@@ -28,15 +28,21 @@ ACTION_VERBS = (
     "create",
     "delete",
     "derive",
+    "describe",
+    "display",
     "edit",
     "explain",
     "export",
+    "find",
     "grant",
     "group",
+    "guide",
     "handoff",
     "handle",
     "highlight",
     "import",
+    "inspect",
+    "keep",
     "link",
     "leave",
     "log",
@@ -49,6 +55,8 @@ ACTION_VERBS = (
     "pair",
     "persist",
     "present",
+    "prepare",
+    "provide",
     "produce",
     "publish",
     "rank",
@@ -58,6 +66,8 @@ ACTION_VERBS = (
     "render",
     "request",
     "resolve",
+    "respond",
+    "review",
     "route",
     "save",
     "schedule",
@@ -87,6 +97,8 @@ GENERIC_TERMS = {
     "contract",
     "domain",
     "evidence",
+    "explicit",
+    "explicitly",
     "first",
     "greenfield",
     "hand",
@@ -99,13 +111,13 @@ GENERIC_TERMS = {
     "only",
     "off",
     "output",
+    "path",
     "planned",
     "product",
     "project",
     "proof",
     "record",
     "release",
-    "review",
     "reviewer",
     "service",
     "single",
@@ -132,17 +144,30 @@ GENERIC_TERMS = {
 }
 
 ARTIFACT_CARRIER_TERMS = {
+    "alternative",
+    "alternatives",
     "answer",
     "answers",
+    "assignment",
+    "assignments",
     "blocker",
     "blockers",
+    "confirmation",
+    "confirmations",
     "criteria",
+    "context",
     "decision",
+    "description",
+    "descriptions",
+    "detail",
+    "details",
     "evidence",
     "field",
     "fields",
     "flag",
     "flags",
+    "form",
+    "forms",
     "history",
     "input",
     "inputs",
@@ -158,6 +183,8 @@ ARTIFACT_CARRIER_TERMS = {
     "outcomes",
     "output",
     "outputs",
+    "option",
+    "options",
     "package",
     "packet",
     "preference",
@@ -167,8 +194,11 @@ ARTIFACT_CARRIER_TERMS = {
     "records",
     "request",
     "result",
+    "review",
+    "reviews",
     "rule",
     "rubric",
+    "rubrics",
     "score",
     "signal",
     "state",
@@ -178,8 +208,33 @@ ARTIFACT_CARRIER_TERMS = {
     "unit",
     "units",
     "version",
+    "versioning",
     "view",
+    "visit",
+    "visits",
 }
+
+ROLEISH_TERMS = {
+    "actor",
+    "admin",
+    "administrator",
+    "applicant",
+    "client",
+    "coordinator",
+    "customer",
+    "manager",
+    "operator",
+    "owner",
+    "participant",
+    "person",
+    "requester",
+    "resident",
+    "reviewer",
+    "submitter",
+    "user",
+}
+
+NOUN_MODIFIER_ACTION_TERMS = {"review"}
 
 
 def clean_artifact_phrases(values: Sequence[str]) -> list[str]:
@@ -191,19 +246,35 @@ def clean_artifact_phrase(value: str) -> str:
     if not text:
         return ""
     text = _clean_visible_phrase_debris(text)
+    text = _normalize_misplaced_artifact_modifiers(text)
+    action_pattern = action_forms_pattern()
+    text = re.sub(rf"^(?:[a-z0-9-]+\s+){{0,4}}can\s+(?:{action_pattern})\s+", "", text, flags=re.I)
     text = re.sub(r"\b(?:related path|failure avoided|relevant behavior)\s*:\s*.+$", "", text, flags=re.I)
     text = re.sub(r"\busing\s+(?:mocked|stubbed|simulated)\b.*$", "", text, flags=re.I)
     text = re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", text, flags=re.I)
+    text = re.sub(r"^(?:release\s+)?good\s+enough\s+", "", text, flags=re.I)
+    text = re.sub(r"\b(?:accepted|confirmed|needed|received|requested|trusted|visible)\b", "", text, flags=re.I)
+    text = re.sub(r"\bkeep(?:s|ing)?\s+", "", text, flags=re.I)
+    text = re.sub(r"\bexplicit(?:ly)?\b", "", text, flags=re.I)
+    text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.I)
     leading_modifiers = "validated|candidate|selected|ranked|authorized"
     if "completeness" not in text:
         leading_modifiers = f"required|{leading_modifiers}"
     text = re.sub(rf"^(?:{leading_modifiers})\s+", "", text, flags=re.I)
+    text = re.sub(r"^(?:central|core|main|primary)\s+", "", text, flags=re.I)
     words = text.split()
     preserve_modifier = bool(
         len(words) >= 2 and words[0].casefold().endswith("ing") and words[1].casefold() in ARTIFACT_CARRIER_TERMS
+    ) or bool(
+        len(words) >= 2
+        and words[0].casefold() in NOUN_MODIFIER_ACTION_TERMS
+        and words[1].casefold() in ARTIFACT_CARRIER_TERMS
     )
     if not preserve_modifier:
         text = strip_action(text)
+    text = re.sub(r"^[a-z0-9][a-z0-9 -]{0,80}\s+owns\s+", "", text, flags=re.I)
+    text = re.sub(r"\b(?:and\s+)?keeps?\s+the\s+next\s+visible\s+step\s+tied\s+to\s*:\s*.+$", "next-step context", text, flags=re.I)
+    text = re.sub(r"\btied\s+to\s*:\s*.+$", "", text, flags=re.I)
     text = re.sub(r"^(?:hold|holds|holding)\s+", "", text, flags=re.I)
     text = re.sub(
         r"\bhold\s+(?=(?:profile|record|state|history|log|entry|session|trip|event|timeline|measurement|metric|reading)\b)",
@@ -214,7 +285,14 @@ def clean_artifact_phrase(value: str) -> str:
     text = re.sub(r"^(?:them|it|their|they|this|that)\s+(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"^(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"\b(?:them|it|their|they|this|that)\b", "", text, flags=re.I)
+    text = re.sub(r"\bhas\s+enough\s+[a-z0-9-]+\b", "", text, flags=re.I)
     text = re.sub(r"\s+", " ", text).strip(" .,;:")
+    text = re.sub(
+        r"\b(?:accepted|confirmed|needed|received|requested|trusted|visible)\b$",
+        "",
+        text,
+        flags=re.I,
+    ).strip(" .,;:")
     if not text:
         return ""
     lowered = text.casefold()
@@ -225,6 +303,7 @@ def clean_artifact_phrase(value: str) -> str:
     if lowered in {
         "authorized actor",
         "blocker state",
+        "blocked states",
         "handoff evidence",
         "local blockers",
         "prior result",
@@ -237,11 +316,45 @@ def clean_artifact_phrase(value: str) -> str:
         return lowered
     if lowered in GENERIC_TERMS:
         return ""
+    if lowered in {"action", "actions", "user action", "user actions"}:
+        return ""
     words = text.split()
     if len(words) > 8:
         return ""
     if len(words) == 1 and words[0] not in ARTIFACT_CARRIER_TERMS and words[0] != "blocker":
         return ""
+    if set(words) & ARTIFACT_CARRIER_TERMS:
+        keep_role_qualified_artifact = (
+            len(words) == 2
+            and words[0].casefold() in ROLEISH_TERMS
+            and words[1].casefold() in ARTIFACT_CARRIER_TERMS
+            and words[1].casefold() not in {"action", "actions", "input", "inputs"}
+        )
+        if not keep_role_qualified_artifact:
+            words = [
+                word
+                for word in words
+                if word.casefold() not in ROLEISH_TERMS and word.casefold() not in {"enough", "next"}
+            ]
+        text = " ".join(words).strip(" .,;:")
+        text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.I)
+        words = text.split()
+        lowered = text.casefold()
+        if not text:
+            return ""
+    if any(word.casefold() in ROLEISH_TERMS for word in words) and any(
+        word.casefold() in {"action", "actions"} for word in words
+    ):
+        return ""
+    if "enough" in {word.casefold() for word in words} and not (set(words) & ARTIFACT_CARRIER_TERMS):
+        return ""
+    if len(words) >= 3 and _looks_actorish_term(words[0]) and looks_action_term(words[1]):
+        text = " ".join(words[2:]).strip(" .,;:")
+        text = strip_action(text)
+        words = text.split()
+        lowered = text.casefold()
+        if not text or text in GENERIC_TERMS:
+            return ""
     if not content_terms(text):
         return ""
     action_hits = [
@@ -252,6 +365,11 @@ def clean_artifact_phrase(value: str) -> str:
     if action_hits and not (set(words) & ARTIFACT_CARRIER_TERMS):
         return ""
     return text
+
+
+def _looks_actorish_term(value: str) -> bool:
+    token = str(value or "").casefold()
+    return bool(re.search(r"(?:er|or|ist|ian|ant|ee)$", token))
 
 
 def _clean_visible_phrase_debris(value: str) -> str:
@@ -276,6 +394,24 @@ def _clean_visible_phrase_debris(value: str) -> str:
         flags=re.I,
     )
     text = re.sub(r"\b(?P<object>[a-z0-9][a-z0-9 '-]{1,50})\s+visible\s+result\b", r"\g<object>", text, flags=re.I)
+    return re.sub(r"\s+", " ", text).strip(" .,;:")
+
+
+def _normalize_misplaced_artifact_modifiers(value: str) -> str:
+    """Repair parser-order debris before it becomes a contract artifact."""
+
+    text = clean_text(value).casefold().strip(" .,;:")
+    if not text:
+        return ""
+    required = re.match(r"^[a-z0-9-]+\s+required\s+(?P<object>[a-z0-9][a-z0-9 '-]{1,80})$", text, flags=re.I)
+    if required:
+        text = f"required {required.group('object')}"
+    missing = re.match(r"^[a-z0-9-]+\s+missing\s+(?P<object>[a-z0-9][a-z0-9 '-]{1,80})$", text, flags=re.I)
+    if missing:
+        missing_object = trim_phrase(missing.group("object"))
+        if missing_object and not set(missing_object.split()) & ARTIFACT_CARRIER_TERMS:
+            missing_object = f"{missing_object} detail"
+        text = f"missing {missing_object}".strip()
     return re.sub(r"\s+", " ", text).strip(" .,;:")
 
 

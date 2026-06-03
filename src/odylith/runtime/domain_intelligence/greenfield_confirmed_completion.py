@@ -7,6 +7,8 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
@@ -35,8 +37,9 @@ from odylith.runtime.domain_intelligence.greenfield_product_risks import build_p
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
@@ -317,7 +320,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             metrics = [
                 f"{label} proves one complete user path that reaches {outcome_sentence}.",
                 f"{label} explains blocked, missing, or invalid information before the product shows a result.",
-                f"{label} keeps actor, source, status, evidence, result, and explanation clear enough to understand how {state_object} changed.",
+                f"{label} preserves actor, source, status, result, and recovery context for each {state_object} change.",
             ]
             if _row_is_release_proof(row):
                 if non_goal_rows:
@@ -348,114 +351,29 @@ def _capability_phrase(proposal: Mapping[str, Any]) -> str:
 def _action_phrase(proposal: Mapping[str, Any]) -> str:
     """Return the material user-side action without folding in the final result."""
 
-    model = first_path_model(_first_path(proposal))
-    rows: list[str] = []
-    reached_visible_result = False
-    for step in model.steps:
-        clean = _clean_action_step(step)
-        if not clean:
-            continue
-        if not rows and _is_opening_step(clean):
-            continue
-        if _is_result_step(clean):
-            reached_visible_result = True
-            continue
-        if reached_visible_result and rows:
-            break
-        rows.append(clean)
-        if len(rows) >= 3:
-            break
-    if rows:
-        return _fragment(_join_action_steps(rows), fallback="complete the first product action", limit=220)
-    capability = _capability_phrase(proposal)
-    outcome = _outcome_phrase(proposal)
-    if outcome and outcome.casefold() in capability.casefold():
-        capability = re.sub(r",?\s+(?:and\s+)?(?:see|sees|view|views|review|reviews|receive|receives|get|gets)\s+.+$", "", capability, flags=re.I)
-    return _fragment(capability, fallback="complete the first product action", limit=220)
+    action = first_path_action_phrase(_first_path(proposal), fallback="complete the first product action", max_fragments=1)
+    return _base_user_action_phrase(action) or "complete the first product action"
 
 
-def _clean_action_step(value: Any) -> str:
+def _base_user_action_phrase(value: str) -> str:
     text = _clean(value).strip(" .")
-    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.I)
-    text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.I)
-    text = re.sub(
-        r"^(?:a|an|the)\s+(?:user|owner|person|actor|customer|applicant|participant|operator)\s+",
-        "",
-        text,
-        flags=re.I,
-    )
-    replacements = {
-        "adds": "add",
-        "logs": "log",
-        "enters": "enter",
-        "selects": "select",
-        "submits": "submit",
-        "saves": "save",
-        "chooses": "choose",
-        "clicks": "click",
-        "accepts": "accept",
-        "dismisses": "dismiss",
-        "records": "record",
-        "captures": "capture",
-        "reviews": "review",
-    }
-    first, sep, tail = text.partition(" ")
-    replacement = replacements.get(first.casefold().strip(".,;:"))
-    if replacement:
-        text = f"{replacement}{sep}{tail}".strip()
-    for inflected, base in replacements.items():
-        text = re.sub(rf"\b(and|then)\s+{re.escape(inflected)}\b", rf"\1 {base}", text, flags=re.I)
-        text = re.sub(rf"\b(and|then)\s+manually\s+{re.escape(inflected)}\b", rf"\1 manually {base}", text, flags=re.I)
-    text = re.sub(
-        r",\s+and\s+(manually\s+)?(log|enter|select|submit|save|choose|click|accept|dismiss|record|capture|review)\b",
-        r" and \1\2",
-        text,
-        flags=re.I,
-    )
-    text = re.sub(r"\s+", " ", text).strip(" .")
-    if text[:2].isupper():
-        return text
-    text = text[:1].lower() + text[1:] if text else ""
-    return text
-
-
-def _is_opening_step(value: str) -> bool:
-    return bool(re.search(r"\bopens?\s+(?:the\s+)?(?:app|web app|application|site|website|product)\b", value, flags=re.I))
-
-
-def _is_result_step(value: str) -> bool:
-    text = value.casefold()
-    if re.search(r"\b(?:sees?|views?|receives?|reads?|gets?|shows?|displays?|returns?|produces?|calculates?|computes?|renders?)\b", text):
-        return True
-    if re.search(r"^(?:the\s+)?(?:product|system|app|application|service|platform|dashboard)\s+", text):
-        return True
-    return False
-
-
-def _join_action_steps(values: Sequence[str]) -> str:
-    rows = [_clean(value).strip(" .") for value in values if _clean(value)]
-    if not rows:
+    if not text:
         return ""
-    if len(rows) == 1:
-        return rows[0]
-    if len(rows) == 2:
-        return f"{rows[0]} and {rows[1]}"
-    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
+    text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
+    words = text.split()
+    for index in range(1, min(len(words), 6)):
+        candidate = " ".join(words[index:]).strip(" .")
+        if looks_like_finite_action(candidate):
+            return base_action_clause(candidate)
+    return base_action_clause(text)
 
 
 def _outcome_phrase(proposal: Mapping[str, Any]) -> str:
-    model = first_path_model(_first_path(proposal))
-    text = _clean(model.visible_outcome) or _clean(_proof_boundary(proposal)) or "the promised user-visible result"
-    text = re.sub(r"\bvisible-result\s+event\b", "visible result", text, flags=re.I)
-    text = _fragment(text, fallback="the promised user-visible result", limit=220)
-    text = re.sub(
-        r"^(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
-        r"(?:sees?|views?|receives?|reads?|gets?)\s+",
-        "",
-        text,
-        flags=re.I,
+    return first_path_outcome_phrase(
+        _first_path(proposal),
+        proof_boundary=_proof_boundary(proposal),
+        fallback="the promised user-visible result",
     )
-    return text.rstrip(".") or "the promised user-visible result"
 
 
 def _workstream_subject(row: Mapping[str, Any], *, fallback: str) -> str:
@@ -806,7 +724,10 @@ def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: s
         _sentence(f"Blocked-path proof: missing input, invalid state, failed validation, absent explanation, or unresolved review blocks readiness for {state_object}.", limit=520),
         _sentence(f"Replay proof: {state_object} can be reconstructed with actor, timestamp, prior state, current state, result, and explanation.", limit=520),
         _sentence(f"Access and privacy proof: only authorized actors can view or mutate protected state, and audit, retention, privacy, accessibility, and safety obligations stay visible.", limit=520),
-        _sentence(f"Component proof: every generated component proves the local behavior it owns and explains what happens when required information is missing.", limit=520),
+        _sentence(
+            "Each owned product behavior must prove its successful path and explain what happens when required information is missing.",
+            limit=520,
+        ),
         _sentence(f"Release proof: {label} cannot promote unless validation output proves the visible product outcome and stays inside the first-release promise.", limit=520),
     ]
     return _set_list(proposal, "validation_strategy", rows)
@@ -825,13 +746,13 @@ def _repair_backlog_success_language(proposal: dict[str, Any], *, release_select
         metrics = [
             _sentence(f"{title} proves the first path in release {release}: a representative user can {action}, and the product reaches {outcome}.", limit=700),
             _sentence(f"{title} explains missing or invalid information before the product shows a result.", limit=500),
-            _sentence(f"{title} keeps {state_object} replayable with actor, source, status, evidence, result, and explanation.", limit=500),
+            _sentence(f"{title} preserves enough {state_object} context to explain the actor, status, result, and recovery path.", limit=500),
             _sentence(f"{title} stays inside the first-release promise and keeps deferred outcomes out of the success claim.", limit=500),
         ]
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "replay", "evidence")):
             changed |= _set_list(row, "success_metrics", metrics, limit=1000)
         validation = [
-            _sentence(f"Validate success, blocked, replay, access, privacy, and evidence paths for {title}.", limit=360),
+            _sentence(f"Validate a successful {title} path, a blocked path, replay, role access, privacy handling, and evidence visibility.", limit=360),
             _sentence(f"Reject release readiness when {title} cannot explain its result, changed state, access posture, or recovery path.", limit=420),
         ]
         if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block", "replay")):
@@ -894,28 +815,31 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
         changed |= _repair_bad_scalar(
             row,
             "security_posture",
-            fallback=f"Security posture: {title} keeps authorization, private data handling, audit, retention, privacy, and recovery controls visible before release.",
+            fallback=f"Security posture: {title} states who can see or change the product state, what sensitive information is involved, and how recovery stays visible before release.",
         )
         if _sequence_has_text_repair(row.get("success_metrics")):
+            metrics = [
+                f"{title} proves the first path in release {release}: a representative user can {action}, and the product reaches {outcome}.",
+                f"{title} explains missing or invalid information before the product shows a result.",
+                f"{title} preserves enough {state_object} context to explain the actor, status, result, and recovery path.",
+                f"{title} stays inside the first-release promise without borrowing deferred outcomes.",
+            ]
             changed |= _set_list(
                 row,
                 "success_metrics",
-                [
-                    f"{title} proves the first path in release {release}: a representative user can {action}, and the product reaches {outcome}.",
-                    f"{title} explains missing or invalid information before the product shows a result.",
-                    f"{title} keeps {state_object} replayable with actor, source, status, evidence, result, and explanation.",
-                    f"{title} stays inside the first-release promise without borrowing deferred outcomes.",
-                ],
+                metrics,
             )
+            changed |= _repair_domain_intelligence_metrics(row, title=title, action=action, outcome=outcome, state_object=state_object)
         if _sequence_has_text_repair(row.get("validation")):
             changed |= _set_list(
                 row,
                 "validation",
                 [
-                    f"Validate success, blocked, replay, access, privacy, and evidence paths for {title}.",
+                    f"Validate a successful {title} path, a blocked path, replay, role access, privacy handling, and evidence visibility.",
                     f"Reject release readiness when {title} cannot explain its result, changed state, access posture, or recovery path.",
                 ],
             )
+        changed |= _repair_domain_intelligence_metrics(row, title=title, action=action, outcome=outcome, state_object=state_object)
         if _sequence_has_text_repair(row.get("rationale_lines")):
             changed |= _set_list(
                 row,
@@ -951,6 +875,30 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
             fallback=f"Shows how {_project_title(proposal)} preserves first-path state, evidence, and proof.",
         )
     return changed
+
+
+def _repair_domain_intelligence_metrics(
+    row: dict[str, Any],
+    *,
+    title: str,
+    action: str,
+    outcome: str,
+    state_object: str,
+) -> bool:
+    intelligence = row.get("domain_intelligence")
+    if not isinstance(intelligence, dict):
+        return False
+    if not _sequence_has_text_repair(intelligence.get("metrics")):
+        return False
+    return _set_list(
+        intelligence,
+        "metrics",
+        [
+            f"{title} proves users can {action} and the product reaches {outcome}.",
+            f"Every readiness assertion for {title} has state, explanation, validation, release-review, and non-goal references.",
+            f"{title} keeps {state_object} clear when the result is blocked, corrected, or replayed.",
+        ],
+    )
 
 
 def _validation_strategy_needs_repair(proposal: Mapping[str, Any]) -> bool:

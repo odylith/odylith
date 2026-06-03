@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "63c8c0639d6569bac6965f293432933321983c069e666cffa76360cad42487db",
-    "file_count": 312,
+    "digest": "f22177d281fd1e469646b2c6f8944a6b1c787bf0c5755855c8c6324379186812",
+    "file_count": 313,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -155,6 +155,7 @@
       "odylith/radar/source/ideas/2026-04/2026-04-29-v0-1-15-repo-context-graph-v1.md",
       "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
       "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+      "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
       "odylith/radar/source/programs/B-072.execution-waves.v1.json",
       "odylith/radar/source/programs/B-096.execution-waves.v1.json",
       "odylith/radar/source/programs/B-099.execution-waves.v1.json",
@@ -8596,6 +8597,46 @@
         "code_reference_count": 0
       },
       "execution_wave_refs": []
+    },
+    {
+      "idea_id": "B-143",
+      "title": "Decompose greenfield project intelligence surface",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "workstream_parent": "",
+      "workstream_children": [],
+      "workstream_depends_on": [
+        "B-142"
+      ],
+      "workstream_blocks": [],
+      "workstream_reopens": "",
+      "workstream_reopened_by": "",
+      "workstream_split_from": "",
+      "workstream_split_into": [],
+      "workstream_merged_into": "",
+      "workstream_merged_from": [],
+      "related_diagram_ids": [
+        "D-043"
+      ],
+      "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
+      "promoted_to_plan": "",
+      "plan_traceability": {
+        "runbooks": [],
+        "developer_docs": [],
+        "code_references": []
+      },
+      "active_release_id": "",
+      "active_release": {},
+      "release_history": [],
+      "release_history_summary": "",
+      "coverage": {
+        "linked_plan_count": 0,
+        "linked_diagram_count": 1,
+        "runbook_count": 0,
+        "developer_doc_count": 0,
+        "code_reference_count": 0
+      },
+      "execution_wave_refs": []
     }
   ],
   "releases": [
@@ -10662,6 +10703,14 @@
       "file": "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md"
     },
     {
+      "id": "B-143",
+      "type": "workstream",
+      "label": "Decompose greenfield project intelligence surface",
+      "status": "queued",
+      "workstream_type": "standalone",
+      "file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md"
+    },
+    {
       "id": "component:atlas",
       "type": "component",
       "label": "Atlas",
@@ -11081,7 +11130,8 @@
         "B-090",
         "B-091",
         "B-098",
-        "B-110"
+        "B-110",
+        "B-143"
       ],
       "diagrams": [
         "D-001",
@@ -11117,7 +11167,8 @@
         "D-029",
         "D-030",
         "D-031",
-        "D-039"
+        "D-039",
+        "D-043"
       ],
       "sources": [
         "manifest",
@@ -11195,7 +11246,8 @@
       "file": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
       "workstreams": [
         "B-141",
-        "B-142"
+        "B-142",
+        "B-143"
       ],
       "diagrams": [
         "D-043"
@@ -11521,7 +11573,8 @@
         "B-135",
         "B-131",
         "B-141",
-        "B-142"
+        "B-142",
+        "B-143"
       ],
       "diagrams": [
         "D-001",
@@ -20417,6 +20470,11 @@
     },
     {
       "source": "B-142",
+      "target": "B-143",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "B-142",
       "target": "component:atlas",
       "edge_type": "component_linkage"
     },
@@ -20464,6 +20522,26 @@
       "source": "B-142",
       "target": "release:release-0-1-15",
       "edge_type": "active_release"
+    },
+    {
+      "source": "B-143",
+      "target": "component:dashboard",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-143",
+      "target": "component:domain-intelligence",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-143",
+      "target": "component:odylith",
+      "edge_type": "component_linkage"
+    },
+    {
+      "source": "B-143",
+      "target": "diagram:D-043",
+      "edge_type": "diagram_linkage"
     },
     {
       "source": "component:atlas",
@@ -21248,6 +21326,11 @@
     {
       "source": "component:dashboard",
       "target": "diagram:D-040",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:dashboard",
+      "target": "diagram:D-043",
       "edge_type": "component_diagram"
     },
     {
@@ -24460,6 +24543,13 @@
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
+    },
+    "B-143": {
+      "linked_plan_count": 0,
+      "linked_diagram_count": 1,
+      "runbook_count": 0,
+      "developer_doc_count": 0,
+      "code_reference_count": 0
     }
   },
   "warning_items": [
@@ -24543,10 +24633,10 @@
       "info": 0
     },
     "connectivity": {
-      "spine_node_count": 256,
-      "structural_edge_count": 1694,
+      "spine_node_count": 257,
+      "structural_edge_count": 1700,
       "connected_component_count": 3,
-      "largest_component_size": 254,
+      "largest_component_size": 255,
       "isolated_node_count": 2,
       "isolated_nodes": [
         "release:release-0-1-11",
@@ -24556,18 +24646,18 @@
     "findings": []
   },
   "summary": {
-    "workstream_count": 142,
+    "workstream_count": 143,
     "release_count": 5,
     "component_count": 30,
     "active_release_assignment_count": 20,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 346,
-    "edge_count": 1798,
+    "node_count": 347,
+    "edge_count": 1804,
     "warning_count": 6,
     "warning_item_count": 6,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-06-01 21:55:51Z"
+  "generated_utc": "2026-06-03 02:48:05Z"
 }

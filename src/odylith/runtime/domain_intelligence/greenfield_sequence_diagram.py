@@ -22,6 +22,13 @@ _ACTION_VERB_PATTERN = (
     r"shows?|stores?|submits?|supplies?|tracks?|validates?|verifies?|views?|votes?"
 )
 _SPLIT_ACTION_VERB_PATTERN = _ACTION_VERB_PATTERN.replace("schedules?", "schedules").replace("views?", "views")
+_BASE_ACTION_VERB_PATTERN = (
+    r"add|adjust|approve|assign|attach|calculate|capture|check|choose|close|collect|compare|complete|compute|"
+    r"confirm|correct|create|decide|decline|delete|derive|edit|enter|evaluate|export|fetch|find|get|group|hand|"
+    r"highlight|import|inspect|keep|link|log|notify|open|order|persist|preserve|produce|publish|rank|read|receive|"
+    r"record|reject|render|request|resolve|return|review|route|run|save|schedule|screen|see|select|send|show|store|"
+    r"submit|supply|track|validate|verify|view|vote"
+)
 
 
 def sequence_mermaid(
@@ -173,7 +180,10 @@ def _launcher_only_step(value: str) -> bool:
     text = _compact_text(value).strip(" .")
     return bool(
         len(re.findall(r"[A-Za-z0-9]+", text)) <= 6
-        and re.search(r"\bopens?\s+(?:the\s+)?(?:app|web app|application|site|website|product)\b", text, flags=re.IGNORECASE)
+        and (
+            re.search(r"\bopens?\s+(?:the\s+)?(?:app|web app|application|site|website|product)\b", text, flags=re.IGNORECASE)
+            or re.search(r"\b(?:signs?\s+in|logs?\s+in|authenticates?)\b", text, flags=re.IGNORECASE)
+        )
     )
 
 
@@ -186,7 +196,7 @@ def _normalize_event_step(value: str) -> str:
     if re.search(r"\brenders?\s+the\s+visible\s+result\s*:", text, re.IGNORECASE):
         text = re.sub(
             r"^.*?\brenders?\s+the\s+visible\s+result\s*:\s*"
-            r"(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
+            r"(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer|[A-Za-z][A-Za-z0-9/-]*(?:\s+[A-Za-z][A-Za-z0-9/-]*){0,3})\s+"
             r"(?:sees?|views?|receives?|gets?|reads?)\s+",
             "Show ",
             text,
@@ -539,10 +549,57 @@ def _step_message(value: str, *, keep_actor_subject: bool = True) -> str:
 def _step_action_label(value: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _strip_dangling_tail(_trim(value, 130)), flags=re.IGNORECASE)
     text = re.sub(r"^(?:the\s+)?(?:product|app|application|system)\s+", "", text, flags=re.IGNORECASE)
+    role_can = re.match(
+        r"^(?:a|an|the|one)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+can\s+(?P<verb>[A-Za-z]+)\b(?P<rest>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if role_can:
+        role = role_can.group("role").strip()
+        verb = _third_person_verb(role_can.group("verb"))
+        rest = _role_can_rest_to_third_person(role_can.group("rest"))
+        text = f"{role} {verb}{rest}".strip(" .")
+        return text[:1].upper() + text[1:] if text else "Advance accepted path"
     text = _strip_primary_actor_subject(text)
     text = re.sub(r"^(?:they|them|their)\s+", "", text, flags=re.IGNORECASE).strip(" .")
     text = _imperative_handoff_focus(text)
     return text[:1].upper() + text[1:] if text else "Advance accepted path"
+
+
+def _third_person_verb(value: str) -> str:
+    verb = str(value or "").strip()
+    if not verb:
+        return verb
+    irregular = {"do": "does", "go": "goes", "have": "has"}
+    lowered = verb.casefold()
+    if lowered in irregular:
+        return irregular[lowered]
+    if lowered.endswith(("s", "x", "z", "ch", "sh")):
+        return f"{verb}es"
+    if lowered.endswith("y") and len(verb) > 1 and lowered[-2] not in {"a", "e", "i", "o", "u"}:
+        return f"{verb[:-1]}ies"
+    return f"{verb}s"
+
+
+def _role_can_rest_to_third_person(value: str) -> str:
+    rest = str(value or "")
+
+    def replace_comma(match: re.Match[str]) -> str:
+        prefix = " and " if match.group("and") else ", "
+        return f"{prefix}{_third_person_verb(match.group('verb'))}"
+
+    rest = re.sub(
+        rf"\s*,\s+(?P<and>and\s+)?(?P<verb>{_BASE_ACTION_VERB_PATTERN})\b",
+        replace_comma,
+        rest,
+        flags=re.IGNORECASE,
+    )
+    return re.sub(
+        rf"\s+and\s+(?P<verb>{_BASE_ACTION_VERB_PATTERN})\b",
+        lambda match: f" and {_third_person_verb(match.group('verb'))}",
+        rest,
+        flags=re.IGNORECASE,
+    )
 
 
 def _handoff_message(next_step: str) -> str:
@@ -569,11 +626,21 @@ def _strip_primary_actor_subject(value: str) -> str:
         flags=re.IGNORECASE,
     ).strip(" .")
     match = re.match(
-        rf"^(?:(?:a|an|the|one)\s+)(?:[A-Za-z0-9][A-Za-z0-9/-]*\s+){{1,4}}(?P<verb>{_ACTION_VERB_PATTERN})\b(?P<rest>.*)$",
+        rf"^(?P<subject>(?:(?:a|an|the|one)\s+)(?:[A-Za-z0-9][A-Za-z0-9/-]*\s+){{1,4}})(?P<verb>{_ACTION_VERB_PATTERN})\b(?P<rest>.*)$",
         text,
         flags=re.IGNORECASE,
     )
-    if match:
+    if match and re.search(
+        r"\b(?:actor|applicant|borrower|coordinator|customer|owner|participant|patient|person|requester|reviewer|supervisor|user)\b",
+        match.group("subject"),
+        flags=re.IGNORECASE,
+    ):
+        text = f"{match.group('verb')}{match.group('rest')}".strip(" .")
+    elif match and re.match(r"^(?:a|an|the|one)\s+", match.group("subject"), flags=re.IGNORECASE) and not re.search(
+        r"\b(?:app|application|dashboard|engine|product|service|system|view|workspace)\b",
+        match.group("subject"),
+        flags=re.IGNORECASE,
+    ):
         text = f"{match.group('verb')}{match.group('rest')}".strip(" .")
     return text
 

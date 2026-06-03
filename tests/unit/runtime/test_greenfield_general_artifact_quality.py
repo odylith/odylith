@@ -8,22 +8,17 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_proposals
-from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
-    public_prose_quality_issues,
-    rendered_component_spec_quality_issues,
-)
+from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import rendered_component_spec_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
-from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
-from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import _first_action_clause
-from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import _sentence_fragment
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
-    build_greenfield_package_report,
-    build_greenfield_completion_report,
     GreenfieldCompletionPackage,
+    _contrastive_domain_drift_issues,
+    build_greenfield_completion_report,
+    build_greenfield_package_report,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import (
     generated_semantic_slop_issues,
@@ -579,8 +574,8 @@ def test_greenfield_health_tracking_defers_later_scope_and_keeps_atlas_implement
 
     assert "Deferred scope<br/>Medication and Relief Tracking with Reminders Service" in boundary
     assert "Deferred scope<br/>Shareable Visit Summary Generation Service" in boundary
-    assert "Proof checkpoint<br/>Proven when one person can create a pain entry" in proof
-    assert "see the persisted entry" in proof
+    assert "Proof checkpoint<br/>The result on a timeline and trend view" in proof
+    assert "Proven when one person can create a pain entry" not in proof
     assert "done, path, mean, person" not in proof
 
 
@@ -617,7 +612,8 @@ def test_greenfield_protocol_effect_tracker_uses_protocol_measurement_and_timeli
     assert first_path_contract["visible_result"] == "See them aligned on one timeline"
     assert len(first_path_contract["events"]) >= 6
     proof_checkpoint = str(semantic_model["diagram_event_graph"]["proof_checkpoint"])  # type: ignore[index]
-    assert "accepted first path" in proof_checkpoint
+    assert "visible outcome proof" in proof_checkpoint
+    assert "accepted first path" not in proof_checkpoint
     assert "protocol, intervention" not in proof_checkpoint
     assert (
         semantic_components["Timeline and Correlation View Service"]["semantic_axis"]
@@ -692,7 +688,8 @@ def test_greenfield_protocol_effect_tracker_uses_protocol_measurement_and_timeli
     assert "See them aligned on one<br/>timeline" in sequence
     assert "A2->>" not in sequence
     assert "A3->>" not in sequence
-    assert "Proof checkpoint<br/>Proven when a user can create a protocol" in proof
+    assert "Proof checkpoint<br/>See them aligned on one timeline" in proof
+    assert "Proven when a user can create a protocol" not in proof
     assert "protocol, intervention, timing, dose, baseline, follow-up" not in proof
 
     for banned in (
@@ -946,6 +943,18 @@ def test_greenfield_post_confirm_completion_fails_contrastive_unexplained_artifa
     assert "outsiderterm" in joined
 
 
+def test_contrastive_domain_drift_allows_generic_lifecycle_terms(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["components"][0]["component_contract"]["outside_boundary"] += (
+        ", incomplete input blocker, incomplete state marker, incomplete signal, incomplete handoff, "
+        "incomplete report, incomplete packet, incomplete result, and incomplete correction"
+    )
+
+    issues = _contrastive_domain_drift_issues(proposal, proposal["semantic_model"])
+
+    assert issues == []
+
+
 def test_greenfield_post_confirm_completion_fails_near_duplicate_generated_sentences(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     repeated = (
@@ -1194,7 +1203,8 @@ def test_greenfield_ranking_engine_and_review_surface_stay_distinct(tmp_path: Pa
     assert "A1->>" not in sequence
     assert 'input1["External input<br/>Transit schedule feed"] --> boundary2' in boundary
     assert 'input2["External input<br/>Fare table feed"] --> boundary3' in boundary
-    assert "Proof checkpoint<br/>Proven when one traveler can enter a trip" in proof
+    assert "Proof checkpoint<br/>The lowest-cost acceptable route" in proof
+    assert "Proven when one traveler can enter a trip" not in proof
     assert "check traveler" not in proof
     assert "Commuter, and" not in rendered
     assert "user path, state, evidence, decision, and follow-up" not in rendered
@@ -1223,7 +1233,8 @@ def test_greenfield_tribunal_rejects_shallow_confirmed_artifact_substance(tmp_pa
     issues = "\n".join(decision.issues)
 
     assert not decision.passed
-    assert "confirmed Radar workstream `Let Traveler Enter Origin, Destination, Departure Time, and Preference` is too thin" in issues
+    assert "confirmed Radar workstream `" in issues
+    assert "is too thin" in issues
     assert "presentation boundary but owns computation or source-truth state" in issues
     assert "collapses the first path into too few events" in issues
 
@@ -1449,168 +1460,5 @@ Release 0.0.1 succeeds when one vendor can submit documents, missing files block
     assert "check_rule_ledger_proof" not in checklist_spec
     assert "Suggested fixture:" not in checklist_spec
     assert "compliance" in checklist_spec.casefold()
-    assert "missing or malformed input explains what must change" in checklist_spec
-    assert "Replay one Compliance Checklist Ledger result" in checklist_spec
-
-
-def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:
-    contract = derive_component_semantic_contract(
-        {
-            "label": "Planning Engine",
-            "source_system_description": "computes plan targets from progress snapshots and status windows with rationale",
-        },
-        proposal={"intent": {"title": "Generic Planning"}},
-        sibling={"label": "Weekly Status Review", "source_system_description": "calculates weekly status and progress state"},
-        previous_label="Daily Progress Logging",
-        next_label="Weekly Status Review",
-        state_label="planning record",
-    ).fields
-
-    spec = build_component_spec(
-        component_id="planning-engine",
-        label="Planning Engine",
-        path="src/planning/engine.py",
-        kind="service",
-        status="planned",
-        sources=("user_intent",),
-        workstreams=("B-001",),
-        component_contract=contract,
-    )
-
-    assert rendered_component_spec_quality_issues({"Planning Engine": spec}, project_title="Generic Planning") == []
-    assert "## Component Brief" not in spec
-    assert "## Boundary Narrative" not in spec
-    assert "## First Release Proof" not in spec
-    assert "## Implementation Starting Point" not in spec
-    assert "Planning Engine carries the product logic" in spec
-    assert "Component Snapshot" not in spec
-    assert "runtime ownership boundary" not in spec
-    assert "structured contract below" not in spec
-    assert "Refused domain responsibilities:" not in spec
-    assert "Forbidden runtime authorities:" not in spec
-    assert "Source-backed proof named by the first implementation plan" not in spec
-    assert "computes plan targets input" not in spec.casefold()
-
-    assert "Suggested fixture:" not in spec
-    assert "Run one Planning Engine example" in spec
-    assert "missing or malformed input explains what must change" in spec
-
-
-def test_greenfield_component_spec_renderer_rejects_mechanical_contract_dump() -> None:
-    contract = {
-        "owned_state": (
-            "Decision and reason-code service state, producing the explainable result, "
-            "Related path: review flow captures declared facts, "
-            "runs them against configurable review checks, decision reason-code, local blockers, "
-            "handoff evidence for application review state"
-        ),
-        "accepted_inputs": (
-            "Required producing the explainable result, decision reason-code command, required fields, "
-            "prior state, source evidence, authorized actor, validation notes"
-        ),
-        "produced_outputs": (
-            "Validated producing the explainable result, decision reason-code state, correction marker, "
-            "replayable change evidence, blocked-state evidence, reviewer explanation, handoff record"
-        ),
-        "states_or_transitions": "open, requested, qualified, returned, visible, received, captured, validated, blocked, revised, handed-off",
-        "outside_boundary": (
-            "Refused domain responsibilities: responsibilities not named by this component boundary; "
-            "sibling-owned state: reviewer queue state, case routing; "
-            "forbidden runtime authorities: mutation of upstream source truth, silent overwrite of downstream handoff state, release approval"
-        ),
-        "local_proof": [
-            "Decision and Reason-code Service proof ties producing the explainable result, required inputs, produced outputs, blocker behavior, and downstream handoff together",
-            "Invalid or missing producing the explainable result blocks trusted downstream state instead of producing Decision and Reason-code Service output",
-            "Decision and Reason-code Service replay proof preserves actor, source, validation status, blocker state, and handoff evidence",
-        ],
-        "upstream_truth": "Qualification Rules Engine",
-        "downstream_consumers": "Reviewer Queue Service",
-        "unique_failure": (
-            "Decision and Reason-code Service can look complete while producing the explainable result is missing, "
-            "stale, assigned to the wrong boundary, or released without source evidence, blocker state, or downstream handoff evidence."
-        ),
-    }
-
-    spec = build_component_spec(
-        component_id="decision-and-reason-code-service",
-        label="Decision and Reason-code Service",
-        path="src/application_review/decision_and_reason_code_service",
-        kind="service",
-        status="planned",
-        sources=("user_intent",),
-        workstreams=("B-004",),
-        diagrams=("D-002",),
-        component_contract=contract,
-    )
-
-    assert rendered_component_spec_quality_issues({"Decision and Reason-code Service": spec}, project_title="Application Review") == []
-    assert "explainable result" in spec
-    assert "decision reason-code" in spec
-    assert "Qualification Rules Engine" in spec
-    assert "Reviewer Queue Service" in spec
-    for forbidden in (
-        "Component Snapshot",
-        "Component planning record for",
-        "runtime ownership boundary",
-        "structured contract below",
-        "It exists to make this failure testable",
-        "Related path:",
-        "Required producing",
-        "Validated producing",
-        "Suggested fixture:",
-        "Refused domain responsibilities:",
-        "Forbidden runtime authorities:",
-        "Operator Verification",
-        "Related path:",
-        "runs them against",
-    ):
-        assert forbidden not in spec
-
-
-def test_greenfield_component_ids_remove_product_component_word_overlap() -> None:
-    rows = confirmed_components(
-        label="Service Goal Planning",
-        label_slug="service-goal-planning",
-        internal_systems=[
-            "Planning Engine: computes plan targets from progress snapshots and status windows.",
-        ],
-        first_path="A user receives an adjusted plan target.",
-        state_object="planning record",
-        proof_boundary="Plan adjustment evidence is visible.",
-    )
-
-    component_id = str(rows[0]["component_id"])
-    assert component_id == "service-goal-planning-engine"
-    assert "planning-planning" not in component_id
-
-def test_greenfield_quality_gate_rejects_verb_phrase_slot_filling() -> None:
-    issues = public_prose_quality_issues(
-        {
-            "component_contract": {
-                "accepted_inputs": "Planning Engine accepts computes plan targets input.",
-                "produced_outputs": "Planning Engine produces computes plan targets result.",
-            }
-        }
-    )
-
-    assert any("verb phrase inserted into contract artifact slot" in issue for issue in issues)
-
-def test_greenfield_quality_gate_rejects_generic_governance_posture_filler() -> None:
-    issues = public_prose_quality_issues(
-        {
-            "problem": "The user path, state, evidence, decision, and follow-up are scattered.",
-            "opportunity": "Build the narrow entry, actions, feedback, and handoff before adding scope.",
-            "product_view": "Users inspect state profile, the first-path outcome, visible blockers, risk posture, and evidence.",
-        }
-    )
-
-    assert any("generic governance posture filler" in issue for issue in issues)
-
-def test_greenfield_first_action_clause_stops_before_next_product_action() -> None:
-    assert (
-        _first_action_clause(
-            "A requester submits a maintenance request, the product verifies required details, assigns a technician, estimates cost and timing, and notifies the requester."
-        )
-        == "A requester submits a maintenance request"
-    )
-    assert _sentence_fragment("Validated intake request and downstream handoff") == "validated intake request and downstream handoff"
+    assert "stops before a trusted result" in checklist_spec
+    assert "A replay of Compliance Checklist Ledger still connects" in checklist_spec

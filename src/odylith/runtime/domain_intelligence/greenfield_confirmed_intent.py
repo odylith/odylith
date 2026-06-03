@@ -10,6 +10,7 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 
@@ -238,13 +239,24 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
     title = title_normalization.canonical_title
     preamble_story = _preamble_story(sections, title)
+    preamble_paragraphs = _preamble_paragraphs(text, title)
+    derived_proof = _derived_proof_boundary_paragraph(preamble_paragraphs)
+    derived_state = _derived_state_paragraph(preamble_paragraphs)
+    derived_first_path = _derived_first_path_paragraph(preamble_paragraphs)
+    derived_story = _derived_product_story(
+        preamble_paragraphs,
+        state=derived_state,
+        first_path=derived_first_path,
+        proof_boundary=derived_proof,
+    )
+    structured_preamble_story = preamble_story if _has_structured_body_sections(sections) else ""
     result: dict[str, Any] = {
         "title": _clean(title),
         "prompt": _canonical_prompt_text(prompt, title_normalization=title_normalization),
-        "product_story": _section_text(sections, "product_story") or preamble_story,
-        "state_object": _section_text(sections, "state_object"),
-        "first_path": _section_text(sections, "first_path"),
-        "proof_boundary": _section_text(sections, "proof_boundary"),
+        "product_story": _section_text(sections, "product_story") or structured_preamble_story or derived_story or preamble_story,
+        "state_object": _section_text(sections, "state_object") or derived_state,
+        "first_path": _section_text(sections, "first_path") or derived_first_path,
+        "proof_boundary": _section_text(sections, "proof_boundary") or derived_proof,
         "problem": _section_text(sections, "problem"),
         "customer": _section_text(sections, "customer"),
         "opportunity": _section_text(sections, "opportunity"),
@@ -264,6 +276,22 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     result = _complete_confirmed_intent_before_validation(result)
     _validate_confirmed_intent(result)
     return result
+
+
+def _has_structured_body_sections(sections: Mapping[str, list[str]]) -> bool:
+    return any(
+        key
+        in {
+            "state_object",
+            "first_path",
+            "proof_boundary",
+            "human_actors",
+            "internal_systems",
+            "external_systems",
+            "component_responsibilities",
+        }
+        for key in sections
+    )
 
 
 def _canonical_prompt_text(value: Any, *, title_normalization: Any) -> str:
@@ -415,6 +443,10 @@ def _looks_like_plain_heading(text: str) -> bool:
         "first complete path odylith should prove before broader scope",
         "first complete path the product should prove before broader scope",
         "human actors",
+        "participants",
+        "stakeholders",
+        "people who participate",
+        "who participates",
         "external systems",
         "external systems not owned by this product",
         "internal systems",
@@ -456,7 +488,13 @@ def _classify_heading(value: str) -> str:
         return "product_view"
     if normalized in {"success metrics", "proof metrics"}:
         return "success_metrics"
-    if "human actor" in normalized or normalized == "actors":
+    if "human actor" in normalized or normalized in {
+        "actors",
+        "participants",
+        "stakeholders",
+        "people who participate",
+        "who participates",
+    }:
         return "human_actors"
     if normalized == "systems":
         return "systems"
@@ -580,6 +618,155 @@ def _preamble_story(sections: Mapping[str, list[str]], title: str) -> str:
             continue
         lines.append(line)
     return _clean(" ".join(lines))
+
+
+def _preamble_paragraphs(text: str, title: str) -> list[str]:
+    title_text = _clean(title).casefold()
+    paragraphs: list[str] = []
+    for raw in re.split(r"\n\s*\n+", str(text or "")):
+        lines: list[str] = []
+        for line in raw.splitlines():
+            cleaned = _clean(line.lstrip("#").strip())
+            if not cleaned:
+                continue
+            if title_text and cleaned.casefold() == title_text:
+                continue
+            if _heading_key(line):
+                continue
+            if re.match(r"^\s*(?:[-*•]|\d+[.)])\s+", line):
+                continue
+            lines.append(cleaned)
+        paragraph = _clean(" ".join(lines))
+        if paragraph:
+            paragraphs.append(paragraph)
+    return paragraphs
+
+
+def _derived_state_paragraph(paragraphs: Sequence[str]) -> str:
+    for paragraph in paragraphs:
+        if _looks_like_state_paragraph(paragraph) and _word_count(paragraph) >= FIELD_MIN_WORDS["state_object"]:
+            return paragraph
+    return ""
+
+
+def _derived_first_path_paragraph(paragraphs: Sequence[str]) -> str:
+    scored: list[tuple[int, int, str]] = []
+    for index, paragraph in enumerate(paragraphs):
+        if _word_count(paragraph) < FIELD_MIN_WORDS["first_path"]:
+            continue
+        if _looks_like_proof_or_scope_paragraph(paragraph) or _looks_like_state_paragraph(paragraph):
+            continue
+        if not _has_material_first_path_action(paragraph):
+            continue
+        model = first_path_model(paragraph)
+        action_count = sum(1 for step in model.steps if _has_progression_or_outcome(step))
+        score = action_count * 3
+        if model.visible_outcome:
+            score += 5
+        if re.search(r"\b(?:opens?|starts?|adds?|enters?|logs?|records?|submits?|saves?|corrects?)\b", paragraph, re.IGNORECASE):
+            score += 2
+        if re.search(r"\b(?:shows?|displays?|returns?|receives?|sees?|views?|reviews?)\b", paragraph, re.IGNORECASE):
+            score += 2
+        if _looks_like_explicit_first_path_paragraph(paragraph):
+            score += 8
+        if _looks_like_product_story_paragraph(paragraph):
+            score -= 6
+        if score >= 7:
+            scored.append((score, -index, paragraph))
+    scored.sort(reverse=True)
+    return scored[0][2] if scored else ""
+
+
+def _looks_like_explicit_first_path_paragraph(value: str) -> bool:
+    text = _clean(value)
+    return bool(
+        re.match(
+            r"^(?:the\s+)?(?:first\s+complete\s+path|first\s+path|first\s+journey|first\s+version\s+path)\b",
+            text,
+            re.IGNORECASE,
+        )
+        or re.match(
+            r"^(?:a|an|the)\s+[^.]{1,80}\b(?:opens?|starts?|adds?|enters?|logs?|records?|submits?|chooses?|selects?|describes?)\b",
+            text,
+            re.IGNORECASE,
+        )
+    )
+
+
+def _looks_like_product_story_paragraph(value: str) -> bool:
+    text = _clean(value)
+    return bool(
+        re.match(r"^[^.]{1,80}\bneed(?:s)?\b[^.]{0,120}\b(?:way|place|product|tool|experience)\b", text, re.IGNORECASE)
+        or re.match(r"^[^.]{1,80}\b(?:want|wants)\b[^.]{0,120}\b(?:way|place|product|tool|experience)\b", text, re.IGNORECASE)
+        or re.search(r"\b(?:helps?|gives?)\s+[^.]{1,80}\b(?:receive|understand|avoid|decide|keep)\b", text, re.IGNORECASE)
+    )
+
+
+def _derived_proof_boundary_paragraph(paragraphs: Sequence[str]) -> str:
+    for paragraph in paragraphs:
+        if _word_count(paragraph) >= FIELD_MIN_WORDS["proof_boundary"] and _looks_like_proof_or_scope_paragraph(paragraph):
+            return paragraph
+    return ""
+
+
+def _derived_product_story(paragraphs: Sequence[str], *, state: str, first_path: str, proof_boundary: str = "") -> str:
+    story_rows: list[str] = []
+    state_key = _clean(state).casefold()
+    path_key = _clean(first_path).casefold()
+    proof_key = _clean(proof_boundary).casefold()
+    for paragraph in paragraphs:
+        lowered = paragraph.casefold()
+        if lowered == state_key or lowered == path_key or lowered == proof_key:
+            continue
+        if _looks_like_state_paragraph(paragraph) or _looks_like_proof_or_scope_paragraph(paragraph):
+            continue
+        if _word_count(paragraph) >= 12:
+            story_rows.append(paragraph)
+        if len(story_rows) >= 2:
+            break
+    return _clean(" ".join(story_rows))
+
+
+def _looks_like_proof_or_scope_paragraph(value: str) -> bool:
+    text = _clean(value)
+    return bool(
+        re.match(
+            r"^(?:the\s+)?(?:first\s+)?release(?:\s+[0-9.]+)?\s+"
+            r"(?:(?:is|works?|succeeds?|passes?|ready)\b|(?:is\s+)?(?:good\s+enough|proven|done|complete)\b)",
+            text,
+            re.IGNORECASE,
+        )
+        or re.match(r"^(?:release\s+[0-9.]+\s+)?(?:succeeds?|is\s+proven|proven|proof)\b", text, re.IGNORECASE)
+        or re.search(r"\b(?:first\s+release|release\s+[0-9.]+)\s+(?:is\s+)?(?:proven|good\s+enough|ready|succeeds?|works?)\b", text, re.IGNORECASE)
+        or re.search(r"\b(?:out\s+of\s+scope|deferred|not\s+included|non[- ]goals?)\b", text, re.IGNORECASE)
+    )
+
+
+def _looks_like_state_paragraph(value: str) -> bool:
+    text = _clean(value)
+    if not text:
+        return False
+    return bool(
+        re.search(
+            r"\b(?:central|core|main|primary)\s+(?:object|state)\b"
+            r"|\b(?:state|record|history)\s+(?:is|records?|keeps?|carries?|tracks?|stores?|maintains?)\b"
+            r"|\b(?:the\s+)?(?:product|system|application|app)\s+(?:keeps?|records?|stores?|tracks?|maintains?|captures?)\s+"
+            r"(?:a|an|the)\s+",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _has_material_first_path_action(value: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:adds?|chooses?|clicks?|corrects?|creates?|describes?|edits?|enters?|fills?|imports?|logs?|"
+            r"opens?|records?|saves?|selects?|starts?|submits?|uploads?)\b",
+            _clean(value),
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _section_list(sections: Mapping[str, list[str]], key: str) -> list[str]:
@@ -1108,6 +1295,8 @@ def _title_case_phrase(value: str) -> str:
 def _validate_confirmed_intent(intent: Mapping[str, Any]) -> None:
     missing: list[str] = []
     for key, minimum in FIELD_MIN_WORDS.items():
+        if key == "product_story" and _product_story_is_clear_enough(intent):
+            continue
         if _word_count(_clean(intent.get(key))) < minimum:
             missing.append(key)
     actor_rows = _strings(intent.get("human_actors"))
@@ -1132,6 +1321,25 @@ def _validate_confirmed_intent(intent: Mapping[str, Any]) -> None:
             f"missing or too thin: {formatted}. Write the visible confirmation to a Markdown file "
             "and pass it with --intent-file."
         )
+
+
+def _product_story_is_clear_enough(intent: Mapping[str, Any]) -> bool:
+    story = _clean(intent.get("product_story"))
+    if _word_count(story) < 12:
+        return False
+    if not _has_meaningful_story_shape(story):
+        return False
+    context = " ".join(
+        part
+        for part in (
+            " ".join(_strings(intent.get("human_actors"))),
+            " ".join(_strings(intent.get("internal_systems"))),
+            _clean(intent.get("state_object")),
+            _clean(intent.get("first_path")),
+        )
+        if part
+    )
+    return _has_semantic_overlap(story, context, minimum=1)
 
 
 def _qualitative_intent_gaps(intent: Mapping[str, Any]) -> list[str]:

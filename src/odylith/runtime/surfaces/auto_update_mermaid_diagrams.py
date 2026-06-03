@@ -34,6 +34,7 @@ select = _mermaid_worker_session.select
 _ATLAS_AUTO_UPDATE_GUARD_NAMESPACE = "generated-refresh-guards"
 _ATLAS_AUTO_UPDATE_GUARD_KEY = "atlas-auto-update"
 _MERMAID_RENDER_CONFIG = Path(__file__).with_name("assets") / "mermaid_render_config.json"
+_MERMAID_PUPPETEER_CONFIG = Path(__file__).with_name("assets") / "mermaid_puppeteer_config.json"
 
 
 @dataclass(frozen=True)
@@ -553,17 +554,19 @@ def _select_stale_diagram_indexes(
 
 
 def _render_diagram(*, repo_root: Path, source_mmd: str, source_svg: str, source_png: str, cli_version: str) -> None:
+    mmdc_bin = _mermaid_worker_session.resolve_mermaid_cli_bin(repo_root=repo_root, cli_version=cli_version)
+    base_cmd = ["node", str(mmdc_bin)] if mmdc_bin.suffix == ".js" else [str(mmdc_bin)]
     for output in (source_svg, source_png):
         cmd = [
-            "npx",
-            "-y",
-            f"@mermaid-js/mermaid-cli@{cli_version}",
+            *base_cmd,
             "-i",
             source_mmd,
             "-o",
             output,
             "--configFile",
             str(_MERMAID_RENDER_CONFIG),
+            "--puppeteerConfigFile",
+            str(_MERMAID_PUPPETEER_CONFIG),
         ]
         subprocess.run(cmd, cwd=str(repo_root), check=True)
 

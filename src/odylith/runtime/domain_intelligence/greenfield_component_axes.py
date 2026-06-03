@@ -112,9 +112,9 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
         produced_outputs=f"{primary} result, {output_focus} update, blocked-state explanation, and next-step context",
         states_or_transitions=", ".join(states[:9]),
         outside_boundary=(
-            "responsibilities not named by this component boundary; "
-            "adjacent component state and recovery context owned elsewhere; "
-            "mutation of original input facts, silent overwrite of another component result state, and release approval"
+            "adjacent component state owned elsewhere; "
+            "original input facts and upstream source truth; "
+            "release approval and broader rollout decisions"
         ),
         local_proof=(
             f"{primary} proof covers required inputs, owned state, produced outputs, and recovery context.",

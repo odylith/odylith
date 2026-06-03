@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 from typing import Sequence
@@ -36,6 +37,27 @@ def _confirm_rendered_chat(
         session_id=session_id,
         last_assistant_message=rendered,
         render_surface=f"{_normalize_text(host_family).lower() or 'host'}_visible_intervention",
+    )
+
+
+def _stop_summary_assist_text(summary: object, *, forced: bool = False, changed_paths: Sequence[str] = ()) -> str:
+    text = _normalize_text(summary)
+    if not text:
+        return ""
+    if not forced and not changed_paths and not _looks_like_completed_work_summary(text):
+        return ""
+    return (
+        "**Odylith Assist:** Closeout reached in chat; no separate Observation or Proposal earned this turn."
+    )
+
+
+def _looks_like_completed_work_summary(value: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:built|changed|completed|fixed|hardened|implemented|patched|ran|repaired|updated|validated|worked)\b",
+            value,
+            flags=re.IGNORECASE,
+        )
     )
 
 
@@ -183,6 +205,12 @@ def render_visible_intervention(
             visible_markdown_override=rendered,
         )
         rendered = decision.visible_markdown
+    if not rendered and closeout and normalized_phase == "stop_summary":
+        rendered = _stop_summary_assist_text(
+            summary,
+            forced=include_closeout is True,
+            changed_paths=changed_paths,
+        )
     if rendered and record_delivery:
         host_surface_runtime.append_visible_intervention_events(
             repo_root=Path(repo_root).expanduser().resolve(),

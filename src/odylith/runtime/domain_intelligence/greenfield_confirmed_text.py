@@ -27,6 +27,9 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         r"\b(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
         r"\b(?:the\s+)?(?:domain\s+)?object\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
         r"\b(?:the\s+)?proof\s+record\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
+        r"^(?:the\s+)?product\s+(?:captures?|keeps?|records?|stores?|tracks?)\s+"
+        r"(?:a|an|the)?\s*(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
+        r"(?:with|containing|that|for)\b",
         r"^(?:a|an|the)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
         r"(?:tracks|records|stores|captures|moves|starts|changes)\b",
     )
@@ -139,8 +142,7 @@ def join_system_labels(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else ", and other accepted systems"
-    return ", ".join(selected) + suffix
+    return ", ".join(selected)
 
 
 def _system_label(value: str) -> str:
@@ -182,8 +184,7 @@ def join_items(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else ", and other accepted items"
-    return ", ".join(selected) + suffix
+    return ", ".join(selected)
 
 
 def join_brief_items(items: list[str] | None, *, limit: int = 3, item_limit: int = 120) -> str:
@@ -196,8 +197,7 @@ def join_brief_items(items: list[str] | None, *, limit: int = 3, item_limit: int
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; other accepted items are tracked separately"
-    return "; ".join(selected) + suffix
+    return "; ".join(selected)
 
 
 def clean_generated_text(value: Any) -> str:

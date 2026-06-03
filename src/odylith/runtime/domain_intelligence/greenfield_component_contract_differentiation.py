@@ -443,7 +443,8 @@ def _axis_payload(
     upstream: str,
     downstream: str,
 ) -> dict[str, Any]:
-    owned_state = f"{axis.owned_state} for {state_label}"
+    label_focus = _literal_label_compounds(label)
+    owned_state = _join_contract_clauses(", ".join(label_focus[:3]), f"{axis.owned_state} for {state_label}")
     accepted_inputs = axis.accepted_inputs
     produced_outputs = axis.produced_outputs
     local_proof = _local_proof(axis=axis, label=label, sibling_label=sibling_label)
@@ -461,6 +462,36 @@ def _axis_payload(
     }
 
 
+def _literal_label_compounds(label: str) -> list[str]:
+    drop = {
+        "adapter",
+        "and",
+        "client",
+        "component",
+        "engine",
+        "for",
+        "in",
+        "of",
+        "on",
+        "service",
+        "store",
+        "surface",
+        "system",
+        "the",
+        "to",
+        "view",
+        "with",
+        "workspace",
+    }
+    terms = [
+        word
+        for word in re.findall(r"[a-z0-9][a-z0-9'-]*", _clean(label).casefold())
+        if word not in drop
+    ]
+    rows = [f"{terms[index]} {terms[index + 1]}" for index in range(max(0, len(terms) - 1))]
+    return _unique_terms(rows)
+
+
 def _semantic_contract_is_strong(semantic_contract: Any) -> bool:
     local_terms = getattr(semantic_contract, "local_terms", ())
     confidence = int(getattr(semantic_contract, "confidence", 0) or 0)
@@ -470,17 +501,36 @@ def _semantic_contract_is_strong(semantic_contract: Any) -> bool:
 def _join_contract_clauses(*values: Any) -> str:
     clauses: list[str] = []
     for value in values:
-        clauses.extend(split_contract_clauses(value))
+        clauses.extend(_clean_contract_clause(clause) for clause in split_contract_clauses(value))
+    clauses = [clause for clause in clauses if clause]
     return _phrase(_unique_terms(clauses))
 
 
 def _outside_boundary(*, axis: ComponentAxis, sibling_axis: ComponentAxis | None, sibling_label: str) -> str:
-    outside = axis.outside_boundary
+    outside = _clean_contract_clause(axis.outside_boundary)
     if sibling_axis:
-        sibling_focus = sibling_axis.owned_state.split(" for ", 1)[0]
+        sibling_focus = _clean_contract_clause(sibling_axis.owned_state.split(" for ", 1)[0])
         sibling_name = f" owned by {sibling_label}" if sibling_label else ""
-        outside = f"{outside}; {sibling_focus}{sibling_name}"
+        outside = _join_contract_clauses(outside, f"{sibling_focus}{sibling_name}" if sibling_focus else "")
     return outside
+
+
+def _clean_contract_clause(value: Any) -> str:
+    text = _clean(value)
+    text = re.sub(r"\bresponsibilities\s+not\s+named\s+by\s+(?:this\s+)?component\s+boundary\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(?:guide|guides|guided|guiding)\s+(?:the\s+)?first\s+path\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(?:capture|captures|captured|capturing)\s+allowed\s+commands?\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(?:expose|exposes|exposed|exposing)\s+blocked\s+states?\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(?:local\s+)?blockers?\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\brecovery\s+context\s+owned\s+elsewhere\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bmutation\s+of\s+(?:original|upstream)\s+(?:input\s+)?facts\b", "original input facts", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bsilent\s+overwrite\s+of\s+another\s+component\s+result(?:\s+state)?\b", "another component result", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*;\s*", "; ", text)
+    text = re.sub(r"\s*,\s*", ", ", text)
+    text = re.sub(r"(?:,\s*){2,}", ", ", text)
+    text = re.sub(r"^\s*(?:and|or|,|;)+\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*(?:and|or|,|;)+\s*$", "", text, flags=re.IGNORECASE)
+    return _clean(text).strip(" .,;")
 
 
 def _local_proof(*, axis: ComponentAxis, label: str, sibling_label: str) -> list[str]:

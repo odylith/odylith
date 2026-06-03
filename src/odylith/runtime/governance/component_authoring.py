@@ -119,7 +119,7 @@ def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
     first_clause = re.split(r"\s*;\s*", text, maxsplit=1)[0] if text else ""
     first_clause = re.split(r"\b(?:accepts?|produces?|prevents?|blocks?)\b", first_clause, maxsplit=1, flags=re.IGNORECASE)[0]
     first_clause = re.sub(
-        r"^(?:owns?|maintains?|coordinates?|records?|captures?|stores?|holds?|tracks?|presents?|shows?|displays?|attaches?|assembles?|computes?|applies?|checks?)\s+",
+        r"^(?:owns?|maintains?|coordinates?|records?|captures?|stores?|holds?|tracks?|keeps?|presents?|shows?|displays?|attaches?|assembles?|computes?|applies?|checks?)\s+",
         "",
         first_clause,
         flags=re.IGNORECASE,
@@ -134,7 +134,7 @@ def _public_what_it_is(*, label: str, kind: str, responsibility: str) -> str:
     focus = _registry_focus_phrase(label=label, responsibility=responsibility)
     return (
         f"{label} is planned as {article} {kind} boundary for {focus}. "
-        "It keeps local state, blocked behavior, recovery evidence, and release proof reviewable."
+        "It gives implementation a clear place to keep the local result, blocked cases, recovery path, and review evidence together."
     )
 
 
@@ -182,8 +182,7 @@ def _build_registry_entry(
         "status": status,
         "what_it_is": what_it_is,
         "why_tracked": (
-            f"Tracked from {evidence_phrase} as a named ownership boundary so implementation and review can see "
-            "what it owns, what it depends on, which interfaces it exposes, and which proof promotes it."
+            f"Tracked from {evidence_phrase} because this boundary must stay understandable before source-backed behavior promotes it."
         ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
         "sources": normalized_sources or ["manifest"],

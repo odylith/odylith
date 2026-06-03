@@ -167,6 +167,8 @@ def _resolve_governed_radar_paths(
 def _slugify(value: str) -> str:
     token = re.sub(r"[^a-z0-9]+", "-", str(value or "").strip().lower())
     token = token.strip("-")
+    if len(token) > 96:
+        token = token[:96].rstrip("-")
     return token or "workstream"
 
 

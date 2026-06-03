@@ -4,6 +4,7 @@ import json
 import time
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
 
@@ -34,6 +35,8 @@ def test_greenfield_create_confirm_full_refresh_stays_under_thirty_seconds(tmp_p
     assert rc == 0
     assert elapsed < 30.0
     assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+    assert all("(" not in line and ")" not in line for line in payload["atlas_scaffold_logs"])
     assert payload["dashboard_refresh"]["status"] == "passed"
     assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert len(payload["backlog"]) == 4

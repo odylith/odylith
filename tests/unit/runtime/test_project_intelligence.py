@@ -1294,10 +1294,12 @@ def test_greenfield_project_handoff_prompts_are_source_launch_protocol(tmp_path:
     ]
     assert all(row.get("stop") for row in prompts)
     assert "Request Decision Workspace" in encoded
-    assert "request type, timing, supporting details, and contact information" in encoded
     assert "accepted or needs-information result" in encoded
+    assert "request type" in encoded
     assert "Coordinator" in encoded
     assert "automatic approval" in encoded
+    assert "and receives" not in encoded
+    assert "and external account creation" not in encoded
     assert "Do not edit source yet" in encoded
     assert "product responsibilities to cover" in encoded
     assert "service interfaces for" not in encoded
@@ -1346,7 +1348,79 @@ def test_greenfield_project_handoff_and_scenario_copy_remove_parser_fragments(tm
     assert "service behavior for" not in handoff
     assert "service interfaces for" not in handoff
     assert "holds the device profile" not in handoff
-    assert "maintain the device profile" in handoff
+    assert "current readout with one recommended next action" in handoff
+    assert "and receives" not in handoff
+
+
+def test_greenfield_project_dashboard_rejects_adapter_level_slop(tmp_path: Path) -> None:
+    proposal = {
+        "mode": "greenfield_apply_ready",
+        "_accepted_project": {"source_path": "odylith/runtime/source/accepted-project.v1.json"},
+        "intent": {
+            "title": "Request Review Workspace",
+            "product_story": (
+                "A small operations team needs one place where requests, review notes, and next steps are understandable."
+            ),
+            "first_path": (
+                "The requester enters the request type, amount, timing constraints, and contact details. "
+                "The workspace checks the request against the team rules, asks for missing information when needed, "
+                "and displays a decision summary with reason notes. A reviewer can inspect the request, add follow-up "
+                "notes, and keep the next action visible."
+            ),
+            "human_actors": ["Requester", "Request Reviewer", "Follow-up Owner"],
+        },
+        "observed_source": {"source_posture": "docs_only"},
+        "project_brief": {
+            "purpose": (
+                "Make the request review workspace operating reality clear enough that a user can understand the problem, "
+                "first path, owned state, and proof boundary."
+            )
+        },
+        "project_intelligence": {
+            "intent": [
+                "Project objective: Make the request review workspace operating reality clear enough that a user can understand the problem, first path, owned state, and proof boundary.",
+                "Assumption: the first release proves one concrete request review.",
+                "Non-goals: live integrations, automated approvals, long-term analytics, multi-team routing.",
+            ]
+        },
+        "validation_strategy": [
+            "Success proof: release 0.0.1 proves the first path by letting a representative user enter the request type, amount, timing constraints and contact details, check."
+        ],
+        "release_plan": {"label": "0.0.1"},
+        "risks": [
+            {"title": "Decision Accuracy", "statement": "The decision summary can be wrong when request facts are incomplete."},
+            {"title": "User Trust", "statement": "A requester may not understand why the result appeared."},
+            {"title": "Policy Drift", "statement": "The criteria can drift away from the operating rules."},
+            {"title": "Operational Adoption", "statement": "Reviewers may ignore the result if it lacks enough context."},
+        ],
+        "backlog": [
+            {
+                "title": "Let Requester Enter the Request Details",
+                "customer": "Requester",
+                "domain_intelligence": {
+                    "actors": ["Where a Requester: uses the product to provide information."]
+                },
+            }
+        ],
+        "components": [
+            {"label": "Request Intake", "responsibility": "Capture the request type, timing, amount, and contact details."},
+            {"label": "Review Result", "responsibility": "Show the decision summary, reason notes, and next action."},
+        ],
+        "diagrams": [],
+    }
+
+    payload = builder.build_project_intelligence_payload(repo_root=tmp_path, shell_payload={"greenfield_proposal": proposal})
+    encoded = json.dumps(payload, sort_keys=True)
+    lowered = encoded.casefold()
+
+    assert "Where a Requester" not in encoded
+    assert "other accepted items" not in lowered
+    assert "1 more point needs review" in lowered
+    assert "the user enter" not in lowered
+    assert "asks." not in lowered
+    assert "Proof needed: Success proof" not in encoded
+    assert "check." not in payload["scenario"][-1]
+    assert "operating reality clear enough" not in payload["scenario"][-1].casefold()
 
 
 def test_project_intelligence_presenter_renders_fallback_without_payload() -> None:

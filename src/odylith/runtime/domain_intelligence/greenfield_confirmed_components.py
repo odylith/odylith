@@ -373,7 +373,7 @@ def _contains_kind_token(text: str, tokens: tuple[str, ...]) -> bool:
 
 
 def _component_label(name: str, kind: str) -> str:
-    name = _title_phrase(name)
+    name = _greenfield_component_label_text(_title_phrase(name))
     if kind == "client" and not re.search(r"\b(surface|client|ui|portal|dashboard|app)\b", name, re.IGNORECASE):
         return f"{name} Surface"
     if kind == "adapter" and "adapter" not in name.casefold():
@@ -381,6 +381,11 @@ def _component_label(name: str, kind: str) -> str:
     if kind == "service" and not re.search(r"\b(service|ledger|registry|store|trail|linker|engine|core|review|tracker|planner|evaluator)\b", name, re.IGNORECASE):
         return f"{name} Service"
     return name
+
+
+def _greenfield_component_label_text(value: str) -> str:
+    text = re.sub(r"\bRegistry\b", "Record", str(value or ""), flags=re.IGNORECASE)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def _title_phrase(value: str) -> str:
@@ -447,19 +452,16 @@ def _dependencies(*, name: str, description: str, prior: list[dict[str, Any]]) -
     action, _action_rationale = _system_action(description)
     topic, rationale = _system_detail(description)
     responsibility = _responsibility_reference(action=action, fallback=topic or f"the {name.lower()} responsibility")
+    focus = _dependency_focus(action=action, fallback=responsibility)
     deps: list[str] = []
     if prior:
         previous = prior[-1]
         previous_label = str(previous.get("label") or previous.get("component_id") or "the previous component").strip()
-        deps.append(
-            f"Coordinates with {previous_label} so upstream state, evidence, or decisions are available before this component can {_can_clause(action, responsibility)}."
-        )
+        deps.append(f"Uses {previous_label} output as upstream context for {focus}.")
     if rationale:
         deps.append(_evidence_sentence(rationale))
     if not deps:
-        deps.append(
-            f"The first implementation plan must name the exact data, event, or call boundary this component uses to {_can_clause(action, responsibility)}."
-        )
+        deps.append(f"The first implementation plan must name the exact data, event, or call boundary used for {focus}.")
     return deps
 
 
@@ -627,6 +629,24 @@ def _can_clause(action: str, fallback: str) -> str:
     return f"complete {fallback[:1].lower() + fallback[1:]}" if fallback else "complete its assigned responsibility"
 
 
+def _dependency_focus(*, action: str, fallback: str) -> str:
+    text = str(action or fallback or "").strip(" .")
+    text = re.sub(r"^\s*this\s+responsibility\s*:\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^\s*(?:the\s+)?accepted\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(?:guide|guides|guided|guiding)\s+(?:the\s+)?first\s+path\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(?:capture|captures|captured|capturing)\s+allowed\s+commands?\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(?:expose|exposes|exposed|exposing)\s+blocked\s+states?\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bkeeps?\s+the\s+next\s+action\s+(?:clear|visible)\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*[:,;]\s*$", "", text).strip(" .,;")
+    text = re.sub(r"^\s*(?:and|or|,|;)+\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*(?:and|or|,|;)+\s*$", "", text, flags=re.IGNORECASE)
+    if not text or len(re.findall(r"[A-Za-z0-9]+", text)) < 3:
+        return "the local product behavior"
+    if looks_like_finite_action(text):
+        return base_action_clause(text)
+    return text[:1].lower() + text[1:]
+
+
 def _evidence_sentence(value: str) -> str:
     text = str(value or "").strip(" .")
     if not text:
@@ -653,8 +673,7 @@ def _join_domain_items(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else "; other accepted items are tracked separately"
-    return "; ".join(selected) + suffix
+    return "; ".join(selected)
 
 
 def _join_system_names(items: list[str] | None, *, limit: int = 4) -> str:
@@ -663,8 +682,7 @@ def _join_system_names(items: list[str] | None, *, limit: int = 4) -> str:
     if not values:
         return ""
     selected = values[:limit]
-    suffix = "" if len(values) <= limit else ", and other accepted systems"
-    return ", ".join(selected) + suffix
+    return ", ".join(selected)
 
 
 def _brief_clause(value: str, *, limit: int = 180) -> str:

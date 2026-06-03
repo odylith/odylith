@@ -645,7 +645,7 @@ def _promotion_bar_lines(
     source = f"`{path}`" if path else "the source boundary named by the first technical plan"
     anchor = f"`{first_workstream}`" if first_workstream else "the first implementation plan"
     proof_handles = [_proof_handle(label, line, index=index) for index, line in enumerate(proof_lines[:3], start=1)]
-    promotion_proof = ", ".join(f"`{handle}`" for handle in proof_handles) if proof_handles else "the listed component proof"
+    promotion_proof = ", ".join(f"`{handle}`" for handle in proof_handles) if proof_handles else "verification evidence"
     return (
         f"{label} remains candidate until {anchor} lands source-backed behavior inside {source}.",
         f"Promotion requires source-backed {promotion_proof}; proposal text alone is not enough.",

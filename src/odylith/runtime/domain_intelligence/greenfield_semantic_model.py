@@ -155,7 +155,7 @@ def build_greenfield_semantic_model(
             events=path_contract.events,
             component_sequence=tuple(ref.component_id for ref in component_refs if _is_first_release_scope(ref.release_scope)),
             proof_checkpoint=_proof_checkpoint(
-                proof_boundary,
+                path_contract.visible_result or proof_boundary,
                 state_label=state_label,
                 actor_terms=_actor_terms(human_actors),
             ),
@@ -310,7 +310,10 @@ def _proof_obligations(
 def _proof_checkpoint(value: str, *, state_label: str, actor_terms: Sequence[str]) -> str:
     text = _clean(value)
     text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+(?:only\s+)?when\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+is\s+trusted\s+only\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^the\s+release\s+succeeds\s+(?:only\s+)?when\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^the\s+first\s+release\s+works\s+when\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:the\s+)?accepted\s+path\s+can\s+be\s+replayed\s+from\s+", "replay ", text, flags=re.IGNORECASE)
     text = re.sub(r"^the\s+first\s+proof\s+is\s+", "", text, flags=re.IGNORECASE)
     text = re.split(r"\bwhat\s+must\s+not\s+be\s+claimed\s+yet\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
     clauses = [
@@ -321,8 +324,8 @@ def _proof_checkpoint(value: str, *, state_label: str, actor_terms: Sequence[str
     for clause in clauses:
         if len(re.findall(r"[A-Za-z0-9]+", clause)) >= 4:
             clipped = _clip_clause(clause, 88)
-            return f"accepted first path proof: {clipped}" if clipped else "accepted first path proof"
-    return f"accepted first path proof: {state_label} validation, replay evidence, blockers, and release decision"
+            return f"visible outcome proof: {clipped}" if clipped else "visible outcome proof"
+    return f"visible outcome proof: {state_label} validation, replay evidence, blockers, and release decision"
 
 
 def _clip_clause(value: str, limit: int) -> str:

@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-05-20
+Last updated: 2026-06-02
 
 
 ## Overview
@@ -70,6 +70,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-14: Replaced the v0.1.15 host-authored JSON repair path with an Odylith-owned confirmed create path. `greenfield propose --confirm-intent --format json` now emits the same apply-ready proposal that `greenfield create --confirm` applies, release smoke runs the confirmed create path against a fresh repo, and installed guidance forbids hand-authored proposal repair loops across hosts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-173`, `CB-181`)
 - 2026-05-19: Tightened the confirmed-intent internal-systems gate so fail-closed create still rejects the exact generic fallback trio while accepting domain-specific systems that own evidence review, such as a race gearbox run evidence review surface. The recurrence is captured under `CB-202`, and the regression tests prove both acceptance and rejection paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-05-20: Added the confirmed-completion gate for `greenfield create --confirm`. Confirmed proposals now fill deterministic omissions before writes: project posture, backlog risk/security fields, component interfaces/dependencies/validation/risks, and non-self-invalidating Atlas watch paths. The gate reruns proposal and governed-artifact Tribunals before create applies source truth, so a rich accepted intent produces a full Radar/Registry/Atlas/release/Compass project set instead of stopping on missing derivable fields. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-02: Hardened the post-confirm semantic render path so first-path clauses, component contracts, Atlas labels, runtime JSON, public dashboard prose, Radar workstreams, and Registry component specs reject parser debris, activity-shaped actor names, framework proof scaffolds, bare outcome nouns, coordinated action-verb drift, and component-boundary boilerplate before any confirmed greenfield writes. First-path parsing now lives in `greenfield_first_path_semantics.py`, separate from title normalization, release classification, and slop scanning. The pass keeps the fix provider-free and domain-agnostic, with regression coverage in `test_greenfield_post_confirm_slop_regressions.py`, an 11.67-second confirmed-create E2E run with no slop hits, and rendered browser proof for Radar and Registry behavior. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -78,7 +79,7 @@ This section captures synchronized requirement and contract signals derived from
   fixed in-code domain list or push private schema repair onto the host.
 - `proposal_normalization.py` owns compatibility normalization for reasonable
   host-authored proposal shapes before strict validation. It may repair field
-  spelling, release-plan shape, component proof-field aliases, generic diagram
+  spelling, release-plan shape, proof-field aliases, generic diagram
   slugs, Mermaid sequence message punctuation, and missing umbrella program
   parents, but it must not invent source-backed implementation evidence.
 - `greenfield_transaction.py` owns retry-safe source-truth rollback for failed
@@ -105,6 +106,15 @@ This section captures synchronized requirement and contract signals derived from
   then reruns the greenfield Tribunal and governed artifact Tribunals. It may
   retry bounded deterministic omissions, but it must not invent source-backed
   implementation evidence or ask the host to hand-author proposal JSON.
+- Confirmed-create semantic rendering must run after deterministic completion
+  and before any source-truth write. It must compile first-path action,
+  capability, and visible-result clauses once from the accepted semantic model,
+  keep post-result follow-up from leaking into the first implementation slice,
+  normalize coordinated action verbs through the shared prose grammar owner, and
+  fail closed when generated Radar, Registry, Atlas, project-dashboard, or
+  runtime JSON text still contains parser debris, role/action splices, bare
+  outcome nouns, generic proof scaffolds, component-boundary boilerplate, or
+  unclear human-visible copy.
 - Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
   or reconstruct proposal JSON. Proposal review uses the canonical object from
   `greenfield propose`; confirmation uses `greenfield create --confirm` unless an

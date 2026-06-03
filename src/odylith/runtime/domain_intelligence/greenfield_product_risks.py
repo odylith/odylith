@@ -353,7 +353,7 @@ def _input_focus(first_path: str, *, fallback: str) -> str:
         )
         and not re.search(r"\b(?:display|review|return|see|show|summarize)\b", clause, re.IGNORECASE)
     ]
-    input_objects = [_input_clause_object(clause) for clause in input_clauses[:2]]
+    input_objects = [_input_clause_object(clause) for clause in input_clauses[:1]]
     input_objects = [value for value in input_objects if value]
     if len(input_objects) == 2:
         selected = f"{input_objects[0]} and {input_objects[1]}"

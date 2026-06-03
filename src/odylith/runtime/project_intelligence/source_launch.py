@@ -8,7 +8,10 @@ from pathlib import Path
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.project_intelligence.utils import display_text, list_value, sentence, short, strings
 
 
@@ -164,12 +167,13 @@ def _plan_prompt(
     language: _LanguageSignal | None,
 ) -> dict[str, str]:
     language_name = language.name if language else "the confirmed language"
+    product_responsibilities = _prompt_phrase(capabilities, fallback="the accepted product responsibilities")
     prompt = (
         f"Odylith, expand the accepted {product} direction into an implementation plan using {language_name}. Keep this first "
         f"path as the only implementation scope: {path}. Before editing source, propose the first source boundary "
-        f"around {boundary}, the files or modules to create, domain objects for {actor}, interactions involving "
-        f"{participant}, product responsibilities to cover: {capabilities}; validation points, test commands, proof gates for {proof}, "
-        f"and excluded scope: {excluded}."
+        f"around {boundary}, the files or modules to create, the product objects {actor} changes or reads, the handoff for "
+        f"{participant}, product responsibilities to cover: {product_responsibilities}, validation points, test commands, "
+        f"proof gates for {proof}, and excluded scope: {excluded}."
     )
     return {
         "label": "Create first implementation plan",
@@ -189,11 +193,12 @@ def _implementation_prompt(
     excluded: str,
     boundary: str,
 ) -> dict[str, str]:
+    product_responsibilities = _prompt_phrase(capabilities, fallback="the accepted product responsibilities")
     prompt = (
         f"Odylith, implement the smallest runnable {product} product slice from the accepted plan. Restate the target files "
         f"before editing. Build only this path: {path}. Create the minimal domain model, source boundary around {boundary}, "
-        f"product behavior for these responsibilities: {capabilities}; input validation, structured result, and user-visible explanation. Protect "
-        f"against this product risk while coding: {risk}. Keep outside the slice: {excluded}. If one excluded capability is "
+        f"product behavior for these responsibilities: {product_responsibilities}, input validation, structured result, and user-visible explanation. Protect "
+        f"against this product risk while coding: {_prompt_phrase(risk, fallback='the named product risk')}. Keep outside the slice: {excluded}. If one excluded capability is "
         "actually required, explain why and stop before editing."
     )
     return {
@@ -210,7 +215,7 @@ def _proof_prompt(*, product: str, path: str, risk: str, proof: str) -> dict[str
         f"Odylith, add behavior proof for the first {product} source slice. Test the accepted path: {path}. Add tests for "
         "valid input, missing or incomplete required input, an unfavorable or blocked outcome, and reproducibility from "
         f"the same submitted inputs, configuration, and state. Preserve the explanation in a testable structure. Prove this "
-        f"risk is controlled by the tests: {risk}. Run the validation commands from the plan."
+        f"risk is controlled by the tests: {_prompt_phrase(risk, fallback='the named product risk')}. Run the validation commands from the plan."
     )
     return {
         "label": "Add tests and proof",
@@ -288,6 +293,13 @@ def _actor_at(actors: Sequence[tuple[str, str, str]], index: int) -> str:
 
 
 def _capability_phrase(*, components: Sequence[Mapping[str, Any]], first_path: str) -> str:
+    action = first_path_action_phrase(first_path, fallback="", limit=110, max_fragments=1)
+    outcome = first_path_outcome_phrase(first_path, fallback="", limit=110)
+    action = _drop_embedded_outcome(action)
+    if action and outcome:
+        return f"capture the information needed to {action} and return {outcome}"
+    if outcome:
+        return f"return {outcome} with enough context for the next participant"
     phrases: list[str] = []
     for component in components:
         text = (
@@ -310,7 +322,7 @@ def _risk_phrase(risks: Sequence[Any]) -> str:
         else:
             text = sentence(risk)
         if text:
-            return short(_clean_fragment(text), limit=220)
+            return _prompt_phrase(text, fallback="the real-world failure modes named by the accepted product direction", limit=180)
     return "the real-world failure modes named by the accepted product direction"
 
 
@@ -318,12 +330,18 @@ def _proof_phrase(*, validation: Sequence[str], first_path: str) -> str:
     for row in validation:
         text = sentence(row)
         if text:
-            return short(_clean_fragment(text), limit=220)
+            clean = _prompt_phrase(text, fallback="", limit=180)
+            if _looks_scaffolded_proof(clean):
+                outcome = first_path_outcome_phrase(first_path, fallback="", limit=110)
+                if outcome:
+                    return f"the accepted path returns {outcome} with repeatable evidence"
+                return "the accepted path returns its promised result with repeatable evidence"
+            return clean
     return short(f"the accepted path produces its intended result: {first_path}", limit=220)
 
 
 def _exclusion_phrase(non_goals: Sequence[str]) -> str:
-    rows = [_clean_fragment(row) for row in non_goals if sentence(row)]
+    rows = [re.sub(r":\s+(?:and|or)\s+", ": ", _clean_fragment(row), flags=re.IGNORECASE) for row in non_goals if sentence(row)]
     if rows:
         return _join(rows[:4])
     return _join(_PROTECTED_SCOPE[:5])
@@ -336,6 +354,14 @@ def _source_boundary_hint(product: str) -> str:
 
 def _first_path_phrase(value: str) -> str:
     text = _clean_fragment(value)
+    action = first_path_action_phrase(text, fallback="", limit=180, max_fragments=1)
+    outcome = first_path_outcome_phrase(text, fallback="", limit=150)
+    if action and outcome:
+        subject_action = _subjectify_path_step(action)
+        joiner = "and receive" if subject_action.casefold().startswith("the user can ") else "and receives"
+        return short(f"{subject_action} {joiner} {outcome}", limit=320)
+    if action:
+        return short(_subjectify_path_step(action), limit=260)
     model = first_path_model(text)
     if model.steps:
         rows: list[str] = []
@@ -363,8 +389,38 @@ def _subjectify_path_step(value: str) -> str:
         text,
         flags=re.IGNORECASE,
     ):
-        return f"the user {text}"
+        action = base_action_clause(text)
+        return f"the user can {action}" if action else text
     return text
+
+
+def _prompt_phrase(value: object, *, fallback: str, limit: int = 180) -> str:
+    """Keep host prompts specific without copying whole component contracts into chat."""
+
+    text = _clean_fragment(value)
+    if not text:
+        return fallback
+    text = re.sub(r"\b(?:proof gates?|validation points?)\s+for\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bThe weak inputs are\s*[. ]*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+(?:and|or|asks?|check|checks)\s*$", "", text, flags=re.IGNORECASE).strip(" .,;:")
+    text = re.sub(r"\.\.+", ".", text)
+    return short(text, limit=limit, fallback=fallback)
+
+
+def _drop_embedded_outcome(value: str) -> str:
+    text = sentence(value).strip(" .")
+    text = re.sub(r"\s+and\s+receives?\s+.+$", "", text, flags=re.IGNORECASE).strip(" .")
+    text = re.sub(r"^(?:the\s+user\s+can\s+)", "", text, flags=re.IGNORECASE).strip(" .")
+    return text
+
+
+def _looks_scaffolded_proof(value: str) -> bool:
+    lowered = sentence(value).casefold()
+    return bool(
+        "success proof:" in lowered
+        or "letting a representative user" in lowered
+        or re.search(r"\b(?:asks?|checks?|shows?|displays?)\s*[.]$", lowered)
+    )
 
 
 def _normalize_embedded_action_verbs(value: str) -> str:

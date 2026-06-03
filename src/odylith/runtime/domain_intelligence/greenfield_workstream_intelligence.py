@@ -186,7 +186,7 @@ def build_workstream_domain_intelligence(
             f"Actors include {actor_summary}.",
             f"State object: {state_object}.",
             f"Review record: {evidence_record}.",
-            f"Accepted product promise: {proof_boundary}.",
+            f"Promised product outcome: {proof_boundary}.",
         ],
         "state": [
             f"State focus: {build_scope}",

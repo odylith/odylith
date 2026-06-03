@@ -350,7 +350,7 @@ def scaffold_diagram(
 
     catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
     logs.append(f"catalog updated: {catalog_path}")
-    logs.append(f"added: {diagram_id} ({slug})")
+    logs.append(f"added diagram: {diagram_id} / {slug}")
     logs.append(f"validation gate: {tribunal.status}")
 
     source_path = surface_path_helpers.resolve_repo_path(repo_root=repo_root, token=source_mmd)

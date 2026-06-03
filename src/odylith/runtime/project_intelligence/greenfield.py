@@ -12,6 +12,8 @@ from odylith.runtime.domain_intelligence.artifact_enrichment import domain_graph
 from odylith.runtime.domain_intelligence.artifact_enrichment import tribunal_actor_projection
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.project_intelligence.job_cards import job_card_summary
 from odylith.runtime.project_intelligence.job_cards import job_status_label
 from odylith.runtime.project_intelligence.job_cards import low_information_job_body
@@ -975,8 +977,38 @@ def _clean_project_purpose(value: object) -> str:
     lowered = text.casefold()
     if lowered.startswith("make ") and "concrete product program before implementation starts" in lowered:
         return ""
+    if _looks_generated_project_purpose(text):
+        return ""
     if "project object captures intent" in lowered:
         return ""
+    return text
+
+
+def _looks_generated_project_purpose(value: object) -> bool:
+    lowered = sentence(value).casefold()
+    return any(
+        marker in lowered
+        for marker in (
+            "problem, first path, owned state, and proof boundary",
+            "operating reality clear enough that a user can understand",
+            "governable as one product spine",
+            "before any generated artifact",
+        )
+    )
+
+
+def _clean_proof_summary(value: object, *, first_path: str) -> str:
+    text = sentence(value).strip()
+    lowered = text.casefold()
+    if (
+        "success proof:" in lowered
+        or "letting a representative user" in lowered
+        or re.search(r"\b(?:check|ask|route|return|display|show)\s*[.]$", lowered)
+    ):
+        outcome = first_path_outcome_phrase(first_path, fallback="", limit=120)
+        if outcome:
+            return f"The first release must show that a representative user can complete the scenario and receive {outcome}."
+        return "The first release must show that a representative user can complete the scenario and receive the promised result."
     return text
 
 
@@ -984,7 +1016,11 @@ def _non_goal_rows(project: Mapping[str, Any]) -> list[str]:
     raw = project_intent_line(project, "non-goals")
     if not raw:
         return []
-    pieces = [piece.strip(" .") for piece in raw.split(",") if piece.strip(" .")]
+    pieces = [
+        re.sub(r"^(?:and|or)\s+", "", piece.strip(" ."), flags=re.IGNORECASE)
+        for piece in raw.split(",")
+        if piece.strip(" .")
+    ]
     if len(pieces) <= 1:
         pieces = [raw.strip(" .")]
     return [f"Not in the first release: {piece}." for piece in pieces[:4]]
@@ -1066,6 +1102,7 @@ def _proof_title(validation: Sequence[str], *, first_path: str = "") -> str:
 def _proof_body(*, validation: Sequence[str], first_path: str) -> str:
     proof = summarize_proof(validation[0] if validation else "", first_path=first_path)
     if proof:
+        proof = _clean_proof_summary(proof, first_path=first_path)
         if proof.casefold().startswith("proof must show "):
             return proof.rstrip(".") + "."
         return proof.rstrip(".") + "."
@@ -1078,6 +1115,7 @@ def _proof_body(*, validation: Sequence[str], first_path: str) -> str:
 def _proof_answer_body(*, validation: Sequence[str], first_path: str) -> str:
     proof = summarize_proof(validation[0] if validation else "", first_path=first_path)
     if proof and not _looks_path_echo(proof, first_path=first_path):
+        proof = _clean_proof_summary(proof, first_path=first_path)
         return proof.rstrip(".") + "."
     return (
         "Release proof should show the accepted path running end to end with reviewer-visible source evidence, "
@@ -1105,7 +1143,16 @@ def _scenario_body(*, project: Mapping[str, Any], first_path: str, validation: S
     )
     path = (summarize_first_path(first_path) or sentence(first_path)).rstrip(".")
     proof_text = _proof_body(validation=validation, first_path=first_path).rstrip(".")
-    return f"{purpose} First path: {path}. Proof needed: {proof_text}."
+    if _looks_generated_project_purpose(purpose):
+        purpose = ""
+    rows = []
+    if purpose:
+        rows.append(purpose.rstrip(".") + ".")
+    if path:
+        rows.append(f"First scenario: {path}.")
+    if proof_text:
+        rows.append(f"Proof needed: {proof_text}.")
+    return " ".join(rows) or "The accepted product direction still needs implementation proof."
 
 
 def _scenario_details(*, first_path: str, validation: Sequence[str], accepted: bool) -> list[tuple[str, str]]:
@@ -1367,6 +1414,11 @@ def _is_project_actor_label(value: str) -> bool:
     if len(label.split()) > 10:
         return False
     lowered = label.casefold().replace("_", " ")
+    if re.match(
+        r"^(?:and|or|where|when|if|because|so|that|which|what|why|how|with|against|from|until|before|after)\b",
+        lowered,
+    ):
+        return False
     if lowered in {
         "actor",
         "other accepted items",
@@ -1667,11 +1719,16 @@ def _job_body_text(
                 return compact
         text = re.sub(r"\bShow how The\b", "Show how the", text)
         text = re.sub(r"\bmaps the first path, The\b", "maps the first path, the", text)
+        if _looks_clipped_job_body(text):
+            continue
         return text
     component_body = _matched_component_summary(title=title, component_summaries=component_summaries)
     component_body = job_card_summary(component_body)
-    if component_body and not low_information_job_body(component_body):
+    if component_body and not low_information_job_body(component_body) and not _looks_clipped_job_body(component_body):
         return component_body
+    first_path_body = _job_first_path_body(first_path)
+    if first_path_body:
+        return first_path_body
     if title.casefold().startswith("prove "):
         return _job_fallback_body(title)
     if " boundary" in title.casefold():
@@ -1679,6 +1736,25 @@ def _job_body_text(
     if " proof" in title.casefold():
         return _job_fallback_body(title)
     return _job_fallback_body(title)
+
+
+def _job_first_path_body(first_path: str) -> str:
+    action = first_path_action_phrase(first_path, fallback="", limit=90, max_fragments=1)
+    outcome = first_path_outcome_phrase(first_path, fallback="", limit=90)
+    if action and outcome:
+        return f"Focuses the slice on {action} so the user receives {outcome}."
+    if outcome:
+        return f"Focuses the slice on producing {outcome} with enough context for review."
+    return ""
+
+
+def _looks_clipped_job_body(value: object) -> bool:
+    lowered = sentence(value).casefold().strip()
+    return bool(
+        re.search(r"\b(?:asks?|checks?|current|validation|contact|missing)\s*[.]$", lowered)
+        or re.search(r"\bthe user\s+[A-Z]", sentence(value))
+        or ".." in lowered
+    )
 
 
 def _job_fallback_body(title: str) -> str:
@@ -1813,7 +1889,9 @@ def _join_boundary_values(values: Sequence[str], *, total: int) -> str:
     joined = "; ".join(clean_values)
     remaining = max(0, total - len(clean_values))
     if remaining:
-        joined = f"{joined}; other accepted items stay outside this summary"
+        noun = "point" if remaining == 1 else "points"
+        verb = "needs" if remaining == 1 else "need"
+        joined = f"{joined}; {remaining} more {noun} {verb} review"
     return joined
 
 

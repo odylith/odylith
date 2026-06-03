@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import shutil
 import select
 import subprocess
 import time
@@ -12,6 +14,7 @@ from typing import Any, Mapping, Sequence, TextIO
 _MERMAID_WORKER_SCRIPT = Path(__file__).with_name("assets") / "mermaid_cli_worker.mjs"
 _MERMAID_PACKAGE_ROOT_CACHE: dict[str, Path] = {}
 _HEARTBEAT_INTERVAL_SECONDS = 10.0
+_NPX_RESOLUTION_TIMEOUT_SECONDS = 12.0
 
 
 class MermaidDiagramValidationError(RuntimeError):
@@ -40,6 +43,14 @@ def _resolve_mermaid_cli_root(*, repo_root: Path, cli_version: str) -> Path:
     cached = _MERMAID_PACKAGE_ROOT_CACHE.get(cache_key)
     if cached is not None and cached.is_dir():
         return cached
+    for candidate in _local_mermaid_package_candidates(repo_root=repo_root, cli_version=cli_version):
+        _MERMAID_PACKAGE_ROOT_CACHE[cache_key] = candidate
+        return candidate
+    if os.environ.get("ODYLITH_ALLOW_MERMAID_NPX_INSTALL", "").strip().lower() not in {"1", "true", "yes"}:
+        raise RuntimeError(
+            f"Mermaid CLI {cli_version} is not available from ODYLITH_MERMAID_CLI_ROOT, local node_modules, "
+            "global mmdc, or the npm cache; set ODYLITH_ALLOW_MERMAID_NPX_INSTALL=1 to allow an online npx install."
+        )
     cmd = [
         "npx",
         "-y",
@@ -55,6 +66,7 @@ def _resolve_mermaid_cli_root(*, repo_root: Path, cli_version: str) -> Path:
         check=True,
         capture_output=True,
         text=True,
+        timeout=_NPX_RESOLUTION_TIMEOUT_SECONDS,
     )
     lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
     if not lines:
@@ -65,6 +77,94 @@ def _resolve_mermaid_cli_root(*, repo_root: Path, cli_version: str) -> Path:
         raise RuntimeError(f"Mermaid CLI package root missing: {package_root}")
     _MERMAID_PACKAGE_ROOT_CACHE[cache_key] = package_root
     return package_root
+
+
+def resolve_mermaid_cli_bin(*, repo_root: Path, cli_version: str) -> Path:
+    package_root = _resolve_mermaid_cli_root(repo_root=repo_root, cli_version=cli_version)
+    local_bin = package_root.parent.parent / ".bin" / "mmdc"
+    if local_bin.is_file():
+        return local_bin
+    source_bin = package_root / "src" / "cli.js"
+    if source_bin.is_file():
+        return source_bin
+    raise RuntimeError(f"Mermaid CLI executable missing under {package_root}")
+
+
+def _local_mermaid_package_candidates(*, repo_root: Path, cli_version: str) -> tuple[Path, ...]:
+    requested_version = str(cli_version or "").strip()
+    candidates: list[Path] = []
+    env_root = os.environ.get("ODYLITH_MERMAID_CLI_ROOT", "").strip()
+    if env_root:
+        candidates.append(Path(env_root).expanduser())
+    root = Path(repo_root).resolve()
+    candidates.extend(
+        [
+            root / "node_modules" / "@mermaid-js" / "mermaid-cli",
+            root / "odylith" / "node_modules" / "@mermaid-js" / "mermaid-cli",
+        ]
+    )
+    global_bin = shutil.which("mmdc")
+    if global_bin:
+        global_root = _package_root_from_path(Path(global_bin).resolve())
+        if global_root is not None:
+            candidates.append(global_root)
+    cache_root = Path(os.environ.get("npm_config_cache", "") or Path.home() / ".npm").expanduser()
+    candidates.extend(_npm_cache_mermaid_roots(cache_root=cache_root, cli_version=requested_version))
+    seen: set[Path] = set()
+    exact: list[Path] = []
+    compatible: list[Path] = []
+    for candidate in candidates:
+        path = Path(candidate).expanduser().resolve()
+        if path in seen:
+            continue
+        seen.add(path)
+        version = _mermaid_package_version(path)
+        if not version:
+            continue
+        if requested_version and version == requested_version:
+            exact.append(path)
+        elif not requested_version:
+            compatible.append(path)
+    return tuple(exact or compatible)
+
+
+def _npm_cache_mermaid_roots(*, cache_root: Path, cli_version: str) -> tuple[Path, ...]:
+    npx_root = Path(cache_root) / "_npx"
+    if not npx_root.is_dir():
+        return ()
+    rows: list[tuple[float, Path]] = []
+    for package_json in npx_root.glob("*/node_modules/@mermaid-js/mermaid-cli/package.json"):
+        root = package_json.parent
+        version = _mermaid_package_version(root)
+        if cli_version and version != cli_version:
+            continue
+        try:
+            mtime = package_json.stat().st_mtime
+        except OSError:
+            mtime = 0.0
+        rows.append((mtime, root))
+    rows.sort(key=lambda item: item[0], reverse=True)
+    return tuple(root for _mtime, root in rows)
+
+
+def _package_root_from_path(path: Path) -> Path | None:
+    for candidate in [path, *path.parents]:
+        if _mermaid_package_version(candidate):
+            return candidate
+    return None
+
+
+def _mermaid_package_version(path: Path) -> str:
+    package_json = Path(path) / "package.json"
+    if not package_json.is_file():
+        return ""
+    try:
+        payload = json.loads(package_json.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ""
+    if str(payload.get("name", "")).strip() != "@mermaid-js/mermaid-cli":
+        return ""
+    return str(payload.get("version", "")).strip()
 
 
 def _worker_job(job: Mapping[str, str]) -> dict[str, str]:

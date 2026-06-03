@@ -8,9 +8,11 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -43,7 +45,10 @@ _ROLE_WORDS = {
     "admin",
     "analyst",
     "auditor",
+    "applicant",
+    "beneficiary",
     "chief",
+    "client",
     "coordinator",
     "customer",
     "director",
@@ -57,20 +62,23 @@ _ROLE_WORDS = {
     "owner",
     "planner",
     "reviewer",
+    "requester",
+    "resident",
     "staff",
     "submitter",
     "supervisor",
     "support",
+    "team",
     "technician",
     "user",
     "volunteer",
 }
 
 _SYSTEM_SUFFIXES = (
-    "profile registry",
-    "workflow planner",
-    "evidence and decision log",
-    "access and safety guardrail",
+    "product record",
+    "experience guide",
+    "evidence log",
+    "release guardrail",
 )
 
 
@@ -158,7 +166,7 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
     actors = _actor_labels(intent)
     systems = _system_labels(intent)
 
-    if _word_count(story) < CORE_FIELD_MIN_WORDS["product_story"]:
+    if _story_needs_completion(story):
         actor_text = _join(actors[:2]) or f"{_focus_label(title)} users"
         story_head = _short(
             story,
@@ -176,15 +184,39 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
         )
     if _word_count(first_path) < CORE_FIELD_MIN_WORDS["first_path"]:
         primary = actors[0] if actors else f"{_focus_label(title)} operator"
-        system_text = _join(systems[:2]) or f"{_focus_label(title)} product systems"
+        source_text = ". ".join(value for value in (story, state, proof) if value)
+        action = first_path_action_phrase(source_text, fallback="provide the required information", max_fragments=2)
+        outcome = _visible_outcome_phrase(source_text, proof=proof)
+        action = _clean(action).rstrip(" .") or "provide the required information"
+        outcome = _clean(outcome).rstrip(" .") or "a clear result"
         intent["first_path"] = _sentence(
-            f"{primary} starts one real {title.lower()} case, uses {system_text} to move it through input, review, decision, and follow-up, then sees a clear outcome with missing or blocked evidence called out."
+            f"{primary} {action}. The product uses the accepted information to return {outcome}, explains any missing input, and leaves the result reviewable."
         )
     if _word_count(proof) < CORE_FIELD_MIN_WORDS["proof_boundary"]:
+        action = first_path_action_phrase(first_path or story, fallback="complete the first useful product action", max_fragments=1)
+        outcome = _visible_outcome_phrase(first_path or story, proof=proof).rstrip(" .") or "a clear, useful result"
         intent["proof_boundary"] = _sentence(
-            f"Release 0.0.1 is trusted only when the accepted path can be replayed from input through state change, release-review evidence, blocked or degraded states, access posture, and final decision. "
+            f"The first release works when a representative user can {action}, the product shows {outcome}, and missing or invalid information leaves a clear correction path instead of a misleading result. "
             f"It must not claim live integrations, broad automation, regulated correctness, or production-scale operation beyond the confirmed {title.lower()} boundary."
         )
+
+
+def _story_needs_completion(value: str) -> bool:
+    text = _clean(value)
+    if not text:
+        return True
+    if _word_count(text) >= CORE_FIELD_MIN_WORDS["product_story"]:
+        return False
+    if _word_count(text) >= 12 and re.search(r"\b(?:needs?|wants?|helps?|gives?|lets?|makes?|turns?)\b", text, flags=re.I):
+        return bool(
+            re.search(
+                r"\b(?:accepted\s+first\s+path|first\s+path\s+entry|source\s+evidence|visible\s+blockers|"
+                r"systems?\s+that\s+own|proof\s+boundary|state\s+object)\b",
+                text,
+                flags=re.I,
+            )
+        )
+    return True
 
 
 def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
@@ -199,18 +231,19 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     outcome_text = _visible_outcome_phrase(first_path, proof=proof)
     state_phrase = _state_focus_phrase(state, title=title)
     path_capability = _path_capability(first_path, fallback=f"the first {title.lower()} path")
+    needs_verb = _needs_verb(customer_text)
 
     if not _clean(intent.get("problem")):
         intent["problem"] = _sentence(
             _story_problem_sentence(story)
             or (
-                f"{customer_text} need a dependable way to understand {state_phrase} and decide what to do from {outcome_text}; "
+                f"{customer_text} {needs_verb} a dependable way to understand {state_phrase} and decide what to do from {outcome_text}; "
                 "without it, the work stays scattered, hard to interpret, and easy to act on too late or for the wrong reason."
             )
         )
     elif _problem_needs_repair(intent.get("problem")):
         intent["problem"] = _sentence(
-            f"{customer_text} need a dependable way to understand {state_phrase} and decide what to do from {outcome_text}; "
+            f"{customer_text} {needs_verb} a dependable way to understand {state_phrase} and decide what to do from {outcome_text}; "
             "without it, the work stays scattered, hard to interpret, and easy to act on too late or for the wrong reason."
         )
     if not _clean(intent.get("customer")) or _customer_needs_repair(intent.get("customer")):
@@ -258,7 +291,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
 def _completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     rows = [row for row in _strings(intent.get("human_actors")) if not _actor_row_is_meta(row)]
     labels = [_actor_label(row, title=title) for row in rows]
-    labels = [label for label in labels if label]
+    labels = [label for label in labels if label and not _actor_label_has_clause_lead(label)]
     if not labels:
         labels.extend(_derived_actor_labels(intent, title=title))
     labels = list(unique_text(labels))[:5]
@@ -310,6 +343,8 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
         body = "provides the information the product needs and expects a clear result, explanation, and next step"
     elif re.search(r"\b(editor|manager|chair|coordinator|operator|supervisor|lead|owner|director)\b", label_text):
         body = "keeps the product outcome aligned with the real operational goal and decides when exceptions need human judgment"
+    elif re.search(r"\bteam\b", label_text):
+        body = "owns the operating context around the request, keeps expectations clear, and uses the product outcome to coordinate follow-up"
     elif re.search(r"\b(reviewer|inspector|evaluator|analyst|auditor|expert|approver|compliance)\b", label_text):
         body = "uses the product output to review quality, challenge weak results, and decide whether follow-up is needed"
     elif re.search(r"\b(coach|trainer|advisor|consultant|specialist)\b", label_text):
@@ -322,7 +357,10 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
         path_role = _actor_path_role(label=label, first_path=first_path, state=state)
         if path_role:
             return f"{label}: {path_role}."
-        body = "can own a named responsibility in the accepted path and see the state, blockers, evidence, or outcome relevant to that responsibility"
+        body = (
+            "contributes information, review, or action needed for the first product outcome and needs the result, limits, "
+            "and next step to stay understandable"
+        )
     return f"{label}: {body}."
 
 
@@ -349,7 +387,24 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     if not clause:
         return ""
     clause = re.sub(r"^(?:a|an|the)\s+", "", clause, flags=re.IGNORECASE)
-    return f"cares about {clause[:1].lower() + clause[1:]}"
+    clause = _strip_actor_subject_from_clause(clause, label=label)
+    if not clause:
+        return ""
+    return f"uses the product around {clause[:1].lower() + clause[1:]} and needs the outcome to remain clear enough to act on"
+
+
+def _strip_actor_subject_from_clause(value: str, *, label: str) -> str:
+    """Remove a role label when it was copied into a clause as the subject."""
+
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    label_terms = sorted(_semantic_terms(label), key=len, reverse=True)
+    if label_terms:
+        lead = r"(?:a|an|the|one)?\s*(?:" + "|".join(re.escape(term) for term in label_terms) + r")"
+        text = re.sub(rf"^{lead}\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
+    text = re.sub(r"^(?:signs?|opens?|starts?)\s+(?:in|into|the\s+app|the\s+product|the\s+site|the\s+web\s+app)\b[,.]?\s*", "", text, flags=re.IGNORECASE)
+    return text.strip(" .")
 
 
 def _path_clauses(value: str) -> list[str]:
@@ -401,6 +456,8 @@ def _product_view_needs_repair(value: Any) -> bool:
         or re.search(r"\baccepted\s+first\s+path\b", text, re.IGNORECASE)
         or re.search(r"\bsource\s+evidence|visible\s+blockers|systems?\s+that\s+own\b", text, re.IGNORECASE)
         or re.search(r"\bto\s+complete\s+(?:A|The)\b", text)
+        or re.search(r"\b(?:use|reach)\s+(?:a|an|the|[A-Z][A-Za-z0-9/-]*)\s+[^.]{0,80}\b(?:sees?|views?|receives?|reads?|gets?)\b", text)
+        or re.search(r"\b(?:active\s+and\s+decide|from\s+(?:A|An|The)\s+[A-Za-z0-9/-]+[^.]{0,80}\b(?:sees?|views?|receives?|reads?|gets?))\b", text)
         or re.search(r"\.\s*,", text)
     )
 
@@ -413,6 +470,9 @@ def _problem_needs_repair(value: Any) -> bool:
         re.search(r"\bis\s+not\s+trustworthy\s+when\b", text, re.I)
         or re.search(r"\bsource\s+evidence|visible\s+blockers|systems?\s+that\s+own\s+the\s+handoff\b", text, re.I)
         or re.search(r"\bfirst\s+path\s+entry\b", text, re.I)
+        or re.search(r"\bactive\s+and\s+decide\b", text, re.I)
+        or re.search(r"\bfrom\s+(?:A|An|The)\s+[A-Za-z0-9/-]+[^.]{0,100}\b(?:sees?|views?|receives?|reads?|gets?)\b", text)
+        or re.search(r"\b(?:use|reach)\s+(?:a|an|the|[A-Z][A-Za-z0-9/-]*)\s+[^.]{0,80}\b(?:sees?|views?|receives?|reads?|gets?)\b", text)
     )
 
 
@@ -440,6 +500,8 @@ def _metric_needs_repair(value: Any) -> bool:
         return True
     if re.search(r"\baccepted\s+path\s+lets\s+users\b|\bproof\s+boundary\b|\bevidence\s+context\b", text, re.I):
         return True
+    if re.search(r"\b(?:use|reach)\s+(?:a|an|the|[A-Z][A-Za-z0-9/-]*)\s+[^.]{0,80}\b(?:sees?|views?|receives?|reads?|gets?)\b", text):
+        return True
     if text.rstrip().endswith(","):
         return True
     tail = text.rstrip(".;:, ").split()[-1].casefold() if text.split() else ""
@@ -453,7 +515,20 @@ def _customer_summary(actors: Sequence[str], *, title: str) -> str:
         return f"{_focus_label(title)} users"
     if len(labels) == 1:
         return labels[0]
+    if _secondary_role_is_supporting(labels[1]):
+        return labels[0]
     return _join(labels[:2])
+
+
+def _secondary_role_is_supporting(label: str) -> bool:
+    text = _clean(label).casefold()
+    return bool(
+        re.search(
+            r"\b(?:admin|administrator|advisor|analyst|approver|auditor|coach|coordinator|evaluator|expert|inspector|"
+            r"lead|manager|officer|operator|reviewer|specialist|supervisor|support)\b",
+            text,
+        )
+    )
 
 
 def _customer_sentence(actors: Sequence[str], *, title: str, first_path: str) -> str:
@@ -470,6 +545,15 @@ def _customer_sentence(actors: Sequence[str], *, title: str, first_path: str) ->
     return f"{_focus_label(title)} users need to {first_path_capability_phrase(first_path)} and understand the outcome."
 
 
+def _needs_verb(label: str) -> str:
+    text = _clean(label).casefold()
+    if not text:
+        return "need"
+    if " and " in text or "," in text or text.endswith(("s", "team", "teams")):
+        return "need"
+    return "needs"
+
+
 def _state_focus_phrase(state: str, *, title: str) -> str:
     text = _clean(state)
     if not text:
@@ -482,20 +566,8 @@ def _state_focus_phrase(state: str, *, title: str) -> str:
 
 
 def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
-    model = first_path_model(first_path)
-    text = _clean(model.visible_outcome) or _clean(proof) or _clean(first_path)
-    text = re.sub(r"^this\s+", "the ", text, flags=re.I)
-    text = re.sub(r"\bvisible-result\s+event\b", "visible result", text, flags=re.I)
-    text = re.sub(r"\s+[—-]\s*", ": ", text, count=1)
-    text = _short(text, fallback="a visible, useful result", limit=190).rstrip(".")
-    text = re.sub(
-        r"^(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
-        r"(?:sees?|views?|receives?|reads?|gets?)\s+",
-        "",
-        text,
-        flags=re.I,
-    )
-    if not re.search(r"\b(?:result|readout|summary|decision|answer|recommendation|card|view|report|status|outcome)\b", text, re.I):
+    text = first_path_outcome_phrase(first_path, proof_boundary=proof, fallback="a visible, useful result", limit=190).rstrip(".")
+    if not re.search(r"\b(?:answer|appointment|booking|card|confirmation|decision|outcome|readout|recommendation|report|result|status|summary|view)\b", text, re.I):
         text = f"a visible outcome from {text}"
     return text
 
@@ -546,6 +618,7 @@ def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -
         return ""
     if "—" in raw or ":" in raw:
         name, description = re.split(r"\s+—\s+|:\s*", raw, maxsplit=1)
+        description = _clean_system_description(description)
         if _system_description_is_enough(description):
             return f"{_title_case(name)} — {description.rstrip('.')}"
     name = _system_label(raw, title=title)
@@ -583,58 +656,224 @@ def _system_description_is_enough(value: str) -> bool:
 def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     focus = _focus_label(title)
     state = _state_label(_clean(intent.get("state_object")), title=title)
-    first_path = _short(_clean(intent.get("first_path")), fallback="the accepted first path")
     proof = _short(_clean(intent.get("proof_boundary")), fallback="the release proof")
     names = [f"{focus} {suffix}" for suffix in _SYSTEM_SUFFIXES]
     descriptions = [
         f"owns identity, current status, version history, and traceable changes for {state}",
-        f"guides the first path, captures allowed commands, exposes blocked states, and keeps the next action clear: {first_path}",
+        "presents the current state, missing-information guidance, user-facing confirmation, and next useful action without owning source records",
         f"records the result, validation status, release decision, failure reason, and reviewable proof: {proof}",
-        "keeps authorization, shared access, privacy, safety, retention, accessibility, reminders, and recovery behavior explicit before wider rollout",
+        "shows the visible result, known limits, and recovery conditions before broader rollout",
     ]
     return [f"{_title_case(name)} — {description.rstrip('.')}" for name, description in zip(names, descriptions)]
 
 
+def _clean_system_description(value: str) -> str:
+    text = _clean(value).strip(" .")
+    text = re.sub(
+        r"\b(?:captures?|capturing)\s+user\s+actions?\b",
+        "captures the product interaction",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\b(?:explains?|explaining)\s+blocked\s+states?\b",
+        "explains missing or invalid information",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\s*(?:,?\s*and\s+)?(?:keeps?|keeping)\s+the\s+next\s+visible\s+step\s+tied\s+to\s*:\s*[^.]+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"\s*,\s*,\s*", ", ", text)
+    text = re.sub(r"\s*,\s*(?:and\s*)?$", "", text, flags=re.IGNORECASE)
+    return _clean(text).strip(" .,;:")
+
+
 def _derived_actor_labels(intent: Mapping[str, Any], *, title: str) -> list[str]:
     focus = _focus_label(title)
-    context = _context(intent)
-    candidates = _role_candidates(context)
+    first_path = _clean(intent.get("first_path"))
+    story = _clean(intent.get("product_story"))
+    state = _clean(intent.get("state_object"))
+    candidates = unique_text(
+        [
+            *_role_candidates(first_path),
+            *_role_candidates(state),
+            *_role_candidates(story),
+            *_role_candidates(_actor_context(intent)),
+        ]
+    )
     labels: list[str] = []
     for candidate in candidates:
         if _word_count(candidate) <= 5:
-            labels.append(_title_case(candidate))
-    labels.extend(
-        [
-            f"{focus} operator",
-            f"{focus} reviewer",
-            f"{focus} support owner",
-            f"{focus} release decision owner",
-        ]
-    )
+            label = _title_case(candidate)
+            if not _actor_label_has_clause_lead(label):
+                labels.append(label)
+    labels = _dedupe_actor_labels(list(unique_text(labels)))
+    if len(labels) < 2:
+        labels.extend(
+            [
+                f"{focus} operator",
+                f"{focus} reviewer",
+                f"{focus} support owner",
+                f"{focus} release decision owner",
+            ]
+        )
     return list(unique_text(labels))
 
 
 def _role_candidates(text: str) -> list[str]:
-    words = re.findall(r"[A-Za-z][A-Za-z/-]*", text)
     candidates: list[str] = []
-    for index, word in enumerate(words):
-        if word.casefold() not in _ROLE_WORDS:
-            continue
-        start = max(0, index - 2)
-        phrase = " ".join(words[start : index + 1])
-        phrase = re.sub(r"^(?:a|an|the|one|first|main|primary|current)\s+", "", phrase, flags=re.IGNORECASE)
-        if phrase and not phrase.casefold().startswith(("product ", "project ", "workflow ")):
-            candidates.append(phrase)
+    for sentence in re.split(r"(?<=[.!?])\s+|;\s+", _clean(text)):
+        words = re.findall(r"[A-Za-z][A-Za-z/-]*", sentence)
+        for index, word in enumerate(words):
+            if word.casefold() not in _ROLE_WORDS:
+                continue
+            if _role_token_is_artifact_context(words, index):
+                continue
+            start = max(0, index - 2)
+            phrase = " ".join(words[start : index + 1])
+            phrase = re.sub(
+                r"^(?:a|an|and|the|one|first|main|primary|current)\s+",
+                "",
+                phrase,
+                flags=re.IGNORECASE,
+            )
+            phrase_words = phrase.split()
+            if (
+                len(phrase_words) >= 3
+                and phrase_words[-2].casefold() in {"a", "an", "the"}
+                and phrase_words[0].casefold().endswith("ing")
+            ):
+                phrase = phrase_words[-1]
+            phrase = _trim_non_actor_lead_words(phrase)
+            if (
+                phrase
+                and phrase.casefold() not in {"team"}
+                and not _actor_label_has_clause_lead(phrase)
+                and not phrase.casefold().startswith(("product ", "project ", "workflow "))
+            ):
+                candidates.append(phrase)
     return list(unique_text(candidates))
+
+
+def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:
+    previous_token = words[index - 1].casefold().strip(".,;:-") if index > 0 else ""
+    next_token = words[index + 1].casefold().strip(".,;:-") if index + 1 < len(words) else ""
+    sentence = " ".join(words).casefold()
+    if re.search(r"\b(?:defer(?:red|s)?|out\s+of\s+scope|non[-\s]?goals?|later|future|not\s+included)\b", sentence):
+        return True
+    artifact_neighbors = {
+        "confirmation",
+        "contact",
+        "decision",
+        "detail",
+        "details",
+        "field",
+        "fields",
+        "follow-up",
+        "history",
+        "information",
+        "note",
+        "notes",
+        "record",
+        "status",
+        "visible",
+    }
+    if previous_token in artifact_neighbors or next_token in artifact_neighbors:
+        return True
+    current = words[index].casefold()
+    return "-" in current and any(part in artifact_neighbors for part in current.split("-"))
+
+
+def _dedupe_actor_labels(values: Sequence[str]) -> list[str]:
+    labels = [
+        re.sub(r"^(?:one|first|main|primary)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
+        for value in values
+        if _clean(value)
+    ]
+    result: list[str] = []
+    lowered_labels = [label.casefold() for label in labels]
+    for label, lowered in zip(labels, lowered_labels):
+        if any(other != lowered and other.endswith(f" {lowered}") for other in lowered_labels):
+            continue
+        result.append(label)
+    return result
+
+
+def _trim_non_actor_lead_words(value: str) -> str:
+    words = _clean(value).split()
+    non_actor_leads = {
+        "a",
+        "answer",
+        "against",
+        "an",
+        "and",
+        "after",
+        "before",
+        "because",
+        "displays",
+        "decision",
+        "detail",
+        "details",
+        "evidence",
+        "gives",
+        "history",
+        "in",
+        "input",
+        "places",
+        "provides",
+        "request",
+        "note",
+        "notes",
+        "outcome",
+        "path",
+        "proof",
+        "reason",
+        "record",
+        "release",
+        "result",
+        "returns",
+        "scope",
+        "shows",
+        "state",
+        "status",
+        "summary",
+        "the",
+        "then",
+        "when",
+        "where",
+        "which",
+        "with",
+    }
+    while len(words) > 1 and words[0].casefold().strip(".,;:") in non_actor_leads:
+        words.pop(0)
+    if len(words) > 1 and words[-2].casefold().strip(".,;:") in non_actor_leads:
+        words = words[-1:]
+    return " ".join(words)
+
+
+def _actor_label_has_clause_lead(value: str) -> bool:
+    return bool(
+        re.match(
+            r"^(?:and|or|where|when|if|because|so|that|which|what|why|how|with|against|from|until|before|after|"
+            r"displays?|gives?|places?|provides?|returns?|shows?)\b",
+            _clean(value).casefold(),
+        )
+    )
 
 
 def _actor_label(row: str, *, title: str) -> str:
     raw = _clean(str(row).split("—", 1)[0].split(":", 1)[0])
     raw = re.sub(r"^(?:a|an|the)\s+", "", raw, flags=re.IGNORECASE).strip()
+    raw = re.sub(r"^(?:one|first|main|primary)\s+", "", raw, flags=re.IGNORECASE).strip()
     if not raw:
         return ""
     accepted = accepted_actor_label(str(row), project_focus=_focus_label(title))
     if accepted:
+        accepted = re.sub(r"^(?:one|first|main|primary)\s+", "", accepted, flags=re.IGNORECASE).strip()
         return accepted if _actor_row_has_usable_description(str(row)) else _title_case(accepted)
     specific = _specific_role_label(raw)
     if specific:
@@ -933,6 +1172,21 @@ def _context(intent: Mapping[str, Any]) -> str:
     return ". ".join(part.strip(" .") for part in parts if part)
 
 
+def _actor_context(intent: Mapping[str, Any]) -> str:
+    parts = [
+        _clean(intent.get("title")),
+        _clean(intent.get("product_story")),
+        _clean(intent.get("problem")),
+        _clean(intent.get("customer")),
+        _clean(intent.get("opportunity")),
+        _clean(intent.get("product_view")),
+        _clean(intent.get("state_object")),
+        _clean(intent.get("first_path")),
+        " ".join(_strings(intent.get("human_actors"))),
+    ]
+    return ". ".join(part.strip(" .") for part in parts if part)
+
+
 def _best_context_clause(name: str, context: str) -> str:
     terms = _semantic_terms(name)
     scored: list[tuple[int, int, str]] = []
@@ -1024,13 +1278,16 @@ def _path_headline(value: str, *, fallback: str, limit: int = 140) -> str:
 
 
 def _path_capability(value: str, *, fallback: str, limit: int = 180) -> str:
-    return _short(first_path_capability_phrase(value, fallback=fallback, limit=limit), fallback=fallback, limit=limit)
+    action = first_path_action_phrase(value, fallback=fallback, limit=limit, max_fragments=1)
+    return _short(_capability_action_clause(action), fallback=fallback, limit=limit)
 
 
 def _capability_action_clause(value: str) -> str:
     text = clean_text(value).strip(" .")
     if not text:
         return "complete the accepted path"
+    if looks_like_action_clause(text):
+        return base_action_clause(text)
     actor_action = _actor_action_clause(text)
     if actor_action:
         return actor_action
@@ -1048,7 +1305,7 @@ def _actor_action_clause(value: str) -> str:
         base = _base_action_verb(verb)
         if base != verb.casefold():
             tail = " ".join(words[index + 1 :]).strip(" .")
-            return " ".join(part for part in (base, tail) if part)
+            return base_action_clause(" ".join(part for part in (base, tail) if part))
     return ""
 
 

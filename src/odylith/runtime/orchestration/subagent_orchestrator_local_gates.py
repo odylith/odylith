@@ -57,8 +57,7 @@ def can_decompose_coordination_heavy_write(
     odylith_narrowing_required = bool(
         context_summary.get("narrowing_required") or context_summary.get("odylith_execution_narrowing_required")
     )
-    odylith_native_spawn_ready = bool(context_summary.get("native_spawn_ready"))
-    if odylith_signal_present and (odylith_narrowing_required or not odylith_route_ready or not odylith_native_spawn_ready):
+    if odylith_signal_present and (odylith_narrowing_required or not odylith_route_ready):
         return False
     return len([list(group) for group in path_groups if group]) >= 2
 
@@ -87,7 +86,6 @@ def should_keep_local(
     odylith_narrowing_required = bool(
         context_summary.get("narrowing_required") or context_summary.get("odylith_execution_narrowing_required")
     )
-    odylith_native_spawn_ready = bool(context_summary.get("native_spawn_ready"))
     if "odylith_routing_signal_present" in context_summary:
         odylith_signal_present = bool(context_summary.get("odylith_routing_signal_present"))
     else:
@@ -106,7 +104,6 @@ def should_keep_local(
         and (
             odylith_narrowing_required
             or not odylith_route_ready
-            or not odylith_native_spawn_ready
             or odylith_spawn_worthiness <= 1
             or odylith_selection_mode in {"narrow_first", "guarded_narrowing"}
         )
@@ -127,7 +124,6 @@ def should_keep_local(
         odylith_signal_present
         and not request.needs_write
         and not odylith_route_ready
-        and not odylith_native_spawn_ready
         and "odylith-read-only-local-narrowing" not in reasons
     ):
         reasons.append("odylith-read-only-local-narrowing")

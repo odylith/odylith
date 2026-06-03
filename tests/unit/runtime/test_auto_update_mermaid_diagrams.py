@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.surfaces import auto_update_mermaid_diagrams as mermaid
+from odylith.runtime.surfaces import mermaid_worker_session
 
 
 def test_render_diagrams_batch_falls_back_from_blocking_worker_job(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -95,6 +96,11 @@ def test_one_shot_mermaid_render_uses_atlas_render_config(tmp_path: Path, monkey
         return subprocess.CompletedProcess(cmd, 0)
 
     monkeypatch.setattr(mermaid.subprocess, "run", _fake_run)
+    monkeypatch.setattr(
+        mermaid._mermaid_worker_session,  # noqa: SLF001
+        "resolve_mermaid_cli_bin",
+        lambda **_kwargs: tmp_path / "node_modules" / ".bin" / "mmdc",
+    )
 
     mermaid._render_diagram(  # noqa: SLF001
         repo_root=tmp_path,
@@ -106,14 +112,48 @@ def test_one_shot_mermaid_render_uses_atlas_render_config(tmp_path: Path, monkey
 
     assert len(commands) == 2
     for command in commands:
+        assert command[0].endswith("mmdc")
+        assert "npx" not in command
         assert "--configFile" in command
         assert command[command.index("--configFile") + 1].endswith("mermaid_render_config.json")
+        assert "--puppeteerConfigFile" in command
+        assert command[command.index("--puppeteerConfigFile") + 1].endswith("mermaid_puppeteer_config.json")
+
+
+def test_mermaid_worker_resolves_cached_cli_before_npx(tmp_path: Path, monkeypatch) -> None:
+    cache_root = tmp_path / ".npm"
+    package_root = cache_root / "_npx" / "cached" / "node_modules" / "@mermaid-js" / "mermaid-cli"
+    package_root.mkdir(parents=True)
+    package_root.joinpath("package.json").write_text(
+        json.dumps({"name": "@mermaid-js/mermaid-cli", "version": "11.12.0"}),
+        encoding="utf-8",
+    )
+    bin_root = package_root.parent.parent / ".bin"
+    bin_root.mkdir(parents=True)
+    bin_root.joinpath("mmdc").write_text("#!/usr/bin/env node\n", encoding="utf-8")
+
+    def _unexpected_npx(*_args, **_kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("cached Mermaid CLI should be used before npx")
+
+    mermaid_worker_session._MERMAID_PACKAGE_ROOT_CACHE.clear()  # noqa: SLF001
+    monkeypatch.setenv("npm_config_cache", str(cache_root))
+    monkeypatch.delenv("ODYLITH_ALLOW_MERMAID_NPX_INSTALL", raising=False)
+    monkeypatch.delenv("ODYLITH_MERMAID_CLI_ROOT", raising=False)
+    monkeypatch.setattr(mermaid_worker_session.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(mermaid_worker_session.subprocess, "run", _unexpected_npx)
+
+    resolved = mermaid_worker_session.resolve_mermaid_cli_bin(repo_root=tmp_path, cli_version="11.12.0")
+
+    assert resolved == bin_root.joinpath("mmdc").resolve()
 
 
 def test_mermaid_worker_applies_managed_palette_to_legacy_and_new_diagrams() -> None:
     worker_source = (Path(mermaid.__file__).with_name("assets") / "mermaid_cli_worker.mjs").read_text(encoding="utf-8")
 
     assert "const clusterPalette = [" in worker_source
+    assert "--no-sandbox" in worker_source
+    assert "--disable-setuid-sandbox" in worker_source
+    assert "--disable-dev-shm-usage" in worker_source
     assert "const clusterPaletteByBucket = {" in worker_source
     assert "const nodePalette = {" in worker_source
     assert "const connectorPalette = {" in worker_source

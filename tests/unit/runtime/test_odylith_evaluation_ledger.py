@@ -814,7 +814,7 @@ def test_orchestrator_marks_non_repo_work_prompts_local(tmp_path: Path) -> None:
     assert "non-repo-work-prompt" in decision.local_only_reasons
 
 
-def test_coordination_heavy_write_requires_route_ready_runtime_before_decomposition() -> None:
+def test_coordination_heavy_write_requires_route_ready_contract_before_decomposition() -> None:
     request = orchestrator.OrchestrationRequest(
         prompt="Implement the grounded install-time slice.",
         candidate_paths=[
@@ -870,7 +870,7 @@ def test_coordination_heavy_write_requires_route_ready_runtime_before_decomposit
                 "odylith_execution_route_ready": True,
                 "narrowing_required": False,
                 "odylith_execution_narrowing_required": False,
-                "native_spawn_ready": True,
+                "native_spawn_ready": False,
             },
         }
     )
@@ -885,6 +885,69 @@ def test_coordination_heavy_write_requires_route_ready_runtime_before_decomposit
         local_gates.can_decompose_coordination_heavy_write(request, ready_assessment, path_groups=path_groups)
         is True
     )
+
+
+def test_route_ready_plan_does_not_go_local_only_when_native_spawn_is_policy_gated() -> None:
+    request = orchestrator.OrchestrationRequest(
+        prompt="Implement the bounded renderer and validator updates.",
+        candidate_paths=["src/example_renderer.py", "tests/test_example_renderer.py"],
+        needs_write=True,
+        evidence_cone_grounded=True,
+    )
+    assessment = router.TaskAssessment(
+        prompt=request.prompt,
+        task_kind="implementation",
+        task_family="bounded_feature",
+        phase="implementation",
+        needs_write=True,
+        correctness_critical=False,
+        feature_implementation=True,
+        mixed_phase=False,
+        requires_multi_agent_adjudication=False,
+        evolving_context_required=False,
+        evidence_cone_grounded=True,
+        ambiguity=1,
+        blast_radius=1,
+        context_breadth=2,
+        coordination_cost=2,
+        reversibility_risk=1,
+        mechanicalness=1,
+        write_scope_clarity=3,
+        acceptance_clarity=3,
+        artifact_specificity=3,
+        validation_clarity=2,
+        latency_pressure=0,
+        requested_depth=2,
+        accuracy_bias=2,
+        earned_depth=2,
+        delegation_readiness=2,
+        base_confidence=2,
+        accuracy_preference="accuracy",
+        context_signal_summary={
+            "odylith_routing_signal_present": True,
+            "route_ready": True,
+            "odylith_execution_route_ready": True,
+            "narrowing_required": False,
+            "odylith_execution_narrowing_required": False,
+            "native_spawn_ready": False,
+            "odylith_execution_delegate_preference": "delegate",
+            "odylith_execution_selection_mode": "bounded_write",
+            "spawn_worthiness_score": 3,
+        },
+    )
+
+    reasons, notes = local_gates.should_keep_local(
+        request,
+        assessment,
+        architecture_policy={},
+        path_groups=[["src/example_renderer.py"], ["tests/test_example_renderer.py"]],
+        decomposable_coordination_gates=frozenset(),
+        trivial_local_prompt=False,
+    )
+
+    assert "odylith-local-narrowing" not in reasons
+    assert "odylith-read-only-local-narrowing" not in reasons
+    assert all("runtime handoff" not in note for note in notes)
 
 
 def test_odylith_consumer_paths_do_not_collapse_into_governance_followups() -> None:

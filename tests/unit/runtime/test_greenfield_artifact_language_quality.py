@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
-from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import _program_problem
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import _program_problem
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.governance.component_authoring import _public_what_it_is
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 from odylith.runtime.project_intelligence.product_story_cards import build_greenfield_story_cards
@@ -86,6 +87,36 @@ def test_state_store_specs_do_not_render_as_configuration_policy() -> None:
     assert "keeps the product record together" in spec
     assert "boundary for holds" not in summary
     assert "boundary for the asset profile" in summary
+
+
+def test_component_spec_preserves_relative_clauses_in_accepted_intent() -> None:
+    spec = build_narrative_component_spec(
+        component_id="revision-tracker",
+        label="Revision Tracker",
+        path="src/example/revision_tracker",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-004",),
+        diagrams=("D-002",),
+        responsibility="links applicant revisions to the documents and checks they are meant to address",
+        component_contract={
+            "owned_state": "applicant revisions to the documents and checks they are meant to address",
+            "accepted_inputs": "zoning check evidence and revision uploads",
+            "produced_outputs": "linked revision state and review evidence",
+            "states_or_transitions": "submitted, linked, validated, blocked, revised",
+            "outside_boundary": "decision package state and final approval state",
+            "local_proof": (
+                "Revision Tracker links applicant revisions to the documents and checks they are meant to address.",
+            ),
+            "upstream_truth": "Zoning Check Ledger",
+            "downstream_consumers": "Decision Package Review",
+            "unique_failure": "Revision Tracker can mislead reviewers if revisions are disconnected from the checks they address.",
+        },
+    )
+
+    assert "checks they are meant to address" in spec
+    assert "checks are meant to address" not in spec
 
 
 def test_confirmed_greenfield_artifacts_reject_mechanical_dashboard_and_radar_language(tmp_path) -> None:
@@ -195,3 +226,23 @@ def test_greenfield_program_problem_fallback_reads_like_a_product_problem() -> N
     assert " to turn " not in problem
     assert "first release can collect activity" not in problem
     assert "is not trustworthy when" not in problem
+
+
+def test_need_to_turn_slop_gate_allows_human_problem_language_but_rejects_product_name_scaffold() -> None:
+    human_story = {
+        "product_story": (
+            "Residents need a calmer way to turn small home repair problems into confirmed appointments "
+            "without repeated calls or unclear availability."
+        )
+    }
+    generated_scaffold = {
+        "problem": (
+            "Residents need RepairDesk Booking Platform to turn source evidence, visible blockers, "
+            "and release proof into implementation confidence."
+        )
+    }
+
+    assert generated_semantic_slop_issues(human_story) == []
+    assert generated_semantic_slop_issues(generated_scaffold) == [
+        "mechanical need-to-turn problem scaffold leaked at artifact.problem",
+    ]

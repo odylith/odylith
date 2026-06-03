@@ -122,6 +122,19 @@ def test_stop_visible_intervention_recovers_assist_from_summary_validation(tmp_p
     assert "closing with 1 focused check" in rendered
 
 
+def test_stop_visible_intervention_has_minimum_assist_when_summary_has_no_richer_signal(tmp_path) -> None:
+    rendered = host_visible_intervention.render_visible_intervention(
+        repo_root=tmp_path,
+        host_family="codex",
+        phase="stop_summary",
+        summary="Worked on the greenfield generator and orchestration contract.",
+    )
+
+    assert rendered == (
+        "**Odylith Assist:** Closeout reached in chat; no separate Observation or Proposal earned this turn."
+    )
+
+
 def test_visible_intervention_generic_failure_has_observation_without_fake_assist(tmp_path) -> None:
     rendered = host_visible_intervention.render_visible_intervention(
         repo_root=tmp_path,

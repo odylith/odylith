@@ -50,7 +50,10 @@ async function main() {
     if (browser !== null) {
       return browser;
     }
-    browser = await puppeteer.launch({ headless: 'shell' });
+    browser = await puppeteer.launch({
+      headless: 'shell',
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    });
     return browser;
   };
 

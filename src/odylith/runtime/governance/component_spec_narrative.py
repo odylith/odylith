@@ -145,12 +145,12 @@ def _narrative_role(
 ) -> str:
     text = " ".join([label, *_string_rows(owns), *_string_rows(accepts), *_string_rows(produces), *_string_rows(transitions), *_string_rows(outside), *_string_rows(proofs)]).casefold()
     label_text = label.casefold()
-    if re.search(r"\b(audit|evidence|file|ledger|provenance|registry|trail)\b", label_text):
+    if re.search(r"\b(store|repository|record|records|profile|registry|history|log)\b", label_text):
+        return "state_store"
+    if re.search(r"\b(audit|evidence|file|ledger|provenance|trail)\b", label_text):
         return "evidence"
     if re.search(r"\b(config|configuration|admin|administrator|policy|setting)\b", label_text):
         return "configuration"
-    if re.search(r"\b(store|repository|record|records|profile|history|log)\b", label_text):
-        return "state_store"
     if re.search(r"\b(decision|outcome|reason|approve|approval|decline|explain|rationale|recommendation)\b", label_text):
         return "decision"
     if re.search(r"\b(compute|calculation|calculator|engine|score|rank|compare|threshold|ratio|rule|eligibility|pricing)\b", label_text):
@@ -191,8 +191,8 @@ def _opening_narrative(
 ) -> str:
     noun = _kind_noun(kind)
     if role == "entry":
-        lead = f"{label} is where the first release turns user-provided information into product state."
-        body = f"Its center of gravity is {focus}; the important part is not the screen or adapter, but the moment {input_focus} becomes trustworthy enough to continue."
+        lead = f"{label} is responsible for the first product information this boundary must make reliable."
+        body = f"It keeps {focus} together so the next product step can move forward without another boundary guessing what the user meant or what is still missing."
     elif role == "decision":
         lead = f"{label} is the place where the product turns prepared evidence into an explained outcome."
         body = f"The spec should stay focused on {output_focus}, because downstream work needs to know not only what happened but why it happened."
@@ -215,8 +215,8 @@ def _opening_narrative(
         lead = f"{label} is the component that makes accepted product state understandable to a person."
         body = f"It should present {focus} from trusted inputs rather than becoming the owner of the source records it displays."
     elif role == "evidence":
-        lead = f"{label} keeps the project honest after the first path runs."
-        body = f"Its job is to preserve {focus} so release review can replay what changed, which source was used, and which blockers remained visible."
+        lead = f"{label} preserves the evidence that makes the first release reviewable."
+        body = f"Its job is to keep {focus} tied to the result a reviewer needs to understand, without turning the evidence record into the decision owner."
     elif role == "integration":
         lead = f"{label} is the seam between the product and an outside source or protocol."
         body = f"It should translate {input_focus} into {output_focus} without letting provider-specific behavior leak across the rest of the first release."
@@ -240,11 +240,30 @@ def _accepted_intent_sentence(value: str) -> str:
         flags=re.I,
     ):
         return ""
+    text = re.sub(r"\bFailure\s+avoided\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip(" .")
+    cleaned_fragment = _clean_fragment(text)
+    if cleaned_fragment:
+        text = cleaned_fragment
+    if _accepted_intent_is_low_signal(text):
+        return ""
     text = re.sub(r"\s+[—-]\s+", ": ", text, count=1)
     text = re.sub(r"\s+", " ", text).strip(" .")
+    keep_match = re.match(r"^keeps?\s+(?P<body>.+)$", text, flags=re.I)
+    if keep_match:
+        body = _clean_fragment(keep_match.group("body"))
+        return _sentence(f"Accepted intent assigns this component to {_lower_first(body)}") if body else ""
     if looks_like_finite_action(text):
         return _sentence(f"Accepted intent says this component {_lower_first(text)}")
     return _sentence(f"Accepted intent centers this component on {_lower_first(text)}")
+
+
+def _accepted_intent_is_low_signal(value: str) -> bool:
+    text = clean_text(value).casefold()
+    return bool(
+        re.search(r"\buser actions?\b", text)
+        or re.search(r"\bblocked states?\b", text)
+        or re.search(r"\bnext-step context\b", text)
+    )
 
 
 def _state_narrative(
@@ -256,16 +275,18 @@ def _state_narrative(
     produces: Sequence[str],
     transitions: Sequence[str],
 ) -> str:
-    owned = _human_join(owns[:8])
-    accepted = _human_join(accepts[:5])
-    produced = _human_join(produces[:5])
-    state_path = _human_join(transitions[:16])
+    owned_rows = _narrative_items(owns, limit=4)
+    owned = _human_join(owned_rows)
+    material_state = _human_join(_supplemental_state_items(owns, existing=owned_rows, limit=5))
+    accepted = _human_join(_narrative_items(accepts, limit=3))
+    produced = _human_join(_narrative_items(produces, limit=3))
+    state_path = _human_join(_transition_items(transitions, limit=12))
     if role in {"entry", "recovery"}:
-        first = f"The local state starts with {owned}." if owned else f"{label} needs the first implementation plan to name its local state."
+        first = f"It owns {owned}." if owned else f"{label} needs the first implementation plan to name its local state."
         second = f"The component can take in {accepted}, but it should only move forward after required values, corrections, or blockers are explicit." if accepted else ""
     elif role in {"decision", "calculation"}:
         if accepted and produced and not _phrases_too_similar(accepted, produced):
-            first = f"The useful state is the relationship between {accepted} and {produced}."
+            first = f"The useful state is the explanation that connects incoming {accepted} to {produced}."
         else:
             first = f"{label} must keep its input facts, calculation context, and visible result together."
         second = f"That relationship is what makes the outcome reviewable instead of a black-box claim."
@@ -276,16 +297,25 @@ def _state_narrative(
         first = f"The owned state is {owned}, and it should stay close to the inputs and corrections that created it."
         second = f"It accepts {accepted} and returns {produced} only after required information is complete enough to trust."
     elif role == "handoff":
-        first = f"The next-step state is useful only if {produced} travels with enough context from {accepted}."
+        handoff_state = produced or "the next-step output"
+        source_context = accepted or "upstream context"
+        first = (
+            f"The next-step state is useful only when {handoff_state} "
+            f"{_present_verb(handoff_state, singular='travels', plural='travel')} with enough context from {source_context}."
+        )
         second = "Raw input fields should remain with their owner; this component should carry the context another participant needs."
     elif role == "read_model":
         first = f"The visible state should explain {owned} without pretending to own every source record."
         second = f"It can render {produced}, while stale, empty, or blocked states remain visible."
+    elif role == "evidence":
+        first = f"The evidence state should keep {owned} connected to the result being reviewed."
+        second = f"It accepts {accepted} and returns {produced} only when the review trail remains explainable."
     else:
-        first = f"The local contract centers on {owned}."
-        second = f"It accepts {accepted} and returns {produced}."
+        first = f"The useful local state is {owned}."
+        second = f"It accepts {accepted} and returns {produced} when the next product step can rely on it."
+    material = _material_state_sentence(role=role, material_state=material_state)
     transition = f"The important lifecycle is {state_path}." if state_path else ""
-    return _sentences(first, second, transition)
+    return _sentences(first, second, material, transition)
 
 
 def _boundary_narrative(
@@ -299,7 +329,11 @@ def _boundary_narrative(
     kept = [
         item
         for item in outside
-        if not re.search(r"\b(?:runtime implementation|release approval|silent overwrite)\b", item, flags=re.I)
+        if not re.search(
+            r"\b(?:runtime implementation|release approval|silent overwrite|guide path|capture allowed command)\b",
+            item,
+            flags=re.I,
+        )
     ]
     outside_text = _human_join(kept[:4])
     if upstream and downstream:
@@ -328,9 +362,9 @@ def _boundary_narrative(
 
 def _proof_narrative(*, label: str, role: str, failure: str, proofs: Sequence[str]) -> str:
     risk = (
-        f"The failure to guard against is {failure}"
+        f"The product failure to guard against is {failure}"
         if failure
-        else f"The failure to guard against is treating {label} as ready without local behavior proof"
+        else f"The product failure to guard against is treating {label} as ready without local behavior proof"
     )
     selected = [_clean_proof_sentence(proof, label=label, index=index) for index, proof in enumerate(proofs[:5], start=1)]
     selected = [row for row in selected if row]
@@ -382,6 +416,24 @@ def _clean_proof_sentence(proof: str, *, label: str, index: int) -> str:
     if not text:
         return ""
     text = re.sub(
+        rf"^Run one {re.escape(label)} example with a clear explanation for (.+)$",
+        rf"{label} shows \1 on a successful path with enough explanation for a reviewer to understand it",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        rf"^Run one blocked {re.escape(label)} example where missing or malformed input explains what must change before the result can be trusted$",
+        rf"When required input is missing or malformed, {label} stops before showing a trusted result and explains what must change",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        rf"^Replay one {re.escape(label)} result and confirm the actor, input facts, status, and explanation still agree$",
+        rf"A replay of {label} still connects the actor, input facts, status, and explanation",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
         r"\bmissing,\s*stale,\s*unauthorized,\s*or\s*malformed\s+input\b",
         "the named bad input",
         text,
@@ -430,18 +482,24 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
         flags=re.I,
     )
     text = re.sub(r"^[A-Z][A-Za-z0-9]*(?:\s+[A-Z][A-Za-z0-9]*){0,5}\s+owns\s+", "", text)
+    text = re.sub(r"^[a-z0-9][a-z0-9 -]{0,80}\s+owns\s+", "", text, flags=re.I)
     text = re.sub(
-        r"^(?:owns?|accepts?|produces?|returns?|return|depends\s+on|coordinates\s+with|computes?|evaluates?|validates?|captures?)\s+",
+        r"^(?:owns?|accepts?|produces?|returns?|return|depends\s+on|coordinates\s+with|computes?|evaluates?|explains?|validates?|captures?)\s+",
         "",
         text,
         flags=re.I,
     )
+    text = re.sub(r"\b(?:and\s+)?keeps?\s+the\s+next\s+visible\s+step\s+tied\s+to\s*:\s*.+$", "next-step context", text, flags=re.I)
+    text = re.sub(r"\btied\s+to\s*:\s*.+$", "", text, flags=re.I)
     text = re.sub(r"\b(?:producing|recording|capturing|tracking|reviewing|showing|returning)\s+the\s+", "", text, flags=re.I)
     text = re.sub(r"\b(?:producing|recording|capturing|tracking|reviewing|showing|returning)\s+", "", text, flags=re.I)
     text = re.sub(r"\busing\s+(?:mocked|stubbed|simulated)\b.*$", "", text, flags=re.I)
+    text = re.sub(r"^guides?\s+the\s+first\s+path,?\s*", "", text, flags=re.I)
+    text = re.sub(r"\bkeep(?:s|ing)?\s+", "", text, flags=re.I)
+    text = re.sub(r"\bexplicit(?:ly)?\b", "", text, flags=re.I)
     text = re.sub(r"^(?:them|it|their|they|this|that)\s+(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"^(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
-    text = re.sub(r"\b(?:them|it|their|they|this|that)\b", "", text, flags=re.I)
+    text = re.sub(r"\b(?:them|it|their|they|this|that)\b(?!\s+(?:are|is|was|were)\b)", "", text, flags=re.I)
     text = re.sub(r"\s+", " ", text).strip(" .;:,")
     if not text:
         return ""
@@ -450,9 +508,9 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
         return ""
     if re.match(r"^(?:and|or|their|they|them|it|this|that|who|which|where)\b", lowered):
         return ""
-    if not proof and re.fullmatch(r"(?:local blockers?|handoff evidence|source evidence|prior state|prior result|authorized actor|validation command|validation context|validation notes?)", lowered):
+    if not proof and re.fullmatch(r"(?:actions?|user actions?|local blockers?|handoff evidence|source evidence|prior state|prior result|authorized actor|validation command|validation context|validation notes?|next-step context|blocker state|blocked states?)", lowered):
         return ""
-    if "responsibilities not named by this component boundary" in lowered:
+    if re.search(r"\bresponsibilities\s+not\s+named\s+by\s+(?:this\s+)?component\s+boundary\b", lowered):
         return ""
     if len(text.split()) <= 2 and lowered in {"state", "command", "record", "result", "evidence", "handoff"}:
         return ""
@@ -473,7 +531,166 @@ def _clean_entity_item(value: str) -> str:
 
 
 def _fallback_phrase(values: Sequence[str], fallback: str) -> str:
-    return _human_join(values[:5]) if values else _lower_first(fallback)
+    rows = _narrative_items(values, limit=3)
+    return _human_join(rows) if rows else _lower_first(fallback)
+
+
+def _narrative_items(values: Sequence[str], *, limit: int, allow_status: bool = False) -> tuple[str, ...]:
+    rows: list[str] = []
+    filler_status_tokens = {
+        "accepted",
+        "confirmed",
+        "needed",
+        "received",
+        "requested",
+        "trusted",
+        "visible",
+    }
+    material_values = [
+        clean_text(value).strip(" .")
+        for value in values
+        if clean_text(value).strip(" .")
+    ]
+    has_material_alternative = any(not _generated_boundary_state_item(value) for value in material_values)
+    for value in material_values:
+        text = clean_text(value).strip(" .")
+        if not text:
+            continue
+        lowered = text.casefold()
+        if has_material_alternative and _generated_boundary_state_item(text):
+            continue
+        if lowered in filler_status_tokens:
+            continue
+        if re.search(
+            r"\b(?:responsibilities not named|adjacent component|silent overwrite|release approval|mutation of original|mutation of upstream|local blockers?|recovery context owned elsewhere|guide path|capture allowed command)\b",
+            lowered,
+        ):
+            continue
+        if lowered in {
+            "blocker state",
+            "blocked states",
+            "correction marker",
+            "handoff context",
+            "next-step context",
+            "reviewer explanation",
+            "source evidence",
+            "validation context",
+        }:
+            continue
+        if any(_phrases_too_similar(text, existing) for existing in rows):
+            continue
+        rows.append(text)
+        if len(rows) >= limit:
+            break
+    return tuple(rows)
+
+
+def _generated_boundary_state_item(value: str) -> bool:
+    return bool(
+        re.fullmatch(
+            r"[a-z0-9][a-z0-9 '-]{0,80}\s+(?:adapter|client|component|engine|queue|service|store|surface|system|view)\s+state",
+            clean_text(value).casefold(),
+        )
+    )
+
+
+def _supplemental_state_items(values: Sequence[str], *, existing: Sequence[str], limit: int) -> tuple[str, ...]:
+    candidates: list[tuple[int, int, str]] = []
+    for index, value in enumerate(values):
+        text = clean_text(value).strip(" .")
+        if not text:
+            continue
+        if any(_phrases_too_similar(text, row) for row in existing):
+            continue
+        score = _state_material_score(text)
+        if score <= 0:
+            continue
+        candidates.append((score, index, text))
+    candidates.sort(key=lambda row: (-row[0], row[1]))
+    selected: list[tuple[int, str]] = []
+    for _score, index, text in candidates:
+        if any(_phrases_too_similar(text, chosen) for _chosen_index, chosen in selected):
+            continue
+        selected.append((index, text))
+        if len(selected) >= limit:
+            break
+    return tuple(text for _index, text in sorted(selected))
+
+
+def _transition_items(values: Sequence[str], *, limit: int) -> tuple[str, ...]:
+    rows = _narrative_items(values, limit=24, allow_status=True)
+    if len(rows) <= limit:
+        return rows
+    selected: list[tuple[int, str]] = [(index, text) for index, text in enumerate(rows[: min(6, limit)])]
+    for index, text in enumerate(rows[min(6, limit) :], start=min(6, limit)):
+        if _transition_material_score(text) <= 0:
+            continue
+        if any(_phrases_too_similar(text, existing) for _existing_index, existing in selected):
+            continue
+        selected.append((index, text))
+        if len(selected) >= limit:
+            break
+    if len(selected) < limit:
+        for index, text in enumerate(rows):
+            if any(index == existing_index or _phrases_too_similar(text, existing) for existing_index, existing in selected):
+                continue
+            selected.append((index, text))
+            if len(selected) >= limit:
+                break
+    return tuple(text for _index, text in sorted(selected))
+
+
+def _transition_material_score(value: str) -> int:
+    text = clean_text(value).casefold()
+    score = 0
+    for pattern, weight in (
+        (r"\b(?:accepted|approved|declined|denied|rejected|qualified|eligible|ineligible|decided)\b", 3),
+        (r"\b(?:scheduled|completed|closed|final|published|delivered|sent|received)\b", 3),
+        (r"\b(?:blocked|stale|missing|invalid|failed|error|returned|revised|corrected)\b", 3),
+        (r"\b(?:draft|open|started|submitted|created|ready|reviewed)\b", 1),
+    ):
+        if re.search(pattern, text):
+            score += weight
+    return score
+
+
+def _state_material_score(value: str) -> int:
+    text = clean_text(value).casefold()
+    score = 0
+    for pattern, weight in (
+        (r"\b(?:validation|validated|validates?|completeness|complete)\b", 3),
+        (r"\b(?:missing|blocked|blocker|invalid|correction|recovery)\b", 3),
+        (r"\b(?:provenance|source|evidence|attachment|uploaded|document)\b", 3),
+        (r"\b(?:access|permission|privacy|sensitive|retention|deletion|consent)\b", 3),
+        (r"\b(?:lifecycle|history|timeline|transition|status)\b", 2),
+        (r"\b(?:visibility|visible|reviewable|audit|traceable|replay)\b", 2),
+    ):
+        if re.search(pattern, text):
+            score += weight
+    return score
+
+
+def _material_state_sentence(*, role: str, material_state: str) -> str:
+    if not material_state:
+        return ""
+    if role == "read_model":
+        return f"It should also keep {material_state} visible enough for someone to understand the view"
+    if role == "state_store":
+        return f"It should also keep {material_state} attached to the record instead of leaving those facts implicit"
+    if role == "evidence":
+        return f"It should also keep {material_state} connected to the evidence trail"
+    if role in {"entry", "recovery"}:
+        return f"It should also keep {material_state} visible before the path moves on"
+    return f"It should also keep {material_state} visible enough to review"
+
+
+def _present_verb(subject: str, *, singular: str, plural: str) -> str:
+    text = clean_text(subject).casefold()
+    if " and " in text or "," in text:
+        return plural
+    if re.search(r"\b(?:items|outputs|records|results|states|details|fields|entries|events|requests)\b", text):
+        return plural
+    return singular
 
 
 def _human_join(values: Sequence[str]) -> str:

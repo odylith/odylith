@@ -236,7 +236,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   to `B-003` and `D-002,D-003,D-004`, Scenario Replay Harness to `B-004` and
   `D-005`; host-authored components without component-level diagram refs no
   longer inherit system-context/program-wave diagrams. Proof:
-  `python3 -m pytest tests/unit/runtime/test_greenfield_proposals.py
+  `.venv/bin/python -m pytest tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_component_authoring.py
   tests/unit/runtime/test_governed_artifact_tribunal.py -q` (`39 passed`).
 - 2026-05-08 project-first UX deepening made proposal text render a fuller
@@ -245,12 +245,12 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   per-layer project reality, project design board rows, host-independent
   "customize by saying" examples, and apply/create closeouts that label the
   child workstream as a future implementation lane after gates instead of an
-  immediate coding instruction. Proof: `python3 -m pytest
+  immediate coding instruction. Proof: `.venv/bin/python -m pytest
   tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
   tests/unit/runtime/test_component_authoring.py
   tests/unit/install/test_local_release_smoke.py -q` (`58 passed`);
-  `python3 -m py_compile` passed for the touched greenfield UX modules and
+  `.venv/bin/python -m py_compile` passed for the touched greenfield UX modules and
   release smoke script.
 - 2026-05-08 traceability writer hardening fixed the remaining applied-Radar
   sludge discovered by fresh external-domain temp-repo proof: structured risks,
@@ -260,12 +260,12 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   longer split into lowercase fragments. Proof: source-local `greenfield
   propose` produced 270-line project-first text with 24 project-intelligence
   layers, source-local apply wrote all four external-domain Radar workstreams with no
-  shallow-fragment hits, `python3 -m pytest
+  shallow-fragment hits, `.venv/bin/python -m pytest
   tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
   tests/unit/runtime/test_component_authoring.py
   tests/unit/install/test_local_release_smoke.py -q` passed (`58 passed`), and
-  `python3 -m py_compile` passed for the touched greenfield modules.
+  `.venv/bin/python -m py_compile` passed for the touched greenfield modules.
 - 2026-05-08 Atlas UX deepening made the default greenfield diagram suite
   act like an architecture review board instead of a box-and-arrow sketch.
   Canonical diagram rows now carry `review_focus`, `operator_question`, and
@@ -275,12 +275,12 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   directly inside the diagrams. Proof: source-local `greenfield propose` for
   an external-domain fixture rendered 290 lines with per-diagram summary/review/
   question/gate guidance, canonical JSON carried five annotated Atlas rows, and
-  `python3 -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py
+  `.venv/bin/python -m pytest tests/unit/runtime/test_greenfield_atlas_contract.py
   tests/unit/runtime/test_greenfield_proposals.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
   tests/unit/runtime/test_component_authoring.py
   tests/unit/install/test_local_release_smoke.py -q` passed (`69 passed`) plus
-  `python3 -m py_compile` for the touched proposal rendering/scaffold modules.
+  `.venv/bin/python -m py_compile` for the touched proposal rendering/scaffold modules.
 - 2026-05-08 greenfield anti-slop hardening removed the residual applied-Radar
   weak spots found by a fresh external-domain audit: proposal-level risks are now
   domain-specific structured records with class, severity, trigger,
@@ -289,7 +289,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   validated; malformed generated ownership prose such as `owns Own ...` is
   rejected; parent workstreams use program-level ontology instead of repeating
   child implementation nouns; proposal and applied Radar risk rendering preserve
-  the structured risk fields. Proof: `python3 -m pytest
+  the structured risk fields. Proof: `.venv/bin/python -m pytest
   tests/unit/runtime/test_greenfield_atlas_contract.py
   tests/unit/runtime/test_greenfield_host_routing.py
   tests/unit/runtime/test_greenfield_intelligence_schema.py
@@ -635,11 +635,48 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   fresh external consumer create run that produced Radar, Registry, Atlas,
   release, Compass memory, and refreshed shell surfaces end to end without
   storing the external product's domain labels in Odylith governance truth.
+- 2026-06-02 post-confirm semantic-render hardening moved the remaining
+  first-path action, visible-result, and coordinated-verb cleanup into shared
+  domain-neutral grammar and semantic-quality gates. First-path parsing now
+  lives in `greenfield_first_path_semantics.py` so semantic rendering stays
+  separate from title normalization, release classification, and slop scanning.
+  Confirmed create now
+  rejects role/action splices, parser debris, activity-shaped actor names,
+  framework proof scaffolds, bare outcome nouns, component-boundary boilerplate,
+  and finite action drift before Radar workstreams, Registry components, Atlas
+  labels, runtime JSON, or project dashboard copy can be written. The
+  requester/reviewer case keeps post-result reviewer follow-up out of the
+  requester first-slice prose while multi-actor pre-result workflows remain
+  intact. Proof: `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py
+  tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
+  tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py
+  tests/unit/runtime/test_greenfield_artifact_language_quality.py` passed
+  (`67 passed`); `.venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed
+  (`1 passed`) with the confirmed-create gate under 30 seconds and semantic
+  slop checks enabled; `.venv/bin/python -m pytest -q
+  tests/integration/runtime/test_project_tab_browser.py` passed (`2 passed`);
+  an ad hoc temp-repo create measurement completed in 11.67 seconds with six
+  diagrams, no missing assets, and no slop hits.
 
 ## Test Strategy
-- Run focused unit tests for domain intelligence, host routing, component authoring, CLI dispatch, show capabilities, and Compass transaction filtering.
-- Run governance validators for Casebook, backlog, plan binding/traceability as touched, release migration gate, and refreshed Radar/Registry/Atlas/Compass surfaces.
-- Run headless browser smoke over the regenerated dashboards so the new records and the timeline-audit fix are visible without layout regressions.
+- Run focused unit tests for domain intelligence, host routing, component
+  authoring, CLI dispatch, show capabilities, and Compass transaction filtering
+  with the repo-local interpreter, for example `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py`.
+- For confirmed-create speed and artifact quality, run `.venv/bin/python -m
+  pytest -q tests/integration/runtime/test_greenfield_create_performance.py`;
+  it must stay under 30 seconds after confirmation and reject generated
+  semantic slop in the create payload.
+- Run governance validators for Casebook, backlog, plan binding/traceability as
+  touched, release migration gate, and refreshed Radar/Registry/Atlas/Compass
+  surfaces.
+- Run headless browser smoke over the regenerated dashboards so the new records
+  and the timeline-audit fix are visible without layout regressions.
 
 ## Open Questions
 - Should a future signed domain-pack marketplace augment host reasoning with
