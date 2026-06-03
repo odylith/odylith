@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_component_contract import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import component_spec_preflight_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
@@ -34,7 +35,7 @@ def complete_semantic_model(
             state_object=_clean(intent.get("state_object")) or state_object,
             first_path=first_path,
             proof_boundary=proof_boundary,
-            components=_dict_rows(proposal.get("components")),
+            components=dict_rows(proposal.get("components")),
             human_actors=text_values(intent.get("human_actors")),
             internal_systems=text_values(intent.get("internal_systems")),
             external_systems=text_values(intent.get("external_systems")),
@@ -112,12 +113,6 @@ def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
         )
         issues.extend(f"diagram row {index}: {issue}" for issue in decision.issues)
     return issues
-
-
-def _dict_rows(value: Any) -> list[dict[str, Any]]:
-    if not isinstance(value, list):
-        return []
-    return [row for row in value if isinstance(row, dict)]
 
 
 __all__ = ["complete_semantic_model", "preflight_issues"]

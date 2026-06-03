@@ -1104,6 +1104,18 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   deselected in 0.21s`); standard greenfield artifact-quality proof passed
   (`146 passed in 232.66s`); and confirmed-create performance proof passed (`1
   passed in 11.42s`).
+- 2026-06-03 dict-row coercion follow-through added `dict_rows` to the same
+  shared row owner and removed duplicate `_dict_rows` clones from confirmed
+  completion and confirmed prewrite gating. Mutable generated rows now share
+  the same row-coercion contract as mapping rows (`greenfield_rows.py`: 18
+  lines; `greenfield_confirmed_completion.py`: 587 lines;
+  `greenfield_confirmed_prewrite_gate.py`: 118 lines), and
+  `tests/unit/runtime/test_greenfield_row_coercion.py` prevents both private
+  `_mapping_rows` and `_dict_rows` helpers from returning. Proof: syntax proof
+  passed for the touched row/completion/prewrite modules; focused row and
+  confirmed-repair proof passed (`4 passed in 11.18s`); standard greenfield
+  artifact-quality proof passed (`146 passed in 242.54s`); and
+  confirmed-create performance proof passed (`1 passed in 11.61s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

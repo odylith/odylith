@@ -11,6 +11,7 @@ GREENFIELD_ROWS_PATH = DOMAIN_INTELLIGENCE / "greenfield_rows.py"
 def test_greenfield_mapping_row_coercion_stays_in_shared_owner() -> None:
     rows_source = GREENFIELD_ROWS_PATH.read_text(encoding="utf-8")
     assert "def mapping_rows" in rows_source
+    assert "def dict_rows" in rows_source
     assert not (DOMAIN_INTELLIGENCE / "greenfield_post_confirm_rows.py").exists()
 
     for path in (
@@ -25,3 +26,11 @@ def test_greenfield_mapping_row_coercion_stays_in_shared_owner() -> None:
         source = path.read_text(encoding="utf-8")
         assert "def _mapping_rows" not in source
         assert "from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows" in source
+
+    for path in (
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_completion.py",
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_prewrite_gate.py",
+    ):
+        source = path.read_text(encoding="utf-8")
+        assert "def _dict_rows" not in source
+        assert "from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows" in source

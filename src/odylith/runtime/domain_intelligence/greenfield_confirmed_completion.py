@@ -41,6 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_se
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
+from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
@@ -220,8 +221,8 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
 
 
 def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
-    rows = _dict_rows(proposal.get("backlog"))
-    components = _dict_rows(proposal.get("components"))
+    rows = dict_rows(proposal.get("backlog"))
+    components = dict_rows(proposal.get("components"))
     if len(rows) < 2 or not components:
         return False
     by_id = {_clean(component.get("component_id")): component for component in components if _clean(component.get("component_id"))}
@@ -426,7 +427,7 @@ def _repair_backlog_success_language(proposal: dict[str, Any], *, release_select
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     changed = False
-    for row in _dict_rows(proposal.get("backlog")):
+    for row in dict_rows(proposal.get("backlog")):
         title = _clean(row.get("title")) or label
         metrics = [
             _sentence(f"{title} proves the first path in release {release}: a representative user can {action}, and the product reaches {outcome}.", limit=700),
@@ -471,7 +472,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
     outcome = completion_text.outcome_phrase(proposal)
     if _validation_strategy_needs_repair(proposal):
         changed |= _repair_validation_strategy(proposal, release_selector=release_selector)
-    for row in _dict_rows(proposal.get("backlog")):
+    for row in dict_rows(proposal.get("backlog")):
         title = _clean(row.get("title")) or completion_text.project_title(proposal)
         changed |= _repair_bad_scalar(
             row,
@@ -535,7 +536,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
                 ],
             )
     changed |= repair_component_sentence_lists(proposal)
-    for index, row in enumerate(_dict_rows(proposal.get("diagrams")), start=1):
+    for index, row in enumerate(dict_rows(proposal.get("diagrams")), start=1):
         changed |= _repair_bad_scalar(row, "title", fallback=completion_text.diagram_title(row, proposal=proposal, index=index))
         changed |= _repair_bad_scalar(
             row,
@@ -567,12 +568,6 @@ def _repair_domain_intelligence_metrics(
             f"{title} keeps {state_object} clear when the result is blocked, corrected, or replayed.",
         ],
     )
-
-
-def _dict_rows(value: Any) -> list[dict[str, Any]]:
-    if not isinstance(value, list):
-        return []
-    return [row for row in value if isinstance(row, dict)]
 
 
 def _ensure_text(row: dict[str, Any], key: str, default: str, *, repair_bad_text: bool = False) -> bool:
