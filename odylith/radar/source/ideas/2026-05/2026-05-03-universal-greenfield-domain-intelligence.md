@@ -793,6 +793,25 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.54s`).
+- 2026-06-03 confirmed-completion text-model decomposition moved confirmed-create
+  phrase derivation, workstream labels and sentences, component/backlog lexical
+  matching, diagram/project title derivation, first-path/proof/state summaries,
+  actor summaries, and keyword extraction into
+  `greenfield_confirmed_completion_text_model.py`. The completion parent now
+  calls that owner directly, removed dead pass-through component wrappers for
+  interfaces/dependencies/validation, and dropped below the 800-line soft limit
+  (`greenfield_confirmed_completion.py`: 1068 to 793 lines), while
+  `test_greenfield_confirmed_repair.py` pins the text-model owner split. Proof:
+  `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed;
+  `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed (`3 passed in
+  9.95s`); the broader greenfield artifact-quality bundle passed (`118 passed
+  in 310.95s`); and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 10.08s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

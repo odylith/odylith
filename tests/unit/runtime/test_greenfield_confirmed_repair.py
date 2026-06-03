@@ -23,19 +23,28 @@ CONFIRMED_PREWRITE_GATE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/g
 CONFIRMED_COMPLETION_QUALITY_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_quality.py"
 )
+CONFIRMED_COMPLETION_TEXT_MODEL_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py"
+)
 
 
 def test_confirmed_completion_prewrite_gate_stays_in_dedicated_owner() -> None:
     parent_source = CONFIRMED_COMPLETION_PATH.read_text(encoding="utf-8")
     gate_source = CONFIRMED_PREWRITE_GATE_PATH.read_text(encoding="utf-8")
     quality_source = CONFIRMED_COMPLETION_QUALITY_PATH.read_text(encoding="utf-8")
+    text_model_source = CONFIRMED_COMPLETION_TEXT_MODEL_PATH.read_text(encoding="utf-8")
 
-    assert len(parent_source.splitlines()) < 1200
+    assert len(parent_source.splitlines()) < 800
     assert "def _artifact_issues" not in parent_source
     assert "run_greenfield_tribunal" not in parent_source
     assert "def _text_needs_repair" not in parent_source
     assert "def _sequence_needs_repair" not in parent_source
     assert "def _has_bad_tail" not in parent_source
+    assert "def _project_title" not in parent_source
+    assert "def _component_label" not in parent_source
+    assert "def _keywords" not in parent_source
+    assert "def _component_interfaces" not in parent_source
+    assert "greenfield_confirmed_completion_text_model as completion_text" in parent_source
     assert "preflight_issues as _preflight_issues" in parent_source
     assert "text_needs_repair as _text_needs_repair" in parent_source
     assert "def preflight_issues" in gate_source
@@ -43,6 +52,10 @@ def test_confirmed_completion_prewrite_gate_stays_in_dedicated_owner() -> None:
     assert "def text_needs_repair" in quality_source
     assert "def sequence_needs_repair" in quality_source
     assert "def validation_strategy_needs_repair" in quality_source
+    assert "def project_title" in text_model_source
+    assert "def component_label" in text_model_source
+    assert "def keywords" in text_model_source
+    assert "def primary_component_for_backlog" in text_model_source
 
 
 def _dirty_complete_contract() -> dict[str, object]:
