@@ -880,6 +880,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   and `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 13.49s`).
+- 2026-06-03 component semantic-context decomposition moved context-derived
+  phrase extraction, late first-path/proof backfill selection, context anchor
+  expansion, actor/action prefix removal, and context-backfill decisions into
+  `greenfield_component_semantic_context.py`. The semantic contract owner now
+  focuses on assembling component-local Registry contracts from accepted product
+  facts (`greenfield_component_semantic_contract.py`: 863 to 627 lines), while
+  `test_greenfield_component_semantic_contract_quality.py` pins the context
+  owner and parent soft-limit ceiling. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py
+  src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py
+  tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py`
+  passed; focused component semantic/spec proof passed (`11 passed in 0.41s`);
+  the broader greenfield artifact-quality bundle passed (`128 passed in
+  345.24s`); and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.45s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

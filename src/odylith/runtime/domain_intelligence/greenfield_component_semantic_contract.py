@@ -13,6 +13,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     accepted_inputs_text as _accepted_inputs_text,
 )
@@ -106,7 +107,7 @@ def derive_component_semantic_contract(
     description = _description(row)
     proposal_context = _proposal_context(proposal)
     local_text = " ".join(text for text in (label, description, proposal_context) if text)
-    clauses = _clauses(description or label)
+    clauses = semantic_context.clauses(description or label)
     action_terms = _actions(" ".join(text for text in (label, description) if text)) or _actions(local_text)
     description_phrases = _clean_artifact_phrases(
         [
@@ -118,7 +119,7 @@ def derive_component_semantic_contract(
     )
     label_terms = _content_terms(label)
     description_terms = _content_terms(description)
-    context_phrases = _context_object_phrases(
+    context_phrases = semantic_context.context_object_phrases(
         proposal_context,
         label_terms=label_terms,
         description_terms=description_terms,
@@ -126,17 +127,17 @@ def derive_component_semantic_contract(
     label_phrases = _label_compound_phrases(label)
     bridge_phrases = _bridge_phrases(label, description)
     lifecycle_phrases = _lifecycle_phrases(label, description)
-    context_required_phrases = _context_required_phrases(
+    context_required_phrases = semantic_context.context_required_phrases(
         context_phrases,
         label_terms=label_terms,
         description_terms=description_terms,
     )
-    context_compound_phrases = _context_anchor_compounds(
+    context_compound_phrases = semantic_context.context_anchor_compounds(
         proposal_context,
         anchor_terms=unique_text([*label_terms, *description_terms]),
     )
     local_phrases = [*description_phrases, *label_phrases, *bridge_phrases, *lifecycle_phrases]
-    needs_context_backfill = _needs_context_backfill(
+    needs_context_backfill = semantic_context.needs_context_backfill(
         description=description,
         description_phrases=description_phrases,
         context_required_phrases=context_required_phrases,
@@ -318,19 +319,6 @@ def _proposal_context(proposal: Mapping[str, Any]) -> str:
     return " ".join(_clean(value) for value in values if _clean(value))
 
 
-def _clauses(value: str) -> list[str]:
-    text = _clean(value)
-    text = re.sub(r"\brationale\s*:\s*.+$", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^\s*owns\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"\brelevant\s+behavior\s*:\s*", "", text, flags=re.IGNORECASE)
-    parts = re.split(r"[,;.]|\band\b|\bthen\b", text, flags=re.IGNORECASE)
-    return unique_text(
-        _trim_phrase(re.sub(r"^(?:and|or|the|a|an)\s+", "", part, flags=re.IGNORECASE))
-        for part in parts
-        if _trim_phrase(part)
-    )
-
-
 def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
     rows: list[str] = []
     for clause in clauses:
@@ -421,214 +409,6 @@ def _relation_phrases(value: str) -> list[str]:
     return unique_text(rows)
 
 
-def _context_object_phrases(
-    value: str,
-    *,
-    label_terms: Sequence[str],
-    description_terms: Sequence[str],
-) -> list[str]:
-    anchors = set(label_terms[:5]) | set(description_terms[:8])
-    anchors = _expanded_context_anchors(anchors)
-    rows: list[str] = []
-    carry = 0
-    carry_base: tuple[str, ...] = ()
-    for clause in _clauses(value):
-        stripped_clause = _strip_action(_object_clause_focus(clause))
-        stripped_clause = re.sub(
-            r"\b(?:before|after|while|because|unless|without)\b.+$",
-            "",
-            stripped_clause,
-            flags=re.IGNORECASE,
-        )
-        terms = _drop_actor_action_lead(_content_terms(stripped_clause or clause))
-        if re.search(r"\balign(?:s|ed|ing)?\b", clause, flags=re.IGNORECASE) and re.search(
-            r"\btimeline\b", clause, flags=re.IGNORECASE
-        ):
-            rows.append("aligned timeline")
-        anchored = bool(terms and (not anchors or set(terms) & anchors))
-        if anchored:
-            carry = 3 if _opens_detail_list(clause) else 0
-            carry_base = _context_carry_base(
-                terms,
-                label_terms=label_terms,
-                description_terms=description_terms,
-            )
-        elif carry > 0:
-            carry -= 1
-        if not terms or not (anchored or carry > 0):
-            continue
-        if anchored:
-            rows.append(" ".join(terms[:4]))
-            if len(terms) > 4:
-                rows.append(" ".join(terms[2:6]))
-            continue
-        if carry_base:
-            detail_terms = [term for term in terms[:3] if term not in carry_base]
-            if detail_terms:
-                rows.append(" ".join((*carry_base, *detail_terms)))
-        rows.append(" ".join(terms[:4]))
-    return unique_text(rows)
-
-
-def _context_required_phrases(
-    values: Sequence[str],
-    *,
-    label_terms: Sequence[str],
-    description_terms: Sequence[str],
-    limit: int = 5,
-) -> list[str]:
-    """Select late path/proof phrases that add local detail beyond the label."""
-
-    anchors = set(label_terms[:6]) | set(description_terms[:8])
-    if not anchors:
-        return []
-    expanded = _expanded_context_anchors(anchors)
-    candidates: list[tuple[int, int, str]] = []
-    for index, phrase in enumerate(values):
-        terms = set(_content_terms(phrase))
-        if not terms or not terms & expanded or not terms - anchors:
-            continue
-        lead = _content_terms(phrase)[:1]
-        score = 0
-        score += len(terms & anchors) * 10
-        score += len(terms & expanded) * 4
-        score += len(terms & _ARTIFACT_CARRIER_TERMS) * 8
-        if 2 <= len(terms) <= 5:
-            score += 4
-        if lead and lead[0] in {"successful", "user"}:
-            score -= 6
-        candidates.append((-score, index, phrase))
-    return unique_text(phrase for _score, _index, phrase in sorted(candidates)[:limit])
-
-
-def _needs_context_backfill(
-    *,
-    description: str,
-    description_phrases: Sequence[str],
-    context_required_phrases: Sequence[str],
-) -> bool:
-    """Return whether local text needs first-path field detail backfill."""
-
-    if not _clean(description):
-        return True
-    broad_detail = re.compile(
-        r"\b(?:central\s+object|details?|facts?|context|data|payload|information)\b",
-        flags=re.IGNORECASE,
-    )
-    if broad_detail.search(_clean(description)) or any(broad_detail.search(_clean(phrase)) for phrase in description_phrases):
-        return True
-    local_terms = set(_content_terms(description))
-    context_text = " ".join(context_required_phrases)
-    if local_terms & {"measurement", "metric", "metrics", "value", "unit"} and re.search(
-        r"\b(?:baseline|follow-up|followup|measurement|metric|value|unit|source)\b",
-        context_text,
-        flags=re.IGNORECASE,
-    ):
-        return True
-    if any(set(_content_terms(phrase)) & _ARTIFACT_CARRIER_TERMS for phrase in description_phrases):
-        return False
-    return bool(len(description_phrases) <= 3 and context_required_phrases)
-
-
-def _context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: int = 8) -> list[str]:
-    """Extract compact local compounds around label or description anchors."""
-
-    anchors = set(anchor_terms)
-    if not anchors:
-        return []
-    rows: list[str] = []
-    for clause in re.split(r"(?<=[.!?])\s+|[,;]", _clean(value)):
-        clause = _object_clause_focus(clause)
-        clause = re.sub(
-            r"\b(?:before|after|while|because|unless|without)\b.+$",
-            "",
-            clause,
-            flags=re.IGNORECASE,
-        )
-        terms = _drop_actor_action_lead(_content_terms(clause))
-        if len(terms) < 2:
-            continue
-        for index, term in enumerate(terms):
-            if term not in anchors:
-                continue
-            start = max(0, index - 2)
-            phrase_terms = terms[start : index + 1]
-            if len(phrase_terms) >= 2 and set(phrase_terms) - anchors:
-                rows.append(" ".join(phrase_terms))
-            if index + 1 < len(terms):
-                phrase_terms = terms[index : min(len(terms), index + 3)]
-                if len(phrase_terms) >= 2 and set(phrase_terms) - anchors:
-                    rows.append(" ".join(phrase_terms))
-            if len(rows) >= limit:
-                return unique_text(rows)
-    return unique_text(rows)
-
-
-def _opens_detail_list(value: str) -> bool:
-    """Return whether a clause is likely followed by list-item details."""
-
-    return bool(re.search(r"\b(?:for|including|includes|with)\b", _clean(value), flags=re.IGNORECASE))
-
-
-def _context_carry_base(
-    terms: Sequence[str],
-    *,
-    label_terms: Sequence[str],
-    description_terms: Sequence[str],
-) -> tuple[str, ...]:
-    """Return a compact local noun base for list items following an anchored clause."""
-
-    anchors = set(label_terms[:5]) | set(description_terms[:8])
-    if not terms:
-        return ()
-    for index, term in enumerate(terms):
-        if term not in anchors:
-            continue
-        left = max(0, index - 1)
-        right = min(len(terms), index + 2)
-        candidate = tuple(terms[left:right])
-        if len(candidate) >= 2:
-            return candidate[:2]
-        return (term,)
-    return tuple(terms[:2])
-
-
-def _expanded_context_anchors(anchors: set[str]) -> set[str]:
-    """Add generic action neighbors so thin labels can find their path clause."""
-
-    expanded = set(anchors)
-    if {"intake", "capture", "entry", "packet"} & anchors:
-        expanded.update({"attach", "create", "draft", "import", "receive", "submit", "upload", "validate"})
-    if {"follow", "list", "selected", "selection", "watch", "watchlist"} & anchors:
-        expanded.update({"activity", "item", "selected", "signal", "source", "watchlist"})
-    if {"status", "view", "dashboard", "timeline", "progress", "analytics"} & anchors:
-        expanded.update(
-            {
-                "display",
-                "entry",
-                "event",
-                "explain",
-                "history",
-                "measurement",
-                "metric",
-                "outcome",
-                "point",
-                "record",
-                "show",
-                "summary",
-                "trend",
-                "view",
-            }
-        )
-    if {"metric", "measurement", "normalization", "generation", "signal", "quality"} & anchors:
-        expanded.update({"aligned", "data", "reading", "readiness", "signal", "summary", "timeline", "trend", "value"})
-    if {"quality", "review", "assessment", "check"} & anchors:
-        expanded.update({"check", "evidence", "rule", "uncertainty", "validation"})
-    if {"decision", "ledger", "journal", "rationale"} & anchors:
-        expanded.update({"decide", "decision", "outcome", "rationale", "recheck", "release"})
-    return expanded
-
-
 def _actions(value: str) -> list[str]:
     text = _clean(value).casefold()
     result: list[str] = []
@@ -651,7 +431,7 @@ def _bridge_phrases(label: str, description: str) -> list[str]:
     """Derive compact artifact nouns from label descriptors and local details."""
 
     label_terms = _content_terms(label)
-    phrases = _object_phrases(_clauses(description), fallback=label)
+    phrases = _object_phrases(semantic_context.clauses(description), fallback=label)
     if not label_terms or not phrases:
         return []
     description_terms = set(_content_terms(description))
@@ -779,8 +559,8 @@ def _prioritize_object_phrases(
 ) -> list[str]:
     """Prefer phrases that add intent-derived detail to the component boundary."""
 
-    label_set = _expanded_context_anchors(set(label_terms[:7]))
-    description_set = _expanded_context_anchors(set(description_terms[:10]))
+    label_set = semantic_context.expanded_context_anchors(set(label_terms[:7]))
+    description_set = semantic_context.expanded_context_anchors(set(description_terms[:10]))
 
     def rank(index: int, phrase: str) -> tuple[int, int, int, int]:
         terms = _content_terms(phrase)
@@ -832,22 +612,6 @@ def _summary_object_phrases(values: Sequence[str], *, required_phrases: Sequence
         if phrase not in result:
             result.append(phrase)
     return result[:limit]
-
-
-def _drop_actor_action_lead(terms: Sequence[str]) -> list[str]:
-    """Remove actor/action prefixes that are not artifact nouns."""
-
-    result = list(terms)
-    if len(result) >= 2 and _looks_actor_term(result[0]) and _looks_action_term(result[1]):
-        result = result[2:]
-    if len(result) >= 2 and _looks_action_term(result[0]) and result[0] not in _ARTIFACT_CARRIER_TERMS:
-        result = result[1:]
-    return result
-
-
-def _looks_actor_term(value: str) -> bool:
-    token = str(value or "").casefold()
-    return bool(re.search(r"(?:er|or|ist|ian|ant|ee)$", token))
 
 
 def _phrase(values: Sequence[str]) -> str:

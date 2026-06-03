@@ -1,11 +1,31 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
     derive_component_semantic_contract,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
+
+
+ROOT = Path(__file__).resolve().parents[3]
+SEMANTIC_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py"
+SEMANTIC_CONTEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py"
+
+
+def test_component_semantic_context_stays_in_dedicated_owner() -> None:
+    contract_source = SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
+    context_source = SEMANTIC_CONTEXT_PATH.read_text(encoding="utf-8")
+
+    assert len(contract_source.splitlines()) < 800
+    assert "greenfield_component_semantic_context as semantic_context" in contract_source
+    assert "def _context_object_phrases" not in contract_source
+    assert "def _context_required_phrases" not in contract_source
+    assert "def _needs_context_backfill" not in contract_source
+    assert "def context_object_phrases" in context_source
+    assert "def context_required_phrases" in context_source
+    assert "def needs_context_backfill" in context_source
 
 
 def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns() -> None:
