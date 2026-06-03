@@ -825,6 +825,25 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   tests/unit/runtime/test_greenfield_component_spec_quality.py
   tests/unit/runtime/test_greenfield_confirmed_surfaces.py::test_confirmed_greenfield_noun_phrase_responsibilities_stay_grammatical`
   (`9 passed in 0.34s`).
+- 2026-06-03 confirmed-backlog text-model decomposition moved Radar
+  workstream phrase derivation, actor label extraction, first-action/outcome
+  clauses, proof focus selection, problem fallback wording, product-term
+  overlap checks, and rationale-line generation into
+  `greenfield_confirmed_backlog_text_model.py`. The Radar row builder now
+  stays focused on program/release/backlog record assembly
+  (`greenfield_confirmed_backlog.py`: 911 to 503 lines), while
+  `test_greenfield_artifact_language_quality.py` pins the text-model owner and
+  parent soft-limit ceiling. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py
+  tests/unit/runtime/test_greenfield_artifact_language_quality.py` passed;
+  focused artifact-language/component proof passed (`15 passed in 3.04s`);
+  the broader greenfield artifact-quality bundle passed (`120 passed in
+  311.68s`); and `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 10.09s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

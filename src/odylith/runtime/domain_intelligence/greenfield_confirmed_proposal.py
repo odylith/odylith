@@ -14,8 +14,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import con
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_program
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_release_plan
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import join_actor_labels
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import proof_claim_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import join_actor_labels
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import (
     confirmed_components,
     confirmed_project_brief,

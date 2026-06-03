@@ -1,14 +1,36 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import program_problem
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import _program_problem
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.governance.component_authoring import _public_what_it_is
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 from odylith.runtime.project_intelligence.product_story_cards import build_greenfield_story_cards
+
+
+ROOT = Path(__file__).resolve().parents[3]
+CONFIRMED_BACKLOG_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py"
+CONFIRMED_BACKLOG_TEXT_MODEL_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py"
+)
+
+
+def test_confirmed_backlog_text_model_stays_in_dedicated_owner() -> None:
+    parent_source = CONFIRMED_BACKLOG_PATH.read_text(encoding="utf-8")
+    text_model_source = CONFIRMED_BACKLOG_TEXT_MODEL_PATH.read_text(encoding="utf-8")
+
+    assert len(parent_source.splitlines()) < 800
+    assert "greenfield_confirmed_backlog_text_model as backlog_text" in parent_source
+    assert "def _program_problem" not in parent_source
+    assert "def _sentence_fragment" not in parent_source
+    assert "def _first_action_clause" not in parent_source
+    assert "def program_problem" in text_model_source
+    assert "def sentence_fragment" in text_model_source
+    assert "def first_action_clause" in text_model_source
 
 
 def test_greenfield_story_cards_keep_action_grammar_and_visible_outcome() -> None:
@@ -209,7 +231,7 @@ Release 0.0.1 succeeds when one owner can add the asset, log usage, receive a gr
 
 
 def test_greenfield_program_problem_fallback_reads_like_a_product_problem() -> None:
-    problem = _program_problem(
+    problem = program_problem(
         label="Example Product",
         actors="Primary User, Supporting Reviewer",
         story="Example Product organizes a first release.",

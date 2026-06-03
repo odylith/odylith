@@ -7,9 +7,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
     rendered_component_spec_quality_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import _first_action_clause
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import _sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 
@@ -237,9 +237,9 @@ def test_greenfield_quality_gate_rejects_generic_governance_posture_filler() -> 
 
 def test_greenfield_first_action_clause_stops_before_next_product_action() -> None:
     assert (
-        _first_action_clause(
+        first_action_clause(
             "A requester submits a maintenance request, the product verifies required details, assigns a technician, estimates cost and timing, and notifies the requester."
         )
         == "A requester submits a maintenance request"
     )
-    assert _sentence_fragment("Validated intake request and downstream handoff") == "validated intake request and downstream handoff"
+    assert sentence_fragment("Validated intake request and downstream handoff") == "validated intake request and downstream handoff"

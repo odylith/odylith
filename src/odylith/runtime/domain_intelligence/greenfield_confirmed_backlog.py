@@ -2,24 +2,19 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-import re
+from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.common.prose_grammar import base_action_clause
-from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import system_component_name
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items as _join_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import problem_text as _problem_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import _has_mechanical_need_to_turn
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import (
     build_workstream_domain_intelligence,
 )
@@ -36,33 +31,35 @@ def confirmed_workstream_titles(
     human_actors: list[str],
 ) -> tuple[str, str, str]:
     labels = [
-        _workstream_subject(str(row.get("label", "")).strip())
+        backlog_text.workstream_subject(str(row.get("label", "")).strip())
         for row in components
         if str(row.get("label", "")).strip()
     ]
-    actor = _lead_actor_label(human_actors)
-    action = _imperative_action_phrase(first_path)
+    actor = backlog_text.lead_actor_label(human_actors)
+    action = backlog_text.imperative_action_phrase(first_path)
     state_label = _domain_object_label(state_object, fallback=f"{label} state")
     proof_label = labels[-1] if len(labels) > 2 else (labels[0] if labels else label)
-    outcome = _first_path_outcome(first_path, proof_boundary=proof_boundary)
-    if outcome and not _generic_title_outcome(outcome):
-        workflow_actor = actor or _actor_from_action(action) or "user"
+    outcome = backlog_text.first_path_outcome(first_path, proof_boundary=proof_boundary)
+    if outcome and not backlog_text.generic_title_outcome(outcome):
+        workflow_actor = actor or backlog_text.actor_from_action(action) or "user"
         workflow = f"Let {workflow_actor} reach {outcome}"
     elif action:
-        action_actor, action_tail = _actor_action_parts(action)
+        action_actor, action_tail = backlog_text.actor_action_parts(action)
         workflow_actor = action_actor or actor or "user"
-        workflow_action = _base_leading_action(action_tail or _strip_actor_prefix(action, workflow_actor) or action)
+        workflow_action = backlog_text.base_leading_action(
+            action_tail or backlog_text.strip_actor_prefix(action, workflow_actor) or action
+        )
         workflow = f"Let {workflow_actor} {workflow_action}"
     elif labels:
         workflow = f"Make {labels[0]} usable in the first path"
     else:
         workflow = f"Make {label} usable in the first path"
-    state_changer = _state_changer_label(labels, state_label=state_label)
+    state_changer = backlog_text.state_changer_label(labels, state_label=state_label)
     if state_changer:
         boundary = f"Keep {state_label} clear after {state_changer} changes it"
     else:
         boundary = f"Keep {state_label} clear and reviewable"
-    proof_subject = state_label or _proof_title_object(proof_boundary) or proof_label
+    proof_subject = state_label or backlog_text.proof_title_object(proof_boundary) or proof_label
     proof = f"Show why {proof_subject} can be trusted"
     return (
         _title_label(workflow) or workflow,
@@ -215,24 +212,24 @@ def confirmed_backlog_rows(
     opportunity_summary = _short_summary(opportunity, limit=360)
     product_view_summary = _short_summary(product_view, limit=360)
     first_path_summary = _short_summary(first_path, limit=380)
-    proof_summary = proof_claim_summary(proof_boundary, limit=340)
+    proof_summary = backlog_text.proof_claim_summary(proof_boundary, limit=340)
     clauses = first_path_clauses(
         first_path_summary,
         proof_boundary=proof_summary,
-        action_fallback=_first_action_clause(first_path_summary) or "complete the accepted product path",
-        capability_fallback=_first_action_clause(first_path_summary) or "complete the accepted product path",
+        action_fallback=backlog_text.first_action_clause(first_path_summary) or "complete the accepted product path",
+        capability_fallback=backlog_text.first_action_clause(first_path_summary) or "complete the accepted product path",
         capability_limit=340,
         outcome_limit=240,
     )
-    actors = join_actor_labels(human_actors) or _short_summary(customer, limit=260) or f"{label} users and reviewers"
+    actors = backlog_text.join_actor_labels(human_actors) or _short_summary(customer, limit=260) or f"{label} users and reviewers"
     non_goal_text = _join_items(non_goals) or "broader automation, live integrations, and production-scale decisions"
-    primary_component = _workstream_subject(_component_label_at(components, 0, fallback=f"{label} first path"))
-    second_component = _workstream_subject(_component_label_at(components, 1, fallback=primary_component))
-    proof_component = _workstream_subject(
-        _component_label_at(components, len(components) - 1, fallback=f"{label} proof review")
+    primary_component = backlog_text.workstream_subject(backlog_text.component_label_at(components, 0, fallback=f"{label} first path"))
+    second_component = backlog_text.workstream_subject(backlog_text.component_label_at(components, 1, fallback=primary_component))
+    proof_component = backlog_text.workstream_subject(
+        backlog_text.component_label_at(components, len(components) - 1, fallback=f"{label} proof review")
     )
     proof_record_label = _title_label(f"{proof_component} proof record") or evidence_label
-    primary_user_action = _sentence_fragment(
+    primary_user_action = backlog_text.sentence_fragment(
         first_path_action_phrase(
             first_path_summary,
             fallback=clauses.action_chain or clauses.model.material_action or "complete the accepted product path",
@@ -240,20 +237,20 @@ def confirmed_backlog_rows(
             limit=180,
         )
     )
-    first_path_entry_text = _sentence_fragment(clauses.model.material_action or primary_user_action or clauses.action_chain)
-    first_path_capability = _capability_action_clause(
-        primary_user_action or _sentence_fragment(clauses.capability_chain) or first_path_entry_text
+    first_path_entry_text = backlog_text.sentence_fragment(clauses.model.material_action or primary_user_action or clauses.action_chain)
+    first_path_capability = backlog_text.capability_action_clause(
+        primary_user_action or backlog_text.sentence_fragment(clauses.capability_chain) or first_path_entry_text
     )
-    first_path_full_capability = _capability_action_clause(_sentence_fragment(clauses.capability_chain) or first_path_capability)
-    outcome_summary = _sentence_fragment(clauses.visible_result) or _first_path_outcome(first_path_summary, proof_boundary=proof_boundary)
-    proof_focus = _proof_focus_phrase(proof_summary, fallback="release decision")
+    first_path_full_capability = backlog_text.capability_action_clause(backlog_text.sentence_fragment(clauses.capability_chain) or first_path_capability)
+    outcome_summary = backlog_text.sentence_fragment(clauses.visible_result) or backlog_text.first_path_outcome(first_path_summary, proof_boundary=proof_boundary)
+    proof_focus = backlog_text.proof_focus_phrase(proof_summary, fallback="release decision")
     dependency_outcome = outcome_summary or "the promised first-path result"
-    first_path_action = _capability_action_clause(primary_user_action or first_path_entry_text or first_path_capability)
-    path_entry_story = _sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
-    metric_actor = _problem_actor_subject(actors, fallback=f"{label} user")
-    downstream_actor = _supporting_actor_label(human_actors)
-    downstream_subject = _problem_actor_subject(downstream_actor, fallback="the next participant") if downstream_actor else "The next participant"
-    parent_problem = _program_problem(
+    first_path_action = backlog_text.capability_action_clause(primary_user_action or first_path_entry_text or first_path_capability)
+    path_entry_story = backlog_text.sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
+    metric_actor = backlog_text.problem_actor_subject(actors, fallback=f"{label} user")
+    downstream_actor = backlog_text.supporting_actor_label(human_actors)
+    downstream_subject = backlog_text.problem_actor_subject(downstream_actor, fallback="the next participant") if downstream_actor else "The next participant"
+    parent_problem = backlog_text.program_problem(
         label=label,
         actors=actors,
         story=product_story,
@@ -264,7 +261,7 @@ def confirmed_backlog_rows(
     parent_opportunity = f"Ship one complete outcome: a representative user can {first_path_action} and use {outcome_summary} to decide what to do next."
     parent_view = f"{label} should feel complete when {actors} can {first_path_action}, see {outcome_summary}, and understand what remains outside the first release."
     first_slice_action = first_path_full_capability or first_path_action
-    if outcome_summary and not _shares_product_terms(first_slice_action, outcome_summary):
+    if outcome_summary and not backlog_text.shares_product_terms(first_slice_action, outcome_summary):
         first_slice = f"Deliver one complete path where a user can {first_slice_action} and see {outcome_summary}."
     else:
         first_slice = f"Deliver one complete path where a user can {first_slice_action}."
@@ -424,336 +421,6 @@ def confirmed_backlog_rows(
     return [parent, workflow, boundary, proof]
 
 
-def proof_claim_summary(value: str, *, limit: int = 260) -> str:
-    text = _short_summary(value, limit=limit).strip(" .")
-    text = re.sub(r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:release\s+[0-9.]+\s+)?(?:is\s+)?proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?proof\s+boundary\s+(?:is|means)\s*:?\s*", "", text, flags=re.IGNORECASE)
-    return text or _short_summary(value, limit=limit).strip(" .")
-
-
-def join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
-    labels: list[str] = []
-    for value in values or []:
-        label = _compact_text(str(value)).split("—", 1)[0].split(":", 1)[0].strip(" .")
-        if label and label.casefold() not in {"other accepted items"}:
-            labels.append(label)
-    selected = list(dict.fromkeys(labels))[:limit]
-    if not selected:
-        return ""
-    return ", ".join(selected)
-
-
-def _actor_from_action(value: str) -> str:
-    actor, _action = _actor_action_parts(value)
-    return actor
-
-
-def _generic_title_outcome(value: str) -> bool:
-    text = _sentence_fragment(value).casefold()
-    return bool(
-        not text
-        or text in {"next action", "next step", "what happens next", "a visible result", "a visible, useful result"}
-        or re.fullmatch(r"(?:a|an|the)?\s*(?:result|outcome|summary|view|status)", text)
-    )
-
-
-def _state_changer_label(labels: Sequence[str], *, state_label: str) -> str:
-    state_terms = _semantic_words(state_label)
-    for label in labels[1:3]:
-        cleaned = _sentence_fragment(label).strip(" .")
-        if not cleaned:
-            continue
-        if re.search(r"\b(?:experience guide|product record|evidence log|release guardrail)\b", cleaned, re.IGNORECASE):
-            continue
-        if not re.search(
-            r"\b(?:approval|assessment|check|comparison|decision|eligibility|evaluation|quality|review|risk|rule|scoring|validation)\b",
-            cleaned,
-            re.IGNORECASE,
-        ):
-            continue
-        label_terms = _semantic_words(cleaned)
-        if state_terms and label_terms and len(state_terms & label_terms) / max(1, min(len(state_terms), len(label_terms))) >= 0.75:
-            continue
-        if re.search(r"\b(?:queue|view|dashboard|summary|report|export|display)\b", cleaned, re.IGNORECASE):
-            continue
-        return cleaned
-    return ""
-
-
-def _semantic_words(value: str) -> set[str]:
-    return {word for word in re.findall(r"[a-z0-9][a-z0-9-]+", _compact_text(value).casefold()) if len(word) > 2}
-
-
-def _lead_actor_label(values: list[str]) -> str:
-    for value in values:
-        text = _compact_text(str(value)).split("—", 1)[0].split(":", 1)[0].strip(" .")
-        text = re.split(r"\b(?:who|that|with|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
-        if not text:
-            continue
-        words = text.split()
-        if len(words) > 4:
-            text = " ".join(words[:4])
-        return _sentence_fragment(text)
-    return "someone"
-
-
-def _supporting_actor_label(values: list[str]) -> str:
-    for value in values[1:]:
-        text = _compact_text(str(value)).split("—", 1)[0].split(":", 1)[0].strip(" .")
-        text = re.split(r"\b(?:who|that|with|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
-        if not text:
-            continue
-        words = text.split()
-        if len(words) > 4:
-            text = " ".join(words[:4])
-        return _sentence_fragment(text)
-    return ""
-
-
-def _imperative_action_phrase(first_path: str) -> str:
-    text = _sentence_fragment(
-        first_path_action_phrase(
-            first_path,
-            fallback=_first_action_clause(first_path) or "complete the accepted path",
-            max_fragments=1,
-            limit=120,
-        )
-    ).strip(" .")
-    if not text:
-        return ""
-    actor, action_without_actor = _actor_action_parts(text)
-    if actor and action_without_actor:
-        return f"{actor} {action_without_actor}"
-    return _capability_action_clause(text)
-
-
-def _base_title_verb(value: str) -> str:
-    token = str(value or "").casefold()
-    overrides = {
-        "chooses": "choose",
-        "does": "do",
-        "goes": "go",
-        "has": "have",
-        "is": "be",
-        "receives": "receive",
-        "sees": "see",
-        "uses": "use",
-    }
-    if token in overrides:
-        return overrides[token]
-    if len(token) > 4 and token.endswith("ies"):
-        return f"{token[:-3]}y"
-    if len(token) > 4 and token.endswith(("ches", "shes", "sses", "xes", "zes")):
-        return token[:-2]
-    if len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
-        return token[:-1]
-    return token
-
-
-def _actor_action_parts(value: str) -> tuple[str, str]:
-    text = re.sub(r"^(?:a|an|the)\s+", "", _sentence_fragment(value), flags=re.IGNORECASE)
-    words = text.split()
-    for index in range(1, min(len(words), 6)):
-        candidate = " ".join(words[index:]).strip(" .")
-        if not looks_like_finite_action(candidate):
-            continue
-        verb = words[index].strip(".,;:")
-        base = _base_title_verb(verb)
-        if base != verb.casefold():
-            actor = " ".join(words[:index]).strip(" .")
-            tail = " ".join(words[index + 1 :]).strip(" .")
-            action = " ".join(part for part in (base, tail) if part)
-            return actor, action
-    return "", ""
-
-
-def _strip_actor_prefix(value: str, actor: str) -> str:
-    text = _sentence_fragment(value)
-    prefix = _sentence_fragment(actor)
-    if prefix and text.casefold().startswith(prefix.casefold()):
-        text = text[len(prefix) :].strip(" .")
-    return text
-
-
-def _base_leading_action(value: str) -> str:
-    text = _sentence_fragment(value)
-    words = text.split()
-    if not words:
-        return text
-    base = _base_title_verb(words[0].strip(".,;:"))
-    if base != words[0].casefold():
-        words[0] = base
-    return " ".join(words)
-
-
-def _proof_title_object(value: str) -> str:
-    text = _short_summary(value, limit=120).strip(" .")
-    text = re.sub(r"^release\s+\S+\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^proof\s+(?:boundary|must\s+show|means)\s*:?\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"\bwithout\b.+$", "", text, flags=re.IGNORECASE).strip(" .,;:")
-    if len(text.split()) > 9:
-        text = " ".join(text.split()[:9])
-    return _sentence_fragment(text)
-
-
-def _workstream_subject(value: str) -> str:
-    text = _compact_text(value)
-    text = re.sub(r"\s+(Service|Surface|Component|Boundary)$", "", text, flags=re.IGNORECASE).strip()
-    return text or value
-
-
-def _component_label_at(components: list[dict[str, Any]], index: int, *, fallback: str) -> str:
-    if not components:
-        return fallback
-    bounded_index = min(max(index, 0), len(components) - 1)
-    value = str(components[bounded_index].get("label", "")).strip()
-    return value or fallback
-
-
-def _first_clause(value: str) -> str:
-    text = _short_summary(value, limit=220)
-    parts = [part.strip(" .") for part in re.split(r"[.;]", text, maxsplit=1) if part.strip(" .")]
-    return parts[0] if parts else text
-
-
-def _first_action_clause(value: str) -> str:
-    text = _first_clause(value)
-    if not text:
-        return text
-    action_pattern = (
-        r"the\s+product\s+(?:accepts?|assigns?|calculates?|completes?|estimates?|fetches?|highlights?|lets?|notifies?|preserves?|ranks?|records?|routes?|shows?|stores?|verifies?)|"
-        r"(?:accepts?|assigns?|calculates?|chooses?|completes?|estimates?|fetches?|highlights?|lets?|logs?|notifies?|preserves?|ranks?|receives?|records?|reviews?|selects?|shows?|stores?|submits?|verifies?)\b"
-    )
-    return re.split(rf",\s+(?=(?:and\s+)?(?:{action_pattern}))", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
-
-
-def _first_path_outcome(value: str, *, proof_boundary: str = "") -> str:
-    return _sentence_fragment(
-        first_path_outcome_phrase(
-            value,
-            proof_boundary=proof_claim_summary(proof_boundary, limit=240),
-            fallback="the promised user-visible result",
-            limit=240,
-        )
-    )
-
-
-def _program_problem(
-    *,
-    label: str,
-    actors: str,
-    story: str,
-    capability: str,
-    outcome: str,
-    fallback: str,
-) -> str:
-    for candidate in (fallback, story):
-        text = _short_summary(candidate, limit=360)
-        if text and not _looks_mechanical_summary(text) and _has_problem_tension(text):
-            return text
-    actor_text = _problem_actor_subject(actors, fallback=f"{label} user")
-    capability_text = capability or "complete the first product path"
-    outcome_text = outcome or "the promised user-visible result"
-    return (
-        f"{actor_text} needs a clear way to {capability_text} and understand what to do next. "
-        f"If {label} only captures activity, the product leaves that user with data but no trustworthy way to use {outcome_text}."
-    )
-
-
-def _problem_actor_subject(actors: str, *, fallback: str) -> str:
-    text = _compact_text(actors)
-    if not text:
-        text = _compact_text(fallback)
-    text = re.split(r"\s*,\s*|\s*;\s*|\s+\band\b\s+", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
-    text = re.sub(r"\s*\((?:primary|secondary|optional|supporting|deferred)\)\s*$", "", text, flags=re.IGNORECASE).strip(" .")
-    if not text:
-        text = "first user"
-    lowered = text.casefold()
-    if re.match(r"^(?:a|an|the|one|this|that|each|people|users|customers|operators|reviewers)\b", lowered):
-        return text[:1].upper() + text[1:]
-    return f"The {lowered}"
-
-
-def _capability_action_clause(value: str) -> str:
-    text = _sentence_fragment(value)
-    if not text:
-        return "complete the accepted path"
-    _actor, actor_action = _actor_action_parts(text)
-    if actor_action:
-        return _normalize_action_clause(actor_action)
-    converted = base_action_clause(text)
-    return _normalize_action_clause(converted or text)
-
-
-def _normalize_action_clause(value: str) -> str:
-    text = base_action_clause(_sentence_fragment(value))
-    text = re.sub(
-        r"^(?:a|an|the)\s+(?:user|owner|person|actor|customer|applicant|participant|operator)\s+",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    )
-    for inflected, base in {
-        "adds": "add",
-        "asks": "ask",
-        "logs": "log",
-        "enters": "enter",
-        "selects": "select",
-        "submits": "submit",
-        "saves": "save",
-        "chooses": "choose",
-        "clicks": "click",
-        "accepts": "accept",
-        "dismisses": "dismiss",
-        "records": "record",
-        "captures": "capture",
-        "reviews": "review",
-    }.items():
-        text = re.sub(rf"\b(and|then)\s+{re.escape(inflected)}\b", rf"\1 {base}", text, flags=re.IGNORECASE)
-        text = re.sub(rf"\b(and|then)\s+manually\s+{re.escape(inflected)}\b", rf"\1 manually {base}", text, flags=re.IGNORECASE)
-    text = re.sub(
-        r",\s+and\s+(manually\s+)?(log|enter|select|submit|save|choose|click|accept|dismiss|record|capture|review)\b",
-        r" and \1\2",
-        text,
-        flags=re.IGNORECASE,
-    )
-    return re.sub(r"\s+", " ", text).strip(" .") or "complete the accepted path"
-
-
-def _sentence_fragment(value: str) -> str:
-    text = _short_summary(value, limit=260).strip(" .")
-    if not text:
-        return ""
-    if re.match(r"^[A-Z]{2,}\b", text):
-        return text
-    return text[:1].casefold() + text[1:]
-
-
-def _proof_focus_phrase(value: str, *, fallback: str) -> str:
-    candidates: list[tuple[int, int, str]] = []
-    for index, clause in enumerate(re.split(r"\s*,\s*|\s+\band\b\s+", _sentence_fragment(value))):
-        text = _sentence_fragment(clause).strip(" .")
-        if not text or len(re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text)) > 6:
-            continue
-        if not re.search(r"\b(?:approval|decision|judgment|outcome|reason|rejection|signoff|status)\b", text, re.I):
-            continue
-        score = 3
-        if re.search(
-            r"\b(?:actor|admin|administrator|coordinator|customer|human|manager|operator|owner|reviewer|user)\b",
-            text,
-            re.I,
-        ):
-            score += 4
-        if re.search(r"\b(?:final|release|review|trusted)\b", text, re.I):
-            score += 1
-        candidates.append((score, -index, text))
-    if not candidates:
-        return fallback
-    candidates.sort(reverse=True)
-    return candidates[0][2]
-
-
 def _backlog_row(
     *,
     label: str,
@@ -797,7 +464,7 @@ def _backlog_row(
         "interfaces": interfaces,
         "validation": validation,
         "evidence_tier": "user_intent" if workstream_type == "program_parent" else "odylith_assumption",
-        "rationale_lines": _rationale_lines(
+        "rationale_lines": backlog_text.rationale_lines(
             label=label,
             title=title,
             opportunity=opportunity,
@@ -827,85 +494,10 @@ def _backlog_row(
     }
 
 
-def _rationale_lines(*, label: str, title: str, opportunity: str, first_slice: str, proof_boundary: str) -> list[str]:
-    why_now = _short_summary(opportunity, limit=180).strip(" .")
-    expected_outcome = _short_summary(first_slice, limit=200).strip(" .")
-    if _looks_mechanical_summary(why_now):
-        why_now = f"{title} proves a bounded part of the accepted {label} first path before adjacent scope expands"
-    if _looks_mechanical_summary(expected_outcome):
-        expected_outcome = f"{title} produces reviewable state, blocker behavior, recovery evidence, and handoff proof"
-    if not why_now:
-        why_now = "Clarify the accepted product boundary before implementation starts"
-    if not expected_outcome:
-        expected_outcome = "Produce the first reviewable release outcome"
-    return [
-        f"- why now: {why_now}.",
-        f"- expected outcome: {expected_outcome}.",
-        "- tradeoff: This stays narrow so the team can prove the promised user outcome before it widens the product promise.",
-        "- deferred for now: Anything not needed for this reviewed behavior waits until the first outcome is proven.",
-        f"- ranking basis: This work comes before optional scope because {label} needs the user outcome, product state, and release claim to agree.",
-    ]
-
-
-def _looks_mechanical_summary(value: str) -> bool:
-    text = _compact_text(value)
-    if not text:
-        return False
-    lowered = text.casefold()
-    repeated_required = len(re.findall(r"\brequired\b", lowered))
-    return bool(
-        repeated_required >= 2
-        or re.search(r"\bactor identity,\s+validation context,\s+and upstream handoff\b", lowered)
-        or re.search(r"\bblocker signal,\s+review rationale,\s+and downstream handoff\b", lowered)
-        or re.search(r"\b(?:accepted\s+first\s+path|accepted\s+proof\s+boundary|first\s+path\s+entry)\b", lowered)
-        or re.search(r"\b(?:visible[- ]result\s+event|rendered\s+dashboard|dashboard\s+renders?\s+the\s+visible\s+result)\b", lowered)
-        or re.search(r"\b(?:source\s+evidence,\s+visible\s+blockers|systems\s+that\s+own\s+the\s+handoff)\b", lowered)
-        or re.search(r"\bis\s+not\s+trustworthy\s+when\b", lowered)
-        or _has_mechanical_need_to_turn(text)
-        or re.search(r"\bfirst\s+release\s+can\s+collect\s+activity\b", lowered)
-        or re.search(r"^on\s+save\b", lowered)
-    )
-
-
-def _has_problem_tension(value: str) -> bool:
-    return bool(
-        re.search(
-            r"\b(?:without|risk|harm|danger|fails?|failure|cannot|missing|unclear|blocked|drift|stale|unsupported|untrusted|needs?|must|if|when|unless|because|otherwise|prevents?|reduces?|no)\b",
-            _compact_text(value).casefold(),
-        )
-    )
-
-
-def _shares_product_terms(left: str, right: str) -> bool:
-    stop = {
-        "accepted",
-        "action",
-        "complete",
-        "first",
-        "path",
-        "product",
-        "release",
-        "result",
-        "state",
-        "that",
-        "their",
-        "user",
-        "when",
-        "with",
-    }
-    left_terms = {token for token in re.findall(r"[a-z0-9][a-z0-9-]*", _compact_text(left).casefold()) if len(token) > 3 and token not in stop}
-    right_terms = {token for token in re.findall(r"[a-z0-9][a-z0-9-]*", _compact_text(right).casefold()) if len(token) > 3 and token not in stop}
-    if not left_terms or not right_terms:
-        return False
-    return len(left_terms & right_terms) >= min(3, len(right_terms))
-
-
 __all__ = [
     "confirmed_backlog_rows",
     "confirmed_evidence_record_label",
     "confirmed_program",
     "confirmed_release_plan",
     "confirmed_workstream_titles",
-    "join_actor_labels",
-    "proof_claim_summary",
 ]
