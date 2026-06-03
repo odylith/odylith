@@ -698,6 +698,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `.venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` with browser
   permissions passed (`1 passed in 9.81s`).
+- 2026-06-03 confirmed-intent parser decomposition moved internal-system row
+  parsing, labeled-role splitting, concise capability expansion, contextual
+  system description repair, generic scaffold detection, and public system
+  name/description helpers into `greenfield_confirmed_system_rows.py`. The
+  confirmed-intent entrypoint now stays focused on file loading, Markdown/JSON
+  section parsing, preamble derivation, and validation
+  (`greenfield_confirmed_intent.py`: 1535 to 880 lines), while
+  `test_greenfield_confirmed_intent.py` pins the system-row owner and the
+  parent line-count ceiling. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py`
+  passed; `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` passed (`27 passed`);
+  the broader greenfield artifact-quality bundle passed (`95 passed in
+  205.10s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

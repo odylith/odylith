@@ -73,6 +73,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-02: Hardened the post-confirm semantic render path so first-path clauses, component contracts, Atlas labels, runtime JSON, public dashboard prose, Radar workstreams, and Registry component specs reject parser debris, activity-shaped actor names, framework proof scaffolds, bare outcome nouns, coordinated action-verb drift, and component-boundary boilerplate before any confirmed greenfield writes. First-path parsing now lives in `greenfield_first_path_semantics.py`, separate from title normalization, release classification, and slop scanning. The pass keeps the fix provider-free and domain-agnostic, with regression coverage in `test_greenfield_post_confirm_slop_regressions.py`, an 11.67-second confirmed-create E2E run with no slop hits, and rendered browser proof for Radar and Registry behavior. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Decomposed confirmed-intent completion so `greenfield_confirmed_actor_completion.py` owns actor row completion, actor label derivation, generated meta-row rejection, and actor description repair, while `greenfield_confirmed_intent_completion.py` keeps orchestration, core-field completion, system completion, title repair, and product posture. Shared confirmed text helpers now live in `greenfield_confirmed_text.py`, the former parent dropped below the source-size ceiling, and `test_greenfield_confirmed_intent.py` pins the actor phase outside the parent. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-create prewrite gating so `greenfield_confirmed_prewrite_gate.py` owns semantic model completion, proposal/component/spec preflight issue aggregation, the deterministic greenfield Tribunal call, and governed-artifact Tribunal issue collection. `greenfield_confirmed_completion.py` now stays under the 1200-line hard threshold while delegating the quality gate through a focused owner pinned by `test_greenfield_confirmed_repair.py`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split confirmed-intent internal-system row parsing into `greenfield_confirmed_system_rows.py`. The owner now handles JSON/Markdown role rows, labeled system spans, sentence-system rows, contextual system descriptions, generic scaffold detection, and exported `confirmed_system_name`/`confirmed_system_description` helpers while `greenfield_confirmed_intent.py` stays below the source-size threshold as a parser/validator entrypoint. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -122,6 +123,12 @@ This section captures synchronized requirement and contract signals derived from
   call `completed_actor_rows`, `actor_labels`, and `actor_row_description`, but
   it must not reintroduce local actor label derivation, generated meta-row
   filtering, or actor description repair.
+- Confirmed-intent internal-system row parsing must stay in
+  `greenfield_confirmed_system_rows.py`. The confirmed-intent entrypoint may
+  call `role_or_system_rows`, `internal_system_rows`,
+  `expand_internal_system_rows`, and `contains_generic_system_scaffold`, but it
+  must not re-own local labeled-span parsing, sentence-system row splitting,
+  system-name prefix detection, or generated system-description repair.
 - Confirmed-create prewrite gating must stay in
   `greenfield_confirmed_prewrite_gate.py`. The completion orchestrator may call
   `complete_semantic_model` and `preflight_issues`, but it must not re-own the
