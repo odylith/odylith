@@ -1120,6 +1120,25 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   standard greenfield artifact-quality proof passed (`146 passed in
   235.23s`); and confirmed-create performance proof passed (`1 passed in
   11.63s`).
+- 2026-06-03 row-owner and semantic-copy follow-through routed remaining
+  component, backlog, handoff, created-row, proposal-row, and wave-row readers
+  through `greenfield_rows.py` instead of package-local `_component_rows` or
+  `_created_rows` helpers. The same pass hardened confirmed project-brief and
+  Registry semantic-context text so metadata-led actor/action phrases such as
+  `resident create repair request` and ditransitive copy such as `shows the
+  resident a confirmation` do not leak into generated component contracts or
+  project posture. Touched owners stay below the soft limit
+  (`greenfield_backlog_impact.py`: 156 lines;
+  `greenfield_component_contract_differentiation.py`: 749 lines;
+  `greenfield_confirmed_component_completion.py`: 242 lines;
+  `greenfield_confirmed_project_brief.py`: 263 lines;
+  `greenfield_component_semantic_context.py`: 308 lines;
+  `greenfield_experience.py`: 473 lines). Proof: syntax proof passed for all
+  touched modules; focused row/component artifact proof passed (`59 passed in
+  164.10s`); the two exposed post-confirm slop regressions passed (`2 passed
+  in 1.15s`); broad confirmed-greenfield proof passed (`160 passed in
+  239.60s`); and confirmed-create performance proof passed (`1 passed in
+  11.51s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

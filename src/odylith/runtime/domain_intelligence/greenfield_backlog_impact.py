@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -41,7 +42,7 @@ def derive_greenfield_impacted_parts(row: Mapping[str, Any], proposal: Mapping[s
     if explicit:
         return _join_labels(explicit)
 
-    component_rows = _component_rows(proposal)
+    component_rows = tuple(mapping_rows(proposal.get("components")))
     lookup = _component_lookup(component_rows)
     labels: list[str] = []
     for key in ("component_focus", "related_components", "component_ids", "components"):
@@ -53,10 +54,6 @@ def derive_greenfield_impacted_parts(row: Mapping[str, Any], proposal: Mapping[s
     if not labels:
         labels.append(_title_boundary_label(row.get("title")))
     return _join_labels(labels) or "Accepted first-path product boundary"
-
-
-def _component_rows(proposal: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
-    return tuple(row for row in proposal.get("components", []) if isinstance(row, Mapping))
 
 
 def _component_lookup(components: Sequence[Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]:
@@ -114,7 +111,7 @@ def _component_label(component: Mapping[str, Any]) -> str:
 
 
 def _is_first_backlog_row(*, row: Mapping[str, Any], proposal: Mapping[str, Any]) -> bool:
-    rows = [item for item in proposal.get("backlog", []) if isinstance(item, Mapping)]
+    rows = mapping_rows(proposal.get("backlog"))
     if not rows:
         return False
     title = slugify(str(row.get("title") or ""))

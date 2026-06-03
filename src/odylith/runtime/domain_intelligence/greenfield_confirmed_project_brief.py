@@ -222,10 +222,24 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
     text = short_summary(value, limit=limit).strip(" .")
     text = re.sub(r"^the first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
+    text = _repair_show_actor_artifact(text)
     if len(text) <= limit:
         return text
     clipped = text[: max(0, limit)].rsplit(" ", 1)[0].rstrip(" ,;:")
     return strip_dangling_tail(clipped).rstrip(" ,;:")
+
+
+def _repair_show_actor_artifact(value: str) -> str:
+    return re.sub(
+        r"\bshows\s+the\s+(?P<actor>[a-z][a-z '-]{1,40})\s+(?P<article>a|an|the)\s+"
+        r"(?P<object>[a-z][a-z0-9 '&/-]{1,90}?)(?=,\s+and\b|[.;]|$)",
+        lambda match: (
+            f"shows {match.group('article')} {match.group('object').strip()} "
+            f"to the {match.group('actor').strip()}"
+        ),
+        value,
+        flags=re.IGNORECASE,
+    )
 
 
 def _brief_option(identifier: str, decision: str, recommended: str, impact: str) -> dict[str, Any]:

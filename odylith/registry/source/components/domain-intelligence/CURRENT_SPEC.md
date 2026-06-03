@@ -96,6 +96,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Consolidated component-contract phrase and term helper ownership in `greenfield_component_terms.py`. Base contracts, semantic contracts, and contract differentiation now reuse `natural_phrase`, `phrase`, and `domain_terms` instead of carrying local `_term_phrase`, `_phrase`, or `_content_terms` clones, while all touched component-contract files stay below the 800-line soft limit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed component completion into `greenfield_confirmed_component_completion.py`. Component contract normalization, contract-derived responsibility/boundary/interface/dependency/validation/risk repair, component risk enrichment, and component sentence repair now sit outside `greenfield_confirmed_completion.py`, which stays below the 800-line soft limit as the confirmed-create repair orchestrator. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Consolidated generated list-row coercion in `greenfield_rows.py`. Confirmed prewrite gating, the deterministic Tribunal, confirmed title repair, apply-prewrite remapping, confirmed completion, and post-confirm semantic/package checks now import `mapping_rows` or `dict_rows` from the shared owner instead of carrying private `_mapping_rows`/`_dict_rows` clones or a post-confirm-specific wrapper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Extended shared row coercion to remaining component, backlog, handoff, created-row, proposal-row, and wave-row readers, and hardened semantic context cleanup for confirmed Registry contract text. `greenfield_backlog_impact.py`, `greenfield_experience.py`, `greenfield_confirmed_component_completion.py`, and `greenfield_component_contract_differentiation.py` now reuse `mapping_rows` or `dict_rows`, while `greenfield_component_semantic_context.py` strips metadata-led actor/action phrases and `greenfield_confirmed_project_brief.py` rewrites awkward show-actor-artifact copy before project posture text is rendered. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -172,10 +173,19 @@ This section captures synchronized requirement and contract signals derived from
   sentence-list repair.
 - Generated list-row coercion must stay in `greenfield_rows.py`. Confirmed
   prewrite gates, Tribunal checks, title repair, apply-prewrite remapping,
-  confirmed completion, and post-confirm semantic/package checks may call
-  `mapping_rows`, `dict_rows`, `row_count`, or `mapping_count`, but they must
-  not reintroduce local `_mapping_rows`/`_dict_rows` helpers, package-local
-  `_row_count`/`_mapping_count` helpers, or a phase-specific row wrapper.
+  confirmed completion, backlog impact, implementation handoff shaping,
+  component completion, component-contract differentiation, and post-confirm
+  semantic/package checks may call `mapping_rows`, `dict_rows`, `row_count`, or
+  `mapping_count`, but they must not reintroduce local `_mapping_rows`,
+  `_dict_rows`, `_component_rows`, `_created_rows`, `_row_count`, or
+  `_mapping_count` helpers, package-local count helpers, or a phase-specific
+  row wrapper.
+- Confirmed semantic context cleanup must remove generated metadata prefixes
+  before actor/action trimming, so project-brief, customization, checkpoint, or
+  command labels cannot turn accepted proof text into artifact nouns such as
+  `resident create repair request`. Project-brief copy must also normalize
+  awkward `shows the <actor> a <result>` phrasing before it is written into
+  human-visible project posture.
 - Confirmed-intent actor completion must stay in
   `greenfield_confirmed_actor_completion.py`. The parent completion module may
   call `completed_actor_rows`, `actor_labels`, and `actor_row_description`, but

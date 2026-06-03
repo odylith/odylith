@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_list as _set_list
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
+from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -100,7 +101,7 @@ def complete_component_rows(proposal: dict[str, Any]) -> bool:
 
 def repair_component_sentence_lists(proposal: Mapping[str, Any]) -> bool:
     changed = False
-    for row in _component_rows(proposal):
+    for row in dict_rows(proposal.get("components")):
         contract = row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else {}
         label = completion_text.component_label(row, 0)
         if _text_needs_repair(row.get("responsibility")):
@@ -116,13 +117,6 @@ def repair_component_sentence_lists(proposal: Mapping[str, Any]) -> bool:
         if _sequence_has_text_repair(row.get("risks")):
             changed |= _set_list(row, "risks", risks_from_contract(label, contract))
     return changed
-
-
-def _component_rows(proposal: Mapping[str, Any]) -> list[dict[str, Any]]:
-    rows = proposal.get("components")
-    if not isinstance(rows, list):
-        return []
-    return [row for row in rows if isinstance(row, dict)]
 
 
 def _component_risks(

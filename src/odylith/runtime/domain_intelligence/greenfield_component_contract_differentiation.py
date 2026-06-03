@@ -34,6 +34,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     natural_phrase,
     split_contract_clauses,
 )
+from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
@@ -84,7 +85,7 @@ _GENERATED_CONTRACT_MARKERS = (
 def differentiate_component_contracts(proposal: dict[str, Any], *, max_passes: int = 5) -> bool:
     """Repair interchangeable generated component contracts before quality gates run."""
 
-    components = _component_rows(proposal)
+    components = dict_rows(proposal.get("components"))
     if len(components) < 2:
         return False
     changed = False
@@ -241,7 +242,7 @@ def _axis_distinctive_terms(axis: ComponentAxis) -> set[str]:
 
 
 def _render_component_specs(proposal: Mapping[str, Any]) -> dict[str, str]:
-    rows = _component_rows(proposal)
+    rows = dict_rows(proposal.get("components"))
     specs: dict[str, str] = {}
     for index, row in enumerate(rows):
         label = _component_label(row, index)
@@ -525,13 +526,6 @@ def _sync_generated_component_fields(
         row["validation"] = validation_from_contract(contract)
     if _weak_sequence(row.get("risks")) or _sequence_reuses_contract_text(row.get("risks"), previous_contract):
         row["risks"] = risks_from_contract(label, contract)
-
-
-def _component_rows(proposal: Mapping[str, Any]) -> list[dict[str, Any]]:
-    rows = proposal.get("components")
-    if not isinstance(rows, list):
-        return []
-    return [row for row in rows if isinstance(row, dict)]
 
 
 def _component_lookup(rows: Sequence[dict[str, Any]]) -> tuple[dict[str, dict[str, Any]], dict[str, int]]:

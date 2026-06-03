@@ -231,15 +231,64 @@ def _context_carry_base(
 
 def _drop_actor_action_lead(terms: Sequence[str]) -> list[str]:
     result = list(terms)
-    if len(result) >= 2 and _looks_actor_term(result[0]) and _looks_action_term(result[1]):
-        result = result[2:]
-    if len(result) >= 2 and _looks_action_term(result[0]) and result[0] not in _ARTIFACT_CARRIER_TERMS:
+    while result and result[0] in _CONTEXT_METADATA_LEADS:
         result = result[1:]
+    changed = True
+    while changed:
+        changed = False
+        if len(result) >= 2 and _looks_actor_term(result[0]) and _looks_action_term(result[1]):
+            result = result[2:]
+            changed = True
+            continue
+        if result and _looks_action_term(result[0]) and result[0] not in _ARTIFACT_CARRIER_TERMS:
+            result = result[1:]
+            changed = True
     return result
+
+
+_CONTEXT_METADATA_LEADS = frozenset(
+    {
+        "choice",
+        "checkpoint",
+        "command",
+        "done_when",
+        "impact",
+        "must_capture",
+        "operator_question",
+        "path",
+        "prompt",
+        "recommended",
+        "section",
+        "use_when",
+        "why_it_matter",
+    }
+)
 
 
 def _looks_actor_term(value: str) -> bool:
     token = str(value or "").casefold()
+    if token in {
+        "admin",
+        "administrator",
+        "agent",
+        "client",
+        "coordinator",
+        "customer",
+        "lead",
+        "member",
+        "operator",
+        "owner",
+        "participant",
+        "patient",
+        "person",
+        "resident",
+        "reviewer",
+        "staff",
+        "student",
+        "team",
+        "user",
+    }:
+        return True
     return bool(re.search(r"(?:er|or|ist|ian|ant|ee)$", token))
 
 

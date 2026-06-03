@@ -12,6 +12,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -41,7 +42,7 @@ def build_next_steps(
     program_result: Mapping[str, Any],
     release_selector: str,
 ) -> dict[str, Any]:
-    created = _created_rows(backlog_result)
+    created = mapping_rows(backlog_result.get("created"))
     by_id = _created_by_id(created)
     umbrella_id = _umbrella_id(program_result)
     umbrella_row = by_id.get(umbrella_id, {})
@@ -103,12 +104,12 @@ def build_component_handoffs(
     traceability_plan: greenfield_traceability.GreenfieldTraceabilityPlan,
     release_selector: str,
 ) -> dict[str, dict[str, Any]]:
-    created = _created_rows(backlog_result)
+    created = mapping_rows(backlog_result.get("created"))
     by_id = _created_by_id(created)
     umbrella_id = _umbrella_id(program_result)
     first_release_ids = [str(item).strip().upper() for item in first_release_workstreams if str(item).strip()]
     handoffs: dict[str, dict[str, Any]] = {}
-    components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
+    components = mapping_rows(proposal.get("components"))
     project_context = _project_context(proposal)
     for row in components:
         key = greenfield_traceability.component_key(row)
@@ -194,7 +195,7 @@ def _component_focused_child_ids(
     aliases = _component_aliases(component_row)
     if not aliases:
         return []
-    rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
+    rows = mapping_rows(proposal.get("backlog"))
     scored: list[tuple[int, int, str]] = []
     for index, row in enumerate(rows):
         if index >= len(created):
@@ -257,10 +258,6 @@ def _slug_aliases(values: Sequence[Any]) -> set[str]:
     return aliases
 
 
-def _created_rows(backlog_result: Mapping[str, Any]) -> list[Mapping[str, Any]]:
-    return [row for row in backlog_result.get("created", []) if isinstance(row, Mapping)]
-
-
 def _created_by_id(created: Sequence[Mapping[str, Any]]) -> dict[str, Mapping[str, Any]]:
     return {
         str(row.get("idea_id", "")).strip().upper(): row
@@ -301,7 +298,7 @@ def _proposal_row_for_created_id(
     created: Sequence[Mapping[str, Any]],
     created_id: str,
 ) -> Mapping[str, Any]:
-    proposal_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
+    proposal_rows = mapping_rows(proposal.get("backlog"))
     target = str(created_id or "").strip().upper()
     for index, created_row in enumerate(created):
         idea_id = str(created_row.get("idea_id", "")).strip().upper()
@@ -311,7 +308,7 @@ def _proposal_row_for_created_id(
 
 
 def _first_wave(program_result: Mapping[str, Any]) -> Mapping[str, Any]:
-    waves = [row for row in program_result.get("waves", []) if isinstance(row, Mapping)]
+    waves = mapping_rows(program_result.get("waves"))
     return waves[0] if waves else {}
 
 

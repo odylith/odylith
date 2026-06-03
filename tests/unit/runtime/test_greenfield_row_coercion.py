@@ -24,6 +24,8 @@ def test_greenfield_mapping_row_coercion_stays_in_shared_owner() -> None:
         DOMAIN_INTELLIGENCE / "proposal_tribunal.py",
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_title_repair.py",
         DOMAIN_INTELLIGENCE / "greenfield_apply_prewrite.py",
+        DOMAIN_INTELLIGENCE / "greenfield_backlog_impact.py",
+        DOMAIN_INTELLIGENCE / "greenfield_experience.py",
     ):
         source = path.read_text(encoding="utf-8")
         assert "def _mapping_rows" not in source
@@ -32,10 +34,23 @@ def test_greenfield_mapping_row_coercion_stays_in_shared_owner() -> None:
     for path in (
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_completion.py",
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_prewrite_gate.py",
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_component_completion.py",
+        DOMAIN_INTELLIGENCE / "greenfield_component_contract_differentiation.py",
     ):
         source = path.read_text(encoding="utf-8")
         assert "def _dict_rows" not in source
         assert "from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows" in source
+
+    for path in (
+        DOMAIN_INTELLIGENCE / "greenfield_backlog_impact.py",
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_component_completion.py",
+        DOMAIN_INTELLIGENCE / "greenfield_component_contract_differentiation.py",
+    ):
+        source = path.read_text(encoding="utf-8")
+        assert "def _component_rows" not in source
+
+    experience_source = (DOMAIN_INTELLIGENCE / "greenfield_experience.py").read_text(encoding="utf-8")
+    assert "def _created_rows" not in experience_source
 
     post_confirm_source = (DOMAIN_INTELLIGENCE / "greenfield_post_confirm_completion.py").read_text(encoding="utf-8")
     assert "def _row_count" not in post_confirm_source
