@@ -89,6 +89,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Split confirmed-create final governed writes into `greenfield_apply_write.py`. The owner now applies Radar source files, stale workstream cleanup, release targeting, program waves, Atlas scaffold/upsert writes, Registry component authoring, accepted-project memory, dashboard refresh, and next-step shaping while `greenfield_proposals.py` stays below the 800-line soft limit as the intent/proposal/prewrite transaction entrypoint. The same pass aligned blank component `release_scope` with the semantic builder and refreshed stale apply semantic models before completion gates run. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split first-path clause rendering into `greenfield_first_path_clauses.py` and shared first-path records into `greenfield_first_path_types.py`. `greenfield_first_path_semantics.py` now owns parsing and semantic model extraction only, while the clause owner renders action, capability, visible-result, action-chain, and trivial-start grammar for Radar, Registry, Atlas, runtime JSON, and dashboard copy. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed generated-artifact substance checks into `proposal_tribunal_substance.py`. The new owner handles confirmed Radar thinness, Registry component-contract substance, cross-axis proof leakage, Atlas scaffold-node rejection, first-path tail preservation, and first-boundary routing while `proposal_tribunal.py` stays focused on deterministic prewrite adjudication and topology/security/actor gates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split confirmed-intent internal-system completion into `greenfield_confirmed_system_completion.py`. The owner now completes internal system rows, fallback systems, system labels, state labels, and context-clause matching while `greenfield_confirmed_intent_completion.py` stays focused on orchestration, core fields, product posture, title repair, and first-path/proof wording. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -152,6 +153,11 @@ This section captures synchronized requirement and contract signals derived from
   `expand_internal_system_rows`, and `contains_generic_system_scaffold`, but it
   must not re-own local labeled-span parsing, sentence-system row splitting,
   system-name prefix detection, or generated system-description repair.
+- Confirmed-intent internal-system completion must stay in
+  `greenfield_confirmed_system_completion.py`. The confirmed-intent completion
+  orchestrator may call `completed_system_rows`, `system_labels`, and
+  `state_label`, but it must not re-own fallback system generation, system
+  label cleanup, system-description cleanup, or context-clause matching.
 - Confirmed-create prewrite gating must stay in
   `greenfield_confirmed_prewrite_gate.py`. The completion orchestrator may call
   `complete_semantic_model` and `preflight_issues`, but it must not re-own the

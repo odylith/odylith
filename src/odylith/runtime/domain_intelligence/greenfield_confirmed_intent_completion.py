@@ -12,6 +12,9 @@ from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_labels as _actor_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows as _completed_actor_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import completed_system_rows as _completed_system_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import state_label as _state_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import system_labels as _system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import GENERIC_TITLE_WORDS as _GENERIC_TITLE_WORDS
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label as _focus_label
@@ -38,14 +41,6 @@ CORE_FIELD_MIN_WORDS = {
     "first_path": 18,
     "proof_boundary": 18,
 }
-
-_SYSTEM_SUFFIXES = (
-    "product record",
-    "experience guide",
-    "evidence log",
-    "release guardrail",
-)
-
 
 def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     """Fill reviewable fields that can be inferred from accepted intent text."""
@@ -418,168 +413,6 @@ def _proof_boundary_metric(proof_boundary: str, *, outcome: str = "") -> str:
     return f"Release readiness requires evidence that {target} is correct, visible, and reproducible{non_goal_hint}."
 
 
-def _completed_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
-    rows = _strings(intent.get("internal_systems")) or _strings(intent.get("component_responsibilities"))
-    context = _context(intent)
-    completed = [_system_row(row, context=context, title=title, explicit=bool(rows)) for row in rows]
-    completed = [row for row in completed if row]
-    if not completed:
-        completed = _derived_system_rows(intent, title=title)
-    return list(unique_text(completed))[:8]
-
-
-def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -> str:
-    raw = _clean(row)
-    if not raw:
-        return ""
-    if "—" in raw or ":" in raw:
-        name, description = re.split(r"\s+—\s+|:\s*", raw, maxsplit=1)
-        description = _clean_system_description(description)
-        if _system_description_is_enough(description):
-            return f"{_title_case(name)} — {description.rstrip('.')}"
-    name = _system_label(raw, title=title)
-    if not name:
-        return ""
-    clause = _best_context_clause(name, context)
-    if explicit:
-        if clause:
-            return f"{name} — {_short(clause, limit=180)}"
-        return name
-    if clause:
-        return (
-            f"{name} — owns its accepted inputs, blocked states, produced outputs, and handoff evidence. "
-            f"Context: {_short(clause, limit=180)}"
-        )
-    return f"{name} — owns input capture, state change, validation evidence, blocked states, and handoff for the accepted {title.lower()} path"
-
-
-def _system_description_is_enough(value: str) -> bool:
-    text = _clean(value)
-    if _word_count(text) >= 5:
-        return True
-    return bool(
-        _word_count(text) >= 3
-        and re.search(
-            r"\b(?:captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
-            r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
-            r"configures?|configuring|owned\s+by|keeps?)\b",
-            text,
-            re.IGNORECASE,
-        )
-    )
-
-
-def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
-    focus = _focus_label(title)
-    state = _state_label(_clean(intent.get("state_object")), title=title)
-    proof = _short(_clean(intent.get("proof_boundary")), fallback="the release proof")
-    names = [f"{focus} {suffix}" for suffix in _SYSTEM_SUFFIXES]
-    descriptions = [
-        f"owns identity, current status, version history, and traceable changes for {state}",
-        "presents the current state, missing-information guidance, user-facing confirmation, and next useful action without owning source records",
-        f"records the result, validation status, release decision, failure reason, and reviewable proof: {proof}",
-        "shows the visible result, known limits, and recovery conditions before broader rollout",
-    ]
-    return [f"{_title_case(name)} — {description.rstrip('.')}" for name, description in zip(names, descriptions)]
-
-
-def _clean_system_description(value: str) -> str:
-    text = _clean(value).strip(" .")
-    text = re.sub(
-        r"\b(?:captures?|capturing)\s+user\s+actions?\b",
-        "captures the product interaction",
-        text,
-        flags=re.IGNORECASE,
-    )
-    text = re.sub(
-        r"\b(?:explains?|explaining)\s+blocked\s+states?\b",
-        "explains missing or invalid information",
-        text,
-        flags=re.IGNORECASE,
-    )
-    text = re.sub(
-        r"\s*(?:,?\s*and\s+)?(?:keeps?|keeping)\s+the\s+next\s+visible\s+step\s+tied\s+to\s*:\s*[^.]+",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    )
-    text = re.sub(r"\s*,\s*,\s*", ", ", text)
-    text = re.sub(r"\s*,\s*(?:and\s*)?$", "", text, flags=re.IGNORECASE)
-    return _clean(text).strip(" .,;:")
-
-
-def _system_labels(intent: Mapping[str, Any]) -> list[str]:
-    labels: list[str] = []
-    for row in _strings(intent.get("internal_systems")):
-        labels.append(_system_label_head(row))
-    return [label for label in labels if label]
-
-
-def _system_label_head(value: str) -> str:
-    head = _clean(value.split("—", 1)[0].split(":", 1)[0])
-    split = re.search(
-        r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
-        r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
-        r"shows?|showing|renders?|rendering|generates?|generating|calculates?|calculating|"
-        r"configures?|configuring|groups?|grouping|aligns?|aligning|tracks?|tracking|manages?|managing)\b)",
-        head,
-        flags=re.IGNORECASE,
-    )
-    if split:
-        head = head[: split.start()].strip(" .:-")
-    return head
-
-
-def _system_label(row: str, *, title: str) -> str:
-    raw = _clean(row)
-    raw = re.sub(r"^(?:a|an|the)\s+", "", raw, flags=re.IGNORECASE)
-    raw = _repair_system_label_tail(raw)
-    if _word_count(raw) > 14:
-        raw = _compact_system_label(raw)
-    return _title_case(raw or f"{_focus_label(title)} system")
-
-
-def _repair_system_label_tail(value: str) -> str:
-    text = _clean(value).strip(" ,;:.")
-    words = text.split()
-    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "for", "of", "the", "to", "with"}:
-        words.pop()
-    return " ".join(words).strip(" ,;:.")
-
-
-def _compact_system_label(value: str) -> str:
-    text = _repair_system_label_tail(value)
-    if _word_count(text) <= 12:
-        return text
-    match = re.match(r"(?P<head>.+?\b(?:flow|capture|tracking|tracker|analytics|explanations|guardrails|controls|viewer|dashboard|workspace|workflow|service|engine|ledger|registry|store|journal|planner|generation|management|intake|versioning))\b", text, flags=re.IGNORECASE)
-    if match and _word_count(match.group("head")) >= 2:
-        return _repair_system_label_tail(match.group("head"))
-    words = text.split()[:12]
-    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "for", "of", "the", "to", "with"}:
-        words.pop()
-    return " ".join(words)
-
-
-def _state_label(value: str, *, title: str) -> str:
-    text = _clean(value)
-    if text:
-        first = re.split(r"[.;]", text, maxsplit=1)[0]
-        match = re.search(r"\b(?:state object is|primary state object is|is)\s+(?:a|an|the)?\s*(?P<label>[^.;:]+)", first, re.IGNORECASE)
-        if match:
-            return _title_case(match.group("label"))
-        match = re.match(
-            r"^(?:a|an|the)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,90}?)\s+"
-            r"(?:tracks|records|stores|captures|moves|starts|changes)\b",
-            first,
-            flags=re.IGNORECASE,
-        )
-        if match:
-            return _title_case(match.group("label"))
-        if _word_count(first) <= 8:
-            return _title_case(first)
-    return f"{_focus_label(title)} state"
-
-
 def _title(intent: Mapping[str, Any]) -> str:
     return _clean(intent.get("title")) or "Greenfield Project"
 
@@ -728,39 +561,6 @@ def _usable_title_phrase(value: str, *, noun: str) -> bool:
     if any(word in _GENERIC_TITLE_WORDS for word in lowered.split()):
         return False
     return _word_count(text) <= 4
-
-
-def _context(intent: Mapping[str, Any]) -> str:
-    parts = [
-        _clean(intent.get("title")),
-        _clean(intent.get("product_story")),
-        _clean(intent.get("problem")),
-        _clean(intent.get("customer")),
-        _clean(intent.get("opportunity")),
-        _clean(intent.get("product_view")),
-        _clean(intent.get("state_object")),
-        _clean(intent.get("first_path")),
-        _clean(intent.get("proof_boundary")),
-        " ".join(_strings(intent.get("human_actors"))),
-        " ".join(_strings(intent.get("external_systems"))),
-        " ".join(_strings(intent.get("assumptions"))),
-        " ".join(_strings(intent.get("ambiguities"))),
-    ]
-    return ". ".join(part.strip(" .") for part in parts if part)
-
-
-def _best_context_clause(name: str, context: str) -> str:
-    terms = _semantic_terms(name)
-    scored: list[tuple[int, int, str]] = []
-    for index, sentence in enumerate(re.split(r"(?<=[.!?])\s+", context)):
-        clause = _clean(sentence).strip(" .")
-        if _word_count(clause) < 6:
-            continue
-        overlap = len(terms & _semantic_terms(clause))
-        if overlap:
-            scored.append((overlap, -index, clause))
-    scored.sort(reverse=True)
-    return scored[0][2] if scored else ""
 
 
 def _strings(value: object) -> list[str]:

@@ -31,6 +31,9 @@ CONFIRMED_ACTOR_COMPLETION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py"
 )
 CONFIRMED_SYSTEM_ROWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py"
+CONFIRMED_SYSTEM_COMPLETION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py"
+)
 CONFIRMED_INTENT_VALIDATION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py"
 )
@@ -87,6 +90,30 @@ def test_confirmed_intent_system_rows_stay_in_dedicated_owner() -> None:
     assert "def _qualitative_intent_gaps" in validation_source
     assert "def _semantic_terms" in validation_source
     assert "def has_progression_or_outcome" in validation_source
+
+
+def test_confirmed_intent_system_completion_stays_in_dedicated_owner() -> None:
+    parent_source = CONFIRMED_INTENT_COMPLETION_PATH.read_text(encoding="utf-8")
+    completion_source = CONFIRMED_SYSTEM_COMPLETION_PATH.read_text(encoding="utf-8")
+
+    assert len(parent_source.splitlines()) < 800
+    assert "completed_system_rows as _completed_system_rows" in parent_source
+    assert "system_labels as _system_labels" in parent_source
+    assert "state_label as _state_label" in parent_source
+    for moved in (
+        "def _system_row",
+        "def _derived_system_rows",
+        "def _clean_system_description",
+        "def _system_label_head",
+        "def _compact_system_label",
+        "def _best_context_clause",
+        "_SYSTEM_SUFFIXES",
+    ):
+        assert moved not in parent_source
+        assert moved in completion_source
+    assert "def completed_system_rows" in completion_source
+    assert "def system_labels" in completion_source
+    assert "def state_label" in completion_source
 
 
 def test_confirmed_intent_parser_keeps_ambiguities_out_of_first_path() -> None:

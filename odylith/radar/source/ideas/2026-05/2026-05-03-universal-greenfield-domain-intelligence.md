@@ -1002,6 +1002,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   artifact-quality proof passed (`62 passed in 165.34s`); full
   confirmed-greenfield regression proof passed (`132 passed in 315.92s`); and
   confirmed-create performance proof passed (`1 passed in 9.77s`).
+- 2026-06-03 confirmed-intent system-completion decomposition moved internal
+  system row completion, fallback system generation, system label cleanup,
+  state-label extraction, and context-clause matching into
+  `greenfield_confirmed_system_completion.py`. The confirmed-intent completion
+  parent now stays focused on orchestration, core-field completion, product
+  posture, title repair, and first-path/proof wording (`846` to `646` lines),
+  while the system-completion owner is `228` lines.
+  `test_greenfield_confirmed_intent.py::test_confirmed_intent_system_completion_stays_in_dedicated_owner`
+  pins the owner boundary. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py
+  tests/unit/runtime/test_greenfield_confirmed_intent.py` passed; focused
+  confirmed-intent proof passed (`28 passed in 39.53s`); broader
+  artifact-quality proof passed (`90 passed in 225.71s`); full
+  confirmed-greenfield regression proof passed (`133 passed in 341.80s`); and
+  confirmed-create performance proof passed (`1 passed in 12.05s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
