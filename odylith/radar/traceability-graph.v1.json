@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "f22177d281fd1e469646b2c6f8944a6b1c787bf0c5755855c8c6324379186812",
+    "digest": "72bd94524ffd58ffdc1bc415ca95f6c19d5518922e2f323827dee78fbfac17e2",
     "file_count": 313,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -8601,7 +8601,7 @@
     {
       "idea_id": "B-143",
       "title": "Decompose greenfield project intelligence surface",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "standalone",
       "workstream_parent": "",
       "workstream_children": [],
@@ -10706,7 +10706,7 @@
       "id": "B-143",
       "type": "workstream",
       "label": "Decompose greenfield project intelligence surface",
-      "status": "queued",
+      "status": "implementation",
       "workstream_type": "standalone",
       "file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md"
     },
@@ -24659,5 +24659,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-06-03 02:48:05Z"
+  "generated_utc": "2026-06-03 03:00:52Z"
 }

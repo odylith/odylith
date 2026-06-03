@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-06-03T02:48:14Z",
+  "generated_utc": "2026-06-03T03:01:14Z",
   "release_summary": {
     "catalog": [
       {
@@ -314,19 +314,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 23,
-            "file_touch_count": 24
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 84
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 23,
-            "file_touch_count": 138
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 159
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-06-02T19:42:20-07:00",
+          "last_activity_iso": "2026-06-02T19:50:21-07:00",
           "age_days": 32,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -342,12 +342,12 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
-            "band": "High"
+            "index": 58,
+            "band": "Medium"
           },
           "48h": {
-            "index": 75,
-            "band": "High"
+            "index": 62,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -647,6 +647,105 @@
             "value": "B-141"
           }
         ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-143",
+        "title": "Decompose greenfield project intelligence surface",
+        "status": "implementation",
+        "priority": "P1",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Greenfield project intelligence now carries project story extraction, dashboard payload shaping, status text, first-path summaries, and card rendering in src/odylith/runtime/project_intelligence/greenfield.py, which is 2048 lines after the v0.1.15 semantic-render hardening checkpoint. That size makes future confirmed-greenfield changes harder to review and violates the product repo source-size discipline for a touched hand-maintained source file.",
+          "customer": "Odylith maintainers working on confirmed greenfield governance and consumer-lane operators who rely on the project tab to review accepted product shape before implementation planning.",
+          "proposed_solution": "Extract the current project-intelligence greenfield renderer into named modules that own separate responsibilities: accepted project facts, card view models, first-path/status handoff text, and final dashboard payload assembly. Keep the current public payload contract stable while moving code behind characterization tests and project-tab browser proof.",
+          "opportunity": "Split the project-intelligence greenfield surface into focused owners with characterization coverage so project story facts, project-tab cards, status or CTA assembly, and payload rendering can evolve independently while preserving the existing project review UX.",
+          "why_now": "The file crossed the 2000-line threshold while active greenfield quality work was still touching the project-tab path. Future greenfield surface changes need this decomposition lane before more behavior lands in the same module.",
+          "founder_pov": "The project tab should keep showing the same accepted project lane, direction choices, readiness gates, wave status, and first-path handoff, but the implementation should make each rendering responsibility easy to inspect and test without reopening a 2000-line module."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
+          "plan_file": ""
+        },
+        "registry_components": [
+          {
+            "component_id": "dashboard",
+            "name": "Dashboard"
+          },
+          {
+            "component_id": "domain-intelligence",
+            "name": "Domain Intelligence"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "",
+        "plan": {
+          "created": "",
+          "updated": "",
+          "all_total_tasks": 0,
+          "all_done_tasks": 0,
+          "total_tasks": 0,
+          "done_tasks": 0,
+          "progress_ratio": 0.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": null,
+          "display_progress_label": "Progress not yet captured",
+          "display_progress_state": "unknown",
+          "progress_classification": "active_untracked",
+          "checklist_label": "",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 1,
+            "local_change_count": 1,
+            "file_touch_count": 84
+          },
+          "48h": {
+            "commit_count": 1,
+            "local_change_count": 1,
+            "file_touch_count": 84
+          }
+        },
+        "timeline": {
+          "start_date": "2026-06-03",
+          "last_activity_iso": "2026-06-02T20:00:46-07:00",
+          "age_days": 0,
+          "eta_days": null,
+          "eta_confidence": "low"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 40,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 40,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {},
+        "scope_signal": {},
+        "proof_refs": [],
         "proof_summary_lines": []
       },
       {
@@ -1730,19 +1829,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 84
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 31
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 112
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-06-02T14:41:35-07:00",
+          "last_activity_iso": "2026-06-02T19:50:21-07:00",
           "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1758,11 +1857,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 86,
+            "index": 87,
             "band": "High"
           },
           "48h": {
-            "index": 86,
+            "index": 87,
             "band": "High"
           }
         },
@@ -1917,19 +2016,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 84
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 141
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 169
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-06-02T14:41:35-07:00",
+          "last_activity_iso": "2026-06-02T19:50:21-07:00",
           "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
@@ -1945,11 +2044,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           }
         },
@@ -2022,105 +2121,6 @@
             "value": "B-117"
           }
         ],
-        "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-143",
-        "title": "Decompose greenfield project intelligence surface",
-        "status": "queued",
-        "priority": "P1",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Greenfield project intelligence now carries project story extraction, dashboard payload shaping, status text, first-path summaries, and card rendering in src/odylith/runtime/project_intelligence/greenfield.py, which is 2048 lines after the v0.1.15 semantic-render hardening checkpoint. That size makes future confirmed-greenfield changes harder to review and violates the product repo source-size discipline for a touched hand-maintained source file.",
-          "customer": "Odylith maintainers working on confirmed greenfield governance and consumer-lane operators who rely on the project tab to review accepted product shape before implementation planning.",
-          "proposed_solution": "Extract the current project-intelligence greenfield renderer into named modules that own separate responsibilities: accepted project facts, card view models, first-path/status handoff text, and final dashboard payload assembly. Keep the current public payload contract stable while moving code behind characterization tests and project-tab browser proof.",
-          "opportunity": "Split the project-intelligence greenfield surface into focused owners with characterization coverage so project story facts, project-tab cards, status or CTA assembly, and payload rendering can evolve independently while preserving the existing project review UX.",
-          "why_now": "The file crossed the 2000-line threshold while active greenfield quality work was still touching the project-tab path. Future greenfield surface changes need this decomposition lane before more behavior lands in the same module.",
-          "founder_pov": "The project tab should keep showing the same accepted project lane, direction choices, readiness gates, wave status, and first-path handoff, but the implementation should make each rendering responsibility easy to inspect and test without reopening a 2000-line module."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
-          "plan_file": ""
-        },
-        "registry_components": [
-          {
-            "component_id": "dashboard",
-            "name": "Dashboard"
-          },
-          {
-            "component_id": "domain-intelligence",
-            "name": "Domain Intelligence"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "",
-        "plan": {
-          "created": "",
-          "updated": "",
-          "all_total_tasks": 0,
-          "all_done_tasks": 0,
-          "total_tasks": 0,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.0,
-          "display_progress_label": "0% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "not_started",
-          "checklist_label": "",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
-          },
-          "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
-          }
-        },
-        "timeline": {
-          "start_date": "2026-06-03",
-          "last_activity_iso": "2026-06-02T19:48:00-07:00",
-          "age_days": 0,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 37,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 37,
-            "band": "Low"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {},
-        "scope_signal": {},
-        "proof_refs": [],
         "proof_summary_lines": []
       },
       {
@@ -29688,19 +29688,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 23,
-            "file_touch_count": 24
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 84
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 23,
-            "file_touch_count": 138
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 159
           }
         },
         "timeline": {
           "start_date": "2026-05-01",
-          "last_activity_iso": "2026-06-02T19:42:20-07:00",
+          "last_activity_iso": "2026-06-02T19:50:21-07:00",
           "age_days": 32,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -29716,12 +29716,12 @@
         "cost": {
           "base_index": 55,
           "24h": {
-            "index": 75,
-            "band": "High"
+            "index": 58,
+            "band": "Medium"
           },
           "48h": {
-            "index": 75,
-            "band": "High"
+            "index": 62,
+            "band": "Medium"
           }
         },
         "proof_state": {},
@@ -30103,19 +30103,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 84
           },
           "48h": {
-            "commit_count": 1,
-            "local_change_count": 1,
-            "file_touch_count": 141
+            "commit_count": 2,
+            "local_change_count": 0,
+            "file_touch_count": 169
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-06-02T14:41:35-07:00",
+          "last_activity_iso": "2026-06-02T19:50:21-07:00",
           "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30131,11 +30131,11 @@
         "cost": {
           "base_index": 35,
           "24h": {
-            "index": 37,
+            "index": 38,
             "band": "Low"
           },
           "48h": {
-            "index": 40,
+            "index": 42,
             "band": "Medium"
           }
         },
@@ -30208,6 +30208,105 @@
             "value": "B-117"
           }
         ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-143",
+        "title": "Decompose greenfield project intelligence surface",
+        "status": "implementation",
+        "priority": "P1",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Greenfield project intelligence now carries project story extraction, dashboard payload shaping, status text, first-path summaries, and card rendering in src/odylith/runtime/project_intelligence/greenfield.py, which is 2048 lines after the v0.1.15 semantic-render hardening checkpoint. That size makes future confirmed-greenfield changes harder to review and violates the product repo source-size discipline for a touched hand-maintained source file.",
+          "customer": "Odylith maintainers working on confirmed greenfield governance and consumer-lane operators who rely on the project tab to review accepted product shape before implementation planning.",
+          "proposed_solution": "Extract the current project-intelligence greenfield renderer into named modules that own separate responsibilities: accepted project facts, card view models, first-path/status handoff text, and final dashboard payload assembly. Keep the current public payload contract stable while moving code behind characterization tests and project-tab browser proof.",
+          "opportunity": "Split the project-intelligence greenfield surface into focused owners with characterization coverage so project story facts, project-tab cards, status or CTA assembly, and payload rendering can evolve independently while preserving the existing project review UX.",
+          "why_now": "The file crossed the 2000-line threshold while active greenfield quality work was still touching the project-tab path. Future greenfield surface changes need this decomposition lane before more behavior lands in the same module.",
+          "founder_pov": "The project tab should keep showing the same accepted project lane, direction choices, readiness gates, wave status, and first-path handoff, but the implementation should make each rendering responsibility easy to inspect and test without reopening a 2000-line module."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
+          "plan_file": ""
+        },
+        "registry_components": [
+          {
+            "component_id": "dashboard",
+            "name": "Dashboard"
+          },
+          {
+            "component_id": "domain-intelligence",
+            "name": "Domain Intelligence"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "",
+        "plan": {
+          "created": "",
+          "updated": "",
+          "all_total_tasks": 0,
+          "all_done_tasks": 0,
+          "total_tasks": 0,
+          "done_tasks": 0,
+          "progress_ratio": 0.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": null,
+          "display_progress_label": "Progress not yet captured",
+          "display_progress_state": "unknown",
+          "progress_classification": "active_untracked",
+          "checklist_label": "",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 1,
+            "local_change_count": 1,
+            "file_touch_count": 84
+          },
+          "48h": {
+            "commit_count": 1,
+            "local_change_count": 1,
+            "file_touch_count": 84
+          }
+        },
+        "timeline": {
+          "start_date": "2026-06-03",
+          "last_activity_iso": "2026-06-02T20:00:46-07:00",
+          "age_days": 0,
+          "eta_days": null,
+          "eta_confidence": "low"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 40,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 40,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {},
+        "scope_signal": {},
+        "proof_refs": [],
         "proof_summary_lines": []
       },
       {
@@ -31664,19 +31763,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 84
           },
           "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 31
+            "commit_count": 1,
+            "local_change_count": 0,
+            "file_touch_count": 112
           }
         },
         "timeline": {
           "start_date": "2026-04-17",
-          "last_activity_iso": "2026-06-02T14:41:35-07:00",
+          "last_activity_iso": "2026-06-02T19:50:21-07:00",
           "age_days": 46,
           "eta_days": null,
           "eta_confidence": "low"
@@ -31692,11 +31791,11 @@
         "cost": {
           "base_index": 84,
           "24h": {
-            "index": 86,
+            "index": 87,
             "band": "High"
           },
           "48h": {
-            "index": 86,
+            "index": 87,
             "band": "High"
           }
         },
@@ -32143,105 +32242,6 @@
           "Frontier: governance-refresh",
           "Evidence tier: live verified"
         ]
-      },
-      {
-        "idea_id": "B-143",
-        "title": "Decompose greenfield project intelligence surface",
-        "status": "queued",
-        "priority": "P1",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Greenfield project intelligence now carries project story extraction, dashboard payload shaping, status text, first-path summaries, and card rendering in src/odylith/runtime/project_intelligence/greenfield.py, which is 2048 lines after the v0.1.15 semantic-render hardening checkpoint. That size makes future confirmed-greenfield changes harder to review and violates the product repo source-size discipline for a touched hand-maintained source file.",
-          "customer": "Odylith maintainers working on confirmed greenfield governance and consumer-lane operators who rely on the project tab to review accepted product shape before implementation planning.",
-          "proposed_solution": "Extract the current project-intelligence greenfield renderer into named modules that own separate responsibilities: accepted project facts, card view models, first-path/status handoff text, and final dashboard payload assembly. Keep the current public payload contract stable while moving code behind characterization tests and project-tab browser proof.",
-          "opportunity": "Split the project-intelligence greenfield surface into focused owners with characterization coverage so project story facts, project-tab cards, status or CTA assembly, and payload rendering can evolve independently while preserving the existing project review UX.",
-          "why_now": "The file crossed the 2000-line threshold while active greenfield quality work was still touching the project-tab path. Future greenfield surface changes need this decomposition lane before more behavior lands in the same module.",
-          "founder_pov": "The project tab should keep showing the same accepted project lane, direction choices, readiness gates, wave status, and first-path handoff, but the implementation should make each rendering responsibility easy to inspect and test without reopening a 2000-line module."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
-          "plan_file": ""
-        },
-        "registry_components": [
-          {
-            "component_id": "dashboard",
-            "name": "Dashboard"
-          },
-          {
-            "component_id": "domain-intelligence",
-            "name": "Domain Intelligence"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "",
-        "plan": {
-          "created": "",
-          "updated": "",
-          "all_total_tasks": 0,
-          "all_done_tasks": 0,
-          "total_tasks": 0,
-          "done_tasks": 0,
-          "progress_ratio": 0.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.0,
-          "display_progress_label": "0% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "not_started",
-          "checklist_label": "",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
-          },
-          "48h": {
-            "commit_count": 0,
-            "local_change_count": 1,
-            "file_touch_count": 1
-          }
-        },
-        "timeline": {
-          "start_date": "2026-06-03",
-          "last_activity_iso": "2026-06-02T19:48:00-07:00",
-          "age_days": 0,
-          "eta_days": null,
-          "eta_confidence": "low"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 37,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 37,
-            "band": "Low"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {},
-        "scope_signal": {},
-        "proof_refs": [],
-        "proof_summary_lines": []
       },
       {
         "idea_id": "B-021",
@@ -59063,19 +59063,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 23,
-          "file_touch_count": 24
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 84
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 23,
-          "file_touch_count": 138
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 159
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-06-02T19:42:20-07:00",
+        "last_activity_iso": "2026-06-02T19:50:21-07:00",
         "age_days": 32,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -59091,12 +59091,12 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
-          "band": "High"
+          "index": 58,
+          "band": "Medium"
         },
         "48h": {
-          "index": 75,
-          "band": "High"
+          "index": 62,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -59478,19 +59478,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 84
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 141
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 169
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-06-02T14:41:35-07:00",
+        "last_activity_iso": "2026-06-02T19:50:21-07:00",
         "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59506,11 +59506,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         }
       },
@@ -59583,6 +59583,105 @@
           "value": "B-117"
         }
       ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-143",
+      "title": "Decompose greenfield project intelligence surface",
+      "status": "implementation",
+      "priority": "P1",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Greenfield project intelligence now carries project story extraction, dashboard payload shaping, status text, first-path summaries, and card rendering in src/odylith/runtime/project_intelligence/greenfield.py, which is 2048 lines after the v0.1.15 semantic-render hardening checkpoint. That size makes future confirmed-greenfield changes harder to review and violates the product repo source-size discipline for a touched hand-maintained source file.",
+        "customer": "Odylith maintainers working on confirmed greenfield governance and consumer-lane operators who rely on the project tab to review accepted product shape before implementation planning.",
+        "proposed_solution": "Extract the current project-intelligence greenfield renderer into named modules that own separate responsibilities: accepted project facts, card view models, first-path/status handoff text, and final dashboard payload assembly. Keep the current public payload contract stable while moving code behind characterization tests and project-tab browser proof.",
+        "opportunity": "Split the project-intelligence greenfield surface into focused owners with characterization coverage so project story facts, project-tab cards, status or CTA assembly, and payload rendering can evolve independently while preserving the existing project review UX.",
+        "why_now": "The file crossed the 2000-line threshold while active greenfield quality work was still touching the project-tab path. Future greenfield surface changes need this decomposition lane before more behavior lands in the same module.",
+        "founder_pov": "The project tab should keep showing the same accepted project lane, direction choices, readiness gates, wave status, and first-path handoff, but the implementation should make each rendering responsibility easy to inspect and test without reopening a 2000-line module."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
+        "plan_file": ""
+      },
+      "registry_components": [
+        {
+          "component_id": "dashboard",
+          "name": "Dashboard"
+        },
+        {
+          "component_id": "domain-intelligence",
+          "name": "Domain Intelligence"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "",
+        "updated": "",
+        "all_total_tasks": 0,
+        "all_done_tasks": 0,
+        "total_tasks": 0,
+        "done_tasks": 0,
+        "progress_ratio": 0.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": null,
+        "display_progress_label": "Progress not yet captured",
+        "display_progress_state": "unknown",
+        "progress_classification": "active_untracked",
+        "checklist_label": "",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 1,
+          "local_change_count": 1,
+          "file_touch_count": 84
+        },
+        "48h": {
+          "commit_count": 1,
+          "local_change_count": 1,
+          "file_touch_count": 84
+        }
+      },
+      "timeline": {
+        "start_date": "2026-06-03",
+        "last_activity_iso": "2026-06-02T20:00:46-07:00",
+        "age_days": 0,
+        "eta_days": null,
+        "eta_confidence": "low"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 40,
+          "band": "Medium"
+        },
+        "48h": {
+          "index": 40,
+          "band": "Medium"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {},
+      "scope_signal": {},
+      "proof_refs": [],
       "proof_summary_lines": []
     },
     {
@@ -61039,19 +61138,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 84
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 31
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 112
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-06-02T14:41:35-07:00",
+        "last_activity_iso": "2026-06-02T19:50:21-07:00",
         "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
@@ -61067,11 +61166,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 86,
+          "index": 87,
           "band": "High"
         },
         "48h": {
-          "index": 86,
+          "index": 87,
           "band": "High"
         }
       },
@@ -61518,105 +61617,6 @@
         "Frontier: governance-refresh",
         "Evidence tier: live verified"
       ]
-    },
-    {
-      "idea_id": "B-143",
-      "title": "Decompose greenfield project intelligence surface",
-      "status": "queued",
-      "priority": "P1",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Greenfield project intelligence now carries project story extraction, dashboard payload shaping, status text, first-path summaries, and card rendering in src/odylith/runtime/project_intelligence/greenfield.py, which is 2048 lines after the v0.1.15 semantic-render hardening checkpoint. That size makes future confirmed-greenfield changes harder to review and violates the product repo source-size discipline for a touched hand-maintained source file.",
-        "customer": "Odylith maintainers working on confirmed greenfield governance and consumer-lane operators who rely on the project tab to review accepted product shape before implementation planning.",
-        "proposed_solution": "Extract the current project-intelligence greenfield renderer into named modules that own separate responsibilities: accepted project facts, card view models, first-path/status handoff text, and final dashboard payload assembly. Keep the current public payload contract stable while moving code behind characterization tests and project-tab browser proof.",
-        "opportunity": "Split the project-intelligence greenfield surface into focused owners with characterization coverage so project story facts, project-tab cards, status or CTA assembly, and payload rendering can evolve independently while preserving the existing project review UX.",
-        "why_now": "The file crossed the 2000-line threshold while active greenfield quality work was still touching the project-tab path. Future greenfield surface changes need this decomposition lane before more behavior lands in the same module.",
-        "founder_pov": "The project tab should keep showing the same accepted project lane, direction choices, readiness gates, wave status, and first-path handoff, but the implementation should make each rendering responsibility easy to inspect and test without reopening a 2000-line module."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
-        "plan_file": ""
-      },
-      "registry_components": [
-        {
-          "component_id": "dashboard",
-          "name": "Dashboard"
-        },
-        {
-          "component_id": "domain-intelligence",
-          "name": "Domain Intelligence"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "",
-        "updated": "",
-        "all_total_tasks": 0,
-        "all_done_tasks": 0,
-        "total_tasks": 0,
-        "done_tasks": 0,
-        "progress_ratio": 0.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.0,
-        "display_progress_label": "0% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "not_started",
-        "checklist_label": "",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
-        },
-        "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
-        }
-      },
-      "timeline": {
-        "start_date": "2026-06-03",
-        "last_activity_iso": "2026-06-02T19:48:00-07:00",
-        "age_days": 0,
-        "eta_days": null,
-        "eta_confidence": "low"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 37,
-          "band": "Low"
-        },
-        "48h": {
-          "index": 37,
-          "band": "Low"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {},
-      "scope_signal": {},
-      "proof_refs": [],
-      "proof_summary_lines": []
     },
     {
       "idea_id": "B-021",
@@ -93125,19 +93125,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 23,
-          "file_touch_count": 24
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 84
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 23,
-          "file_touch_count": 138
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 159
         }
       },
       "timeline": {
         "start_date": "2026-05-01",
-        "last_activity_iso": "2026-06-02T19:42:20-07:00",
+        "last_activity_iso": "2026-06-02T19:50:21-07:00",
         "age_days": 32,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -93153,12 +93153,12 @@
       "cost": {
         "base_index": 55,
         "24h": {
-          "index": 75,
-          "band": "High"
+          "index": 58,
+          "band": "Medium"
         },
         "48h": {
-          "index": 75,
-          "band": "High"
+          "index": 62,
+          "band": "Medium"
         }
       },
       "proof_state": {},
@@ -93226,6 +93226,105 @@
           "value": "B-142"
         }
       ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-143",
+      "title": "Decompose greenfield project intelligence surface",
+      "status": "implementation",
+      "priority": "P1",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Greenfield project intelligence now carries project story extraction, dashboard payload shaping, status text, first-path summaries, and card rendering in src/odylith/runtime/project_intelligence/greenfield.py, which is 2048 lines after the v0.1.15 semantic-render hardening checkpoint. That size makes future confirmed-greenfield changes harder to review and violates the product repo source-size discipline for a touched hand-maintained source file.",
+        "customer": "Odylith maintainers working on confirmed greenfield governance and consumer-lane operators who rely on the project tab to review accepted product shape before implementation planning.",
+        "proposed_solution": "Extract the current project-intelligence greenfield renderer into named modules that own separate responsibilities: accepted project facts, card view models, first-path/status handoff text, and final dashboard payload assembly. Keep the current public payload contract stable while moving code behind characterization tests and project-tab browser proof.",
+        "opportunity": "Split the project-intelligence greenfield surface into focused owners with characterization coverage so project story facts, project-tab cards, status or CTA assembly, and payload rendering can evolve independently while preserving the existing project review UX.",
+        "why_now": "The file crossed the 2000-line threshold while active greenfield quality work was still touching the project-tab path. Future greenfield surface changes need this decomposition lane before more behavior lands in the same module.",
+        "founder_pov": "The project tab should keep showing the same accepted project lane, direction choices, readiness gates, wave status, and first-path handoff, but the implementation should make each rendering responsibility easy to inspect and test without reopening a 2000-line module."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
+        "plan_file": ""
+      },
+      "registry_components": [
+        {
+          "component_id": "dashboard",
+          "name": "Dashboard"
+        },
+        {
+          "component_id": "domain-intelligence",
+          "name": "Domain Intelligence"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "",
+        "updated": "",
+        "all_total_tasks": 0,
+        "all_done_tasks": 0,
+        "total_tasks": 0,
+        "done_tasks": 0,
+        "progress_ratio": 0.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": null,
+        "display_progress_label": "Progress not yet captured",
+        "display_progress_state": "unknown",
+        "progress_classification": "active_untracked",
+        "checklist_label": "",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 1,
+          "local_change_count": 1,
+          "file_touch_count": 84
+        },
+        "48h": {
+          "commit_count": 1,
+          "local_change_count": 1,
+          "file_touch_count": 84
+        }
+      },
+      "timeline": {
+        "start_date": "2026-06-03",
+        "last_activity_iso": "2026-06-02T20:00:46-07:00",
+        "age_days": 0,
+        "eta_days": null,
+        "eta_confidence": "low"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 40,
+          "band": "Medium"
+        },
+        "48h": {
+          "index": 40,
+          "band": "Medium"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {},
+      "scope_signal": {},
+      "proof_refs": [],
       "proof_summary_lines": []
     },
     {
@@ -111679,19 +111778,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 84
         },
         "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 31
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 112
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-06-02T14:41:35-07:00",
+        "last_activity_iso": "2026-06-02T19:50:21-07:00",
         "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
@@ -111707,11 +111806,11 @@
       "cost": {
         "base_index": 84,
         "24h": {
-          "index": 86,
+          "index": 87,
           "band": "High"
         },
         "48h": {
-          "index": 86,
+          "index": 87,
           "band": "High"
         }
       },
@@ -113178,19 +113277,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
+          "commit_count": 1,
+          "local_change_count": 0,
+          "file_touch_count": 84
         },
         "48h": {
-          "commit_count": 1,
-          "local_change_count": 1,
-          "file_touch_count": 141
+          "commit_count": 2,
+          "local_change_count": 0,
+          "file_touch_count": 169
         }
       },
       "timeline": {
         "start_date": "2026-04-17",
-        "last_activity_iso": "2026-06-02T14:41:35-07:00",
+        "last_activity_iso": "2026-06-02T19:50:21-07:00",
         "age_days": 46,
         "eta_days": null,
         "eta_confidence": "low"
@@ -113206,11 +113305,11 @@
       "cost": {
         "base_index": 35,
         "24h": {
-          "index": 37,
+          "index": 38,
           "band": "Low"
         },
         "48h": {
-          "index": 40,
+          "index": 42,
           "band": "Medium"
         }
       },
@@ -117607,105 +117706,6 @@
         "Frontier: governance-refresh",
         "Evidence tier: live verified"
       ]
-    },
-    {
-      "idea_id": "B-143",
-      "title": "Decompose greenfield project intelligence surface",
-      "status": "queued",
-      "priority": "P1",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Greenfield project intelligence now carries project story extraction, dashboard payload shaping, status text, first-path summaries, and card rendering in src/odylith/runtime/project_intelligence/greenfield.py, which is 2048 lines after the v0.1.15 semantic-render hardening checkpoint. That size makes future confirmed-greenfield changes harder to review and violates the product repo source-size discipline for a touched hand-maintained source file.",
-        "customer": "Odylith maintainers working on confirmed greenfield governance and consumer-lane operators who rely on the project tab to review accepted product shape before implementation planning.",
-        "proposed_solution": "Extract the current project-intelligence greenfield renderer into named modules that own separate responsibilities: accepted project facts, card view models, first-path/status handoff text, and final dashboard payload assembly. Keep the current public payload contract stable while moving code behind characterization tests and project-tab browser proof.",
-        "opportunity": "Split the project-intelligence greenfield surface into focused owners with characterization coverage so project story facts, project-tab cards, status or CTA assembly, and payload rendering can evolve independently while preserving the existing project review UX.",
-        "why_now": "The file crossed the 2000-line threshold while active greenfield quality work was still touching the project-tab path. Future greenfield surface changes need this decomposition lane before more behavior lands in the same module.",
-        "founder_pov": "The project tab should keep showing the same accepted project lane, direction choices, readiness gates, wave status, and first-path handoff, but the implementation should make each rendering responsibility easy to inspect and test without reopening a 2000-line module."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-06/2026-06-03-decompose-greenfield-project-intelligence-surface.md",
-        "plan_file": ""
-      },
-      "registry_components": [
-        {
-          "component_id": "dashboard",
-          "name": "Dashboard"
-        },
-        {
-          "component_id": "domain-intelligence",
-          "name": "Domain Intelligence"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "",
-        "updated": "",
-        "all_total_tasks": 0,
-        "all_done_tasks": 0,
-        "total_tasks": 0,
-        "done_tasks": 0,
-        "progress_ratio": 0.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.0,
-        "display_progress_label": "0% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "not_started",
-        "checklist_label": "",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
-        },
-        "48h": {
-          "commit_count": 0,
-          "local_change_count": 1,
-          "file_touch_count": 1
-        }
-      },
-      "timeline": {
-        "start_date": "2026-06-03",
-        "last_activity_iso": "2026-06-02T19:48:00-07:00",
-        "age_days": 0,
-        "eta_days": null,
-        "eta_confidence": "low"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 37,
-          "band": "Low"
-        },
-        "48h": {
-          "index": 37,
-          "band": "Low"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {},
-      "scope_signal": {},
-      "proof_refs": [],
-      "proof_summary_lines": []
     }
   ],
   "verified_scoped_workstreams": {
@@ -118265,6 +118265,33 @@
           "proof_blocker": false
         }
       },
+      "B-143": {
+        "rank": 3,
+        "rung": "R3",
+        "token": "active_scope",
+        "label": "Active scope",
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "caps": [],
+        "promoted_default": true,
+        "budget_class": "fast_simple",
+        "feature_vector": {
+          "has_any_signal": true,
+          "verified_completion": false,
+          "narrow_verified_signal": true,
+          "meaningful_scope_activity": true,
+          "decision_evidence": false,
+          "implementation_evidence": true,
+          "open_warning": false,
+          "cross_surface_conflict": false,
+          "stale_authority": false,
+          "unsafe_closeout": false,
+          "proof_blocker": false
+        }
+      },
       "B-001": {
         "rank": 0,
         "rung": "R0",
@@ -120596,32 +120623,6 @@
           "governance_only_local_change": false,
           "broad_fanout": false
         }
-      },
-      "B-143": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
-        "feature_vector": {
-          "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
-        }
       }
     },
     "48h": {
@@ -121127,6 +121128,33 @@
         }
       },
       "B-142": {
+        "rank": 3,
+        "rung": "R3",
+        "token": "active_scope",
+        "label": "Active scope",
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "caps": [],
+        "promoted_default": true,
+        "budget_class": "fast_simple",
+        "feature_vector": {
+          "has_any_signal": true,
+          "verified_completion": false,
+          "narrow_verified_signal": true,
+          "meaningful_scope_activity": true,
+          "decision_evidence": false,
+          "implementation_evidence": true,
+          "open_warning": false,
+          "cross_surface_conflict": false,
+          "stale_authority": false,
+          "unsafe_closeout": false,
+          "proof_blocker": false
+        }
+      },
+      "B-143": {
         "rank": 3,
         "rung": "R3",
         "token": "active_scope",
@@ -123486,32 +123514,6 @@
           "window_inactive": false,
           "governance_only_local_change": false,
           "broad_fanout": true
-        }
-      },
-      "B-143": {
-        "rank": 3,
-        "rung": "R3",
-        "token": "active_scope",
-        "label": "Active scope",
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "caps": [],
-        "promoted_default": true,
-        "budget_class": "fast_simple",
-        "feature_vector": {
-          "has_any_signal": true,
-          "verified_completion": false,
-          "narrow_verified_signal": true,
-          "meaningful_scope_activity": true,
-          "decision_evidence": false,
-          "implementation_evidence": false,
-          "open_warning": false,
-          "cross_surface_conflict": false,
-          "stale_authority": false,
-          "unsafe_closeout": false,
-          "proof_blocker": false
         }
       }
     }

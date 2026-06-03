@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.focus import backlog_rows_by_id
 from odylith.runtime.project_intelligence.narration import evidence_boundary_phrase
@@ -660,12 +661,25 @@ def _subjectify_path_step(value: str) -> str:
     if not text:
         return ""
     text = _normalize_embedded_action_verbs(text)
-    if re.match(
-        r"^(?:add|adds|log|logs|manually\s+log|manually\s+logs|enter|enters|select|selects|submit|submits|save|saves|choose|chooses|click|clicks|accept|accepts|dismiss|dismisses|record|records|capture|captures|tap|taps)\b",
+    subject_action = re.match(
+        r"^(?P<subject>(?:the\s+)?(?:user|person|customer|actor|operator|participant|owner|requester|applicant|performer))\s+"
+        r"(?P<verb>add|adds|log|logs|enter|enters|select|selects|submit|submits|save|saves|choose|chooses|click|clicks|accept|accepts|dismiss|dismisses|record|records|capture|captures|tap|taps|play|plays)\b(?P<tail>.*)$",
         text,
         flags=re.IGNORECASE,
-    ):
-        return f"the user {_lower_first(text)}"
+    )
+    if subject_action:
+        subject = subject_action.group("subject")
+        verb = third_person_action_verb(subject_action.group("verb"))
+        return f"{_lower_first(subject)} {verb}{subject_action.group('tail')}".strip()
+    action = re.match(
+        r"^(?P<prefix>manually\s+)?(?P<verb>add|adds|log|logs|enter|enters|select|selects|submit|submits|save|saves|choose|chooses|click|clicks|accept|accepts|dismiss|dismisses|record|records|capture|captures|tap|taps)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if action:
+        prefix = action.group("prefix") or ""
+        verb = third_person_action_verb(action.group("verb"))
+        return f"the user {prefix}{verb}{action.group('tail')}".strip()
     return text
 
 

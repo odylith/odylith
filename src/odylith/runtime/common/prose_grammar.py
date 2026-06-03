@@ -197,6 +197,8 @@ def third_person_action_verb(value: str) -> str:
     if not verb:
         return verb
     lowered = verb.casefold()
+    if lowered in _FINITE_ACTION_VERBS:
+        return verb
     if lowered in _INFINITIVE_TO_FINITE:
         return _INFINITIVE_TO_FINITE[lowered]
     if lowered.endswith(("s", "x", "z", "ch", "sh")):

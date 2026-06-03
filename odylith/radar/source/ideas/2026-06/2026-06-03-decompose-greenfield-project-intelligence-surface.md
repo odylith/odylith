@@ -1,4 +1,4 @@
-status: queued
+status: implementation
 
 idea_id: B-143
 
@@ -79,7 +79,7 @@ Extract the current project-intelligence greenfield renderer into named modules 
 - Preserve normal, fallback, and degraded project-tab behavior with unit and browser regression proof.
 
 ## Non-Goals
-- Do not widen this queued workstream into unrelated product cleanup.
+- Do not widen this workstream into unrelated product cleanup.
 
 ## Risks
 - Domain/compliance/policy risk: Decomposition can accidentally change greenfield project-tab copy, hide readiness gates, or weaken first-path proof context. The slice must use characterization tests and browser proof before claiming parity.
@@ -97,7 +97,11 @@ src/odylith/runtime/project_intelligence/greenfield.py drops below 1200 lines; e
 - Run a focused generated-surface review for normal, fallback, and degraded project-tab states before claiming parity.
 
 ## Rollout
-- Queue now, then bind a technical plan when the implementation wave starts.
+- Land focused extraction slices with unchanged public payload shape, then refresh Radar and Compass after source proof passes.
+
+## Implementation Evidence
+- 2026-06-03 first slice split `src/odylith/runtime/project_intelligence/greenfield.py` into focused owners for source/proposal helpers, project text, participant cards, job cards, and known/unknown/risk cards. The top-level greenfield adapter dropped from 2048 lines to 287 lines; extracted modules range from 219 to 706 lines and keep the public payload assembly path stable.
+- The same pass fixed subject-plus-base-verb story rendering by reusing the shared prose grammar inflector, so accepted first-path narration preserves readable subject/verb agreement such as `the user taps Record`.
 
 ## Why Now
 The file crossed the 2000-line threshold while active greenfield quality work was still touching the project-tab path. Future greenfield surface changes need this decomposition lane before more behavior lands in the same module.
@@ -117,7 +121,9 @@ The project tab should keep showing the same accepted project lane, direction ch
 - No migration impact recorded yet.
 
 ## Test Strategy
-- Add targeted regression coverage when implementation begins.
+- `.venv/bin/python -m pytest -q tests/unit/runtime/test_project_intelligence.py` (`32 passed`).
+- `.venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_general_artifact_quality.py tests/unit/runtime/test_greenfield_component_spec_quality.py tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py tests/unit/runtime/test_greenfield_confirmed_repair.py tests/unit/runtime/test_greenfield_artifact_language_quality.py` (`67 passed`).
+- `.venv/bin/python -m pytest -q tests/integration/runtime/test_project_tab_browser.py` (`2 passed`).
 
 ## Open Questions
-- Which existing workstreams or component specs should this attach to first?
+- Whether a follow-up slice should split `greenfield_project_text.py` further once additional project-tab copy changes accumulate.
