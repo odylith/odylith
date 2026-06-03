@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 
@@ -98,3 +99,20 @@ def test_atlas_component_cards_explain_specific_boundary_without_path_boilerplat
     assert "Domain evidence" not in encoded
     assert "**" not in encoded
     assert "`" not in encoded
+
+
+def test_confirmed_diagram_text_model_stays_in_dedicated_owner() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    diagram_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py"
+    text_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py"
+    diagram_source = diagram_owner.read_text(encoding="utf-8")
+    text_source = text_owner.read_text(encoding="utf-8")
+
+    assert len(diagram_source.splitlines()) < 800
+    assert "greenfield_confirmed_diagram_text as diagram_text" in diagram_source
+    assert "def _component_description" not in diagram_source
+    assert "def _brief_proof_boundary" not in diagram_source
+    assert "def _short_label" not in diagram_source
+    assert "def component_description" in text_source
+    assert "def brief_proof_boundary" in text_source
+    assert "def short_label" in text_source

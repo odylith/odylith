@@ -844,6 +844,25 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   311.68s`); and `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 10.09s`).
+- 2026-06-03 confirmed-Atlas diagram text-model decomposition moved component
+  card descriptions, product/actor/proof briefs, proof-review labels,
+  workstream title derivation, Mermaid label trimming, and short-label cleanup
+  into `greenfield_confirmed_diagram_text.py`. The diagram owner now keeps
+  row assembly and flowchart wiring focused (`greenfield_confirmed_diagrams.py`:
+  999 to 468 lines), while `test_greenfield_confirmed_diagrams.py` pins the
+  text-model owner and parent soft-limit ceiling. The same pass repaired a
+  stale confirmed-surface assertion so the test expects the current imperative
+  action label `Tap Record` instead of the older third-person label. Proof:
+  `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py
+  tests/unit/runtime/test_greenfield_confirmed_diagrams.py
+  tests/unit/runtime/test_greenfield_confirmed_surfaces.py` passed; focused
+  diagram/surface proof passed (`6 passed in 5.80s`); the broader greenfield
+  artifact-quality bundle passed (`126 passed in 388.79s`); and
+  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 14.50s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

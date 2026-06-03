@@ -72,7 +72,7 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
     assert 'actor["User action<br/>Solo performer"]' in sequence["mermaid_source"]
     assert 'C1["Audio Capture and<br/>Pre-processing Service"]' in sequence["mermaid_source"]
     assert 'S1["Open LiveScore"]' in sequence["mermaid_source"]
-    assert 'S2["Taps Record"]' in sequence["mermaid_source"]
+    assert 'S2["Tap Record"]' in sequence["mermaid_source"]
     assert "roughly 30-second<br/>monophonic line" in sequence["mermaid_source"]
     assert "downloadable PDF and<br/>MusicXML" in sequence["mermaid_source"]
     assert "state, evidence, and next action stay visible" in sequence["mermaid_source"]
