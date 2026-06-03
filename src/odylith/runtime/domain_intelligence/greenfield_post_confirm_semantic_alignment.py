@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_rows import mapping_rows as _mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -42,7 +42,7 @@ def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
         issues.append("DiagramEventGraph must carry a readable proof checkpoint")
     proof_keys = {
         clean_text(row.get("key"))
-        for row in _mapping_rows(semantic.get("proof_obligations"))
+        for row in mapping_rows(semantic.get("proof_obligations"))
         if clean_text(row.get("key"))
     }
     for key in ("first_path_contract", "release_boundary"):
@@ -52,8 +52,8 @@ def semantic_model_shape_issues(semantic: Mapping[str, Any]) -> list[str]:
 
 
 def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: Mapping[str, Any]) -> list[str]:
-    proposal_components = _mapping_rows(proposal.get("components"))
-    model_components = _mapping_rows(semantic.get("components"))
+    proposal_components = mapping_rows(proposal.get("components"))
+    model_components = mapping_rows(semantic.get("components"))
     issues: list[str] = []
     proposal_by_id = {_component_id(row): row for row in proposal_components if _component_id(row)}
     model_by_id = {_component_id(row): row for row in model_components if _component_id(row)}
@@ -90,7 +90,7 @@ def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: M
             issues.append(f"GreenfieldSemanticModel component `{component_id}` proof obligations drifted from ComponentContract")
     proof_keys = {
         clean_text(row.get("key"))
-        for row in _mapping_rows(semantic.get("proof_obligations"))
+        for row in mapping_rows(semantic.get("proof_obligations"))
     }
     for component_id, row in proposal_by_id.items():
         if clean_text(row.get("release_scope")) == "out_of_scope":
@@ -101,8 +101,8 @@ def semantic_component_alignment_issues(proposal: Mapping[str, Any], semantic: M
 
 
 def semantic_workstream_alignment_issues(proposal: Mapping[str, Any], semantic: Mapping[str, Any]) -> list[str]:
-    proposal_rows = _mapping_rows(proposal.get("backlog"))
-    model_rows = _mapping_rows(semantic.get("workstreams"))
+    proposal_rows = mapping_rows(proposal.get("backlog"))
+    model_rows = mapping_rows(semantic.get("workstreams"))
     proposal_by_title = {clean_text(row.get("title")): row for row in proposal_rows if clean_text(row.get("title"))}
     model_by_title = {clean_text(row.get("title")): row for row in model_rows if clean_text(row.get("title"))}
     proposal_titles = set(proposal_by_title)
@@ -137,7 +137,7 @@ def semantic_diagram_alignment_issues(proposal: Mapping[str, Any], semantic: Map
     graph = semantic.get("diagram_event_graph") if isinstance(semantic.get("diagram_event_graph"), Mapping) else {}
     active_components = {
         _component_id(row)
-        for row in _mapping_rows(proposal.get("components"))
+        for row in mapping_rows(proposal.get("components"))
         if _component_id(row) and _is_first_release_scope(row.get("release_scope"))
     }
     graph_components = {
@@ -151,17 +151,17 @@ def semantic_diagram_alignment_issues(proposal: Mapping[str, Any], semantic: Map
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     first_path_events = tuple(
         clean_text(row.get("text"))
-        for row in _mapping_rows(first_path.get("events") if isinstance(first_path, Mapping) else ())
+        for row in mapping_rows(first_path.get("events") if isinstance(first_path, Mapping) else ())
         if clean_text(row.get("text"))
     )
     graph_events = tuple(
         clean_text(row.get("text"))
-        for row in _mapping_rows(graph.get("events") if isinstance(graph, Mapping) else ())
+        for row in mapping_rows(graph.get("events") if isinstance(graph, Mapping) else ())
         if clean_text(row.get("text"))
     )
     if first_path_events and graph_events != first_path_events:
         issues.append("DiagramEventGraph events drifted from FirstPathContract events")
-    diagram_rows = _mapping_rows(proposal.get("diagrams"))
+    diagram_rows = mapping_rows(proposal.get("diagrams"))
     if not diagram_rows:
         issues.append("post-confirm completion requires in-memory Atlas diagram artifacts")
     for row in diagram_rows:
@@ -173,7 +173,7 @@ def semantic_diagram_alignment_issues(proposal: Mapping[str, Any], semantic: Map
 def rendered_spec_alignment_issues(proposal: Mapping[str, Any], rendered_specs: Mapping[str, str]) -> list[str]:
     active_labels = {
         clean_text(row.get("label"))
-        for row in _mapping_rows(proposal.get("components"))
+        for row in mapping_rows(proposal.get("components"))
         if clean_text(row.get("label")) and clean_text(row.get("release_scope")) != "out_of_scope"
     }
     rendered_labels = {clean_text(label) for label in rendered_specs}

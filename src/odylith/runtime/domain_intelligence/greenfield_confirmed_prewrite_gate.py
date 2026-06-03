@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_component_contract import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import component_spec_preflight_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -38,7 +39,7 @@ def complete_semantic_model(
             internal_systems=text_values(intent.get("internal_systems")),
             external_systems=text_values(intent.get("external_systems")),
             non_goals=text_values(proposal.get("non_goals") or intent.get("non_goals")),
-            workstreams=_mapping_rows(proposal.get("backlog")),
+            workstreams=mapping_rows(proposal.get("backlog")),
         )
     )
     if proposal.get("semantic_model") == model:
@@ -61,7 +62,7 @@ def preflight_issues(proposal: Mapping[str, Any], *, release_selector: str) -> l
 
 def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
     issues: list[str] = []
-    for index, row in enumerate(_mapping_rows(proposal.get("backlog")), start=1):
+    for index, row in enumerate(mapping_rows(proposal.get("backlog")), start=1):
         decision = artifact_tribunal.run_governed_artifact_tribunal(
             artifact_kind="backlog",
             payload={
@@ -76,7 +77,7 @@ def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
             },
         )
         issues.extend(f"backlog row {index}: {issue}" for issue in decision.issues)
-    for index, row in enumerate(_mapping_rows(proposal.get("components")), start=1):
+    for index, row in enumerate(mapping_rows(proposal.get("components")), start=1):
         decision = artifact_tribunal.run_governed_artifact_tribunal(
             artifact_kind="component",
             payload={
@@ -93,7 +94,7 @@ def _artifact_issues(proposal: Mapping[str, Any]) -> list[str]:
             },
         )
         issues.extend(f"component row {index}: {issue}" for issue in decision.issues)
-    for index, row in enumerate(_mapping_rows(proposal.get("diagrams")), start=1):
+    for index, row in enumerate(mapping_rows(proposal.get("diagrams")), start=1):
         decision = artifact_tribunal.run_governed_artifact_tribunal(
             artifact_kind="atlas_diagram",
             payload={
@@ -117,12 +118,6 @@ def _dict_rows(value: Any) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         return []
     return [row for row in value if isinstance(row, dict)]
-
-
-def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
-    if not isinstance(value, list):
-        return []
-    return [row for row in value if isinstance(row, Mapping)]
 
 
 __all__ = ["complete_semantic_model", "preflight_issues"]

@@ -9,6 +9,7 @@ from typing import Any
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.project_intelligence_binding import attach_project_intelligence_bindings
@@ -148,7 +149,7 @@ def _project_intelligence_first_row(proposal: Mapping[str, Any], key: str) -> st
 
 def _component_system_rows(proposal: Mapping[str, Any]) -> tuple[str, ...]:
     rows: list[str] = []
-    for component in _mapping_rows(proposal.get("components")):
+    for component in mapping_rows(proposal.get("components")):
         label = _clean(component.get("label"))
         description = _clean(component.get("source_system_description")) or _clean(component.get("responsibility"))
         if label and description:
@@ -171,10 +172,6 @@ def _replace_title_text(value: Any, *, current: str, replacement: str) -> None:
                 value[index] = nested.replace(current, replacement)
             else:
                 _replace_title_text(nested, current=current, replacement=replacement)
-
-
-def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
-    return [row for row in value if isinstance(row, Mapping)] if isinstance(value, list) else []
 
 
 def _first_path(proposal: Mapping[str, Any]) -> str:

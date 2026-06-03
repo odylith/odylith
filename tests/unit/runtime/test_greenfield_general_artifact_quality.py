@@ -44,7 +44,6 @@ POST_CONFIRM_SEMANTIC_DRIFT_PATH = (
 POST_CONFIRM_SEMANTIC_ALIGNMENT_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py"
 )
-POST_CONFIRM_ROWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rows.py"
 PROPOSAL_TRIBUNAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/proposal_tribunal.py"
 PROPOSAL_TRIBUNAL_SUBSTANCE_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py"
@@ -55,7 +54,6 @@ def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> No
     parent_source = POST_CONFIRM_COMPLETION_PATH.read_text(encoding="utf-8")
     drift_source = POST_CONFIRM_SEMANTIC_DRIFT_PATH.read_text(encoding="utf-8")
     alignment_source = POST_CONFIRM_SEMANTIC_ALIGNMENT_PATH.read_text(encoding="utf-8")
-    rows_source = POST_CONFIRM_ROWS_PATH.read_text(encoding="utf-8")
 
     assert len(parent_source.splitlines()) < 800
     assert "def _generated_artifact_sentences" not in parent_source
@@ -76,7 +74,6 @@ def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> No
     assert "def semantic_workstream_alignment_issues" in alignment_source
     assert "def semantic_diagram_alignment_issues" in alignment_source
     assert "def rendered_spec_alignment_issues" in alignment_source
-    assert "def mapping_rows" in rows_source
 
 
 def test_greenfield_tribunal_substance_gate_stays_in_dedicated_owner() -> None:

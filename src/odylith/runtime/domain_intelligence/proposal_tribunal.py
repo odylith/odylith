@@ -14,6 +14,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import collect_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence import greenfield_programs
@@ -139,11 +140,11 @@ def run_greenfield_tribunal(
 ) -> GreenfieldTribunalDecision:
     """Adjudicate proposal coherence before greenfield source-truth writes."""
 
-    backlog = _mapping_rows(proposal.get("backlog"))
-    components = _mapping_rows(proposal.get("components"))
-    diagrams = _mapping_rows(proposal.get("diagrams"))
+    backlog = mapping_rows(proposal.get("backlog"))
+    components = mapping_rows(proposal.get("components"))
+    diagrams = mapping_rows(proposal.get("diagrams"))
     program = proposal.get("program", {}) if isinstance(proposal.get("program"), Mapping) else {}
-    waves = _mapping_rows(program.get("waves"))
+    waves = mapping_rows(program.get("waves"))
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     issues: list[str] = []
@@ -427,10 +428,6 @@ def _check_visible_tribunal_actors(
             "Tribunal visible actors must distinguish stable judgment roles instead of reusing one label: "
             + ", ".join(repeated)
         )
-
-
-def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
-    return [row for row in value if isinstance(row, Mapping)] if isinstance(value, list) else []
 
 
 def _project_title_slugs(proposal: Mapping[str, Any]) -> set[str]:

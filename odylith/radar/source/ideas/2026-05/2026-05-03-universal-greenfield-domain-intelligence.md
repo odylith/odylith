@@ -1087,6 +1087,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   3.92s`); standard greenfield artifact-quality proof passed (`145 passed in
   234.45s`); and confirmed-create performance proof passed (`1 passed in
   11.48s`).
+- 2026-06-03 row-coercion ownership consolidation promoted shared generated
+  list-row coercion into `greenfield_rows.py` and removed local
+  `_mapping_rows` clones from confirmed prewrite gating, the deterministic
+  Tribunal, confirmed title repair, apply-prewrite remapping, and post-confirm
+  semantic/package checks. The former post-confirm-specific row owner was
+  deleted instead of left as a wrapper, so row coercion is no longer coupled to
+  one package phase (`greenfield_rows.py`: 12 lines;
+  `greenfield_post_confirm_completion.py`: 693 lines;
+  `proposal_tribunal.py`: 519 lines; `greenfield_apply_prewrite.py`: 456
+  lines). `tests/unit/runtime/test_greenfield_row_coercion.py` now pins the
+  shared owner and prevents private `_mapping_rows` helpers from returning.
+  Proof: syntax proof passed for the touched Domain Intelligence modules and
+  row-owner tests; focused row-owner proof passed (`1 passed in 0.02s`);
+  focused post-confirm/Tribunal structural proof passed (`2 passed, 38
+  deselected in 0.21s`); standard greenfield artifact-quality proof passed
+  (`146 passed in 232.66s`); and confirmed-create performance proof passed (`1
+  passed in 11.42s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 from odylith.runtime.governance import backlog_authoring
@@ -212,7 +213,7 @@ def remap_prewrite_backlog_result(
     remapped: dict[str, Any] = dict(backlog_result)
     remapped["created"] = [
         _remap_created_backlog_item(row, source_root=staged_root, target_root=real_root)
-        for row in _mapping_rows(backlog_result.get("created"))
+        for row in mapping_rows(backlog_result.get("created"))
     ]
     remapped["backlog_index"] = _remap_path_text(backlog_result.get("backlog_index"), source_root=staged_root, target_root=real_root)
     remapped["idea_files"] = _remap_text_by_path(backlog_result.get("idea_files"), source_root=staged_root, target_root=real_root)
@@ -315,7 +316,7 @@ def preview_accepted_project_memory(
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
     return build_accepted_project_source_payload(
         proposal=proposal,
-        backlog_items=_mapping_rows(backlog_result.get("created")),
+        backlog_items=mapping_rows(backlog_result.get("created")),
         component_items=tuple(row for row in component_items if isinstance(row, Mapping)),
         diagram_ids=greenfield_apply_diagrams.allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows),
         release_selector=release_selector,
@@ -340,7 +341,7 @@ def preview_compass_acceptance_event(
     diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
     return build_greenfield_acceptance_event_preview(
         proposal=proposal,
-        backlog_items=_mapping_rows(backlog_result.get("created")),
+        backlog_items=mapping_rows(backlog_result.get("created")),
         component_items=tuple(row for row in component_items if isinstance(row, Mapping)),
         diagram_ids=greenfield_apply_diagrams.allocated_diagram_ids(root, len(diagram_rows), rows=diagram_rows),
         release_selector=release_selector,
@@ -376,10 +377,6 @@ def _copy_existing_path(source: Path, target: Path) -> None:
         shutil.copytree(source, target, symlinks=True)
     else:
         shutil.copy2(source, target)
-
-
-def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
-    return [row for row in value if isinstance(row, Mapping)] if isinstance(value, list) else []
 
 
 def _remap_created_backlog_item(

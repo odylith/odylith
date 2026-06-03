@@ -6,7 +6,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_rows import mapping_rows as _mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -128,7 +128,7 @@ def _intent_signature_text(proposal: Mapping[str, Any]) -> str:
 
 def _component_signature_text(proposal: Mapping[str, Any]) -> str:
     rows: list[Any] = []
-    for row in _mapping_rows(proposal.get("components")):
+    for row in mapping_rows(proposal.get("components")):
         rows.extend([row.get("label"), row.get("source_system_description")])
     return " ".join(clean_text(row) for row in rows if clean_text(row))
 
@@ -139,7 +139,7 @@ def _generated_artifact_text(proposal: Mapping[str, Any]) -> str:
 
 def _generated_artifact_value_texts(proposal: Mapping[str, Any]) -> list[str]:
     rows: list[Any] = []
-    for row in _mapping_rows(proposal.get("backlog")):
+    for row in mapping_rows(proposal.get("backlog")):
         rows.extend(
             [
                 row.get("title"),
@@ -151,9 +151,9 @@ def _generated_artifact_value_texts(proposal: Mapping[str, Any]) -> list[str]:
                 row.get("validation"),
             ]
         )
-    for row in _mapping_rows(proposal.get("components")):
+    for row in mapping_rows(proposal.get("components")):
         rows.extend([row.get("label"), row.get("source_system_description"), row.get("component_contract")])
-    for row in _mapping_rows(proposal.get("diagrams")):
+    for row in mapping_rows(proposal.get("diagrams")):
         rows.extend([row.get("title"), row.get("summary"), row.get("read_guide"), row.get("components")])
     release_plan = proposal.get("release_plan") if isinstance(proposal.get("release_plan"), Mapping) else {}
     rows.extend([release_plan.get("strategy"), release_plan.get("promotion_criteria")])
@@ -164,7 +164,7 @@ def _generated_artifact_value_texts(proposal: Mapping[str, Any]) -> list[str]:
 
 def _generated_repetition_value_texts(proposal: Mapping[str, Any]) -> list[str]:
     rows: list[Any] = []
-    for row in _mapping_rows(proposal.get("backlog")):
+    for row in mapping_rows(proposal.get("backlog")):
         rows.extend(
             [
                 row.get("problem"),
@@ -175,9 +175,9 @@ def _generated_repetition_value_texts(proposal: Mapping[str, Any]) -> list[str]:
                 row.get("validation"),
             ]
         )
-    for row in _mapping_rows(proposal.get("components")):
+    for row in mapping_rows(proposal.get("components")):
         rows.extend([row.get("source_system_description"), row.get("component_contract")])
-    for row in _mapping_rows(proposal.get("diagrams")):
+    for row in mapping_rows(proposal.get("diagrams")):
         rows.extend([row.get("summary"), row.get("read_guide")])
     release_plan = proposal.get("release_plan") if isinstance(proposal.get("release_plan"), Mapping) else {}
     rows.extend([release_plan.get("strategy"), release_plan.get("promotion_criteria")])

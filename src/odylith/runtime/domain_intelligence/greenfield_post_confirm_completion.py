@@ -27,7 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_targets i
 from odylith.runtime.domain_intelligence.greenfield_project_brief import PROJECT_BRIEF_SCHEMA_VERSION
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_rows import mapping_rows as _mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
     rendered_spec_alignment_issues as _rendered_spec_alignment_issues,
 )
@@ -260,11 +260,11 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
     compass_preview = package.compass_memory_preview if isinstance(package.compass_memory_preview, Mapping) else {}
     next_steps_preview = package.next_steps_preview if isinstance(package.next_steps_preview, Mapping) else {}
     if backlog_result:
-        created = _mapping_rows(backlog_result.get("created"))
+        created = mapping_rows(backlog_result.get("created"))
         idea_files = backlog_result.get("idea_files") if isinstance(backlog_result.get("idea_files"), Mapping) else {}
         proposal_titles = {
             clean_text(row.get("title"))
-            for row in _mapping_rows(package.proposal.get("backlog"))
+            for row in mapping_rows(package.proposal.get("backlog"))
             if clean_text(row.get("title"))
         }
         created_titles = {clean_text(row.get("title")) for row in created if clean_text(row.get("title"))}
@@ -284,7 +284,7 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
     if backlog_result and not atlas_sources:
         issues.append("prewrite package must include rendered Atlas Mermaid sources")
     if atlas_sources:
-        diagram_rows = _mapping_rows(package.proposal.get("diagrams"))
+        diagram_rows = mapping_rows(package.proposal.get("diagrams"))
         if len(atlas_sources) != len(diagram_rows):
             issues.append("prewrite Atlas package must render one Mermaid source per DiagramEventGraph diagram")
         for raw_path, source in atlas_sources.items():
@@ -418,7 +418,7 @@ def _next_steps_preview_issues(
     issues: list[str] = []
     created_ids = {
         clean_text(row.get("idea_id")).upper()
-        for row in _mapping_rows((package.backlog_result or {}).get("created"))
+        for row in mapping_rows((package.backlog_result or {}).get("created"))
         if clean_text(row.get("idea_id"))
     }
     start_id = clean_text(next_steps_preview.get("start_workstream_id")).upper()
@@ -555,9 +555,9 @@ def _accepted_project_preview_issues(
     if not isinstance(proposal.get("semantic_model"), Mapping):
         issues.append("accepted-project memory preview must include the GreenfieldSemanticModel")
     created = accepted_preview.get("created") if isinstance(accepted_preview.get("created"), Mapping) else {}
-    if len(_mapping_rows(created.get("workstreams"))) != len(_mapping_rows((package.backlog_result or {}).get("created"))):
+    if len(mapping_rows(created.get("workstreams"))) != len(mapping_rows((package.backlog_result or {}).get("created"))):
         issues.append("accepted-project memory preview workstream count drifted from Radar prewrite output")
-    if len(_mapping_rows(created.get("components"))) != len(component_preview):
+    if len(mapping_rows(created.get("components"))) != len(component_preview):
         issues.append("accepted-project memory preview component count drifted from Registry prewrite output")
     diagram_ids = [item for item in created.get("diagrams", []) if clean_text(item)] if isinstance(created.get("diagrams"), list) else []
     if len(diagram_ids) != len(atlas_sources):
@@ -569,7 +569,7 @@ def _accepted_project_preview_issues(
         _component_preview_path_fidelity_issues(
             owner="accepted-project memory preview",
             expected=component_preview,
-            actual=_mapping_rows(created.get("components")),
+            actual=mapping_rows(created.get("components")),
         )
     )
     return issues
@@ -590,7 +590,7 @@ def _compass_memory_preview_issues(
     if not clean_text(compass_preview.get("summary")):
         issues.append("Compass memory event preview must include an acceptance summary")
     workstreams = [item for item in compass_preview.get("workstreams", []) if clean_text(item)] if isinstance(compass_preview.get("workstreams"), list) else []
-    if len(workstreams) != len(_mapping_rows((package.backlog_result or {}).get("created"))):
+    if len(workstreams) != len(mapping_rows((package.backlog_result or {}).get("created"))):
         issues.append("Compass memory event preview workstreams drifted from Radar prewrite output")
     components = [item for item in compass_preview.get("components", []) if clean_text(item)] if isinstance(compass_preview.get("components"), list) else []
     if len(components) != len(component_preview):
@@ -641,7 +641,7 @@ def _confirmed_greenfield_package(proposal: Mapping[str, Any]) -> bool:
 
 
 def _active_component_rows(proposal: Mapping[str, Any]) -> list[Mapping[str, Any]]:
-    rows = _mapping_rows(proposal.get("components"))
+    rows = mapping_rows(proposal.get("components"))
     active = [
         row
         for row in rows

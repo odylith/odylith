@@ -1,4 +1,4 @@
-"""Shared row coercion for post-confirm greenfield package checks."""
+"""Shared row coercion for greenfield proposal surfaces."""
 
 from __future__ import annotations
 
