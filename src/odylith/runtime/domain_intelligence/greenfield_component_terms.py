@@ -168,10 +168,16 @@ ARTIFACT_CARRIER_TERMS = {
     "flags",
     "form",
     "forms",
+    "guardrail",
+    "guardrails",
     "history",
     "input",
     "inputs",
+    "journal",
+    "journals",
     "ledger",
+    "list",
+    "lists",
     "marker",
     "markers",
     "metric",
@@ -325,10 +331,14 @@ def clean_artifact_phrase(value: str) -> str:
         return ""
     if set(words) & ARTIFACT_CARRIER_TERMS:
         keep_role_qualified_artifact = (
-            len(words) == 2
+            2 <= len(words) <= 4
             and words[0].casefold() in ROLEISH_TERMS
-            and words[1].casefold() in ARTIFACT_CARRIER_TERMS
-            and words[1].casefold() not in {"action", "actions", "input", "inputs"}
+            and words[-1].casefold() in ARTIFACT_CARRIER_TERMS
+            and words[-1].casefold() not in {"action", "actions", "input", "inputs"}
+            and (
+                len(words) == 2
+                or any(word.casefold() not in ROLEISH_TERMS and word.casefold() not in ARTIFACT_CARRIER_TERMS for word in words[1:-1])
+            )
         )
         if not keep_role_qualified_artifact:
             words = [

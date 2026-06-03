@@ -1018,6 +1018,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   artifact-quality proof passed (`90 passed in 225.71s`); full
   confirmed-greenfield regression proof passed (`133 passed in 341.80s`); and
   confirmed-create performance proof passed (`1 passed in 12.05s`).
+- 2026-06-03 Atlas first-path step derivation decomposition moved semantic
+  event extraction, launcher-only filtering, first-path step fallback,
+  compound-step expansion, and step dedupe into `greenfield_sequence_steps.py`.
+  `greenfield_sequence_diagram.py` now owns participant routing, component
+  routing, Mermaid labels, and diagram rendering only (`868` to `701` lines),
+  while the new step owner is `199` lines. The same pass hardened accepted
+  first paths whose final user decision includes `act later` so the Atlas tail
+  preservation gate still sees the final action, and kept short
+  role-qualified Registry artifacts such as `person follow list` intact in
+  generated component contracts. Proof: focused diagram/sequence proof passed
+  (`11 passed, 36 deselected in 29.77s`); full confirmed-greenfield proof
+  passed (`48 passed in 69.77s`); broader artifact-quality proof passed (`98
+  passed in 244.93s`); and confirmed-create performance proof passed (`1
+  passed in 12.44s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

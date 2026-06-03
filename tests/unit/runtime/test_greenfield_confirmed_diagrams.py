@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
+from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 
 
 def _diagram_slugs() -> dict[str, str]:
@@ -116,3 +117,39 @@ def test_confirmed_diagram_text_model_stays_in_dedicated_owner() -> None:
     assert "def component_description" in text_source
     assert "def brief_proof_boundary" in text_source
     assert "def short_label" in text_source
+
+
+def test_sequence_event_steps_stay_in_dedicated_owner() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    diagram_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py"
+    steps_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py"
+    diagram_source = diagram_owner.read_text(encoding="utf-8")
+    steps_source = steps_owner.read_text(encoding="utf-8")
+
+    assert len(diagram_source.splitlines()) < 800
+    assert "from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps" in diagram_source
+    assert "sequence_event_steps(first_path, semantic_model=semantic_model)" in diagram_source
+    assert "sequence_event_steps(first_path, semantic_model=semantic_model, dedupe=True)" in diagram_source
+    for moved in (
+        "def _semantic_event_steps",
+        "def _drop_launcher_only_steps",
+        "def _launcher_only_step",
+        "def _normalize_event_step",
+        "def _first_path_steps",
+        "def _expand_compound_steps",
+        "def _dedupe_steps",
+    ):
+        assert moved not in diagram_source
+        assert moved in steps_source
+    assert "def sequence_event_steps" in steps_source
+
+
+def test_sequence_event_steps_preserve_action_later_decision_tail() -> None:
+    steps = sequence_event_steps(
+        "A user adds a person to follow, chooses approved public data sources, sees recent activity signals with source links, "
+        "reviews risk and context summaries, adds selected items to a watchlist, and records whether they plan to research, "
+        "ignore, or act later.",
+        dedupe=True,
+    )
+
+    assert steps[-1] == "A user records whether they plan to research, ignore, or act later"

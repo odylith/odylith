@@ -319,6 +319,11 @@ def _is_scope_or_deferred_statement(value: str) -> bool:
     if not text:
         return False
     lowered = text.casefold()
+    if re.search(r"\b(?:act|follow(?:-|\s+)up|research|respond|retry|return)\s+later\b", lowered) and _MATERIAL_ACTION_RE.search(
+        text
+    ):
+        if not re.search(r"\b(?:defer|deferred|future|not\s+included|not\s+claim|outside|release|scope)\b", lowered):
+            return False
     if re.search(
         r"\b(?:out\s+of\s+scope|outside\s+(?:the\s+)?(?:first\s+)?release|outside\s+scope|"
         r"stay\s+outside|stays\s+outside|deferred|later|future|not\s+included|not\s+claim|"

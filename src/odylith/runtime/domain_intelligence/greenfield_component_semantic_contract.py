@@ -468,6 +468,8 @@ def _label_compound_phrases(label: str) -> list[str]:
         if term not in {"adapter", "client", "engine", "service", "surface", "system", "viewer"}
     ]
     rows: list[str] = []
+    if 2 <= len(terms) <= 5 and terms[-1] in _ARTIFACT_CARRIER_TERMS:
+        rows.append(" ".join(terms))
     for index in range(max(0, len(terms) - 1)):
         rows.append(f"{terms[index]} {terms[index + 1]}")
     rows = list(unique_text(rows))
