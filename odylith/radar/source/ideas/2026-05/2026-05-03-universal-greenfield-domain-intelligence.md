@@ -774,6 +774,25 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.79s`).
+- 2026-06-03 confirmed-completion quality decomposition moved generic text
+  repair detection, sequence repair detection, proof-boundary weakness checks,
+  and bad sentence-tail detection into
+  `greenfield_confirmed_completion_quality.py`. The confirmed-completion
+  orchestrator now calls the shared quality owner instead of carrying local
+  `_text_needs_repair`, `_sequence_needs_repair`, and `_has_bad_tail` helpers
+  (`greenfield_confirmed_completion.py`: 1192 to 1068 lines), while
+  `test_greenfield_confirmed_repair.py` pins the owner split. Proof:
+  `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_quality.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed;
+  `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed (`3 passed in
+  10.66s`); the broader greenfield artifact-quality bundle passed (`118 passed
+  in 332.17s`); and the escalated Chromium-capable run of `PYTHONPATH=src
+  .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.54s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

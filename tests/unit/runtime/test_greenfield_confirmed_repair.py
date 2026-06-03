@@ -20,18 +20,29 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 ROOT = Path(__file__).resolve().parents[3]
 CONFIRMED_COMPLETION_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py"
 CONFIRMED_PREWRITE_GATE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py"
+CONFIRMED_COMPLETION_QUALITY_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_quality.py"
+)
 
 
 def test_confirmed_completion_prewrite_gate_stays_in_dedicated_owner() -> None:
     parent_source = CONFIRMED_COMPLETION_PATH.read_text(encoding="utf-8")
     gate_source = CONFIRMED_PREWRITE_GATE_PATH.read_text(encoding="utf-8")
+    quality_source = CONFIRMED_COMPLETION_QUALITY_PATH.read_text(encoding="utf-8")
 
     assert len(parent_source.splitlines()) < 1200
     assert "def _artifact_issues" not in parent_source
     assert "run_greenfield_tribunal" not in parent_source
+    assert "def _text_needs_repair" not in parent_source
+    assert "def _sequence_needs_repair" not in parent_source
+    assert "def _has_bad_tail" not in parent_source
     assert "preflight_issues as _preflight_issues" in parent_source
+    assert "text_needs_repair as _text_needs_repair" in parent_source
     assert "def preflight_issues" in gate_source
     assert "artifact_tribunal.run_governed_artifact_tribunal" in gate_source
+    assert "def text_needs_repair" in quality_source
+    assert "def sequence_needs_repair" in quality_source
+    assert "def validation_strategy_needs_repair" in quality_source
 
 
 def _dirty_complete_contract() -> dict[str, object]:
