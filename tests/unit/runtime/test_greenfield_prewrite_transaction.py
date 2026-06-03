@@ -7,6 +7,7 @@ import pytest
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
+from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
@@ -67,14 +68,14 @@ def _proposal(tmp_path: Path) -> dict[str, object]:
 
 
 def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
-        greenfield_proposals.component_authoring.owned_surface_refresh,
+        greenfield_apply_write.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
@@ -709,14 +710,14 @@ def test_greenfield_apply_blocks_bad_accepted_project_preview_before_governed_wr
 def test_greenfield_apply_uses_dry_run_release_target_preview_before_target_writes(tmp_path: Path, monkeypatch) -> None:
     proposal = _proposal(tmp_path)
     _disable_refreshes(monkeypatch)
-    original = greenfield_proposals.release_planning_authoring.ensure_release_selector
+    original = greenfield_apply_prewrite.release_planning_authoring.ensure_release_selector
     dry_run_calls: list[bool] = []
 
     def capture_release_selector(**kwargs):
         dry_run_calls.append(bool(kwargs.get("dry_run")))
         return original(**kwargs)
 
-    monkeypatch.setattr(greenfield_proposals.release_planning_authoring, "ensure_release_selector", capture_release_selector)
+    monkeypatch.setattr(greenfield_apply_prewrite.release_planning_authoring, "ensure_release_selector", capture_release_selector)
 
     greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,

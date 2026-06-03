@@ -86,6 +86,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Split generated Registry component semantic context extraction into `greenfield_component_semantic_context.py`. Context-derived phrase extraction, late first-path/proof backfill selection, context anchor expansion, actor/action prefix removal, and context-backfill decisions now sit outside `greenfield_component_semantic_contract.py`, which stays below the 800-line soft limit as the semantic contract assembly owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split generated Registry component contract target parsing into `greenfield_component_contract_targets.py`. Rendered-spec issue parsing, duplicate repair-target dedupe, and operator-facing component-spec blocker copy now sit outside `greenfield_component_contract_differentiation.py`, which stays below the 800-line soft limit as the contract repair orchestrator. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-create apply-prewrite component and diagram rendering into `greenfield_apply_components.py` and `greenfield_apply_diagrams.py`. First-release Registry input shaping, dry-run component preview, in-memory Registry spec rendering, component dependency/risk/responsibility copy, Atlas source preview, and diagram ID allocation now sit outside `greenfield_apply_prewrite.py`, which stays below the 800-line soft limit as the staged package and remapping owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Split confirmed-create final governed writes into `greenfield_apply_write.py`. The owner now applies Radar source files, stale workstream cleanup, release targeting, program waves, Atlas scaffold/upsert writes, Registry component authoring, accepted-project memory, dashboard refresh, and next-step shaping while `greenfield_proposals.py` stays below the 800-line soft limit as the intent/proposal/prewrite transaction entrypoint. The same pass aligned blank component `release_scope` with the semantic builder and refreshed stale apply semantic models before completion gates run. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -146,6 +147,13 @@ This section captures synchronized requirement and contract signals derived from
   `complete_semantic_model` and `preflight_issues`, but it must not re-own the
   greenfield Tribunal call, governed-artifact Tribunal aggregation, or local
   proposal/component/spec issue collector loop.
+- Confirmed-create final governed writes must stay in
+  `greenfield_apply_write.py`. The greenfield proposal entrypoint may call
+  `release_assignment_note` and `write_greenfield_proposal`, but it must not
+  re-own Radar source writes, stale workstream cleanup, release assignment
+  writes, program wave creation, Atlas scaffold/upsert helpers, Registry
+  component authoring, accepted-project memory recording, dashboard refresh, or
+  next-step shaping.
 - Installed greenfield guidance must not ask Codex or Claude hosts to hand-author
   or reconstruct proposal JSON. Proposal review uses the canonical object from
   `greenfield propose`; confirmation uses `greenfield create --confirm` unless an

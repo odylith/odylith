@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
@@ -1104,14 +1105,14 @@ def test_greenfield_apply_keeps_deferred_components_out_of_first_release_registr
     monkeypatch,
 ) -> None:
     _seed_empty_governance_repo(tmp_path)
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
-        greenfield_proposals.component_authoring.owned_surface_refresh,
+        greenfield_apply_write.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

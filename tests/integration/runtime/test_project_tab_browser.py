@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.project_intelligence import assets
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
@@ -22,17 +23,17 @@ from tests.unit.runtime.greenfield_proposal_fixtures import (
 def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa: ANN001
     _seed_empty_governance_repo(tmp_path)
     monkeypatch.setattr(
-        greenfield_proposals.owned_surface_refresh,
+        greenfield_apply_write.owned_surface_refresh,
         "raise_for_failed_refreshes",
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_proposals.component_authoring.owned_surface_refresh,
+        greenfield_apply_write.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
     monkeypatch.setattr(
-        greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh,
+        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
@@ -267,9 +268,9 @@ def test_greenfield_create_confirm_completes_cross_domain_projects(
     intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(intent_text, encoding="utf-8")
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc = greenfield_proposals.main(
         [

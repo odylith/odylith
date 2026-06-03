@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
+from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
@@ -36,7 +37,7 @@ def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None =
                 diagram["render_source_fingerprint"] = "stubbed-official-refresh"
             catalog_path.write_text(json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", refresh)
+    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", refresh)
 
 
 def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None:
@@ -273,8 +274,8 @@ def test_greenfield_cli_json_is_governed_audit_after_intent_confirmation(tmp_pat
 def test_greenfield_apply_cli_prints_operator_handoff(tmp_path, monkeypatch, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
     _stub_dashboard_refresh(monkeypatch)
-    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal_path = tmp_path / "proposal.json"
     proposal_path.write_text(json.dumps(_host_reasoned_ecommerce_proposal()), encoding="utf-8")
 
@@ -340,8 +341,8 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     _write_confirmed_intent(tmp_path)
     dashboard_calls: list[dict[str, object]] = []
     _stub_dashboard_refresh(monkeypatch, dashboard_calls)
-    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     apply_ready_flags: list[bool] = []
     original_apply = greenfield_proposals.apply_greenfield_proposal
 
@@ -484,8 +485,8 @@ Release 0.0.1 succeeds when one authorized request can link a protected record, 
         encoding="utf-8",
     )
     _stub_dashboard_refresh(monkeypatch)
-    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc = greenfield_proposals.main(
         [
@@ -589,8 +590,8 @@ Release 0.0.1 succeeds when one site record can be opened, linked to source evid
         encoding="utf-8",
     )
     _stub_dashboard_refresh(monkeypatch)
-    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
     rc = greenfield_proposals.main(
         [
@@ -698,9 +699,9 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
         print("refresh progress that must not contaminate JSON stdout", flush=True)
         os.write(1, b"fd-level refresh progress must not contaminate JSON stdout\n")
 
-    monkeypatch.setattr(greenfield_proposals.owned_surface_refresh, "raise_for_failed_refreshes", noisy_refresh)
-    monkeypatch.setattr(greenfield_proposals.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
-    monkeypatch.setattr(greenfield_proposals.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", noisy_refresh)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal_path = tmp_path / "proposal.json"
     proposal_path.write_text(json.dumps(_host_reasoned_ecommerce_proposal()), encoding="utf-8")
 

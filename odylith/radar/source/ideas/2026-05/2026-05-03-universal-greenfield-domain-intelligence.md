@@ -940,6 +940,33 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 10.93s`).
+- 2026-06-03 final apply governed-write decomposition moved Radar file writes,
+  stale workstream artifact cleanup, release targeting writes, program
+  creation, Atlas scaffold/upsert behavior, Registry component authoring,
+  accepted-project memory recording, dashboard refresh, and next-step shaping
+  into `greenfield_apply_write.py`. `greenfield_proposals.py` now stays focused
+  on no-write intent preview, proposal normalization, prewrite package repair,
+  transaction setup, and CLI output (`greenfield_proposals.py`: 676 lines;
+  `greenfield_apply_write.py`: 477 lines), while
+  `test_greenfield_proposals.py::test_greenfield_apply_write_stays_in_dedicated_owner`
+  prevents final writes from returning to the parent. The same proof pass fixed
+  a post-confirm semantic alignment edge: blank component `release_scope` now
+  means active unless explicitly deferred/out of scope, matching the semantic
+  model builder and Registry writer, and apply-time semantic repair can refresh
+  stale semantic models before the gate runs. Proof: `.venv/bin/python -m
+  py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
+  src/odylith/runtime/domain_intelligence/greenfield_apply_write.py
+  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py
+  src/odylith/runtime/domain_intelligence/greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_proposals.py
+  tests/unit/runtime/test_greenfield_prewrite_transaction.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
+  focused final-apply proof passed (`68 passed in 141.47s`); the broader
+  greenfield artifact-quality bundle passed (`130 passed in 331.45s`); and
+  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.41s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

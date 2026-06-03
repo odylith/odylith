@@ -12,10 +12,10 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 
-def ensure_apply_semantic_model(proposal: dict[str, Any]) -> dict[str, Any]:
+def ensure_apply_semantic_model(proposal: dict[str, Any], *, refresh: bool = False) -> dict[str, Any]:
     """Compile legacy confirmed apply payloads into the post-confirm semantic model."""
 
-    if isinstance(proposal.get("semantic_model"), Mapping):
+    if not refresh and isinstance(proposal.get("semantic_model"), Mapping):
         return proposal
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
     brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}

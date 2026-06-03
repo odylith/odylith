@@ -194,4 +194,4 @@ def _component_id(row: Mapping[str, Any]) -> str:
 
 def _is_first_release_scope(value: Any) -> bool:
     scope = clean_text(value).casefold()
-    return scope not in {"", "deferred", "out_of_scope", "future", "external"}
+    return scope not in {"deferred", "out_of_scope", "future", "external"}
