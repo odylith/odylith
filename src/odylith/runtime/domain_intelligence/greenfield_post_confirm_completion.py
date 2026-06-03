@@ -20,6 +20,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
     component_spec_preflight_issues,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_contract_targets import (
     operator_component_spec_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_project_brief import PROJECT_BRIEF_SCHEMA_VERSION

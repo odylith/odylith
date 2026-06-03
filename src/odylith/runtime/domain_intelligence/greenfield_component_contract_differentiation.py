@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
 from typing import Any
 
+from odylith.runtime.domain_intelligence import greenfield_component_contract_targets as contract_targets
 from odylith.runtime.domain_intelligence.greenfield_component_axes import (
     ComponentAxis,
     derive_component_axis,
@@ -95,7 +95,11 @@ def differentiate_component_contracts(proposal: dict[str, Any], *, max_passes: i
         )
         targets = [
             *targets,
-            *_repair_targets(issues, rows_by_label=rows_by_label, indexes_by_label=indexes_by_label),
+            *contract_targets.repair_targets_from_spec_issues(
+                issues,
+                rows_by_label=rows_by_label,
+                indexes_by_label=indexes_by_label,
+            ),
         ]
         if not targets:
             return changed
@@ -121,62 +125,22 @@ def component_spec_preflight_issues(proposal: Mapping[str, Any]) -> list[str]:
     if not specs:
         return []
     raw_issues = rendered_component_spec_quality_issues(specs, project_title=_project_title(proposal))
-    return operator_component_spec_issues(raw_issues)
+    return contract_targets.operator_component_spec_issues(raw_issues)
 
 
-def operator_component_spec_issues(issues: Sequence[str]) -> list[str]:
-    """Convert component spec quality failures into product-language blockers."""
-
-    return [_operator_issue(issue) for issue in issues]
-
-
-@dataclass(frozen=True)
-class _RepairTarget:
-    index: int
-    row: dict[str, Any]
-    sibling: Mapping[str, Any] | None
-
-
-def _repair_targets(
-    issues: Sequence[str],
+def _contract_repair_targets(
+    rows: Sequence[dict[str, Any]],
     *,
-    rows_by_label: Mapping[str, dict[str, Any]],
-    indexes_by_label: Mapping[str, int],
-) -> list[_RepairTarget]:
-    targets: list[_RepairTarget] = []
-    for issue in issues:
-        pair = re.search(r"component specs `(?P<left>[^`]+)` and `(?P<right>[^`]+)` are too interchangeable", issue)
-        if pair:
-            left = pair.group("left")
-            right = pair.group("right")
-            for label, sibling in ((left, right), (right, left)):
-                if label in rows_by_label:
-                    targets.append(
-                        _RepairTarget(
-                            index=indexes_by_label.get(label, 0),
-                            row=rows_by_label[label],
-                            sibling=rows_by_label.get(sibling),
-                        )
-                    )
-            continue
-        local = re.search(r"component spec `(?P<label>[^`]+)` does not contain", issue)
-        if local and local.group("label") in rows_by_label:
-            label = local.group("label")
-            targets.append(
-                _RepairTarget(index=indexes_by_label.get(label, 0), row=rows_by_label[label], sibling=None)
-            )
-    return _dedupe_targets(targets)
-
-
-def _contract_repair_targets(rows: Sequence[dict[str, Any]], *, proposal: Mapping[str, Any]) -> list[_RepairTarget]:
-    targets: list[_RepairTarget] = []
+    proposal: Mapping[str, Any],
+) -> list[contract_targets.RepairTarget]:
+    targets: list[contract_targets.RepairTarget] = []
     for index, row in enumerate(rows):
         contract = row.get("component_contract")
         if isinstance(contract, Mapping) and (
             _contract_needs_repair(contract) or _contract_misses_local_axis(row=row, contract=contract, proposal=proposal)
         ):
             sibling = rows[index + 1] if index + 1 < len(rows) else (rows[index - 1] if index else None)
-            targets.append(_RepairTarget(index=index, row=row, sibling=sibling))
+            targets.append(contract_targets.RepairTarget(index=index, row=row, sibling=sibling))
     return targets
 
 
@@ -561,34 +525,6 @@ def _sync_generated_component_fields(
         row["risks"] = risks_from_contract(label, contract)
 
 
-def _operator_issue(issue: str) -> str:
-    pair = re.search(r"component specs `(?P<left>[^`]+)` and `(?P<right>[^`]+)` are too interchangeable", issue)
-    if pair:
-        return (
-            "Odylith could not distinguish duplicate internal systems from the accepted intent after deterministic "
-            f"repair: {pair.group('left')} and {pair.group('right')} remained interchangeable."
-        )
-    local = re.search(r"component spec `(?P<label>[^`]+)` does not contain", issue)
-    if local:
-        return (
-            "Odylith could not derive enough component-local product terms from the accepted intent after deterministic "
-            f"repair: {local.group('label')} remained too generic."
-        )
-    return issue
-
-
-def _dedupe_targets(values: Sequence[_RepairTarget]) -> list[_RepairTarget]:
-    result: list[_RepairTarget] = []
-    seen: set[int] = set()
-    for target in values:
-        marker = id(target.row)
-        if marker in seen:
-            continue
-        seen.add(marker)
-        result.append(target)
-    return result
-
-
 def _component_rows(proposal: Mapping[str, Any]) -> list[dict[str, Any]]:
     rows = proposal.get("components")
     if not isinstance(rows, list):
@@ -833,5 +769,4 @@ def _clean(value: Any) -> str:
 __all__ = [
     "component_spec_preflight_issues",
     "differentiate_component_contracts",
-    "operator_component_spec_issues",
 ]

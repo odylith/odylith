@@ -6,6 +6,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
     public_prose_quality_issues,
     rendered_component_spec_quality_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_contract_targets import (
+    operator_component_spec_issues,
+    repair_targets_from_spec_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
@@ -18,6 +22,10 @@ ROOT = Path(__file__).resolve().parents[3]
 CONFIRMED_COMPONENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
 COMPONENT_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py"
 COMPONENT_CONTRACT_PROFILES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py"
+COMPONENT_CONTRACT_DIFFERENTIATION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py"
+)
+COMPONENT_CONTRACT_TARGETS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py"
 
 
 def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
@@ -42,6 +50,38 @@ def test_component_contract_profiles_stay_in_dedicated_owner() -> None:
     assert "def status_view_contract" in profile_source
     assert "def _document_local_proof" in profile_source
     assert "def _status_local_proof" in profile_source
+
+
+def test_component_contract_targets_stay_in_dedicated_owner() -> None:
+    differentiation_source = COMPONENT_CONTRACT_DIFFERENTIATION_PATH.read_text(encoding="utf-8")
+    target_source = COMPONENT_CONTRACT_TARGETS_PATH.read_text(encoding="utf-8")
+
+    assert len(differentiation_source.splitlines()) < 800
+    assert "greenfield_component_contract_targets as contract_targets" in differentiation_source
+    assert "class _RepairTarget" not in differentiation_source
+    assert "def _repair_targets" not in differentiation_source
+    assert "def _operator_issue" not in differentiation_source
+    assert "def _dedupe_targets" not in differentiation_source
+    assert "class RepairTarget" in target_source
+    assert "def repair_targets_from_spec_issues" in target_source
+    assert "def operator_component_spec_issues" in target_source
+
+    intake = {"label": "Intake Service"}
+    review = {"label": "Review Service"}
+    targets = repair_targets_from_spec_issues(
+        ["component specs `Intake Service` and `Review Service` are too interchangeable"],
+        rows_by_label={"Intake Service": intake, "Review Service": review},
+        indexes_by_label={"Intake Service": 0, "Review Service": 1},
+    )
+
+    assert [target.row for target in targets] == [intake, review]
+    assert [target.sibling for target in targets] == [review, intake]
+    assert operator_component_spec_issues(
+        ["component spec `Intake Service` does not contain enough component-local terms"]
+    ) == [
+        "Odylith could not derive enough component-local product terms from the accepted intent after deterministic "
+        "repair: Intake Service remained too generic."
+    ]
 
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:

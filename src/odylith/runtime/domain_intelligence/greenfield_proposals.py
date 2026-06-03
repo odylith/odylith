@@ -30,7 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import bu
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence.greenfield_component_contract import rendered_component_spec_quality_issues
-from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
+from odylith.runtime.domain_intelligence.greenfield_component_contract_targets import (
     operator_component_spec_issues,
 )
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite

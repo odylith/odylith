@@ -896,6 +896,27 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   345.24s`); and `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 11.45s`).
+- 2026-06-03 component contract target decomposition moved rendered-spec issue
+  parsing, repair target selection, duplicate-target dedupe, and
+  operator-facing component-spec blocker copy into
+  `greenfield_component_contract_targets.py`. The differentiation owner now
+  repairs component-local contracts without carrying spec-target parsing
+  (`greenfield_component_contract_differentiation.py`: 837 to 772 lines), while
+  `test_greenfield_component_spec_quality.py` pins the target owner, parent
+  soft-limit ceiling, and concrete issue-to-row mapping. Proof:
+  `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py
+  src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py
+  src/odylith/runtime/domain_intelligence/greenfield_proposals.py
+  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
+  tests/unit/runtime/test_greenfield_component_spec_quality.py
+  tests/unit/runtime/test_greenfield_confirmed_body_comp.py
+  tests/unit/runtime/test_greenfield_confirmed_repair.py` passed; focused
+  component/prewrite proof passed (`15 passed in 14.63s`); the broader
+  greenfield artifact-quality bundle passed (`129 passed in 332.92s`); and
+  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.39s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
