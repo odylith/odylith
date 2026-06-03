@@ -39,22 +39,38 @@ POST_CONFIRM_COMPLETION_PATH = (
 POST_CONFIRM_SEMANTIC_DRIFT_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py"
 )
+POST_CONFIRM_SEMANTIC_ALIGNMENT_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py"
+)
+POST_CONFIRM_ROWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rows.py"
 
 
 def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> None:
     parent_source = POST_CONFIRM_COMPLETION_PATH.read_text(encoding="utf-8")
     drift_source = POST_CONFIRM_SEMANTIC_DRIFT_PATH.read_text(encoding="utf-8")
+    alignment_source = POST_CONFIRM_SEMANTIC_ALIGNMENT_PATH.read_text(encoding="utf-8")
+    rows_source = POST_CONFIRM_ROWS_PATH.read_text(encoding="utf-8")
 
-    assert len(parent_source.splitlines()) < 1200
+    assert len(parent_source.splitlines()) < 800
     assert "def _generated_artifact_sentences" not in parent_source
     assert "def _term_signature" not in parent_source
     assert "def _semantic_overlap_ratio" not in parent_source
+    assert "def _semantic_model_shape_issues" not in parent_source
+    assert "def _mapping_rows" not in parent_source
+    assert "def _mapping_rows" not in drift_source
     assert "contrastive_domain_drift_issues as _contrastive_domain_drift_issues" in parent_source
     assert "semantic_repetition_issues as _semantic_repetition_issues" in parent_source
     assert "semantic_overlap_ratio as _semantic_overlap_ratio" in parent_source
+    assert "semantic_model_shape_issues as _semantic_model_shape_issues" in parent_source
     assert "def contrastive_domain_drift_issues" in drift_source
     assert "def semantic_repetition_issues" in drift_source
     assert "def semantic_overlap_ratio" in drift_source
+    assert "def semantic_model_shape_issues" in alignment_source
+    assert "def semantic_component_alignment_issues" in alignment_source
+    assert "def semantic_workstream_alignment_issues" in alignment_source
+    assert "def semantic_diagram_alignment_issues" in alignment_source
+    assert "def rendered_spec_alignment_issues" in alignment_source
+    assert "def mapping_rows" in rows_source
 
 
 GENERIC_DECISION_REVIEW_INTENT = """# Decision Review Workspace

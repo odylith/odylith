@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_rows import mapping_rows as _mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -197,10 +198,6 @@ def _term_signature(value: str, *, minimum: int) -> set[str]:
         if token and token not in _CONTRASTIVE_GENERIC_TERMS and token not in _CONTRASTIVE_STOPWORDS:
             terms.add(token)
     return terms
-
-
-def _mapping_rows(value: Any) -> list[Mapping[str, Any]]:
-    return [row for row in value if isinstance(row, Mapping)] if isinstance(value, list) else []
 
 
 _CONTRASTIVE_GENERIC_TERMS = {

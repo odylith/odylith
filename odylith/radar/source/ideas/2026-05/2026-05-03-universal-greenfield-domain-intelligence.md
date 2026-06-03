@@ -734,6 +734,28 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `PYTHONPATH=src .venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
   passed in 14.83s`).
+- 2026-06-03 post-confirm semantic-alignment decomposition moved semantic model
+  shape checks, component/workstream/diagram alignment, rendered Registry spec
+  alignment, component ID fallback, and first-release scope checks into
+  `greenfield_post_confirm_semantic_alignment.py`. Shared post-confirm list row
+  coercion now lives in `greenfield_post_confirm_rows.py`, so the completion
+  parent and drift owner no longer carry local `_mapping_rows` clones. The
+  package completion parent now stays below the soft source-size limit
+  (`greenfield_post_confirm_completion.py`: 853 to 691 lines), and
+  `test_greenfield_general_artifact_quality.py` pins the alignment, drift, and
+  row-helper ownership boundaries. Proof: `.venv/bin/python -m py_compile
+  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
+  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py
+  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py
+  src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rows.py
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed;
+  `.venv/bin/python -m pytest -q
+  tests/unit/runtime/test_greenfield_general_artifact_quality.py` passed (`39
+  passed in 170.88s`); the broader greenfield artifact-quality bundle passed
+  (`118 passed in 334.66s`); and the escalated Chromium-capable run of
+  `PYTHONPATH=src .venv/bin/python -m pytest -q
+  tests/integration/runtime/test_greenfield_create_performance.py` passed (`1
+  passed in 11.96s`).
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
