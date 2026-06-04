@@ -15,6 +15,10 @@ def clean_text(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
 
 
+def word_count(value: Any) -> int:
+    return len(re.findall(r"[A-Za-z0-9]+", clean_text(value)))
+
+
 def normalize_domain_token(value: Any, *, minimum: int = 4, stopwords: Iterable[str] = ()) -> str:
     """Normalize one extracted product term without corrupting common nouns.
 

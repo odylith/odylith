@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 84,
-    "mapped_workstream_evidence_count": 74,
+    "explicit_event_count": 85,
+    "mapped_workstream_evidence_count": 75,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 91,
+    "spec_history_event_count": 92,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 85
+    "timeline_event_count": 86
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,20 +21,57 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py"
       ],
       "confidence": "high",
-      "event_index": 565,
+      "event_index": 566,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py +1 more",
-      "ts_iso": "2026-06-04T03:11:46-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +3 more",
+      "ts_iso": "2026-06-04T03:34:21-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_semantic_drift_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 565,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed post-confirm repeated generated-term counts through shared domain term frequencies and generated sentence word thresholds through shared text counting so semantic drift checks no longer scan generated packages once per candidate term.",
+      "ts_iso": "2026-06-04T03:30:28-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

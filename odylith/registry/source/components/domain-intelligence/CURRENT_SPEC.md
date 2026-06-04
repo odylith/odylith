@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed post-confirm repeated generated-term counts through shared domain term frequencies and generated sentence word thresholds through shared text counting so semantic drift checks no longer scan generated packages once per candidate term.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py +2 more
 - **2026-06-04 · Implementation:** Routed confirmed Radar backlog proof-focus counts and repeated-required detection through shared confirmed text counting so backlog wording no longer carries local regex count gates.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed first-path parser visible step-token thresholds through shared display label terms so action-clause splitting and valid-step filtering no longer carry local regex word counts.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed component visible word-count thresholds through shared confirmed text so component responsibility and dependency filtering no longer carry local regex token counts.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -117,6 +117,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed Atlas sequence and first-path flowchart component matching through `greenfield_domain_term_index.ordered_terms`. The shared term index now supports `stem_ing=True` for callers that need gerund collapse, and `greenfield_sequence_diagram.py` no longer owns `_domain_terms` or direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated semantic model term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_semantic_model.py` now passes semantic-model stopwords to the shared owner for ontology terms, required fields, event targets, and actor terms instead of owning `_semantic_terms` or direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed post-confirm semantic drift, repetition, and overlap term signatures through `greenfield_domain_term_index.ordered_terms`. `greenfield_post_confirm_semantic_drift.py` now keeps only post-confirm stopwords and separator cleanup instead of owning direct `normalize_domain_token` calls or local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed post-confirm repeated generated-term counting through `greenfield_domain_term_index.term_frequencies` and generated sentence length filtering through `greenfield_text.word_count`. `greenfield_post_confirm_semantic_drift.py` keeps stopwords, separator cleanup, repetition clustering, and drift thresholds while shared token owners handle reusable counts with one normalized pass. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal substance terms through `greenfield_domain_term_index.ordered_terms`. `proposal_tribunal_substance.py` now keeps only Tribunal stopwords and Atlas action aliases instead of owning direct `normalize_domain_token` calls or local regex token loops for generated Radar, Registry, and Atlas substance checks. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal accepted public-text product phrase matching through `greenfield_domain_term_index.label_terms`. `proposal_tribunal_substance.py` keeps scaffold repetition policy while the shared term index owns raw accepted-text tokenization for product phrases such as `evidence record`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed semantic-quality release-scope and scope-context term signatures through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned exact aliases and prefix aliases, while `greenfield_semantic_quality.py` keeps only release-scope stopwords, alias policy, and release-scope decisions instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -333,6 +334,12 @@ This section captures synchronized requirement and contract signals derived from
   post-confirm stopwords and separator cleanup, but it must not reintroduce
   `_term_token`, local regex token loops, or direct `normalize_domain_token`
   calls.
+- Post-confirm repeated generated-term counts must use
+  `greenfield_domain_term_index.term_frequencies`, and generated sentence
+  length filtering must use `greenfield_text.word_count`. The drift checker may
+  retain stopwords, separator cleanup, repetition clustering, and thresholds,
+  but it must not reintroduce local `len(re.findall(...))` count gates or
+  per-term regex scans.
 - Confirmed artifact Tribunal substance signatures must use
   `greenfield_domain_term_index.ordered_terms` for generated Radar substance,
   Registry proof-boundary, and Atlas first-path tail checks. The Tribunal owner

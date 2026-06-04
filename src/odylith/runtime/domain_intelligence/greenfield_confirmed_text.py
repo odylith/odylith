@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import word_count as _generic_word_count
 
 
 GENERIC_TITLE_WORDS = {
@@ -168,7 +169,7 @@ def title_case_text(value: str) -> str:
 
 
 def word_count(value: str) -> int:
-    return len(re.findall(r"[A-Za-z0-9]+", clean_confirmed_text(value)))
+    return _generic_word_count(clean_confirmed_text(value))
 
 
 def word_occurrences(value: str, word: str) -> int:

@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 205,
-    "mapped_workstream_evidence_count": 175,
+    "explicit_event_count": 206,
+    "mapped_workstream_evidence_count": 176,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 205
+    "timeline_event_count": 206
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_semantic_drift_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 565,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed post-confirm repeated generated-term counts through shared domain term frequencies and generated sentence word thresholds through shared text counting so semantic drift checks no longer scan generated packages once per candidate term.",
+      "ts_iso": "2026-06-04T03:30:28-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",

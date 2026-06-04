@@ -7,9 +7,11 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import term_frequencies
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import word_count
 
 
 def contrastive_domain_drift_issues(proposal: Mapping[str, Any], semantic: Mapping[str, Any]) -> list[str]:
@@ -23,12 +25,16 @@ def contrastive_domain_drift_issues(proposal: Mapping[str, Any], semantic: Mappi
     signature_terms.update(_term_signature(_component_signature_text(proposal), minimum=4))
     generated_text = _generated_artifact_text(proposal)
     generated_counts: dict[str, int] = {}
-    for term in _term_signature(generated_text, minimum=5):
+    for term, count in term_frequencies(
+        _signature_text(generated_text),
+        minimum=5,
+        stopwords=(*_CONTRASTIVE_GENERIC_TERMS, *_CONTRASTIVE_STOPWORDS),
+    ).items():
         if term in _CONTRASTIVE_GENERIC_TERMS:
             continue
         if term in signature_terms:
             continue
-        generated_counts[term] = len(re.findall(rf"\b{re.escape(term)}\b", generated_text.casefold()))
+        generated_counts[term] = count
     leaked = sorted(
         term
         for term, count in generated_counts.items()
@@ -90,7 +96,7 @@ def _generated_artifact_sentences(proposal: Mapping[str, Any]) -> list[str]:
     for text in _generated_repetition_value_texts(proposal):
         for sentence in re.split(r"(?<=[.!?])\s+|\n+|;\s+", text):
             cleaned = clean_text(sentence).strip(" -•")
-            if len(re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", cleaned)) >= 10:
+            if word_count(cleaned) >= 10:
                 sentences.append(cleaned)
     return sentences
 
@@ -184,14 +190,17 @@ def _generated_repetition_value_texts(proposal: Mapping[str, Any]) -> list[str]:
 
 
 def _term_signature(value: str, *, minimum: int) -> set[str]:
-    normalized = clean_text(value).casefold().replace("-", " ").replace("_", " ")
     return set(
         ordered_terms(
-            normalized,
+            _signature_text(value),
             minimum=minimum,
             stopwords=(*_CONTRASTIVE_GENERIC_TERMS, *_CONTRASTIVE_STOPWORDS),
         )
     )
+
+
+def _signature_text(value: str) -> str:
+    return clean_text(value).casefold().replace("-", " ").replace("_", " ")
 
 
 _CONTRASTIVE_GENERIC_TERMS = {
