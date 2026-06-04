@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 103,
-    "mapped_workstream_evidence_count": 93,
+    "explicit_event_count": 104,
+    "mapped_workstream_evidence_count": 94,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 110,
+    "spec_history_event_count": 111,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 104
+    "timeline_event_count": 105
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,20 +21,68 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
         "src/odylith/runtime/domain_intelligence/greenfield_text.py"
       ],
       "confidence": "high",
-      "event_index": 584,
+      "event_index": 585,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more",
-      "ts_iso": "2026-06-04T07:57:26-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +8 more",
+      "ts_iso": "2026-06-04T08:21:00-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_confirmed_text.py"
+      ],
+      "confidence": "high",
+      "event_index": 584,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed generated artifact word-boundary clipping mechanics through shared greenfield text while preserving caller-owned grammar and fallback policy.",
+      "ts_iso": "2026-06-04T08:20:31-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

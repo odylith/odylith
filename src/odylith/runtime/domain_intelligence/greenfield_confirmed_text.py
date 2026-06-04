@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms, ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import word_count as _generic_word_count
@@ -84,6 +85,31 @@ CONFIRMED_INTENT_VALIDATION_STOPWORDS = {
     "without",
 }
 
+CONFIRMED_DANGLING_WORDS = {
+    "a",
+    "an",
+    "and",
+    "as",
+    "at",
+    "because",
+    "by",
+    "for",
+    "from",
+    "if",
+    "in",
+    "into",
+    "of",
+    "on",
+    "or",
+    "required",
+    "the",
+    "to",
+    "when",
+    "while",
+    "with",
+    "without",
+}
+
 
 def compact_text(value: str) -> str:
     text = str(value or "").strip()
@@ -121,12 +147,12 @@ def short_confirmed_text(value: str, *, fallback: str = "", limit: int = 220) ->
     text = clean_confirmed_text(value) or fallback
     if len(text) <= limit:
         return text.rstrip(".")
-    clipped = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:")
-    words = clipped.split()
-    dangling = {"and", "or", "to", "with", "without", "for", "from", "of", "the", "a", "an", "required"}
-    while words and words[-1].casefold().strip(".,;:") in dangling:
-        words.pop()
-    return " ".join(words).rstrip(" ,;:.")
+    return clip_text_at_word_boundary(
+        text,
+        limit=limit,
+        dangling_words=CONFIRMED_DANGLING_WORDS,
+        rstrip_chars=" ,;:.",
+    )
 
 
 def join_confirmed_items(values: Sequence[str]) -> str:
@@ -243,9 +269,7 @@ def short_summary(value: str, *, limit: int = 280) -> str:
             break
     if total:
         return total.strip(" .")
-    clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
-    if " " in clipped:
-        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
+    clipped = clip_text_at_word_boundary(text, limit=max(0, limit - 1))
     clipped = strip_dangling_tail(clipped)
     return clipped
 
@@ -380,7 +404,7 @@ def sentence_text(value: Any, *, fallback: str = "", limit: int = 320) -> str:
     if not text:
         return ""
     if len(text) > limit:
-        text = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:")
+        text = clip_text_at_word_boundary(text, limit=limit)
         text = strip_dangling_tail(text)
         text = text.rstrip(" ,;:")
     if text and text[-1] not in ".!?":

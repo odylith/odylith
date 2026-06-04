@@ -13,6 +13,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -387,11 +388,7 @@ def _first_contract_text(value: Any) -> str:
 
 
 def _short_contract_text(value: Any, *, limit: int = 180) -> str:
-    text = " ".join(str(value or "").split()).strip(" .")
-    if len(text) <= limit:
-        return text
-    clipped = text[:limit].rsplit(" ", 1)[0].strip(" ,;:")
-    return clipped or text[:limit].strip(" ,;:")
+    return clip_text_at_word_boundary(value, limit=limit, strip_edges=" .").strip(" ,;:")
 
 
 def _workstream_title_matches_component(title: str, row: Mapping[str, Any]) -> bool:

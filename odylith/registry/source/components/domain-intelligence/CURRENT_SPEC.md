@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed generated artifact word-boundary clipping mechanics through shared greenfield text while preserving caller-owned grammar and fallback policy.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py +8 more
 - **2026-06-04 · Implementation:** Routed confirmed exact-word occurrence mechanics through shared greenfield text while preserving confirmed Markdown cleanup for repeated-word checks.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +3 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed-intent bare-title token extraction through shared greenfield label terms so hyphenated confirmed titles such as Source-backed Evidence Workspace share the visible display-token contract.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed actor role candidate token extraction through shared greenfield label terms so hyphenated accepted roles such as Source-backed reviewer preserve their visible product signal.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -156,6 +156,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed confirmed-intent progression/outcome marker counts and quality-gate first-path event marker counts through `greenfield_text.progression_marker_count`. Confirmed-intent validation keeps field thresholds, connector vocabulary, outcome fallback, and semantic overlap; the quality gate keeps first-path event sufficiency policy; shared greenfield text owns reusable connector and punctuation marker counting. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal flowchart step counting through `runtime.common.mermaid_text.numbered_flowchart_node_count`. `proposal_tribunal_substance.py` keeps the Atlas event-depth threshold, parser-debris checks, first-path tail preservation, and first-boundary routing policy while shared Mermaid text owns numbered flowchart node discovery and duplicate-node non-inflation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed exact-word occurrence counting through `greenfield_text.word_occurrences`. `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup and the confirmed-text API while shared greenfield text owns exact whole-word occurrence counting for generated Radar mechanical-summary checks such as repeated `required` phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed generated artifact word-boundary clipping through `greenfield_text.clip_text_at_word_boundary` and `strip_dangling_word_tail`. Confirmed text, first-path clause rendering, semantic proof labels, confirmed system rows, confirmed Atlas label text, sequence diagrams, experience handoff text, and project-brief clauses keep their caller-owned grammar, fallback, and label policies while shared greenfield text owns reusable whole-word clipping mechanics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -202,6 +203,14 @@ This section captures synchronized requirement and contract signals derived from
   whole-word occurrence counting must stay in `greenfield_text.word_occurrences`.
   Confirmed text may call that helper after confirmed cleanup, but it must not
   reintroduce local `re.findall(...)` occurrence counting.
+- Generated artifact text owners may decide their limits, fallback wording,
+  dangling-word sets, grammar cleanup, and label balancing, but reusable
+  whole-word clipping mechanics must stay in
+  `greenfield_text.clip_text_at_word_boundary` and
+  `strip_dangling_word_tail`. Confirmed text, first-path clauses, semantic
+  proof labels, confirmed system rows, confirmed Atlas label text, sequence
+  diagrams, experience handoff text, and project-brief clauses must not
+  reintroduce local `.rsplit(" ", 1)` clipping forks.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,

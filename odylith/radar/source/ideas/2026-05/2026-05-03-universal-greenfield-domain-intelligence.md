@@ -2004,6 +2004,27 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`6 passed in 0.05s`); wider greenfield artifact proof passed (`183
   passed in 203.61s`); and confirmed-create performance proof passed (`1 passed
   in 9.79s`), preserving the under-30s create gate.
+- 2026-06-04 word-boundary clipping follow-through moved reusable whole-word
+  clipping and trailing connector stripping mechanics into
+  `greenfield_text.clip_text_at_word_boundary` and
+  `greenfield_text.strip_dangling_word_tail`. Confirmed text, first-path clause
+  rendering, semantic proof labels, confirmed system rows, confirmed Atlas label
+  text, sequence diagrams, experience handoff text, and project-brief clauses
+  still own their domain cleanup, grammar, and fallback policies, while shared
+  greenfield text owns the common clipping mechanics. The touched artifact text
+  callers no longer keep local `.rsplit(" ", 1)` word-boundary clip forks.
+  Touched files remain below limits (`greenfield_first_path_clauses.py`: 760
+  lines; `greenfield_sequence_diagram.py`: 700 lines;
+  `greenfield_confirmed_system_rows.py`: 692 lines;
+  `greenfield_confirmed_diagram_text.py`: 543 lines;
+  `greenfield_semantic_model.py`: 494 lines; `greenfield_experience.py`: 477
+  lines; `greenfield_confirmed_text.py`: 429 lines;
+  `greenfield_confirmed_project_brief.py`: 264 lines; `greenfield_text.py`: 215
+  lines; `test_greenfield_confirmed_text.py`: 172 lines). Proof: syntax proof
+  passed for the touched modules and test; focused artifact text proof passed
+  (`24 passed in 0.27s`); wider greenfield artifact proof passed (`184 passed
+  in 219.55s`); and confirmed-create performance proof passed (`1 passed in
+  11.13s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

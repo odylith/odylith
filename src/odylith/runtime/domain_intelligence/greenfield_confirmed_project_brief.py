@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_i
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 
 def confirmed_project_brief(
@@ -225,7 +226,7 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
     text = _repair_show_actor_artifact(text)
     if len(text) <= limit:
         return text
-    clipped = text[: max(0, limit)].rsplit(" ", 1)[0].rstrip(" ,;:")
+    clipped = clip_text_at_word_boundary(text, limit=limit)
     return strip_dangling_tail(clipped).rstrip(" ,;:")
 
 

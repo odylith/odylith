@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 
 TRIVIAL_START_RE = re.compile(
@@ -689,19 +690,36 @@ def _clip_phrase(value: str, *, limit: int) -> str:
     text = clean_first_path_text(value).strip(" .")
     if len(text) <= limit:
         return text
-    clipped = text[: max(0, limit - 1)].rstrip(" ,;:")
-    if " " in clipped:
-        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
-    while True:
-        cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|required|that|the|this|to|when|while|with|alongside)$",
-            "",
-            clipped,
-            flags=re.IGNORECASE,
-        ).rstrip(" ,;:")
-        if cleaned == clipped:
-            return cleaned
-        clipped = cleaned
+    return clip_text_at_word_boundary(
+        text,
+        limit=max(0, limit - 1),
+        dangling_words={
+            "a",
+            "alongside",
+            "an",
+            "and",
+            "as",
+            "at",
+            "because",
+            "by",
+            "for",
+            "from",
+            "if",
+            "in",
+            "into",
+            "of",
+            "on",
+            "or",
+            "required",
+            "that",
+            "the",
+            "this",
+            "to",
+            "when",
+            "while",
+            "with",
+        },
+    )
 
 
 def clean_first_path_text(value: Any) -> str:

@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import ACTION_VERB_PATTERN as _ACTION_VERB_PATTERN
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 
 _BASE_ACTION_VERB_PATTERN = (
@@ -661,9 +662,7 @@ def _trim(value: str, limit: int) -> str:
     text = _compact_text(value)
     if len(text) <= limit:
         return text
-    clipped = text[: max(0, limit)].rstrip(" ,;:")
-    if " " in clipped:
-        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
+    clipped = clip_text_at_word_boundary(text, limit=limit)
     return _balance_label(_strip_dangling_tail(clipped))
 
 

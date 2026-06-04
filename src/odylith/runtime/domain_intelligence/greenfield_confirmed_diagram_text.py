@@ -12,6 +12,7 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 
 def component_description(row: Mapping[str, Any]) -> str:
@@ -251,9 +252,7 @@ def trim(value: str, limit: int) -> str:
     text = compact_text(value)
     if len(text) <= limit:
         return text
-    clipped = text[: max(0, limit)].rstrip(" ,;:")
-    if " " in clipped:
-        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
+    clipped = clip_text_at_word_boundary(text, limit=limit)
     return _balance_label(_strip_dangling_tail(clipped))
 
 

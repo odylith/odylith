@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms as _semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 
 _GENERIC_SYSTEM_NAME_KEYS = {
@@ -377,13 +378,11 @@ def _brief_clause(value: str, *, limit: int) -> str:
     text = _clean(value).strip(" .")
     if len(text) <= limit:
         return text
-    clipped = text[: max(0, limit)].rstrip(" ,;:")
-    if " " in clipped:
-        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
-    words = clipped.split()
-    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "to", "with", "for", "from", "of", "the", "a", "an"}:
-        words.pop()
-    return " ".join(words).rstrip(" ,;:")
+    return clip_text_at_word_boundary(
+        text,
+        limit=limit,
+        dangling_words={"a", "an", "and", "for", "from", "of", "or", "the", "to", "with"},
+    )
 
 
 def _extract_internal_system_candidates(paragraph: str) -> list[str]:

@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_o
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import (
+    clip_text_at_word_boundary,
     word_occurrences as generic_word_occurrences,
 )
 
@@ -20,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import (
 ROOT = Path(__file__).resolve().parents[3]
 DOMAIN_INTELLIGENCE = ROOT / "src/odylith/runtime/domain_intelligence"
 CONFIRMED_TEXT_PATH = DOMAIN_INTELLIGENCE / "greenfield_confirmed_text.py"
+GREENFIELD_TEXT_PATH = DOMAIN_INTELLIGENCE / "greenfield_text.py"
 
 
 def test_confirmed_intent_list_text_coercion_stays_in_text_owner() -> None:
@@ -115,6 +117,34 @@ def test_confirmed_project_surface_word_count_stays_in_text_owner() -> None:
     assert word_occurrences("Required proof and required signoff stay visible.", "required") == 2
     assert word_occurrences("`Required` proof and **required** signoff stay visible.", "required") == 2
     assert generic_word_occurrences("Required proof and required signoff stay visible.", "required") == 2
+
+
+def test_word_boundary_clipping_stays_in_text_owner() -> None:
+    text_owner = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
+    touched_callers = [
+        "greenfield_confirmed_text.py",
+        "greenfield_first_path_clauses.py",
+        "greenfield_semantic_model.py",
+        "greenfield_confirmed_system_rows.py",
+        "greenfield_confirmed_diagram_text.py",
+        "greenfield_sequence_diagram.py",
+        "greenfield_experience.py",
+        "greenfield_confirmed_project_brief.py",
+    ]
+
+    assert "def clip_text_at_word_boundary" in text_owner
+    assert "def strip_dangling_word_tail" in text_owner
+    assert clip_text_at_word_boundary(
+        "Alpha beta with trailing detail",
+        limit=16,
+        dangling_words={"with"},
+    ) == "Alpha beta"
+    assert clip_text_at_word_boundary("IdentifierWithoutSpaces", limit=10) == "Identifier"
+
+    for caller in touched_callers:
+        source = (DOMAIN_INTELLIGENCE / caller).read_text(encoding="utf-8")
+        assert "clip_text_at_word_boundary" in source
+        assert '.rsplit(" ", 1)' not in source
 
 
 def test_confirmed_focus_label_uses_shared_label_terms() -> None:

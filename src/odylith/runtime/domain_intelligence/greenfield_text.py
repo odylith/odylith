@@ -32,6 +32,39 @@ def word_occurrences(value: Any, word: Any) -> int:
     )
 
 
+def clip_text_at_word_boundary(
+    value: Any,
+    *,
+    limit: int,
+    dangling_words: Iterable[str] = (),
+    strip_edges: str = "",
+    rstrip_chars: str = " ,;:",
+) -> str:
+    text = clean_text(value)
+    if strip_edges:
+        text = text.strip(strip_edges)
+    if len(text) <= limit:
+        return text
+    clipped = text[: max(0, limit)].rstrip(rstrip_chars)
+    if " " in clipped:
+        clipped = clipped.rsplit(" ", 1)[0].rstrip(rstrip_chars)
+    return strip_dangling_word_tail(clipped, dangling_words=dangling_words, rstrip_chars=rstrip_chars)
+
+
+def strip_dangling_word_tail(
+    value: Any,
+    *,
+    dangling_words: Iterable[str],
+    rstrip_chars: str = " ,;:.",
+) -> str:
+    words = clean_text(value).rstrip(rstrip_chars).split()
+    dangling = {clean_text(word).casefold().strip(".,;:") for word in dangling_words}
+    dangling.discard("")
+    while words and words[-1].casefold().strip(".,;:") in dangling:
+        words.pop()
+    return " ".join(words).rstrip(rstrip_chars)
+
+
 def visible_words(value: Any) -> tuple[str, ...]:
     return tuple(re.findall(r"[A-Za-z0-9]+", clean_text(value)))
 

@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _SEMANTIC_MODEL_TERM_STOPWORDS = {
@@ -379,9 +380,7 @@ def _clip_clause(value: str, limit: int) -> str:
     text = _clean(value).strip(" .,:;")
     if len(text) <= limit:
         return text
-    clipped = text[:limit].rstrip(" ,;:")
-    if " " in clipped:
-        clipped = clipped.rsplit(" ", 1)[0].rstrip(" ,;:")
+    clipped = clip_text_at_word_boundary(text, limit=limit)
     return _strip_dangling_tail(clipped) or text
 
 

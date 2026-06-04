@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 164,
-    "mapped_workstream_evidence_count": 135,
+    "explicit_event_count": 165,
+    "mapped_workstream_evidence_count": 136,
     "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 164
+    "timeline_event_count": 165
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -51,6 +51,47 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_confirmed_text.py"
+      ],
+      "confidence": "high",
+      "event_index": 584,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed generated artifact word-boundary clipping mechanics through shared greenfield text while preserving caller-owned grammar and fallback policy.",
+      "ts_iso": "2026-06-04T08:20:31-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
