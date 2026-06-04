@@ -2143,6 +2143,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   wider greenfield artifact proof passed (`190 passed in 204.17s`); and
   confirmed-create performance proof passed (`1 passed in 10.32s`), preserving
   the under-30s create gate.
+- 2026-06-04 artifact sentence cleanup follow-through moved reusable
+  artifact-text sentence casing and trailing-period mechanics into
+  `greenfield_text.clean_artifact_sentence`. Component contracts still own
+  contract assembly, state terms, interfaces, and proof wording; component
+  contract quality still owns public-prose policy and generic actor-label
+  localization. Shared greenfield text now owns the repeated
+  `clean_artifact_text` plus sentence-casing body. The touched callers no
+  longer keep local `return text[:1].upper() + text[1:] + "."` forks. Touched
+  files remain below limits (`greenfield_component_contract.py`: 572 lines;
+  `greenfield_component_contract_quality.py`: 536 lines;
+  `greenfield_text.py`: 279 lines;
+  `test_greenfield_component_spec_quality.py`: 699 lines). Proof: syntax proof
+  passed for the touched modules and test; focused artifact-sentence proof
+  passed (`3 passed in 0.12s`); full component-spec quality proof passed (`14
+  passed in 0.12s`); wider greenfield artifact proof passed (`191 passed in
+  224.52s`); and confirmed-create performance proof passed (`1 passed in
+  13.98s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

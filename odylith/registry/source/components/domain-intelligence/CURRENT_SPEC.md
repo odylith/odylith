@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed component contract artifact sentence casing through shared greenfield text while preserving contract assembly and quality policy, with focused, wide, and performance proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py +3 more
 - **2026-06-04 · Implementation:** Routed Markdown-cleaned sentence casing for confirmed Atlas diagram text and sequence-step rendering through shared greenfield text with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +3 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed Atlas proof-boundary lead cleanup through the shared greenfield text owner and pinned the ownership with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +2 more
-- **2026-06-04 · Implementation:** Routed generated visible-result language normalization through shared greenfield text while preserving caller-owned parser and artifact wording policy.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_terms.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +7 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -160,6 +160,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed generated visible-result language normalization through `greenfield_text.normalize_visible_result_language`. First-path clauses, sequence steps, component artifact terms, confirmed system rows, confirmed intent completion, product-risk wording, and confirmed Atlas diagram labels keep their parser cleanup, sentence removal, risk framing, and label policy while shared greenfield text owns reusable `readout plus`, `on screen, alongside`, `alongside`, and `visible-result event` phrase rewrites. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed Atlas proof-boundary lead cleanup through `greenfield_text.normalize_proof_boundary_language`. `greenfield_confirmed_diagram_text.py` keeps brief proof summaries, semantic checkpoint selection, clause splitting, label limits, and Mermaid-safe rendering while shared greenfield text owns reusable evidence-prompt, trust, success, replay, and done-means prefix cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated artifact text cleanup through `greenfield_text.clean_artifact_text`. Registry component contracts, contract differentiation, contract fields, component profiles, contract quality gates, semantic context, semantic contracts, component terms, the domain term index, and semantic quality keep caller-owned contract, phrase, token, and validation policy while shared greenfield text owns reusable backtick removal, punctuation-spacing cleanup, whitespace collapse, and optional parenthesis splitting. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed component contract and contract-quality artifact sentence casing through `greenfield_text.clean_artifact_sentence`. Component contracts keep contract assembly, state terms, interfaces, and proof wording, and contract quality keeps public-prose policy plus generic actor-label localization while shared greenfield text owns reusable artifact cleanup, capitalization, and trailing-period mechanics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-intent Markdown cleanup through `greenfield_text.clean_markdown_text`. Confirmed text keeps list coercion, semantic terms, word-count APIs, title/focus labels, and generated sentence shaping; confirmed-intent parsing keeps section parsing and title detection; actor labels keep project-specific role normalization while shared greenfield text owns reusable emphasis token stripping, backtick removal, punctuation-spacing cleanup, and whitespace collapse. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed remaining inline Markdown cleanup for confirmed component labels, first-path text, sequence-step sentences, confirmed Atlas sentence text, semantic-model cleanup, and Registry component term windows through `greenfield_text.clean_markdown_text`. Those callers keep component naming, first-path parsing, sentence casing, diagram rendering, semantic model assembly, and term-window scoring while shared greenfield text owns reusable inline emphasis stripping, backtick removal, punctuation-spacing cleanup, and whitespace collapse. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Markdown-cleaned sentence casing for confirmed Atlas diagram text and sequence-step rendering through `greenfield_text.clean_markdown_sentence`. Diagram text keeps component description and label selection, and sequence steps keep first-path step derivation and dedupe while shared greenfield text owns the repeated Markdown cleanup, capitalization, and trailing-period mechanics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -236,6 +237,12 @@ This section captures synchronized requirement and contract signals derived from
   generated-artifact text cleanup must stay in
   `greenfield_text.clean_artifact_text`. They must not reintroduce local
   backtick-removal plus punctuation-spacing regex bodies.
+- Component contract and contract-quality callers may own contract assembly,
+  state terms, proof wording, prose policy, and generic actor-label localization,
+  but reusable artifact-text sentence casing and trailing-period mechanics must
+  stay in `greenfield_text.clean_artifact_sentence`. They must not reintroduce
+  local `return text[:1].upper() + text[1:] + "."` bodies for this cleanup
+  class.
 - Confirmed text, confirmed-intent parsing, and actor-label callers may own
   list coercion, section parsing, title detection, role normalization,
   semantic terms, and generated sentence shaping, but reusable Markdown and

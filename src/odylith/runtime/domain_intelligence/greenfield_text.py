@@ -26,6 +26,13 @@ def clean_artifact_text(value: Any, *, split_parentheses: bool = False) -> str:
     return clean_text(text)
 
 
+def clean_artifact_sentence(value: Any, *, split_parentheses: bool = False) -> str:
+    text = clean_artifact_text(value, split_parentheses=split_parentheses).strip(" .")
+    if not text:
+        return ""
+    return text[:1].upper() + text[1:] + "."
+
+
 def clean_markdown_text(value: Any) -> str:
     text = display_text.strip_inline_markdown_emphasis_tokens(clean_text(value)).replace("`", "")
     text = _PUNCTUATION_SPACING_RE.sub(r"\1", text)

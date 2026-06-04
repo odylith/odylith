@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_wi
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -521,7 +522,7 @@ def _sentence(value: Any) -> str:
         return ""
     if starts_with_generic_actor_label(text):
         text = localize_generic_actor_label(text)
-    return text[:1].upper() + text[1:] + "."
+    return clean_artifact_sentence(text)
 
 
 __all__ = [

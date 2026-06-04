@@ -42,6 +42,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import domain_label
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import progression_marker_count
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
@@ -156,6 +157,25 @@ def test_component_contract_artifact_cleaning_stays_in_text_owner() -> None:
         assert 'clean_text(value).replace("`"' not in source
         assert 'replace("`", "").replace("(", " ").replace(")", " ")' not in source
         assert 're.sub(r"\\s+([,.;:?!])", r"\\1", text)' not in source
+
+
+def test_component_contract_artifact_sentence_stays_in_text_owner() -> None:
+    text_source = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
+    callers = [
+        COMPONENT_CONTRACT_PATH,
+        COMPONENT_CONTRACT_QUALITY_PATH,
+    ]
+
+    assert "def clean_artifact_sentence" in text_source
+    assert clean_artifact_sentence("`risk review` , ready") == "Risk review, ready."
+    assert normalize_contract({"owned_state": "`Risk reviewer` guardrails , ready"})[
+        "owned_state"
+    ] == "Local risk reviewer guardrails, ready."
+
+    for caller in callers:
+        source = caller.read_text(encoding="utf-8")
+        assert "clean_artifact_sentence" in source
+        assert 'return text[:1].upper() + text[1:] + "."' not in source
 
 
 def test_confirmed_project_brief_stays_in_dedicated_owner() -> None:

@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_index import 
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -535,10 +536,7 @@ def _clean(value: Any) -> str:
 
 
 def _sentence(value: Any) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return ""
-    return text[:1].upper() + text[1:] + "."
+    return clean_artifact_sentence(value)
 
 
 def _clause(value: Any) -> str:
