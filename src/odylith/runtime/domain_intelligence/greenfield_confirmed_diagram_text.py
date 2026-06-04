@@ -11,6 +11,7 @@ from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 
 
 def component_description(row: Mapping[str, Any]) -> str:
@@ -114,7 +115,7 @@ def semantic_proof_checkpoint(semantic_model: Mapping[str, Any] | None) -> str:
         visible = re.sub(r"\balongside\b", "with", visible, flags=re.IGNORECASE)
         visible = _strip_dangling_tail(visible)
         visible = _proof_checkpoint_from_visible_result(visible)
-        if len(re.findall(r"[A-Za-z0-9]+", visible)) >= 3:
+        if word_count(visible) >= 3:
             return trim(visible, 80)
     graph = semantic_model.get("diagram_event_graph")
     if isinstance(graph, Mapping):
@@ -125,7 +126,7 @@ def semantic_proof_checkpoint(semantic_model: Mapping[str, Any] | None) -> str:
         value = re.sub(r"^(?:the\s+)?accepted\s+path\s+can\s+be\s+replayed\s+from\s+", "replay ", value, flags=re.IGNORECASE)
         value = re.sub(r"^done\s+means\s*:?\s*", "", value, flags=re.IGNORECASE)
         value = _strip_dangling_tail(value)
-        if len(re.findall(r"[A-Za-z0-9]+", value)) >= 4:
+        if word_count(value) >= 4:
             return trim(value, 80)
     return ""
 
@@ -179,7 +180,7 @@ def proof_checkpoint_label(value: str) -> str:
         if clause.strip(" .")
     ]
     for clause in clauses:
-        if len(re.findall(r"[A-Za-z0-9]+", clause)) >= 4:
+        if word_count(clause) >= 4:
             return trim(clause, 82)
     return ""
 

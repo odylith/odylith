@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
+from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import proof_checkpoint_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import semantic_proof_checkpoint
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
@@ -108,17 +110,28 @@ def test_confirmed_diagram_text_model_stays_in_dedicated_owner() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     diagram_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py"
     text_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py"
+    confirmed_text_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py"
     diagram_source = diagram_owner.read_text(encoding="utf-8")
     text_source = text_owner.read_text(encoding="utf-8")
+    confirmed_text_source = confirmed_text_owner.read_text(encoding="utf-8")
 
     assert len(diagram_source.splitlines()) < 800
     assert "greenfield_confirmed_diagram_text as diagram_text" in diagram_source
     assert "def _component_description" not in diagram_source
     assert "def _brief_proof_boundary" not in diagram_source
     assert "def _short_label" not in diagram_source
+    assert "def word_count" in confirmed_text_source
+    assert "from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count" in text_source
+    assert 're.findall(r"[A-Za-z0-9]+"' not in text_source
     assert "def component_description" in text_source
     assert "def brief_proof_boundary" in text_source
     assert "def short_label" in text_source
+    assert semantic_proof_checkpoint({"first_path_contract": {"visible_result": "`AI/ML` review status appears"}}) == (
+        "AI/ML review status appears"
+    )
+    assert proof_checkpoint_label("Done means: save the `AI/ML` review status and source note.") == (
+        "save the AI/ML review status"
+    )
 
 
 def test_sequence_event_steps_stay_in_dedicated_owner() -> None:

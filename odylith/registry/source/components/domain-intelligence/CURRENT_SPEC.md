@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed Atlas proof-label word counts through shared confirmed text so diagram checkpoint filtering no longer carries local regex token counts.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
 - **2026-06-04 · Implementation:** Routed Atlas sequence-step display word counts through shared label terms so first-path filtering no longer carries local regex token counts.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed semantic-quality raw overlap token extraction through the shared greenfield domain term index so release-scope and sentence-overlap gates no longer carry local regex token loops.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py, tests/unit/runtime/test_greenfield_semantic_quality_terms.py
-- **2026-06-03 · Implementation:** Moved Registry generic actor-label prefix handling into the shared greenfield actor-term owner so contract fields, repair detection, and quality normalization stop carrying local actor-prefix regexes.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -83,6 +83,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Tightened `greenfield_confirmed_components.py` by removing a duplicate `_title_phrase` definition and the unused `_can_clause` helper; the confirmed component owner now stays below the 800-line soft limit with structural coverage in `test_greenfield_component_spec_quality.py`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed Radar workstream phrase derivation into `greenfield_confirmed_backlog_text_model.py`. The owner now handles actor labels, first-action/outcome clauses, proof focus selection, problem fallback wording, product-term overlap checks, and rationale-line generation while `greenfield_confirmed_backlog.py` stays below the 800-line soft limit as the program/release/backlog record assembler. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed Atlas diagram text and label derivation into `greenfield_confirmed_diagram_text.py`. The owner now handles component card descriptions, product/actor/proof briefs, proof-review labels, workstream titles, Mermaid label trimming, and short-label cleanup while `greenfield_confirmed_diagrams.py` stays below the 800-line soft limit as the row assembly and flowchart wiring owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed Atlas proof-label word counts through `greenfield_confirmed_text.word_count`. `greenfield_confirmed_diagram_text.py` keeps proof-label cleanup, proof-review label selection, Mermaid label trimming, and short-label cleanup while confirmed text owns Markdown cleanup and visible word counting for semantic proof checkpoint and proof-review clause thresholds. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split specialized generated Registry component contract profiles into `greenfield_component_contract_profiles.py`. Document-context and status-view contract builders now own their profile-specific phrase extraction, transition selection, outside-boundary wording, and local proof rows while `greenfield_component_contract.py` stays below the 800-line soft limit as the profile selector and generic fallback contract owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split generated Registry component semantic context extraction into `greenfield_component_semantic_context.py`. Context-derived phrase extraction, late first-path/proof backfill selection, context anchor expansion, actor/action prefix removal, and context-backfill decisions now sit outside `greenfield_component_semantic_contract.py`, which stays below the 800-line soft limit as the semantic contract assembly owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split generated Registry component contract target parsing into `greenfield_component_contract_targets.py`. Rendered-spec issue parsing, duplicate repair-target dedupe, and operator-facing component-spec blocker copy now sit outside `greenfield_component_contract_differentiation.py`, which stays below the 800-line soft limit as the contract repair orchestrator. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -366,6 +367,12 @@ This section captures synchronized requirement and contract signals derived from
   `greenfield_project_intelligence.py` may own schema shape, minimum-row
   thresholds, and issue text, but they must not reintroduce local `_word_count`
   helpers for project brief or project intelligence shallow-row checks.
+- Confirmed Atlas proof-label visible word counting must stay in
+  `greenfield_confirmed_text.word_count`.
+  `greenfield_confirmed_diagram_text.py` may own semantic proof checkpoint
+  cleanup, proof-review label selection, Mermaid label trimming, and short-label
+  cleanup, but it must not reintroduce local raw word-count regex loops for
+  confirmed Atlas proof-label thresholds.
 - Confirmed-intent parser visible word counting must stay in
   `greenfield_confirmed_text.word_count`. `greenfield_confirmed_intent.py` may
   own Markdown/JSON section parsing, preamble paragraph selection, and accepted

@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 145,
-    "mapped_workstream_evidence_count": 110,
+    "explicit_event_count": 146,
+    "mapped_workstream_evidence_count": 111,
     "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 145
+    "timeline_event_count": 146
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "tests/unit/runtime/test_greenfield_confirmed_diagrams.py"
+      ],
+      "confidence": "high",
+      "event_index": 557,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed Atlas proof-label word counts through shared confirmed text so diagram checkpoint filtering no longer carries local regex token counts.",
+      "ts_iso": "2026-06-04T01:32:30-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",

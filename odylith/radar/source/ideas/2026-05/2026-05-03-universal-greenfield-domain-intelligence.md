@@ -1045,6 +1045,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`5 passed in 0.06s`); wider greenfield artifact proof passed (`162
   passed in 192.91s`); and confirmed-create performance proof passed (`1
   passed in 9.52s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed Atlas proof-label word-count follow-through moved
+  semantic proof checkpoint and proof-review clause thresholds in
+  `greenfield_confirmed_diagram_text.py` onto
+  `greenfield_confirmed_text.word_count`. The confirmed diagram text owner
+  still owns proof-label cleanup, proof-review label selection, Mermaid label
+  trimming, and short-label cleanup, but confirmed text now owns Markdown
+  cleanup and visible word counting for Atlas proof labels. Touched files
+  remain below limits (`greenfield_confirmed_diagram_text.py`: 544 lines;
+  `greenfield_confirmed_text.py`: 399 lines;
+  `test_greenfield_confirmed_diagrams.py`: 215 lines). Proof: syntax proof
+  passed for the touched modules and test; focused confirmed-diagrams proof
+  passed (`5 passed in 0.06s`); wider greenfield artifact proof passed (`162
+  passed in 193.46s`); and confirmed-create performance proof passed (`1
+  passed in 9.56s`), preserving the under-30s create gate.
 - 2026-06-03 artifact-enrichment graph and Tribunal actor decomposition moved
   Domain Intelligence graph normalization into `artifact_graph.py` and visible
   Tribunal actor projection into `artifact_tribunal_actors.py`.
