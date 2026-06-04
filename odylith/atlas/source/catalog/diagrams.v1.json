@@ -4197,7 +4197,7 @@
         "src/odylith/runtime/surfaces/compass_transaction_runtime.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence": "df1b7f6b28da98d610500d7f35e14f6ca431410a7f151f19f0ee46cc6c266e1d",
+        "src/odylith/runtime/domain_intelligence": "12c5bb569e037310051da6f0fcb6300cca3279bcc2a47b19af5b0a482177e3ac",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "23bbbbc35b664649d96685a211d05ca06e9c32e5768ff6402d7a30927eef8ae8"
       },
       "render_source_fingerprint": "0cba73f4447003c6316f589dd442b776da7b7ddeaf4cbd3adea3f912db3e4f51"

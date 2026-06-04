@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 
 
@@ -142,6 +144,41 @@ def test_sequence_event_steps_stay_in_dedicated_owner() -> None:
         assert moved not in diagram_source
         assert moved in steps_source
     assert "def sequence_event_steps" in steps_source
+
+
+def test_sequence_diagram_term_routing_uses_shared_index() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    diagram_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py"
+    index_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
+    diagram_source = diagram_owner.read_text(encoding="utf-8")
+    index_source = index_owner.read_text(encoding="utf-8")
+
+    assert "def ordered_terms" in index_source
+    assert "stem_ing" in index_source
+    assert (
+        "from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms"
+        in diagram_source
+    )
+    assert "def _domain_terms" not in diagram_source
+    assert "normalize_domain_token" not in diagram_source
+    assert "stem_ing=True" in diagram_source
+
+    assert ordered_terms("Race readings and reviewing status.", stopwords={"and"}, stem_ing=True) == [
+        "race",
+        "read",
+        "review",
+        "status",
+    ]
+    assert (
+        best_component_node_for_text(
+            "reviewing race readings",
+            components=[
+                {"label": "Generic queue", "responsibility": "stores status"},
+                {"label": "Race read review", "responsibility": "reviews telemetry reading"},
+            ],
+        )
+        == "component2"
+    )
 
 
 def test_sequence_event_steps_preserve_action_later_decision_tail() -> None:

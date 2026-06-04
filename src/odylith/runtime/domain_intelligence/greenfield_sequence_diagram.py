@@ -8,10 +8,10 @@ from typing import Any
 
 from odylith.runtime.common import display_text
 from odylith.runtime.common import mermaid_text
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import ACTION_VERB_PATTERN as _ACTION_VERB_PATTERN
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 
 
 _BASE_ACTION_VERB_PATTERN = (
@@ -21,6 +21,32 @@ _BASE_ACTION_VERB_PATTERN = (
     r"record|reject|render|request|resolve|return|review|route|run|save|schedule|screen|see|select|send|show|store|"
     r"submit|supply|track|validate|verify|view|vote"
 )
+
+_SEQUENCE_TERM_STOPWORDS = {
+    "accepted",
+    "actor",
+    "and",
+    "app",
+    "application",
+    "boundary",
+    "component",
+    "evidence",
+    "first",
+    "from",
+    "outcome",
+    "path",
+    "product",
+    "proof",
+    "record",
+    "release",
+    "result",
+    "state",
+    "system",
+    "that",
+    "the",
+    "through",
+    "with",
+}
 
 
 def sequence_mermaid(
@@ -122,16 +148,16 @@ def best_component_node_for_text(value: str, *, components: list[dict[str, Any]]
     """Return the component node id whose local language best matches the text."""
 
     scored: list[tuple[int, int, int, str]] = []
-    terms = _domain_terms(value)
+    terms = _sequence_terms(value)
     if not terms:
         return ""
     for index, component in enumerate(components[:7], start=1):
-        label_score = len(terms & _domain_terms(component.get("label", "")))
+        label_score = len(terms & _sequence_terms(component.get("label", "")))
         component_text = " ".join(
             str(component.get(key, ""))
             for key in ("label", "source_system_description", "responsibility", "boundary")
         )
-        body_score = len(terms & _domain_terms(component_text))
+        body_score = len(terms & _sequence_terms(component_text))
         score = label_score * 3 + body_score
         if score:
             scored.append((score, label_score, -index, _node_id("component", index)))
@@ -198,12 +224,12 @@ def _step_component(step: str, *, components: list[dict[str, Any]], fallback_ind
 
 def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: int = 0) -> int | None:
     text = _compact_text(step).casefold()
-    step_terms = _domain_terms(text)
+    step_terms = _sequence_terms(text)
     if not step_terms:
         return None
     if re.search(r"\b(?:highlight|highlights|choose|chooses|display|show|shows|review|compare|compares)\b", text):
         for index, row in enumerate(rows):
-            row_terms = _domain_terms(row)
+            row_terms = _sequence_terms(row)
             if row_terms & {"comparison", "display", "presentation", "review", "selected", "selection", "surface", "view"}:
                 return index
     if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives)\b", text) and re.search(
@@ -211,13 +237,13 @@ def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: in
         text,
     ):
         for index, row in enumerate(rows):
-            row_terms = _domain_terms(row)
+            row_terms = _sequence_terms(row)
             if row_terms & {"price", "pricing", "cost", "discount", "quote", "quoted"}:
                 return index
     scored: list[tuple[int, int, int]] = []
     for index, row in enumerate(rows):
         row_text = row.casefold()
-        row_terms = _domain_terms(row)
+        row_terms = _sequence_terms(row)
         exact = len(step_terms & row_terms)
         fuzzy = sum(1 for step_term in step_terms for row_term in row_terms if _term_related(step_term, row_term))
         score = exact * 3 + fuzzy
@@ -351,10 +377,10 @@ def _term_related(left: str, right: str) -> bool:
 
 
 def _best_index_for_text(value: str, *, rows: list[str], default: int) -> int:
-    terms = _domain_terms(value)
+    terms = _sequence_terms(value)
     scored: list[tuple[int, int]] = []
     for index, row in enumerate(rows):
-        score = len(terms & _domain_terms(row))
+        score = len(terms & _sequence_terms(row))
         if score:
             scored.append((score, -index))
     if not scored:
@@ -593,40 +619,14 @@ def _imperative_handoff_focus(value: str) -> str:
     return text
 
 
-def _domain_terms(value: object) -> set[str]:
-    stop = {
-        "accepted",
-        "actor",
-        "and",
-        "app",
-        "application",
-        "boundary",
-        "component",
-        "evidence",
-        "first",
-        "from",
-        "outcome",
-        "path",
-        "product",
-        "proof",
-        "record",
-        "release",
-        "result",
-        "state",
-        "system",
-        "that",
-        "the",
-        "through",
-        "with",
-    }
-    terms: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _compact_text(str(value)).casefold()):
-        token = normalize_domain_token(raw, stopwords=stop)
-        if token.endswith("ing") and len(token) > 6:
-            token = token[:-3]
-        if token:
-            terms.add(token)
-    return terms
+def _sequence_terms(value: object) -> set[str]:
+    return set(
+        ordered_terms(
+            _compact_text(str(value)),
+            stopwords=_SEQUENCE_TERM_STOPWORDS,
+            stem_ing=True,
+        )
+    )
 
 
 def _participant_label(value: str) -> str:

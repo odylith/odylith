@@ -1279,6 +1279,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed (`30 passed in 37.40s`); broad artifact/proposal proof passed
   (`130 passed in 204.69s`); and confirmed-create performance proof passed
   (`1 passed in 9.91s`), preserving the under-30s create gate.
+- 2026-06-04 Atlas sequence term-routing follow-through moved first-path
+  sequence and flowchart component matching onto
+  `greenfield_domain_term_index.ordered_terms`. The shared term index now
+  supports caller-owned `stem_ing=True` for sequence routing that needs the
+  previous gerund collapse, while `greenfield_sequence_diagram.py` keeps only
+  sequence-specific stopwords and no longer imports `normalize_domain_token` or
+  owns `_domain_terms`. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 54 lines;
+  `greenfield_sequence_diagram.py`: 695 lines;
+  `test_greenfield_confirmed_diagrams.py`: 189 lines). Proof: syntax proof
+  passed for the touched modules and test; focused diagram proof passed
+  (`5 passed in 0.05s`); wider artifact/proposal proof passed
+  (`105 passed in 166.48s`); and confirmed-create performance proof passed
+  (`1 passed in 9.90s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

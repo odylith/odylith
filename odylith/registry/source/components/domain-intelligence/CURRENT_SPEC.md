@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed Atlas sequence and first-path flowchart component matching through the shared greenfield domain term index with caller-owned gerund stemming and pinned the renderer against local token-loop regressions.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py +1 more
 - **2026-06-03 · Implementation:** Moved confirmed-intent semantic term extraction into the confirmed-text owner and split oversized confirmed-intent ownership tests while preserving focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py +4 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed generated component contract field phrase rendering through the shared component-term owner and proved focused, broad, and under-30s confirmed-create behavior.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py, src/odylith/runtime/domain_intelligence/greenfield_component_terms.py +1 more
-- **2026-06-03 · Implementation:** Routed derived component-axis term extraction through the shared component-term owner and proved focused, broad, and under-30s confirmed-create behavior.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_axes.py, src/odylith/runtime/domain_intelligence/greenfield_component_terms.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -107,6 +107,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Split reusable greenfield domain-term indexing into `greenfield_domain_term_index.py`. Product-risk genericity checks now call `ordered_terms` with risk-specific stopwords, and `greenfield_component_term_index.py` delegates to the same shared kernel while retaining component-specific stopwords, keeping Radar risk specificity and Registry component term matching on one normalization path. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Moved Registry spec term distinctiveness into `greenfield_component_term_index.py`. The term-index owner now exposes `component_domain_terms`, `section_domain_terms`, and `component_local_terms`, while `greenfield_component_contract_quality.py` keeps only quality failure decisions and no longer owns `domain_terms`, `_section_terms`, or `_local_domain_terms`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Moved confirmed-intent semantic term extraction into `greenfield_confirmed_text.semantic_terms`. Confirmed-intent validation now passes `CONFIRMED_INTENT_VALIDATION_STOPWORDS` into the text owner, internal-system row parsing imports the same owner, and the confirmed-intent tests were split so the main confirmed-intent suite stays below the test ceiling. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed Atlas sequence and first-path flowchart component matching through `greenfield_domain_term_index.ordered_terms`. The shared term index now supports `stem_ing=True` for callers that need gerund collapse, and `greenfield_sequence_diagram.py` no longer owns `_domain_terms` or direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -190,6 +191,11 @@ This section captures synchronized requirement and contract signals derived from
   may pass surface-owned stopwords to `ordered_terms`, but they must not
   reintroduce private `_domain_terms`, `_term_token`, or regex token loops for
   generated-artifact specificity.
+- Atlas sequence and first-path flowchart routing must use
+  `greenfield_domain_term_index.ordered_terms` for component and actor text
+  matching. Sequence-specific stopwords and `stem_ing=True` may remain
+  caller-owned, but the sequence renderer must not reintroduce `_domain_terms`,
+  `_term_token`, or direct `normalize_domain_token` loops.
 - Registry spec term-set and distinctiveness scoring must stay in
   `greenfield_component_term_index.py`. Component quality gates may call
   `component_domain_terms`, `section_domain_terms`, and `component_local_terms`
