@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 244,
-    "mapped_workstream_evidence_count": 170,
+    "explicit_event_count": 245,
+    "mapped_workstream_evidence_count": 171,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 244
+    "timeline_event_count": 245
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 559,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed component visible word-count thresholds through shared confirmed text so component responsibility and dependency filtering no longer carry local regex token counts.",
+      "ts_iso": "2026-06-04T01:58:36-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",

@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 78,
-    "mapped_workstream_evidence_count": 68,
+    "explicit_event_count": 79,
+    "mapped_workstream_evidence_count": 69,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 85,
+    "spec_history_event_count": 86,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 79
+    "timeline_event_count": 80
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,53 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
       ],
       "confidence": "high",
-      "event_index": 559,
+      "event_index": 560,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
-      "ts_iso": "2026-06-04T01:47:24-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+      "ts_iso": "2026-06-04T02:00:27-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 559,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed component visible word-count thresholds through shared confirmed text so component responsibility and dependency filtering no longer carry local regex token counts.",
+      "ts_iso": "2026-06-04T01:58:36-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

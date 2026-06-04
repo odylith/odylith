@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_system_description,
     confirmed_system_name,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
@@ -272,7 +273,7 @@ def _responsibility(*, name: str, description: str) -> str:
 
 def _ensure_responsibility_depth(value: str) -> str:
     text = _sentence_case(value)
-    if len(re.findall(r"[A-Za-z0-9]+", text)) >= 6:
+    if word_count(text) >= 6:
         return text
     if text.casefold().startswith("owns "):
         return f"{text} and its reviewable evidence."
@@ -357,7 +358,7 @@ def _generated_or_weak(value: Any) -> bool:
     )
     if any(marker in text for marker in generic_markers):
         return True
-    return len(re.findall(r"[a-z0-9]+", text)) < 6
+    return word_count(text) < 6
 
 
 def _generated_sequence(value: Any) -> bool:
@@ -485,7 +486,7 @@ def _dependency_focus(*, action: str, fallback: str) -> str:
     text = re.sub(r"\s*[:,;]\s*$", "", text).strip(" .,;")
     text = re.sub(r"^\s*(?:and|or|,|;)+\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s*(?:and|or|,|;)+\s*$", "", text, flags=re.IGNORECASE)
-    if not text or len(re.findall(r"[A-Za-z0-9]+", text)) < 3:
+    if not text or word_count(text) < 3:
         return "the local product behavior"
     if looks_like_finite_action(text):
         return base_action_clause(text)

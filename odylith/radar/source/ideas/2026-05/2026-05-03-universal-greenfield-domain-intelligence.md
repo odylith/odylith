@@ -1072,6 +1072,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed (`3 passed in 0.15s`); wider greenfield artifact proof passed
   (`162 passed in 194.12s`); and confirmed-create performance proof passed (`1
   passed in 9.64s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed component word-count follow-through moved
+  responsibility-depth, generated-or-weak, and dependency-focus thresholds in
+  `greenfield_confirmed_components.py` onto
+  `greenfield_confirmed_text.word_count`. The confirmed component owner still
+  owns internal-system component generation, component labels, kind selection,
+  responsibility, boundary, dependency, interface, validation, and fallback
+  contract shaping, while confirmed text now owns Markdown cleanup and visible
+  word counting for component-generation thresholds. Touched files remain below
+  limits (`greenfield_confirmed_components.py`: 578 lines;
+  `greenfield_confirmed_text.py`: 399 lines;
+  `test_greenfield_component_spec_quality.py`: 568 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.14s`); wider greenfield artifact proof passed (`162 passed
+  in 192.35s`); and confirmed-create performance proof passed (`1 passed in
+  9.14s`), preserving the under-30s create gate.
 - 2026-06-03 artifact-enrichment graph and Tribunal actor decomposition moved
   Domain Intelligence graph normalization into `artifact_graph.py` and visible
   Tribunal actor projection into `artifact_tribunal_actors.py`.

@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 326,
-    "mapped_workstream_evidence_count": 169,
+    "explicit_event_count": 327,
+    "mapped_workstream_evidence_count": 170,
     "recent_path_match_count": 0,
     "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 326
+    "timeline_event_count": 327
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 559,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed component visible word-count thresholds through shared confirmed text so component responsibility and dependency filtering no longer carry local regex token counts.",
+      "ts_iso": "2026-06-04T01:58:36-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
