@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 112,
-    "mapped_workstream_evidence_count": 102,
+    "explicit_event_count": 113,
+    "mapped_workstream_evidence_count": 103,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 119,
+    "spec_history_event_count": 120,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 113
+    "timeline_event_count": 114
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,21 +21,60 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py"
       ],
       "confidence": "high",
-      "event_index": 593,
+      "event_index": 594,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py +2 more",
-      "ts_iso": "2026-06-04T10:23:27-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_apply_write.py +3 more",
+      "ts_iso": "2026-06-04T10:39:32-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/common/value_coercion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 593,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed component-axis, contract-quality, contract-differentiation, and apply-write exact string dedupe through common value coercion while preserving caller-owned cleanup and case policy, with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T10:38:57-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

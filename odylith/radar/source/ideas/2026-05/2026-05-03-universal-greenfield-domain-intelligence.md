@@ -2175,6 +2175,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   cleaned-text proof passed (`4 passed in 0.32s`); wider greenfield artifact
   proof passed (`192 passed in 234.56s`); and confirmed-create performance
   proof passed (`1 passed in 11.92s`), preserving the under-30s create gate.
+- 2026-06-04 exact string dedupe follow-through routed component-axis terms,
+  contract differentiation terms, component contract quality issue rows, and
+  Atlas catalog apply-write watch rows through
+  `runtime.common.value_coercion.dedupe_strings`. Component axes still own
+  semantic-axis derivation, contract differentiation still owns lowercase term
+  policy, component contract quality still owns issue cleanup, and apply-write
+  still owns catalog update semantics; common value coercion now owns the
+  repeated trim, empty-filter, and exact-order dedupe body. The touched callers
+  no longer keep local `seen` plus `seen.add(...)` loops for exact string
+  rows. Touched files remain below limits (`greenfield_component_axes.py`: 137
+  lines; `greenfield_component_contract_differentiation.py`: 693 lines;
+  `greenfield_component_contract_quality.py`: 530 lines;
+  `greenfield_apply_write.py`: 465 lines; `value_coercion.py`: 108 lines;
+  `test_greenfield_component_spec_quality.py`: 740 lines). Proof: syntax proof
+  passed for the touched modules and test; focused exact-dedupe proof passed
+  (`16 passed in 6.80s`); wider greenfield artifact proof passed (`193 passed
+  in 215.97s`); and confirmed-create performance proof passed (`1 passed in
+  11.41s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed component-axis, contract-quality, contract-differentiation, and apply-write exact string dedupe through common value coercion while preserving caller-owned cleanup and case policy, with focused, wide, and performance proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/common/value_coercion.py +5 more
 - **2026-06-04 · Implementation:** Routed first-path and semantic-quality cleaned-text dedupe through shared greenfield text while preserving caller-owned cleanup policy, with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py +4 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed-intent Markdown cleanup through the shared greenfield text owner and pinned parser, confirmed-text, and actor-label adoption with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_actor_labels.py +4 more
-- **2026-06-04 · Implementation:** Routed component-contract artifact text cleanup through the shared greenfield text owner and pinned the cleanup with focused, wide, and performance proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -165,6 +165,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed remaining inline Markdown cleanup for confirmed component labels, first-path text, sequence-step sentences, confirmed Atlas sentence text, semantic-model cleanup, and Registry component term windows through `greenfield_text.clean_markdown_text`. Those callers keep component naming, first-path parsing, sentence casing, diagram rendering, semantic model assembly, and term-window scoring while shared greenfield text owns reusable inline emphasis stripping, backtick removal, punctuation-spacing cleanup, and whitespace collapse. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Markdown-cleaned sentence casing for confirmed Atlas diagram text and sequence-step rendering through `greenfield_text.clean_markdown_sentence`. Diagram text keeps component description and label selection, and sequence steps keep first-path step derivation and dedupe while shared greenfield text owns the repeated Markdown cleanup, capitalization, and trailing-period mechanics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed first-path and semantic-quality cleaned-text dedupe through `greenfield_text.unique_text`. First-path clauses keep first-path cleanup, first-path semantics keeps step parsing, and semantic quality keeps generated-artifact validation policy while shared greenfield text owns reusable empty filtering and casefolded duplicate suppression. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed exact string row dedupe for component axes, contract differentiation, component contract quality, and apply-write Atlas catalog rows through `runtime.common.value_coercion.dedupe_strings`. Those callers keep their semantic-axis, lowercasing, issue-cleanup, and catalog update policies while common value coercion owns reusable trimmed empty-filtering and exact-order dedupe. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -270,6 +271,12 @@ This section captures synchronized requirement and contract signals derived from
   `greenfield_text.unique_text`. They must not reintroduce local
   `seen: set[str]`, `key = text.casefold()`, or `seen.add(key)` loops for this
   cleanup class.
+- Component axes, contract differentiation, component contract quality, and
+  apply-write catalog paths may own their semantic-axis derivation, lowercasing,
+  issue cleanup, and catalog update semantics, but reusable exact trimmed string
+  dedupe must stay in `runtime.common.value_coercion.dedupe_strings`. They must
+  not reintroduce local `seen: set[str]`, `seen.add(...)`, `_unique`, or
+  `_unique_strings` loops for this cleanup class.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,

@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import greenfield_component_contract_targets as contract_targets
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_axes import (
@@ -595,14 +596,7 @@ def _focus_phrase(context: str) -> str:
 
 
 def _unique_terms(values: Sequence[str]) -> list[str]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = _clean(value).casefold()
-        if text and text not in seen:
-            seen.add(text)
-            result.append(text)
-    return result
+    return dedupe_strings([_clean(value).casefold() for value in values])
 
 
 def _proposal_text(proposal: Mapping[str, Any], *keys: str) -> str:

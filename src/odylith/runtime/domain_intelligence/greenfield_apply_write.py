@@ -8,6 +8,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_experience
@@ -366,8 +367,8 @@ def _upsert_existing_proposal_diagram(
             "summary": str(row.get("summary", "")).strip(),
             "read_guide": str(row.get("read_guide", "")).strip(),
             "components": components,
-            "related_backlog": _unique_strings(related_backlog),
-            "change_watch_paths": _unique_strings(watch_paths) or [source_mmd],
+            "related_backlog": dedupe_strings(related_backlog),
+            "change_watch_paths": dedupe_strings(watch_paths) or [source_mmd],
         }
     )
     catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
@@ -376,19 +377,6 @@ def _upsert_existing_proposal_diagram(
     source_path.write_text(validated_mermaid_source(row).rstrip() + "\n", encoding="utf-8")
     atlas_scaffold_logs.append(f"updated existing diagram: {entry['slug']}")
     return True
-
-
-def _unique_strings(values: Sequence[str]) -> list[str]:
-    rows: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = str(value or "").strip()
-        if not text or text in seen:
-            continue
-        seen.add(text)
-        rows.append(text)
-    return rows
-
 
 def _update_scaffolded_diagram_link_state(*, root: Path, slug: str, link_state: str) -> None:
     if not slug or not link_state:

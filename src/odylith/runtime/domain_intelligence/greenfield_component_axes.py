@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_component_terms import domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
 
@@ -96,14 +97,14 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
 
     label_terms = domain_terms(label_text, noise_terms=_GENERIC_TERMS)
     context_terms = domain_terms(context_text, noise_terms=_GENERIC_TERMS)
-    terms = _unique([*label_terms, *context_terms])
+    terms = dedupe_strings([*label_terms, *context_terms])
     if not terms:
         return None
     primary = term_phrase(label_terms[:4]) or term_phrase(terms[:4]) or "component"
     detail = term_phrase([term for term in terms if term not in label_terms][:5]) or "accepted product context"
     input_focus = term_phrase(terms[4:8]) or detail
     output_focus = term_phrase(terms[8:12]) or detail
-    states = _unique([*terms[:5], "requested", "validated", "blocked", "handed-off"])
+    states = dedupe_strings([*terms[:5], "requested", "validated", "blocked", "handed-off"])
     return ComponentAxis(
         key=component_axis_key_for_label(label_text) or f"derived_{slugify(primary)}",
         triggers=tuple(terms),
@@ -126,18 +127,6 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
             "or assigned to the wrong ownership boundary."
         ),
     )
-
-
-def _unique(values: list[str] | tuple[str, ...]) -> list[str]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = str(value or "").strip()
-        if text and text not in seen:
-            seen.add(text)
-            result.append(text)
-    return result
-
 
 __all__ = [
     "COMPONENT_AXES",

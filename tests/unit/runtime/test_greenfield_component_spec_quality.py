@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import (
     greenfield_component_contract as component_contract,
     greenfield_component_contract_differentiation as contract_differentiation,
     greenfield_component_contract_profiles as contract_profiles,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_axes import derive_component_axis
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
+    dedupe_text,
     normalize_contract,
     public_prose_quality_issues,
     rendered_component_spec_quality_issues,
@@ -61,6 +64,7 @@ DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfi
 CONFIRMED_PROJECT_BRIEF_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py"
 CONFIRMED_PROPOSAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py"
 GREENFIELD_COMMAND_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_command_text.py"
+COMMON_VALUE_COERCION_PATH = ROOT / "src/odylith/runtime/common/value_coercion.py"
 COMPONENT_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py"
 COMPONENT_CONTRACT_PROFILES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py"
 COMPONENT_CONTRACT_QUALITY_PATH = (
@@ -83,6 +87,7 @@ COMPONENT_SEMANTIC_CONTEXT_PATH = (
 )
 COMPONENT_AXES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py"
 SEMANTIC_QUALITY_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py"
+APPLY_WRITE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py"
 
 
 def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
@@ -176,6 +181,42 @@ def test_component_contract_artifact_sentence_stays_in_text_owner() -> None:
         source = caller.read_text(encoding="utf-8")
         assert "clean_artifact_sentence" in source
         assert 'return text[:1].upper() + text[1:] + "."' not in source
+
+
+def test_exact_string_dedupe_stays_in_common_value_owner() -> None:
+    common_source = COMMON_VALUE_COERCION_PATH.read_text(encoding="utf-8")
+    callers = [
+        COMPONENT_AXES_PATH,
+        COMPONENT_CONTRACT_DIFFERENTIATION_PATH,
+        COMPONENT_CONTRACT_QUALITY_PATH,
+        APPLY_WRITE_PATH,
+    ]
+
+    assert "def dedupe_strings" in common_source
+    assert dedupe_strings([" Alpha ", "Alpha", "alpha", "", "Beta"]) == [
+        "Alpha",
+        "alpha",
+        "Beta",
+    ]
+    assert dedupe_text(["`Alpha`", "Alpha", " alpha "]) == ["Alpha", "alpha"]
+    assert contract_differentiation._unique_terms([" Alpha ", "alpha", "Beta"]) == [
+        "alpha",
+        "beta",
+    ]
+    axis = derive_component_axis(
+        label_text="Status Panel",
+        context_text="status panel validates source evidence for reviewers",
+    )
+    assert axis is not None
+    assert axis.triggers == ("panel", "validate")
+
+    for caller in callers:
+        source = caller.read_text(encoding="utf-8")
+        assert "value_coercion import dedupe_strings" in source
+        assert "seen: set[str]" not in source
+        assert "seen.add(" not in source
+    assert "def _unique(" not in COMPONENT_AXES_PATH.read_text(encoding="utf-8")
+    assert "def _unique_strings" not in APPLY_WRITE_PATH.read_text(encoding="utf-8")
 
 
 def test_confirmed_project_brief_stays_in_dedicated_owner() -> None:

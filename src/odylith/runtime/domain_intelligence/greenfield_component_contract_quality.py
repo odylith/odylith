@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
@@ -283,14 +284,7 @@ def rendered_component_spec_quality_issues(
 def dedupe_text(values: Sequence[str]) -> list[str]:
     """Return text values with order preserved and empty rows removed."""
 
-    result: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = _clean(value)
-        if text and text not in seen:
-            seen.add(text)
-            result.append(text)
-    return result
+    return dedupe_strings([_clean(value) for value in values])
 
 
 def _requires_component_contracts(proposal: Mapping[str, Any]) -> bool:
