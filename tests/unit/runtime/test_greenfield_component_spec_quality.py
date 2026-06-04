@@ -10,7 +10,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_targets i
     operator_component_spec_issues,
     repair_targets_from_spec_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
@@ -136,7 +139,13 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert len(term_index_source.splitlines()) < 800
     assert len(axes_source.splitlines()) < 800
     assert "def ordered_domain_terms" in term_index_source
+    assert "def component_domain_terms" in term_index_source
+    assert "def section_domain_terms" in term_index_source
+    assert "def component_local_terms" in term_index_source
     assert "def ordered_domain_terms" not in quality_source
+    assert "def domain_terms" not in quality_source
+    assert "def _section_terms" not in quality_source
+    assert "def _local_domain_terms" not in quality_source
     assert "def _term_token" not in quality_source
     assert "def natural_phrase" in terms_source
     assert "def term_phrase" in terms_source
@@ -168,6 +177,21 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
         "target",
         "window",
     ]
+    assert component_domain_terms("Planning Engine validates plan targets and status windows.") == {
+        "planning",
+        "engine",
+        "validate",
+        "plan",
+        "target",
+        "window",
+    }
+    assert "structured" not in section_domain_terms("Structured contract validates plan targets and status windows.")
+    assert component_local_terms(
+        text_terms={"planning", "window", "shared"},
+        name_terms={"planning", "engine"},
+        all_text_terms=[{"planning", "window", "shared"}, {"review", "window", "shared"}],
+        repeated_name_terms={"window"},
+    ) == {"planning", "engine", "shared"}
     assert natural_phrase(["alpha", "beta"]) == "alpha and beta"
     assert natural_phrase(["alpha", "beta", "gamma"]) == "alpha, beta, and gamma"
     assert phrase(["alpha", "beta", "gamma"]) == "alpha, beta, gamma"

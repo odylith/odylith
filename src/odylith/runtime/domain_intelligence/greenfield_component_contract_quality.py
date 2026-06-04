@@ -7,8 +7,9 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.domain_intelligence.greenfield_component_term_index import TERM_STOPWORDS
-from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -193,7 +194,7 @@ def component_contract_issues(proposal: Mapping[str, Any]) -> list[str]:
             values = text_values(normalized.get(key))
             if not values:
                 issues.append(f"component row {index} `{label}` component_contract.{key} is empty")
-        terms = domain_terms(" ".join(text_values(normalized)))
+        terms = component_domain_terms(" ".join(text_values(normalized)))
         if len(terms) < 8:
             issues.append(f"component row {index} `{label}` component_contract is too generic to guide implementation")
     issues.extend(public_prose_quality_issues(proposal))
@@ -227,14 +228,14 @@ def rendered_component_spec_quality_issues(
 
     issues: list[str] = []
     names = tuple(specs.keys())
-    name_term_lookup = {name: domain_terms(name) for name in names}
+    name_term_lookup = {name: component_domain_terms(name) for name in names}
     all_name_terms = {term for terms in name_term_lookup.values() for term in terms}
     repeated_name_terms = {
         term
         for term in all_name_terms
         if sum(1 for terms in name_term_lookup.values() if term in terms) > 1
     }
-    spec_term_lookup = {name: domain_terms(text) for name, text in specs.items()}
+    spec_term_lookup = {name: component_domain_terms(text) for name, text in specs.items()}
     all_spec_terms = tuple(spec_term_lookup.values())
     normalized_lines = {
         name: _normalized_spec_lines(text, project_title=project_title, names=names)
@@ -245,7 +246,7 @@ def rendered_component_spec_quality_issues(
         for issue in public_prose_quality_issues(text):
             issues.append(f"`{name}` {issue}")
         issues.extend(_section_overlap_issues(name=name, text=text))
-        local_terms = _local_domain_terms(
+        local_terms = component_local_terms(
             text_terms=spec_term_lookup.get(name, set()),
             name_terms=name_term_lookup.get(name, set()),
             all_text_terms=all_spec_terms,
@@ -274,12 +275,6 @@ def rendered_component_spec_quality_issues(
                     f"component specs `{left_name}` and `{right_name}` reuse the same visible section skeleton"
                 )
     return dedupe_text(issues)
-
-
-def domain_terms(text: str) -> set[str]:
-    """Return normalized, non-structural terms from public component prose."""
-
-    return set(ordered_domain_terms(text))
 
 
 def dedupe_text(values: Sequence[str]) -> list[str]:
@@ -430,7 +425,7 @@ def _substantive_spec_line(line: str) -> bool:
         "### Operator Verification",
     }:
         return False
-    return len(domain_terms(line)) >= 4
+    return len(component_domain_terms(line)) >= 4
 
 
 def _section_overlap_issues(*, name: str, text: str, max_overlap: float = 0.80) -> list[str]:
@@ -442,13 +437,13 @@ def _section_overlap_issues(*, name: str, text: str, max_overlap: float = 0.80) 
         flags=re.IGNORECASE,
     )
     for left_index, (left_name, left_body) in enumerate(sections):
-        left_terms = _section_terms(left_body)
+        left_terms = section_domain_terms(left_body)
         if len(left_terms) < 10:
             continue
         for right_name, right_body in sections[left_index + 1 :]:
             if not structured_contract and "Component Role" in {left_name, right_name}:
                 continue
-            right_terms = _section_terms(right_body)
+            right_terms = section_domain_terms(right_body)
             if len(right_terms) < 10:
                 continue
             overlap = len(left_terms & right_terms) / max(1, min(len(left_terms), len(right_terms)))
@@ -481,34 +476,6 @@ def _spec_sections(text: str) -> list[tuple[str, str]]:
     return result
 
 
-def _section_terms(text: str) -> set[str]:
-    return {
-        token
-        for token in ordered_domain_terms(text)
-        if token
-        not in {
-            "accept",
-            "accepted",
-            "block",
-            "boundary",
-            "candidate",
-            "component",
-            "contract",
-            "field",
-            "first",
-            "handoff",
-            "input",
-            "local",
-            "output",
-            "proof",
-            "refus",
-            "runtime",
-            "source-backed",
-            "structured",
-        }
-    }
-
-
 def _mask_spec_line(line: str, *, project_title: str, names: Sequence[str]) -> str:
     masked = line.casefold()
     for name in [project_title, *names]:
@@ -528,22 +495,6 @@ def _name_variants(name: str) -> tuple[str, ...]:
     text = _clean(name).casefold()
     slug = slugify(text)
     return tuple(unique_text([text, slug, slug.replace("-", " "), slug.replace("-", "_")]))
-
-
-def _local_domain_terms(
-    *,
-    text_terms: set[str],
-    name_terms: set[str],
-    all_text_terms: Sequence[set[str]],
-    repeated_name_terms: set[str],
-) -> set[str]:
-    own_name_terms = name_terms - repeated_name_terms
-    terms = text_terms - repeated_name_terms
-    counts: dict[str, int] = {}
-    for candidate in terms:
-        counts[candidate] = sum(1 for body_terms in all_text_terms if candidate in body_terms)
-    majority = 1 if len(all_text_terms) <= 1 else max(2, len(all_text_terms) // 2)
-    return own_name_terms | {term for term in terms if counts.get(term, 0) <= majority and term not in TERM_STOPWORDS}
 
 
 def _label(row: Mapping[str, Any]) -> str:
@@ -581,7 +532,6 @@ __all__ = [
     "component_contract_issues",
     "contract_is_complete",
     "dedupe_text",
-    "domain_terms",
     "normalize_contract",
     "public_prose_quality_issues",
     "rendered_component_spec_quality_issues",

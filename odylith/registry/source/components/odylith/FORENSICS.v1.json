@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 299,
-    "mapped_workstream_evidence_count": 142,
+    "explicit_event_count": 300,
+    "mapped_workstream_evidence_count": 143,
     "recent_path_match_count": 0,
     "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 299
+    "timeline_event_count": 300
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 532,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Moved Registry spec term-set and distinctiveness scoring into the component term-index owner, keeping component quality gates focused on failure decisions with focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T18:28:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py",

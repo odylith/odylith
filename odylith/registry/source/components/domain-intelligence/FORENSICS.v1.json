@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 51,
-    "mapped_workstream_evidence_count": 41,
+    "explicit_event_count": 52,
+    "mapped_workstream_evidence_count": 42,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 59,
+    "spec_history_event_count": 60,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 52
+    "timeline_event_count": 53
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,21 +21,54 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py"
       ],
       "confidence": "high",
-      "event_index": 532,
+      "event_index": 533,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py +2 more",
-      "ts_iso": "2026-06-03T18:15:12-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py +1 more",
+      "ts_iso": "2026-06-03T18:29:02-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 532,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Moved Registry spec term-set and distinctiveness scoring into the component term-index owner, keeping component quality gates focused on failure decisions with focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T18:28:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -1243,6 +1243,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.23s`); broad artifact/proposal proof passed
   (`100 passed in 176.18s`); and confirmed-create performance proof passed
   (`1 passed in 11.47s`), preserving the under-30s create gate.
+- 2026-06-04 Registry spec term-distinctiveness follow-through moved
+  component-domain term sets, section-term filtering, and component-local
+  distinctiveness scoring into `greenfield_component_term_index.py`.
+  `greenfield_component_contract_quality.py` now decides quality failures by
+  calling `component_domain_terms`, `section_domain_terms`, and
+  `component_local_terms` instead of owning `domain_terms`, `_section_terms`,
+  or `_local_domain_terms`. This keeps generated Registry spec quality checks
+  on the same component-term index owner as contracts, component terms, and
+  contract differentiation while keeping the quality gate focused on
+  fail-closed decisions. Touched files remain below limits
+  (`greenfield_component_term_index.py`: 128 lines;
+  `greenfield_component_contract_quality.py`: 538 lines;
+  `test_greenfield_component_spec_quality.py`: 417 lines). Proof: syntax
+  proof passed for the touched modules and test; focused component-spec proof
+  passed (`12 passed in 0.24s`); broad artifact/proposal proof passed
+  (`128 passed in 222.27s`); and confirmed-create performance proof passed
+  (`1 passed in 11.39s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
