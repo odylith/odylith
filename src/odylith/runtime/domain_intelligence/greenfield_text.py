@@ -16,7 +16,11 @@ def clean_text(value: Any) -> str:
 
 
 def word_count(value: Any) -> int:
-    return len(re.findall(r"[A-Za-z0-9]+", clean_text(value)))
+    return len(visible_words(value))
+
+
+def visible_words(value: Any) -> tuple[str, ...]:
+    return tuple(re.findall(r"[A-Za-z0-9]+", clean_text(value)))
 
 
 def normalize_domain_token(value: Any, *, minimum: int = 4, stopwords: Iterable[str] = ()) -> str:

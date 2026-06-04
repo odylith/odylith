@@ -1758,6 +1758,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`2 passed in 0.83s`); wider greenfield artifact proof passed (`168 passed
   in 197.44s`); and confirmed-create performance proof passed (`1 passed in
   9.34s`), preserving the under-30s create gate.
+- 2026-06-04 Registry contract visible-word follow-through moved status-only
+  and ranked contract phrase word extraction in
+  `greenfield_component_contract_fields.py` onto `greenfield_text.visible_words`.
+  Contract fields still own shell-artifact rejection, status-only field policy,
+  ranked-output normalization, and contract list cleanup, while shared text owns
+  reusable visible word splitting for hyphenated component field phrases such as
+  blocked-state update. Touched files remain below limits
+  (`greenfield_text.py`: 153 lines;
+  `greenfield_component_contract_fields.py`: 414 lines;
+  `test_greenfield_component_spec_quality.py`: 586 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component proof passed
+  (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168 passed
+  in 198.26s`); and confirmed-create performance proof passed (`1 passed in
+  9.56s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

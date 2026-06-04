@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 87,
-    "mapped_workstream_evidence_count": 77,
+    "explicit_event_count": 88,
+    "mapped_workstream_evidence_count": 78,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 94,
+    "spec_history_event_count": 95,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 88
+    "timeline_event_count": 89
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,54 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_programs.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py"
       ],
       "confidence": "high",
-      "event_index": 568,
+      "event_index": 569,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_programs.py",
-      "ts_iso": "2026-06-04T04:06:33-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py +1 more",
+      "ts_iso": "2026-06-04T04:19:42-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 568,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed Registry contract field visible-word extraction through shared greenfield text so status-only and ranked contract phrase checks no longer carry local word-token regexes.",
+      "ts_iso": "2026-06-04T04:19:09-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

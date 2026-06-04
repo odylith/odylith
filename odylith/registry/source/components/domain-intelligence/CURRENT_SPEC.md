@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed Registry contract field visible-word extraction through shared greenfield text so status-only and ranked contract phrase checks no longer carry local word-token regexes.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
 - **2026-06-04 · Implementation:** Routed greenfield program wave-to-workstream matching through the shared domain term index so release waves use plural-aware generated-artifact terms instead of a local regex token loop.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_programs.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed-completion label focus and keyword matching through shared domain term indexing so completion repair no longer carries local token parsing loops.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
-- **2026-06-04 · Implementation:** Routed base component contract profile token extraction through shared domain term indexing so generated Registry profile selection no longer carries a local regex word set.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -140,6 +140,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Moved generated Registry generic actor-label prefix detection and localization into `greenfield_actor_terms.py`. Component contract fields, contract differentiation, and rendered contract quality now share one owner for operator/reviewer/owner/user prefixes, so artifact-bearing labels such as `Primary user request status` and `Risk reviewer guardrails` reduce to the owned artifact phrase while bare generic actor labels stay localized. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed proposal validation field-depth counts through `greenfield_text.word_count`. `proposal_validation.py` keeps proposal shape, evidence-tier, Mermaid, rationale, backlog, component, and diagram validation policy while shared text owns reusable word counting for arbitrary slash- and hyphen-bearing product phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed program wave-to-workstream match terms through `greenfield_domain_term_index.ordered_terms`. `greenfield_programs.py` keeps release selector parsing, explicit workstream refs, fallback ordering, execution-wave document shape, and release-target helpers while the shared term index owns plural folding and reusable token filtering for arbitrary wave and backlog vocabulary. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed Registry contract field visible-word extraction through `greenfield_text.visible_words`. `greenfield_component_contract_fields.py` keeps shell-artifact rejection, status-only field policy, ranked-output normalization, and contract list cleanup while shared text owns reusable visible word splitting for hyphenated generated field phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -502,6 +503,12 @@ This section captures synchronized requirement and contract signals derived from
   resolution, wave fallback order, release selector helpers, and execution-wave
   document shape, but it must not reintroduce local `re.findall` token loops for
   wave/backlog matching.
+- Registry contract field visible-word extraction for status-only fragments and
+  ranked contract phrases must use `greenfield_text.visible_words`.
+  `greenfield_component_contract_fields.py` may own shell-artifact rejection,
+  status-only policy, ranked-output normalization, and contract list cleanup,
+  but it must not reintroduce local word-token `re.findall` loops for those
+  field checks.
 - `proposal_tribunal.py` owns deterministic pre-write adjudication. It fails
   proposals whose child workstreams lack component/diagram/dependency/proof
   topology, whose components lack boundary/interface/dependency/proof

@@ -29,12 +29,15 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_windows impor
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import contract_focus
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import contract_list_text
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import status_only_artifact_fragment
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import domain_label
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
@@ -45,6 +48,7 @@ from odylith.runtime.governance.component_spec_rendering import build_component_
 ROOT = Path(__file__).resolve().parents[3]
 CONFIRMED_COMPONENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
 CONFIRMED_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py"
+GREENFIELD_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_text.py"
 DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
 CONFIRMED_PROJECT_BRIEF_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py"
 CONFIRMED_PROPOSAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py"
@@ -165,6 +169,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     contract_source = COMPONENT_CONTRACT_PATH.read_text(encoding="utf-8")
     differentiation_source = COMPONENT_CONTRACT_DIFFERENTIATION_PATH.read_text(encoding="utf-8")
     fields_source = COMPONENT_CONTRACT_FIELDS_PATH.read_text(encoding="utf-8")
+    text_source = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
     quality_source = COMPONENT_CONTRACT_QUALITY_PATH.read_text(encoding="utf-8")
     semantic_source = COMPONENT_SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
     axes_source = COMPONENT_AXES_PATH.read_text(encoding="utf-8")
@@ -191,10 +196,12 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def generic_actor_label_prefix" in actor_terms_source
     assert "def starts_with_generic_actor_label" in actor_terms_source
     assert "def localize_generic_actor_label" in actor_terms_source
+    assert "def visible_words" in text_source
     assert "def looks_action_form" in terms_source
     assert "def _looks_actorish_term" not in terms_source
     assert "greenfield_actor_terms import looks_actor_term" in terms_source
     assert "greenfield_actor_terms import generic_actor_label_prefix" in fields_source
+    assert "greenfield_text import visible_words" in fields_source
     assert "greenfield_actor_terms import starts_with_generic_actor_label" in differentiation_source
     assert "greenfield_actor_terms import starts_with_generic_actor_label" in quality_source
     generic_actor_regex = "Operator|Maintainer|Reviewer|Primary user"
@@ -244,6 +251,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "normalize_domain_token" not in fields_source
     assert "for raw in re.findall" not in terms_source
     assert "for raw in re.findall" not in fields_source
+    assert "re.findall(r\"[A-Za-z][A-Za-z'-]*\"" not in fields_source
     assert "def _word_set" not in contract_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in contract_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in fields_source
@@ -299,6 +307,10 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("inspector reviews permit note") == "permit note"
     assert clean_artifact_phrase("student submits assignment details") == "assignment details"
     assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
+    assert visible_words("blocked-state update") == ("blocked", "state", "update")
+    assert status_only_artifact_fragment("blocked update")
+    assert not status_only_artifact_fragment("blocked-state update")
+    assert contract_list_text("ranked status windows, blocked update") == "status windows"
     assert contract_focus(
         object_list="Primary user request status",
         action_terms=("record",),

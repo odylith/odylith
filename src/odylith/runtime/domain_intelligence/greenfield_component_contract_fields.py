@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import phras
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 
 def contract_focus(
@@ -177,7 +178,7 @@ def status_only_artifact_fragment(value: str) -> bool:
     text = _clean(value).casefold()
     if re.fullmatch(r"(?:[a-z][a-z'-]*ed\s+){1,4}(?:state\s+)?(?:update|marker|result|decision)", text):
         return True
-    words = re.findall(r"[A-Za-z][A-Za-z'-]*", text)
+    words = [word.casefold() for word in visible_words(text) if any(char.isalpha() for char in word)]
     if not words:
         return False
     if any(word in {"state", "status", "record", "result", "summary", "decision", "request"} for word in words):
@@ -254,7 +255,7 @@ def _ranked_contract_phrase(value: str) -> str:
     text = _clean(value).strip(" .,;").casefold()
     if not re.match(r"^ranked\s+", text):
         return ""
-    words = re.findall(r"[a-z][a-z0-9'-]*", text)
+    words = [word.casefold() for word in visible_words(text) if word[:1].isalpha()]
     if len(words) < 2 or len(words) > 4:
         return ""
     if set(words[1:]) & {"alternatives", "alternative", "options", "option", "candidates", "candidate"}:
