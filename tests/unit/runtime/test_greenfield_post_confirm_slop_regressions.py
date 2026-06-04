@@ -52,8 +52,10 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     assert "def first_path_clauses" in clause_source
     assert "def action_chain_fragment" in clause_source
     assert "def clean_visible_result_phrase" in clause_source
+    assert "greenfield_domain_term_index import label_terms" in clause_source
     assert "greenfield_domain_term_index import ordered_terms" in clause_source
     assert "normalize_domain_token" not in clause_source
+    assert "len(re.findall" not in clause_source
     assert "class FirstPathModel" in type_source
     assert "class FirstPathClauses" in type_source
     assert "def label_terms" in index_source

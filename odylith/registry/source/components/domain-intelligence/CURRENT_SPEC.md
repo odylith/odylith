@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed first-path clause actor-prefix display-token thresholds through shared label terms so actor subject stripping and signature prefix detection no longer carry local regex word counts.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py +1 more
 - **2026-06-04 · Implementation:** Routed first-path parser visible step-token thresholds through shared display label terms so action-clause splitting and valid-step filtering no longer carry local regex word counts.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed Atlas sequence-step display word counts through shared label terms so first-path filtering no longer carries local regex token counts.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed-artifact Tribunal accepted-text product phrase matching through shared label terms so the substance gate no longer carries a local accepted-term regex.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -125,6 +125,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed Registry component phrase identity terms and contract-field transition candidates through `greenfield_domain_term_index.ordered_terms`. `greenfield_component_terms.py` keeps artifact-carrier stopword policy, `greenfield_component_contract_fields.py` keeps transition-state decisions, and `greenfield_component_semantic_contract.py` imports the phrase-identity owner directly instead of wrapping it locally. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed public quality-gate prompt and semantic-contract term extraction through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned `preserve_terms`, so `greenfield_quality_gate.py` can preserve short domain abbreviations while keeping prompt echo and public artifact quality checks off local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed first-path actor signature term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_first_path_clauses.py` keeps first-path action, capability, visible-result, and actor-filtering grammar, while actor signatures share the generated-artifact term index with caller-owned stopwords and short actor-term preservation for labels such as AI, ML, UI, and UX. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed first-path actor-prefix display-token thresholds through `greenfield_domain_term_index.label_terms`. `greenfield_first_path_clauses.py` keeps first-path action, capability, visible-result, actor filtering, and actor-specific term policy while the shared term index counts display tokens for `strip_action_subject`, `_actor_signature`, and `leading_subject_prefix` prefix-length decisions. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed component domain-label token extraction through `greenfield_domain_term_index.label_terms`. The shared domain-term owner now has a visible-label path that preserves casing, acronyms, and alphanumeric terms while `greenfield_confirmed_components.py` keeps component naming policy and title casing without a local regex token loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed component handoff workstream-title matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_experience.py` keeps handoff thresholds and stopwords, while reusable title and component-label normalization shares the generated-artifact term index instead of a local `_meaningful_terms` regex helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated traceability semantic token extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_traceability.py` keeps component-workstream and diagram-link scoring plus compound identifier expansion, while plural and stopword normalization shares the generated-artifact term index instead of a local `_semantic_tokens` regex loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -293,6 +294,12 @@ This section captures synchronized requirement and contract signals derived from
   actor-specific stopwords and short actor-term preservation, but it must not
   import `normalize_domain_token` or reintroduce a local regex token loop for
   actor signatures.
+- First-path actor-prefix display-token thresholds must use
+  `greenfield_domain_term_index.label_terms`.
+  `greenfield_first_path_clauses.py` may own action, capability,
+  visible-result, actor filtering, and actor-specific term policy, but it must
+  not reintroduce local raw word-count regex loops for `strip_action_subject`,
+  `_actor_signature`, or `leading_subject_prefix` prefix-length decisions.
 - Registry component phrase identity and contract-field transition candidate
   extraction must use `greenfield_domain_term_index.ordered_terms` for reusable
   token indexing. `greenfield_component_terms.py` may retain artifact-carrier

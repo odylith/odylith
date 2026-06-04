@@ -1536,6 +1536,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed (`14 passed in 2.78s`); wider greenfield proof passed (`151
   passed in 237.66s`); and confirmed-create performance proof passed (`1 passed
   in 11.47s`), preserving the under-30s create gate.
+- 2026-06-04 first-path actor display-token follow-through moved
+  `strip_action_subject`, `_actor_signature`, and `leading_subject_prefix`
+  actor-prefix length thresholds in `greenfield_first_path_clauses.py` onto
+  `greenfield_domain_term_index.label_terms`. The first-path clause owner still
+  owns action/capability/result grammar, actor filtering, and actor-specific
+  term policy, while the shared index owns display-token counting for deciding
+  whether an actor or system prefix is short enough to strip or use as a
+  signature subject. Touched files remain below limits
+  (`greenfield_first_path_clauses.py`: 742 lines;
+  `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_post_confirm_slop_regressions.py`: 701 lines). Proof:
+  syntax proof passed for the touched module and test; focused post-confirm
+  first-path proof passed (`14 passed in 1.37s`); wider greenfield artifact
+  proof passed (`162 passed in 193.05s`); and confirmed-create performance
+  proof passed (`1 passed in 9.55s`), preserving the under-30s create gate.
 - 2026-06-04 confirmed component label term-index follow-through moved
   `domain_label` token extraction in `greenfield_confirmed_components.py` onto
   `greenfield_domain_term_index.label_terms`. The shared term-index owner now

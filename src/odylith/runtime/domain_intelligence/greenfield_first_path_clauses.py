@@ -8,6 +8,7 @@ from typing import Any, Sequence
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
@@ -451,10 +452,9 @@ def strip_action_subject(value: str) -> str:
     match = MATERIAL_ACTION_RE.search(text)
     if match and match.start() > 0:
         prefix = text[: match.start()].strip(" ,")
-        prefix_words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", prefix)
         if re.search(r"\b(?:if|that|when|where|which|while)\b", prefix, flags=re.IGNORECASE):
             return text
-        if len(prefix_words) <= 6 and (
+        if len(label_terms(prefix)) <= 6 and (
             re.search(
                 r"\b(?:actor|applicant|borrower|coordinator|customer|owner|participant|patient|person|requester|reviewer|supervisor|user)\b",
                 prefix,
@@ -481,7 +481,7 @@ def _actor_signature(value: str) -> str:
         match = MATERIAL_ACTION_RE.search(text)
         if match and match.start() > 0:
             candidate = text[: match.start()].strip(" ,")
-            if len(re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", candidate)) <= 6 and (
+            if len(label_terms(candidate)) <= 6 and (
                 re.search(
                     r"\b(?:actor|applicant|borrower|coordinator|customer|owner|participant|patient|person|requester|reviewer|supervisor|user)\b",
                     candidate,
@@ -537,7 +537,7 @@ def leading_subject_prefix(value: str) -> str:
     subject = text[: match.start()].strip()
     if not re.match(r"^(?:a|an|the|one|this|that|each|another)\s+", subject, flags=re.IGNORECASE):
         return ""
-    if len(re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", subject)) > 6:
+    if len(label_terms(subject)) > 6:
         return ""
     return subject
 
