@@ -32,6 +32,15 @@ def word_occurrences(value: Any, word: Any) -> int:
     )
 
 
+def normalize_visible_result_language(value: Any) -> str:
+    text = clean_text(value)
+    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
+    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.IGNORECASE)
+    text = re.sub(r"\balongside\b", "with", text, flags=re.IGNORECASE)
+    return clean_text(text)
+
+
 def clip_text_at_word_boundary(
     value: Any,
     *,

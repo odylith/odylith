@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 
@@ -384,10 +385,8 @@ def _outcome_focus(*, story: str, first_path: str, proof_boundary: str, state_ob
 
 
 def _outcome_clause_as_noun(value: str) -> str:
-    text = compact_text(value).strip(" .")
-    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
+    text = normalize_visible_result_language(compact_text(value)).strip(" .")
     text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
-    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
     text = re.sub(r"^(?:and|then|finally)\s+", "", text, flags=re.IGNORECASE)
     subject_verb = re.match(
         r"^(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"

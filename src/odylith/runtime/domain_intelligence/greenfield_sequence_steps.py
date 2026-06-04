@@ -9,6 +9,7 @@ from typing import Any
 from odylith.runtime.common import display_text
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 
 ACTION_VERB_PATTERN = (
@@ -89,9 +90,7 @@ def _normalize_event_step(value: str) -> str:
             text,
             flags=re.IGNORECASE,
         )
-    text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.IGNORECASE)
-    text = re.sub(r"\balongside\b", "with", text, flags=re.IGNORECASE)
-    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
+    text = normalize_visible_result_language(text)
     return text
 
 

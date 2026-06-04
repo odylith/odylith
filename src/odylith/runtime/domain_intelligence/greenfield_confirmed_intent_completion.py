@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language as _normalize_visible_result_terms
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -104,9 +105,7 @@ def _normalize_visible_result_language(value: str) -> str:
         text,
         flags=re.IGNORECASE,
     )
-    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
-    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
-    return _clean(text)
+    return _clean(_normalize_visible_result_terms(text))
 
 
 def _completion_seed_is_sufficient(intent: Mapping[str, Any]) -> bool:

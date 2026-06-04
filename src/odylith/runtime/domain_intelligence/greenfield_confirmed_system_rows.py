@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 
 _GENERIC_SYSTEM_NAME_KEYS = {
@@ -227,9 +228,7 @@ def contains_generic_system_scaffold(system_rows: list[str]) -> bool:
 
 
 def _normalize_system_description(value: str) -> str:
-    text = _clean(value)
-    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
-    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
+    text = normalize_visible_result_language(_clean(value))
     text = re.sub(r"^(?:hold|holds|holding)\s+", "maintains ", text, flags=re.IGNORECASE)
     return _clean(text)
 

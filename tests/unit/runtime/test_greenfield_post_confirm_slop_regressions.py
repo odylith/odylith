@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 
 
@@ -24,6 +25,15 @@ FIRST_PATH_SEMANTICS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/gree
 FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py"
 FIRST_PATH_TYPES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py"
 DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
+GREENFIELD_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_text.py"
+SEQUENCE_STEPS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py"
+COMPONENT_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
+CONFIRMED_SYSTEM_ROWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py"
+CONFIRMED_INTENT_COMPLETION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
+)
+PRODUCT_RISKS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py"
+CONFIRMED_DIAGRAM_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py"
 
 
 def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
@@ -77,6 +87,31 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
         "The product displays decision evidence",
     )
     assert model.material_action == "Record follow-up notes"
+
+
+def test_visible_result_language_normalization_stays_in_text_owner() -> None:
+    text_source = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
+    callers = [
+        FIRST_PATH_CLAUSES_PATH,
+        SEQUENCE_STEPS_PATH,
+        COMPONENT_TERMS_PATH,
+        CONFIRMED_SYSTEM_ROWS_PATH,
+        CONFIRMED_INTENT_COMPLETION_PATH,
+        PRODUCT_RISKS_PATH,
+        CONFIRMED_DIAGRAM_TEXT_PATH,
+    ]
+
+    assert "def normalize_visible_result_language" in text_source
+    assert normalize_visible_result_language(
+        "Visible-result event readout plus note on screen, alongside source evidence."
+    ) == "visible result readout and note on screen with source evidence."
+
+    for caller in callers:
+        source = caller.read_text(encoding="utf-8")
+        assert "normalize_visible_result_language" in source
+        assert r"\breadout\s+plus\b" not in source
+        assert r"\bon\s+screen,\s+alongside\b" not in source
+        assert 'r"\\balongside\\b", "with"' not in source
 
 
 def test_confirmed_completion_repairs_actor_and_visible_result_splices() -> None:

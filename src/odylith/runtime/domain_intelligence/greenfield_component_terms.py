@@ -11,7 +11,9 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import ROLEISH_T
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text, unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 ACTION_VERBS = (
@@ -364,11 +366,8 @@ def clean_artifact_phrase(value: str) -> str:
 
 def _clean_visible_phrase_debris(value: str) -> str:
     text = clean_text(value).casefold()
+    text = normalize_visible_result_language(text)
     text = re.sub(r"^on\s+save,\s*", "", text, flags=re.I)
-    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.I)
-    text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.I)
-    text = re.sub(r"\balongside\b", "with", text, flags=re.I)
-    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.I)
     text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.I)
     text = re.sub(
         r"\s+and\s+the\s+(?:dashboard|screen|view)\s+renders?\s+the\s+visible\s+result\s*:\s*(?:the\s+)?",

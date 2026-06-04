@@ -13,6 +13,7 @@ from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 
 def component_description(row: Mapping[str, Any]) -> str:
@@ -111,9 +112,7 @@ def semantic_proof_checkpoint(semantic_model: Mapping[str, Any] | None) -> str:
         return ""
     contract = semantic_model.get("first_path_contract")
     if isinstance(contract, Mapping):
-        visible = compact_text(str(contract.get("visible_result") or ""))
-        visible = re.sub(r"\breadout\s+plus\b", "readout and", visible, flags=re.IGNORECASE)
-        visible = re.sub(r"\balongside\b", "with", visible, flags=re.IGNORECASE)
+        visible = normalize_visible_result_language(compact_text(str(contract.get("visible_result") or "")))
         visible = _strip_dangling_tail(visible)
         visible = _proof_checkpoint_from_visible_result(visible)
         if word_count(visible) >= 3:
@@ -138,9 +137,7 @@ def semantic_visible_result_label(semantic_model: Mapping[str, Any] | None) -> s
     contract = semantic_model.get("first_path_contract")
     if not isinstance(contract, Mapping):
         return ""
-    visible = compact_text(str(contract.get("visible_result") or ""))
-    visible = re.sub(r"\breadout\s+plus\b", "readout and", visible, flags=re.IGNORECASE)
-    visible = re.sub(r"\balongside\b", "with", visible, flags=re.IGNORECASE)
+    visible = normalize_visible_result_language(compact_text(str(contract.get("visible_result") or "")))
     return _strip_dangling_tail(visible)
 
 

@@ -2025,6 +2025,29 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`24 passed in 0.27s`); wider greenfield artifact proof passed (`184 passed
   in 219.55s`); and confirmed-create performance proof passed (`1 passed in
   11.13s`), preserving the under-30s create gate.
+- 2026-06-04 visible-result language follow-through moved reusable
+  `readout plus`, `on screen, alongside`, `alongside`, and
+  `visible-result event` wording normalization into
+  `greenfield_text.normalize_visible_result_language`. First-path clauses,
+  sequence steps, component artifact terms, confirmed system rows, confirmed
+  intent completion, product-risk wording, and confirmed Atlas diagram labels
+  still own their parsing, sentence removal, risk framing, and label policy,
+  while shared greenfield text owns the repeated visible-result phrase
+  rewrites. The touched callers no longer keep local `readout plus` or
+  `alongside` rewrite forks. Touched files remain below limits
+  (`greenfield_component_terms.py`: 774 lines;
+  `greenfield_first_path_clauses.py`: 758 lines;
+  `test_greenfield_post_confirm_slop_regressions.py`: 736 lines;
+  `greenfield_confirmed_system_rows.py`: 691 lines;
+  `greenfield_confirmed_intent_completion.py`: 643 lines;
+  `greenfield_product_risks.py`: 554 lines;
+  `greenfield_confirmed_diagram_text.py`: 540 lines;
+  `greenfield_text.py`: 224 lines; `greenfield_sequence_steps.py`: 199 lines).
+  Proof: syntax proof passed for the touched modules and tests; focused
+  visible-result/artifact proof passed (`90 passed in 17.29s`); wider
+  greenfield artifact proof passed (`185 passed in 210.64s`); and
+  confirmed-create performance proof passed (`1 passed in 9.84s`), preserving
+  the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

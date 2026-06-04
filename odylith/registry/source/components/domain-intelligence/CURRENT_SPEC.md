@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed generated visible-result language normalization through shared greenfield text while preserving caller-owned parser and artifact wording policy.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_terms.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +7 more
 - **2026-06-04 · Implementation:** Routed generated artifact word-boundary clipping mechanics through shared greenfield text while preserving caller-owned grammar and fallback policy.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py +8 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed generated component contract lifecycle state token extraction through shared greenfield visible words so hyphenated phrases such as blocked-state update share the reusable display-token contract.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed-intent bare-title token extraction through shared greenfield label terms so hyphenated confirmed titles such as Source-backed Evidence Workspace share the visible display-token contract.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -157,6 +157,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed confirmed-artifact Tribunal flowchart step counting through `runtime.common.mermaid_text.numbered_flowchart_node_count`. `proposal_tribunal_substance.py` keeps the Atlas event-depth threshold, parser-debris checks, first-path tail preservation, and first-boundary routing policy while shared Mermaid text owns numbered flowchart node discovery and duplicate-node non-inflation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed exact-word occurrence counting through `greenfield_text.word_occurrences`. `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup and the confirmed-text API while shared greenfield text owns exact whole-word occurrence counting for generated Radar mechanical-summary checks such as repeated `required` phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated artifact word-boundary clipping through `greenfield_text.clip_text_at_word_boundary` and `strip_dangling_word_tail`. Confirmed text, first-path clause rendering, semantic proof labels, confirmed system rows, confirmed Atlas label text, sequence diagrams, experience handoff text, and project-brief clauses keep their caller-owned grammar, fallback, and label policies while shared greenfield text owns reusable whole-word clipping mechanics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed generated visible-result language normalization through `greenfield_text.normalize_visible_result_language`. First-path clauses, sequence steps, component artifact terms, confirmed system rows, confirmed intent completion, product-risk wording, and confirmed Atlas diagram labels keep their parser cleanup, sentence removal, risk framing, and label policy while shared greenfield text owns reusable `readout plus`, `on screen, alongside`, `alongside`, and `visible-result event` phrase rewrites. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -211,6 +212,13 @@ This section captures synchronized requirement and contract signals derived from
   proof labels, confirmed system rows, confirmed Atlas label text, sequence
   diagrams, experience handoff text, and project-brief clauses must not
   reintroduce local `.rsplit(" ", 1)` clipping forks.
+- Generated artifact callers may own parser cleanup, sentence removal, risk
+  framing, and label policy, but reusable visible-result phrase normalization
+  must stay in `greenfield_text.normalize_visible_result_language`. First-path
+  clauses, sequence steps, component artifact terms, confirmed system rows,
+  confirmed intent completion, product-risk wording, and confirmed Atlas diagram
+  labels must not reintroduce local `readout plus`, `on screen, alongside`, or
+  `alongside` rewrite forks.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,

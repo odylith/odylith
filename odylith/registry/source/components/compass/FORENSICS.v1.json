@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 270,
-    "mapped_workstream_evidence_count": 196,
+    "explicit_event_count": 271,
+    "mapped_workstream_evidence_count": 197,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 270
+    "timeline_event_count": 271
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,46 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py"
+      ],
+      "confidence": "high",
+      "event_index": 585,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed generated visible-result language normalization through shared greenfield text while preserving caller-owned parser and artifact wording policy.",
+      "ts_iso": "2026-06-04T08:37:02-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",

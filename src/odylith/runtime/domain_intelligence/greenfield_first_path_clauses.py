@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_types import Firs
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 
 TRIVIAL_START_RE = re.compile(
@@ -291,7 +292,7 @@ def clean_visible_result_phrase(value: str) -> str:
     if not text:
         return ""
     text = re.sub(r"^on\s+save,\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
+    text = normalize_visible_result_language(text)
     match = re.match(
         r"^(?:this|the)\s+(?P<head>.+?)\s+[–—-]\s+(?P<detail>.+?)\s+[–—-]\s+is\s+the\s+visible\s+result\b.*$",
         text,
@@ -320,9 +321,6 @@ def clean_visible_result_phrase(value: str) -> str:
     )
     if visible_tail:
         text = visible_tail.group("tail")
-    text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
-    text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.IGNORECASE)
-    text = re.sub(r"\balongside\b", "with", text, flags=re.IGNORECASE)
     text = re.sub(r"\b(?:this|the)\s+rendered\b", "rendered", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+", " ", text).strip(" .")
     return text
