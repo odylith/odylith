@@ -6,6 +6,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -29,16 +30,23 @@ _LABEL_COMPOUND_STOPWORDS = {
     "the",
     "to",
     "view",
+    "viewer",
     "with",
     "workspace",
 }
 
 
+def literal_label_terms(label: Any, *, noise_terms: set[str] | None = None) -> list[str]:
+    """Return normalized component-label terms without shell words."""
+
+    stopwords = set(noise_terms or ()) | _LABEL_COMPOUND_STOPWORDS
+    return ordered_terms(_clean(label), stopwords=stopwords, minimum=2, preserve_terms=_preserved_label_terms(label))
+
+
 def literal_label_compounds(label: Any, *, noise_terms: set[str]) -> list[str]:
     """Return adjacent component-label terms for fallback ownership clauses."""
 
-    stopwords = set(noise_terms) | _LABEL_COMPOUND_STOPWORDS
-    terms = ordered_terms(_clean(label), stopwords=stopwords, minimum=2)
+    terms = literal_label_terms(label, noise_terms=noise_terms)
     rows = [f"{terms[index]} {terms[index + 1]}" for index in range(max(0, len(terms) - 1))]
     return list(unique_text(rows))
 
@@ -68,8 +76,16 @@ def _domain_token_stream(value: Any, *, noise_terms: set[str]) -> list[str]:
     return tokens
 
 
+def _preserved_label_terms(value: Any) -> tuple[str, ...]:
+    return tuple(
+        raw
+        for raw in re.findall(r"[a-z0-9][a-z0-9_-]*", _clean(value).casefold())
+        if raw.endswith("s") and raw in ARTIFACT_CARRIER_TERMS
+    )
+
+
 def _clean(value: Any) -> str:
     return clean_text(value).replace("`", "")
 
 
-__all__ = ["literal_label_compounds", "nearby_domain_terms"]
+__all__ = ["literal_label_compounds", "literal_label_terms", "nearby_domain_terms"]

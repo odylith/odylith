@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import phras
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
+from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
@@ -164,6 +165,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def component_domain_terms" in term_index_source
     assert "def section_domain_terms" in term_index_source
     assert "def component_local_terms" in term_index_source
+    assert "def literal_label_terms" in term_windows_source
     assert "def literal_label_compounds" in term_windows_source
     assert "def nearby_domain_terms" in term_windows_source
     assert "def ordered_domain_terms" not in quality_source
@@ -174,8 +176,11 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def natural_phrase" in terms_source
     assert "def term_phrase" in terms_source
     assert "def _term_phrase" not in contract_source
+    assert "def _label_compound_focus" not in contract_source
+    assert "def _literal_label_terms" not in contract_source
     assert "def _phrase(" not in differentiation_source
     assert "def _phrase(" not in fields_source
+    assert "def literal_label_terms" not in fields_source
     assert "def _content_terms" not in differentiation_source
     assert "def _phrase(" not in semantic_source
     assert "def _phrase_identity_terms" not in semantic_source
@@ -189,8 +194,10 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "term_phrase(" in axes_source
     assert "natural_phrase(" in contract_source
     assert "natural_phrase(" in differentiation_source
+    assert "greenfield_component_term_windows import literal_label_compounds" in contract_source
     assert "greenfield_component_term_windows import literal_label_compounds" in differentiation_source
     assert "greenfield_component_term_windows import nearby_domain_terms" in differentiation_source
+    assert "greenfield_component_term_windows import" in semantic_source
     assert "literal_label_compounds(" in differentiation_source
     assert "nearby_domain_terms(" in differentiation_source
     assert "greenfield_component_term_index import ordered_domain_terms" in contract_source
@@ -203,6 +210,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "normalize_domain_token" not in fields_source
     assert "for raw in re.findall" not in terms_source
     assert "for raw in re.findall" not in fields_source
+    assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in contract_source
+    assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in fields_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in differentiation_source
     assert 're.findall(r"[a-z0-9][a-z0-9_-]*"' not in differentiation_source
     assert "from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase" in fields_source
@@ -242,10 +251,25 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
         "status",
         "window",
     }
+    assert literal_label_terms("AI CRM Status Windows Viewer", noise_terms={"service"}) == [
+        "ai",
+        "crm",
+        "status",
+        "window",
+    ]
+    assert literal_label_terms("Risk Policy Guardrails Service", noise_terms={"service"}) == [
+        "risk",
+        "policy",
+        "guardrails",
+    ]
     assert literal_label_compounds("AI CRM Status Windows Service", noise_terms={"service"}) == [
         "ai crm",
         "crm status",
         "status window",
+    ]
+    assert literal_label_compounds("Risk Policy Guardrails Service", noise_terms={"service"}) == [
+        "risk policy",
+        "policy guardrails",
     ]
     assert nearby_domain_terms(
         ["window"],

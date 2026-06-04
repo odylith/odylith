@@ -30,9 +30,6 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
     label_compound_rank as _label_compound_rank,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
-    literal_label_terms as _literal_label_terms,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     outside_boundary as _outside_boundary,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
@@ -79,6 +76,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import strip
 from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase as _trim_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     verb_forms_pattern as _verb_forms_pattern,
+)
+from odylith.runtime.domain_intelligence.greenfield_component_term_windows import (
+    literal_label_terms as _literal_label_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text

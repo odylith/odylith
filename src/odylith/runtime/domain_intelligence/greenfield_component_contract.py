@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
     rendered_component_spec_quality_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -354,7 +355,7 @@ def _focus_phrase(*, label: str, description: str, context: str) -> str:
     action_object = _clean_focus_object(action_object)
     if action_object and not _generic_action_object(action_object):
         return action_object
-    label_compounds = _label_compound_focus(label)
+    label_compounds = literal_label_compounds(label, noise_terms=set())
     if label_compounds:
         return ", ".join(label_compounds[:4])
     label_terms = _label_semantic_terms(label)
@@ -364,46 +365,6 @@ def _focus_phrase(*, label: str, description: str, context: str) -> str:
     if not terms:
         return _component_subject(label)
     return natural_phrase(terms[:5])
-
-
-def _label_compound_focus(label: str) -> list[str]:
-    terms = _literal_label_terms(label)
-    rows: list[str] = []
-    for index in range(max(0, len(terms) - 1)):
-        left = terms[index]
-        right = terms[index + 1]
-        if left == right:
-            continue
-        rows.append(f"{left} {right}")
-    return unique_text(rows)
-
-
-def _literal_label_terms(label: str) -> list[str]:
-    drop = {
-        "adapter",
-        "and",
-        "client",
-        "component",
-        "engine",
-        "for",
-        "in",
-        "of",
-        "on",
-        "service",
-        "store",
-        "surface",
-        "system",
-        "the",
-        "to",
-        "view",
-        "with",
-        "workspace",
-    }
-    return [
-        word
-        for word in re.findall(r"[a-z0-9][a-z0-9'-]*", _clean(label).casefold())
-        if word not in drop
-    ]
 
 
 def _action_object_phrase(description: str) -> str:

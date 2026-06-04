@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Moved Registry component literal label-term extraction into the shared component term-window owner while preserving plural artifact-carrier label phrases such as policy guardrails and keeping contract builders off local label regex loops.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py +3 more
 - **2026-06-03 · Implementation:** Moved Registry component fallback label compounds and nearby context term-window parsing into a dedicated shared component term-window owner while preserving line-count limits, plural normalization, and generated component contract proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py, src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed confirmed component domain-label token extraction through the shared domain term index while preserving visible acronym and alphanumeric label behavior plus focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
-- **2026-06-03 · Implementation:** Routed first-path actor signature term extraction through the shared domain term index while preserving generated first-path grammar, short-domain actor distinctions, and under-30s confirmed-create proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py, tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -121,6 +121,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed generated traceability semantic token extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_traceability.py` keeps component-workstream and diagram-link scoring plus compound identifier expansion, while plural and stopword normalization shares the generated-artifact term index instead of a local `_semantic_tokens` regex loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed Radar backlog text product-term matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_confirmed_backlog_text_model.py` keeps backlog-specific stopwords and first-slice wording decisions, while `semantic_words` and `shares_product_terms` share plural and stopword normalization with the generated-artifact term index instead of local lower-case regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Split Registry fallback component term-window parsing into `greenfield_component_term_windows.py`. `greenfield_component_contract_differentiation.py` keeps fallback-axis scoring and repair decisions, while the term-window owner handles component label compounds, nearby context windows, plural folding, and short label compounds without growing the near-limit `greenfield_component_terms.py` module. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Moved Registry literal component label-term extraction into `greenfield_component_term_windows.py`. Base component contracts, semantic component contracts, and fallback contract differentiation now share one label-term owner that preserves short labels and plural artifact-carrier phrases such as `policy guardrails` while still folding ordinary semantic plurals such as `status windows`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -196,6 +197,15 @@ This section captures synchronized requirement and contract signals derived from
   loops for fallback component label/context matching. The near-limit
   `greenfield_component_terms.py` module must not absorb that windowing owner
   just to hide the helper movement.
+- Registry literal component label terms and label compounds must stay in
+  `greenfield_component_term_windows.py`. `greenfield_component_contract.py`,
+  `greenfield_component_contract_fields.py`, and
+  `greenfield_component_semantic_contract.py` may own contract field wording,
+  artifact ranking, and semantic assembly, but they must not reintroduce local
+  literal-label regex helpers, pass-through wrappers, or caller-local label
+  compound extraction. The shared owner must preserve short visible labels and
+  plural artifact-carrier nouns such as `policy guardrails` while still folding
+  ordinary semantic plurals such as `status windows`.
 - Component contract field wording must also use
   `greenfield_component_terms.phrase` for comma-clause support-artifact text.
   `greenfield_component_contract_fields.py` may call the shared helper, but it

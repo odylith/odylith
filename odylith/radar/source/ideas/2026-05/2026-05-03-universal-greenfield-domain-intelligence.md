@@ -1477,6 +1477,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.25s`); wider greenfield proof passed (`154 passed in
   224.99s`); and confirmed-create performance proof passed (`1 passed in
   11.72s`), preserving the under-30s create gate.
+- 2026-06-04 Registry literal label-term follow-through moved component label
+  term extraction from `greenfield_component_contract.py` and
+  `greenfield_component_contract_fields.py` into
+  `greenfield_component_term_windows.py`. Base contracts, semantic contracts,
+  and fallback differentiation now share the same label-term owner, preserving
+  short labels such as AI CRM and plural artifact-carrier phrases such as
+  `policy guardrails` without reopening caller-local regex token loops. Touched
+  files remain below limits (`greenfield_component_term_windows.py`: 91 lines;
+  `greenfield_component_contract.py`: 554 lines;
+  `greenfield_component_contract_fields.py`: 413 lines;
+  `greenfield_component_semantic_contract.py`: 620 lines;
+  `test_greenfield_component_spec_quality.py`: 505 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component/guardrail proof
+  passed (`13 passed in 3.38s`); wider greenfield proof passed (`154 passed in
+  216.42s`); and confirmed-create performance proof passed (`1 passed in
+  10.18s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

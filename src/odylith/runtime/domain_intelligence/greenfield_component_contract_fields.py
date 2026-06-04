@@ -183,35 +183,6 @@ def status_only_artifact_fragment(value: str) -> bool:
     return all(word.endswith("ed") or word in {"allowed", "blocked", "rejected", "scheduled"} for word in words)
 
 
-def literal_label_terms(label: str) -> list[str]:
-    drop = {
-        "adapter",
-        "and",
-        "client",
-        "component",
-        "engine",
-        "for",
-        "in",
-        "of",
-        "on",
-        "service",
-        "store",
-        "surface",
-        "system",
-        "the",
-        "to",
-        "view",
-        "viewer",
-        "with",
-        "workspace",
-    }
-    return [
-        word
-        for word in re.findall(r"[a-z0-9][a-z0-9'-]*", _clean(label).casefold())
-        if word not in drop
-    ]
-
-
 def label_compound_rank(value: str) -> tuple[int, str]:
     words = value.split()
     if len(words) < 2:
@@ -434,7 +405,6 @@ __all__ = [
     "contract_focus",
     "contract_list_text",
     "label_compound_rank",
-    "literal_label_terms",
     "outside_boundary",
     "produced_outputs_text",
     "proof_rows",

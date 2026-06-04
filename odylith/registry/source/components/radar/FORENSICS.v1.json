@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 188,
-    "mapped_workstream_evidence_count": 145,
+    "explicit_event_count": 189,
+    "mapped_workstream_evidence_count": 146,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 188
+    "timeline_event_count": 189
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,42 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 548,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Moved Registry component literal label-term extraction into the shared component term-window owner while preserving plural artifact-carrier label phrases such as policy guardrails and keeping contract builders off local label regex loops.",
+      "ts_iso": "2026-06-03T23:17:57-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
