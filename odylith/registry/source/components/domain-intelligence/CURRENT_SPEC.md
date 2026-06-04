@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed semantic-quality raw overlap token extraction through the shared greenfield domain term index so release-scope and sentence-overlap gates no longer carry local regex token loops.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py, tests/unit/runtime/test_greenfield_semantic_quality_terms.py
 - **2026-06-03 · Implementation:** Moved Registry generic actor-label prefix handling into the shared greenfield actor-term owner so contract fields, repair detection, and quality normalization stop carrying local actor-prefix regexes.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py +3 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed confirmed greenfield Radar backlog term matching through the shared domain term index while preserving backlog-specific stopwords and improving plural workstream outcome matching.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py, tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py
-- **2026-06-03 · Implementation:** Routed greenfield traceability semantic token extraction through the shared domain term index while preserving compound identifier expansion and improving generated Radar, Registry, and Atlas linkage for plural component labels.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_traceability.py, tests/unit/runtime/test_greenfield_traceability_terms.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -112,6 +112,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed post-confirm semantic drift, repetition, and overlap term signatures through `greenfield_domain_term_index.ordered_terms`. `greenfield_post_confirm_semantic_drift.py` now keeps only post-confirm stopwords and separator cleanup instead of owning direct `normalize_domain_token` calls or local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal substance terms through `greenfield_domain_term_index.ordered_terms`. `proposal_tribunal_substance.py` now keeps only Tribunal stopwords and Atlas action aliases instead of owning direct `normalize_domain_token` calls or local regex token loops for generated Radar, Registry, and Atlas substance checks. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed semantic-quality release-scope and scope-context term signatures through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned exact aliases and prefix aliases, while `greenfield_semantic_quality.py` keeps only release-scope stopwords, alias policy, and release-scope decisions instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed semantic-quality raw sentence-overlap and scoped-clause token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_semantic_quality.py` now keeps overlap thresholds, release-scope decisions, and stopword policy while the shared term-index owner handles both normalized semantic terms and raw visible-token extraction. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed accepted-intent semantic term indexing through `greenfield_domain_term_index.ordered_terms` while keeping `greenfield_confirmed_text.semantic_terms` as the confirmed-intent API. The shared term index now accepts caller-owned `stem_ing_minimum_length`, and `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup, stopword defaults, and caller handoff instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry component phrase identity terms and contract-field transition candidates through `greenfield_domain_term_index.ordered_terms`. `greenfield_component_terms.py` keeps artifact-carrier stopword policy, `greenfield_component_contract_fields.py` keeps transition-state decisions, and `greenfield_component_semantic_contract.py` imports the phrase-identity owner directly instead of wrapping it locally. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed public quality-gate prompt and semantic-contract term extraction through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned `preserve_terms`, so `greenfield_quality_gate.py` can preserve short domain abbreviations while keeping prompt echo and public artifact quality checks off local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -307,6 +308,11 @@ This section captures synchronized requirement and contract signals derived from
   `greenfield_domain_term_index.ordered_terms`. Semantic quality may retain
   release-scope stopwords and caller-owned alias policy, but it must not
   reintroduce `_terms` token loops or direct `normalize_domain_token` calls.
+- Semantic-quality raw sentence-overlap and scoped-clause token extraction must
+  use `greenfield_domain_term_index.label_terms`. Semantic quality may retain
+  n-gram size, overlap thresholds, scope markers, and stopword policy, but it
+  must not reintroduce local `re.findall` token loops for raw overlap or
+  scope-context word counting.
 - Registry spec term-set and distinctiveness scoring must stay in
   `greenfield_component_term_index.py`. Component quality gates may call
   `component_domain_terms`, `section_domain_terms`, and `component_local_terms`

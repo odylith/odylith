@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 192,
-    "mapped_workstream_evidence_count": 149,
+    "explicit_event_count": 193,
+    "mapped_workstream_evidence_count": 150,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 192
+    "timeline_event_count": 193
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "tests/unit/runtime/test_greenfield_semantic_quality_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 552,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Routed semantic-quality raw overlap token extraction through the shared greenfield domain term index so release-scope and sentence-overlap gates no longer carry local regex token loops.",
+      "ts_iso": "2026-06-04T00:14:54-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py",

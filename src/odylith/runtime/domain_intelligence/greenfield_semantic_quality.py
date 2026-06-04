@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -388,7 +389,7 @@ def _looks_like_head_scoped_clause(value: str) -> bool:
     text = _clean(value)
     if not text:
         return False
-    words = re.findall(r"[a-z0-9]+", text.casefold())
+    words = label_terms(text)
     if len(words) > 14:
         return False
     if re.search(r"\b(?:is|are|stays?|remains?|keeps?|kept|explicitly|currently)\s*$", text, re.IGNORECASE):
@@ -429,11 +430,7 @@ def _terms(value: Any) -> set[str]:
 
 
 def _ngrams(value: str, *, ngram: int) -> set[tuple[str, ...]]:
-    tokens = [
-        token
-        for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(value).casefold())
-        if token not in _NGRAM_STOPWORDS
-    ]
+    tokens = [token.casefold() for token in label_terms(value, stopwords=_NGRAM_STOPWORDS)]
     return {tuple(tokens[index : index + ngram]) for index in range(max(0, len(tokens) - ngram + 1))}
 
 

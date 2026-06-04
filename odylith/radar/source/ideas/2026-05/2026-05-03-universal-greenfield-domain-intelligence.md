@@ -1352,6 +1352,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`1 passed in 3.59s`); wider artifact/proposal/post-confirm proof passed
   (`111 passed in 162.71s`); and confirmed-create performance proof passed
   (`1 passed in 9.67s`), preserving the under-30s create gate.
+- 2026-06-04 semantic-quality raw-token follow-through moved sentence-overlap
+  n-gram extraction and scoped-clause word counts onto
+  `greenfield_domain_term_index.label_terms`. `greenfield_semantic_quality.py`
+  now keeps release-scope decisions, sentence-overlap policy, and stopword
+  choices while the shared term-index owner handles raw token extraction for
+  both semantic and visible-label callers. This removes the remaining
+  `re.findall` token loops from the semantic-quality gate without changing
+  normalized release-scope term policy. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 131 lines;
+  `greenfield_semantic_quality.py`: 475 lines;
+  `test_greenfield_semantic_quality_terms.py`: 72 lines). Proof: syntax proof
+  passed for the touched modules and test; focused semantic-quality proof passed
+  (`1 passed in 0.03s`); wider greenfield artifact proof passed (`157 passed
+  in 195.20s`); and confirmed-create performance proof passed (`1 passed in
+  9.61s`), preserving the under-30s create gate.
 - 2026-06-04 confirmed-intent semantic term-index follow-through kept
   `greenfield_confirmed_text.semantic_terms` as the accepted-intent semantic
   API while moving its reusable token indexing onto

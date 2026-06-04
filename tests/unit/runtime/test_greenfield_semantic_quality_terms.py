@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import (
     release_scope_for_component,
+    sentence_overlap_ratio,
 )
 
 
@@ -26,14 +28,31 @@ def test_semantic_quality_terms_use_shared_index_aliases() -> None:
         "from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms"
         in semantic_source
     )
+    assert (
+        "from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms"
+        in semantic_source
+    )
     assert "normalize_domain_token" not in semantic_source
-    assert "for raw in re.findall" not in semantic_source
+    assert "re.findall" not in semantic_source
 
     assert ordered_terms(
         "shared sharing shares reminding reminded reminders statuses",
         stem_ing=True,
         prefix_aliases={"shar": "share", "remind": "reminder"},
     ) == ["share", "reminder", "status"]
+    assert label_terms("AI CRM Status Windows", stopwords={"crm"}) == [
+        "AI",
+        "Status",
+        "Windows",
+    ]
+    assert (
+        sentence_overlap_ratio(
+            "Reviewer submits safety report with photo proof",
+            "Reviewer submits safety report with photo proof",
+            ngram=3,
+        )
+        == 1.0
+    )
 
     assert (
         release_scope_for_component(
