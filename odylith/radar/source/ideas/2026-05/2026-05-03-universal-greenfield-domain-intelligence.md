@@ -1411,6 +1411,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed (`14 passed in 2.78s`); wider greenfield proof passed (`151
   passed in 237.66s`); and confirmed-create performance proof passed (`1 passed
   in 11.47s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed component label term-index follow-through moved
+  `domain_label` token extraction in `greenfield_confirmed_components.py` onto
+  `greenfield_domain_term_index.label_terms`. The shared term-index owner now
+  separates visible label words from semantic normalized terms, preserving
+  acronyms and alphanumeric labels such as AI, CRM, GIS, UI, UX, `3D`, and
+  `W-2` while removing the component generator's local regex token loop.
+  Touched files remain below limits (`greenfield_domain_term_index.py`: 131
+  lines; `greenfield_confirmed_components.py`: 577 lines;
+  `test_greenfield_component_spec_quality.py`: 455 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.25s`); wider greenfield proof passed (`151 passed in
+  233.14s`); and confirmed-create performance proof passed (`1 passed in
+  11.90s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

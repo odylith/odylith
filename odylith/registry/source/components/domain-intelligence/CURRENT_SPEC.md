@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed confirmed component domain-label token extraction through the shared domain term index while preserving visible acronym and alphanumeric label behavior plus focused, broad, and under-30s confirmed-create proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 - **2026-06-03 · Implementation:** Routed first-path actor signature term extraction through the shared domain term index while preserving generated first-path grammar, short-domain actor distinctions, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py, tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed semantic-quality release-scope term signatures through the shared greenfield domain term index with caller-owned exact and prefix aliases while preserving focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py +1 more
-- **2026-06-03 · Implementation:** Routed confirmed artifact Tribunal substance term signatures through the shared greenfield domain term index while preserving focused, broad, and under-30s confirmed-create proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py, tests/unit/runtime/test_greenfield_tribunal_term_index.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -116,6 +116,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed Registry component phrase identity terms and contract-field transition candidates through `greenfield_domain_term_index.ordered_terms`. `greenfield_component_terms.py` keeps artifact-carrier stopword policy, `greenfield_component_contract_fields.py` keeps transition-state decisions, and `greenfield_component_semantic_contract.py` imports the phrase-identity owner directly instead of wrapping it locally. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed public quality-gate prompt and semantic-contract term extraction through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned `preserve_terms`, so `greenfield_quality_gate.py` can preserve short domain abbreviations while keeping prompt echo and public artifact quality checks off local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed first-path actor signature term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_first_path_clauses.py` keeps first-path action, capability, visible-result, and actor-filtering grammar, while actor signatures share the generated-artifact term index with caller-owned stopwords and short actor-term preservation for labels such as AI, ML, UI, and UX. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed component domain-label token extraction through `greenfield_domain_term_index.label_terms`. The shared domain-term owner now has a visible-label path that preserves casing, acronyms, and alphanumeric terms while `greenfield_confirmed_components.py` keeps component naming policy and title casing without a local regex token loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -200,6 +201,11 @@ This section captures synchronized requirement and contract signals derived from
   caller-owned gerund thresholds or short-term preservation to
   `ordered_terms`, but they must not reintroduce private `_domain_terms`,
   `_term_token`, or regex token loops for generated-artifact specificity.
+- Visible generated-label token extraction must stay in
+  `greenfield_domain_term_index.label_terms` when callers need display words
+  rather than semantic singularization. `greenfield_confirmed_components.py`
+  may own component-label stopwords and title casing, but it must not
+  reintroduce a local `for raw in re.findall` token loop for `domain_label`.
 - Public quality-gate prompt and semantic-contract term extraction must use
   `greenfield_domain_term_index.ordered_terms`. `greenfield_quality_gate.py`
   may own public-quality stopwords, failure messages, and short domain

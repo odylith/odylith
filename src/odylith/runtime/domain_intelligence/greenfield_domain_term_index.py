@@ -11,6 +11,9 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 
 
+_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
+
+
 def ordered_terms(
     value: Any,
     *,
@@ -42,6 +45,13 @@ def ordered_terms(
             prefix_alias_rows,
         )
     )
+
+
+def label_terms(value: Any, *, stopwords: Iterable[str] = ()) -> list[str]:
+    """Return display-label terms without semantic singularization or case folding."""
+
+    stop = tuple(sorted({str(item or "").casefold() for item in stopwords}))
+    return list(_label_terms_cached(_clean(value), stop))
 
 
 def _preserved_terms(terms: Iterable[str]) -> tuple[str, ...]:
@@ -79,7 +89,7 @@ def _ordered_terms_cached(
     seen: set[str] = set()
     alias_map = dict(aliases)
     preserved = set(preserve_terms)
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", cleaned_text):
+    for raw in _TOKEN_RE.findall(cleaned_text):
         raw_token = raw.strip("-_").casefold()
         if raw_token in preserved and raw_token not in stopwords:
             token = raw_token
@@ -98,6 +108,17 @@ def _ordered_terms_cached(
     return tuple(result)
 
 
+@lru_cache(maxsize=4096)
+def _label_terms_cached(cleaned_text: str, stopwords: tuple[str, ...]) -> tuple[str, ...]:
+    stop = set(stopwords)
+    result: list[str] = []
+    for raw in _TOKEN_RE.findall(cleaned_text):
+        token = raw.strip("-_")
+        if token and token.casefold() not in stop:
+            result.append(token)
+    return tuple(result)
+
+
 def _clean(value: Any) -> str:
     text = clean_text(value).replace("`", "")
     text = re.sub(r"\s+([,.;:?!])", r"\1", text)
@@ -105,5 +126,6 @@ def _clean(value: Any) -> str:
 
 
 __all__ = [
+    "label_terms",
     "ordered_terms",
 ]

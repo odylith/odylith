@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
     differentiate_component_contracts,
 )
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 
 
 _STOPWORDS = {
@@ -72,12 +73,7 @@ _GENERIC_COMPONENT_ROLE_PREFIXES: tuple[tuple[re.Pattern[str], str], ...] = (
 
 def domain_label(title: str, prompt: str) -> str:
     source = title or prompt or "Greenfield Project"
-    words = []
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", source):
-        token = raw.strip("-_")
-        if not token or token.casefold() in _STOPWORDS:
-            continue
-        words.append(token)
+    words = label_terms(source, stopwords=_STOPWORDS)
     if not words:
         words = ["Greenfield", "Workflow"]
     selected = words[:4] if len(words) <= 4 else words[:3]

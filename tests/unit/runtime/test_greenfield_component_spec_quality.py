@@ -23,12 +23,15 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
+from odylith.runtime.domain_intelligence.greenfield_confirmed_components import domain_label
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 
 
 ROOT = Path(__file__).resolve().parents[3]
 CONFIRMED_COMPONENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
+DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
 CONFIRMED_PROJECT_BRIEF_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py"
 CONFIRMED_PROPOSAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_proposal.py"
 GREENFIELD_COMMAND_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_command_text.py"
@@ -52,10 +55,22 @@ COMPONENT_AXES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield
 
 def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
     source = CONFIRMED_COMPONENTS_PATH.read_text(encoding="utf-8")
+    index_source = DOMAIN_TERM_INDEX_PATH.read_text(encoding="utf-8")
 
     assert len(source.splitlines()) < 800
     assert source.count("def _title_phrase") == 1
     assert "def _can_clause" not in source
+    assert "greenfield_domain_term_index import label_terms" in source
+    assert "for raw in re.findall" not in source
+    assert "def label_terms" in index_source
+
+    assert domain_label("Build a 3D GIS Permit Review App", "") == "3D GIS Permit Review"
+    assert domain_label("AI CRM workflows for UI audits", "") == "AI CRM Workflows"
+    assert domain_label("", "Create a repair request tracker for contractors") == "Repair Request Tracker Contractors"
+    assert label_terms(
+        "Build a 3D GIS Permit Review App",
+        stopwords={"build", "a", "app"},
+    ) == ["3D", "GIS", "Permit", "Review"]
 
 
 def test_confirmed_project_brief_stays_in_dedicated_owner() -> None:
