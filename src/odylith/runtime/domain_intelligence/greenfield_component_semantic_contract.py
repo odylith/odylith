@@ -72,7 +72,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     object_clause_focus as _object_clause_focus,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
-    phrase_identity_terms as _component_phrase_identity_terms,
+    phrase_identity_terms as _phrase_identity_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase as _phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action as _strip_action
@@ -546,12 +546,6 @@ def _dedupe_phrase_subsets(values: Sequence[str]) -> list[str]:
 def _compact_artifact_phrase(value: str) -> bool:
     words = re.findall(r"[a-z0-9][a-z0-9'-]*", _clean(value).casefold())
     return bool(1 < len(words) <= 3 and set(words) & _ARTIFACT_CARRIER_TERMS)
-
-
-def _phrase_identity_terms(value: str) -> set[str]:
-    """Return phrase identity terms while keeping artifact-carrier nouns."""
-
-    return _component_phrase_identity_terms(value)
 
 
 def _prioritize_object_phrases(

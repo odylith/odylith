@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 225,
-    "mapped_workstream_evidence_count": 151,
+    "explicit_event_count": 226,
+    "mapped_workstream_evidence_count": 152,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 225
+    "timeline_event_count": 226
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 540,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed Registry component phrase identity and contract-field transition terms through the shared greenfield domain term index, removed a semantic-contract pass-through wrapper, and preserved focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T20:41:40-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",

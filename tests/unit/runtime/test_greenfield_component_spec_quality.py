@@ -15,8 +15,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_index import 
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase_identity_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
@@ -154,6 +156,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def _phrase(" not in fields_source
     assert "def _content_terms" not in differentiation_source
     assert "def _phrase(" not in semantic_source
+    assert "def _phrase_identity_terms" not in semantic_source
     assert "def _content_terms" not in axes_source
     assert "def _term_token" not in axes_source
     assert "def _phrase(" not in axes_source
@@ -165,6 +168,13 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "greenfield_component_term_index import ordered_domain_terms" in contract_source
     assert "greenfield_component_term_index import ordered_domain_terms" in differentiation_source
     assert "greenfield_component_term_index import ordered_domain_terms" in terms_source
+    assert "greenfield_domain_term_index import ordered_terms" in terms_source
+    assert "greenfield_domain_term_index import ordered_terms" in fields_source
+    assert "phrase_identity_terms as _phrase_identity_terms" in semantic_source
+    assert "normalize_domain_token" not in terms_source
+    assert "normalize_domain_token" not in fields_source
+    assert "for raw in re.findall" not in terms_source
+    assert "for raw in re.findall" not in fields_source
     assert "from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase" in fields_source
     assert "phrase(" in fields_source
     assert "domain_terms(" in differentiation_source
@@ -196,6 +206,19 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert natural_phrase(["alpha", "beta", "gamma"]) == "alpha, beta, and gamma"
     assert phrase(["alpha", "beta", "gamma"]) == "alpha, beta, gamma"
     assert term_phrase(["alpha", "beta", "gamma"]) == "alpha beta gamma"
+    assert phrase_identity_terms("structured reviewer notes and status windows") == {
+        "structured",
+        "note",
+        "status",
+        "window",
+    }
+    transition = state_transition_text(
+        action_terms=("request", "review"),
+        object_phrases=("request status", "reviewed note", "open handoff"),
+        context_text="The request status can become visible, reviewed, or blocked.",
+        anchor_terms=("status",),
+    )
+    assert transition == "reviewed, open, requested, received, validated, blocked, revised, ready-for-next-step"
 
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:

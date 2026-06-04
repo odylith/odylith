@@ -1369,6 +1369,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`30 passed in 35.33s`); wider artifact/proposal/post-confirm proof passed
   (`141 passed in 200.44s`); and confirmed-create performance proof passed
   (`1 passed in 9.63s`), preserving the under-30s create gate.
+- 2026-06-04 Registry component term-index follow-through moved component
+  phrase identity terms and contract-field transition candidates onto
+  `greenfield_domain_term_index.ordered_terms`. `greenfield_component_terms.py`
+  now owns only artifact-carrier stopword policy, `greenfield_component_contract_fields.py`
+  owns only state/transition decisions, and `greenfield_component_semantic_contract.py`
+  imports the phrase-identity owner directly instead of keeping a pass-through
+  wrapper. The touched Registry component path no longer imports
+  `normalize_domain_token` or loops over regex tokens locally for those term
+  sets. Touched files remain below limits (`greenfield_component_terms.py`: 781
+  lines; `greenfield_component_contract_fields.py`: 443 lines;
+  `greenfield_component_semantic_contract.py`: 620 lines;
+  `test_greenfield_component_spec_quality.py`: 440 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.21s`); wider artifact/proposal proof passed
+  (`120 passed in 162.97s`); and confirmed-create performance proof passed
+  (`1 passed in 9.72s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

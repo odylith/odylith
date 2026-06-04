@@ -11,8 +11,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIF
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -346,14 +346,7 @@ def _transition_terms(
 
 
 def _transition_candidate_terms(value: str) -> list[str]:
-    rows: list[str] = []
-    seen: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(value).casefold()):
-        token = normalize_domain_token(raw, stopwords=())
-        if token not in seen:
-            seen.add(token)
-            rows.append(token)
-    return rows
+    return ordered_terms(_clean(value), stopwords=())
 
 
 def _context_transition_clauses(context_text: str, *, anchor_terms: Sequence[str]) -> list[str]:

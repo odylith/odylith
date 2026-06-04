@@ -7,7 +7,8 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text, normalize_domain_token, unique_text
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text, unique_text
 
 ACTION_VERBS = (
     "accept",
@@ -604,11 +605,7 @@ def content_terms(value: str) -> list[str]:
 
 def phrase_identity_terms(value: str) -> set[str]:
     stopwords = GENERIC_TERMS - ARTIFACT_CARRIER_TERMS
-    return {
-        token
-        for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", clean(value).casefold())
-        if (token := normalize_domain_token(raw, stopwords=stopwords))
-    }
+    return set(ordered_terms(clean(value), stopwords=stopwords))
 
 
 def strip_action(value: str) -> str:
