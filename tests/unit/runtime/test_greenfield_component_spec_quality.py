@@ -18,6 +18,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import natur
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase_identity_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
+from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
@@ -42,6 +44,7 @@ COMPONENT_CONTRACT_QUALITY_PATH = (
 )
 COMPONENT_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py"
 COMPONENT_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
+COMPONENT_TERM_WINDOWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py"
 COMPONENT_CONTRACT_DIFFERENTIATION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py"
 )
@@ -148,8 +151,10 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     axes_source = COMPONENT_AXES_PATH.read_text(encoding="utf-8")
     term_index_source = COMPONENT_TERM_INDEX_PATH.read_text(encoding="utf-8")
     terms_source = COMPONENT_TERMS_PATH.read_text(encoding="utf-8")
+    term_windows_source = COMPONENT_TERM_WINDOWS_PATH.read_text(encoding="utf-8")
 
     assert len(terms_source.splitlines()) < 800
+    assert len(term_windows_source.splitlines()) < 800
     assert len(differentiation_source.splitlines()) < 800
     assert len(fields_source.splitlines()) < 800
     assert len(quality_source.splitlines()) < 800
@@ -159,6 +164,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def component_domain_terms" in term_index_source
     assert "def section_domain_terms" in term_index_source
     assert "def component_local_terms" in term_index_source
+    assert "def literal_label_compounds" in term_windows_source
+    assert "def nearby_domain_terms" in term_windows_source
     assert "def ordered_domain_terms" not in quality_source
     assert "def domain_terms" not in quality_source
     assert "def _section_terms" not in quality_source
@@ -174,12 +181,18 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def _phrase_identity_terms" not in semantic_source
     assert "def _content_terms" not in axes_source
     assert "def _term_token" not in axes_source
+    assert "def _literal_label_compounds" not in differentiation_source
+    assert "def _nearby_content_terms" not in differentiation_source
     assert "def _phrase(" not in axes_source
     assert "def _normalize_axis_text" not in axes_source
     assert "domain_terms(" in axes_source
     assert "term_phrase(" in axes_source
     assert "natural_phrase(" in contract_source
     assert "natural_phrase(" in differentiation_source
+    assert "greenfield_component_term_windows import literal_label_compounds" in differentiation_source
+    assert "greenfield_component_term_windows import nearby_domain_terms" in differentiation_source
+    assert "literal_label_compounds(" in differentiation_source
+    assert "nearby_domain_terms(" in differentiation_source
     assert "greenfield_component_term_index import ordered_domain_terms" in contract_source
     assert "greenfield_component_term_index import ordered_domain_terms" in differentiation_source
     assert "greenfield_component_term_index import ordered_domain_terms" in terms_source
@@ -190,6 +203,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "normalize_domain_token" not in fields_source
     assert "for raw in re.findall" not in terms_source
     assert "for raw in re.findall" not in fields_source
+    assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in differentiation_source
+    assert 're.findall(r"[a-z0-9][a-z0-9_-]*"' not in differentiation_source
     assert "from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase" in fields_source
     assert "phrase(" in fields_source
     assert "domain_terms(" in differentiation_source
@@ -227,6 +242,17 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
         "status",
         "window",
     }
+    assert literal_label_compounds("AI CRM Status Windows Service", noise_terms={"service"}) == [
+        "ai crm",
+        "crm status",
+        "status window",
+    ]
+    assert nearby_domain_terms(
+        ["window"],
+        "Reviewer opens status windows before window proofs capture source-backed audit trails.",
+        noise_terms={"service"},
+        window=3,
+    ) == ["open", "window", "capture", "source-backed"]
     transition = state_transition_text(
         action_terms=("request", "review"),
         object_phrases=("request status", "reviewed note", "open handoff"),

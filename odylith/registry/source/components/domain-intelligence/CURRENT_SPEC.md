@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Moved Registry component fallback label compounds and nearby context term-window parsing into a dedicated shared component term-window owner while preserving line-count limits, plural normalization, and generated component contract proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py, src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py +1 more
 - **2026-06-03 · Implementation:** Routed confirmed greenfield Radar backlog term matching through the shared domain term index while preserving backlog-specific stopwords and improving plural workstream outcome matching.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py, tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed first-path actor signature term extraction through the shared domain term index while preserving generated first-path grammar, short-domain actor distinctions, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py, tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
-- **2026-06-03 · Implementation:** Routed greenfield public quality-gate prompt and semantic contract terms through the shared domain term index with caller-owned short-domain-term preservation while preserving focused, broad, and under-30s confirmed-create proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -120,6 +120,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed component handoff workstream-title matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_experience.py` keeps handoff thresholds and stopwords, while reusable title and component-label normalization shares the generated-artifact term index instead of a local `_meaningful_terms` regex helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated traceability semantic token extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_traceability.py` keeps component-workstream and diagram-link scoring plus compound identifier expansion, while plural and stopword normalization shares the generated-artifact term index instead of a local `_semantic_tokens` regex loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed Radar backlog text product-term matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_confirmed_backlog_text_model.py` keeps backlog-specific stopwords and first-slice wording decisions, while `semantic_words` and `shares_product_terms` share plural and stopword normalization with the generated-artifact term index instead of local lower-case regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Split Registry fallback component term-window parsing into `greenfield_component_term_windows.py`. `greenfield_component_contract_differentiation.py` keeps fallback-axis scoring and repair decisions, while the term-window owner handles component label compounds, nearby context windows, plural folding, and short label compounds without growing the near-limit `greenfield_component_terms.py` module. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -187,6 +188,14 @@ This section captures synchronized requirement and contract signals derived from
   contracts, and contract differentiation may call `natural_phrase`, `phrase`,
   and `domain_terms`, but they must not reintroduce local `_term_phrase`,
   `_phrase`, or `_content_terms` clones for generated Registry contract text.
+- Registry fallback component label compounds and nearby context-window terms
+  must stay in `greenfield_component_term_windows.py`.
+  `greenfield_component_contract_differentiation.py` may own fallback-axis
+  scoring, sibling context, and repair decisions, but it must not reintroduce
+  `_literal_label_compounds`, `_nearby_content_terms`, or local regex token
+  loops for fallback component label/context matching. The near-limit
+  `greenfield_component_terms.py` module must not absorb that windowing owner
+  just to hide the helper movement.
 - Component contract field wording must also use
   `greenfield_component_terms.phrase` for comma-clause support-artifact text.
   `greenfield_component_contract_fields.py` may call the shared helper, but it

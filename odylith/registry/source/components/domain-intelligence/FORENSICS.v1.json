@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 66,
-    "mapped_workstream_evidence_count": 56,
+    "explicit_event_count": 67,
+    "mapped_workstream_evidence_count": 57,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 74,
+    "spec_history_event_count": 75,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 67
+    "timeline_event_count": 68
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,54 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py"
       ],
       "confidence": "high",
-      "event_index": 547,
+      "event_index": 548,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
-      "ts_iso": "2026-06-03T22:40:41-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py +1 more",
+      "ts_iso": "2026-06-03T23:02:25-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 547,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Moved Registry component fallback label compounds and nearby context term-window parsing into a dedicated shared component term-window owner while preserving line-count limits, plural normalization, and generated component contract proof.",
+      "ts_iso": "2026-06-03T22:57:19-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -34,6 +34,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     natural_phrase,
     split_contract_clauses,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
+from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -347,7 +349,7 @@ def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> 
 def _fallback_axis(label: str, context: str, *, focus: str = "") -> ComponentAxis:
     label_terms = domain_terms(label, noise_terms=_FALLBACK_NOISE_TERMS)
     context_terms = domain_terms(context, noise_terms=_FALLBACK_NOISE_TERMS)
-    nearby_terms = _nearby_content_terms(label_terms, context)
+    nearby_terms = nearby_domain_terms(label_terms, context, noise_terms=_FALLBACK_NOISE_TERMS)
     extra_terms = _unique_terms(
         [
             *[term for term in nearby_terms if term not in label_terms],
@@ -410,7 +412,7 @@ def _axis_payload(
     upstream: str,
     downstream: str,
 ) -> dict[str, Any]:
-    label_focus = _literal_label_compounds(label)
+    label_focus = literal_label_compounds(label, noise_terms=_FALLBACK_NOISE_TERMS)
     owned_state = _join_contract_clauses(", ".join(label_focus[:3]), f"{axis.owned_state} for {state_label}")
     accepted_inputs = axis.accepted_inputs
     produced_outputs = axis.produced_outputs
@@ -427,36 +429,6 @@ def _axis_payload(
         "downstream_consumers": downstream,
         "unique_failure": unique_failure,
     }
-
-
-def _literal_label_compounds(label: str) -> list[str]:
-    drop = {
-        "adapter",
-        "and",
-        "client",
-        "component",
-        "engine",
-        "for",
-        "in",
-        "of",
-        "on",
-        "service",
-        "store",
-        "surface",
-        "system",
-        "the",
-        "to",
-        "view",
-        "with",
-        "workspace",
-    }
-    terms = [
-        word
-        for word in re.findall(r"[a-z0-9][a-z0-9'-]*", _clean(label).casefold())
-        if word not in drop
-    ]
-    rows = [f"{terms[index]} {terms[index + 1]}" for index in range(max(0, len(terms) - 1))]
-    return _unique_terms(rows)
 
 
 def _semantic_contract_is_strong(semantic_contract: Any) -> bool:
@@ -624,22 +596,6 @@ def _focus_phrase(context: str) -> str:
     )
     first = re.split(r"[.;]", text, maxsplit=1)[0].strip(" .")
     return first if 4 <= len(first.split()) <= 18 else ""
-
-
-def _nearby_content_terms(label_terms: Sequence[str], context: str, *, window: int = 5) -> list[str]:
-    if not label_terms:
-        return []
-    tokens = re.findall(r"[a-z0-9][a-z0-9_-]*", _clean(context).casefold())
-    result: list[str] = []
-    label_set = set(label_terms)
-    for index, token in enumerate(tokens):
-        normalized = domain_terms(token, noise_terms=_FALLBACK_NOISE_TERMS)
-        if not normalized or normalized[0] not in label_set:
-            continue
-        start = max(0, index - window)
-        end = min(len(tokens), index + window + 1)
-        result.extend(domain_terms(" ".join(tokens[start:end]), noise_terms=_FALLBACK_NOISE_TERMS))
-    return _unique_terms(result)
 
 
 def _unique_terms(values: Sequence[str]) -> list[str]:

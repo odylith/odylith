@@ -1462,6 +1462,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`11 passed in 13.37s`); wider greenfield proof passed (`154 passed in
   228.69s`); and confirmed-create performance proof passed (`1 passed in
   12.05s`), preserving the under-30s create gate.
+- 2026-06-04 Registry fallback term-window follow-through moved component label
+  compounds and nearby context-window parsing from
+  `greenfield_component_contract_differentiation.py` into
+  `greenfield_component_term_windows.py`. Contract differentiation now keeps
+  fallback-axis scoring and repair policy, while the term-window owner handles
+  token parsing, plural folding, and short label compounds such as AI CRM without
+  growing the near-limit `greenfield_component_terms.py` module. Touched files
+  remain below limits (`greenfield_component_terms.py`: 781 lines;
+  `greenfield_component_term_windows.py`: 75 lines;
+  `greenfield_component_contract_differentiation.py`: 705 lines;
+  `test_greenfield_component_spec_quality.py`: 481 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.25s`); wider greenfield proof passed (`154 passed in
+  224.99s`); and confirmed-create performance proof passed (`1 passed in
+  11.72s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
