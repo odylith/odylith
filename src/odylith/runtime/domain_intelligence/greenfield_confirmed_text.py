@@ -171,6 +171,19 @@ def word_count(value: str) -> int:
     return len(re.findall(r"[A-Za-z0-9]+", clean_confirmed_text(value)))
 
 
+def word_occurrences(value: str, word: str) -> int:
+    token = clean_confirmed_text(word).strip()
+    if not token:
+        return 0
+    return len(
+        re.findall(
+            rf"\b{re.escape(token)}\b",
+            clean_confirmed_text(value),
+            re.IGNORECASE,
+        )
+    )
+
+
 def focus_label(title: str) -> str:
     words = [
         word

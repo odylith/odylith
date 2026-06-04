@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed Radar backlog proof-focus counts and repeated-required detection through shared confirmed text counting so backlog wording no longer carries local regex count gates.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
 - **2026-06-04 · Implementation:** Routed confirmed-completion label focus and keyword matching through shared domain term indexing so completion repair no longer carries local token parsing loops.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed component visible word-count thresholds through shared confirmed text so component responsibility and dependency filtering no longer carry local regex token counts.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
-- **2026-06-04 · Implementation:** Routed semantic-model proof checkpoint word counts through shared confirmed text so diagram-event proof filtering no longer carries local regex token counts.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py, src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -132,6 +132,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed component handoff workstream-title matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_experience.py` keeps handoff thresholds and stopwords, while reusable title and component-label normalization shares the generated-artifact term index instead of a local `_meaningful_terms` regex helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated traceability semantic token extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_traceability.py` keeps component-workstream and diagram-link scoring plus compound identifier expansion, while plural and stopword normalization shares the generated-artifact term index instead of a local `_semantic_tokens` regex loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed Radar backlog text product-term matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_confirmed_backlog_text_model.py` keeps backlog-specific stopwords and first-slice wording decisions, while `semantic_words` and `shares_product_terms` share plural and stopword normalization with the generated-artifact term index instead of local lower-case regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed Radar backlog proof-focus word counts and repeated-required detection through `greenfield_confirmed_text.word_count` and `word_occurrences`. `greenfield_confirmed_backlog_text_model.py` keeps proof-focus selection, first-slice wording, mechanical-summary rejection, and product-term matching policy while confirmed text owns Markdown cleanup, visible word counting, and exact word occurrence counting. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Split Registry fallback component term-window parsing into `greenfield_component_term_windows.py`. `greenfield_component_contract_differentiation.py` keeps fallback-axis scoring and repair decisions, while the term-window owner handles component label compounds, nearby context windows, plural folding, and short label compounds without growing the near-limit `greenfield_component_terms.py` module. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Moved Registry literal component label-term extraction into `greenfield_component_term_windows.py`. Base component contracts, semantic component contracts, and fallback contract differentiation now share one label-term owner that preserves short labels and plural artifact-carrier phrases such as `policy guardrails` while still folding ordinary semantic plurals such as `status windows`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Moved generated Registry actor-role token detection into `greenfield_actor_terms.py` and cached action-form classification in `greenfield_component_terms.py`. Component artifact cleanup and semantic context extraction now share the same role classifier, so actor/action leads such as `inspector reviews permit note` are reduced to the owned artifact phrase `permit note` instead of leaking actor prose into Registry contracts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -399,6 +400,12 @@ This section captures synchronized requirement and contract signals derived from
   `greenfield_project_intelligence.py` may own schema shape, minimum-row
   thresholds, and issue text, but they must not reintroduce local `_word_count`
   helpers for project brief or project intelligence shallow-row checks.
+- Confirmed Radar backlog proof-focus word-count thresholds and repeated-word
+  checks must stay in `greenfield_confirmed_text.word_count` and
+  `word_occurrences`. `greenfield_confirmed_backlog_text_model.py` may own
+  proof-focus selection, first-slice wording, rationale-line policy, and
+  mechanical-summary rejection, but it must not reintroduce local raw regex
+  count gates for proof-focus length or repeated `required` detection.
 - Confirmed Atlas proof-label visible word counting must stay in
   `greenfield_confirmed_text.word_count`.
   `greenfield_confirmed_diagram_text.py` may own semantic proof checkpoint

@@ -8,6 +8,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 
 
@@ -95,11 +96,13 @@ def test_confirmed_project_surface_word_count_stays_in_text_owner() -> None:
     ).read_text(encoding="utf-8")
 
     assert "def word_count" in text_source
+    assert "def word_occurrences" in text_source
     assert "greenfield_confirmed_text import word_count" in project_brief_source
     assert "greenfield_confirmed_text import word_count" in project_intelligence_source
     assert "def _word_count" not in project_brief_source
     assert "def _word_count" not in project_intelligence_source
     assert word_count("Source-backed review/triage keeps `AI` CRM status visible.") == 9
+    assert word_occurrences("Required proof and required signoff stay visible.", "required") == 2
 
 
 def test_confirmed_intent_parser_word_count_stays_in_text_owner() -> None:

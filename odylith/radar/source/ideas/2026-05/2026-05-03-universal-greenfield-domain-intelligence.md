@@ -1634,6 +1634,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`11 passed in 13.37s`); wider greenfield proof passed (`154 passed in
   228.69s`); and confirmed-create performance proof passed (`1 passed in
   12.05s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed Radar backlog visible-count follow-through moved proof
+  focus word-count thresholds and repeated-required detection in
+  `greenfield_confirmed_backlog_text_model.py` onto
+  `greenfield_confirmed_text.word_count` and `word_occurrences`. The Radar
+  backlog text model still owns proof focus selection, first-slice wording,
+  mechanical-summary rejection, and product-term matching policy, while
+  confirmed text owns Markdown cleanup, visible word counting, and exact word
+  occurrence counting. Touched files remain below limits
+  (`greenfield_confirmed_backlog_text_model.py`: 475 lines;
+  `greenfield_confirmed_text.py`: 406 lines;
+  `test_greenfield_confirmed_backlog_terms.py`: 56 lines;
+  `test_greenfield_confirmed_text.py`: 120 lines). Proof: syntax proof passed
+  for the touched modules and tests; focused backlog/text proof passed
+  (`8 passed in 8.94s`); wider greenfield artifact proof passed
+  (`165 passed in 201.36s`); and confirmed-create performance proof passed
+  (`1 passed in 9.52s`), preserving the under-30s create gate.
 - 2026-06-04 Registry fallback term-window follow-through moved component label
   compounds and nearby context-window parsing from
   `greenfield_component_contract_differentiation.py` into

@@ -11,6 +11,8 @@ from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import _has_mechanical_need_to_turn
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -363,7 +365,7 @@ def proof_focus_phrase(value: str, *, fallback: str) -> str:
     candidates: list[tuple[int, int, str]] = []
     for index, clause in enumerate(re.split(r"\s*,\s*|\s+\band\b\s+", sentence_fragment(value))):
         text = sentence_fragment(clause).strip(" .")
-        if not text or len(re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text)) > 6:
+        if not text or word_count(text) > 6:
             continue
         if not re.search(r"\b(?:approval|decision|judgment|outcome|reason|rejection|signoff|status)\b", text, re.I):
             continue
@@ -408,7 +410,7 @@ def looks_mechanical_summary(value: str) -> bool:
     if not text:
         return False
     lowered = text.casefold()
-    repeated_required = len(re.findall(r"\brequired\b", lowered))
+    repeated_required = word_occurrences(text, "required")
     return bool(
         repeated_required >= 2
         or re.search(r"\bactor identity,\s+validation context,\s+and upstream handoff\b", lowered)
