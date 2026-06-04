@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import role_or_system_rows as _role_or_system_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 
@@ -447,7 +448,7 @@ def _looks_like_bare_title(value: str) -> bool:
         return False
     if text[-1:] in ".!?":
         return False
-    words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text)
+    words = _label_terms(text)
     if not 1 <= len(words) <= 10:
         return False
     lowered = text.casefold()

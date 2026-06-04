@@ -1925,6 +1925,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`10 passed in 0.22s`); wider greenfield artifact proof passed (`180 passed
   in 201.94s`); and confirmed-create performance proof passed (`1 passed in
   9.71s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed-intent bare-title display-token follow-through moved
+  preamble bare-title word counting in `greenfield_confirmed_intent.py` onto
+  `greenfield_domain_term_index.label_terms`. The confirmed-intent parser still
+  owns section parsing, heading classification, preamble title detection,
+  prewrite normalization, completion, and validation, while the shared term
+  index owns reusable display-token extraction for hyphenated confirmed titles
+  such as Source-backed Evidence Workspace. The bare-title classifier still
+  accepts that title and rejects action-shaped prose such as Reviewer needs
+  status proof. Touched files remain below limits
+  (`greenfield_confirmed_intent.py`: 664 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 336 lines). Proof: syntax
+  proof passed for the touched modules and test; focused ownership proof passed
+  (`11 passed in 0.20s`); wider greenfield artifact proof passed (`181 passed
+  in 200.39s`); and confirmed-create performance proof passed (`1 passed in
+  9.45s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

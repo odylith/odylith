@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 98,
-    "mapped_workstream_evidence_count": 88,
+    "explicit_event_count": 99,
+    "mapped_workstream_evidence_count": 89,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 105,
+    "spec_history_event_count": 106,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 99
+    "timeline_event_count": 100
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,53 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py"
       ],
       "confidence": "high",
-      "event_index": 579,
+      "event_index": 580,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
-      "ts_iso": "2026-06-04T06:42:06-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+      "ts_iso": "2026-06-04T06:56:42-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_ownership.py"
+      ],
+      "confidence": "high",
+      "event_index": 579,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed-intent bare-title token extraction through shared greenfield label terms so hyphenated confirmed titles such as Source-backed Evidence Workspace share the visible display-token contract.",
+      "ts_iso": "2026-06-04T06:55:59-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

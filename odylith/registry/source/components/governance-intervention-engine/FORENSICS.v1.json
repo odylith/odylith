@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 219,
-    "mapped_workstream_evidence_count": 189,
+    "explicit_event_count": 220,
+    "mapped_workstream_evidence_count": 190,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 219
+    "timeline_event_count": 220
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_ownership.py"
+      ],
+      "confidence": "high",
+      "event_index": 579,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed-intent bare-title token extraction through shared greenfield label terms so hyphenated confirmed titles such as Source-backed Evidence Workspace share the visible display-token contract.",
+      "ts_iso": "2026-06-04T06:55:59-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",

@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed-intent bare-title token extraction through shared greenfield label terms so hyphenated confirmed titles such as Source-backed Evidence Workspace share the visible display-token contract.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 - **2026-06-04 · Implementation:** Routed confirmed actor role candidate token extraction through shared greenfield label terms so hyphenated accepted roles such as Source-backed reviewer preserve their visible product signal.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed Registry artifact cleanup action-token checks through shared greenfield visible words and preserved slash-separated visible-result artifact phrases.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_terms.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed component kind-token extraction through shared greenfield visible words so client, adapter, and service classification no longer carries a local regex token loop.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -151,6 +151,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed canonical confirmed project-title repair acceptance checks through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_title_repair.py` keeps stale title detection, existing-title candidate selection, proposal-wide replacement, slug repair, and project-intelligence rebinding while the shared term index owns reusable display-token extraction for title candidates such as `AI/ML Review Workspace`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed focus-label title token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup, list coercion, semantic terms, word counts, repeated-word counts, title casing, focus-label selection, and domain object labels while the shared term index owns reusable display-token extraction for generated titles such as `Source-backed Review Workspace`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed actor role candidate token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_actor_completion.py` keeps accepted actor row completion, role-word policy, artifact-context filtering, non-actor lead trimming, actor-label fallback selection, and actor descriptions while the shared term index owns reusable display-token extraction for accepted role phrases such as `Source-backed reviewer`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed-intent bare-title token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_intent.py` keeps section parsing, heading classification, preamble title detection, prewrite normalization, completion, and validation while the shared term index owns reusable display-token extraction for confirmed titles such as `Source-backed Evidence Workspace`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -352,6 +353,13 @@ This section captures synchronized requirement and contract signals derived from
   artifact-context filtering, non-actor lead trimming, fallback actor
   selection, and actor descriptions, but it must not reintroduce local
   `re.findall(r"[A-Za-z][A-Za-z/-]*", sentence)` loops for `_role_candidates`.
+- Confirmed-intent bare-title token extraction must use
+  `greenfield_domain_term_index.label_terms`.
+  `greenfield_confirmed_intent.py` may own section parsing, heading
+  classification, preamble title detection, completion, and validation, but it
+  must not reintroduce local
+  `re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text)` loops for
+  `_looks_like_bare_title`.
 - Public quality-gate prompt and semantic-contract term extraction must use
   `greenfield_domain_term_index.ordered_terms`. `greenfield_quality_gate.py`
   may own public-quality stopwords, failure messages, and short domain

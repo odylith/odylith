@@ -5,6 +5,7 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import _looks_like_bare_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
@@ -25,6 +26,7 @@ CONFIRMED_SYSTEM_COMPLETION_PATH = (
 CONFIRMED_INTENT_VALIDATION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py"
 )
+CONFIRMED_INTENT_PARSER_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py"
 
 
 def test_confirmed_intent_actor_completion_stays_in_dedicated_owner() -> None:
@@ -139,6 +141,16 @@ def test_confirmed_actor_completion_role_candidates_use_shared_label_terms() -> 
 
     labels = [row.split(":", 1)[0] for row in completed_actor_rows(intent, title=intent["title"])]
     assert "Source-backed Reviewer" in labels
+
+
+def test_confirmed_intent_bare_title_uses_shared_label_terms() -> None:
+    parser_source = CONFIRMED_INTENT_PARSER_PATH.read_text(encoding="utf-8")
+
+    assert "greenfield_domain_term_index import label_terms as _label_terms" in parser_source
+    assert "re.findall(r\"[A-Za-z0-9][A-Za-z0-9'-]*\", text)" not in parser_source
+    assert label_terms("Source-backed Evidence Workspace") == ["Source-backed", "Evidence", "Workspace"]
+    assert _looks_like_bare_title("Source-backed Evidence Workspace")
+    assert _looks_like_bare_title("Reviewer needs status proof") is False
 
 
 def test_confirmed_intent_parser_keeps_ambiguities_out_of_first_path() -> None:
