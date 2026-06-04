@@ -17,6 +17,7 @@ def ordered_terms(
     stopwords: Iterable[str] = (),
     minimum: int = 4,
     stem_ing: bool = False,
+    stem_ing_minimum_length: int = 6,
     aliases: Mapping[str, str] | None = None,
     prefix_aliases: Mapping[str, str] | None = None,
 ) -> list[str]:
@@ -33,6 +34,7 @@ def ordered_terms(
             stop,
             minimum,
             stem_ing,
+            stem_ing_minimum_length,
             alias_rows,
             prefix_alias_rows,
         )
@@ -55,6 +57,7 @@ def _ordered_terms_cached(
     stopwords: tuple[str, ...],
     minimum: int,
     stem_ing: bool,
+    stem_ing_minimum_length: int,
     aliases: tuple[tuple[str, str], ...],
     prefix_aliases: tuple[tuple[str, str], ...],
 ) -> tuple[str, ...]:
@@ -63,7 +66,7 @@ def _ordered_terms_cached(
     alias_map = dict(aliases)
     for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", cleaned_text):
         token = normalize_domain_token(raw, minimum=minimum, stopwords=stopwords)
-        if stem_ing and token.endswith("ing") and len(token) > 6:
+        if stem_ing and token.endswith("ing") and len(token) > stem_ing_minimum_length:
             token = token[:-3]
         token = alias_map.get(token, token)
         for prefix, alias in prefix_aliases:

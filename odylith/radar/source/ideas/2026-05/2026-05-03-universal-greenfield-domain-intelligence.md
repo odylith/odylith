@@ -1352,6 +1352,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`1 passed in 3.59s`); wider artifact/proposal/post-confirm proof passed
   (`111 passed in 162.71s`); and confirmed-create performance proof passed
   (`1 passed in 9.67s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed-intent semantic term-index follow-through kept
+  `greenfield_confirmed_text.semantic_terms` as the accepted-intent semantic
+  API while moving its reusable token indexing onto
+  `greenfield_domain_term_index.ordered_terms`. The shared term index now
+  supports caller-owned `stem_ing_minimum_length`, so confirmed-intent overlap
+  checks can preserve their previous gerund threshold without changing Atlas,
+  Tribunal, semantic-model, risk, or release-scope callers. `greenfield_confirmed_text.py`
+  no longer imports `normalize_domain_token` or loops over regex tokens for
+  semantic terms locally. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 90 lines;
+  `greenfield_confirmed_text.py`: 399 lines;
+  `test_greenfield_confirmed_text.py`: 84 lines). Proof: syntax proof passed
+  for the touched modules and test; focused confirmed-text proof passed
+  (`2 passed in 0.03s`); focused confirmed-intent proof passed
+  (`30 passed in 35.33s`); wider artifact/proposal/post-confirm proof passed
+  (`141 passed in 200.44s`); and confirmed-create performance proof passed
+  (`1 passed in 9.63s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

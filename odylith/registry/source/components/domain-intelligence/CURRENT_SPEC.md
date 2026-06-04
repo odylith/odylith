@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed accepted-intent semantic term indexing through the shared greenfield domain term index while keeping greenfield_confirmed_text.semantic_terms as the confirmed-intent API and preserving focused, broad, and under-30s confirmed-create proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 - **2026-06-03 · Implementation:** Routed semantic-quality release-scope term signatures through the shared greenfield domain term index with caller-owned exact and prefix aliases while preserving focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed Atlas sequence and first-path flowchart component matching through the shared greenfield domain term index with caller-owned gerund stemming and pinned the renderer against local token-loop regressions.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py +1 more
-- **2026-06-03 · Implementation:** Moved confirmed-intent semantic term extraction into the confirmed-text owner and split oversized confirmed-intent ownership tests while preserving focused, broad, and under-30s confirmed-create proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py +4 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -112,6 +112,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed post-confirm semantic drift, repetition, and overlap term signatures through `greenfield_domain_term_index.ordered_terms`. `greenfield_post_confirm_semantic_drift.py` now keeps only post-confirm stopwords and separator cleanup instead of owning direct `normalize_domain_token` calls or local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal substance terms through `greenfield_domain_term_index.ordered_terms`. `proposal_tribunal_substance.py` now keeps only Tribunal stopwords and Atlas action aliases instead of owning direct `normalize_domain_token` calls or local regex token loops for generated Radar, Registry, and Atlas substance checks. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed semantic-quality release-scope and scope-context term signatures through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned exact aliases and prefix aliases, while `greenfield_semantic_quality.py` keeps only release-scope stopwords, alias policy, and release-scope decisions instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed accepted-intent semantic term indexing through `greenfield_domain_term_index.ordered_terms` while keeping `greenfield_confirmed_text.semantic_terms` as the confirmed-intent API. The shared term index now accepts caller-owned `stem_ing_minimum_length`, and `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup, stopword defaults, and caller handoff instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -192,9 +193,10 @@ This section captures synchronized requirement and contract signals derived from
 - Reusable greenfield term normalization must stay in
   `greenfield_domain_term_index.py`. Radar product-risk specificity,
   component-local term indexing, and future artifact-specific overlap checks
-  may pass surface-owned stopwords, exact aliases, or prefix aliases to
-  `ordered_terms`, but they must not reintroduce private `_domain_terms`,
-  `_term_token`, or regex token loops for generated-artifact specificity.
+  may pass surface-owned stopwords, exact aliases, prefix aliases, or
+  caller-owned gerund thresholds to `ordered_terms`, but they must not
+  reintroduce private `_domain_terms`, `_term_token`, or regex token loops for
+  generated-artifact specificity.
 - Atlas sequence and first-path flowchart routing must use
   `greenfield_domain_term_index.ordered_terms` for component and actor text
   matching. Sequence-specific stopwords and `stem_ing=True` may remain
@@ -229,8 +231,11 @@ This section captures synchronized requirement and contract signals derived from
 - Confirmed-intent semantic term extraction must stay in
   `greenfield_confirmed_text.py`. Validation, parser, actor, and
   internal-system modules may call `semantic_terms` with caller-owned stopwords,
-  but they must not reintroduce `_TERM_STOPWORDS`, `_semantic_terms`, or direct
-  `normalize_domain_token` loops for accepted Product Intent semantic overlap.
+  but reusable token indexing must go through
+  `greenfield_domain_term_index.ordered_terms`. Confirmed-text callers must not
+  reintroduce `_TERM_STOPWORDS`, `_semantic_terms`, direct
+  `normalize_domain_token` imports, or local regex token loops for accepted
+  Product Intent semantic overlap.
 - Confirmed component row completion must stay in
   `greenfield_confirmed_component_completion.py`. The confirmed completion
   parent may call `complete_component_rows` and

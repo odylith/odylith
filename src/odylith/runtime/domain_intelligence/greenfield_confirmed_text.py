@@ -6,8 +6,8 @@ import re
 from collections.abc import Iterable, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -138,14 +138,15 @@ def join_confirmed_items(values: Sequence[str]) -> str:
 
 def semantic_terms(text: str, *, stopwords: Iterable[str] | None = None) -> set[str]:
     stop = CONFIRMED_SEMANTIC_STOPWORDS if stopwords is None else set(stopwords)
-    terms: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", clean_confirmed_text(text).casefold()):
-        token = normalize_domain_token(raw, minimum=3, stopwords=stop)
-        if token.endswith("ing") and len(token) > 5:
-            token = token[:-3]
-        if token:
-            terms.add(token)
-    return terms
+    return set(
+        ordered_terms(
+            clean_confirmed_text(text),
+            stopwords=stop,
+            minimum=3,
+            stem_ing=True,
+            stem_ing_minimum_length=5,
+        )
+    )
 
 
 def semantic_overlap(left: str, right: str) -> int:
