@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 320,
-    "mapped_workstream_evidence_count": 163,
+    "explicit_event_count": 321,
+    "mapped_workstream_evidence_count": 164,
     "recent_path_match_count": 0,
     "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 320
+    "timeline_event_count": 321
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py",
+        "tests/unit/runtime/test_greenfield_confirmed_text.py"
+      ],
+      "confidence": "high",
+      "event_index": 553,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed project-brief and project-intelligence word counting through the shared confirmed-text owner so generated project-surface validators no longer carry local word-count helpers.",
+      "ts_iso": "2026-06-04T00:28:03-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",

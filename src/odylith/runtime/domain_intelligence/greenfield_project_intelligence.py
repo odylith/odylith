@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -132,7 +133,7 @@ def project_intelligence_issues(value: Any) -> list[str]:
         minimum = 3 if key in {"intent", "ontology", "operators", "validation_obligations", "topology"} else 2
         if len(rows) < minimum:
             issues.append(f"proposal `project_intelligence.{key}` must include at least {minimum} rows")
-        elif any(_word_count(row) < 5 for row in rows[:minimum]):
+        elif any(word_count(row) < 5 for row in rows[:minimum]):
             issues.append(f"proposal `project_intelligence.{key}` contains shallow rows")
     return issues
 
@@ -185,12 +186,8 @@ def _require_text(value: Mapping[str, Any], key: str, *, issues: list[str], min_
     if not text:
         issues.append(f"proposal `project_intelligence.{key}` must be non-empty")
         return
-    if _word_count(text) < min_words:
+    if word_count(text) < min_words:
         issues.append(f"proposal `project_intelligence.{key}` must contain at least {min_words} meaningful words")
-
-
-def _word_count(value: str) -> int:
-    return len([part for part in clean_text(value).replace("/", " ").split() if part.strip()])
 
 
 __all__ = [

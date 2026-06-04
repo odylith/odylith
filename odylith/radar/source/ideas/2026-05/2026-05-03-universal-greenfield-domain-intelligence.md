@@ -1157,6 +1157,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   39.80s`); broad confirmed-greenfield proof passed (`160 passed in
   240.87s`); and confirmed-create performance proof passed (`1 passed in
   11.52s`).
+- 2026-06-04 confirmed project-surface word-count follow-through moved
+  project-brief and project-intelligence shallow-row checks onto
+  `greenfield_confirmed_text.word_count`. The project brief and project
+  intelligence validators now keep schema/row requirements while the confirmed
+  text owner handles Markdown cleanup and visible word counting, removing the
+  local `_word_count` helpers from both generated project-surface validators.
+  Touched files remain below limits (`greenfield_confirmed_text.py`: 399 lines;
+  `greenfield_project_brief.py`: 254 lines;
+  `greenfield_project_intelligence.py`: 200 lines;
+  `test_greenfield_confirmed_text.py`: 102 lines). Proof: syntax proof passed
+  for the touched modules and test; focused confirmed-text/project-surface proof
+  passed (`5 passed in 0.21s`); wider greenfield artifact proof passed (`160
+  passed in 195.36s`); and confirmed-create performance proof passed (`1 passed
+  in 9.59s`), preserving the under-30s create gate.
 - 2026-06-03 greenfield coercion hygiene follow-through removed the remaining
   workstream-local `_list_values` clone and the project-binding-local
   `_mapping` clone from the B-142/CB-202 slice. Workstream Domain Intelligence

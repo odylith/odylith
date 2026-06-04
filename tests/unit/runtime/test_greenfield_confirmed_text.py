@@ -7,6 +7,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 
 
@@ -82,3 +83,20 @@ def test_confirmed_intent_semantic_terms_stay_in_text_owner() -> None:
         "Product proof keeps a gearbox result ready.",
         stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS,
     )
+
+
+def test_confirmed_project_surface_word_count_stays_in_text_owner() -> None:
+    text_source = CONFIRMED_TEXT_PATH.read_text(encoding="utf-8")
+    project_brief_source = (
+        DOMAIN_INTELLIGENCE / "greenfield_project_brief.py"
+    ).read_text(encoding="utf-8")
+    project_intelligence_source = (
+        DOMAIN_INTELLIGENCE / "greenfield_project_intelligence.py"
+    ).read_text(encoding="utf-8")
+
+    assert "def word_count" in text_source
+    assert "greenfield_confirmed_text import word_count" in project_brief_source
+    assert "greenfield_confirmed_text import word_count" in project_intelligence_source
+    assert "def _word_count" not in project_brief_source
+    assert "def _word_count" not in project_intelligence_source
+    assert word_count("Source-backed review/triage keeps `AI` CRM status visible.") == 9

@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_text_list
@@ -81,12 +82,12 @@ def project_brief_issues(value: Any) -> list[str]:
     prompts = normalize_text_list(value.get("customization_prompts"))
     if len(prompts) < 3:
         issues.append("proposal `project_brief.customization_prompts` must include at least three host-independent examples")
-    elif any(_word_count(prompt) < 6 for prompt in prompts):
+    elif any(word_count(prompt) < 6 for prompt in prompts):
         issues.append("proposal `project_brief.customization_prompts` contains a shallow example")
     gates = normalize_text_list(value.get("coding_readiness_gates"))
     if len(gates) < 4:
         issues.append("proposal `project_brief.coding_readiness_gates` must include at least four gates")
-    elif any(_word_count(gate) < 6 for gate in gates):
+    elif any(word_count(gate) < 6 for gate in gates):
         issues.append("proposal `project_brief.coding_readiness_gates` contains a shallow gate")
     _require_rows(
         value.get("host_independent_paths"),
@@ -184,12 +185,8 @@ def _require_text(value: Mapping[str, Any], key: str, *, owner: str, issues: lis
     if not text:
         issues.append(f"{owner} `{key}` must be non-empty")
         return
-    if _word_count(text) < min_words:
+    if word_count(text) < min_words:
         issues.append(f"{owner} `{key}` must contain at least {min_words} meaningful words")
-
-
-def _word_count(value: str) -> int:
-    return len([part for part in clean_text(value).replace("/", " ").split() if part.strip()])
 
 
 def _blueprint_section_lines(value: Any) -> list[str]:
