@@ -33,6 +33,7 @@ COMPONENT_CONTRACT_DIFFERENTIATION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py"
 )
 COMPONENT_CONTRACT_TARGETS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py"
+COMPONENT_CONTRACT_FIELDS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py"
 COMPONENT_SEMANTIC_CONTRACT_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py"
 )
@@ -116,17 +117,20 @@ def test_component_contract_targets_stay_in_dedicated_owner() -> None:
 def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     contract_source = COMPONENT_CONTRACT_PATH.read_text(encoding="utf-8")
     differentiation_source = COMPONENT_CONTRACT_DIFFERENTIATION_PATH.read_text(encoding="utf-8")
+    fields_source = COMPONENT_CONTRACT_FIELDS_PATH.read_text(encoding="utf-8")
     semantic_source = COMPONENT_SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
     axes_source = COMPONENT_AXES_PATH.read_text(encoding="utf-8")
     terms_source = COMPONENT_TERMS_PATH.read_text(encoding="utf-8")
 
     assert len(terms_source.splitlines()) < 800
     assert len(differentiation_source.splitlines()) < 800
+    assert len(fields_source.splitlines()) < 800
     assert len(axes_source.splitlines()) < 800
     assert "def natural_phrase" in terms_source
     assert "def term_phrase" in terms_source
     assert "def _term_phrase" not in contract_source
     assert "def _phrase(" not in differentiation_source
+    assert "def _phrase(" not in fields_source
     assert "def _content_terms" not in differentiation_source
     assert "def _phrase(" not in semantic_source
     assert "def _content_terms" not in axes_source
@@ -137,6 +141,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "term_phrase(" in axes_source
     assert "natural_phrase(" in contract_source
     assert "natural_phrase(" in differentiation_source
+    assert "from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase" in fields_source
+    assert "phrase(" in fields_source
     assert "domain_terms(" in differentiation_source
 
     assert natural_phrase(["alpha", "beta"]) == "alpha and beta"

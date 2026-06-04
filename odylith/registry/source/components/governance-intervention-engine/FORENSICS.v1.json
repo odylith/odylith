@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 169,
-    "mapped_workstream_evidence_count": 139,
+    "explicit_event_count": 170,
+    "mapped_workstream_evidence_count": 140,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 169
+    "timeline_event_count": 170
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 529,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed generated component contract field phrase rendering through the shared component-term owner and proved focused, broad, and under-30s confirmed-create behavior.",
+      "ts_iso": "2026-06-03T17:45:16-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py",

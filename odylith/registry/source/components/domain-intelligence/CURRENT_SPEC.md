@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed generated component contract field phrase rendering through the shared component-term owner and proved focused, broad, and under-30s confirmed-create behavior.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py, src/odylith/runtime/domain_intelligence/greenfield_component_terms.py +1 more
 - **2026-06-03 · Implementation:** Routed derived component-axis term extraction through the shared component-term owner and proved focused, broad, and under-30s confirmed-create behavior.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_axes.py, src/odylith/runtime/domain_intelligence/greenfield_component_terms.py +1 more
@@ -36,9 +39,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py +1 more
 - **2026-06-03 · Implementation:** Split confirmed Atlas diagram prose and label logic into a dedicated text-model owner, keeping greenfield_confirmed_diagrams.py below the 800-line soft limit while repairing the stale imperative action-label surface assertion.
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py +1 more
-- **2026-06-03 · Implementation:** Split confirmed Radar workstream phrase and rationale logic into a dedicated backlog text-model owner, keeping greenfield_confirmed_backlog.py below the 800-line soft limit with focused, broad, and performance proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -99,6 +99,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Removed the remaining private coercion helpers from workstream Domain Intelligence and project-intelligence binding. `greenfield_workstream_intelligence.py` now uses `greenfield_text.text_values` directly instead of `_list_values`, and `project_intelligence_binding.py` uses `runtime.common.value_coercion.mapping_copy` instead of a local `_mapping` helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split proposal project-brief rendering into `greenfield_project_brief.py`. Proposal text now imports `render_project_brief_lines`, while blueprint-section, customization-option, checkpoint, host-path, and generated-row rendering stay with the project-brief owner and reuse `greenfield_rows.mapping_rows`. `proposal_rendering.py` remains a general proposal text renderer below the 800-line soft limit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Routed component-axis term extraction through `greenfield_component_terms.py`. `greenfield_component_axes.py` now calls `domain_terms` and `term_phrase` for derived semantic axes and no longer owns local `_content_terms`, `_term_token`, `_phrase`, or `_normalize_axis_text` helpers, keeping Registry axis keys and generated component contracts on the same term owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed component contract field support-artifact phrase rendering through `greenfield_component_terms.py`. `greenfield_component_contract_fields.py` now calls the shared comma-clause `phrase` helper and no longer owns a local `_phrase` clone, keeping field-level accepted-input and produced-output wording on the same component-term owner as contracts, differentiation, and axes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -166,6 +167,11 @@ This section captures synchronized requirement and contract signals derived from
   contracts, and contract differentiation may call `natural_phrase`, `phrase`,
   and `domain_terms`, but they must not reintroduce local `_term_phrase`,
   `_phrase`, or `_content_terms` clones for generated Registry contract text.
+- Component contract field wording must also use
+  `greenfield_component_terms.phrase` for comma-clause support-artifact text.
+  `greenfield_component_contract_fields.py` may call the shared helper, but it
+  must not reintroduce a local `_phrase` clone for accepted-input,
+  produced-output, or adjustment-support wording.
 - Confirmed component row completion must stay in
   `greenfield_confirmed_component_completion.py`. The confirmed completion
   parent may call `complete_component_rows` and

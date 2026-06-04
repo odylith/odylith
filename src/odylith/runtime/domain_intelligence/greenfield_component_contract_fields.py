@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTIO
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms
+from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -315,14 +316,14 @@ def _component_owns_adjustment(terms: Sequence[str]) -> bool:
 
 def _supporting_artifacts(value: str, *, exclude_terms: set[str]) -> str:
     phrases: list[str] = []
-    for phrase in [part.strip() for part in _clean(value).casefold().split(",") if part.strip()]:
-        terms = set(content_terms(phrase))
+    for candidate in [part.strip() for part in _clean(value).casefold().split(",") if part.strip()]:
+        terms = set(content_terms(candidate))
         if not terms or terms & exclude_terms or "rationale" in terms:
             continue
-        phrases.append(phrase)
+        phrases.append(candidate)
         if len(phrases) >= 3:
             break
-    return _phrase(phrases) or "accepted input detail"
+    return phrase(phrases) or "accepted input detail"
 
 
 def _transition_terms(
@@ -426,10 +427,6 @@ def _clean_boundary_clause(value: str) -> str:
     text = re.sub(r"^\s*(?:(?:and|or)\b|,|;)+\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s*(?:(?:and|or)\b|,|;)+\s*$", "", text, flags=re.IGNORECASE)
     return _clean(text).strip(" .,;")
-
-
-def _phrase(values: Sequence[str]) -> str:
-    return ", ".join(_clean(value) for value in values if _clean(value))
 
 
 def _clean(value: Any) -> str:

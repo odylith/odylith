@@ -1197,6 +1197,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   artifact-quality proof passed (`54 passed in 166.71s`); and confirmed-create
   performance proof passed (`1 passed in 11.73s`), preserving the under-30s
   create gate.
+- 2026-06-04 component contract field phrase-helper follow-through removed the
+  remaining local `_phrase` helper from
+  `greenfield_component_contract_fields.py`. Supporting-artifact text now calls
+  the shared comma-clause `greenfield_component_terms.phrase` helper, so
+  component axis derivation, component contracts, contract differentiation, and
+  field-level support-artifact wording share the same component-term owner.
+  Touched files remain below the soft limit
+  (`greenfield_component_contract_fields.py`: 450 lines;
+  `greenfield_component_terms.py`: 784 lines;
+  `test_greenfield_component_spec_quality.py`: 370 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.24s`); broad component and artifact-quality proof passed
+  (`54 passed in 170.39s`); and confirmed-create performance proof passed
+  (`1 passed in 13.04s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
