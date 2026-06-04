@@ -22,11 +22,20 @@ def test_confirmed_artifact_tribunal_terms_use_shared_index() -> None:
         "from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms"
         in substance_source
     )
+    assert "greenfield_domain_term_index import label_terms" in substance_source
     assert "normalize_domain_token" not in substance_source
     assert "for raw in re.findall" not in substance_source
+    assert "accepted_terms = set(re.findall" not in substance_source
     assert "ordered_terms(" in substance_source
+    assert "label_terms(accepted_text)" in substance_source
 
     tail_terms = proposal_tribunal_substance._atlas_tail_term_set(
         "Reviewer adds evidence, logs blockers, sees status, and publishes the outcome."
     )
     assert {"add", "log", "see", "publish"} <= tail_terms
+
+    repeated_count = proposal_tribunal_substance._repeated_scaffold_count(
+        "State object appears again. State object repeats. Evidence record repeats.",
+        accepted_text="The accepted product stores evidence and record status.",
+    )
+    assert repeated_count == 2

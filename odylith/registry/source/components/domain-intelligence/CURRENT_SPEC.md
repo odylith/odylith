@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed-artifact Tribunal accepted-text product phrase matching through shared label terms so the substance gate no longer carries a local accepted-term regex.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py +1 more
 - **2026-06-04 · Implementation:** Routed confirmed-intent parser word counting through the shared confirmed-text owner so accepted-intent section inference no longer carries a local word-count helper.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Moved Registry actor-role token detection into a shared greenfield owner and cached component action-form classification so generated artifact phrases drop actor/action leads consistently.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py, src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py +3 more
-- **2026-06-03 · Implementation:** Moved Registry component literal label-term extraction into the shared component term-window owner while preserving plural artifact-carrier label phrases such as policy guardrails and keeping contract builders off local label regex loops.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -113,6 +113,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed generated semantic model term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_semantic_model.py` now passes semantic-model stopwords to the shared owner for ontology terms, required fields, event targets, and actor terms instead of owning `_semantic_terms` or direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed post-confirm semantic drift, repetition, and overlap term signatures through `greenfield_domain_term_index.ordered_terms`. `greenfield_post_confirm_semantic_drift.py` now keeps only post-confirm stopwords and separator cleanup instead of owning direct `normalize_domain_token` calls or local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal substance terms through `greenfield_domain_term_index.ordered_terms`. `proposal_tribunal_substance.py` now keeps only Tribunal stopwords and Atlas action aliases instead of owning direct `normalize_domain_token` calls or local regex token loops for generated Radar, Registry, and Atlas substance checks. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed-artifact Tribunal accepted public-text product phrase matching through `greenfield_domain_term_index.label_terms`. `proposal_tribunal_substance.py` keeps scaffold repetition policy while the shared term index owns raw accepted-text tokenization for product phrases such as `evidence record`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed semantic-quality release-scope and scope-context term signatures through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned exact aliases and prefix aliases, while `greenfield_semantic_quality.py` keeps only release-scope stopwords, alias policy, and release-scope decisions instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed semantic-quality raw sentence-overlap and scoped-clause token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_semantic_quality.py` now keeps overlap thresholds, release-scope decisions, and stopword policy while the shared term-index owner handles both normalized semantic terms and raw visible-token extraction. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed accepted-intent semantic term indexing through `greenfield_domain_term_index.ordered_terms` while keeping `greenfield_confirmed_text.semantic_terms` as the confirmed-intent API. The shared term index now accepts caller-owned `stem_ing_minimum_length`, and `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup, stopword defaults, and caller handoff instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -431,6 +432,11 @@ This section captures synchronized requirement and contract signals derived from
   thinness checks, Registry local-proof leakage checks, Atlas scaffold-node
   rejection, first-path tail preservation, first-boundary routing, or the
   project-term analysis used to judge generated artifact specificity.
+  Normalized generated-artifact terms must use
+  `greenfield_domain_term_index.ordered_terms`, and accepted public-text
+  product phrase exceptions must use `greenfield_domain_term_index.label_terms`;
+  the Tribunal substance gate must not reintroduce local accepted-term regex
+  loops.
 - Artifact enrichment must keep workstream graph normalization and visible
   Tribunal actor naming in dedicated owners. `artifact_enrichment.py` may call
   `artifact_graph.domain_graph_from_workstream` and

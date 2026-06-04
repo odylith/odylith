@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 195,
-    "mapped_workstream_evidence_count": 152,
+    "explicit_event_count": 196,
+    "mapped_workstream_evidence_count": 153,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 195
+    "timeline_event_count": 196
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,42 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py",
+        "tests/unit/runtime/test_greenfield_tribunal_term_index.py"
+      ],
+      "confidence": "high",
+      "event_index": 555,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed-artifact Tribunal accepted-text product phrase matching through shared label terms so the substance gate no longer carries a local accepted-term regex.",
+      "ts_iso": "2026-06-04T01:03:01-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",

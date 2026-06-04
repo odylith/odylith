@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -439,7 +440,7 @@ def _accepted_public_text(proposal: Mapping[str, Any]) -> str:
 
 def _repeated_scaffold_count(text: str, *, accepted_text: str = "") -> int:
     lowered = str(text or "").casefold()
-    accepted_terms = set(re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", accepted_text.casefold()))
+    accepted_terms = {term.casefold() for term in label_terms(accepted_text)}
     product_phrases = {"evidence record", "reviewer decision"}
     return sum(
         lowered.count(phrase)

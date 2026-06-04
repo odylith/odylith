@@ -1361,6 +1361,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`4 passed in 6.89s`); wider artifact/proposal/post-confirm proof passed
   (`102 passed in 162.96s`); and confirmed-create performance proof passed
   (`1 passed in 9.68s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed-artifact Tribunal accepted-term follow-through moved
+  accepted public-text product phrase matching onto
+  `greenfield_domain_term_index.label_terms`. `proposal_tribunal_substance.py`
+  still owns Tribunal scaffold repetition policy and generated-artifact
+  substance decisions, but it no longer carries a local accepted-term regex for
+  the `evidence record` and `reviewer decision` product-phrase exceptions.
+  Touched files remain below limits (`proposal_tribunal_substance.py`: 462
+  lines; `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_tribunal_term_index.py`: 41 lines). Proof: syntax proof
+  passed for the touched modules and test; focused Tribunal term-index proof
+  passed (`1 passed in 0.02s`); wider greenfield artifact proof passed (`162
+  passed in 193.53s`); and confirmed-create performance proof passed (`1
+  passed in 9.54s`), preserving the under-30s create gate.
 - 2026-06-04 semantic-quality release-scope term-index follow-through moved
   release-scope and scope-context term signatures onto
   `greenfield_domain_term_index.ordered_terms`. The shared term index now
