@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence import (
+    greenfield_component_contract as component_contract,
     greenfield_component_contract_differentiation as contract_differentiation,
     greenfield_component_contract_profiles as contract_profiles,
 )
@@ -268,6 +269,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "nearby_domain_terms(" in differentiation_source
     assert "greenfield_component_term_index import ordered_domain_terms" in contract_source
     assert "greenfield_domain_term_index import ordered_terms" in contract_source
+    assert "greenfield_text import visible_words" in contract_source
     assert "greenfield_component_term_index import ordered_domain_terms" in differentiation_source
     assert "greenfield_component_term_index import ordered_domain_terms" in terms_source
     assert "greenfield_domain_term_index import ordered_terms" in terms_source
@@ -283,6 +285,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "re.findall(r\"[A-Za-z][A-Za-z'-]*\"" not in fields_source
     assert "def _word_set" not in contract_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in contract_source
+    assert "re.findall(r\"\\b(?:draft|submitted|sent|received|accepted" not in contract_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in fields_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in differentiation_source
     assert 're.findall(r"[a-z0-9][a-z0-9_-]*"' not in contract_source
@@ -338,6 +341,9 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
     assert clean_artifact_phrase("dashboard visibly updates web/ui surface") == "web/ui surface state"
     assert visible_words("blocked-state update") == ("blocked", "state", "update")
+    assert component_contract._state_terms_from_context(
+        "submitted draft was blocked-state, ready, recovered, and ready again"
+    ) == ("submitted", "draft", "blocked", "ready", "recovered")
     assert contract_differentiation._trigger_hits(("status", "window"), "Status-window proof") == 2
     assert status_only_artifact_fragment("blocked update")
     assert not status_only_artifact_fragment("blocked-state update")

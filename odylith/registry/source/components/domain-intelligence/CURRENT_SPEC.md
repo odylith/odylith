@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed generated component contract lifecycle state token extraction through shared greenfield visible words so hyphenated phrases such as blocked-state update share the reusable display-token contract.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
 - **2026-06-04 · Implementation:** Routed confirmed-intent bare-title token extraction through shared greenfield label terms so hyphenated confirmed titles such as Source-backed Evidence Workspace share the visible display-token contract.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed-intent title repair and system-label qualifier display tokens through shared greenfield label terms so slash-separated labels such as AI/ML review record preserve their visible product signal.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
-- **2026-06-04 · Implementation:** Routed Registry artifact cleanup action-token checks through shared greenfield visible words and preserved slash-separated visible-result artifact phrases.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_terms.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -152,6 +152,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed confirmed focus-label title token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup, list coercion, semantic terms, word counts, repeated-word counts, title casing, focus-label selection, and domain object labels while the shared term index owns reusable display-token extraction for generated titles such as `Source-backed Review Workspace`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed actor role candidate token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_actor_completion.py` keeps accepted actor row completion, role-word policy, artifact-context filtering, non-actor lead trimming, actor-label fallback selection, and actor descriptions while the shared term index owns reusable display-token extraction for accepted role phrases such as `Source-backed reviewer`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-intent bare-title token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_intent.py` keeps section parsing, heading classification, preamble title detection, prewrite normalization, completion, and validation while the shared term index owns reusable display-token extraction for confirmed titles such as `Source-backed Evidence Workspace`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed generated component contract state token extraction through `greenfield_text.visible_words`. `greenfield_component_contract.py` keeps lifecycle state vocabulary, state-label extraction, focus phrase selection, contract assembly, and proof wording while shared greenfield text owns reusable visible-word splitting for hyphenated state phrases such as `blocked-state update`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -360,6 +361,12 @@ This section captures synchronized requirement and contract signals derived from
   must not reintroduce local
   `re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text)` loops for
   `_looks_like_bare_title`.
+- Generated component contract state token extraction must use
+  `greenfield_text.visible_words` plus contract-owned lifecycle state
+  vocabulary. `greenfield_component_contract.py` may own state-label
+  extraction, focus phrase selection, contract assembly, and proof wording, but
+  it must not reintroduce local lifecycle-state `re.findall(...)` loops for
+  `_state_terms_from_context`.
 - Public quality-gate prompt and semantic-contract term extraction must use
   `greenfield_domain_term_index.ordered_terms`. `greenfield_quality_gate.py`
   may own public-quality stopwords, failure messages, and short domain

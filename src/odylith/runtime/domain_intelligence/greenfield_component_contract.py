@@ -22,6 +22,29 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
+
+
+_STATE_TERMS = {
+    "accepted",
+    "approved",
+    "available",
+    "blocked",
+    "completed",
+    "declined",
+    "draft",
+    "failed",
+    "ready",
+    "received",
+    "recovered",
+    "rejected",
+    "reviewed",
+    "scheduled",
+    "sent",
+    "stale",
+    "submitted",
+    "unavailable",
+}
 
 
 def ensure_component_contract(
@@ -334,8 +357,10 @@ def _state_label(value: str, *, fallback: str) -> str:
 
 def _state_terms_from_context(context: str) -> tuple[str, ...]:
     terms = []
-    for token in re.findall(r"\b(?:draft|submitted|sent|received|accepted|declined|blocked|stale|scheduled|completed|reviewed|approved|rejected|ready|unavailable|available|failed|recovered)\b", context.casefold()):
-        terms.append(token)
+    for token in visible_words(context):
+        normalized = token.casefold()
+        if normalized in _STATE_TERMS:
+            terms.append(normalized)
     return tuple(unique_text(terms)[:8])
 
 
