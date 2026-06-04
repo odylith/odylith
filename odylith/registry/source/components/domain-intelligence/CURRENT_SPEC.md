@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed semantic-quality release-scope term signatures through the shared greenfield domain term index with caller-owned exact and prefix aliases while preserving focused, broad, and under-30s confirmed-create proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py +1 more
 - **2026-06-03 · Implementation:** Routed confirmed artifact Tribunal substance term signatures through the shared greenfield domain term index while preserving focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py, tests/unit/runtime/test_greenfield_tribunal_term_index.py
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Moved confirmed-intent semantic term extraction into the confirmed-text owner and split oversized confirmed-intent ownership tests while preserving focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py +4 more
-- **2026-06-03 · Implementation:** Moved Registry spec term-set and distinctiveness scoring into the component term-index owner, keeping component quality gates focused on failure decisions with focused, broad, and under-30s confirmed-create proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py, src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -111,6 +111,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed generated semantic model term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_semantic_model.py` now passes semantic-model stopwords to the shared owner for ontology terms, required fields, event targets, and actor terms instead of owning `_semantic_terms` or direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed post-confirm semantic drift, repetition, and overlap term signatures through `greenfield_domain_term_index.ordered_terms`. `greenfield_post_confirm_semantic_drift.py` now keeps only post-confirm stopwords and separator cleanup instead of owning direct `normalize_domain_token` calls or local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal substance terms through `greenfield_domain_term_index.ordered_terms`. `proposal_tribunal_substance.py` now keeps only Tribunal stopwords and Atlas action aliases instead of owning direct `normalize_domain_token` calls or local regex token loops for generated Radar, Registry, and Atlas substance checks. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed semantic-quality release-scope and scope-context term signatures through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned exact aliases and prefix aliases, while `greenfield_semantic_quality.py` keeps only release-scope stopwords, alias policy, and release-scope decisions instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -191,9 +192,9 @@ This section captures synchronized requirement and contract signals derived from
 - Reusable greenfield term normalization must stay in
   `greenfield_domain_term_index.py`. Radar product-risk specificity,
   component-local term indexing, and future artifact-specific overlap checks
-  may pass surface-owned stopwords to `ordered_terms`, but they must not
-  reintroduce private `_domain_terms`, `_term_token`, or regex token loops for
-  generated-artifact specificity.
+  may pass surface-owned stopwords, exact aliases, or prefix aliases to
+  `ordered_terms`, but they must not reintroduce private `_domain_terms`,
+  `_term_token`, or regex token loops for generated-artifact specificity.
 - Atlas sequence and first-path flowchart routing must use
   `greenfield_domain_term_index.ordered_terms` for component and actor text
   matching. Sequence-specific stopwords and `stem_ing=True` may remain
@@ -215,6 +216,10 @@ This section captures synchronized requirement and contract signals derived from
   may retain Tribunal stopwords and Atlas action aliases, but it must not
   reintroduce `_term_set` token loops, direct `normalize_domain_token` calls, or
   regex token loops for reusable generated-artifact vocabulary.
+- Semantic-quality release-scope and scope-context term signatures must use
+  `greenfield_domain_term_index.ordered_terms`. Semantic quality may retain
+  release-scope stopwords and caller-owned alias policy, but it must not
+  reintroduce `_terms` token loops or direct `normalize_domain_token` calls.
 - Registry spec term-set and distinctiveness scoring must stay in
   `greenfield_component_term_index.py`. Component quality gates may call
   `component_domain_terms`, `section_domain_terms`, and `component_local_terms`

@@ -1334,6 +1334,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`4 passed in 6.89s`); wider artifact/proposal/post-confirm proof passed
   (`102 passed in 162.96s`); and confirmed-create performance proof passed
   (`1 passed in 9.68s`), preserving the under-30s create gate.
+- 2026-06-04 semantic-quality release-scope term-index follow-through moved
+  release-scope and scope-context term signatures onto
+  `greenfield_domain_term_index.ordered_terms`. The shared term index now
+  supports caller-owned exact aliases and prefix aliases so semantic quality can
+  preserve reminder and sharing vocabulary folding while
+  `greenfield_semantic_quality.py` owns only release-scope stopwords, alias
+  policy, and release-scope decisions. It no longer imports
+  `normalize_domain_token` or loops over regex tokens locally. The enforcement
+  guard lives in a dedicated small test instead of growing the oversized
+  aggregate artifact-quality suite. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 87 lines;
+  `greenfield_semantic_quality.py`: 478 lines;
+  `test_greenfield_semantic_quality_terms.py`: 47 lines). Proof: syntax proof
+  passed for the touched modules and test; focused semantic-quality proof passed
+  (`1 passed in 0.03s`) and the health-tracking release-scope scenario passed
+  (`1 passed in 3.59s`); wider artifact/proposal/post-confirm proof passed
+  (`111 passed in 162.71s`); and confirmed-create performance proof passed
+  (`1 passed in 9.67s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

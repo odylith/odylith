@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 57,
-    "mapped_workstream_evidence_count": 47,
+    "explicit_event_count": 58,
+    "mapped_workstream_evidence_count": 48,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 65,
+    "spec_history_event_count": 66,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 58
+    "timeline_event_count": 59
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,56 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py"
       ],
       "confidence": "high",
-      "event_index": 538,
+      "event_index": 539,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py",
-      "ts_iso": "2026-06-03T19:55:13-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more",
+      "ts_iso": "2026-06-03T20:11:55-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "tests/unit/runtime/test_greenfield_semantic_quality_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 538,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Routed semantic-quality release-scope term signatures through the shared greenfield domain term index with caller-owned exact and prefix aliases while preserving focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T20:11:23-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -36,12 +36,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 118,
-    "mapped_workstream_evidence_count": 89,
+    "explicit_event_count": 119,
+    "mapped_workstream_evidence_count": 90,
     "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 118
+    "timeline_event_count": 119
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -51,6 +51,42 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "tests/unit/runtime/test_greenfield_semantic_quality_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 538,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Routed semantic-quality release-scope term signatures through the shared greenfield domain term index with caller-owned exact and prefix aliases while preserving focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T20:11:23-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py",

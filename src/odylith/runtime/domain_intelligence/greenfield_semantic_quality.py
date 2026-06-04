@@ -6,8 +6,8 @@ import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
@@ -99,6 +99,55 @@ _SINGLE_TERM_SCOPE_TERMS = frozenset(
         "triage",
     }
 )
+
+_SEMANTIC_QUALITY_TERM_STOPWORDS = {
+    "accepted",
+    "action",
+    "adjacent",
+    "actor",
+    "app",
+    "application",
+    "assigned",
+    "boundary",
+    "component",
+    "data",
+    "decision",
+    "deferred",
+    "depend",
+    "evidence",
+    "explicitly",
+    "first",
+    "handoff",
+    "input",
+    "internal",
+    "other",
+    "output",
+    "outside",
+    "path",
+    "presentation",
+    "product",
+    "produce",
+    "proof",
+    "record",
+    "release",
+    "responsibility",
+    "review",
+    "rule",
+    "scope",
+    "service",
+    "source",
+    "state",
+    "stay",
+    "system",
+    "this",
+    "truth",
+    "unless",
+    "user",
+}
+_SEMANTIC_QUALITY_TERM_PREFIX_ALIASES = {
+    "remind": "reminder",
+    "shar": "share",
+}
 
 _SAFETY_RE = re.compile(
     r"\b(?:safety|safe|sensitive|protected|regulated|compliance|consent|private|privacy|"
@@ -369,62 +418,14 @@ def _text_leaves(value: Any, *, path: tuple[str, ...] = ()) -> tuple[tuple[str, 
 
 
 def _terms(value: Any) -> set[str]:
-    stop = {
-        "accepted",
-        "action",
-        "adjacent",
-        "actor",
-        "app",
-        "application",
-        "assigned",
-        "boundary",
-        "component",
-        "data",
-        "decision",
-        "deferred",
-        "depend",
-        "evidence",
-        "explicitly",
-        "first",
-        "handoff",
-        "input",
-        "internal",
-        "other",
-        "output",
-        "outside",
-        "path",
-        "presentation",
-        "product",
-        "produce",
-        "proof",
-        "record",
-        "release",
-        "responsibility",
-        "review",
-        "rule",
-        "scope",
-        "service",
-        "source",
-        "state",
-        "stay",
-        "system",
-        "this",
-        "truth",
-        "unless",
-        "user",
-    }
-    result: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(value).casefold()):
-        token = normalize_domain_token(raw, stopwords=stop)
-        if token.endswith("ing") and len(token) > 6:
-            token = token[:-3]
-        if token.startswith("shar"):
-            token = "share"
-        if token.startswith("remind"):
-            token = "reminder"
-        if token:
-            result.add(token)
-    return result
+    return set(
+        ordered_terms(
+            _clean(value),
+            stopwords=_SEMANTIC_QUALITY_TERM_STOPWORDS,
+            stem_ing=True,
+            prefix_aliases=_SEMANTIC_QUALITY_TERM_PREFIX_ALIASES,
+        )
+    )
 
 
 def _ngrams(value: str, *, ngram: int) -> set[tuple[str, ...]]:
