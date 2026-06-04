@@ -23,6 +23,22 @@ def visible_words(value: Any) -> tuple[str, ...]:
     return tuple(re.findall(r"[A-Za-z0-9]+", clean_text(value)))
 
 
+def progression_marker_count(
+    value: Any,
+    *,
+    connectors: Iterable[str] = (),
+    punctuation: str = "",
+) -> int:
+    text = clean_text(value)
+    connector_set: set[str] = set()
+    for connector in connectors:
+        cleaned = clean_text(connector).casefold()
+        if cleaned:
+            connector_set.add(cleaned)
+    count = sum(1 for word in visible_words(text) if word.casefold() in connector_set)
+    return count + sum(text.count(mark) for mark in punctuation)
+
+
 def normalize_domain_token(value: Any, *, minimum: int = 4, stopwords: Iterable[str] = ()) -> str:
     """Normalize one extracted product term without corrupting common nouns.
 

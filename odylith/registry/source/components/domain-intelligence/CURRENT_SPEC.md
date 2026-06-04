@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed-intent progression and quality-gate event marker counts through shared greenfield text while preserving caller-owned thresholds and under-30s confirmed-create proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py, src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py +4 more
 - **2026-06-04 · Implementation:** Routed generated component contract lifecycle state token extraction through shared greenfield visible words so hyphenated phrases such as blocked-state update share the reusable display-token contract.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed canonical confirmed project-title repair acceptance checks through shared greenfield label terms so slash-separated title candidates such as AI/ML Review Workspace preserve their visible product signal.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_repair.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed-intent title repair and system-label qualifier display tokens through shared greenfield label terms so slash-separated labels such as AI/ML review record preserve their visible product signal.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -153,6 +153,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed confirmed actor role candidate token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_actor_completion.py` keeps accepted actor row completion, role-word policy, artifact-context filtering, non-actor lead trimming, actor-label fallback selection, and actor descriptions while the shared term index owns reusable display-token extraction for accepted role phrases such as `Source-backed reviewer`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-intent bare-title token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_intent.py` keeps section parsing, heading classification, preamble title detection, prewrite normalization, completion, and validation while the shared term index owns reusable display-token extraction for confirmed titles such as `Source-backed Evidence Workspace`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated component contract state token extraction through `greenfield_text.visible_words`. `greenfield_component_contract.py` keeps lifecycle state vocabulary, state-label extraction, focus phrase selection, contract assembly, and proof wording while shared greenfield text owns reusable visible-word splitting for hyphenated state phrases such as `blocked-state update`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed-intent progression/outcome marker counts and quality-gate first-path event marker counts through `greenfield_text.progression_marker_count`. Confirmed-intent validation keeps field thresholds, connector vocabulary, outcome fallback, and semantic overlap; the quality gate keeps first-path event sufficiency policy; shared greenfield text owns reusable connector and punctuation marker counting. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -182,6 +183,12 @@ This section captures synchronized requirement and contract signals derived from
   systems. Generic scaffold detection may reject exact fallback names together,
   but it must not reject a project-specific `evidence review` system solely
   because evidence review is part of its domain responsibility.
+- Confirmed-intent progression/outcome checks and quality-gate first-path event
+  checks may own their connector sets, punctuation sets, and thresholds, but
+  reusable connector/punctuation marker counting must stay in
+  `greenfield_text.progression_marker_count`. These callers must not
+  reintroduce local `len(re.findall(...))` counters for progression, punctuation,
+  or event checks.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,

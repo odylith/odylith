@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation import has_progression_or_outcome
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import _looks_like_bare_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
@@ -65,6 +66,15 @@ def test_confirmed_intent_system_rows_stay_in_dedicated_owner() -> None:
     assert "def _semantic_terms" not in validation_source
     assert "semantic_terms" in validation_source
     assert "def has_progression_or_outcome" in validation_source
+
+
+def test_confirmed_intent_progression_markers_use_shared_text_owner() -> None:
+    validation_source = CONFIRMED_INTENT_VALIDATION_PATH.read_text(encoding="utf-8")
+
+    assert "greenfield_text import progression_marker_count" in validation_source
+    assert "len(re.findall" not in validation_source
+    assert has_progression_or_outcome("The review record starts as draft and ends as accepted.")
+    assert has_progression_or_outcome("The review record captures intake, evidence; decision: archive.")
 
 
 def test_confirmed_intent_system_completion_stays_in_dedicated_owner() -> None:

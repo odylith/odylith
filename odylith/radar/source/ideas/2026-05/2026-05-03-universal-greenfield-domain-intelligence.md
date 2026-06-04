@@ -1958,6 +1958,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed in 0.17s`); wider greenfield artifact proof passed (`181 passed in
   201.34s`); and confirmed-create performance proof passed (`1 passed in
   9.59s`), preserving the under-30s create gate.
+- 2026-06-04 progression-marker count follow-through moved confirmed-intent
+  progression/outcome connector counting, punctuation counting, and quality-gate
+  first-path event marker counting onto
+  `greenfield_text.progression_marker_count`. Confirmed-intent validation still
+  owns qualitative thresholds, connector vocabulary, outcome fallback, and
+  semantic overlap, while the quality gate still owns first-path event
+  sufficiency policy. Shared greenfield text now owns reusable
+  connector/punctuation marker counting for both callers. Touched files remain
+  below limits (`greenfield_confirmed_intent_validation.py`: 205 lines;
+  `greenfield_quality_gate.py`: 660 lines; `greenfield_text.py`: 169 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 346 lines;
+  `test_greenfield_domain_profile_quality.py`: 277 lines;
+  `test_greenfield_component_spec_quality.py`: 640 lines). Proof: syntax proof
+  passed for the touched modules and tests; focused ownership/quality proof
+  passed (`46 passed in 13.75s`); wider greenfield artifact proof passed (`182
+  passed in 203.05s`); and confirmed-create performance proof passed (`1 passed
+  in 9.73s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

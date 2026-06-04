@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import pu
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import progression_marker_count
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _CONTROL_PLANE_LEAKS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -284,7 +285,7 @@ def _semantic_model_issues(proposal: Mapping[str, Any]) -> list[str]:
 
 
 def _path_needs_events(value: str) -> bool:
-    return len(re.findall(r"\b(?:and|then|later)\b|[.;]", clean_text(value), re.IGNORECASE)) >= 2
+    return progression_marker_count(value, connectors=("and", "then", "later"), punctuation=".;") >= 2
 
 
 def _is_confirmed_generated_proposal(proposal: Mapping[str, Any]) -> bool:

@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIR
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_text import progression_marker_count
 
 
 FIELD_MIN_WORDS = {
@@ -27,6 +28,22 @@ FIELD_MIN_WORDS = {
 }
 LIST_ROW_MIN_WORDS = 5
 SYSTEM_ROW_MIN_WORDS = 5
+PROGRESSION_CONNECTORS = (
+    "start",
+    "starts",
+    "end",
+    "ends",
+    "then",
+    "after",
+    "before",
+    "when",
+    "until",
+    "from",
+    "to",
+    "through",
+    "with",
+    "without",
+)
 
 _META_NARRATION_PATTERNS = [
     re.compile(pattern, re.IGNORECASE)
@@ -169,18 +186,9 @@ def _has_meaningful_story_shape(text: str) -> bool:
 
 def has_progression_or_outcome(text: str) -> bool:
     cleaned = clean_confirmed_text(text)
-    if (
-        len(
-            re.findall(
-                r"\b(?:starts?|ends?|then|after|before|when|until|from|to|through|with|without)\b",
-                cleaned,
-                re.IGNORECASE,
-            )
-        )
-        >= 2
-    ):
+    if progression_marker_count(cleaned, connectors=PROGRESSION_CONNECTORS) >= 2:
         return True
-    if len(re.findall(r"[,;:]", cleaned)) >= 2:
+    if progression_marker_count(cleaned, punctuation=",;:") >= 2:
         return True
     return word_count(cleaned) >= 24 and bool(
         re.search(

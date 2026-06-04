@@ -42,6 +42,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import domain_label
+from odylith.runtime.domain_intelligence.greenfield_text import progression_marker_count
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
@@ -101,6 +102,14 @@ def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
     assert domain_label("", "Create a repair request tracker for contractors") == "Repair Request Tracker Contractors"
     assert word_count("`AI/ML` status review keeps source evidence visible.") == 8
     assert visible_words("UI-client dashboard") == ("UI", "client", "dashboard")
+    assert (
+        progression_marker_count(
+            "Draft starts; then evidence is accepted.",
+            connectors=("starts", "then"),
+            punctuation=";",
+        )
+        == 3
+    )
     assert label_terms(
         "Build a 3D GIS Permit Review App",
         stopwords={"build", "a", "app"},

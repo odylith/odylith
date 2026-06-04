@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 100,
-    "mapped_workstream_evidence_count": 90,
+    "explicit_event_count": 101,
+    "mapped_workstream_evidence_count": 91,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 107,
+    "spec_history_event_count": 108,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 101
+    "timeline_event_count": 102
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,58 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py"
       ],
       "confidence": "high",
-      "event_index": 581,
+      "event_index": 582,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
-      "ts_iso": "2026-06-04T07:09:45-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py +2 more",
+      "ts_iso": "2026-06-04T07:27:19-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_ownership.py",
+        "tests/unit/runtime/test_greenfield_domain_profile_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 581,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed-intent progression and quality-gate event marker counts through shared greenfield text while preserving caller-owned thresholds and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-04T07:26:42-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

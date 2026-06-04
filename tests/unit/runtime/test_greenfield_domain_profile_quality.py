@@ -8,6 +8,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import _meaningful_terms
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import _path_needs_events
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
@@ -211,9 +212,13 @@ def test_quality_gate_meaningful_terms_use_shared_domain_index() -> None:
     term_index_source = (source_root / "greenfield_domain_term_index.py").read_text(encoding="utf-8")
 
     assert "greenfield_domain_term_index import ordered_terms" in gate_source
+    assert "greenfield_text import progression_marker_count" in gate_source
     assert "normalize_domain_token" not in gate_source
     assert "for raw in re.findall" not in gate_source
+    assert 'len(re.findall(r"\\b(?:and|then|later)\\b|[.;]"' not in gate_source
     assert "preserve_terms" in term_index_source
+    assert _path_needs_events("Open intake, then show the review result.")
+    assert not _path_needs_events("Open intake once")
     assert _meaningful_terms("AI CRM statuses and UI workflows") == (
         "ai",
         "crm",
