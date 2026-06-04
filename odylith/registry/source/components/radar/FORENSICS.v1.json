@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 196,
-    "mapped_workstream_evidence_count": 153,
+    "explicit_event_count": 197,
+    "mapped_workstream_evidence_count": 154,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 196
+    "timeline_event_count": 197
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py",
+        "tests/unit/runtime/test_greenfield_confirmed_diagrams.py"
+      ],
+      "confidence": "high",
+      "event_index": 556,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed Atlas sequence-step display word counts through shared label terms so first-path filtering no longer carries local regex token counts.",
+      "ts_iso": "2026-06-04T01:17:30-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",

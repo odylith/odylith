@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from odylith.runtime.common import display_text
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 
 
@@ -65,7 +66,7 @@ def _drop_launcher_only_steps(values: list[str]) -> list[str]:
 def _launcher_only_step(value: str) -> bool:
     text = _compact_text(value).strip(" .")
     return bool(
-        len(re.findall(r"[A-Za-z0-9]+", text)) <= 6
+        len(label_terms(text)) <= 6
         and (
             re.search(r"\bopens?\s+(?:the\s+)?(?:app|web app|application|site|website|product)\b", text, flags=re.IGNORECASE)
             or re.search(r"\b(?:signs?\s+in|logs?\s+in|authenticates?)\b", text, flags=re.IGNORECASE)
@@ -107,7 +108,7 @@ def _first_path_steps(value: str) -> list[str]:
         if ":" in first:
             first = first.rsplit(":", 1)[-1].strip(" .")
         steps = [first, *numbered[1:]] if first else numbered[1:]
-        return [_sentence(step).rstrip(".") for step in steps if len(re.findall(r"[A-Za-z0-9]+", step)) >= 3]
+        return [_sentence(step).rstrip(".") for step in steps if len(label_terms(step)) >= 3]
     steps = [part.strip(" .") for part in re.split(r"(?<=[.!?])\s+|;\s+", text) if part.strip(" .")]
     expanded: list[str] = []
     for step in steps:

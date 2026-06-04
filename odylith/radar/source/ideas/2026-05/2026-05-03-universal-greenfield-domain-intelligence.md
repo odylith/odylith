@@ -1032,6 +1032,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`48 passed in 69.77s`); broader artifact-quality proof passed (`98
   passed in 244.93s`); and confirmed-create performance proof passed (`1
   passed in 12.44s`).
+- 2026-06-04 Atlas sequence-step label-term follow-through moved
+  launcher-only and numbered-step display word counts in
+  `greenfield_sequence_steps.py` onto `greenfield_domain_term_index.label_terms`.
+  The sequence step owner still owns semantic event extraction, fallback
+  splitting, compound expansion, and dedupe, but it no longer carries local
+  raw word-count regexes for Atlas first-path step filtering. Touched files
+  remain below limits (`greenfield_sequence_steps.py`: 200 lines;
+  `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_confirmed_diagrams.py`: 202 lines). Proof: syntax proof
+  passed for the touched modules and test; focused confirmed-diagrams proof
+  passed (`5 passed in 0.06s`); wider greenfield artifact proof passed (`162
+  passed in 192.91s`); and confirmed-create performance proof passed (`1
+  passed in 9.52s`), preserving the under-30s create gate.
 - 2026-06-03 artifact-enrichment graph and Tribunal actor decomposition moved
   Domain Intelligence graph normalization into `artifact_graph.py` and visible
   Tribunal actor projection into `artifact_tribunal_actors.py`.

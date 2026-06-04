@@ -125,11 +125,15 @@ def test_sequence_event_steps_stay_in_dedicated_owner() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     diagram_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py"
     steps_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py"
+    index_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
     diagram_source = diagram_owner.read_text(encoding="utf-8")
     steps_source = steps_owner.read_text(encoding="utf-8")
+    index_source = index_owner.read_text(encoding="utf-8")
 
     assert len(diagram_source.splitlines()) < 800
+    assert "def label_terms" in index_source
     assert "from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps" in diagram_source
+    assert "from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms" in steps_source
     assert "sequence_event_steps(first_path, semantic_model=semantic_model)" in diagram_source
     assert "sequence_event_steps(first_path, semantic_model=semantic_model, dedupe=True)" in diagram_source
     for moved in (
@@ -144,6 +148,12 @@ def test_sequence_event_steps_stay_in_dedicated_owner() -> None:
         assert moved not in diagram_source
         assert moved in steps_source
     assert "def sequence_event_steps" in steps_source
+    assert 're.findall(r"[A-Za-z0-9]+"' not in steps_source
+
+    assert sequence_event_steps("1. Open app. 2. Add AI/ML result. 3. Save final status.") == [
+        "Add AI/ML result",
+        "Save final status",
+    ]
 
 
 def test_sequence_diagram_term_routing_uses_shared_index() -> None:

@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed Atlas sequence-step display word counts through shared label terms so first-path filtering no longer carries local regex token counts.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py +1 more
 - **2026-06-04 · Implementation:** Routed confirmed-artifact Tribunal accepted-text product phrase matching through shared label terms so the substance gate no longer carries a local accepted-term regex.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Moved Registry generic actor-label prefix handling into the shared greenfield actor-term owner so contract fields, repair detection, and quality normalization stop carrying local actor-prefix regexes.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py +3 more
-- **2026-06-03 · Implementation:** Moved Registry actor-role token detection into a shared greenfield owner and cached component action-form classification so generated artifact phrases drop actor/action leads consistently.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py, src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -92,6 +92,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Split confirmed generated-artifact substance checks into `proposal_tribunal_substance.py`. The new owner handles confirmed Radar thinness, Registry component-contract substance, cross-axis proof leakage, Atlas scaffold-node rejection, first-path tail preservation, and first-boundary routing while `proposal_tribunal.py` stays focused on deterministic prewrite adjudication and topology/security/actor gates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed-intent internal-system completion into `greenfield_confirmed_system_completion.py`. The owner now completes internal system rows, fallback systems, system labels, state labels, and context-clause matching while `greenfield_confirmed_intent_completion.py` stays focused on orchestration, core fields, product posture, title repair, and first-path/proof wording. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split Atlas first-path event-step derivation into `greenfield_sequence_steps.py`. The step owner now handles semantic events, launcher-only filtering, first-path fallback parsing, compound-step expansion, and dedupe while `greenfield_sequence_diagram.py` stays below the 800-line soft limit as the participant/component routing and Mermaid rendering owner. The pass also preserves final `act later` decision tails and short role-qualified component artifacts such as `person follow list` in confirmed create output. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed Atlas sequence-step display word counts through `greenfield_domain_term_index.label_terms`. `greenfield_sequence_steps.py` keeps event extraction, fallback splitting, launcher filtering, compound expansion, and dedupe while the shared term index owns display-token counting for launcher-only and numbered first-path filtering. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split Domain Intelligence artifact enrichment so `artifact_graph.py` owns graph normalization and `artifact_tribunal_actors.py` owns visible Tribunal actor projection. `artifact_enrichment.py` now stays below the 800-line soft limit as the artifact projection owner, and project-intelligence callers import graph and actor helpers from their dedicated owners. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed project-brief rendering into `greenfield_confirmed_project_brief.py` and consolidated greenfield command quoting into `greenfield_command_text.py`. `greenfield_confirmed_components.py` now stays below the 800-line soft limit as the confirmed Registry component generator instead of also owning project-readiness copy and host handoff commands. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Consolidated component-contract phrase and term helper ownership in `greenfield_component_terms.py`. Base contracts, semantic contracts, and contract differentiation now reuse `natural_phrase`, `phrase`, and `domain_terms` instead of carrying local `_term_phrase`, `_phrase`, or `_content_terms` clones, while all touched component-contract files stay below the 800-line soft limit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -185,7 +186,10 @@ This section captures synchronized requirement and contract signals derived from
   `sequence_event_steps`, but they must not re-own semantic event extraction,
   launcher-only filtering, fallback first-path splitting, compound-step
   expansion, or step dedupe. First-path scope detection must not classify
-  user-decision tails such as `act later` as deferred release scope.
+  user-decision tails such as `act later` as deferred release scope. Display
+  word counts for launcher-only and numbered first-path filtering must use
+  `greenfield_domain_term_index.label_terms`; the sequence step owner must not
+  reintroduce local raw word-count regex loops.
 - Generated Registry component artifact cleanup must preserve short
   role-qualified artifact identities when they end in an owned artifact noun,
   for example `person follow list` and `reviewer notes`; it may still strip
