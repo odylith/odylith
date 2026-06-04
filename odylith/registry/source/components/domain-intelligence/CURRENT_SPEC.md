@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed post-confirm semantic drift and repetition term signatures through the shared greenfield domain term index while preserving focused, broad, and under-30s confirmed-create proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py, tests/unit/runtime/test_greenfield_semantic_drift_terms.py
 - **2026-06-03 · Implementation:** Routed generated semantic model ontology, required-field, event-target, and actor term extraction through the shared greenfield domain term index while preserving semantic-model stopwords and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py, tests/unit/runtime/test_greenfield_intelligence_schema.py
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Split reusable greenfield artifact term indexing into a shared owner for Radar product-risk specificity and Registry component term matching, with focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +2 more
-- **2026-06-03 · Implementation:** Split ordered Registry component term indexing into a dedicated owner and proved focused, broad, and under-30s confirmed-create behavior.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py, src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -109,6 +109,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Moved confirmed-intent semantic term extraction into `greenfield_confirmed_text.semantic_terms`. Confirmed-intent validation now passes `CONFIRMED_INTENT_VALIDATION_STOPWORDS` into the text owner, internal-system row parsing imports the same owner, and the confirmed-intent tests were split so the main confirmed-intent suite stays below the test ceiling. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Atlas sequence and first-path flowchart component matching through `greenfield_domain_term_index.ordered_terms`. The shared term index now supports `stem_ing=True` for callers that need gerund collapse, and `greenfield_sequence_diagram.py` no longer owns `_domain_terms` or direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated semantic model term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_semantic_model.py` now passes semantic-model stopwords to the shared owner for ontology terms, required fields, event targets, and actor terms instead of owning `_semantic_terms` or direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed post-confirm semantic drift, repetition, and overlap term signatures through `greenfield_domain_term_index.ordered_terms`. `greenfield_post_confirm_semantic_drift.py` now keeps only post-confirm stopwords and separator cleanup instead of owning direct `normalize_domain_token` calls or local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -202,6 +203,11 @@ This section captures synchronized requirement and contract signals derived from
   fields, event targets, and actor terms. Semantic-model stopwords may remain
   caller-owned, but `greenfield_semantic_model.py` must not reintroduce
   `_semantic_terms`, `_term_token`, or direct `normalize_domain_token` loops.
+- Post-confirm semantic drift, repetition, and overlap signatures must use
+  `greenfield_domain_term_index.ordered_terms`. The drift checker may retain
+  post-confirm stopwords and separator cleanup, but it must not reintroduce
+  `_term_token`, local regex token loops, or direct `normalize_domain_token`
+  calls.
 - Registry spec term-set and distinctiveness scoring must stay in
   `greenfield_component_term_index.py`. Component quality gates may call
   `component_domain_terms`, `section_domain_terms`, and `component_local_terms`

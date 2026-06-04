@@ -6,9 +6,9 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 
@@ -96,16 +96,13 @@ def _generated_artifact_sentences(proposal: Mapping[str, Any]) -> list[str]:
 
 
 def _sentence_signature(value: str) -> set[str]:
-    terms: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", clean_text(value).casefold()):
-        token = normalize_domain_token(
-            raw,
+    return set(
+        ordered_terms(
+            value,
             minimum=4,
             stopwords=(*_CONTRASTIVE_GENERIC_TERMS, *_CONTRASTIVE_STOPWORDS),
         )
-        if token and token not in _CONTRASTIVE_GENERIC_TERMS and token not in _CONTRASTIVE_STOPWORDS:
-            terms.add(token)
-    return terms
+    )
 
 
 def _intent_signature_text(proposal: Mapping[str, Any]) -> str:
@@ -187,17 +184,14 @@ def _generated_repetition_value_texts(proposal: Mapping[str, Any]) -> list[str]:
 
 
 def _term_signature(value: str, *, minimum: int) -> set[str]:
-    terms: set[str] = set()
     normalized = clean_text(value).casefold().replace("-", " ").replace("_", " ")
-    for raw in re.findall(r"[a-z0-9][a-z0-9]*", normalized):
-        token = normalize_domain_token(
-            raw,
+    return set(
+        ordered_terms(
+            normalized,
             minimum=minimum,
             stopwords=(*_CONTRASTIVE_GENERIC_TERMS, *_CONTRASTIVE_STOPWORDS),
         )
-        if token and token not in _CONTRASTIVE_GENERIC_TERMS and token not in _CONTRASTIVE_STOPWORDS:
-            terms.add(token)
-    return terms
+    )
 
 
 _CONTRASTIVE_GENERIC_TERMS = {

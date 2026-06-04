@@ -1307,6 +1307,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`3 passed in 0.11s`); wider artifact/proposal/post-confirm proof
   passed (`108 passed in 168.60s`); and confirmed-create performance proof
   passed (`1 passed in 9.91s`), preserving the under-30s create gate.
+- 2026-06-04 post-confirm drift term-index follow-through moved semantic
+  repetition signatures, overlap signatures, and contrastive drift term
+  signatures onto `greenfield_domain_term_index.ordered_terms`.
+  `greenfield_post_confirm_semantic_drift.py` now owns only post-confirm
+  stopwords and separator cleanup, and no longer imports
+  `normalize_domain_token` or loops over regex tokens locally. The enforcement
+  guard lives in a dedicated small test instead of growing the oversized
+  aggregate artifact-quality suite. Touched files remain below limits
+  (`greenfield_post_confirm_semantic_drift.py`: 389 lines;
+  `test_greenfield_semantic_drift_terms.py`: 32 lines). Proof: syntax proof
+  passed for the touched module and test; focused drift proof passed
+  (`2 passed in 0.11s`); wider artifact/proposal/post-confirm proof passed
+  (`101 passed in 164.28s`); and confirmed-create performance proof passed
+  (`1 passed in 9.69s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
