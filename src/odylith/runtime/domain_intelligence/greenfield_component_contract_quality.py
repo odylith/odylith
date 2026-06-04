@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping, Sequence
-from functools import lru_cache
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import TERM_STOPWORDS
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -156,71 +156,6 @@ _DANGLING_WORDS = {
     "with",
 }
 
-_STRUCTURAL_TERMS = {
-    "accepted",
-    "actor",
-    "application",
-    "boundary",
-    "candidate",
-    "change",
-    "component",
-    "contract",
-    "current",
-    "detail",
-    "evidence",
-    "field",
-    "first",
-    "greenfield",
-    "handoff",
-    "handle",
-    "implementation",
-    "input",
-    "local",
-    "normal",
-    "operator",
-    "output",
-    "owner",
-    "planned",
-    "product",
-    "behavior",
-    "prove",
-    "service",
-    "proof",
-    "record",
-    "release",
-    "review",
-    "reviewer",
-    "source",
-    "state",
-    "status",
-    "system",
-    "technical",
-    "traceable",
-    "traced",
-    "validation",
-    "workstream",
-}
-
-_TERM_STOPWORDS = _STRUCTURAL_TERMS | {
-    "about",
-    "after",
-    "also",
-    "before",
-    "between",
-    "does",
-    "each",
-    "into",
-    "must",
-    "that",
-    "this",
-    "when",
-    "where",
-    "which",
-    "while",
-    "without",
-}
-
-
 def normalize_contract(value: Mapping[str, Any]) -> dict[str, Any]:
     """Normalize a component contract into sentence-shaped public text."""
 
@@ -341,38 +276,10 @@ def rendered_component_spec_quality_issues(
     return dedupe_text(issues)
 
 
-def ordered_domain_terms(text: str) -> list[str]:
-    """Return stable, non-structural terms suitable for component-local prose."""
-
-    return list(_ordered_domain_terms_cached(_clean(text).casefold()))
-
-
-@lru_cache(maxsize=4096)
-def _ordered_domain_terms_cached(cleaned_text: str) -> tuple[str, ...]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", cleaned_text):
-        token = _term_token(raw)
-        if token and token not in seen:
-            seen.add(token)
-            result.append(token)
-    return tuple(result)
-
-
 def domain_terms(text: str) -> set[str]:
     """Return normalized, non-structural terms from public component prose."""
 
-    return set(_domain_terms_cached(_clean(text).casefold()))
-
-
-@lru_cache(maxsize=4096)
-def _domain_terms_cached(cleaned_text: str) -> frozenset[str]:
-    terms: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", cleaned_text):
-        token = _term_token(raw)
-        if token:
-            terms.add(token)
-    return frozenset(terms)
+    return set(ordered_domain_terms(text))
 
 
 def dedupe_text(values: Sequence[str]) -> list[str]:
@@ -636,7 +543,7 @@ def _local_domain_terms(
     for candidate in terms:
         counts[candidate] = sum(1 for body_terms in all_text_terms if candidate in body_terms)
     majority = 1 if len(all_text_terms) <= 1 else max(2, len(all_text_terms) // 2)
-    return own_name_terms | {term for term in terms if counts.get(term, 0) <= majority and term not in _TERM_STOPWORDS}
+    return own_name_terms | {term for term in terms if counts.get(term, 0) <= majority and term not in TERM_STOPWORDS}
 
 
 def _label(row: Mapping[str, Any]) -> str:
@@ -649,11 +556,6 @@ def _has_dangling_tail(value: str) -> bool:
         return False
     tail = text.rstrip(".;:, ").split()[-1].casefold()
     return tail in _DANGLING_WORDS
-
-
-@lru_cache(maxsize=4096)
-def _term_token(value: str) -> str:
-    return normalize_domain_token(value, stopwords=_TERM_STOPWORDS)
 
 
 def _clean(value: Any) -> str:
@@ -681,7 +583,6 @@ __all__ = [
     "dedupe_text",
     "domain_terms",
     "normalize_contract",
-    "ordered_domain_terms",
     "public_prose_quality_issues",
     "rendered_component_spec_quality_issues",
 ]

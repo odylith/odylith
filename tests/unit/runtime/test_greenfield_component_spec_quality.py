@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_targets i
     operator_component_spec_issues,
     repair_targets_from_spec_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
@@ -28,6 +29,10 @@ CONFIRMED_PROPOSAL_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenf
 GREENFIELD_COMMAND_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_command_text.py"
 COMPONENT_CONTRACT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py"
 COMPONENT_CONTRACT_PROFILES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py"
+COMPONENT_CONTRACT_QUALITY_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py"
+)
+COMPONENT_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py"
 COMPONENT_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
 COMPONENT_CONTRACT_DIFFERENTIATION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py"
@@ -118,14 +123,21 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     contract_source = COMPONENT_CONTRACT_PATH.read_text(encoding="utf-8")
     differentiation_source = COMPONENT_CONTRACT_DIFFERENTIATION_PATH.read_text(encoding="utf-8")
     fields_source = COMPONENT_CONTRACT_FIELDS_PATH.read_text(encoding="utf-8")
+    quality_source = COMPONENT_CONTRACT_QUALITY_PATH.read_text(encoding="utf-8")
     semantic_source = COMPONENT_SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
     axes_source = COMPONENT_AXES_PATH.read_text(encoding="utf-8")
+    term_index_source = COMPONENT_TERM_INDEX_PATH.read_text(encoding="utf-8")
     terms_source = COMPONENT_TERMS_PATH.read_text(encoding="utf-8")
 
     assert len(terms_source.splitlines()) < 800
     assert len(differentiation_source.splitlines()) < 800
     assert len(fields_source.splitlines()) < 800
+    assert len(quality_source.splitlines()) < 800
+    assert len(term_index_source.splitlines()) < 800
     assert len(axes_source.splitlines()) < 800
+    assert "def ordered_domain_terms" in term_index_source
+    assert "def ordered_domain_terms" not in quality_source
+    assert "def _term_token" not in quality_source
     assert "def natural_phrase" in terms_source
     assert "def term_phrase" in terms_source
     assert "def _term_phrase" not in contract_source
@@ -141,10 +153,21 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "term_phrase(" in axes_source
     assert "natural_phrase(" in contract_source
     assert "natural_phrase(" in differentiation_source
+    assert "greenfield_component_term_index import ordered_domain_terms" in contract_source
+    assert "greenfield_component_term_index import ordered_domain_terms" in differentiation_source
+    assert "greenfield_component_term_index import ordered_domain_terms" in terms_source
     assert "from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase" in fields_source
     assert "phrase(" in fields_source
     assert "domain_terms(" in differentiation_source
 
+    assert ordered_domain_terms("Planning Engine validates plan targets and status windows.") == [
+        "planning",
+        "engine",
+        "validate",
+        "plan",
+        "target",
+        "window",
+    ]
     assert natural_phrase(["alpha", "beta"]) == "alpha and beta"
     assert natural_phrase(["alpha", "beta", "gamma"]) == "alpha, beta, and gamma"
     assert phrase(["alpha", "beta", "gamma"]) == "alpha, beta, gamma"

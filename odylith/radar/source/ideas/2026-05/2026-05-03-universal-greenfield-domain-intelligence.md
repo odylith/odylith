@@ -1211,6 +1211,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.24s`); broad component and artifact-quality proof passed
   (`54 passed in 170.39s`); and confirmed-create performance proof passed
   (`1 passed in 13.04s`), preserving the under-30s create gate.
+- 2026-06-04 component term-index ownership follow-through moved ordered
+  component-local term extraction out of the Registry quality gate and into
+  `greenfield_component_term_index.py`. Component contracts, contract
+  differentiation, component terms, and component quality gates now import
+  `ordered_domain_terms` from the dedicated term-index owner instead of
+  reaching through `greenfield_component_contract_quality.py`, so Registry
+  quality checks no longer hide the reusable term extraction owner. Touched
+  files remain below the soft limit (`greenfield_component_term_index.py`: 105
+  lines; `greenfield_component_contract_quality.py`: 588 lines;
+  `greenfield_component_terms.py`: 784 lines;
+  `test_greenfield_component_spec_quality.py`: 391 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component-spec proof passed
+  (`12 passed in 0.22s`); broad component and artifact-quality proof passed
+  (`54 passed in 152.75s`); and confirmed-create performance proof passed
+  (`1 passed in 9.95s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

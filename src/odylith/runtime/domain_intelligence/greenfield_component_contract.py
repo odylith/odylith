@@ -12,10 +12,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
     component_contract_issues,
     contract_is_complete,
     normalize_contract,
-    ordered_domain_terms,
     public_prose_quality_issues,
     rendered_component_spec_quality_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values

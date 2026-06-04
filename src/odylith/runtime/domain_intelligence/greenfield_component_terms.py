@@ -6,7 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import ordered_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text, normalize_domain_token, unique_text
 
 ACTION_VERBS = (
