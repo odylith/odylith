@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 357,
-    "mapped_workstream_evidence_count": 200,
+    "explicit_event_count": 358,
+    "mapped_workstream_evidence_count": 201,
     "recent_path_match_count": 0,
     "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 357
+    "timeline_event_count": 358
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,42 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_confirmed_text.py"
+      ],
+      "confidence": "high",
+      "event_index": 590,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed Markdown-cleaned sentence casing for confirmed Atlas diagram text and sequence-step rendering through shared greenfield text with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T09:51:37-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",

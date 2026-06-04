@@ -32,6 +32,13 @@ def clean_markdown_text(value: Any) -> str:
     return clean_text(text)
 
 
+def clean_markdown_sentence(value: Any) -> str:
+    text = clean_markdown_text(value).rstrip(".")
+    if text:
+        text = text[:1].upper() + text[1:]
+    return f"{text}." if text else ""
+
+
 def word_count(value: Any) -> int:
     return len(visible_words(value))
 

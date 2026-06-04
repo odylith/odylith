@@ -7,7 +7,7 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
@@ -185,10 +185,7 @@ def _dedupe_steps(values: list[str]) -> list[str]:
 
 
 def _sentence(value: str) -> str:
-    text = clean_markdown_text(value).rstrip(".")
-    if text:
-        text = text[:1].upper() + text[1:]
-    return f"{text}." if text else ""
+    return clean_markdown_sentence(value)
 
 
 def _compact_text(value: str) -> str:

@@ -2127,6 +2127,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   4.27s`); wider greenfield artifact proof passed (`189 passed in 208.74s`);
   and confirmed-create performance proof passed (`1 passed in 11.13s`),
   preserving the under-30s create gate.
+- 2026-06-04 Markdown sentence cleanup follow-through moved reusable
+  Markdown-cleaned sentence casing and trailing-period mechanics into
+  `greenfield_text.clean_markdown_sentence`. Confirmed Atlas diagram text still
+  owns component description selection and diagram label policy, and sequence
+  steps still own first-path step derivation and dedupe; shared greenfield text
+  now owns the repeated `clean_markdown_text` plus sentence-casing body. The
+  touched callers no longer keep local `text[:1].upper() + text[1:]` and
+  `return f"{text}." if text else ""` forks. Touched files remain below limits
+  (`greenfield_confirmed_diagram_text.py`: 513 lines;
+  `greenfield_sequence_steps.py`: 195 lines; `greenfield_text.py`: 272 lines;
+  `test_greenfield_confirmed_text.py`: 264 lines). Proof: syntax proof passed
+  for the touched modules and test; focused sentence-cleanup proof passed (`5
+  passed in 0.09s`); relevant caller proof passed (`22 passed in 3.91s`);
+  wider greenfield artifact proof passed (`190 passed in 204.17s`); and
+  confirmed-create performance proof passed (`1 passed in 10.32s`), preserving
+  the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

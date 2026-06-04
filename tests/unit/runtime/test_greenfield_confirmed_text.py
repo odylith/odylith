@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_text import (
+    clean_markdown_sentence,
     clean_markdown_text,
     clip_text_at_word_boundary,
     word_occurrences as generic_word_occurrences,
@@ -88,6 +89,7 @@ def test_inline_markdown_cleanup_shared_by_confirmed_text_callers() -> None:
     ]
 
     assert clean_markdown_text(" **Ops** sees `status` , ready") == "Ops sees status, ready"
+    assert clean_markdown_sentence(" **ops** sees `status` , ready.") == "Ops sees status, ready."
     assert clean_first_path_text(" **Ops** sees `status` , ready") == "Ops sees status, ready"
     assert diagram_sentence(" **ops** sees `status` , ready.") == "Ops sees status, ready."
     assert sequence_event_steps("1. Open app. 2. **Ops** adds `status` , ready. 3. Save result.") == [
@@ -111,10 +113,31 @@ def test_inline_markdown_cleanup_shared_by_confirmed_text_callers() -> None:
 
     for caller in callers:
         source = caller.read_text(encoding="utf-8")
-        assert "clean_markdown_text" in source
+        assert "clean_markdown_text" in source or "clean_markdown_sentence" in source
         assert "display_text.strip_inline_markdown_emphasis_tokens" not in source
         assert 'replace("`", "")' not in source
         assert 're.sub(r"\\s+([,.;:?!])", r"\\1", text)' not in source
+
+
+def test_markdown_sentence_casing_stays_in_text_owner() -> None:
+    text_owner = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
+    callers = [
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_diagram_text.py",
+        DOMAIN_INTELLIGENCE / "greenfield_sequence_steps.py",
+    ]
+
+    assert "def clean_markdown_sentence" in text_owner
+    assert clean_markdown_sentence(" **ops** sees `status` , ready.") == "Ops sees status, ready."
+    assert diagram_sentence(" **ops** sees `status` , ready.") == "Ops sees status, ready."
+    assert sequence_event_steps("1. Open app. 2. **ops** sees `status` , ready.") == [
+        "Ops sees status, ready"
+    ]
+
+    for caller in callers:
+        source = caller.read_text(encoding="utf-8")
+        assert "clean_markdown_sentence" in source
+        assert "text[:1].upper() + text[1:]" not in source
+        assert 'return f"{text}." if text else ""' not in source
 
 
 def test_confirmed_intent_semantic_terms_stay_in_text_owner() -> None:

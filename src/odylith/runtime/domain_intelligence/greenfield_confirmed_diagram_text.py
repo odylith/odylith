@@ -11,7 +11,7 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
-from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_boundary_language
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
@@ -32,10 +32,7 @@ def component_description(row: Mapping[str, Any]) -> str:
 
 
 def sentence(value: str) -> str:
-    text = clean_markdown_text(value).rstrip(".")
-    if text:
-        text = text[:1].upper() + text[1:]
-    return f"{text}." if text else ""
+    return clean_markdown_sentence(value)
 
 
 def brief_first_path(value: str) -> str:

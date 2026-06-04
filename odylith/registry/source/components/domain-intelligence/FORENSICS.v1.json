@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 109,
-    "mapped_workstream_evidence_count": 99,
+    "explicit_event_count": 110,
+    "mapped_workstream_evidence_count": 100,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 116,
+    "spec_history_event_count": 117,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 110
+    "timeline_event_count": 111
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,25 +21,57 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
         "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py",
         "src/odylith/runtime/domain_intelligence/greenfield_text.py"
       ],
       "confidence": "high",
-      "event_index": 590,
+      "event_index": 591,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py +6 more",
-      "ts_iso": "2026-06-04T09:39:47-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +2 more",
+      "ts_iso": "2026-06-04T09:52:13-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_confirmed_text.py"
+      ],
+      "confidence": "high",
+      "event_index": 590,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed Markdown-cleaned sentence casing for confirmed Atlas diagram text and sequence-step rendering through shared greenfield text with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T09:51:37-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
