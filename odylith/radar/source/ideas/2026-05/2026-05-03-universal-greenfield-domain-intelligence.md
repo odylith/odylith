@@ -1260,6 +1260,25 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`12 passed in 0.24s`); broad artifact/proposal proof passed
   (`128 passed in 222.27s`); and confirmed-create performance proof passed
   (`1 passed in 11.39s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed-intent semantic-term follow-through moved validation
+  and internal-system semantic token extraction into
+  `greenfield_confirmed_text.semantic_terms`. Confirmed-intent validation now
+  passes `CONFIRMED_INTENT_VALIDATION_STOPWORDS` into the shared text owner
+  instead of carrying its own `_TERM_STOPWORDS` and `_semantic_terms` loop, and
+  `greenfield_confirmed_system_rows.py` imports the same owner instead of
+  normalizing tokens locally. The pass also split ownership and parser tests
+  into `test_greenfield_confirmed_intent_ownership.py`, bringing
+  `test_greenfield_confirmed_intent.py` back below the test ceiling. Touched
+  files remain below limits (`greenfield_confirmed_text.py`: 398 lines;
+  `greenfield_confirmed_intent_validation.py`: 197 lines;
+  `greenfield_confirmed_system_rows.py`: 693 lines;
+  `test_greenfield_confirmed_text.py`: 61 lines;
+  `test_greenfield_confirmed_intent.py`: 1459 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 269 lines). Proof: syntax
+  proof passed for the touched modules and tests; focused confirmed-intent
+  proof passed (`30 passed in 37.40s`); broad artifact/proposal proof passed
+  (`130 passed in 204.69s`); and confirmed-create performance proof passed
+  (`1 passed in 9.91s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

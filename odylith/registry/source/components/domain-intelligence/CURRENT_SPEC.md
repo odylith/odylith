@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Moved confirmed-intent semantic term extraction into the confirmed-text owner and split oversized confirmed-intent ownership tests while preserving focused, broad, and under-30s confirmed-create proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py +4 more
 - **2026-06-03 · Implementation:** Moved Registry spec term-set and distinctiveness scoring into the component term-index owner, keeping component quality gates focused on failure decisions with focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py, src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed derived component-axis term extraction through the shared component-term owner and proved focused, broad, and under-30s confirmed-create behavior.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_axes.py, src/odylith/runtime/domain_intelligence/greenfield_component_terms.py +1 more
-- **2026-06-03 · Implementation:** Split proposal project-brief rendering into the project-brief owner, reused shared generated-row coercion, and proved focused, broad, and under-30s confirmed-create behavior.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_project_brief.py, src/odylith/runtime/domain_intelligence/proposal_rendering.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -106,6 +106,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Split ordered component-local term indexing into `greenfield_component_term_index.py`. Component contracts, contract differentiation, component terms, and component quality gates now import `ordered_domain_terms` from the term-index owner, while `greenfield_component_contract_quality.py` no longer owns reusable ordered term extraction or a local `_term_token` cache. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Split reusable greenfield domain-term indexing into `greenfield_domain_term_index.py`. Product-risk genericity checks now call `ordered_terms` with risk-specific stopwords, and `greenfield_component_term_index.py` delegates to the same shared kernel while retaining component-specific stopwords, keeping Radar risk specificity and Registry component term matching on one normalization path. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Moved Registry spec term distinctiveness into `greenfield_component_term_index.py`. The term-index owner now exposes `component_domain_terms`, `section_domain_terms`, and `component_local_terms`, while `greenfield_component_contract_quality.py` keeps only quality failure decisions and no longer owns `domain_terms`, `_section_terms`, or `_local_domain_terms`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Moved confirmed-intent semantic term extraction into `greenfield_confirmed_text.semantic_terms`. Confirmed-intent validation now passes `CONFIRMED_INTENT_VALIDATION_STOPWORDS` into the text owner, internal-system row parsing imports the same owner, and the confirmed-intent tests were split so the main confirmed-intent suite stays below the test ceiling. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -195,6 +196,11 @@ This section captures synchronized requirement and contract signals derived from
   to decide generated-spec failures, but they must not define `domain_terms`,
   `_section_terms`, `_local_domain_terms`, or direct stopword ownership for
   Registry spec distinctiveness.
+- Confirmed-intent semantic term extraction must stay in
+  `greenfield_confirmed_text.py`. Validation, parser, actor, and
+  internal-system modules may call `semantic_terms` with caller-owned stopwords,
+  but they must not reintroduce `_TERM_STOPWORDS`, `_semantic_terms`, or direct
+  `normalize_domain_token` loops for accepted Product Intent semantic overlap.
 - Confirmed component row completion must stay in
   `greenfield_confirmed_component_completion.py`. The confirmed completion
   parent may call `complete_component_rows` and

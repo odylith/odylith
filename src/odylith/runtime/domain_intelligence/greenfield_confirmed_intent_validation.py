@@ -13,9 +13,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
     has_meaningful_system_description,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIRMED_INTENT_VALIDATION_STOPWORDS
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 
 
 FIELD_MIN_WORDS = {
@@ -49,47 +50,6 @@ _META_NARRATION_PATTERNS = [
         r"\bdocumented\s+non-goals\b",
     )
 ]
-
-_TERM_STOPWORDS = {
-    "a",
-    "an",
-    "and",
-    "are",
-    "as",
-    "at",
-    "be",
-    "by",
-    "can",
-    "cost",
-    "for",
-    "from",
-    "has",
-    "have",
-    "in",
-    "into",
-    "is",
-    "it",
-    "low",
-    "of",
-    "on",
-    "or",
-    "product",
-    "project",
-    "release",
-    "should",
-    "small",
-    "system",
-    "systems",
-    "that",
-    "the",
-    "then",
-    "this",
-    "through",
-    "to",
-    "with",
-    "without",
-}
-
 
 def validate_confirmed_intent(intent: Mapping[str, Any]) -> None:
     missing: list[str] = []
@@ -232,17 +192,6 @@ def has_progression_or_outcome(text: str) -> bool:
 
 
 def _has_semantic_overlap(left: str, right: str, *, minimum: int) -> bool:
-    left_terms = _semantic_terms(left)
-    right_terms = _semantic_terms(right)
+    left_terms = semantic_terms(left, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)
+    right_terms = semantic_terms(right, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)
     return len(left_terms & right_terms) >= minimum
-
-
-def _semantic_terms(text: str) -> set[str]:
-    terms: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", clean_confirmed_text(text).casefold()):
-        token = normalize_domain_token(raw, minimum=3, stopwords=_TERM_STOPWORDS)
-        if token.endswith("ing") and len(token) > 5:
-            token = token[:-3]
-        if token:
-            terms.add(token)
-    return terms

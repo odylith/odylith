@@ -8,9 +8,9 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms as _semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 
 
 _GENERIC_SYSTEM_NAME_KEYS = {
@@ -73,24 +73,6 @@ _SYSTEM_NAME_NOUNS = {
     "workflow",
     "workflows",
 }
-
-_TERM_STOPWORDS = {
-    "and",
-    "are",
-    "before",
-    "can",
-    "for",
-    "from",
-    "has",
-    "have",
-    "into",
-    "that",
-    "the",
-    "this",
-    "with",
-    "without",
-}
-
 
 def confirmed_system_name(value: str) -> str:
     cleaned = _clean(value)
@@ -696,17 +678,6 @@ def _internal_system_rationale(paragraph: str) -> str:
 def _system_name_key(value: str) -> str:
     text = re.sub(r"[^a-z0-9\s]+", " ", str(value or "").casefold())
     return re.sub(r"\s+", " ", text).strip()
-
-
-def _semantic_terms(text: str) -> set[str]:
-    terms: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(text).casefold()):
-        token = normalize_domain_token(raw, minimum=3, stopwords=_TERM_STOPWORDS)
-        if token.endswith("ing") and len(token) > 5:
-            token = token[:-3]
-        if token:
-            terms.add(token)
-    return terms
 
 
 __all__ = [

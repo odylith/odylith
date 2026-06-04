@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -23,6 +23,63 @@ GENERIC_TITLE_WORDS = {
     "tool",
     "tracker",
     "workspace",
+}
+
+CONFIRMED_SEMANTIC_STOPWORDS = {
+    "and",
+    "are",
+    "before",
+    "can",
+    "for",
+    "from",
+    "has",
+    "have",
+    "into",
+    "that",
+    "the",
+    "this",
+    "with",
+    "without",
+}
+
+CONFIRMED_INTENT_VALIDATION_STOPWORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "be",
+    "by",
+    "can",
+    "cost",
+    "for",
+    "from",
+    "has",
+    "have",
+    "in",
+    "into",
+    "is",
+    "it",
+    "low",
+    "of",
+    "on",
+    "or",
+    "product",
+    "project",
+    "release",
+    "should",
+    "small",
+    "system",
+    "systems",
+    "that",
+    "the",
+    "then",
+    "this",
+    "through",
+    "to",
+    "with",
+    "without",
 }
 
 
@@ -79,23 +136,8 @@ def join_confirmed_items(values: Sequence[str]) -> str:
     return ", ".join(cleaned[:-1]) + f", and {cleaned[-1]}"
 
 
-def semantic_terms(text: str) -> set[str]:
-    stop = {
-        "and",
-        "are",
-        "before",
-        "can",
-        "for",
-        "from",
-        "has",
-        "have",
-        "into",
-        "that",
-        "the",
-        "this",
-        "with",
-        "without",
-    }
+def semantic_terms(text: str, *, stopwords: Iterable[str] | None = None) -> set[str]:
+    stop = CONFIRMED_SEMANTIC_STOPWORDS if stopwords is None else set(stopwords)
     terms: set[str] = set()
     for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", clean_confirmed_text(text).casefold()):
         token = normalize_domain_token(raw, minimum=3, stopwords=stop)
