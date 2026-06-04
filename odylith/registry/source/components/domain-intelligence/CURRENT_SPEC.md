@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed first-path and semantic-quality cleaned-text dedupe through shared greenfield text while preserving caller-owned cleanup policy, with focused, wide, and performance proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py +4 more
 - **2026-06-04 · Implementation:** Routed component contract artifact sentence casing through shared greenfield text while preserving contract assembly and quality policy, with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py +3 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed component-contract artifact text cleanup through the shared greenfield text owner and pinned the cleanup with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py +3 more
-- **2026-06-04 · Implementation:** Routed confirmed Atlas proof-boundary lead cleanup through the shared greenfield text owner and pinned the ownership with focused, wide, and performance proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -164,6 +164,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed confirmed-intent Markdown cleanup through `greenfield_text.clean_markdown_text`. Confirmed text keeps list coercion, semantic terms, word-count APIs, title/focus labels, and generated sentence shaping; confirmed-intent parsing keeps section parsing and title detection; actor labels keep project-specific role normalization while shared greenfield text owns reusable emphasis token stripping, backtick removal, punctuation-spacing cleanup, and whitespace collapse. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed remaining inline Markdown cleanup for confirmed component labels, first-path text, sequence-step sentences, confirmed Atlas sentence text, semantic-model cleanup, and Registry component term windows through `greenfield_text.clean_markdown_text`. Those callers keep component naming, first-path parsing, sentence casing, diagram rendering, semantic model assembly, and term-window scoring while shared greenfield text owns reusable inline emphasis stripping, backtick removal, punctuation-spacing cleanup, and whitespace collapse. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Markdown-cleaned sentence casing for confirmed Atlas diagram text and sequence-step rendering through `greenfield_text.clean_markdown_sentence`. Diagram text keeps component description and label selection, and sequence steps keep first-path step derivation and dedupe while shared greenfield text owns the repeated Markdown cleanup, capitalization, and trailing-period mechanics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed first-path and semantic-quality cleaned-text dedupe through `greenfield_text.unique_text`. First-path clauses keep first-path cleanup, first-path semantics keeps step parsing, and semantic quality keeps generated-artifact validation policy while shared greenfield text owns reusable empty filtering and casefolded duplicate suppression. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -263,6 +264,12 @@ This section captures synchronized requirement and contract signals derived from
   stay in `greenfield_text.clean_markdown_sentence`. They must not reintroduce
   local `text[:1].upper() + text[1:]` plus `return f"{text}." if text else ""`
   bodies for this cleanup class.
+- First-path clauses, first-path semantics, and semantic quality may own their
+  candidate cleanup, step parsing, and validation thresholds, but reusable
+  empty filtering and casefolded duplicate suppression must stay in
+  `greenfield_text.unique_text`. They must not reintroduce local
+  `seen: set[str]`, `key = text.casefold()`, or `seen.add(key)` loops for this
+  cleanup class.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,

@@ -2160,6 +2160,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed in 0.12s`); wider greenfield artifact proof passed (`191 passed in
   224.52s`); and confirmed-create performance proof passed (`1 passed in
   13.98s`), preserving the under-30s create gate.
+- 2026-06-04 cleaned-text dedupe follow-through routed first-path and
+  semantic-quality duplicate suppression through `greenfield_text.unique_text`.
+  First-path clauses still own first-path cleanup, first-path semantics still
+  owns step parsing, and semantic quality still owns generated-artifact
+  validation policy; shared greenfield text now owns the repeated cleaned-text
+  casefold dedupe body. The touched callers no longer keep local `seen` plus
+  `text.casefold()` loops. Touched files remain below limits
+  (`greenfield_first_path_clauses.py`: 749 lines;
+  `greenfield_first_path_semantics.py`: 357 lines;
+  `greenfield_semantic_quality.py`: 466 lines; `greenfield_text.py`: 279
+  lines; `test_greenfield_post_confirm_slop_regressions.py`: 803 lines).
+  Proof: syntax proof passed for the touched modules and test; focused
+  cleaned-text proof passed (`4 passed in 0.32s`); wider greenfield artifact
+  proof passed (`192 passed in 234.56s`); and confirmed-create performance
+  proof passed (`1 passed in 11.92s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

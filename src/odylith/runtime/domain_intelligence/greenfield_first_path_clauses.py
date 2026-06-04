@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_types import Firs
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
 TRIVIAL_START_RE = re.compile(
@@ -725,15 +726,7 @@ def clean_first_path_text(value: Any) -> str:
 
 
 def _unique(values: Sequence[str]) -> list[str]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = clean_first_path_text(value)
-        key = text.casefold()
-        if text and key not in seen:
-            seen.add(key)
-            result.append(text)
-    return result
+    return list(unique_text(clean_first_path_text(value) for value in values))
 
 
 __all__ = [

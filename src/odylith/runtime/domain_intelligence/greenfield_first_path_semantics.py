@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import lo
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import visible_action_clause as _visible_action_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import visible_result_object as _visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 _ACTION_BASE_VERB_PATTERN = action_base_verb_pattern()
 
@@ -346,15 +347,7 @@ def _sentence_case(value: str) -> str:
 
 
 def _unique(values: Sequence[str]) -> list[str]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = _clean(value)
-        key = text.casefold()
-        if text and key not in seen:
-            seen.add(key)
-            result.append(text)
-    return result
+    return list(unique_text(_clean(value) for value in values))
 
 __all__ = [
     "FirstPathModel",

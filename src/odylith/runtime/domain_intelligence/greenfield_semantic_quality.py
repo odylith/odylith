@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_clauses
@@ -441,15 +442,7 @@ def _clean(value: Any) -> str:
 
 
 def _unique(values: Sequence[str]) -> list[str]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = _clean(value)
-        key = text.casefold()
-        if text and key not in seen:
-            seen.add(key)
-            result.append(text)
-    return result
+    return list(unique_text(_clean(value) for value in values))
 
 
 __all__ = [

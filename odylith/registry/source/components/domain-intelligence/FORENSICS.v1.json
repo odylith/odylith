@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 111,
-    "mapped_workstream_evidence_count": 101,
+    "explicit_event_count": 112,
+    "mapped_workstream_evidence_count": 102,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 118,
+    "spec_history_event_count": 119,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 112
+    "timeline_event_count": 113
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,21 +21,58 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_text.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py"
       ],
       "confidence": "high",
-      "event_index": 592,
+      "event_index": 593,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py +2 more",
-      "ts_iso": "2026-06-04T10:05:36-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py +2 more",
+      "ts_iso": "2026-06-04T10:23:27-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py"
+      ],
+      "confidence": "high",
+      "event_index": 592,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed first-path and semantic-quality cleaned-text dedupe through shared greenfield text while preserving caller-owned cleanup policy, with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T10:22:51-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

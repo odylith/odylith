@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
@@ -27,6 +28,7 @@ FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenf
 FIRST_PATH_TYPES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py"
 DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
 GREENFIELD_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_text.py"
+SEMANTIC_QUALITY_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py"
 SEQUENCE_STEPS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py"
 COMPONENT_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
 CONFIRMED_SYSTEM_ROWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py"
@@ -88,6 +90,40 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
         "The product displays decision evidence",
     )
     assert model.material_action == "Record follow-up notes"
+
+
+def test_cleaned_text_dedupe_stays_in_text_owner() -> None:
+    text_source = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
+    callers = [
+        SEMANTIC_QUALITY_PATH,
+        FIRST_PATH_SEMANTICS_PATH,
+        FIRST_PATH_CLAUSES_PATH,
+    ]
+
+    assert "def unique_text" in text_source
+    steps = first_path_steps(
+        "1. **Reviewer** records `status`. "
+        "2. reviewer records status. "
+        "3. Product shows result."
+    )
+    assert steps == (
+        "Reviewer records status",
+        "Product shows result",
+    )
+    assert not generated_semantic_slop_issues(
+        [
+            "`specific proof` stays visible",
+            "specific proof stays visible",
+        ],
+        root="proof",
+    )
+
+    for caller in callers:
+        source = caller.read_text(encoding="utf-8")
+        assert "unique_text" in source
+        assert "seen: set[str]" not in source
+        assert "key = text.casefold()" not in source
+        assert "seen.add(key)" not in source
 
 
 def test_visible_result_language_normalization_stays_in_text_owner() -> None:
