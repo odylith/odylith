@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -384,12 +385,7 @@ def _resolve_workstream_refs(
 
 
 def _row_tokens(*values: Any) -> set[str]:
-    tokens: set[str] = set()
-    for value in text_values(values):
-        for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", value.casefold()):
-            if len(token) >= 3 and token not in _STOP_WORDS:
-                tokens.add(token)
-    return tokens
+    return set(ordered_terms(" ".join(text_values(values)), minimum=3, stopwords=_STOP_WORDS))
 
 
 def _wave_text(row: Mapping[str, Any]) -> set[str]:

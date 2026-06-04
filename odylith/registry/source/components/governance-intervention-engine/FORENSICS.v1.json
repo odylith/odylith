@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 207,
-    "mapped_workstream_evidence_count": 177,
+    "explicit_event_count": 208,
+    "mapped_workstream_evidence_count": 178,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 207
+    "timeline_event_count": 208
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,42 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_programs.py",
+        "tests/unit/runtime/test_greenfield_program_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 567,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Routed greenfield program wave-to-workstream matching through the shared domain term index so release waves use plural-aware generated-artifact terms instead of a local regex token loop.",
+      "ts_iso": "2026-06-04T04:06:02-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_text.py",

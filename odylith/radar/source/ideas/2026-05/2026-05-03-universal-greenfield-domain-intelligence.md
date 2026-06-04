@@ -1745,6 +1745,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`4 passed in 3.49s`); wider greenfield artifact proof passed
   (`167 passed in 197.00s`); and confirmed-create performance proof passed
   (`1 passed in 9.56s`), preserving the under-30s create gate.
+- 2026-06-04 program wave term follow-through moved release-wave to
+  workstream matching in `greenfield_programs.py` onto
+  `greenfield_domain_term_index.ordered_terms`. Program wave creation still
+  owns release selector parsing, explicit workstream refs, wave fallback order,
+  execution-wave document shape, and release-target helpers, while the shared
+  domain term index owns reusable plural folding and token filtering for
+  arbitrary wave and backlog vocabulary. Touched files remain below limits
+  (`greenfield_programs.py`: 460 lines; `greenfield_domain_term_index.py`: 212
+  lines; `test_greenfield_program_terms.py`: 45 lines). Proof: syntax proof
+  passed for the touched module and test; focused program proof passed
+  (`2 passed in 0.83s`); wider greenfield artifact proof passed (`168 passed
+  in 197.44s`); and confirmed-create performance proof passed (`1 passed in
+  9.34s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
