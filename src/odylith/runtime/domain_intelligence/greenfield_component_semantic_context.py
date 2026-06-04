@@ -6,6 +6,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term as _looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
 )
@@ -263,33 +264,6 @@ _CONTEXT_METADATA_LEADS = frozenset(
         "why_it_matter",
     }
 )
-
-
-def _looks_actor_term(value: str) -> bool:
-    token = str(value or "").casefold()
-    if token in {
-        "admin",
-        "administrator",
-        "agent",
-        "client",
-        "coordinator",
-        "customer",
-        "lead",
-        "member",
-        "operator",
-        "owner",
-        "participant",
-        "patient",
-        "person",
-        "resident",
-        "reviewer",
-        "staff",
-        "student",
-        "team",
-        "user",
-    }:
-        return True
-    return bool(re.search(r"(?:er|or|ist|ian|ant|ee)$", token))
 
 
 def _clean(value: Any) -> str:

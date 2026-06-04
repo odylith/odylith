@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 137,
-    "mapped_workstream_evidence_count": 102,
+    "explicit_event_count": 139,
+    "mapped_workstream_evidence_count": 104,
     "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 137
+    "timeline_event_count": 139
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,72 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
+        "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 550,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Moved Registry actor-role token detection into a shared greenfield owner and cached component action-form classification so generated artifact phrases drop actor/action leads consistently.",
+      "ts_iso": "2026-06-03T23:38:27-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 549,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Centralized greenfield actor-role token detection and cached action-form classification so Registry component artifact phrases drop actor/action leads such as inspector reviews while semantic context extraction shares the same owner.",
+      "ts_iso": "2026-06-03T23:35:46-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",

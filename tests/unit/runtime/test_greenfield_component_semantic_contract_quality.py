@@ -6,6 +6,7 @@ from pathlib import Path
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
     derive_component_semantic_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 
 
@@ -23,9 +24,16 @@ def test_component_semantic_context_stays_in_dedicated_owner() -> None:
     assert "def _context_object_phrases" not in contract_source
     assert "def _context_required_phrases" not in contract_source
     assert "def _needs_context_backfill" not in contract_source
+    assert "def _looks_actor_term" not in context_source
+    assert "greenfield_actor_terms import looks_actor_term as _looks_actor_term" in context_source
     assert "def context_object_phrases" in context_source
     assert "def context_required_phrases" in context_source
     assert "def needs_context_backfill" in context_source
+    assert context_object_phrases(
+        "Inspector reviews permit note, missing documents, and timeline evidence.",
+        label_terms=["permit", "note"],
+        description_terms=["review", "document"],
+    ) == ("permit note", "missing document")
 
 
 def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns() -> None:

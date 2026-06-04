@@ -1493,6 +1493,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`13 passed in 3.38s`); wider greenfield proof passed (`154 passed in
   216.42s`); and confirmed-create performance proof passed (`1 passed in
   10.18s`), preserving the under-30s create gate.
+- 2026-06-04 Registry actor/action artifact-term follow-through moved
+  actor-role token detection into `greenfield_actor_terms.py` and made
+  `greenfield_component_terms.py` use cached action-form lookup when cleaning
+  generated Registry artifact phrases. Component semantic context now imports
+  the same actor-role classifier instead of carrying its own local role list,
+  so phrases such as `inspector reviews permit note` become `permit note`
+  consistently across base artifact cleanup and context extraction. Touched
+  files remain below limits (`greenfield_actor_terms.py`: 61 lines;
+  `greenfield_component_terms.py`: 776 lines;
+  `greenfield_component_semantic_context.py`: 282 lines;
+  `test_greenfield_component_spec_quality.py`: 519 lines;
+  `test_greenfield_component_semantic_contract_quality.py`: 69 lines). Proof:
+  syntax proof passed for the touched modules and tests; focused component
+  proof passed (`14 passed in 0.14s`); wider greenfield artifact proof passed
+  (`156 passed in 195.31s`); and confirmed-create performance proof passed
+  (`1 passed in 9.29s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

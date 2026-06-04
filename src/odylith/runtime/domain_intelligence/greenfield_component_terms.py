@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping, Sequence
+from functools import lru_cache
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import ROLEISH_TERMS
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text, unique_text
@@ -221,26 +224,6 @@ ARTIFACT_CARRIER_TERMS = {
     "visits",
 }
 
-ROLEISH_TERMS = {
-    "actor",
-    "admin",
-    "administrator",
-    "applicant",
-    "client",
-    "coordinator",
-    "customer",
-    "manager",
-    "operator",
-    "owner",
-    "participant",
-    "person",
-    "requester",
-    "resident",
-    "reviewer",
-    "submitter",
-    "user",
-}
-
 NOUN_MODIFIER_ACTION_TERMS = {"review"}
 
 
@@ -359,7 +342,7 @@ def clean_artifact_phrase(value: str) -> str:
         return ""
     if "enough" in {word.casefold() for word in words} and not (set(words) & ARTIFACT_CARRIER_TERMS):
         return ""
-    if len(words) >= 3 and _looks_actorish_term(words[0]) and looks_action_term(words[1]):
+    if len(words) >= 3 and looks_actor_term(words[0]) and looks_action_form(words[1]):
         text = " ".join(words[2:]).strip(" .,;:")
         text = strip_action(text)
         words = text.split()
@@ -371,16 +354,11 @@ def clean_artifact_phrase(value: str) -> str:
     action_hits = [
         word
         for word in re.findall(r"[a-z0-9]+", lowered)
-        if looks_action_term(word) and word not in ARTIFACT_CARRIER_TERMS
+        if looks_action_form(word) and word not in ARTIFACT_CARRIER_TERMS
     ]
     if action_hits and not (set(words) & ARTIFACT_CARRIER_TERMS):
         return ""
     return text
-
-
-def _looks_actorish_term(value: str) -> bool:
-    token = str(value or "").casefold()
-    return bool(re.search(r"(?:er|or|ist|ian|ant|ee)$", token))
 
 
 def _clean_visible_phrase_debris(value: str) -> str:
@@ -641,21 +619,36 @@ def looks_action_term(value: str) -> bool:
     token = str(value or "").casefold()
     if token in ACTION_VERBS:
         return True
-    return token in {past_tense(verb) for verb in ACTION_VERBS}
+    return token in _past_action_terms()
 
 
+def looks_action_form(value: str) -> bool:
+    token = str(value or "").casefold()
+    return token in _action_form_set()
+
+
+@lru_cache(maxsize=1)
+def _action_form_set() -> frozenset[str]:
+    return frozenset(form for verb in ACTION_VERBS for form in verb_forms(verb))
+
+
+@lru_cache(maxsize=1)
+def _past_action_terms() -> frozenset[str]:
+    return frozenset(past_tense(verb) for verb in ACTION_VERBS)
+
+
+@lru_cache(maxsize=1)
 def action_forms_pattern() -> str:
-    forms: list[str] = []
-    for verb in ACTION_VERBS:
-        forms.extend(verb_forms(verb))
-    return "|".join(re.escape(form) for form in sorted(set(forms), key=lambda value: (-len(value), value)))
+    return "|".join(re.escape(form) for form in sorted(_action_form_set(), key=lambda value: (-len(value), value)))
 
 
+@lru_cache(maxsize=128)
 def verb_forms_pattern(verb: str) -> str:
     return "|".join(re.escape(form) for form in sorted(verb_forms(verb), key=lambda value: (-len(value), value)))
 
 
-def verb_forms(verb: str) -> set[str]:
+@lru_cache(maxsize=128)
+def verb_forms(verb: str) -> frozenset[str]:
     forms = {verb, f"{verb}s", f"{verb}es", f"{verb}ed", f"{verb}ing"}
     if verb.endswith("y") and len(verb) > 1 and verb[-2] not in {"a", "e", "i", "o", "u"}:
         stem = verb[:-1]
@@ -663,7 +656,7 @@ def verb_forms(verb: str) -> set[str]:
     if verb.endswith("e") and len(verb) > 1:
         stem = verb[:-1]
         forms.update({f"{verb}d", f"{stem}ing"})
-    return forms
+    return frozenset(forms)
 
 
 def trim_phrase(value: str) -> str:
@@ -768,7 +761,9 @@ __all__ = [
     "domain_terms",
     "enrich_owned_state_from_io",
     "local_terms",
+    "looks_action_form",
     "looks_action_term",
+    "looks_actor_term",
     "natural_phrase",
     "object_clause_focus",
     "phrase",

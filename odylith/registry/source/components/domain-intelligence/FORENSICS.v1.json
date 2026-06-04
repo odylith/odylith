@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 68,
-    "mapped_workstream_evidence_count": 58,
+    "explicit_event_count": 70,
+    "mapped_workstream_evidence_count": 60,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 76,
+    "spec_history_event_count": 77,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 69
+    "timeline_event_count": 71
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,22 +21,87 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
       ],
       "confidence": "high",
-      "event_index": 549,
+      "event_index": 551,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py +3 more",
-      "ts_iso": "2026-06-03T23:20:32-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py +2 more",
+      "ts_iso": "2026-06-03T23:38:58-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
+        "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 550,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Moved Registry actor-role token detection into a shared greenfield owner and cached component action-form classification so generated artifact phrases drop actor/action leads consistently.",
+      "ts_iso": "2026-06-03T23:38:27-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 549,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Centralized greenfield actor-role token detection and cached action-form classification so Registry component artifact phrases drop actor/action leads such as inspector reviews while semantic context extraction shares the same owner.",
+      "ts_iso": "2026-06-03T23:35:46-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

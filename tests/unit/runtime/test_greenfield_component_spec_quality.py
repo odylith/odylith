@@ -10,10 +10,13 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_targets i
     operator_component_spec_issues,
     repair_targets_from_spec_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import looks_action_form
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase_identity_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
@@ -45,6 +48,7 @@ COMPONENT_CONTRACT_QUALITY_PATH = (
 )
 COMPONENT_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py"
 COMPONENT_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py"
+ACTOR_TERMS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py"
 COMPONENT_TERM_WINDOWS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py"
 COMPONENT_CONTRACT_DIFFERENTIATION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py"
@@ -152,6 +156,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     axes_source = COMPONENT_AXES_PATH.read_text(encoding="utf-8")
     term_index_source = COMPONENT_TERM_INDEX_PATH.read_text(encoding="utf-8")
     terms_source = COMPONENT_TERMS_PATH.read_text(encoding="utf-8")
+    actor_terms_source = ACTOR_TERMS_PATH.read_text(encoding="utf-8")
     term_windows_source = COMPONENT_TERM_WINDOWS_PATH.read_text(encoding="utf-8")
 
     assert len(terms_source.splitlines()) < 800
@@ -168,6 +173,10 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def literal_label_terms" in term_windows_source
     assert "def literal_label_compounds" in term_windows_source
     assert "def nearby_domain_terms" in term_windows_source
+    assert "def looks_actor_term" in actor_terms_source
+    assert "def looks_action_form" in terms_source
+    assert "def _looks_actorish_term" not in terms_source
+    assert "greenfield_actor_terms import looks_actor_term" in terms_source
     assert "def ordered_domain_terms" not in quality_source
     assert "def domain_terms" not in quality_source
     assert "def _section_terms" not in quality_source
@@ -251,6 +260,11 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
         "status",
         "window",
     }
+    assert looks_actor_term("inspector")
+    assert looks_action_form("reviews")
+    assert clean_artifact_phrase("inspector reviews permit note") == "permit note"
+    assert clean_artifact_phrase("student submits assignment details") == "assignment details"
+    assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
     assert literal_label_terms("AI CRM Status Windows Viewer", noise_terms={"service"}) == [
         "ai",
         "crm",

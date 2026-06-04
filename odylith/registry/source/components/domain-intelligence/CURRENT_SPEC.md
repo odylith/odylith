@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Moved Registry actor-role token detection into a shared greenfield owner and cached component action-form classification so generated artifact phrases drop actor/action leads consistently.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py, src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py +3 more
 - **2026-06-03 · Implementation:** Moved Registry component literal label-term extraction into the shared component term-window owner while preserving plural artifact-carrier label phrases such as policy guardrails and keeping contract builders off local label regex loops.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py +3 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed greenfield component handoff title matching through the shared domain term index while preserving Radar and Registry handoff quality plus focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_experience.py, tests/unit/runtime/test_greenfield_experience_terms.py
-- **2026-06-03 · Implementation:** Routed confirmed component domain-label token extraction through the shared domain term index while preserving visible acronym and alphanumeric label behavior plus focused, broad, and under-30s confirmed-create proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -122,6 +122,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed confirmed Radar backlog text product-term matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_confirmed_backlog_text_model.py` keeps backlog-specific stopwords and first-slice wording decisions, while `semantic_words` and `shares_product_terms` share plural and stopword normalization with the generated-artifact term index instead of local lower-case regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Split Registry fallback component term-window parsing into `greenfield_component_term_windows.py`. `greenfield_component_contract_differentiation.py` keeps fallback-axis scoring and repair decisions, while the term-window owner handles component label compounds, nearby context windows, plural folding, and short label compounds without growing the near-limit `greenfield_component_terms.py` module. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Moved Registry literal component label-term extraction into `greenfield_component_term_windows.py`. Base component contracts, semantic component contracts, and fallback contract differentiation now share one label-term owner that preserves short labels and plural artifact-carrier phrases such as `policy guardrails` while still folding ordinary semantic plurals such as `status windows`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Moved generated Registry actor-role token detection into `greenfield_actor_terms.py` and cached action-form classification in `greenfield_component_terms.py`. Component artifact cleanup and semantic context extraction now share the same role classifier, so actor/action leads such as `inspector reviews permit note` are reduced to the owned artifact phrase `permit note` instead of leaking actor prose into Registry contracts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -206,6 +207,14 @@ This section captures synchronized requirement and contract signals derived from
   compound extraction. The shared owner must preserve short visible labels and
   plural artifact-carrier nouns such as `policy guardrails` while still folding
   ordinary semantic plurals such as `status windows`.
+- Generated Registry actor-role token detection must stay in
+  `greenfield_actor_terms.py`, and action-form classification used by component
+  artifact cleanup must stay cached in `greenfield_component_terms.py`.
+  Component artifact cleanup and semantic context extraction may own phrase
+  ranking and context carry policy, but they must not reintroduce local
+  actor-role lists, suffix-only actor checks, or non-cached action-form token
+  loops that let actor/action leads such as `inspector reviews` leak into owned
+  artifact nouns.
 - Component contract field wording must also use
   `greenfield_component_terms.phrase` for comma-clause support-artifact text.
   `greenfield_component_contract_fields.py` may call the shared helper, but it
