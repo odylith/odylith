@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lookup_for
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
@@ -37,6 +38,9 @@ GREENFIELD_APPLY_WRITE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/gr
 ARTIFACT_ENRICHMENT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/artifact_enrichment.py"
 ARTIFACT_GRAPH_PATH = ROOT / "src/odylith/runtime/domain_intelligence/artifact_graph.py"
 ARTIFACT_TRIBUNAL_ACTORS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py"
+GREENFIELD_DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
+GREENFIELD_COMPONENT_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py"
+GREENFIELD_PRODUCT_RISKS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py"
 
 
 def test_greenfield_apply_write_stays_in_dedicated_owner() -> None:
@@ -103,6 +107,27 @@ def test_artifact_enrichment_graph_and_tribunal_actors_stay_in_dedicated_owners(
         "def _dedupe_visible_actor_names",
     ):
         assert moved in actors_source
+
+
+def test_product_risk_specificity_uses_shared_term_index() -> None:
+    domain_index_source = GREENFIELD_DOMAIN_TERM_INDEX_PATH.read_text(encoding="utf-8")
+    component_index_source = GREENFIELD_COMPONENT_TERM_INDEX_PATH.read_text(encoding="utf-8")
+    risk_source = GREENFIELD_PRODUCT_RISKS_PATH.read_text(encoding="utf-8")
+
+    assert len(domain_index_source.splitlines()) < 800
+    assert len(component_index_source.splitlines()) < 800
+    assert len(risk_source.splitlines()) < 800
+    assert "def ordered_terms" in domain_index_source
+    assert "ordered_terms(text, stopwords=TERM_STOPWORDS)" in component_index_source
+    assert "from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms" in risk_source
+    assert "def _domain_terms(" not in risk_source
+
+    assert ordered_terms("Permit statuses, applicant readings, and permit statuses.", stopwords={"and"}) == [
+        "permit",
+        "status",
+        "applicant",
+        "reading",
+    ]
 
 
 def _write(path: Path, text: str) -> None:

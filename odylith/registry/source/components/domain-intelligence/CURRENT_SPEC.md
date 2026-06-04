@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Split reusable greenfield artifact term indexing into a shared owner for Radar product-risk specificity and Registry component term matching, with focused, broad, and under-30s confirmed-create proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +2 more
 - **2026-06-03 · Implementation:** Split ordered Registry component term indexing into a dedicated owner and proved focused, broad, and under-30s confirmed-create behavior.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_quality.py, src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py +2 more
@@ -38,8 +41,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_project_brief.py, src/odylith/runtime/domain_intelligence/proposal_rendering.py +1 more
 - **2026-06-03 · Implementation:** Split generated Registry component semantic context extraction into a dedicated owner, keeping greenfield_component_semantic_contract.py below the 800-line soft limit with focused, broad, and performance proof.
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py, src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py +1 more
-- **2026-06-03 · Implementation:** Split generated Registry component contract document-context and status-view profiles into a dedicated owner, keeping greenfield_component_contract.py below the 800-line soft limit with focused, broad, and performance proof.
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -102,6 +103,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Routed component-axis term extraction through `greenfield_component_terms.py`. `greenfield_component_axes.py` now calls `domain_terms` and `term_phrase` for derived semantic axes and no longer owns local `_content_terms`, `_term_token`, `_phrase`, or `_normalize_axis_text` helpers, keeping Registry axis keys and generated component contracts on the same term owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed component contract field support-artifact phrase rendering through `greenfield_component_terms.py`. `greenfield_component_contract_fields.py` now calls the shared comma-clause `phrase` helper and no longer owns a local `_phrase` clone, keeping field-level accepted-input and produced-output wording on the same component-term owner as contracts, differentiation, and axes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Split ordered component-local term indexing into `greenfield_component_term_index.py`. Component contracts, contract differentiation, component terms, and component quality gates now import `ordered_domain_terms` from the term-index owner, while `greenfield_component_contract_quality.py` no longer owns reusable ordered term extraction or a local `_term_token` cache. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Split reusable greenfield domain-term indexing into `greenfield_domain_term_index.py`. Product-risk genericity checks now call `ordered_terms` with risk-specific stopwords, and `greenfield_component_term_index.py` delegates to the same shared kernel while retaining component-specific stopwords, keeping Radar risk specificity and Registry component term matching on one normalization path. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -179,6 +181,12 @@ This section captures synchronized requirement and contract signals derived from
   contract differentiation, and quality gates may call `ordered_domain_terms`,
   but `greenfield_component_contract_quality.py` must not reintroduce local
   `ordered_domain_terms` or `_term_token` helpers.
+- Reusable greenfield term normalization must stay in
+  `greenfield_domain_term_index.py`. Radar product-risk specificity,
+  component-local term indexing, and future artifact-specific overlap checks
+  may pass surface-owned stopwords to `ordered_terms`, but they must not
+  reintroduce private `_domain_terms`, `_term_token`, or regex token loops for
+  generated-artifact specificity.
 - Confirmed component row completion must stay in
   `greenfield_confirmed_component_completion.py`. The confirmed completion
   parent may call `complete_component_rows` and

@@ -1226,6 +1226,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.22s`); broad component and artifact-quality proof passed
   (`54 passed in 152.75s`); and confirmed-create performance proof passed
   (`1 passed in 9.95s`), preserving the under-30s create gate.
+- 2026-06-04 greenfield domain-term index follow-through split shared
+  artifact specificity tokenization into `greenfield_domain_term_index.py`.
+  Product-risk genericity checks now use `ordered_terms` with risk-specific
+  stopwords instead of a local `_domain_terms` helper, and the component-term
+  index delegates tokenization to the same shared kernel while keeping
+  component-specific stopwords. This keeps Radar product-risk specificity and
+  Registry component term matching on one host/model/project-agnostic term
+  normalization path. Touched files remain below limits
+  (`greenfield_domain_term_index.py`: 46 lines;
+  `greenfield_component_term_index.py`: 84 lines;
+  `greenfield_product_risks.py`: 555 lines;
+  `test_greenfield_proposals.py`: 1391 lines). Proof: syntax proof passed
+  for the touched modules and test; focused proposal proof passed
+  (`46 passed in 15.79s`); focused component proof passed
+  (`12 passed in 0.23s`); broad artifact/proposal proof passed
+  (`100 passed in 176.18s`); and confirmed-create performance proof passed
+  (`1 passed in 11.47s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

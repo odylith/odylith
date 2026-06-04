@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compac
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -33,6 +34,39 @@ _SENSITIVE_RE = re.compile(
     re.IGNORECASE,
 )
 _EXTERNAL_RE = re.compile(r"\b(?:api|device|external|import|integration|ledger|portal|provider|source|upload)\b", re.IGNORECASE)
+
+_RISK_TERM_STOPWORDS = {
+    "about",
+    "accepted",
+    "after",
+    "before",
+    "between",
+    "cannot",
+    "could",
+    "every",
+    "first",
+    "from",
+    "have",
+    "into",
+    "must",
+    "product",
+    "release",
+    "result",
+    "state",
+    "system",
+    "their",
+    "there",
+    "these",
+    "they",
+    "this",
+    "through",
+    "until",
+    "users",
+    "when",
+    "where",
+    "which",
+    "without",
+}
 
 
 @dataclass(frozen=True)
@@ -292,53 +326,14 @@ def _quality_gate(row: Mapping[str, str], *, ctx: _RiskContext) -> dict[str, str
 
 
 def _too_generic(statement: str, ctx: _RiskContext) -> bool:
-    terms = set(_domain_terms(" ".join([ctx.title, ctx.story, ctx.problem, ctx.first_path, ctx.state_object, ctx.outcome])))
-    present = set(_domain_terms(statement))
+    terms = set(
+        ordered_terms(
+            " ".join([ctx.title, ctx.story, ctx.problem, ctx.first_path, ctx.state_object, ctx.outcome]),
+            stopwords=_RISK_TERM_STOPWORDS,
+        )
+    )
+    present = set(ordered_terms(statement, stopwords=_RISK_TERM_STOPWORDS))
     return len(statement.split()) < 16 or (bool(terms) and len(terms & present) < 2)
-
-
-def _domain_terms(value: str) -> list[str]:
-    stop = {
-        "about",
-        "accepted",
-        "after",
-        "before",
-        "between",
-        "cannot",
-        "could",
-        "every",
-        "first",
-        "from",
-        "have",
-        "into",
-        "must",
-        "product",
-        "release",
-        "result",
-        "state",
-        "system",
-        "their",
-        "there",
-        "these",
-        "they",
-        "this",
-        "through",
-        "until",
-        "users",
-        "when",
-        "where",
-        "which",
-        "without",
-    }
-    rows: list[str] = []
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", compact_text(value).casefold()):
-        token = raw.replace("_", "-").strip("-")
-        if len(token) < 4 or token in stop:
-            continue
-        if token.endswith("s") and len(token) > 5:
-            token = token[:-1]
-        rows.append(token)
-    return list(dict.fromkeys(rows))
 
 
 def _input_focus(first_path: str, *, fallback: str) -> str:

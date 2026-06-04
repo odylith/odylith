@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import re
-from functools import lru_cache
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 
 STRUCTURAL_TERMS = {
     "accepted",
@@ -77,25 +74,7 @@ TERM_STOPWORDS = STRUCTURAL_TERMS | {
 def ordered_domain_terms(text: Any) -> list[str]:
     """Return stable, non-structural terms suitable for component-local prose."""
 
-    return list(_ordered_domain_terms_cached(_clean(text).casefold()))
-
-
-@lru_cache(maxsize=4096)
-def _ordered_domain_terms_cached(cleaned_text: str) -> tuple[str, ...]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", cleaned_text):
-        token = normalize_domain_token(raw, stopwords=TERM_STOPWORDS)
-        if token and token not in seen:
-            seen.add(token)
-            result.append(token)
-    return tuple(result)
-
-
-def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return ordered_terms(text, stopwords=TERM_STOPWORDS)
 
 
 __all__ = [
