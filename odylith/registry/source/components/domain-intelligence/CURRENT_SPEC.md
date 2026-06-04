@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-06-03
+Last updated: 2026-06-04
 
 
 ## Overview
@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed first-path actor signature term extraction through the shared domain term index while preserving generated first-path grammar, short-domain actor distinctions, and under-30s confirmed-create proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py, tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py
 - **2026-06-03 · Implementation:** Routed greenfield public quality-gate prompt and semantic contract terms through the shared domain term index with caller-owned short-domain-term preservation while preserving focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed confirmed artifact Tribunal substance term signatures through the shared greenfield domain term index while preserving focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py, tests/unit/runtime/test_greenfield_tribunal_term_index.py
-- **2026-06-03 · Implementation:** Routed post-confirm semantic drift and repetition term signatures through the shared greenfield domain term index while preserving focused, broad, and under-30s confirmed-create proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py, tests/unit/runtime/test_greenfield_semantic_drift_terms.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -115,6 +115,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed accepted-intent semantic term indexing through `greenfield_domain_term_index.ordered_terms` while keeping `greenfield_confirmed_text.semantic_terms` as the confirmed-intent API. The shared term index now accepts caller-owned `stem_ing_minimum_length`, and `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup, stopword defaults, and caller handoff instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry component phrase identity terms and contract-field transition candidates through `greenfield_domain_term_index.ordered_terms`. `greenfield_component_terms.py` keeps artifact-carrier stopword policy, `greenfield_component_contract_fields.py` keeps transition-state decisions, and `greenfield_component_semantic_contract.py` imports the phrase-identity owner directly instead of wrapping it locally. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed public quality-gate prompt and semantic-contract term extraction through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned `preserve_terms`, so `greenfield_quality_gate.py` can preserve short domain abbreviations while keeping prompt echo and public artifact quality checks off local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed first-path actor signature term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_first_path_clauses.py` keeps first-path action, capability, visible-result, and actor-filtering grammar, while actor signatures share the generated-artifact term index with caller-owned stopwords and short actor-term preservation for labels such as AI, ML, UI, and UX. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -206,6 +207,12 @@ This section captures synchronized requirement and contract signals derived from
   `preserve_terms` and must not import `normalize_domain_token`, define
   `_singular` token wrappers, or loop over regex tokens locally for prompt echo
   or semantic-contract noun checks.
+- First-path actor signature extraction must use
+  `greenfield_domain_term_index.ordered_terms`. `greenfield_first_path_clauses.py`
+  may own action, capability, visible-result, and actor-filtering grammar, plus
+  actor-specific stopwords and short actor-term preservation, but it must not
+  import `normalize_domain_token` or reintroduce a local regex token loop for
+  actor signatures.
 - Registry component phrase identity and contract-field transition candidate
   extraction must use `greenfield_domain_term_index.ordered_terms` for reusable
   token indexing. `greenfield_component_terms.py` may retain artifact-carrier

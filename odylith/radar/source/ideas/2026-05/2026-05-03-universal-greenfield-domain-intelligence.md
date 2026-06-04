@@ -1398,6 +1398,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`17 passed in 13.90s`); wider greenfield proof passed (`168 passed in
   226.89s`); and confirmed-create performance proof passed (`1 passed in
   9.44s`), preserving the under-30s create gate.
+- 2026-06-04 first-path actor term-index follow-through moved actor signature
+  term extraction in `greenfield_first_path_clauses.py` onto
+  `greenfield_domain_term_index.ordered_terms`. The first-path clause owner now
+  keeps only action/capability/result grammar and actor-specific stopword policy,
+  while the shared index preserves short domain actor terms such as AI, ML, UI,
+  and UX. This prevents later plain-actor follow-up actions from bleeding into a
+  qualified actor's first path after a visible result. Touched files remain below
+  limits (`greenfield_first_path_clauses.py`: 742 lines;
+  `test_greenfield_post_confirm_slop_regressions.py`: 674 lines). Proof:
+  syntax proof passed for the touched module and test; focused post-confirm slop
+  proof passed (`14 passed in 2.78s`); wider greenfield proof passed (`151
+  passed in 237.66s`); and confirmed-create performance proof passed (`1 passed
+  in 11.47s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

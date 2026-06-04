@@ -8,10 +8,10 @@ from typing import Any, Sequence
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 
 
 TRIVIAL_START_RE = re.compile(
@@ -41,6 +41,11 @@ MATERIAL_ACTION_RE = re.compile(
     r")\b",
     re.IGNORECASE,
 )
+
+_ACTOR_SIGNATURE_STOPWORDS = frozenset(
+    {"a", "an", "the", "one", "this", "that", "each", "another", "can"}
+)
+_PRESERVED_SHORT_ACTOR_TERMS = frozenset({"ai", "ml", "ui", "ux"})
 
 
 def first_path_capability_phrase(
@@ -497,11 +502,14 @@ def _actor_signature(value: str) -> str:
     subject = re.sub(r"^(?:a|an|the|one)\s+", "", subject, flags=re.IGNORECASE)
     subject = re.sub(r"\s+can\s*$", "", subject, flags=re.IGNORECASE)
     subject = re.sub(r"\b(?:product|system|app|application|workspace|engine|dashboard|view)\b", "", subject, flags=re.IGNORECASE)
-    tokens = [
-        normalize_domain_token(token, minimum=3, stopwords={"the", "one", "can"})
-        for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", subject.casefold())
-    ]
-    return " ".join(token for token in tokens if token)
+    return " ".join(
+        ordered_terms(
+            subject,
+            minimum=3,
+            stopwords=_ACTOR_SIGNATURE_STOPWORDS,
+            preserve_terms=_PRESERVED_SHORT_ACTOR_TERMS,
+        )
+    )
 
 
 def _primary_actor_signature(model: FirstPathModel) -> str:

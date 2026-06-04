@@ -46,6 +46,8 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     assert "def first_path_clauses" in clause_source
     assert "def action_chain_fragment" in clause_source
     assert "def clean_visible_result_phrase" in clause_source
+    assert "greenfield_domain_term_index import ordered_terms" in clause_source
+    assert "normalize_domain_token" not in clause_source
     assert "class FirstPathModel" in type_source
     assert "class FirstPathClauses" in type_source
 
@@ -112,6 +114,11 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
     request = first_path_clauses(request_path)
     care = first_path_clauses(care_path)
     review = first_path_clauses(review_path)
+    short_actor_path = (
+        "The AI reviewer records a decision. The product displays the decision queue. "
+        "A reviewer approves final status."
+    )
+    short_actor = first_path_clauses(short_actor_path)
 
     assert request.action_chain == "select a request type and enter amount, constraints and contact details"
     assert request.visible_result == "a decision with reason notes"
@@ -123,6 +130,9 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
     assert care.visible_result == "a clear prompt, updated status, and next action"
     assert review.action_chain == "import one permit application, record a zoning check, and submit one revision"
     assert review.visible_result == "the decision package with traceable documents, comments, checks and final status"
+    assert short_actor.action_chain == "record a decision"
+    assert short_actor.capability_chain == "record a decision and see the decision queue"
+    assert "approve final status" not in short_actor.capability_chain
     assert base_action_clause("logs progress and reviews weekly status") == "log progress and review weekly status"
     assert (
         base_action_clause("requests a slot, receives confirmation, and records next steps")
