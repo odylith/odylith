@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed-intent parser word counting through the shared confirmed-text owner so accepted-intent section inference no longer carries a local word-count helper.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
 - **2026-06-04 · Implementation:** Routed confirmed project-brief and project-intelligence word counting through the shared confirmed-text owner so generated project-surface validators no longer carry local word-count helpers.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py, src/odylith/runtime/domain_intelligence/greenfield_project_brief.py +2 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Moved Registry component literal label-term extraction into the shared component term-window owner while preserving plural artifact-carrier label phrases such as policy guardrails and keeping contract builders off local label regex loops.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py +3 more
-- **2026-06-03 · Implementation:** Moved Registry component fallback label compounds and nearby context term-window parsing into a dedicated shared component term-window owner while preserving line-count limits, plural normalization, and generated component contract proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py, src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -100,6 +100,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Extended shared row coercion to remaining component, backlog, handoff, created-row, proposal-row, and wave-row readers, and hardened semantic context cleanup for confirmed Registry contract text. `greenfield_backlog_impact.py`, `greenfield_experience.py`, `greenfield_confirmed_component_completion.py`, and `greenfield_component_contract_differentiation.py` now reuse `mapping_rows` or `dict_rows`, while `greenfield_component_semantic_context.py` strips metadata-led actor/action phrases and `greenfield_confirmed_project_brief.py` rewrites awkward show-actor-artifact copy before project posture text is rendered. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Consolidated confirmed-intent list text coercion in `greenfield_confirmed_text.py`. The parser, completion, actor-completion, system-completion, and validation owners now call `confirmed_text_values` instead of carrying local `_strings` helpers, so Markdown cleanup and strict accepted-intent list semantics stay in one shared confirmed-text owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed project-brief and project-intelligence word counting through `greenfield_confirmed_text.word_count`. The project-surface validators now keep schema and row-depth thresholds while confirmed text owns Markdown cleanup and visible word counting instead of local `_word_count` helpers. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed-intent parser word counting through `greenfield_confirmed_text.word_count`. The parser now keeps section inference, preamble paragraph selection, and accepted-field derivation while confirmed text owns Markdown cleanup and visible word counting instead of a parser-local `_word_count` helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Removed the remaining private coercion helpers from workstream Domain Intelligence and project-intelligence binding. `greenfield_workstream_intelligence.py` now uses `greenfield_text.text_values` directly instead of `_list_values`, and `project_intelligence_binding.py` uses `runtime.common.value_coercion.mapping_copy` instead of a local `_mapping` helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split proposal project-brief rendering into `greenfield_project_brief.py`. Proposal text now imports `render_project_brief_lines`, while blueprint-section, customization-option, checkpoint, host-path, and generated-row rendering stay with the project-brief owner and reuse `greenfield_rows.mapping_rows`. `proposal_rendering.py` remains a general proposal text renderer below the 800-line soft limit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Routed component-axis term extraction through `greenfield_component_terms.py`. `greenfield_component_axes.py` now calls `domain_terms` and `term_phrase` for derived semantic axes and no longer owns local `_content_terms`, `_term_token`, `_phrase`, or `_normalize_axis_text` helpers, keeping Registry axis keys and generated component contracts on the same term owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -360,6 +361,10 @@ This section captures synchronized requirement and contract signals derived from
   `greenfield_project_intelligence.py` may own schema shape, minimum-row
   thresholds, and issue text, but they must not reintroduce local `_word_count`
   helpers for project brief or project intelligence shallow-row checks.
+- Confirmed-intent parser visible word counting must stay in
+  `greenfield_confirmed_text.word_count`. `greenfield_confirmed_intent.py` may
+  own Markdown/JSON section parsing, preamble paragraph selection, and accepted
+  field derivation, but it must not reintroduce a local `def _word_count`.
 - General workstream Domain Intelligence text-list coercion must use
   `greenfield_text.text_values` directly; `greenfield_workstream_intelligence.py`
   must not reintroduce `_list_values`. Project-intelligence artifact binding

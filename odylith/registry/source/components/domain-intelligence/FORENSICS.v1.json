@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 73,
-    "mapped_workstream_evidence_count": 63,
+    "explicit_event_count": 74,
+    "mapped_workstream_evidence_count": 64,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 80,
+    "spec_history_event_count": 81,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 74
+    "timeline_event_count": 75
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,20 +21,53 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_project_intelligence.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py"
       ],
       "confidence": "high",
-      "event_index": 554,
+      "event_index": 555,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_project_brief.py +1 more",
-      "ts_iso": "2026-06-04T00:29:57-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+      "ts_iso": "2026-06-04T00:51:59-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "tests/unit/runtime/test_greenfield_confirmed_text.py"
+      ],
+      "confidence": "high",
+      "event_index": 554,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed-intent parser word counting through the shared confirmed-text owner so accepted-intent section inference no longer carries a local word-count helper.",
+      "ts_iso": "2026-06-04T00:39:36-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -1171,6 +1171,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`5 passed in 0.21s`); wider greenfield artifact proof passed (`160
   passed in 195.36s`); and confirmed-create performance proof passed (`1 passed
   in 9.59s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed-intent parser word-count follow-through moved accepted
+  intent section inference onto `greenfield_confirmed_text.word_count`. The
+  parser still owns Markdown/JSON section parsing, preamble paragraph
+  selection, and story/state/path/proof derivation, but confirmed text owns
+  Markdown cleanup plus visible word counting, removing the parser-local
+  `_word_count` helper and the last confirmed parser fork in this slice.
+  Touched files remain below limits (`greenfield_confirmed_intent.py`: 663
+  lines; `greenfield_confirmed_text.py`: 399 lines;
+  `test_greenfield_confirmed_text.py`: 117 lines). Proof: syntax proof passed
+  for the touched modules and test; focused confirmed-intent proof passed (`32
+  passed in 32.52s`); wider greenfield artifact proof passed (`161 passed in
+  196.16s`); and confirmed-create performance proof passed (`1 passed in
+  9.60s`), preserving the under-30s create gate.
 - 2026-06-03 greenfield coercion hygiene follow-through removed the remaining
   workstream-local `_list_values` clone and the project-binding-local
   `_mapping` clone from the B-142/CB-202 slice. Workstream Domain Intelligence

@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import preferred_internal_rows as _preferred_internal_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import role_or_system_rows as _role_or_system_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 
@@ -640,10 +641,6 @@ def _section_list(sections: Mapping[str, list[str]], key: str) -> list[str]:
         return values
     paragraph = _section_text(sections, key)
     return [paragraph] if paragraph else []
-
-
-def _word_count(value: str) -> int:
-    return len(re.findall(r"[A-Za-z0-9]+", value))
 
 
 def _clean(value: object) -> str:

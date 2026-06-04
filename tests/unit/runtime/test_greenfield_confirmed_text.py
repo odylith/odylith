@@ -100,3 +100,18 @@ def test_confirmed_project_surface_word_count_stays_in_text_owner() -> None:
     assert "def _word_count" not in project_brief_source
     assert "def _word_count" not in project_intelligence_source
     assert word_count("Source-backed review/triage keeps `AI` CRM status visible.") == 9
+
+
+def test_confirmed_intent_parser_word_count_stays_in_text_owner() -> None:
+    text_source = CONFIRMED_TEXT_PATH.read_text(encoding="utf-8")
+    confirmed_intent_source = (
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_intent.py"
+    ).read_text(encoding="utf-8")
+
+    assert "def word_count" in text_source
+    assert (
+        "greenfield_confirmed_text import word_count as _word_count"
+        in confirmed_intent_source
+    )
+    assert "def _word_count" not in confirmed_intent_source
+    assert word_count("Accepted `AI` review/triage keeps status visible.") == 7
