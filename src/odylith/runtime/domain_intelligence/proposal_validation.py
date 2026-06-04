@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_brief import project
 from odylith.runtime.domain_intelligence.greenfield_component_contract import component_contract_issues
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import project_intelligence_issues
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
 from odylith.runtime.domain_intelligence.project_intelligence_binding import project_intelligence_binding_issues
 
@@ -264,7 +265,7 @@ def _validate_backlog_row(row: Any, index: int) -> None:
     if len(metrics) < 2:
         raise ValueError(f"backlog row {index} must include at least two success_metrics")
     for metric_index, metric in enumerate(metrics, start=1):
-        if _meaningful_word_count(metric) < 4:
+        if word_count(metric) < 4:
             raise ValueError(f"backlog row {index} success_metrics[{metric_index}] is too shallow")
     intelligence_issues = domain_intelligence_issues(row.get("domain_intelligence"), owner=f"backlog row {index}")
     if intelligence_issues:
@@ -293,7 +294,7 @@ def _validate_rationale_lines(row: Mapping[str, Any], index: int) -> None:
         if marker not in joined:
             raise ValueError(f"backlog row {index} rationale_lines must include `{marker}`")
     for line_index, line in enumerate(lines, start=1):
-        if _meaningful_word_count(line) < 7:
+        if word_count(line) < 7:
             raise ValueError(f"backlog row {index} rationale_lines[{line_index}] is too shallow")
 
 
@@ -349,7 +350,7 @@ def _require_text(row: Mapping[str, Any], key: str, *, owner: str, min_words: in
         raise ValueError(f"{owner} `{key}` must be non-empty")
     if value.casefold() in _PLACEHOLDER_TOKENS:
         raise ValueError(f"{owner} `{key}` must not be placeholder text")
-    if _meaningful_word_count(value) < min_words:
+    if word_count(value) < min_words:
         raise ValueError(f"{owner} `{key}` must contain at least {min_words} meaningful words")
     return value
 
@@ -363,10 +364,6 @@ def _validate_diagram_components(row: Mapping[str, Any], index: int) -> None:
             raise ValueError(f"diagram row {index} components[{component_index}] must be an object")
         _require_text(component, "name", owner=f"diagram row {index} components[{component_index}]", min_words=1)
         _require_text(component, "description", owner=f"diagram row {index} components[{component_index}]", min_words=4)
-
-
-def _meaningful_word_count(value: str) -> int:
-    return len(re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", str(value or "")))
 
 
 def _canonical_source(source: str) -> str:

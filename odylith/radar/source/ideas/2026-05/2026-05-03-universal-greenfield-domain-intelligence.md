@@ -1731,6 +1731,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`45 passed in 131.74s`); wider greenfield artifact proof passed
   (`166 passed in 197.92s`); and confirmed-create performance proof passed
   (`1 passed in 9.42s`), preserving the under-30s create gate.
+- 2026-06-04 proposal validation text-depth follow-through moved backlog,
+  rationale-line, success-metric, component-responsibility, and diagram
+  component-description word-depth checks in `proposal_validation.py` onto
+  `greenfield_text.word_count`. Proposal validation still owns required-field
+  policy, issue batching, evidence-tier checks, diagram safety, and proposal
+  shape gates, while shared text owns reusable visible word counting for
+  hyphenated product terms such as source-backed checkout-recovery proof.
+  Touched files remain below limits (`proposal_validation.py`: 371 lines;
+  `greenfield_text.py`: 149 lines;
+  `test_greenfield_proposal_validation_text.py`: 46 lines). Proof: syntax proof
+  passed for the touched module and test; focused proposal validation proof
+  passed (`4 passed in 3.49s`); wider greenfield artifact proof passed
+  (`167 passed in 197.00s`); and confirmed-create performance proof passed
+  (`1 passed in 9.56s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
