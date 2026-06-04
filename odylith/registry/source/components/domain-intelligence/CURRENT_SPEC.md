@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed-artifact Tribunal flowchart step counting through shared Mermaid text so duplicate step nodes cannot inflate first-path event depth.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/common/mermaid_text.py, src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py +2 more
 - **2026-06-04 · Implementation:** Routed confirmed-intent progression and quality-gate event marker counts through shared greenfield text while preserving caller-owned thresholds and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py, src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py +4 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed focus-label title token extraction through shared greenfield label terms so hyphenated generated titles such as Source-backed Review Workspace preserve their visible product signal.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
-- **2026-06-04 · Implementation:** Routed canonical confirmed project-title repair acceptance checks through shared greenfield label terms so slash-separated title candidates such as AI/ML Review Workspace preserve their visible product signal.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_repair.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -154,6 +154,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed confirmed-intent bare-title token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_intent.py` keeps section parsing, heading classification, preamble title detection, prewrite normalization, completion, and validation while the shared term index owns reusable display-token extraction for confirmed titles such as `Source-backed Evidence Workspace`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated component contract state token extraction through `greenfield_text.visible_words`. `greenfield_component_contract.py` keeps lifecycle state vocabulary, state-label extraction, focus phrase selection, contract assembly, and proof wording while shared greenfield text owns reusable visible-word splitting for hyphenated state phrases such as `blocked-state update`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-intent progression/outcome marker counts and quality-gate first-path event marker counts through `greenfield_text.progression_marker_count`. Confirmed-intent validation keeps field thresholds, connector vocabulary, outcome fallback, and semantic overlap; the quality gate keeps first-path event sufficiency policy; shared greenfield text owns reusable connector and punctuation marker counting. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed-artifact Tribunal flowchart step counting through `runtime.common.mermaid_text.numbered_flowchart_node_count`. `proposal_tribunal_substance.py` keeps the Atlas event-depth threshold, parser-debris checks, first-path tail preservation, and first-boundary routing policy while shared Mermaid text owns numbered flowchart node discovery and duplicate-node non-inflation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -189,6 +190,12 @@ This section captures synchronized requirement and contract signals derived from
   `greenfield_text.progression_marker_count`. These callers must not
   reintroduce local `len(re.findall(...))` counters for progression, punctuation,
   or event checks.
+- Confirmed-artifact Tribunal checks may own the minimum Atlas flowchart event
+  threshold and debris rejection policy, but reusable numbered Mermaid
+  flowchart node discovery must stay in
+  `runtime.common.mermaid_text.numbered_flowchart_node_count` or
+  `numbered_flowchart_node_ids`. Tribunal substance checks must not reintroduce
+  local `len(re.findall(...))` counters for first-path flowchart step depth.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,

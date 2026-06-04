@@ -189,6 +189,27 @@ def test_mermaid_text_normalizes_sequence_labels_notes_and_messages() -> None:
     assert "…" not in normalized
 
 
+def test_mermaid_text_counts_numbered_flowchart_nodes_once() -> None:
+    source = "\n".join(
+        [
+            "flowchart LR",
+            '  S1["Open request"]',
+            '  S2["Check evidence"]',
+            '  S2["Duplicate evidence definition"]',
+            '  S10["Publish outcome"]',
+            '  C1["Intake service"]',
+        ]
+    )
+
+    assert mermaid_text.numbered_flowchart_node_ids(source, prefix="S") == (
+        "S1",
+        "S2",
+        "S10",
+    )
+    assert mermaid_text.numbered_flowchart_node_count(source, prefix="S") == 3
+    assert mermaid_text.numbered_flowchart_node_count(source, prefix="C") == 1
+
+
 def test_confirmed_greenfield_create_handles_generic_reviewer_and_action_systems(tmp_path: Path) -> None:
     intent = parse_confirmed_intent_text(
         """Volunteer Equipment Checkout Tracker — Product Intent Confirmation

@@ -1975,6 +1975,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`46 passed in 13.75s`); wider greenfield artifact proof passed (`182
   passed in 203.05s`); and confirmed-create performance proof passed (`1 passed
   in 9.73s`), preserving the under-30s create gate.
+- 2026-06-04 Tribunal flowchart node-count follow-through moved confirmed
+  first-path flowchart step counting out of
+  `proposal_tribunal_substance.py` and into
+  `mermaid_text.numbered_flowchart_node_count`. The Tribunal substance owner
+  still decides the minimum event threshold and the Atlas debris checks, while
+  shared Mermaid text owns numbered flowchart node discovery. The helper counts
+  unique node IDs in first-seen order, so duplicate `S2` declarations cannot
+  inflate first-path event depth. Touched files remain below limits
+  (`proposal_tribunal_substance.py`: 463 lines; `mermaid_text.py`: 212 lines;
+  `test_greenfield_tribunal_term_index.py`: 43 lines;
+  `test_greenfield_confirmed_surfaces.py`: 282 lines). Proof: syntax proof
+  passed for the touched modules and tests; focused Tribunal/Mermaid proof
+  passed (`7 passed in 7.21s`); wider greenfield artifact proof passed (`183
+  passed in 204.28s`); and confirmed-create performance proof passed (`1 passed
+  in 9.25s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

@@ -25,7 +25,9 @@ def test_confirmed_artifact_tribunal_terms_use_shared_index() -> None:
     assert "greenfield_domain_term_index import label_terms" in substance_source
     assert "normalize_domain_token" not in substance_source
     assert "for raw in re.findall" not in substance_source
+    assert "len(re.findall" not in substance_source
     assert "accepted_terms = set(re.findall" not in substance_source
+    assert "mermaid_text.numbered_flowchart_node_count" in substance_source
     assert "ordered_terms(" in substance_source
     assert "label_terms(accepted_text)" in substance_source
 

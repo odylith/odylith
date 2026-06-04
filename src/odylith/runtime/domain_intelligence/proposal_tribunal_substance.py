@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -272,7 +273,7 @@ def _check_first_path_flowchart(
     source: str,
     issues: list[str],
 ) -> None:
-    step_count = len(re.findall(r"\bS\d+\[\"", source))
+    step_count = mermaid_text.numbered_flowchart_node_count(source, prefix="S")
     if step_count < 3:
         issues.append(f"confirmed Atlas flowchart `{title}` collapses the first path into too few events")
     if "C4-" in source or re.search(r"\bparticipant\b", source, re.IGNORECASE):

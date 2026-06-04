@@ -10,6 +10,9 @@ from odylith.runtime.common import display_text
 _FIRST_CONTENT_RE = re.compile(r"^\s*(?!%%)(\S+)", re.MULTILINE)
 _PARTICIPANT_RE = re.compile(r"^(\s*participant\s+\S+\s+as\s+)(.+?)\s*$", re.IGNORECASE)
 _NOTE_RE = re.compile(r"^(\s*Note\s+(?:over|right of|left of)\s+[^:]+:\s*)(.+?)\s*$", re.IGNORECASE)
+_NUMBERED_FLOWCHART_NODE_RE = re.compile(
+    r"(?<![\w-])(?P<prefix>[A-Za-z]+)(?P<number>\d+)\s*\[\""
+)
 
 
 def clean_mermaid_text(value: object) -> str:
@@ -83,6 +86,31 @@ def normalize_mermaid_source(source: str) -> str:
     if first != "sequenceDiagram":
         return source
     return "\n".join(_normalize_sequence_lines(source.splitlines()))
+
+
+def numbered_flowchart_node_ids(source: object, *, prefix: str = "S") -> tuple[str, ...]:
+    """Return unique numbered flowchart node IDs in first-seen order."""
+
+    wanted_prefix = str(prefix or "").strip()
+    if not wanted_prefix:
+        return ()
+    seen: set[str] = set()
+    node_ids: list[str] = []
+    for match in _NUMBERED_FLOWCHART_NODE_RE.finditer(str(source or "")):
+        if match.group("prefix") != wanted_prefix:
+            continue
+        node_id = f"{match.group('prefix')}{match.group('number')}"
+        if node_id in seen:
+            continue
+        seen.add(node_id)
+        node_ids.append(node_id)
+    return tuple(node_ids)
+
+
+def numbered_flowchart_node_count(source: object, *, prefix: str = "S") -> int:
+    """Count unique numbered flowchart nodes for a caller-owned prefix."""
+
+    return len(numbered_flowchart_node_ids(source, prefix=prefix))
 
 
 def _normalize_sequence_lines(lines: Sequence[str]) -> list[str]:
@@ -175,6 +203,8 @@ __all__ = [
     "clean_mermaid_text",
     "escape_mermaid_label",
     "normalize_mermaid_source",
+    "numbered_flowchart_node_count",
+    "numbered_flowchart_node_ids",
     "wrap_mermaid_label",
     "wrap_sequence_message",
     "wrap_sequence_note",
