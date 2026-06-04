@@ -8,12 +8,51 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+
+_SEMANTIC_MODEL_TERM_STOPWORDS = {
+    "accepted",
+    "action",
+    "after",
+    "before",
+    "boundary",
+    "complete",
+    "create",
+    "created",
+    "enter",
+    "entered",
+    "enters",
+    "first",
+    "greenfield",
+    "least",
+    "path",
+    "person",
+    "product",
+    "proven",
+    "proof",
+    "record",
+    "recorded",
+    "release",
+    "state",
+    "succeed",
+    "succeeds",
+    "system",
+    "that",
+    "their",
+    "then",
+    "this",
+    "user",
+    "view",
+    "viewed",
+    "views",
+    "when",
+    "with",
+}
 
 
 @dataclass(frozen=True)
@@ -143,7 +182,14 @@ def build_greenfield_semantic_model(
         internal_systems=component_labels or tuple(_clean(row) for row in internal_systems if _clean(row)),
         external_systems=tuple(_clean(row) for row in external_systems if _clean(row)),
         non_goals=tuple(_clean(row) for row in non_goals if _clean(row)),
-        domain_terms=tuple(sorted(_semantic_terms(" ".join([title, state_object, first_path, proof_boundary])))),
+        domain_terms=tuple(
+            sorted(
+                ordered_terms(
+                    " ".join([title, state_object, first_path, proof_boundary]),
+                    stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS,
+                )
+            )
+        ),
     )
     return GreenfieldSemanticModel(
         schema_version="odylith.greenfield.semantic_model.v1",
@@ -353,7 +399,14 @@ def _strip_dangling_tail(value: str) -> str:
 
 
 def _required_fields(steps: Sequence[str], *, state_object: str) -> list[str]:
-    terms = [term for term in _semantic_terms(" ".join([state_object, *steps])) if len(term) > 3]
+    terms = [
+        term
+        for term in ordered_terms(
+            " ".join([state_object, *steps]),
+            stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS,
+        )
+        if len(term) > 3
+    ]
     priority = ["identity", "source", "timestamp", "status", "value", "rationale", "evidence"]
     ordered = [term for term in priority if term in terms]
     ordered.extend(term for term in terms if term not in ordered)
@@ -361,7 +414,7 @@ def _required_fields(steps: Sequence[str], *, state_object: str) -> list[str]:
 
 
 def _event_target(step: str, *, state_object: str) -> str:
-    terms = list(_semantic_terms(step))
+    terms = ordered_terms(step, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)
     if terms:
         return " ".join(terms[:4])
     return state_object
@@ -416,60 +469,10 @@ def _actor_terms(values: Sequence[str]) -> tuple[str, ...]:
             maxsplit=1,
             flags=re.IGNORECASE,
         )[0]
-        for term in _semantic_terms(role_head):
+        for term in ordered_terms(role_head, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS):
             if term not in seen:
                 seen.add(term)
                 terms.append(term)
-    return tuple(terms)
-
-
-def _semantic_terms(value: Any) -> tuple[str, ...]:
-    stop = {
-        "accepted",
-        "action",
-        "after",
-        "before",
-        "boundary",
-        "complete",
-        "create",
-        "created",
-        "enter",
-        "entered",
-        "enters",
-        "first",
-        "greenfield",
-        "least",
-        "path",
-        "person",
-        "product",
-        "proven",
-        "proof",
-        "record",
-        "recorded",
-        "release",
-        "state",
-        "succeed",
-        "succeeds",
-        "system",
-        "that",
-        "their",
-        "then",
-        "this",
-        "user",
-        "view",
-        "viewed",
-        "views",
-        "when",
-        "with",
-    }
-    terms: list[str] = []
-    seen: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _clean(value).casefold()):
-        token = normalize_domain_token(raw, stopwords=stop)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        terms.append(token)
     return tuple(terms)
 
 

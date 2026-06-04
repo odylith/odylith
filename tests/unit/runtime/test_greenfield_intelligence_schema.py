@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import project_intelligence_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import domain_intelligence_issues
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
+
+ROOT = Path(__file__).resolve().parents[3]
+DOMAIN_INTELLIGENCE = ROOT / "src/odylith/runtime/domain_intelligence"
 
 
 def _apply_ready_fixture(tmp_path, prompt: str) -> dict[str, object]:  # noqa: ANN001
@@ -64,4 +69,43 @@ def test_workstream_intelligence_captures_scope_owners_and_invalidation_rules(tm
     assert "workflow domain_intelligence contains malformed ownership phrase" in domain_intelligence_issues(
         malformed,
         owner="workflow",
+    )
+
+
+def test_semantic_model_term_extraction_uses_shared_domain_index() -> None:
+    model_source = (DOMAIN_INTELLIGENCE / "greenfield_semantic_model.py").read_text(encoding="utf-8")
+    index_source = (DOMAIN_INTELLIGENCE / "greenfield_domain_term_index.py").read_text(encoding="utf-8")
+
+    assert "def ordered_terms" in index_source
+    assert "from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms" in model_source
+    assert "def _semantic_terms" not in model_source
+    assert "normalize_domain_token" not in model_source
+    assert "_SEMANTIC_MODEL_TERM_STOPWORDS" in model_source
+
+    model = build_greenfield_semantic_model(
+        title="Race Reading Review",
+        state_object="Race reading record with gearbox status",
+        first_path="A reviewer opens race readings, reviews gearbox status, and records evidence.",
+        proof_boundary="Release succeeds when reviewed readings show evidence and status.",
+        components=[],
+        human_actors=["Race reviewer"],
+    )
+
+    assert model.domain_ontology.domain_terms == (
+        "evidence",
+        "gearbox",
+        "open",
+        "race",
+        "reading",
+        "review",
+        "reviewed",
+        "reviewer",
+        "show",
+        "status",
+    )
+    assert model.first_path_contract.required_fields[:4] == (
+        "status",
+        "evidence",
+        "race",
+        "reading",
     )

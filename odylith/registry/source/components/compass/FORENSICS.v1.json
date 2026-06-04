@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 220,
-    "mapped_workstream_evidence_count": 146,
+    "explicit_event_count": 221,
+    "mapped_workstream_evidence_count": 147,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 220
+    "timeline_event_count": 221
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,39 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+        "tests/unit/runtime/test_greenfield_intelligence_schema.py"
+      ],
+      "confidence": "high",
+      "event_index": 535,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed generated semantic model ontology, required-field, event-target, and actor term extraction through the shared greenfield domain term index while preserving semantic-model stopwords and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T19:25:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",

@@ -1293,6 +1293,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`5 passed in 0.05s`); wider artifact/proposal proof passed
   (`105 passed in 166.48s`); and confirmed-create performance proof passed
   (`1 passed in 9.90s`), preserving the under-30s create gate.
+- 2026-06-04 semantic-model term-index follow-through moved generated semantic
+  model ontology terms, required-field terms, event-target terms, and actor
+  terms onto `greenfield_domain_term_index.ordered_terms`.
+  `greenfield_semantic_model.py` now owns only semantic-model stopwords and no
+  longer imports `normalize_domain_token` or defines `_semantic_terms`, keeping
+  generated Radar, Registry, Atlas, and Tribunal semantic model vocabulary on
+  the same shared normalization owner as product risks and Atlas sequence
+  routing. Touched files remain below limits
+  (`greenfield_semantic_model.py`: 494 lines;
+  `test_greenfield_intelligence_schema.py`: 111 lines). Proof: syntax proof
+  passed for the touched module and test; focused intelligence-schema proof
+  passed (`3 passed in 0.11s`); wider artifact/proposal/post-confirm proof
+  passed (`108 passed in 168.60s`); and confirmed-create performance proof
+  passed (`1 passed in 9.91s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
