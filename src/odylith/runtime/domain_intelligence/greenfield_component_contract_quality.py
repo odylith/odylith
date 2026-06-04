@@ -7,6 +7,8 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
@@ -519,11 +521,8 @@ def _sentence(value: Any) -> str:
     text = _clean(value).strip(" .")
     if not text:
         return ""
-    if re.match(
-        r"^(?:Operator|Maintainer|Reviewer|Primary user|Project operator|Domain reviewer|Implementation owner|Evidence owner|Workflow operator|Risk reviewer|Proof reviewer)(?:\s|:|[-–—]|$)",
-        text,
-    ):
-        text = f"local {text[:1].lower()}{text[1:]}"
+    if starts_with_generic_actor_label(text):
+        text = localize_generic_actor_label(text)
     return text[:1].upper() + text[1:] + "."
 
 

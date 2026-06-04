@@ -6,6 +6,8 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import generic_actor_label_prefix
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
@@ -240,13 +242,11 @@ def _ranked_output_artifact(value: str) -> str:
 
 def _safe_artifact_focus(value: str) -> str:
     text = _clean(value).strip(" .")
-    if re.match(
-        r"^(?:operator|maintainer|reviewer|primary user|project operator|domain reviewer|implementation owner|"
-        r"evidence owner|workflow operator|risk reviewer|proof reviewer)(?:\s|:|[-–—]|$)",
-        text,
-        flags=re.IGNORECASE,
-    ):
-        return f"local {text[:1].lower()}{text[1:]}"
+    if generic_actor_label_prefix(text):
+        cleaned = clean_artifact_phrase(text)
+        if cleaned and not generic_actor_label_prefix(cleaned):
+            return cleaned
+        return localize_generic_actor_label(text)
     return text
 
 

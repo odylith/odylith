@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
+    normalize_contract,
     public_prose_quality_issues,
     rendered_component_spec_quality_issues,
 )
@@ -10,7 +11,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_targets i
     operator_component_spec_issues,
     repair_targets_from_spec_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import generic_actor_label_prefix
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
@@ -24,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import term_
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import contract_focus
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
@@ -174,9 +179,19 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def literal_label_compounds" in term_windows_source
     assert "def nearby_domain_terms" in term_windows_source
     assert "def looks_actor_term" in actor_terms_source
+    assert "def generic_actor_label_prefix" in actor_terms_source
+    assert "def starts_with_generic_actor_label" in actor_terms_source
+    assert "def localize_generic_actor_label" in actor_terms_source
     assert "def looks_action_form" in terms_source
     assert "def _looks_actorish_term" not in terms_source
     assert "greenfield_actor_terms import looks_actor_term" in terms_source
+    assert "greenfield_actor_terms import generic_actor_label_prefix" in fields_source
+    assert "greenfield_actor_terms import starts_with_generic_actor_label" in differentiation_source
+    assert "greenfield_actor_terms import starts_with_generic_actor_label" in quality_source
+    generic_actor_regex = "Operator|Maintainer|Reviewer|Primary user"
+    assert generic_actor_regex not in fields_source
+    assert generic_actor_regex not in differentiation_source
+    assert generic_actor_regex not in quality_source
     assert "def ordered_domain_terms" not in quality_source
     assert "def domain_terms" not in quality_source
     assert "def _section_terms" not in quality_source
@@ -262,9 +277,35 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     }
     assert looks_actor_term("inspector")
     assert looks_action_form("reviews")
+    assert generic_actor_label_prefix("Risk reviewer guardrails") == "risk reviewer"
+    assert generic_actor_label_prefix("End-user advocate checklist") == "end-user advocate"
+    assert starts_with_generic_actor_label("Project operator: approval packet")
+    assert localize_generic_actor_label("Operator approval packet") == "local operator approval packet"
+    assert localize_generic_actor_label("Build owner proof") == "local build owner proof"
     assert clean_artifact_phrase("inspector reviews permit note") == "permit note"
     assert clean_artifact_phrase("student submits assignment details") == "assignment details"
     assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
+    assert contract_focus(
+        object_list="Primary user request status",
+        action_terms=("record",),
+        fallback="",
+        role="input",
+    ) == "required request status command, required fields, prior state, and explanation context"
+    assert contract_focus(
+        object_list="Risk reviewer guardrails",
+        action_terms=("record",),
+        fallback="",
+        role="input",
+    ) == "required risk guardrails command, required fields, prior state, and explanation context"
+    assert contract_focus(
+        object_list="Operator approval packet",
+        action_terms=("record",),
+        fallback="",
+        role="input",
+    ) == "required local operator approval packet command, required fields, prior state, and explanation context"
+    assert normalize_contract({"owned_state": "Risk reviewer guardrails"})["owned_state"] == (
+        "Local risk reviewer guardrails."
+    )
     assert literal_label_terms("AI CRM Status Windows Viewer", noise_terms={"service"}) == [
         "ai",
         "crm",

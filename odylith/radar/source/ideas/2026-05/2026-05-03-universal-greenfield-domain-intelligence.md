@@ -1509,6 +1509,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed (`14 passed in 0.14s`); wider greenfield artifact proof passed
   (`156 passed in 195.31s`); and confirmed-create performance proof passed
   (`1 passed in 9.29s`), preserving the under-30s create gate.
+- 2026-06-04 Registry generic actor-label prefix follow-through moved
+  local operator/reviewer prefix detection into `greenfield_actor_terms.py`.
+  Component contract fields, contract differentiation, and rendered-spec
+  quality now share `generic_actor_label_prefix`,
+  `starts_with_generic_actor_label`, and `localize_generic_actor_label`
+  instead of carrying local actor-prefix regexes. Generic prefixes that leave a
+  concrete artifact behind, such as `Primary user request status` and
+  `Risk reviewer guardrails`, now reduce to the owned artifact phrase, while
+  bare generic actor labels such as `Operator approval packet` stay localized.
+  Touched files remain below limits (`greenfield_actor_terms.py`: 107 lines;
+  `greenfield_component_contract_fields.py`: 413 lines;
+  `greenfield_component_contract_differentiation.py`: 700 lines;
+  `greenfield_component_contract_quality.py`: 537 lines;
+  `test_greenfield_component_spec_quality.py`: 560 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component proof passed
+  (`14 passed in 0.17s`); wider greenfield artifact proof passed (`156 passed
+  in 194.91s`); and confirmed-create performance proof passed (`1 passed in
+  9.55s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

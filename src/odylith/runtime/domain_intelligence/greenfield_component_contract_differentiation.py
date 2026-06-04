@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_component_contract_targets as contract_targets
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_axes import (
     ComponentAxis,
     derive_component_axis,
@@ -190,13 +191,7 @@ def _contract_misses_local_axis(*, row: Mapping[str, Any], contract: Mapping[str
 
 
 def _starts_with_generic_actor(value: str) -> bool:
-    text = _clean(value)
-    return bool(
-        re.match(
-            r"^(?:Operator|Maintainer|Reviewer|Primary user|Project operator|Domain reviewer|Implementation owner|Evidence owner|Workflow operator|Risk reviewer|Proof reviewer)(?:\s|:|[-–—]|$)",
-            text,
-        )
-    )
+    return starts_with_generic_actor_label(_clean(value))
 
 
 def _axis_distinctive_terms(axis: ComponentAxis) -> set[str]:
