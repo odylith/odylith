@@ -9,7 +9,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIF
 from odylith.runtime.domain_intelligence.greenfield_component_terms import domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -85,7 +85,7 @@ def _preserved_label_terms(value: Any) -> tuple[str, ...]:
 
 
 def _clean(value: Any) -> str:
-    return clean_text(value).replace("`", "")
+    return clean_markdown_text(value)
 
 
 __all__ = ["literal_label_compounds", "literal_label_terms", "nearby_domain_terms"]

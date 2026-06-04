@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed remaining inline Markdown cleanup for confirmed component labels, first-path text, sequence steps, Atlas sentence text, semantic model cleanup, and Registry term windows through shared greenfield text with focused, wide, and performance proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py +7 more
 - **2026-06-04 · Implementation:** Routed confirmed-intent Markdown cleanup through the shared greenfield text owner and pinned parser, confirmed-text, and actor-label adoption with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_actor_labels.py +4 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed generated artifact word-boundary clipping mechanics through shared greenfield text while preserving caller-owned grammar and fallback policy.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py +8 more
-- **2026-06-04 · Implementation:** Routed confirmed exact-word occurrence mechanics through shared greenfield text while preserving confirmed Markdown cleanup for repeated-word checks.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -161,6 +161,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed confirmed Atlas proof-boundary lead cleanup through `greenfield_text.normalize_proof_boundary_language`. `greenfield_confirmed_diagram_text.py` keeps brief proof summaries, semantic checkpoint selection, clause splitting, label limits, and Mermaid-safe rendering while shared greenfield text owns reusable evidence-prompt, trust, success, replay, and done-means prefix cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated artifact text cleanup through `greenfield_text.clean_artifact_text`. Registry component contracts, contract differentiation, contract fields, component profiles, contract quality gates, semantic context, semantic contracts, component terms, the domain term index, and semantic quality keep caller-owned contract, phrase, token, and validation policy while shared greenfield text owns reusable backtick removal, punctuation-spacing cleanup, whitespace collapse, and optional parenthesis splitting. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-intent Markdown cleanup through `greenfield_text.clean_markdown_text`. Confirmed text keeps list coercion, semantic terms, word-count APIs, title/focus labels, and generated sentence shaping; confirmed-intent parsing keeps section parsing and title detection; actor labels keep project-specific role normalization while shared greenfield text owns reusable emphasis token stripping, backtick removal, punctuation-spacing cleanup, and whitespace collapse. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed remaining inline Markdown cleanup for confirmed component labels, first-path text, sequence-step sentences, confirmed Atlas sentence text, semantic-model cleanup, and Registry component term windows through `greenfield_text.clean_markdown_text`. Those callers keep component naming, first-path parsing, sentence casing, diagram rendering, semantic model assembly, and term-window scoring while shared greenfield text owns reusable inline emphasis stripping, backtick removal, punctuation-spacing cleanup, and whitespace collapse. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -240,6 +241,14 @@ This section captures synchronized requirement and contract signals derived from
   emphasis cleanup must stay in `greenfield_text.clean_markdown_text`. They
   must not reintroduce local `**`, `__`, backtick stripping, or
   punctuation-spacing regex bodies.
+- Confirmed component labels, first-path text cleanup, sequence-step sentence
+  shaping, confirmed Atlas sentence text, semantic-model cleanup, and Registry
+  component term windows may own their component naming, parser, sentence,
+  diagram, semantic model, and term-window policies, but reusable inline
+  Markdown cleanup must stay in `greenfield_text.clean_markdown_text`. They
+  must not reintroduce local `display_text.strip_inline_markdown_emphasis_tokens`,
+  `replace("`", "")`, or punctuation-spacing regex bodies for this cleanup
+  class.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,

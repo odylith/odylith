@@ -10,8 +10,15 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
+from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_terms
+from odylith.runtime.domain_intelligence.greenfield_confirmed_components import system_component_name
+from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import sentence as diagram_sentence
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import clean_first_path_text
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
+from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_text import (
     clean_markdown_text,
     clip_text_at_word_boundary,
@@ -66,6 +73,46 @@ def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:
         assert "clean_markdown_text" in source
         assert 'replace("**", "")' not in source
         assert 'replace("__", "")' not in source
+        assert 'replace("`", "")' not in source
+        assert 're.sub(r"\\s+([,.;:?!])", r"\\1", text)' not in source
+
+
+def test_inline_markdown_cleanup_shared_by_confirmed_text_callers() -> None:
+    callers = [
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_components.py",
+        DOMAIN_INTELLIGENCE / "greenfield_first_path_clauses.py",
+        DOMAIN_INTELLIGENCE / "greenfield_sequence_steps.py",
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_diagram_text.py",
+        DOMAIN_INTELLIGENCE / "greenfield_semantic_model.py",
+        DOMAIN_INTELLIGENCE / "greenfield_component_term_windows.py",
+    ]
+
+    assert clean_markdown_text(" **Ops** sees `status` , ready") == "Ops sees status, ready"
+    assert clean_first_path_text(" **Ops** sees `status` , ready") == "Ops sees status, ready"
+    assert diagram_sentence(" **ops** sees `status` , ready.") == "Ops sees status, ready."
+    assert sequence_event_steps("1. Open app. 2. **Ops** adds `status` , ready. 3. Save result.") == [
+        "Ops adds status, ready",
+        "Save result",
+    ]
+    assert system_component_name("**AI** `Review` Service") == "AI Review Service"
+    assert literal_label_terms("**Claims** `Review` Store", noise_terms=set()) == ["claim", "review"]
+    semantic = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="**Claims** Review",
+            state_object="`claim` state",
+            first_path="**Reviewer** records `score` , status.",
+            proof_boundary="save `score` , ready",
+            components=[],
+            human_actors=["**Reviewer**"],
+        )
+    )
+    assert semantic["first_path_contract"]["actor"] == "Reviewer"
+    assert semantic["first_path_contract"]["events"][0]["text"] == "Reviewer records score, status"
+
+    for caller in callers:
+        source = caller.read_text(encoding="utf-8")
+        assert "clean_markdown_text" in source
+        assert "display_text.strip_inline_markdown_emphasis_tokens" not in source
         assert 'replace("`", "")' not in source
         assert 're.sub(r"\\s+([,.;:?!])", r"\\1", text)' not in source
 

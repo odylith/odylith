@@ -6,8 +6,8 @@ from collections.abc import Mapping
 import re
 from typing import Any
 
-from odylith.runtime.common import display_text
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
@@ -185,8 +185,7 @@ def _dedupe_steps(values: list[str]) -> list[str]:
 
 
 def _sentence(value: str) -> str:
-    text = display_text.strip_inline_markdown_emphasis_tokens(value).replace("`", "")
-    text = " ".join(text.strip().split()).rstrip(".")
+    text = clean_markdown_text(value).rstrip(".")
     if text:
         text = text[:1].upper() + text[1:]
     return f"{text}." if text else ""

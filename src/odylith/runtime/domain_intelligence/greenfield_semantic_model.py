@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -477,7 +478,7 @@ def _actor_terms(values: Sequence[str]) -> tuple[str, ...]:
 
 
 def _clean(value: Any) -> str:
-    return re.sub(r"\s+", " ", clean_text(value).replace("`", "")).strip()
+    return clean_markdown_text(value)
 
 
 __all__ = [

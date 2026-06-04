@@ -2106,6 +2106,27 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed in 38.12s`); wider greenfield artifact proof passed (`188 passed in
   193.25s`); and confirmed-create performance proof passed (`1 passed in
   9.39s`), preserving the under-30s create gate.
+- 2026-06-04 inline Markdown-cleanup follow-through extended the shared
+  `greenfield_text.clean_markdown_text` owner to confirmed component labels,
+  first-path text cleanup, sequence-step sentence shaping, confirmed Atlas
+  sentence text, semantic-model cleanup, and Registry component term windows.
+  The shared owner now uses the common inline-emphasis stripper plus one
+  punctuation-spacing helper, while callers keep their domain policies for
+  component naming, first-path parsing, sentence casing, semantic model
+  assembly, and term-window scoring. The touched callers no longer keep local
+  inline emphasis, backtick, or punctuation-spacing cleanup forks. Touched files
+  remain below limits (`greenfield_first_path_clauses.py`: 756 lines;
+  `greenfield_confirmed_components.py`: 577 lines;
+  `greenfield_confirmed_diagram_text.py`: 516 lines;
+  `greenfield_semantic_model.py`: 495 lines; `greenfield_text.py`: 265 lines;
+  `greenfield_sequence_steps.py`: 198 lines;
+  `greenfield_component_term_windows.py`: 91 lines;
+  `test_greenfield_confirmed_text.py`: 241 lines). Proof: syntax proof passed
+  for the touched modules and test; focused shared-cleanup proof passed (`10
+  passed in 0.27s`); relevant greenfield caller proof passed (`35 passed in
+  4.27s`); wider greenfield artifact proof passed (`189 passed in 208.74s`);
+  and confirmed-create performance proof passed (`1 passed in 11.13s`),
+  preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

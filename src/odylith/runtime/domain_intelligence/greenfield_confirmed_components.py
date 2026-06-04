@@ -6,7 +6,6 @@ import re
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.common import display_text
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
@@ -28,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
     differentiate_component_contracts,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 
@@ -520,9 +520,7 @@ def _title_phrase(value: str) -> str:
 
 
 def _plain_text(value: object) -> str:
-    text = display_text.strip_inline_markdown_emphasis_tokens(value).replace("`", "").strip()
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return " ".join(text.split())
+    return clean_markdown_text(value)
 
 
 def _title_word(value: str, *, first: bool = True, previous: str = "") -> str:

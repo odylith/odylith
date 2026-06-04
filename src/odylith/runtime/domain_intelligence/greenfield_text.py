@@ -6,9 +6,12 @@ import re
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+from odylith.runtime.common import display_text
+
 _LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;)+")
 _COMMA_LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;|,)+")
 _LIST_BULLET_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s*")
+_PUNCTUATION_SPACING_RE = re.compile(r"\s+([,.;:?!])")
 
 
 def clean_text(value: Any) -> str:
@@ -19,13 +22,13 @@ def clean_artifact_text(value: Any, *, split_parentheses: bool = False) -> str:
     text = clean_text(value).replace("`", "")
     if split_parentheses:
         text = text.replace("(", " ").replace(")", " ")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
+    text = _PUNCTUATION_SPACING_RE.sub(r"\1", text)
     return clean_text(text)
 
 
 def clean_markdown_text(value: Any) -> str:
-    text = clean_text(value).replace("**", "").replace("__", "").replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
+    text = display_text.strip_inline_markdown_emphasis_tokens(clean_text(value)).replace("`", "")
+    text = _PUNCTUATION_SPACING_RE.sub(r"\1", text)
     return clean_text(text)
 
 
