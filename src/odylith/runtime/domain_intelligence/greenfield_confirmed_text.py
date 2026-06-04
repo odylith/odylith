@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import word_count as _generic_word_count
+from odylith.runtime.domain_intelligence.greenfield_text import word_occurrences as _generic_word_occurrences
 
 
 GENERIC_TITLE_WORDS = {
@@ -173,16 +174,7 @@ def word_count(value: str) -> int:
 
 
 def word_occurrences(value: str, word: str) -> int:
-    token = clean_confirmed_text(word).strip()
-    if not token:
-        return 0
-    return len(
-        re.findall(
-            rf"\b{re.escape(token)}\b",
-            clean_confirmed_text(value),
-            re.IGNORECASE,
-        )
-    )
+    return _generic_word_occurrences(clean_confirmed_text(value), clean_confirmed_text(word))
 
 
 def focus_label(title: str) -> str:

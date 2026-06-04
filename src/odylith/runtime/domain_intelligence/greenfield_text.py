@@ -19,6 +19,19 @@ def word_count(value: Any) -> int:
     return len(visible_words(value))
 
 
+def word_occurrences(value: Any, word: Any) -> int:
+    token = clean_text(word)
+    if not token:
+        return 0
+    return len(
+        re.findall(
+            rf"\b{re.escape(token)}\b",
+            clean_text(value),
+            re.IGNORECASE,
+        )
+    )
+
+
 def visible_words(value: Any) -> tuple[str, ...]:
     return tuple(re.findall(r"[A-Za-z0-9]+", clean_text(value)))
 

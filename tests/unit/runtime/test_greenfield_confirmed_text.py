@@ -12,6 +12,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_c
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_text import (
+    word_occurrences as generic_word_occurrences,
+)
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -99,12 +102,19 @@ def test_confirmed_project_surface_word_count_stays_in_text_owner() -> None:
 
     assert "def word_count" in text_source
     assert "def word_occurrences" in text_source
+    assert (
+        "greenfield_text import word_occurrences as _generic_word_occurrences"
+        in text_source
+    )
+    assert "re.findall(" not in text_source
     assert "greenfield_confirmed_text import word_count" in project_brief_source
     assert "greenfield_confirmed_text import word_count" in project_intelligence_source
     assert "def _word_count" not in project_brief_source
     assert "def _word_count" not in project_intelligence_source
     assert word_count("Source-backed review/triage keeps `AI` CRM status visible.") == 9
     assert word_occurrences("Required proof and required signoff stay visible.", "required") == 2
+    assert word_occurrences("`Required` proof and **required** signoff stay visible.", "required") == 2
+    assert generic_word_occurrences("Required proof and required signoff stay visible.", "required") == 2
 
 
 def test_confirmed_focus_label_uses_shared_label_terms() -> None:

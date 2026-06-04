@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed exact-word occurrence mechanics through shared greenfield text while preserving confirmed Markdown cleanup for repeated-word checks.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +3 more
 - **2026-06-04 · Implementation:** Routed confirmed-artifact Tribunal flowchart step counting through shared Mermaid text so duplicate step nodes cannot inflate first-path event depth.
   - Scope: B-142
   - Evidence: src/odylith/runtime/common/mermaid_text.py, src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py +2 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed actor role candidate token extraction through shared greenfield label terms so hyphenated accepted roles such as Source-backed reviewer preserve their visible product signal.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed focus-label title token extraction through shared greenfield label terms so hyphenated generated titles such as Source-backed Review Workspace preserve their visible product signal.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -155,6 +155,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed generated component contract state token extraction through `greenfield_text.visible_words`. `greenfield_component_contract.py` keeps lifecycle state vocabulary, state-label extraction, focus phrase selection, contract assembly, and proof wording while shared greenfield text owns reusable visible-word splitting for hyphenated state phrases such as `blocked-state update`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-intent progression/outcome marker counts and quality-gate first-path event marker counts through `greenfield_text.progression_marker_count`. Confirmed-intent validation keeps field thresholds, connector vocabulary, outcome fallback, and semantic overlap; the quality gate keeps first-path event sufficiency policy; shared greenfield text owns reusable connector and punctuation marker counting. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed-artifact Tribunal flowchart step counting through `runtime.common.mermaid_text.numbered_flowchart_node_count`. `proposal_tribunal_substance.py` keeps the Atlas event-depth threshold, parser-debris checks, first-path tail preservation, and first-boundary routing policy while shared Mermaid text owns numbered flowchart node discovery and duplicate-node non-inflation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed exact-word occurrence counting through `greenfield_text.word_occurrences`. `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup and the confirmed-text API while shared greenfield text owns exact whole-word occurrence counting for generated Radar mechanical-summary checks such as repeated `required` phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -196,6 +197,11 @@ This section captures synchronized requirement and contract signals derived from
   `runtime.common.mermaid_text.numbered_flowchart_node_count` or
   `numbered_flowchart_node_ids`. Tribunal substance checks must not reintroduce
   local `len(re.findall(...))` counters for first-path flowchart step depth.
+- Confirmed text may own confirmed Markdown cleanup, list coercion, semantic
+  term APIs, title/focus labels, and domain-object labels, but reusable exact
+  whole-word occurrence counting must stay in `greenfield_text.word_occurrences`.
+  Confirmed text may call that helper after confirmed cleanup, but it must not
+  reintroduce local `re.findall(...)` occurrence counting.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,

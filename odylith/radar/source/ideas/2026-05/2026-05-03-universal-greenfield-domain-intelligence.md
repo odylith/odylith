@@ -1990,6 +1990,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`7 passed in 7.21s`); wider greenfield artifact proof passed (`183
   passed in 204.28s`); and confirmed-create performance proof passed (`1 passed
   in 9.25s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed exact-word occurrence follow-through moved repeated-word
+  counting mechanics from `greenfield_confirmed_text.py` into
+  `greenfield_text.word_occurrences`. Confirmed text still owns confirmed
+  Markdown cleanup and the public confirmed-text API, while shared greenfield
+  text owns reusable exact whole-word counting for generated Radar phrases such
+  as repeated `required` mechanical summaries. Touched files remain below limits
+  (`greenfield_confirmed_text.py`: 405 lines; `greenfield_text.py`: 182 lines;
+  `greenfield_confirmed_backlog_text_model.py`: 475 lines;
+  `test_greenfield_confirmed_text.py`: 142 lines;
+  `test_greenfield_confirmed_backlog_terms.py`: 56 lines). Proof: syntax proof
+  passed for the touched modules and tests; focused confirmed-text/backlog proof
+  passed (`6 passed in 0.05s`); wider greenfield artifact proof passed (`183
+  passed in 203.61s`); and confirmed-create performance proof passed (`1 passed
+  in 9.79s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
