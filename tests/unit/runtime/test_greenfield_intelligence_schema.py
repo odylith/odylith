@@ -82,6 +82,10 @@ def test_semantic_model_term_extraction_uses_shared_domain_index() -> None:
     assert "from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms" in model_source
     assert "from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count" in model_source
     assert "def _semantic_terms" not in model_source
+    assert "def _actor_terms" not in model_source
+    assert "actor_terms=" not in model_source
+    assert "seen: set[str]" not in model_source
+    assert "seen.add(" not in model_source
     assert "normalize_domain_token" not in model_source
     assert 're.findall(r"[A-Za-z0-9]+"' not in model_source
     assert "_SEMANTIC_MODEL_TERM_STOPWORDS" in model_source

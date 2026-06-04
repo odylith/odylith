@@ -206,7 +206,6 @@ def build_greenfield_semantic_model(
             proof_checkpoint=_proof_checkpoint(
                 path_contract.visible_result or proof_boundary,
                 state_label=state_label,
-                actor_terms=_actor_terms(human_actors),
             ),
         ),
         proof_obligations=_proof_obligations(
@@ -356,7 +355,7 @@ def _proof_obligations(
     return tuple(obligations)
 
 
-def _proof_checkpoint(value: str, *, state_label: str, actor_terms: Sequence[str]) -> str:
+def _proof_checkpoint(value: str, *, state_label: str) -> str:
     text = _clean(value)
     text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+(?:only\s+)?when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+is\s+trusted\s+only\s+when\s+", "", text, flags=re.IGNORECASE)
@@ -455,26 +454,6 @@ def _actor_label(values: Sequence[str], *, fallback: str) -> str:
         if text:
             return text
     return fallback
-
-
-def _actor_terms(values: Sequence[str]) -> tuple[str, ...]:
-    terms: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        label = _clean(value).split("—", 1)[0].split(":", 1)[0].strip(" .")
-        if re.search(r"\bowner\b", label, re.IGNORECASE):
-            continue
-        role_head = re.split(
-            r"\b(?:aggregating|analyzing|choosing|collecting|coordinating|managing|monitoring|needing|recording|reviewing|running|seeking|tracking|using|who|with)\b",
-            label,
-            maxsplit=1,
-            flags=re.IGNORECASE,
-        )[0]
-        for term in ordered_terms(role_head, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS):
-            if term not in seen:
-                seen.add(term)
-                terms.append(term)
-    return tuple(terms)
 
 
 def _clean(value: Any) -> str:

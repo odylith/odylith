@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 236,
-    "mapped_workstream_evidence_count": 193,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 237,
+    "mapped_workstream_evidence_count": 194,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 236
+    "timeline_event_count": 238
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,58 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/radar/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 598,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "radar"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/radar/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-04T11:23:23-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+        "tests/unit/runtime/test_greenfield_intelligence_schema.py"
+      ],
+      "confidence": "high",
+      "event_index": 596,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Removed unused semantic-model actor-term extraction and its local seen-loop dedupe from confirmed-create proof checkpoint construction, with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T11:23:03-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",

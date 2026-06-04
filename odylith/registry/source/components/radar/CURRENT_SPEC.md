@@ -5,7 +5,7 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-05-04
+Last updated: 2026-06-04
 
 
 Last updated (UTC): 2026-04-15
@@ -320,6 +320,9 @@ themselves.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Removed unused semantic-model actor-term extraction and its local seen-loop dedupe from confirmed-create proof checkpoint construction, with focused, wide, and performance proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md +3 more
 - **2026-05-02 · Implementation:** Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.
   - Scope: B-142
   - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
@@ -335,9 +338,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-05-02 · Implementation:** B-140/B-141 v0.1.13 dev-maintainer surfaces now keep source-local proof distinct from pinned 0.1.12 and default Release Targets to current/next aliases.
   - Scope: B-140, B-141
   - Evidence: odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md, src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py +1 more
-- **2026-05-02 · Implementation:** Proved v0.1.13 historical upgrade matrix for 0.1.10, 0.1.11, and 0.1.12 starts; release migration gate remains green.
-  - Scope: B-141
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md, odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 115,
-    "mapped_workstream_evidence_count": 105,
+    "explicit_event_count": 116,
+    "mapped_workstream_evidence_count": 106,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 122,
+    "spec_history_event_count": 123,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 116
+    "timeline_event_count": 117
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,21 +21,55 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/artifact_enrichment.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py"
       ],
       "confidence": "high",
-      "event_index": 596,
+      "event_index": 597,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/artifact_enrichment.py +2 more",
-      "ts_iso": "2026-06-04T11:09:31-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+      "ts_iso": "2026-06-04T11:23:23-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+        "tests/unit/runtime/test_greenfield_intelligence_schema.py"
+      ],
+      "confidence": "high",
+      "event_index": 596,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Removed unused semantic-model actor-term extraction and its local seen-loop dedupe from confirmed-create proof checkpoint construction, with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T11:23:03-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -2229,6 +2229,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   greenfield artifact proof passed (`194 passed in 206.29s`); and
   confirmed-create performance proof passed (`1 passed in 14.35s`), preserving
   the under-30s create gate.
+- 2026-06-04 semantic-model dead-code follow-through removed unused
+  human-actor term extraction from `greenfield_semantic_model.py`.
+  `_proof_checkpoint` no longer accepts an `actor_terms` parameter that it did
+  not read, and the semantic model no longer runs a local `_actor_terms`
+  `seen`/`seen.add(...)` dedupe loop on every confirmed-create semantic model
+  build. Domain term extraction remains owned by
+  `greenfield_domain_term_index.ordered_terms`, and generated proof checkpoint
+  text still renders from the accepted visible-result or proof-boundary text.
+  Touched files remain below limits (`greenfield_semantic_model.py`: 474 lines;
+  `test_greenfield_intelligence_schema.py`: 131 lines). Proof: syntax proof
+  passed for the touched module and test; focused semantic-model regression
+  passed (`1 passed in 0.15s`); owning schema proof passed (`3 passed in
+  0.12s`); wider greenfield artifact proof passed (`194 passed in 200.15s`);
+  and confirmed-create performance proof passed (`1 passed in 11.01s`),
+  preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

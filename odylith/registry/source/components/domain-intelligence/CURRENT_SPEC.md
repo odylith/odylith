@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Removed unused semantic-model actor-term extraction and its local seen-loop dedupe from confirmed-create proof checkpoint construction, with focused, wide, and performance proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md +3 more
 - **2026-06-04 · Implementation:** Routed sequence-step, artifact-enrichment, and component repair-target keyed dedupe through common value coercion while preserving caller-owned equivalence keys, with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/common/value_coercion.py +7 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed component contract artifact sentence casing through shared greenfield text while preserving contract assembly and quality policy, with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py +3 more
-- **2026-06-04 · Implementation:** Routed Markdown-cleaned sentence casing for confirmed Atlas diagram text and sequence-step rendering through shared greenfield text with focused, wide, and performance proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -168,6 +168,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed exact string row dedupe for component axes, contract differentiation, component contract quality, and apply-write Atlas catalog rows through `runtime.common.value_coercion.dedupe_strings`. Those callers keep their semantic-axis, lowercasing, issue-cleanup, and catalog update policies while common value coercion owns reusable trimmed empty-filtering and exact-order dedupe. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed exact issue/string row dedupe for proposal validation, quality-gate issue rows, traceability ID joins, and accepted-project memory previews through `runtime.common.value_coercion.dedupe_strings`. Those callers keep remediation copy, generated artifact policy, ID normalization, and accepted-project Markdown cleanup while common value coercion owns reusable trimmed empty-filtering, limit handling, and exact-order dedupe. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed keyed dedupe for sequence event steps, artifact enrichment bullets, and component contract repair targets through `runtime.common.value_coercion.dedupe_by_key`. Those callers keep their step canonicalization, artifact-native bullet keys, and row-identity repair-target keys while common value coercion owns reusable first-seen keyed duplicate suppression. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Removed unused actor-term extraction from the confirmed semantic model. `greenfield_semantic_model.py` no longer computes `_actor_terms(human_actors)` or passes an unread `actor_terms` parameter into proof-checkpoint rendering; domain terms stay in the shared term index, and proof checkpoints continue to render from accepted visible-result or proof-boundary text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -291,6 +292,10 @@ This section captures synchronized requirement and contract signals derived from
   order-preserving keyed dedupe must stay in
   `runtime.common.value_coercion.dedupe_by_key`. They must not reintroduce local
   `seen`/`seen.add(...)` keyed loops for this cleanup class.
+- Confirmed semantic model construction must not compute unused actor-term
+  rows. `greenfield_semantic_model.py` may use the shared term index for active
+  domain terms, but proof-checkpoint rendering must not accept or compute dead
+  `actor_terms`, `_actor_terms`, or local `seen`/`seen.add(...)` dedupe loops.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,
