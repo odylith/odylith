@@ -594,6 +594,10 @@ def natural_phrase(values: Sequence[str]) -> str:
     return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
+def term_phrase(values: Sequence[str]) -> str:
+    return " ".join(clean(value) for value in values if clean(value))
+
+
 def content_terms(value: str) -> list[str]:
     return unique_text(term for term in ordered_domain_terms(value) if term not in GENERIC_TERMS and not term.isdigit())
 
@@ -774,6 +778,7 @@ __all__ = [
     "phrase_identity_terms",
     "split_contract_clauses",
     "strip_action",
+    "term_phrase",
     "trim_phrase",
     "verb_forms_pattern",
 ]

@@ -1183,6 +1183,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proposal and artifact-quality proof passed (`87 passed in 189.11s`); and
   confirmed-create performance proof passed (`1 passed in 11.97s`), preserving
   the under-30s create gate.
+- 2026-06-03 component-axis term-helper follow-through removed the remaining
+  `_content_terms`, `_term_token`, `_phrase`, and `_normalize_axis_text`
+  helpers from `greenfield_component_axes.py`. Derived Registry semantic axes
+  now use `greenfield_component_terms.domain_terms` and the shared
+  space-joined `term_phrase` helper, so axis keys, component contracts, and
+  artifact-quality checks share the same component-term owner instead of
+  drifting through a local fork. Touched files remain below the soft limit
+  (`greenfield_component_axes.py`: 148 lines; `greenfield_component_terms.py`:
+  784 lines; `test_greenfield_component_spec_quality.py`: 364 lines). Proof:
+  syntax proof passed for the touched modules and test; focused component-axis
+  and spec-quality proof passed (`15 passed in 13.16s`); broad component and
+  artifact-quality proof passed (`54 passed in 166.71s`); and confirmed-create
+  performance proof passed (`1 passed in 11.73s`), preserving the under-30s
+  create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

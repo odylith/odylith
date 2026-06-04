@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_targets i
 )
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
@@ -35,6 +36,7 @@ COMPONENT_CONTRACT_TARGETS_PATH = ROOT / "src/odylith/runtime/domain_intelligenc
 COMPONENT_SEMANTIC_CONTRACT_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py"
 )
+COMPONENT_AXES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py"
 
 
 def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
@@ -115,15 +117,24 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     contract_source = COMPONENT_CONTRACT_PATH.read_text(encoding="utf-8")
     differentiation_source = COMPONENT_CONTRACT_DIFFERENTIATION_PATH.read_text(encoding="utf-8")
     semantic_source = COMPONENT_SEMANTIC_CONTRACT_PATH.read_text(encoding="utf-8")
+    axes_source = COMPONENT_AXES_PATH.read_text(encoding="utf-8")
     terms_source = COMPONENT_TERMS_PATH.read_text(encoding="utf-8")
 
     assert len(terms_source.splitlines()) < 800
     assert len(differentiation_source.splitlines()) < 800
+    assert len(axes_source.splitlines()) < 800
     assert "def natural_phrase" in terms_source
+    assert "def term_phrase" in terms_source
     assert "def _term_phrase" not in contract_source
     assert "def _phrase(" not in differentiation_source
     assert "def _content_terms" not in differentiation_source
     assert "def _phrase(" not in semantic_source
+    assert "def _content_terms" not in axes_source
+    assert "def _term_token" not in axes_source
+    assert "def _phrase(" not in axes_source
+    assert "def _normalize_axis_text" not in axes_source
+    assert "domain_terms(" in axes_source
+    assert "term_phrase(" in axes_source
     assert "natural_phrase(" in contract_source
     assert "natural_phrase(" in differentiation_source
     assert "domain_terms(" in differentiation_source
@@ -131,6 +142,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert natural_phrase(["alpha", "beta"]) == "alpha and beta"
     assert natural_phrase(["alpha", "beta", "gamma"]) == "alpha, beta, and gamma"
     assert phrase(["alpha", "beta", "gamma"]) == "alpha, beta, gamma"
+    assert term_phrase(["alpha", "beta", "gamma"]) == "alpha beta gamma"
 
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:

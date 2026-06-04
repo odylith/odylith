@@ -7,11 +7,11 @@ runtime and use only generic ownership primitives.
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 
 from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
+from odylith.runtime.domain_intelligence.greenfield_component_terms import domain_terms
+from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
 
 
 @dataclass(frozen=True)
@@ -74,7 +74,7 @@ _GENERIC_TERMS = {
 def component_axis_key_for_label(label_text: str) -> str:
     """Return a stable axis key derived from the label itself."""
 
-    terms = _content_terms(label_text)
+    terms = domain_terms(label_text, noise_terms=_GENERIC_TERMS)
     if not terms:
         return ""
     return f"derived_{slugify('-'.join(terms[:5]))}"
@@ -94,15 +94,15 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
     vocabulary from another product type.
     """
 
-    label_terms = _content_terms(label_text)
-    context_terms = _content_terms(context_text)
+    label_terms = domain_terms(label_text, noise_terms=_GENERIC_TERMS)
+    context_terms = domain_terms(context_text, noise_terms=_GENERIC_TERMS)
     terms = _unique([*label_terms, *context_terms])
     if not terms:
         return None
-    primary = _phrase(label_terms[:4]) or _phrase(terms[:4]) or "component"
-    detail = _phrase([term for term in terms if term not in label_terms][:5]) or "accepted product context"
-    input_focus = _phrase(terms[4:8]) or detail
-    output_focus = _phrase(terms[8:12]) or detail
+    primary = term_phrase(label_terms[:4]) or term_phrase(terms[:4]) or "component"
+    detail = term_phrase([term for term in terms if term not in label_terms][:5]) or "accepted product context"
+    input_focus = term_phrase(terms[4:8]) or detail
+    output_focus = term_phrase(terms[8:12]) or detail
     states = _unique([*terms[:5], "requested", "validated", "blocked", "handed-off"])
     return ComponentAxis(
         key=component_axis_key_for_label(label_text) or f"derived_{slugify(primary)}",
@@ -128,25 +128,6 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
     )
 
 
-def _content_terms(value: str) -> list[str]:
-    terms: list[str] = []
-    seen: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", _normalize_axis_text(value).casefold()):
-        token = _term_token(raw)
-        if token and token not in seen:
-            seen.add(token)
-            terms.append(token)
-    return terms
-
-
-def _term_token(value: str) -> str:
-    return normalize_domain_token(value, stopwords=_GENERIC_TERMS)
-
-
-def _phrase(values: list[str] | tuple[str, ...]) -> str:
-    return " ".join(str(value).strip() for value in values if str(value).strip())
-
-
 def _unique(values: list[str] | tuple[str, ...]) -> list[str]:
     result: list[str] = []
     seen: set[str] = set()
@@ -156,10 +137,6 @@ def _unique(values: list[str] | tuple[str, ...]) -> list[str]:
             seen.add(text)
             result.append(text)
     return result
-
-
-def _normalize_axis_text(value: str) -> str:
-    return re.sub(r"\s+", " ", str(value or "").replace("_", " ").replace("-", " ")).strip()
 
 
 __all__ = [

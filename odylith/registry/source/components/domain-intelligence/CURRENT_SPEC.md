@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed derived component-axis term extraction through the shared component-term owner and proved focused, broad, and under-30s confirmed-create behavior.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_axes.py, src/odylith/runtime/domain_intelligence/greenfield_component_terms.py +1 more
 - **2026-06-03 · Implementation:** Split proposal project-brief rendering into the project-brief owner, reused shared generated-row coercion, and proved focused, broad, and under-30s confirmed-create behavior.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_project_brief.py, src/odylith/runtime/domain_intelligence/proposal_rendering.py +1 more
@@ -36,9 +39,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Split confirmed Radar workstream phrase and rationale logic into a dedicated backlog text-model owner, keeping greenfield_confirmed_backlog.py below the 800-line soft limit with focused, broad, and performance proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py +1 more
-- **2026-06-03 · Implementation:** Removed duplicate confirmed-component title helper and unused clause helper, keeping greenfield_confirmed_components.py below the 800-line soft limit with focused component proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, tests/unit/runtime/test_greenfield_component_spec_quality.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -98,6 +98,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Consolidated confirmed-intent list text coercion in `greenfield_confirmed_text.py`. The parser, completion, actor-completion, system-completion, and validation owners now call `confirmed_text_values` instead of carrying local `_strings` helpers, so Markdown cleanup and strict accepted-intent list semantics stay in one shared confirmed-text owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Removed the remaining private coercion helpers from workstream Domain Intelligence and project-intelligence binding. `greenfield_workstream_intelligence.py` now uses `greenfield_text.text_values` directly instead of `_list_values`, and `project_intelligence_binding.py` uses `runtime.common.value_coercion.mapping_copy` instead of a local `_mapping` helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split proposal project-brief rendering into `greenfield_project_brief.py`. Proposal text now imports `render_project_brief_lines`, while blueprint-section, customization-option, checkpoint, host-path, and generated-row rendering stay with the project-brief owner and reuse `greenfield_rows.mapping_rows`. `proposal_rendering.py` remains a general proposal text renderer below the 800-line soft limit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Routed component-axis term extraction through `greenfield_component_terms.py`. `greenfield_component_axes.py` now calls `domain_terms` and `term_phrase` for derived semantic axes and no longer owns local `_content_terms`, `_term_token`, `_phrase`, or `_normalize_axis_text` helpers, keeping Registry axis keys and generated component contracts on the same term owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -203,6 +204,11 @@ This section captures synchronized requirement and contract signals derived from
   `_project_brief_lines`, blueprint-section, customization-option, checkpoint,
   or host-path rendering helpers. Project-brief row rendering must use shared
   generated-row coercion from `greenfield_rows.py`.
+- Derived component-axis term extraction must use
+  `greenfield_component_terms.domain_terms`, and component-axis local wording
+  must use `greenfield_component_terms.term_phrase`. `greenfield_component_axes.py`
+  must not reintroduce local `_content_terms`, `_term_token`, `_phrase`, or
+  `_normalize_axis_text` helpers.
 - Confirmed-intent actor completion must stay in
   `greenfield_confirmed_actor_completion.py`. The parent completion module may
   call `completed_actor_rows`, `actor_labels`, and `actor_row_description`, but
@@ -389,6 +395,7 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/unit/runtime/test_greenfield_row_coercion.py`
 - `tests/unit/runtime/test_greenfield_coercion_hygiene.py`
 - `tests/unit/runtime/test_greenfield_project_brief_rendering.py`
+- `tests/unit/runtime/test_greenfield_component_spec_quality.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
 - `tests/unit/runtime/test_greenfield_intelligence_schema.py`
 - `tests/unit/runtime/test_greenfield_atlas_contract.py`
