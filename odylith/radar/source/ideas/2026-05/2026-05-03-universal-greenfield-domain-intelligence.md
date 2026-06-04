@@ -1170,6 +1170,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   16.10s`); broader greenfield artifact-quality and confirmed-create proof
   passed (`119 passed in 233.71s`), including the under-30s confirmed-create
   performance gate.
+- 2026-06-03 project-brief rendering ownership follow-through moved proposal
+  text rendering for the top-level `project_brief` into
+  `greenfield_project_brief.py`. `proposal_rendering.py` now delegates through
+  `render_project_brief_lines` instead of owning `_project_brief_lines`,
+  blueprint-section, customization-option, checkpoint, or host-path helpers,
+  and the project-brief owner uses shared `greenfield_rows.mapping_rows` for
+  mixed generated rows. Touched files stay small (`proposal_rendering.py`: 573
+  lines; `greenfield_project_brief.py`: 257 lines; enforcement test: 88
+  lines). Proof: syntax proof passed for the touched renderer modules and test;
+  focused project-brief/proposal proof passed (`4 passed in 0.22s`); broader
+  proposal and artifact-quality proof passed (`87 passed in 189.11s`); and
+  confirmed-create performance proof passed (`1 passed in 11.97s`), preserving
+  the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
