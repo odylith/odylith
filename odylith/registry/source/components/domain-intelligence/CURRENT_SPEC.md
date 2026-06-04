@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed-completion label focus and keyword matching through shared domain term indexing so completion repair no longer carries local token parsing loops.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 - **2026-06-04 · Implementation:** Routed base component contract profile token extraction through shared domain term indexing so generated Registry profile selection no longer carries a local regex word set.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed semantic-model proof checkpoint word counts through shared confirmed text so diagram-event proof filtering no longer carries local regex token counts.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py, src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed Atlas proof-label word counts through shared confirmed text so diagram checkpoint filtering no longer carries local regex token counts.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -124,6 +124,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed accepted-intent semantic term indexing through `greenfield_domain_term_index.ordered_terms` while keeping `greenfield_confirmed_text.semantic_terms` as the confirmed-intent API. The shared term index now accepts caller-owned `stem_ing_minimum_length`, and `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup, stopword defaults, and caller handoff instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry component phrase identity terms and contract-field transition candidates through `greenfield_domain_term_index.ordered_terms`. `greenfield_component_terms.py` keeps artifact-carrier stopword policy, `greenfield_component_contract_fields.py` keeps transition-state decisions, and `greenfield_component_semantic_contract.py` imports the phrase-identity owner directly instead of wrapping it locally. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed base component contract profile token extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_component_contract.py` keeps profile selection, generic fallback contract assembly, focus phrase derivation, state terms, boundary clauses, and public contract field projection while the shared domain-term index owns reusable token parsing, short-term preservation, and plural folding for profile matching. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed-completion label focus and keyword extraction through `greenfield_domain_term_index.label_terms` and `ordered_terms`. `greenfield_confirmed_completion_text_model.py` keeps completion phrasing, generated labels, first-path/proof/state summaries, actor summaries, and backlog-to-component matching policy while the shared domain-term index owns visible label tokenization, plural folding, digit filtering, and reusable keyword parsing. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed public quality-gate prompt and semantic-contract term extraction through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned `preserve_terms`, so `greenfield_quality_gate.py` can preserve short domain abbreviations while keeping prompt echo and public artifact quality checks off local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed first-path actor signature term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_first_path_clauses.py` keeps first-path action, capability, visible-result, and actor-filtering grammar, while actor signatures share the generated-artifact term index with caller-owned stopwords and short actor-term preservation for labels such as AI, ML, UI, and UX. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed first-path actor-prefix display-token thresholds through `greenfield_domain_term_index.label_terms`. `greenfield_first_path_clauses.py` keeps first-path action, capability, visible-result, actor filtering, and actor-specific term policy while the shared term index counts display tokens for `strip_action_subject`, `_actor_signature`, and `leading_subject_prefix` prefix-length decisions. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -360,6 +361,12 @@ This section captures synchronized requirement and contract signals derived from
   reintroduce `_TERM_STOPWORDS`, `_semantic_terms`, direct
   `normalize_domain_token` imports, or local regex token loops for accepted
   Product Intent semantic overlap.
+- Confirmed-completion label focus and keyword extraction must use
+  `greenfield_domain_term_index.label_terms` and `ordered_terms`.
+  `greenfield_confirmed_completion_text_model.py` may own completion phrasing,
+  generated labels, summaries, actor text, and backlog-to-component matching
+  policy, but it must not reintroduce local label regex loops or private
+  character-filtering keyword loops for completion matching.
 - Confirmed component row completion must stay in
   `greenfield_confirmed_component_completion.py`. The confirmed completion
   parent may call `complete_component_rows` and

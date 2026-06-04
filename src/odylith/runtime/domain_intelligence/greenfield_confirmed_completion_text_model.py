@@ -14,7 +14,19 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+
+_LABEL_FOCUS_STOPWORDS = {
+    "adapter",
+    "component",
+    "engine",
+    "service",
+    "surface",
+    "system",
+    "view",
+}
 
 
 def capability_phrase(proposal: Mapping[str, Any]) -> str:
@@ -140,9 +152,11 @@ def component_focus_phrase(*, label: str, contract: Mapping[str, Any], fallback:
 
 def _label_focus_phrase(label: str) -> str:
     words = [
-        word
-        for word in re.findall(r"[A-Za-z0-9][A-Za-z0-9-]*", _clean(label).casefold())
-        if word not in {"adapter", "component", "engine", "service", "surface", "system", "view"}
+        word.casefold()
+        for word in label_terms(
+            _clean(label).replace("_", " "),
+            stopwords=_LABEL_FOCUS_STOPWORDS,
+        )
     ]
     return " ".join(words[:5]).strip()
 
@@ -180,13 +194,8 @@ def row_is_release_proof(row: Mapping[str, Any]) -> bool:
 
 
 def keywords(values: Sequence[Any]) -> set[str]:
-    words: set[str] = set()
-    for value in values:
-        for raw in str(value or "").replace("_", " ").replace("-", " ").split():
-            word = "".join(char for char in raw.casefold() if char.isalnum())
-            if len(word) >= 4:
-                words.add(word)
-    return words
+    text = " ".join(str(value or "").replace("_", " ").replace("-", " ") for value in values)
+    return set(ordered_terms(text, minimum=4))
 
 
 def component_label(row: Mapping[str, Any], index: int) -> str:

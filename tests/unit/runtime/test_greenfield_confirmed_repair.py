@@ -12,6 +12,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
     component_spec_preflight_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import component_focus_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import keywords
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
@@ -71,7 +73,31 @@ def test_confirmed_completion_prewrite_gate_stays_in_dedicated_owner() -> None:
     assert "def project_title" in text_model_source
     assert "def component_label" in text_model_source
     assert "def keywords" in text_model_source
+    assert "greenfield_domain_term_index import label_terms" in text_model_source
+    assert "greenfield_domain_term_index import ordered_terms" in text_model_source
+    assert 're.findall(r"[A-Za-z0-9][A-Za-z0-9-]*"' not in text_model_source
+    assert "for raw in str(value or \"\")" not in text_model_source
     assert "def primary_component_for_backlog" in text_model_source
+    assert component_focus_phrase(label="AI CRM Status Windows Service", contract={}, fallback="fallback") == (
+        "ai crm status windows"
+    )
+    assert component_focus_phrase(label="Risk_policy component", contract={}, fallback="fallback") == (
+        "risk policy"
+    )
+    assert keywords(["Status Windows Service", "Build window proof"]) == {
+        "build",
+        "proof",
+        "service",
+        "status",
+        "window",
+    }
+    assert keywords(["source_backed evidence-trails", "2026 proof"]) == {
+        "backed",
+        "evidence",
+        "proof",
+        "source",
+        "trail",
+    }
 
 
 def _dirty_complete_contract() -> dict[str, object]:

@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 82,
-    "mapped_workstream_evidence_count": 72,
+    "explicit_event_count": 83,
+    "mapped_workstream_evidence_count": 73,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 89,
+    "spec_history_event_count": 90,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 83
+    "timeline_event_count": 84
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,53 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py"
       ],
       "confidence": "high",
-      "event_index": 563,
+      "event_index": 564,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
-      "ts_iso": "2026-06-04T02:42:48-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py",
+      "ts_iso": "2026-06-04T02:59:38-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "tests/unit/runtime/test_greenfield_confirmed_repair.py"
+      ],
+      "confidence": "high",
+      "event_index": 563,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed-completion label focus and keyword matching through shared domain term indexing so completion repair no longer carries local token parsing loops.",
+      "ts_iso": "2026-06-04T02:56:13-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -1526,6 +1526,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`14 passed in 0.16s`); wider greenfield artifact proof passed
   (`162 passed in 190.72s`); and confirmed-create performance proof passed
   (`1 passed in 9.50s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed-completion keyword term-index follow-through moved
+  label focus and keyword extraction in
+  `greenfield_confirmed_completion_text_model.py` onto
+  `greenfield_domain_term_index.label_terms` and `ordered_terms`. The
+  completion text model still owns action/outcome phrasing, workstream
+  sentences, project/component/diagram labels, first-path/proof/state
+  summaries, actor summaries, and backlog-to-component matching policy, while
+  the shared domain-term index owns reusable token parsing, plural folding,
+  digit filtering, and visible label words. Touched files remain below limits
+  (`greenfield_confirmed_completion_text_model.py`: 284 lines;
+  `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_confirmed_repair.py`: 305 lines). Proof: syntax proof
+  passed for the touched module and test; focused confirmed-repair proof
+  passed (`8 passed in 8.82s`); wider greenfield artifact proof passed
+  (`165 passed in 200.56s`); and confirmed-create performance proof passed
+  (`1 passed in 9.61s`), preserving the under-30s create gate.
 - 2026-06-04 public quality-gate term-index follow-through moved prompt echo
   and semantic contract noun extraction in `greenfield_quality_gate.py` onto
   `greenfield_domain_term_index.ordered_terms`. The shared index now supports
