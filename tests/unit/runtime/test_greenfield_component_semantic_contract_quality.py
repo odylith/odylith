@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence import greenfield_component_semantic_contract as semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
     derive_component_semantic_contract,
 )
@@ -24,6 +25,8 @@ def test_component_semantic_context_stays_in_dedicated_owner() -> None:
     assert "def _context_object_phrases" not in contract_source
     assert "def _context_required_phrases" not in contract_source
     assert "def _needs_context_backfill" not in contract_source
+    assert "greenfield_domain_term_index import label_terms as _label_terms" in contract_source
+    assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in contract_source
     assert "def _looks_actor_term" not in context_source
     assert "greenfield_actor_terms import looks_actor_term as _looks_actor_term" in context_source
     assert "def context_object_phrases" in context_source
@@ -34,6 +37,8 @@ def test_component_semantic_context_stays_in_dedicated_owner() -> None:
         label_terms=["permit", "note"],
         description_terms=["review", "document"],
     ) == ("permit note", "missing document")
+    assert semantic_contract._compact_artifact_phrase("source-backed_review record")
+    assert not semantic_contract._compact_artifact_phrase("source-backed audit trail evidence record")
 
 
 def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns() -> None:

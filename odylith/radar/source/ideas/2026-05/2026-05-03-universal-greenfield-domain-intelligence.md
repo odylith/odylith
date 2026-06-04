@@ -1801,6 +1801,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168 passed
   in 199.26s`); and confirmed-create performance proof passed (`1 passed in
   9.53s`), preserving the under-30s create gate.
+- 2026-06-04 Registry semantic compact-artifact follow-through moved compact
+  artifact phrase token counting in
+  `greenfield_component_semantic_contract.py` onto
+  `greenfield_domain_term_index.label_terms`. Semantic contracts still own
+  object-phrase dedupe, compact-artifact preservation, phrase prioritization,
+  and local contract assembly, while the shared domain term index owns reusable
+  display-token parsing for hyphenated and underscore-separated artifact
+  phrases such as source-backed_review record. Touched files remain below
+  limits (`greenfield_component_semantic_contract.py`: 621 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_component_semantic_contract_quality.py`: 74 lines). Proof:
+  syntax proof passed for the touched modules and test; focused semantic
+  contract proof passed (`2 passed in 0.07s`); wider greenfield artifact proof
+  passed (`168 passed in 201.86s`); and confirmed-create performance proof
+  passed (`1 passed in 9.61s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

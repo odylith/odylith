@@ -42,6 +42,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     status_only_artifact_fragment as _status_only_artifact_fragment,
 )
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS as _ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
@@ -544,7 +545,7 @@ def _dedupe_phrase_subsets(values: Sequence[str]) -> list[str]:
 
 
 def _compact_artifact_phrase(value: str) -> bool:
-    words = re.findall(r"[a-z0-9][a-z0-9'-]*", _clean(value).casefold())
+    words = [word.casefold() for word in _label_terms(_clean(value))]
     return bool(1 < len(words) <= 3 and set(words) & _ARTIFACT_CARRIER_TERMS)
 
 
