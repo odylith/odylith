@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed Registry artifact cleanup action-token checks through shared greenfield visible words and preserved slash-separated visible-result artifact phrases.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_terms.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
 - **2026-06-04 · Implementation:** Routed confirmed component kind-token extraction through shared greenfield visible words so client, adapter, and service classification no longer carries a local regex token loop.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed Registry contract differentiation trigger token extraction through shared greenfield text visible words so fallback-axis scoring no longer carries a local token regex.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
-- **2026-06-04 · Implementation:** Routed Registry contract field visible-word extraction through shared greenfield text so status-only and ranked contract phrase checks no longer carry local word-token regexes.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -146,6 +146,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed Registry document-context and status-view profile object labels through `greenfield_domain_term_index.label_terms`. `greenfield_component_contract_profiles.py` keeps profile wording, proof rows, and state-object policy while the shared term index owns visible label tokenization for hyphenated and underscore-separated object labels. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry semantic contract compact-artifact token counting through `greenfield_domain_term_index.label_terms`. `greenfield_component_semantic_contract.py` keeps object-phrase dedupe, compact-artifact preservation, phrase prioritization, and local contract assembly while the shared term index owns display-token parsing for hyphenated and underscore-separated artifact phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry term-window raw display-token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_component_term_windows.py` keeps label-term preservation, compound construction, and nearby context-window policy while the shared term index owns reusable display-token parsing for component labels and context phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed Registry artifact cleanup action-token checks through `greenfield_text.visible_words` and preserved slash-separated visible-result object phrases during cleanup. `greenfield_component_terms.py` keeps artifact phrase cleanup, actor/action trimming, action-form classification, artifact-carrier policy, and phrase identity while shared greenfield text owns reusable visible-word splitting for generated artifact phrases such as `web/ui surface`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -270,6 +271,13 @@ This section captures synchronized requirement and contract signals derived from
   may own local-score thresholds, trigger-hit weighting, sibling repair, and
   repair decisions, but it must not reintroduce local word-token `re.findall`
   loops for `_trigger_hits`.
+- Registry artifact cleanup action-token checks must use
+  `greenfield_text.visible_words`. `greenfield_component_terms.py` may own
+  artifact phrase cleanup, actor/action trimming, action-form classification,
+  artifact-carrier policy, and phrase identity, but it must not reintroduce
+  local word-token `re.findall(r"[a-z0-9]+", lowered)` loops for cleanup
+  filtering or malformed slash-separated visible-result objects such as
+  `web state/ui surface`.
 - Registry document-context and status-view profile object phrases must use
   `greenfield_domain_term_index.label_terms` with profile-owned stopwords.
   `greenfield_component_contract_profiles.py` may own profile wording, local

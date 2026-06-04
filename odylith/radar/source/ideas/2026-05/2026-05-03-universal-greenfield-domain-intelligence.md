@@ -1845,6 +1845,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168
   passed in 198.29s`); and confirmed-create performance proof passed (`1 passed
   in 9.54s`), preserving the under-30s create gate.
+- 2026-06-04 Registry artifact cleanup visible-word follow-through moved
+  action-token filtering in `greenfield_component_terms.py` onto
+  `greenfield_text.visible_words` and repaired slash-separated visible-result
+  cleanup so `web/ui surface` no longer becomes malformed as
+  `web state/ui surface`. Component terms still own artifact phrase cleanup,
+  actor/action trimming, action-form classification, artifact-carrier policy,
+  and phrase identity, while shared greenfield text owns reusable visible-word
+  splitting for generated artifact phrases. Touched files remain below limits
+  (`greenfield_component_terms.py`: 777 lines; `greenfield_text.py`: 153
+  lines; `test_greenfield_component_spec_quality.py`: 632 lines). Proof:
+  syntax proof passed for the touched modules and test; focused component proof
+  passed (`12 passed in 0.16s`); wider greenfield artifact proof passed (`168
+  passed in 197.06s`); and confirmed-create performance proof passed (`1
+  passed in 9.35s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

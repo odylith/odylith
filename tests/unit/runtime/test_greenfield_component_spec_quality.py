@@ -271,11 +271,13 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "greenfield_component_term_index import ordered_domain_terms" in differentiation_source
     assert "greenfield_component_term_index import ordered_domain_terms" in terms_source
     assert "greenfield_domain_term_index import ordered_terms" in terms_source
+    assert "greenfield_text import visible_words" in terms_source
     assert "greenfield_domain_term_index import ordered_terms" in fields_source
     assert "phrase_identity_terms as _phrase_identity_terms" in semantic_source
     assert "normalize_domain_token" not in terms_source
     assert "normalize_domain_token" not in fields_source
     assert "for raw in re.findall" not in terms_source
+    assert 're.findall(r"[a-z0-9]+", lowered)' not in terms_source
     assert "for raw in re.findall" not in fields_source
     assert 're.findall(r"[a-z0-9]+"' not in differentiation_source
     assert "re.findall(r\"[A-Za-z][A-Za-z'-]*\"" not in fields_source
@@ -334,6 +336,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("inspector reviews permit note") == "permit note"
     assert clean_artifact_phrase("student submits assignment details") == "assignment details"
     assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
+    assert clean_artifact_phrase("dashboard visibly updates web/ui surface") == "web/ui surface state"
     assert visible_words("blocked-state update") == ("blocked", "state", "update")
     assert contract_differentiation._trigger_hits(("status", "window"), "Status-window proof") == 2
     assert status_only_artifact_fragment("blocked update")

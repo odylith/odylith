@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_act
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text, unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 ACTION_VERBS = (
     "accept",
@@ -353,7 +354,7 @@ def clean_artifact_phrase(value: str) -> str:
         return ""
     action_hits = [
         word
-        for word in re.findall(r"[a-z0-9]+", lowered)
+        for word in visible_words(lowered)
         if looks_action_form(word) and word not in ARTIFACT_CARRIER_TERMS
     ]
     if action_hits and not (set(words) & ARTIFACT_CARRIER_TERMS):
@@ -377,7 +378,7 @@ def _clean_visible_phrase_debris(value: str) -> str:
     )
     text = re.sub(r"\b(?:dashboard|screen|view)\s+renders?\s+the\s+visible\s+result\s*:\s*(?:the\s+)?", "", text, flags=re.I)
     text = re.sub(
-        r"\bdashboard\s+visibly\s+updates?\s+(?P<object>[a-z0-9][a-z0-9 '-]{1,50})\b",
+        r"\bdashboard\s+visibly\s+updates?\s+(?P<object>[a-z0-9][a-z0-9 '/-]{1,50})\b",
         r"\g<object> state",
         text,
         flags=re.I,
