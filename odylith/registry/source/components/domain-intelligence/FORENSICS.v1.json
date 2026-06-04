@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 65,
-    "mapped_workstream_evidence_count": 55,
+    "explicit_event_count": 66,
+    "mapped_workstream_evidence_count": 56,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 73,
+    "spec_history_event_count": 74,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 66
+    "timeline_event_count": 67
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,52 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py"
       ],
       "confidence": "high",
-      "event_index": 546,
+      "event_index": 547,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
-      "ts_iso": "2026-06-03T22:21:00-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
+      "ts_iso": "2026-06-03T22:40:41-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
+        "tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 546,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed greenfield Radar backlog term matching through the shared domain term index while preserving backlog-specific stopwords and improving plural workstream outcome matching.",
+      "ts_iso": "2026-06-03T22:38:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed confirmed greenfield Radar backlog term matching through the shared domain term index while preserving backlog-specific stopwords and improving plural workstream outcome matching.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py, tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py
 - **2026-06-03 · Implementation:** Routed greenfield traceability semantic token extraction through the shared domain term index while preserving compound identifier expansion and improving generated Radar, Registry, and Atlas linkage for plural component labels.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_traceability.py, tests/unit/runtime/test_greenfield_traceability_terms.py
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed greenfield public quality-gate prompt and semantic contract terms through the shared domain term index with caller-owned short-domain-term preservation while preserving focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py +1 more
-- **2026-06-03 · Implementation:** Routed Registry component phrase identity and contract-field transition terms through the shared greenfield domain term index, removed a semantic-contract pass-through wrapper, and preserved focused, broad, and under-30s confirmed-create proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py, src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -119,6 +119,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed confirmed component domain-label token extraction through `greenfield_domain_term_index.label_terms`. The shared domain-term owner now has a visible-label path that preserves casing, acronyms, and alphanumeric terms while `greenfield_confirmed_components.py` keeps component naming policy and title casing without a local regex token loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed component handoff workstream-title matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_experience.py` keeps handoff thresholds and stopwords, while reusable title and component-label normalization shares the generated-artifact term index instead of a local `_meaningful_terms` regex helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated traceability semantic token extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_traceability.py` keeps component-workstream and diagram-link scoring plus compound identifier expansion, while plural and stopword normalization shares the generated-artifact term index instead of a local `_semantic_tokens` regex loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed Radar backlog text product-term matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_confirmed_backlog_text_model.py` keeps backlog-specific stopwords and first-slice wording decisions, while `semantic_words` and `shares_product_terms` share plural and stopword normalization with the generated-artifact term index instead of local lower-case regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -214,6 +215,12 @@ This section captures synchronized requirement and contract signals derived from
   scoring, fallback parent assignment, and compound identifier expansion, but it
   must not reintroduce local `re.findall` token loops for generated
   Radar-to-Registry-to-Atlas traceability matching.
+- Confirmed Radar backlog semantic term extraction and product-term sharing must
+  use `greenfield_domain_term_index.ordered_terms` with caller-owned backlog
+  stopwords. `greenfield_confirmed_backlog_text_model.py` may own first-slice
+  wording policy and generic product-share stopwords, but it must not reintroduce
+  local lower-case `re.findall` token loops for `semantic_words` or
+  `shares_product_terms`.
 - Visible generated-label token extraction must stay in
   `greenfield_domain_term_index.label_terms` when callers need display words
   rather than semantic singularization. `greenfield_confirmed_components.py`

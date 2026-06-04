@@ -1449,6 +1449,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   greenfield proof passed (`153 passed in 230.09s`); and confirmed-create
   performance proof passed (`1 passed in 11.77s`), preserving the under-30s
   create gate.
+- 2026-06-04 confirmed Radar backlog term-index follow-through moved
+  `semantic_words` and `shares_product_terms` in
+  `greenfield_confirmed_backlog_text_model.py` onto
+  `greenfield_domain_term_index.ordered_terms`. The Radar backlog text model now
+  keeps backlog-specific stopwords and first-slice text decisions, while the
+  shared index handles plural folding so `status windows` and `window proof`
+  share the same product terms without matching on generic release/path glue.
+  Touched files remain below limits (`greenfield_confirmed_backlog_text_model.py`:
+  473 lines; `test_greenfield_confirmed_backlog_terms.py`: 39 lines). Proof:
+  syntax proof passed for the touched module and test; focused backlog text proof
+  passed (`11 passed in 13.37s`); wider greenfield proof passed (`154 passed in
+  228.69s`); and confirmed-create performance proof passed (`1 passed in
+  12.05s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

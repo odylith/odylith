@@ -8,11 +8,43 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import _has_mechanical_need_to_turn
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
+
+_BACKLOG_TERM_STOPWORDS = frozenset(
+    {
+        "and",
+        "for",
+        "from",
+        "into",
+        "that",
+        "then",
+        "the",
+        "this",
+        "when",
+        "with",
+        "without",
+    }
+)
+_PRODUCT_SHARE_STOPWORDS = _BACKLOG_TERM_STOPWORDS | frozenset(
+    {
+        "accepted",
+        "action",
+        "complete",
+        "first",
+        "path",
+        "product",
+        "release",
+        "result",
+        "state",
+        "their",
+        "user",
+    }
+)
 
 
 def proof_claim_summary(value: str, *, limit: int = 260) -> str:
@@ -73,7 +105,7 @@ def state_changer_label(labels: Sequence[str], *, state_label: str) -> str:
 
 
 def semantic_words(value: str) -> set[str]:
-    return {word for word in re.findall(r"[a-z0-9][a-z0-9-]+", _compact_text(value).casefold()) if len(word) > 2}
+    return set(ordered_terms(value, minimum=3, stopwords=_BACKLOG_TERM_STOPWORDS))
 
 
 def lead_actor_label(values: list[str]) -> str:
@@ -401,24 +433,8 @@ def has_problem_tension(value: str) -> bool:
 
 
 def shares_product_terms(left: str, right: str) -> bool:
-    stop = {
-        "accepted",
-        "action",
-        "complete",
-        "first",
-        "path",
-        "product",
-        "release",
-        "result",
-        "state",
-        "that",
-        "their",
-        "user",
-        "when",
-        "with",
-    }
-    left_terms = {token for token in re.findall(r"[a-z0-9][a-z0-9-]*", _compact_text(left).casefold()) if len(token) > 3 and token not in stop}
-    right_terms = {token for token in re.findall(r"[a-z0-9][a-z0-9-]*", _compact_text(right).casefold()) if len(token) > 3 and token not in stop}
+    left_terms = set(ordered_terms(left, minimum=4, stopwords=_PRODUCT_SHARE_STOPWORDS))
+    right_terms = set(ordered_terms(right, minimum=4, stopwords=_PRODUCT_SHARE_STOPWORDS))
     if not left_terms or not right_terms:
         return False
     return len(left_terms & right_terms) >= min(3, len(right_terms))
