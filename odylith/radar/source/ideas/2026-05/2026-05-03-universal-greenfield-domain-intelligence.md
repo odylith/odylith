@@ -1059,6 +1059,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`5 passed in 0.06s`); wider greenfield artifact proof passed (`162
   passed in 193.46s`); and confirmed-create performance proof passed (`1
   passed in 9.56s`), preserving the under-30s create gate.
+- 2026-06-04 semantic-model proof-checkpoint word-count follow-through moved
+  diagram-event proof checkpoint clause thresholds in
+  `greenfield_semantic_model.py` onto `greenfield_confirmed_text.word_count`.
+  The semantic model still owns first-path contracts, ontology, component refs,
+  workstream refs, diagram event graph assembly, and proof-obligation shaping,
+  but confirmed text now owns Markdown cleanup and visible word counting for
+  proof-checkpoint thresholds. Touched files remain below limits
+  (`greenfield_semantic_model.py`: 495 lines; `greenfield_confirmed_text.py`:
+  399 lines; `test_greenfield_intelligence_schema.py`: 127 lines). Proof:
+  syntax proof passed for the touched modules and test; focused semantic-schema
+  proof passed (`3 passed in 0.15s`); wider greenfield artifact proof passed
+  (`162 passed in 194.12s`); and confirmed-create performance proof passed (`1
+  passed in 9.64s`), preserving the under-30s create gate.
 - 2026-06-03 artifact-enrichment graph and Tribunal actor decomposition moved
   Domain Intelligence graph normalization into `artifact_graph.py` and visible
   Tribunal actor projection into `artifact_tribunal_actors.py`.

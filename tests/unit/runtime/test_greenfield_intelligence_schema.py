@@ -75,11 +75,15 @@ def test_workstream_intelligence_captures_scope_owners_and_invalidation_rules(tm
 def test_semantic_model_term_extraction_uses_shared_domain_index() -> None:
     model_source = (DOMAIN_INTELLIGENCE / "greenfield_semantic_model.py").read_text(encoding="utf-8")
     index_source = (DOMAIN_INTELLIGENCE / "greenfield_domain_term_index.py").read_text(encoding="utf-8")
+    text_source = (DOMAIN_INTELLIGENCE / "greenfield_confirmed_text.py").read_text(encoding="utf-8")
 
     assert "def ordered_terms" in index_source
+    assert "def word_count" in text_source
     assert "from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms" in model_source
+    assert "from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count" in model_source
     assert "def _semantic_terms" not in model_source
     assert "normalize_domain_token" not in model_source
+    assert 're.findall(r"[A-Za-z0-9]+"' not in model_source
     assert "_SEMANTIC_MODEL_TERM_STOPWORDS" in model_source
 
     model = build_greenfield_semantic_model(
@@ -108,4 +112,16 @@ def test_semantic_model_term_extraction_uses_shared_domain_index() -> None:
         "evidence",
         "race",
         "reading",
+    )
+
+    proof_model = build_greenfield_semantic_model(
+        title="AI Review",
+        state_object="AI review record",
+        first_path="Reviewer saves an AI/ML status note.",
+        proof_boundary="Done means: save the `AI/ML` review status and source note.",
+        components=[],
+        human_actors=["Reviewer"],
+    )
+    assert proof_model.diagram_event_graph.proof_checkpoint == (
+        "visible outcome proof: Reviewer saves an AI/ML status note"
     )

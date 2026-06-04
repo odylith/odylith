@@ -8,6 +8,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
@@ -368,7 +369,7 @@ def _proof_checkpoint(value: str, *, state_label: str, actor_terms: Sequence[str
         if clause.strip(" .")
     ]
     for clause in clauses:
-        if len(re.findall(r"[A-Za-z0-9]+", clause)) >= 4:
+        if word_count(clause) >= 4:
             clipped = _clip_clause(clause, 88)
             return f"visible outcome proof: {clipped}" if clipped else "visible outcome proof"
     return f"visible outcome proof: {state_label} validation, replay evidence, blockers, and release decision"

@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 146,
-    "mapped_workstream_evidence_count": 111,
+    "explicit_event_count": 147,
+    "mapped_workstream_evidence_count": 112,
     "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 146
+    "timeline_event_count": 147
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+        "tests/unit/runtime/test_greenfield_intelligence_schema.py"
+      ],
+      "confidence": "high",
+      "event_index": 558,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed semantic-model proof checkpoint word counts through shared confirmed text so diagram-event proof filtering no longer carries local regex token counts.",
+      "ts_iso": "2026-06-04T01:45:43-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
