@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
@@ -116,6 +117,28 @@ def test_confirmed_intent_completion_title_tokens_use_shared_label_terms() -> No
     }
 
     assert complete_confirmed_intent(intent)["title"] == "AI/ML Review Record Workspace"
+
+
+def test_confirmed_actor_completion_role_candidates_use_shared_label_terms() -> None:
+    actor_source = CONFIRMED_ACTOR_COMPLETION_PATH.read_text(encoding="utf-8")
+
+    assert "greenfield_domain_term_index import label_terms as _label_terms" in actor_source
+    assert 're.findall(r"[A-Za-z][A-Za-z/-]*", sentence)' not in actor_source
+    assert label_terms("Source-backed reviewer") == ["Source-backed", "reviewer"]
+
+    intent = {
+        "title": "Source-backed Review Workspace",
+        "product_story": "A source-backed reviewer compares AI/ML notes and keeps status-window proof clear.",
+        "state_object": "Source-backed review record tracks AI/ML notes and status-window proof.",
+        "first_path": (
+            "Source-backed reviewer opens the AI/ML review workspace, records source-backed evidence, "
+            "and sees status-window proof."
+        ),
+        "human_actors": [],
+    }
+
+    labels = [row.split(":", 1)[0] for row in completed_actor_rows(intent, title=intent["title"])]
+    assert "Source-backed Reviewer" in labels
 
 
 def test_confirmed_intent_parser_keeps_ambiguities_out_of_first_path() -> None:

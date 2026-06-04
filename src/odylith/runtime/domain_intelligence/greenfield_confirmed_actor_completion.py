@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -241,7 +242,7 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str) -> list[str]
 def _role_candidates(text: str) -> list[str]:
     candidates: list[str] = []
     for sentence in re.split(r"(?<=[.!?])\s+|;\s+", _clean(text)):
-        words = re.findall(r"[A-Za-z][A-Za-z/-]*", sentence)
+        words = _label_terms(sentence)
         for index, word in enumerate(words):
             if word.casefold() not in _ROLE_WORDS:
                 continue

@@ -1907,6 +1907,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed in 0.03s`); wider greenfield artifact proof passed (`179 passed in
   202.27s`); and confirmed-create performance proof passed (`1 passed in
   9.54s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed actor-candidate display-token follow-through moved
+  derived actor role candidate token extraction in
+  `greenfield_confirmed_actor_completion.py` onto
+  `greenfield_domain_term_index.label_terms`. Actor completion still owns
+  accepted actor row completion, role-word policy, artifact-context filtering,
+  non-actor lead trimming, actor-label fallback selection, and actor
+  descriptions, while the shared term index owns reusable display-token
+  extraction for hyphenated accepted role phrases such as Source-backed
+  reviewer. The public completion path still preserves that role as
+  `Source-backed Reviewer` when accepted intent text leaves human actors empty.
+  Touched files remain below limits
+  (`greenfield_confirmed_actor_completion.py`: 446 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 324 lines). Proof: syntax
+  proof passed for the touched modules and test; focused ownership proof passed
+  (`10 passed in 0.22s`); wider greenfield artifact proof passed (`180 passed
+  in 201.94s`); and confirmed-create performance proof passed (`1 passed in
+  9.71s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
