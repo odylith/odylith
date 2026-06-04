@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -424,7 +425,7 @@ def _title_needs_repair(value: str) -> bool:
         return True
     if not text or text.casefold() == "greenfield project":
         return True
-    words = re.findall(r"[A-Za-z0-9]+", text)
+    words = label_terms(text)
     if not words:
         return True
     tail = words[-1].casefold()
@@ -495,7 +496,7 @@ def _title_qualifier(context: str, system_labels: Sequence[str], *, noun: str) -
     for source in sources:
         text = _clean(source)
         for match in re.finditer(
-            r"\b(?P<phrase>[A-Za-z][A-Za-z0-9'-]*(?:\s+[A-Za-z][A-Za-z0-9'-]*){0,2})\s+"
+            r"\b(?P<phrase>[A-Za-z][A-Za-z0-9_'/&-]*(?:\s+[A-Za-z][A-Za-z0-9_'/&-]*){0,2})\s+"
             r"(?P<noun>activity|signal|signals|case|cases|record|records|item|items|request|requests|submission|submissions|evidence|data|profile|profiles)\b",
             text,
         ):
@@ -506,7 +507,7 @@ def _title_qualifier(context: str, system_labels: Sequence[str], *, noun: str) -
     for label in system_labels:
         words = [
             word
-            for word in re.findall(r"[A-Za-z0-9]+", label)
+            for word in label_terms(label)
             if word.casefold() not in _GENERIC_TITLE_WORDS and word.casefold() != noun.casefold()
         ]
         if 1 <= len(words) <= 3:

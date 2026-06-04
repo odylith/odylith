@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 
@@ -84,6 +86,36 @@ def test_confirmed_intent_system_completion_stays_in_dedicated_owner() -> None:
     assert "def completed_system_rows" in completion_source
     assert "def system_labels" in completion_source
     assert "def state_label" in completion_source
+
+
+def test_confirmed_intent_completion_title_tokens_use_shared_label_terms() -> None:
+    parent_source = CONFIRMED_INTENT_COMPLETION_PATH.read_text(encoding="utf-8")
+
+    assert "greenfield_domain_term_index import label_terms" in parent_source
+    assert 're.findall(r"[A-Za-z0-9]+", text)' not in parent_source
+    assert 're.findall(r"[A-Za-z0-9]+", label)' not in parent_source
+    assert label_terms("AI/ML Review Workspace") == ["AI", "ML", "Review", "Workspace"]
+
+    intent = {
+        "title": "A very long title that captures what users want because it follows many details",
+        "product_story": (
+            "Researchers need a source-backed AI/ML review workspace that keeps review evidence, "
+            "reviewer decisions, model notes, and status-window proof clear enough for handoff and release review."
+        ),
+        "state_object": "AI/ML review record tracks source-backed findings, reviewer decisions, and status-window proof.",
+        "first_path": (
+            "Reviewer opens the AI/ML review workspace, records source-backed review evidence, compares findings, "
+            "and sees status-window proof for the next decision."
+        ),
+        "proof_boundary": (
+            "Release succeeds when the reviewer can inspect source-backed proof, compare review evidence, "
+            "and see status-window readiness without broad automation."
+        ),
+        "internal_systems": ["AI/ML Review Workspace - records source-backed review status and proof windows."],
+        "human_actors": ["Research reviewer - checks evidence quality and records review decisions."],
+    }
+
+    assert complete_confirmed_intent(intent)["title"] == "AI/ML Review Record Workspace"
 
 
 def test_confirmed_intent_parser_keeps_ambiguities_out_of_first_path() -> None:

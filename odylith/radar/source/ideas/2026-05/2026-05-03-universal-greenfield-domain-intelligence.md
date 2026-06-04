@@ -1859,6 +1859,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`12 passed in 0.16s`); wider greenfield artifact proof passed (`168
   passed in 197.06s`); and confirmed-create performance proof passed (`1
   passed in 9.35s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed-intent title display-token follow-through moved title
+  repair word checks and system-label qualifier cleanup in
+  `greenfield_confirmed_intent_completion.py` onto
+  `greenfield_domain_term_index.label_terms`. Confirmed-intent completion still
+  owns title repair, title noun selection, qualifier ranking, core-field
+  completion, and product-posture completion, while the shared term index owns
+  reusable display-token extraction for slash-separated accepted labels such as
+  AI/ML review record. The visible generated title now preserves that product
+  signal as `AI/ML Review Record Workspace` instead of clipping it to
+  `ML Review Record Workspace`. Touched files remain below limits
+  (`greenfield_confirmed_intent_completion.py`: 644 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_intent_ownership.py`: 301 lines). Proof: syntax
+  proof passed for the touched modules and test; focused ownership proof passed
+  (`9 passed in 0.22s`); wider greenfield artifact proof passed (`177 passed
+  in 198.50s`); and confirmed-create performance proof passed (`1 passed in
+  9.62s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

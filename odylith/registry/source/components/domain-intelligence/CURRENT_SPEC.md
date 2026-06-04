@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed-intent title repair and system-label qualifier display tokens through shared greenfield label terms so slash-separated labels such as AI/ML review record preserve their visible product signal.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 - **2026-06-04 · Implementation:** Routed Registry artifact cleanup action-token checks through shared greenfield visible words and preserved slash-separated visible-result artifact phrases.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_terms.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed Registry document-context and status-view profile object label extraction through shared greenfield domain label terms so profile contracts no longer carry a local display-token regex.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
-- **2026-06-04 · Implementation:** Routed Registry contract differentiation trigger token extraction through shared greenfield text visible words so fallback-axis scoring no longer carries a local token regex.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -147,6 +147,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed Registry semantic contract compact-artifact token counting through `greenfield_domain_term_index.label_terms`. `greenfield_component_semantic_contract.py` keeps object-phrase dedupe, compact-artifact preservation, phrase prioritization, and local contract assembly while the shared term index owns display-token parsing for hyphenated and underscore-separated artifact phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry term-window raw display-token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_component_term_windows.py` keeps label-term preservation, compound construction, and nearby context-window policy while the shared term index owns reusable display-token parsing for component labels and context phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry artifact cleanup action-token checks through `greenfield_text.visible_words` and preserved slash-separated visible-result object phrases during cleanup. `greenfield_component_terms.py` keeps artifact phrase cleanup, actor/action trimming, action-form classification, artifact-carrier policy, and phrase identity while shared greenfield text owns reusable visible-word splitting for generated artifact phrases such as `web/ui surface`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed-intent title repair and system-label qualifier display tokens through `greenfield_domain_term_index.label_terms`. `greenfield_confirmed_intent_completion.py` keeps title repair, title noun selection, qualifier ranking, core-field completion, and product-posture completion while the shared term index owns reusable display-token extraction for accepted labels such as `AI/ML review record`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -323,6 +324,13 @@ This section captures synchronized requirement and contract signals derived from
   rather than semantic singularization. `greenfield_confirmed_components.py`
   may own component-label stopwords and title casing, but it must not
   reintroduce a local `for raw in re.findall` token loop for `domain_label`.
+- Confirmed-intent title repair and system-label qualifier display tokens must
+  use `greenfield_domain_term_index.label_terms`.
+  `greenfield_confirmed_intent_completion.py` may own title repair, title noun
+  selection, qualifier ranking, core-field completion, and product-posture
+  completion, but it must not reintroduce local `re.findall(r"[A-Za-z0-9]+",
+  ...)` token loops that can clip slash-separated accepted labels such as
+  `AI/ML review record`.
 - Public quality-gate prompt and semantic-contract term extraction must use
   `greenfield_domain_term_index.ordered_terms`. `greenfield_quality_gate.py`
   may own public-quality stopwords, failure messages, and short domain
