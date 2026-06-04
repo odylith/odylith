@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 209,
-    "mapped_workstream_evidence_count": 166,
+    "explicit_event_count": 210,
+    "mapped_workstream_evidence_count": 167,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 209
+    "timeline_event_count": 210
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 569,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed Registry contract differentiation trigger token extraction through shared greenfield text visible words so fallback-axis scoring no longer carries a local token regex.",
+      "ts_iso": "2026-06-04T04:33:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",

@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed Registry contract differentiation trigger token extraction through shared greenfield text visible words so fallback-axis scoring no longer carries a local token regex.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_differentiation.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
 - **2026-06-04 · Implementation:** Routed Registry contract field visible-word extraction through shared greenfield text so status-only and ranked contract phrase checks no longer carry local word-token regexes.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed Radar backlog proof-focus counts and repeated-required detection through shared confirmed text counting so backlog wording no longer carries local regex count gates.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed-completion label focus and keyword matching through shared domain term indexing so completion repair no longer carries local token parsing loops.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -141,6 +141,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed proposal validation field-depth counts through `greenfield_text.word_count`. `proposal_validation.py` keeps proposal shape, evidence-tier, Mermaid, rationale, backlog, component, and diagram validation policy while shared text owns reusable word counting for arbitrary slash- and hyphen-bearing product phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed program wave-to-workstream match terms through `greenfield_domain_term_index.ordered_terms`. `greenfield_programs.py` keeps release selector parsing, explicit workstream refs, fallback ordering, execution-wave document shape, and release-target helpers while the shared term index owns plural folding and reusable token filtering for arbitrary wave and backlog vocabulary. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry contract field visible-word extraction through `greenfield_text.visible_words`. `greenfield_component_contract_fields.py` keeps shell-artifact rejection, status-only field policy, ranked-output normalization, and contract list cleanup while shared text owns reusable visible word splitting for hyphenated generated field phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed Registry contract differentiation trigger matching through `greenfield_text.visible_words`. `greenfield_component_contract_differentiation.py` keeps fallback-axis scoring, sibling repair, and contract repair decisions while shared text owns reusable visible word splitting for hyphenated trigger phrases such as `status-window proof`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -254,6 +255,11 @@ This section captures synchronized requirement and contract signals derived from
   `greenfield_component_contract_fields.py` may call the shared helper, but it
   must not reintroduce a local `_phrase` clone for accepted-input,
   produced-output, or adjustment-support wording.
+- Registry fallback-axis trigger matching must use
+  `greenfield_text.visible_words`. `greenfield_component_contract_differentiation.py`
+  may own local-score thresholds, trigger-hit weighting, sibling repair, and
+  repair decisions, but it must not reintroduce local word-token `re.findall`
+  loops for `_trigger_hits`.
 - Ordered component-local term indexing must stay in
   `greenfield_component_term_index.py`. Component contracts, component terms,
   contract differentiation, and quality gates may call `ordered_domain_terms`,

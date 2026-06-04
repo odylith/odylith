@@ -1772,6 +1772,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168 passed
   in 198.26s`); and confirmed-create performance proof passed (`1 passed in
   9.56s`), preserving the under-30s create gate.
+- 2026-06-04 Registry contract differentiation visible-word follow-through
+  moved fallback-axis trigger matching in
+  `greenfield_component_contract_differentiation.py` onto
+  `greenfield_text.visible_words`. Contract differentiation still owns
+  fallback-axis scoring, sibling repair, and component contract repair
+  decisions, while shared text owns reusable visible word splitting for
+  hyphenated trigger phrases such as status-window proof. Touched files remain
+  below limits (`greenfield_component_contract_differentiation.py`: 701 lines;
+  `greenfield_text.py`: 153 lines; `test_greenfield_component_spec_quality.py`:
+  592 lines). Proof: syntax proof passed for the touched modules and test;
+  focused component proof passed (`12 passed in 0.16s`); wider greenfield
+  artifact proof passed (`168 passed in 199.10s`); and confirmed-create
+  performance proof passed (`1 passed in 9.47s`), preserving the under-30s
+  create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

@@ -40,6 +40,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_windows impor
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 
 
@@ -562,7 +563,7 @@ def _axis_local_score(axis: ComponentAxis, *, label_text: str, description_text:
 
 
 def _trigger_hits(triggers: Sequence[str], text: str) -> int:
-    tokens = re.findall(r"[a-z0-9]+", _clean(text).casefold())
+    tokens = tuple(word.casefold() for word in visible_words(text))
     hits = 0
     for trigger in triggers:
         normalized = trigger.casefold()

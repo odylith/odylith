@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence import (
+    greenfield_component_contract_differentiation as contract_differentiation,
+)
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
     normalize_contract,
     public_prose_quality_issues,
@@ -202,6 +205,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "greenfield_actor_terms import looks_actor_term" in terms_source
     assert "greenfield_actor_terms import generic_actor_label_prefix" in fields_source
     assert "greenfield_text import visible_words" in fields_source
+    assert "greenfield_text import visible_words" in differentiation_source
     assert "greenfield_actor_terms import starts_with_generic_actor_label" in differentiation_source
     assert "greenfield_actor_terms import starts_with_generic_actor_label" in quality_source
     generic_actor_regex = "Operator|Maintainer|Reviewer|Primary user"
@@ -251,6 +255,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "normalize_domain_token" not in fields_source
     assert "for raw in re.findall" not in terms_source
     assert "for raw in re.findall" not in fields_source
+    assert 're.findall(r"[a-z0-9]+"' not in differentiation_source
     assert "re.findall(r\"[A-Za-z][A-Za-z'-]*\"" not in fields_source
     assert "def _word_set" not in contract_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in contract_source
@@ -308,6 +313,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("student submits assignment details") == "assignment details"
     assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
     assert visible_words("blocked-state update") == ("blocked", "state", "update")
+    assert contract_differentiation._trigger_hits(("status", "window"), "Status-window proof") == 2
     assert status_only_artifact_fragment("blocked update")
     assert not status_only_artifact_fragment("blocked-state update")
     assert contract_list_text("ranked status windows, blocked update") == "status windows"
