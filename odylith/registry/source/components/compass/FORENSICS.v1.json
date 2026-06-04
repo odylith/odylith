@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 229,
-    "mapped_workstream_evidence_count": 155,
+    "explicit_event_count": 230,
+    "mapped_workstream_evidence_count": 156,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 229
+    "timeline_event_count": 230
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,39 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+        "tests/unit/runtime/test_greenfield_experience_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 544,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed greenfield component handoff title matching through the shared domain term index while preserving Radar and Registry handoff quality plus focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T21:54:59-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",

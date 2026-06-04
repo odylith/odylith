@@ -8,15 +8,33 @@ consistent across CLI output and candidate component specs.
 
 from __future__ import annotations
 
-import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence import greenfield_traceability
+
+_HANDOFF_MATCH_STOPWORDS = frozenset(
+    {
+        "adapter",
+        "build",
+        "component",
+        "first",
+        "handoffs",
+        "implement",
+        "path",
+        "proof",
+        "review",
+        "service",
+        "state",
+        "surface",
+        "system",
+    }
+)
 
 
 def row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
@@ -377,34 +395,23 @@ def _short_contract_text(value: Any, *, limit: int = 180) -> str:
 
 
 def _workstream_title_matches_component(title: str, row: Mapping[str, Any]) -> bool:
-    title_terms = _meaningful_terms(title)
-    label_terms = _meaningful_terms(str(row.get("label", "") or row.get("component_id", "")))
+    title_terms = set(
+        ordered_terms(
+            title,
+            minimum=4,
+            stopwords=_HANDOFF_MATCH_STOPWORDS,
+        )
+    )
+    label_terms = set(
+        ordered_terms(
+            str(row.get("label", "") or row.get("component_id", "")),
+            minimum=4,
+            stopwords=_HANDOFF_MATCH_STOPWORDS,
+        )
+    )
     if not title_terms or not label_terms:
         return False
     return len(title_terms & label_terms) >= min(2, len(label_terms))
-
-
-def _meaningful_terms(value: str) -> set[str]:
-    stop = {
-        "adapter",
-        "build",
-        "component",
-        "first",
-        "handoffs",
-        "implement",
-        "path",
-        "proof",
-        "review",
-        "service",
-        "state",
-        "surface",
-        "system",
-    }
-    return {
-        token
-        for token in re.findall(r"[a-z0-9]+", str(value or "").casefold())
-        if len(token) >= 4 and token not in stop
-    }
 
 
 def _validation_items(*, row: Mapping[str, Any], wave: Mapping[str, Any]) -> tuple[str, ...]:

@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 63,
-    "mapped_workstream_evidence_count": 53,
+    "explicit_event_count": 64,
+    "mapped_workstream_evidence_count": 54,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 71,
+    "spec_history_event_count": 72,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 64
+    "timeline_event_count": 65
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,20 +21,52 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py"
       ],
       "confidence": "high",
-      "event_index": 544,
+      "event_index": 545,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py +1 more",
-      "ts_iso": "2026-06-03T21:30:21-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+      "ts_iso": "2026-06-03T22:02:31-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+        "tests/unit/runtime/test_greenfield_experience_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 544,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed greenfield component handoff title matching through the shared domain term index while preserving Radar and Registry handoff quality plus focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T21:54:59-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

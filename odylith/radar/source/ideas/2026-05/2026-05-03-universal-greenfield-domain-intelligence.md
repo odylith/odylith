@@ -1424,6 +1424,18 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.25s`); wider greenfield proof passed (`151 passed in
   233.14s`); and confirmed-create performance proof passed (`1 passed in
   11.90s`), preserving the under-30s create gate.
+- 2026-06-04 component handoff title-match term-index follow-through moved
+  generated component handoff workstream-title matching in `greenfield_experience.py`
+  onto `greenfield_domain_term_index.ordered_terms`. The handoff owner now keeps
+  only matching policy and stopwords, while the shared index handles plural
+  folding so `status dashboards` can match `Status Dashboard Surface` and
+  `reviews service` does not leak past the intended `review` and `service`
+  stopwords. Touched files remain below limits (`greenfield_experience.py`: 481
+  lines; `test_greenfield_experience_terms.py`: 55 lines). Proof: syntax proof
+  passed for the touched module and test; focused experience/row proof passed
+  (`2 passed in 0.08s`); wider greenfield proof passed (`152 passed in
+  229.35s`); and confirmed-create performance proof passed (`1 passed in
+  11.57s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
