@@ -87,20 +87,33 @@ def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
     assert "def _can_clause" not in source
     assert "greenfield_domain_term_index import label_terms" in source
     assert "from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count" in source
+    assert "greenfield_text import visible_words" in source
     assert "def word_count" in text_source
     assert "for raw in re.findall" not in source
     assert 'len(re.findall(r"[A-Za-z0-9]+"' not in source
     assert 'len(re.findall(r"[a-z0-9]+"' not in source
+    assert 're.findall(r"[a-z0-9]+"' not in source
     assert "def label_terms" in index_source
 
     assert domain_label("Build a 3D GIS Permit Review App", "") == "3D GIS Permit Review"
     assert domain_label("AI CRM workflows for UI audits", "") == "AI CRM Workflows"
     assert domain_label("", "Create a repair request tracker for contractors") == "Repair Request Tracker Contractors"
     assert word_count("`AI/ML` status review keeps source evidence visible.") == 8
+    assert visible_words("UI-client dashboard") == ("UI", "client", "dashboard")
     assert label_terms(
         "Build a 3D GIS Permit Review App",
         stopwords={"build", "a", "app"},
     ) == ["3D", "GIS", "Permit", "Review"]
+    assert confirmed_components(
+        label="Permit Review",
+        label_slug="permit-review",
+        internal_systems=["UI-client dashboard - shows permit review status and source evidence."],
+    )[0]["kind"] == "client"
+    assert confirmed_components(
+        label="Permit Review",
+        label_slug="permit-review",
+        internal_systems=["External-provider adapter - imports permit status from city records."],
+    )[0]["kind"] == "adapter"
 
 
 def test_confirmed_project_brief_stays_in_dedicated_owner() -> None:

@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 92,
-    "mapped_workstream_evidence_count": 82,
+    "explicit_event_count": 93,
+    "mapped_workstream_evidence_count": 83,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 99,
+    "spec_history_event_count": 100,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 93
+    "timeline_event_count": 94
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,53 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
       ],
       "confidence": "high",
-      "event_index": 573,
+      "event_index": 574,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py",
-      "ts_iso": "2026-06-04T05:17:44-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+      "ts_iso": "2026-06-04T05:31:01-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 573,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed component kind-token extraction through shared greenfield visible words so client, adapter, and service classification no longer carries a local regex token loop.",
+      "ts_iso": "2026-06-04T05:30:12-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

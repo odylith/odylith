@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed confirmed component kind-token extraction through shared greenfield visible words so client, adapter, and service classification no longer carries a local regex token loop.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
 - **2026-06-04 · Implementation:** Routed Registry component term-window raw display-token extraction through shared greenfield label terms so fallback label and nearby-context windows no longer carry local regex token loops.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed Registry contract field visible-word extraction through shared greenfield text so status-only and ranked contract phrase checks no longer carry local word-token regexes.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py, src/odylith/runtime/domain_intelligence/greenfield_text.py +1 more
-- **2026-06-04 · Implementation:** Routed greenfield program wave-to-workstream matching through the shared domain term index so release waves use plural-aware generated-artifact terms instead of a local regex token loop.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_programs.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -130,6 +130,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed first-path actor signature term extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_first_path_clauses.py` keeps first-path action, capability, visible-result, and actor-filtering grammar, while actor signatures share the generated-artifact term index with caller-owned stopwords and short actor-term preservation for labels such as AI, ML, UI, and UX. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed first-path actor-prefix display-token thresholds through `greenfield_domain_term_index.label_terms`. `greenfield_first_path_clauses.py` keeps first-path action, capability, visible-result, actor filtering, and actor-specific term policy while the shared term index counts display tokens for `strip_action_subject`, `_actor_signature`, and `leading_subject_prefix` prefix-length decisions. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed component domain-label token extraction through `greenfield_domain_term_index.label_terms`. The shared domain-term owner now has a visible-label path that preserves casing, acronyms, and alphanumeric terms while `greenfield_confirmed_components.py` keeps component naming policy and title casing without a local regex token loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed confirmed component kind-token extraction through `greenfield_text.visible_words`. `greenfield_confirmed_components.py` keeps client/adapter/service kind policy while shared greenfield text owns reusable visible-word splitting for hyphenated and slash-separated internal system names. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed component handoff workstream-title matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_experience.py` keeps handoff thresholds and stopwords, while reusable title and component-label normalization shares the generated-artifact term index instead of a local `_meaningful_terms` regex helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed generated traceability semantic token extraction through `greenfield_domain_term_index.ordered_terms`. `greenfield_traceability.py` keeps component-workstream and diagram-link scoring plus compound identifier expansion, while plural and stopword normalization shares the generated-artifact term index instead of a local `_semantic_tokens` regex loop. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed confirmed Radar backlog text product-term matching through `greenfield_domain_term_index.ordered_terms`. `greenfield_confirmed_backlog_text_model.py` keeps backlog-specific stopwords and first-slice wording decisions, while `semantic_words` and `shares_product_terms` share plural and stopword normalization with the generated-artifact term index instead of local lower-case regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -460,6 +461,10 @@ This section captures synchronized requirement and contract signals derived from
   interface, validation, and fallback contract shaping, but it must not
   reintroduce local raw word-count regex loops for responsibility-depth,
   generated-or-weak, or dependency-focus thresholds.
+- Confirmed component kind-token extraction must use
+  `greenfield_text.visible_words`. `greenfield_confirmed_components.py` may own
+  client, adapter, and service kind policy, but it must not reintroduce local
+  `re.findall(r"[a-z0-9]+", ...)` loops for `_contains_kind_token`.
 - Confirmed-intent parser visible word counting must stay in
   `greenfield_confirmed_text.word_count`. `greenfield_confirmed_intent.py` may
   own Markdown/JSON section parsing, preamble paragraph selection, and accepted

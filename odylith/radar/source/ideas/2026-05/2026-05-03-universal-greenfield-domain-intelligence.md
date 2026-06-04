@@ -1831,6 +1831,20 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`14 passed in 0.13s`); wider greenfield artifact proof passed (`168 passed
   in 198.38s`); and confirmed-create performance proof passed (`1 passed in
   9.69s`), preserving the under-30s create gate.
+- 2026-06-04 Confirmed component kind-token follow-through moved internal
+  system kind classification in `greenfield_confirmed_components.py` onto
+  `greenfield_text.visible_words`. Confirmed components still own
+  internal-system component generation, labels, kind selection, responsibility,
+  boundary, dependency, interface, validation, and fallback contract shaping,
+  while shared greenfield text owns reusable visible-word splitting for
+  hyphenated and slash-separated system names such as UI-client dashboard and
+  web/ui surface. Touched files remain below limits
+  (`greenfield_confirmed_components.py`: 579 lines; `greenfield_text.py`: 153
+  lines; `test_greenfield_component_spec_quality.py`: 629 lines). Proof:
+  syntax proof passed for the touched modules and test; focused component proof
+  passed (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168
+  passed in 198.29s`); and confirmed-create performance proof passed (`1 passed
+  in 9.54s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

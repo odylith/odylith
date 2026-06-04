@@ -28,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
     differentiate_component_contracts,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 
 _STOPWORDS = {
@@ -222,7 +223,7 @@ def _system_kind(name: str, description: str) -> str:
 
 
 def _contains_kind_token(text: str, tokens: tuple[str, ...]) -> bool:
-    words = re.findall(r"[a-z0-9]+", text.casefold())
+    words = [word.casefold() for word in visible_words(text)]
     for token in tokens:
         normalized = token.casefold()
         if normalized in {"ui", "web"}:
