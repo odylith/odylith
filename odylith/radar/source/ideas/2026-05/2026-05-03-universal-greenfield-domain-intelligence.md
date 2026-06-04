@@ -1786,6 +1786,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   artifact proof passed (`168 passed in 199.10s`); and confirmed-create
   performance proof passed (`1 passed in 9.47s`), preserving the under-30s
   create gate.
+- 2026-06-04 Registry profile object-label follow-through moved document
+  context and status-view object phrase token extraction in
+  `greenfield_component_contract_profiles.py` onto
+  `greenfield_domain_term_index.label_terms`. Profile contracts still own
+  document-context wording, status-view wording, local proof rows, and profile
+  state-object policy, while the shared domain term index owns reusable visible
+  label tokenization for hyphenated and underscore-separated state labels such
+  as source-backed_review record. Touched files remain below limits
+  (`greenfield_component_contract_profiles.py`: 369 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_component_spec_quality.py`: 599 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component proof passed
+  (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168 passed
+  in 199.26s`); and confirmed-create performance proof passed (`1 passed in
+  9.53s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

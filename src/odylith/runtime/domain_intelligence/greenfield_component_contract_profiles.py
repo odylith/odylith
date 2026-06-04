@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -106,10 +107,10 @@ def status_view_contract(
 
 
 def _object_phrase(value: str) -> str:
-    text = _clean(value).casefold()
+    text = _clean(value).casefold().replace("_", " ")
     if not text:
         return "domain record"
-    words = [word for word in re.findall(r"[A-Za-z0-9-]+", text) if word not in {"the", "primary", "core"}]
+    words = label_terms(text, stopwords={"the", "primary", "core"})
     return " ".join(words[:4]) or "domain record"
 
 

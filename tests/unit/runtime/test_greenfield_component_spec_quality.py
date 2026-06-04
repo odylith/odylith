@@ -4,6 +4,7 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence import (
     greenfield_component_contract_differentiation as contract_differentiation,
+    greenfield_component_contract_profiles as contract_profiles,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
     normalize_contract,
@@ -134,6 +135,12 @@ def test_component_contract_profiles_stay_in_dedicated_owner() -> None:
     assert "def status_view_contract" in profile_source
     assert "def _document_local_proof" in profile_source
     assert "def _status_local_proof" in profile_source
+    assert "greenfield_domain_term_index import label_terms" in profile_source
+    assert 're.findall(r"[A-Za-z0-9-]+"' not in profile_source
+    assert (
+        contract_profiles._object_phrase("The Primary source-backed_review record")
+        == "source-backed review record"
+    )
 
 
 def test_component_contract_targets_stay_in_dedicated_owner() -> None:
