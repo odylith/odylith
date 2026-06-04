@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 100,
-    "mapped_workstream_evidence_count": 72,
+    "explicit_event_count": 115,
+    "mapped_workstream_evidence_count": 80,
     "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 100
+    "timeline_event_count": 115
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,409 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 524,
+      "explicit_components": [
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "B-142/CB-202 follow-through moved remaining component and handoff row readers onto greenfield_rows.py and fixed metadata-led semantic copy cleanup for confirmed project briefs and Registry contracts.",
+      "ts_iso": "2026-06-03T16:21:38-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 516,
+      "explicit_components": [
+        "atlas",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Split Atlas first-path sequence step derivation into greenfield_sequence_steps.py; preserved action-later tails and compact role-qualified Registry artifacts; diagram, confirmed-greenfield, artifact-quality, and performance proofs passed.",
+      "ts_iso": "2026-06-03T12:58:43-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 511,
+      "explicit_components": [
+        "atlas",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Split confirmed-create apply-prewrite Registry component previews and Atlas diagram previews into dedicated owners; apply-prewrite is now below the 800-line soft limit and focused, broad, and performance proofs passed.",
+      "ts_iso": "2026-06-03T11:08:02-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 510,
+      "explicit_components": [
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Split Registry component contract target parsing into greenfield_component_contract_targets.py; differentiation parent is below the 800-line soft limit and focused, broad, and performance proofs passed.",
+      "ts_iso": "2026-06-03T10:48:49-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
+        "tests/unit/runtime/test_greenfield_component_semantic_contract_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 509,
+      "explicit_components": [
+        "domain-intelligence",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Split generated Registry component semantic context extraction into a dedicated owner, keeping greenfield_component_semantic_contract.py below the 800-line soft limit with focused, broad, and performance proof.",
+      "ts_iso": "2026-06-03T10:34:20-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 508,
+      "explicit_components": [
+        "domain-intelligence",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Split generated Registry component contract document-context and status-view profiles into a dedicated owner, keeping greenfield_component_contract.py below the 800-line soft limit with focused, broad, and performance proof.",
+      "ts_iso": "2026-06-03T10:21:17-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
+        "tests/unit/runtime/test_greenfield_artifact_language_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 506,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Split confirmed Radar workstream phrase and rationale logic into a dedicated backlog text-model owner, keeping greenfield_confirmed_backlog.py below the 800-line soft limit with focused, broad, and performance proof.",
+      "ts_iso": "2026-06-03T09:48:51-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 505,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Removed duplicate confirmed-component title helper and unused clause helper, keeping greenfield_confirmed_components.py below the 800-line soft limit with focused component proof.",
+      "ts_iso": "2026-06-03T09:32:57-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py",
+        "tests/unit/runtime/test_greenfield_confirmed_repair.py"
+      ],
+      "confidence": "high",
+      "event_index": 504,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Split confirmed-completion phrase and label modeling into a dedicated text-model owner, removed pass-through component wrappers, and kept the confirmed-completion parent below the 800-line soft limit with focused, broad, and performance proof.",
+      "ts_iso": "2026-06-03T09:27:27-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_quality.py",
+        "tests/unit/runtime/test_greenfield_confirmed_repair.py"
+      ],
+      "confidence": "high",
+      "event_index": 503,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Extracted confirmed-completion text quality predicates into greenfield_confirmed_completion_quality.py; completion parent is now 1068 lines and proof passed: 3 focused, 118 bundle, and 1 performance test.",
+      "ts_iso": "2026-06-03T09:11:26-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_validation.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent.py"
+      ],
+      "confidence": "high",
+      "event_index": 502,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Extracted confirmed-intent validation into greenfield_confirmed_intent_validation.py; parser is now 671 lines and proof passed: 27 focused, 118 bundle, and 1 performance test.",
+      "ts_iso": "2026-06-03T08:58:17-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rows.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
+        "tests/unit/runtime/test_greenfield_general_artifact_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 501,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Extracted post-confirm semantic model alignment into greenfield_post_confirm_semantic_alignment.py and shared row coercion into greenfield_post_confirm_rows.py; completion parent is now 691 lines and proof passed: 39 focused, 118 bundle, and 1 performance test.",
+      "ts_iso": "2026-06-03T08:43:36-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py",
+        "tests/unit/runtime/test_greenfield_general_artifact_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 500,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Extracted post-confirm semantic drift checks into greenfield_post_confirm_semantic_drift.py; parent completion gate is 852 lines and proof passed: 39 focused, 22 prewrite, 118 bundle, and 1 performance test.",
+      "ts_iso": "2026-06-03T08:14:55-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 494,
+      "explicit_components": [
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "radar",
+        "registry"
+      ],
+      "meaningful": false,
+      "summary": "Tightened greenfield post-confirm Radar workstream and Registry component artifact quality. Semantic renderers now reject parser debris, proof scaffolds, bare outcome nouns, and component-boundary boilerplate; latest confirmed-create E2E completed in 9.61 seconds with no slop hits and the browser matrix passed.",
+      "ts_iso": "2026-06-02T18:33:07-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
+        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py"
+      ],
+      "confidence": "high",
+      "event_index": 493,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Hardened confirmed greenfield create so semantic-model renderers reject parser debris, role/action splices, bare outcome nouns, and framework proof scaffolds before Radar, Registry, Atlas, and runtime records are written.",
+      "ts_iso": "2026-06-02T11:59:19-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",

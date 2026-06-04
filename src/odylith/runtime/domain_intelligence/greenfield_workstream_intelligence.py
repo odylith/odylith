@@ -117,11 +117,11 @@ def domain_intelligence_issues(value: Any, *, owner: str) -> list[str]:
         nested = value.get(key)
         if not _layer_has_depth(nested):
             issues.append(f"{owner} domain_intelligence.{key} is missing or too shallow")
-    if len(_list_values(value.get("ontology"))) < 4:
+    if len(text_values(value.get("ontology"))) < 4:
         issues.append(f"{owner} domain_intelligence.ontology must define at least four domain terms")
-    if len(_list_values(value.get("operators"))) < 3:
+    if len(text_values(value.get("operators"))) < 3:
         issues.append(f"{owner} domain_intelligence.operators must define at least three state-changing operations")
-    if len(_list_values(value.get("validation_obligations"))) < 3:
+    if len(text_values(value.get("validation_obligations"))) < 3:
         issues.append(f"{owner} domain_intelligence.validation_obligations must define at least three proof gates")
     duplicate_terms = _duplicate_ontology_terms(value.get("ontology"))
     if duplicate_terms:
@@ -301,12 +301,8 @@ def _render_layer(value: Any) -> list[str]:
             if rendered:
                 rows.append(f"- {clean_text(key)}: {rendered}")
         return rows
-    values = _list_values(value)
+    values = text_values(value)
     return [f"- {item}" for item in values if item]
-
-
-def _list_values(value: Any) -> list[str]:
-    return [clean_text(item) for item in text_values(value) if clean_text(item)]
 
 
 def _layer_has_depth(value: Any) -> bool:
@@ -317,7 +313,7 @@ def _layer_has_depth(value: Any) -> bool:
 def _duplicate_ontology_terms(value: Any) -> list[str]:
     seen: dict[str, str] = {}
     duplicates: list[str] = []
-    for row in _list_values(value):
+    for row in text_values(value):
         label = clean_text(row.split(":", 1)[0] if ":" in row else row)
         key = _ontology_term_key(row)
         if not key:

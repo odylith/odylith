@@ -6,6 +6,7 @@ import copy
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.common.value_coercion import mapping_copy
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
 PROJECT_INTELLIGENCE_BINDING_KEY = "project_intelligence_binding"
@@ -25,8 +26,8 @@ def attach_project_intelligence_bindings(proposal: Mapping[str, Any]) -> dict[st
     """Attach project-intelligence provenance to every generated artifact row."""
 
     result = copy.deepcopy(dict(proposal))
-    project_intelligence = _mapping(result.get("project_intelligence"))
-    intent = _mapping(result.get("intent"))
+    project_intelligence = mapping_copy(result.get("project_intelligence"))
+    intent = mapping_copy(result.get("intent"))
     base = _base_binding(project_intelligence=project_intelligence, intent=intent)
     result[ARTIFACT_DERIVATION_KEY] = {
         "root": PROJECT_INTELLIGENCE_ROOT,
@@ -178,12 +179,8 @@ def _binding_for(base: Mapping[str, str], *, artifact_kind: str, artifact_id: st
     return binding
 
 
-def _mapping(value: Any) -> Mapping[str, Any]:
-    return value if isinstance(value, Mapping) else {}
-
-
 def _release_identifier(value: Any) -> str:
-    row = _mapping(value)
+    row = mapping_copy(value)
     return (
         clean_text(row.get("provisional_release_id"))
         or clean_text(row.get("selector"))

@@ -24,23 +24,21 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-07 · Implementation:** Deepened B-142 greenfield Atlas output: generic scaffolds now emit five architecture views and the robot-swarm logistics profile emits ten domain-specific diagrams, tracked by CB-182.
+- **2026-06-03 · Implementation:** Split generated Registry component semantic context extraction into a dedicated owner, keeping greenfield_component_semantic_contract.py below the 800-line soft limit with focused, broad, and performance proof.
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py, src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py +1 more
+- **2026-06-03 · Implementation:** Split generated Registry component contract document-context and status-view profiles into a dedicated owner, keeping greenfield_component_contract.py below the 800-line soft limit with focused, broad, and performance proof.
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract.py, src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py +1 more
+- **2026-06-03 · Implementation:** Split confirmed Atlas diagram prose and label logic into a dedicated text-model owner, keeping greenfield_confirmed_diagrams.py below the 800-line soft limit while repairing the stale imperative action-label surface assertion.
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py +1 more
+- **2026-06-03 · Implementation:** Split confirmed Radar workstream phrase and rationale logic into a dedicated backlog text-model owner, keeping greenfield_confirmed_backlog.py below the 800-line soft limit with focused, broad, and performance proof.
   - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-08-greenfield-atlas-proposal-suite-is-too-shallow-for-architecture-review.md, src/odylith/runtime/domain_intelligence/proposal_scaffold.py +2 more
-- **2026-05-06 · Implementation:** Hardened greenfield Tribunal/apply rollback and refreshed generated governance surfaces after migration, CLI, and headless-browser QA.
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py +1 more
+- **2026-06-03 · Implementation:** Removed duplicate confirmed-component title helper and unused clause helper, keeping greenfield_confirmed_components.py below the 800-line soft limit with focused component proof.
   - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_transaction.py, tests/unit/runtime/test_greenfield_proposals.py
-- **2026-05-06 · Implementation:** Hardened greenfield engine alignment: exact code-path context now carries Registry owner into the Execution Engine handshake, greenfield proposal requests expose all activation layers, CB-174 captured, and sync check-only passes after Registry/Atlas refresh.
-  - Evidence: odylith/casebook/bugs/2026-05-06-context-exact-code-paths-lose-registry-owner-in-execution-handshake.md, src/odylith/runtime/context_engine/odylith_context_engine_projection_entity_runtime.py +1 more
-- **2026-05-02 · Implementation:** Replaced Domain Intelligence template catalog path with host-reasoned proposal contract, apply-time schema validation, and host-authored Atlas Mermaid source requirements; reran engine, migration, and browser proof.
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, tests/unit/runtime/test_greenfield_component_spec_quality.py
+- **2026-06-03 · Implementation:** Split confirmed-completion phrase and label modeling into a dedicated text-model owner, removed pass-through component wrappers, and kept the confirmed-completion parent below the 800-line soft limit with focused, broad, and performance proof.
   - Scope: B-142
-  - Evidence: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
-- **2026-05-02 · Implementation:** Domain Intelligence corrected to host-reasoned proposal authoring with apply-time topology validation and no in-code project taxonomy.
-  - Scope: B-142
-  - Evidence: odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +1 more
-- **2026-05-02 · Implementation:** Hardened B-142 Domain Intelligence with alternate-fit classification, acronym-safe titles, dedicated proposal rendering, program-formation output, migration-observer markers, full engine/install/browser proof, and fresh empty-consumer apply proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/archetypes.py, src/odylith/runtime/domain_intelligence/greenfield_proposals.py +2 more
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -98,6 +96,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Consolidated generated list-row coercion in `greenfield_rows.py`. Confirmed prewrite gating, the deterministic Tribunal, confirmed title repair, apply-prewrite remapping, confirmed completion, and post-confirm semantic/package checks now import `mapping_rows` or `dict_rows` from the shared owner instead of carrying private `_mapping_rows`/`_dict_rows` clones or a post-confirm-specific wrapper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Extended shared row coercion to remaining component, backlog, handoff, created-row, proposal-row, and wave-row readers, and hardened semantic context cleanup for confirmed Registry contract text. `greenfield_backlog_impact.py`, `greenfield_experience.py`, `greenfield_confirmed_component_completion.py`, and `greenfield_component_contract_differentiation.py` now reuse `mapping_rows` or `dict_rows`, while `greenfield_component_semantic_context.py` strips metadata-led actor/action phrases and `greenfield_confirmed_project_brief.py` rewrites awkward show-actor-artifact copy before project posture text is rendered. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Consolidated confirmed-intent list text coercion in `greenfield_confirmed_text.py`. The parser, completion, actor-completion, system-completion, and validation owners now call `confirmed_text_values` instead of carrying local `_strings` helpers, so Markdown cleanup and strict accepted-intent list semantics stay in one shared confirmed-text owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-03: Removed the remaining private coercion helpers from workstream Domain Intelligence and project-intelligence binding. `greenfield_workstream_intelligence.py` now uses `greenfield_text.text_values` directly instead of `_list_values`, and `project_intelligence_binding.py` uses `runtime.common.value_coercion.mapping_copy` instead of a local `_mapping` helper. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -192,6 +191,11 @@ This section captures synchronized requirement and contract signals derived from
   system-completion, and validation modules may call `confirmed_text_values`,
   but they must not reintroduce local `_strings` helpers or silently flatten
   mapping-shaped values into accepted intent list rows.
+- General workstream Domain Intelligence text-list coercion must use
+  `greenfield_text.text_values` directly; `greenfield_workstream_intelligence.py`
+  must not reintroduce `_list_values`. Project-intelligence artifact binding
+  must use `runtime.common.value_coercion.mapping_copy` for mapping coercion
+  instead of a local `_mapping` helper.
 - Confirmed-intent actor completion must stay in
   `greenfield_confirmed_actor_completion.py`. The parent completion module may
   call `completed_actor_rows`, `actor_labels`, and `actor_row_description`, but
@@ -376,6 +380,7 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/unit/runtime/test_greenfield_confirmed_intent.py`
 - `tests/unit/runtime/test_greenfield_confirmed_repair.py`
 - `tests/unit/runtime/test_greenfield_row_coercion.py`
+- `tests/unit/runtime/test_greenfield_coercion_hygiene.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
 - `tests/unit/runtime/test_greenfield_intelligence_schema.py`
 - `tests/unit/runtime/test_greenfield_atlas_contract.py`

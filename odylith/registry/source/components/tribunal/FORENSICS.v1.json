@@ -30,12 +30,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 117,
+    "explicit_event_count": 120,
     "mapped_workstream_evidence_count": 107,
     "recent_path_match_count": 0,
     "spec_history_event_count": 6,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 117
+    "timeline_event_count": 120
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -44,6 +44,58 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 521,
+      "explicit_components": [
+        "domain-intelligence",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Consolidated Domain Intelligence generated row coercion into greenfield_rows.py, removed private _mapping_rows clones from confirmed prewrite, Tribunal, title repair, apply-prewrite, and post-confirm callers, and proved the shared owner with focused, broad, and performance tests.",
+      "ts_iso": "2026-06-03T15:35:13-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 517,
+      "explicit_components": [
+        "domain-intelligence",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Split Domain Intelligence artifact graph normalization and visible Tribunal actor projection out of artifact_enrichment.py; artifact enrichment now owns artifact projections only.",
+      "ts_iso": "2026-06-03T14:10:31-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 514,
+      "explicit_components": [
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "tribunal"
+      ],
+      "meaningful": false,
+      "summary": "Split confirmed generated-artifact substance checks into proposal_tribunal_substance.py; proposal_tribunal.py now stays at 522 lines while Tribunal artifact quality and confirmed-create performance proofs passed.",
+      "ts_iso": "2026-06-03T12:14:34-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",

@@ -1157,6 +1157,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   39.80s`); broad confirmed-greenfield proof passed (`160 passed in
   240.87s`); and confirmed-create performance proof passed (`1 passed in
   11.52s`).
+- 2026-06-03 greenfield coercion hygiene follow-through removed the remaining
+  workstream-local `_list_values` clone and the project-binding-local
+  `_mapping` clone from the B-142/CB-202 slice. Workstream Domain Intelligence
+  validation and rendering now use the shared `greenfield_text.text_values`
+  owner directly, while project-intelligence artifact binding uses
+  `runtime.common.value_coercion.mapping_copy` for root and release-plan
+  mapping coercion. `tests/unit/runtime/test_greenfield_coercion_hygiene.py`
+  pins both owner boundaries so future artifact-quality fixes cannot re-add
+  private list or mapping coercion in those modules. Proof: focused
+  coercion/domain-intelligence/project-binding proof passed (`49 passed in
+  16.10s`); broader greenfield artifact-quality and confirmed-create proof
+  passed (`119 passed in 233.71s`), including the under-30s confirmed-create
+  performance gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
