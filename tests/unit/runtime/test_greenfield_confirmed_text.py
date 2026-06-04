@@ -6,9 +6,11 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     CONFIRMED_INTENT_VALIDATION_STOPWORDS,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 
 
@@ -103,6 +105,16 @@ def test_confirmed_project_surface_word_count_stays_in_text_owner() -> None:
     assert "def _word_count" not in project_intelligence_source
     assert word_count("Source-backed review/triage keeps `AI` CRM status visible.") == 9
     assert word_occurrences("Required proof and required signoff stay visible.", "required") == 2
+
+
+def test_confirmed_focus_label_uses_shared_label_terms() -> None:
+    text_source = CONFIRMED_TEXT_PATH.read_text(encoding="utf-8")
+
+    assert "greenfield_domain_term_index import label_terms" in text_source
+    assert 're.findall(r"[A-Za-z0-9]+", title)' not in text_source
+    assert label_terms("Source-backed Review Workspace") == ["Source-backed", "Review", "Workspace"]
+    assert focus_label("Source-backed Review Workspace") == "Source-backed Review"
+    assert focus_label("AI/ML Review Workspace") == "AI ML Review"
 
 
 def test_confirmed_intent_parser_word_count_stays_in_text_owner() -> None:

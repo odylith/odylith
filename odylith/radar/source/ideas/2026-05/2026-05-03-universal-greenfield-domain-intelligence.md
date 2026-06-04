@@ -1891,6 +1891,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`8 passed in 7.88s`); wider greenfield artifact proof passed (`178
   passed in 201.72s`); and confirmed-create performance proof passed (`1
   passed in 9.49s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed focus-label display-token follow-through moved confirmed
+  project focus-label title token extraction in `greenfield_confirmed_text.py`
+  onto `greenfield_domain_term_index.label_terms`. Confirmed text still owns
+  confirmed Markdown cleanup, list coercion, semantic terms, word counts,
+  repeated-word counts, title casing, focus-label selection, and domain object
+  labels, while the shared term index owns reusable display-token extraction
+  for hyphenated generated titles such as Source-backed Review Workspace. The
+  visible focus label now preserves that product signal as
+  `Source-backed Review` instead of flattening it to `Source Backed Review`.
+  Touched files remain below limits (`greenfield_confirmed_text.py`: 413 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_text.py`: 132 lines). Proof: syntax proof passed
+  for the touched modules and test; focused confirmed-text proof passed (`5
+  passed in 0.03s`); wider greenfield artifact proof passed (`179 passed in
+  202.27s`); and confirmed-create performance proof passed (`1 passed in
+  9.54s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

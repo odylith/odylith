@@ -6,7 +6,7 @@ import re
 from collections.abc import Iterable, Sequence
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms, ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -188,11 +188,11 @@ def word_occurrences(value: str, word: str) -> int:
 def focus_label(title: str) -> str:
     words = [
         word
-        for word in re.findall(r"[A-Za-z0-9]+", title)
+        for word in label_terms(title)
         if word.casefold() not in GENERIC_TITLE_WORDS
     ]
     if not words:
-        words = re.findall(r"[A-Za-z0-9]+", title)[:3]
+        words = label_terms(title)[:3]
     return title_case_text(" ".join(words[:4]) or "Project")
 
 
