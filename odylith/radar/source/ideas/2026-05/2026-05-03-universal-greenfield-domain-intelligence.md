@@ -1510,6 +1510,22 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.21s`); wider artifact/proposal proof passed
   (`120 passed in 162.97s`); and confirmed-create performance proof passed
   (`1 passed in 9.72s`), preserving the under-30s create gate.
+- 2026-06-04 base component profile term-index follow-through moved
+  `_profile` focused label/kind token extraction in
+  `greenfield_component_contract.py` onto
+  `greenfield_domain_term_index.ordered_terms` with caller-owned short-term
+  preservation. The base component contract owner still owns profile
+  selection, generic fallback contract assembly, focus phrase derivation, state
+  terms, boundary clauses, and public contract field projection, while the
+  shared domain-term index owns reusable token parsing and plural folding for
+  profile words. Touched files remain below limits
+  (`greenfield_component_contract.py`: 551 lines;
+  `greenfield_component_term_index.py`: 128 lines;
+  `test_greenfield_component_spec_quality.py`: 574 lines). Proof: syntax proof
+  passed for the touched module and test; focused component-spec proof passed
+  (`14 passed in 0.16s`); wider greenfield artifact proof passed
+  (`162 passed in 190.72s`); and confirmed-create performance proof passed
+  (`1 passed in 9.50s`), preserving the under-30s create gate.
 - 2026-06-04 public quality-gate term-index follow-through moved prompt echo
   and semantic contract noun extraction in `greenfield_quality_gate.py` onto
   `greenfield_domain_term_index.ordered_terms`. The shared index now supports

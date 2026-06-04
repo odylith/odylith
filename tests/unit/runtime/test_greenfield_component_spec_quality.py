@@ -37,6 +37,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import domain_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
 
@@ -233,6 +234,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "literal_label_compounds(" in differentiation_source
     assert "nearby_domain_terms(" in differentiation_source
     assert "greenfield_component_term_index import ordered_domain_terms" in contract_source
+    assert "greenfield_domain_term_index import ordered_terms" in contract_source
     assert "greenfield_component_term_index import ordered_domain_terms" in differentiation_source
     assert "greenfield_component_term_index import ordered_domain_terms" in terms_source
     assert "greenfield_domain_term_index import ordered_terms" in terms_source
@@ -242,9 +244,11 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "normalize_domain_token" not in fields_source
     assert "for raw in re.findall" not in terms_source
     assert "for raw in re.findall" not in fields_source
+    assert "def _word_set" not in contract_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in contract_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in fields_source
     assert "re.findall(r\"[a-z0-9][a-z0-9'-]*\"" not in differentiation_source
+    assert 're.findall(r"[a-z0-9][a-z0-9_-]*"' not in contract_source
     assert 're.findall(r"[a-z0-9][a-z0-9_-]*"' not in differentiation_source
     assert "from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase" in fields_source
     assert "phrase(" in fields_source
@@ -258,6 +262,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
         "target",
         "window",
     ]
+    assert ordered_terms("Status notifications surface", minimum=1) == ["status", "notification", "surface"]
+    assert ordered_terms("Evidence uploads service", minimum=1) == ["evidence", "upload", "service"]
     assert component_domain_terms("Planning Engine validates plan targets and status windows.") == {
         "planning",
         "engine",

@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -231,7 +232,7 @@ def _accepted_input_focus(focus: str, *, kind: str) -> str:
 
 def _profile(*, label: str, kind: str, context: str) -> str:
     focused = f"{label} {kind}".casefold()
-    focused_words = _word_set(focused)
+    focused_words = set(ordered_terms(focused, minimum=1))
     text = f"{focused} {context}".casefold()
     if focused_words & {"document", "attachment", "upload", "packet", "file"} or "context handling" in focused:
         return "document_context"
@@ -533,10 +534,6 @@ def _first_contract_item(value: str) -> str:
     segment = re.split(r",|;", text, maxsplit=1)[0]
     segment = re.sub(r"^(?:and|or)\s+", "", segment, flags=re.IGNORECASE).strip(" .")
     return segment
-
-
-def _word_set(text: str) -> set[str]:
-    return {word for word in re.findall(r"[a-z0-9][a-z0-9_-]*", _clean(text).casefold()) if word}
 
 
 __all__ = [
