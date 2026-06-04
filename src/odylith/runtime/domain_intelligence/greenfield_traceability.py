@@ -9,6 +9,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import collect_delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -40,6 +41,7 @@ _DIAGRAM_FIELDS = (
 )
 _STOPWORDS = {
     "adapter",
+    "and",
     "application",
     "boundary",
     "candidate",
@@ -47,9 +49,11 @@ _STOPWORDS = {
     "core",
     "engine",
     "framework",
+    "from",
     "govern",
     "greenfield",
     "harness",
+    "into",
     "library",
     "memory",
     "module",
@@ -60,7 +64,12 @@ _STOPWORDS = {
     "surface",
     "store",
     "system",
+    "the",
+    "that",
+    "this",
     "view",
+    "with",
+    "without",
 }
 
 
@@ -589,11 +598,7 @@ def _workstream_haystack(row: Mapping[str, Any], *, fallback_title: str) -> str:
 
 
 def _semantic_tokens(value: str) -> set[str]:
-    tokens = {
-        token
-        for token in re.findall(r"[a-z0-9][a-z0-9_-]{2,}", str(value).casefold())
-        if token not in _STOPWORDS
-    }
+    tokens = set(ordered_terms(value, minimum=3, stopwords=_STOPWORDS))
     expanded: set[str] = set(tokens)
     for token in tokens:
         expanded.update(part for part in token.replace("_", "-").split("-") if len(part) > 2 and part not in _STOPWORDS)

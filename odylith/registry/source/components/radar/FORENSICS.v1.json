@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 185,
-    "mapped_workstream_evidence_count": 142,
+    "explicit_event_count": 186,
+    "mapped_workstream_evidence_count": 143,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 185
+    "timeline_event_count": 186
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,39 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
+        "tests/unit/runtime/test_greenfield_traceability_terms.py"
+      ],
+      "confidence": "high",
+      "event_index": 545,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed greenfield traceability semantic token extraction through the shared domain term index while preserving compound identifier expansion and improving generated Radar, Registry, and Atlas linkage for plural component labels.",
+      "ts_iso": "2026-06-03T22:11:31-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py",

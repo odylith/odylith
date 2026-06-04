@@ -1436,6 +1436,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`2 passed in 0.08s`); wider greenfield proof passed (`152 passed in
   229.35s`); and confirmed-create performance proof passed (`1 passed in
   11.57s`), preserving the under-30s create gate.
+- 2026-06-04 traceability semantic token term-index follow-through moved
+  generated Radar, Registry, and Atlas traceability matching in
+  `greenfield_traceability.py` onto `greenfield_domain_term_index.ordered_terms`.
+  The traceability owner now keeps scoring thresholds and compound identifier
+  expansion, while the shared index handles plural folding so component labels
+  such as `Status Windows` can link to singular workstream titles such as
+  `Build window proof`. Touched files remain below limits
+  (`greenfield_traceability.py`: 661 lines; `test_greenfield_traceability_terms.py`:
+  65 lines). Proof: syntax proof passed for the touched module and test;
+  focused traceability/artifact proof passed (`41 passed in 162.78s`); wider
+  greenfield proof passed (`153 passed in 230.09s`); and confirmed-create
+  performance proof passed (`1 passed in 11.77s`), preserving the under-30s
+  create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
