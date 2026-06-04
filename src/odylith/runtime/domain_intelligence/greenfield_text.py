@@ -41,6 +41,30 @@ def normalize_visible_result_language(value: Any) -> str:
     return clean_text(text)
 
 
+def normalize_proof_boundary_language(value: Any) -> str:
+    text = clean_text(value).strip(" .:")
+    if not text:
+        return ""
+    replacements = (
+        (r"^what\s+would\s+count\s+as\s+evidence[^:]*:\s*", ""),
+        (r"^(?:accepted\s+first\s+path|visible\s+outcome)\s+proof\s*:\s*", ""),
+        (r"^done\s+means\s*:?\s*", ""),
+        (r"^the\s+first\s+proof\s+is\s+", ""),
+        (r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+", ""),
+        (r"^(?:release\s+[A-Za-z0-9_.-]+\s+)?(?:is\s+)?proven\s+when\s+", ""),
+        (r"^(?:release\s+[A-Za-z0-9_.-]+\s+|the\s+release\s+)?(?:is\s+)?trusted\s+only\s+when\s+", ""),
+        (r"^(?:the\s+)?first\s+release\s+works\s+when\s+", ""),
+        (r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+when\s+", ""),
+        (r"^the\s+release\s+succeeds\s+when\s+", ""),
+        (r"^(?:the\s+)?accepted\s+path\s+can\s+be\s+replayed\s+from\s+", "replay "),
+    )
+    for pattern, replacement in replacements:
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+        text = clean_text(text).strip(" .:")
+    text = re.split(r"\bwhat\s+must\s+not\s+be\s+claimed\s+yet\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
+    return clean_text(text).strip(" .:")
+
+
 def clip_text_at_word_boundary(
     value: Any,
     *,

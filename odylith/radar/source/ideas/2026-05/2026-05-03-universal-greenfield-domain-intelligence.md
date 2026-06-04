@@ -2048,6 +2048,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   greenfield artifact proof passed (`185 passed in 210.64s`); and
   confirmed-create performance proof passed (`1 passed in 9.84s`), preserving
   the under-30s create gate.
+- 2026-06-04 proof-boundary language follow-through moved reusable evidence,
+  trust, success, replay, and done-means lead cleanup into
+  `greenfield_text.normalize_proof_boundary_language`. Confirmed Atlas diagram
+  text still owns brief proof summaries, semantic checkpoint selection, clause
+  splitting, label length limits, and Mermaid-safe rendering, while shared
+  greenfield text owns the repeated proof-boundary prefix rewrites. The touched
+  diagram text owner no longer keeps local proof-lead regex forks. Touched files
+  remain below limits (`greenfield_confirmed_diagram_text.py`: 517 lines;
+  `greenfield_text.py`: 248 lines;
+  `test_greenfield_post_confirm_slop_regressions.py`: 767 lines). Proof:
+  syntax proof passed for the touched modules and test; focused proof-boundary
+  and Atlas surface proof passed (`2 passed in 0.17s`); wider greenfield
+  artifact proof passed (`186 passed in 203.82s`); and confirmed-create
+  performance proof passed (`1 passed in 9.57s`), preserving the under-30s
+  create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

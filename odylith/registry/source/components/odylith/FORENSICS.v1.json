@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 353,
-    "mapped_workstream_evidence_count": 196,
+    "explicit_event_count": 354,
+    "mapped_workstream_evidence_count": 197,
     "recent_path_match_count": 0,
     "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 353
+    "timeline_event_count": 354
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py"
+      ],
+      "confidence": "high",
+      "event_index": 586,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed Atlas proof-boundary lead cleanup through the shared greenfield text owner and pinned the ownership with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T08:54:52-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",

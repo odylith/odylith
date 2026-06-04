@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_boundary_language
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 
@@ -112,6 +113,36 @@ def test_visible_result_language_normalization_stays_in_text_owner() -> None:
         assert r"\breadout\s+plus\b" not in source
         assert r"\bon\s+screen,\s+alongside\b" not in source
         assert 'r"\\balongside\\b", "with"' not in source
+
+
+def test_proof_boundary_language_normalization_stays_in_text_owner() -> None:
+    text_source = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
+    diagram_source = CONFIRMED_DIAGRAM_TEXT_PATH.read_text(encoding="utf-8")
+
+    assert "def normalize_proof_boundary_language" in text_source
+    assert (
+        normalize_proof_boundary_language(
+            "Release 0.0.1 is trusted only when the accepted path can be replayed from input through state change."
+        )
+        == "replay input through state change"
+    )
+    assert (
+        normalize_proof_boundary_language(
+            "What would count as evidence the wedge works: a recorded take. "
+            "What must not be claimed yet: polyphony."
+        )
+        == "a recorded take"
+    )
+    assert normalize_proof_boundary_language("Done means: reviewer sees the blocked reason.") == (
+        "reviewer sees the blocked reason"
+    )
+
+    assert "normalize_proof_boundary_language" in diagram_source
+    assert r"what\s+would\s+count\s+as\s+evidence" not in diagram_source
+    assert r"accepted\s+path\s+can\s+be\s+replayed" not in diagram_source
+    assert r"first\s+version\s+is\s+proven" not in diagram_source
+    assert r"trusted\s+only\s+when" not in diagram_source
+    assert r"done\s+means" not in diagram_source
 
 
 def test_confirmed_completion_repairs_actor_and_visible_result_splices() -> None:

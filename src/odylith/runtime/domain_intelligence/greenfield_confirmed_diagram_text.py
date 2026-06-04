@@ -13,6 +13,7 @@ from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_boundary_language
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 
@@ -79,15 +80,7 @@ def brief_proof_boundary(value: str) -> str:
     text = compact_text(value)
     if not text:
         return ""
-    text = re.sub(r"^what would count as evidence[^:]*:\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:release\s+[A-Za-z0-9_.-]+\s+)?(?:is\s+)?proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:release\s+[A-Za-z0-9_.-]+\s+)?(?:is\s+)?trusted\s+only\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?first\s+release\s+works\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^the release succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?accepted\s+path\s+can\s+be\s+replayed\s+from\s+", "replay ", text, flags=re.IGNORECASE)
-    text = re.split(r"\bwhat must not be claimed yet\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
+    text = normalize_proof_boundary_language(text)
     text = text.split(". ", 1)[0]
     return trim(text.strip(" .:"), 150)
 
@@ -119,12 +112,7 @@ def semantic_proof_checkpoint(semantic_model: Mapping[str, Any] | None) -> str:
             return trim(visible, 80)
     graph = semantic_model.get("diagram_event_graph")
     if isinstance(graph, Mapping):
-        value = compact_text(str(graph.get("proof_checkpoint") or ""))
-        value = re.sub(r"^(?:accepted\s+first\s+path|visible\s+outcome)\s+proof\s*:\s*", "", value, flags=re.IGNORECASE)
-        value = re.sub(r"^(?:first\s+version\s+is\s+)?proven\s+when\s+", "", value, flags=re.IGNORECASE)
-        value = re.sub(r"^(?:release\s+[A-Za-z0-9_.-]+\s+)?(?:is\s+)?trusted\s+only\s+when\s+", "", value, flags=re.IGNORECASE)
-        value = re.sub(r"^(?:the\s+)?accepted\s+path\s+can\s+be\s+replayed\s+from\s+", "replay ", value, flags=re.IGNORECASE)
-        value = re.sub(r"^done\s+means\s*:?\s*", "", value, flags=re.IGNORECASE)
+        value = normalize_proof_boundary_language(compact_text(str(graph.get("proof_checkpoint") or "")))
         value = _strip_dangling_tail(value)
         if word_count(value) >= 4:
             return trim(value, 80)
@@ -154,20 +142,9 @@ def proof_evidence_label(*, components: list[dict[str, Any]], fallback: str) -> 
 
 
 def proof_checkpoint_label(value: str) -> str:
-    text = compact_text(value).strip(" .")
+    text = normalize_proof_boundary_language(compact_text(value))
     if not text:
         return ""
-    text = re.sub(r"^done\s+means\s*:?\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:release\s+[A-Za-z0-9_.-]+\s+)?(?:is\s+)?proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:release\s+[A-Za-z0-9_.-]+\s+)?(?:is\s+)?trusted\s+only\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?first\s+release\s+works\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^the\s+release\s+succeeds\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?accepted\s+path\s+can\s+be\s+replayed\s+from\s+", "replay ", text, flags=re.IGNORECASE)
-    text = re.sub(r"^the\s+first\s+proof\s+is\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^what\s+would\s+count\s+as\s+evidence[^:]*:\s*", "", text, flags=re.IGNORECASE)
-    text = re.split(r"\bwhat\s+must\s+not\s+be\s+claimed\s+yet\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
     clauses = [
         clause.strip(" .")
         for clause in re.split(

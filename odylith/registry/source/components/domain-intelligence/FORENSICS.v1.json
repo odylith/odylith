@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 105,
-    "mapped_workstream_evidence_count": 95,
+    "explicit_event_count": 106,
+    "mapped_workstream_evidence_count": 96,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 112,
+    "spec_history_event_count": 113,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 106
+    "timeline_event_count": 107
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,26 +21,55 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_terms.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py",
         "src/odylith/runtime/domain_intelligence/greenfield_text.py"
       ],
       "confidence": "high",
-      "event_index": 586,
+      "event_index": 587,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_terms.py +7 more",
-      "ts_iso": "2026-06-04T08:41:10-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +1 more",
+      "ts_iso": "2026-06-04T08:55:19-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py"
+      ],
+      "confidence": "high",
+      "event_index": 586,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed Atlas proof-boundary lead cleanup through the shared greenfield text owner and pinned the ownership with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T08:54:52-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
