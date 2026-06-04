@@ -1045,6 +1045,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`5 passed in 0.06s`); wider greenfield artifact proof passed (`162
   passed in 192.91s`); and confirmed-create performance proof passed (`1
   passed in 9.52s`), preserving the under-30s create gate.
+- 2026-06-04 first-path parser label-term follow-through moved new-action
+  clause and valid-step display-token thresholds in
+  `greenfield_first_path_semantics.py` onto
+  `greenfield_domain_term_index.label_terms`. The first-path parser still owns
+  prefix stripping, action splitting, role-can normalization, subjectless
+  action normalization, material action selection, visible outcome selection,
+  recovery extraction, and `FirstPathModel` assembly, while the shared term
+  index now owns display-token counting for first-path parser thresholds.
+  Touched files remain below limits (`greenfield_first_path_semantics.py`: 364
+  lines; `greenfield_domain_term_index.py`: 131 lines;
+  `test_greenfield_post_confirm_slop_regressions.py`: 699 lines). Proof:
+  syntax proof passed for the touched module and test; focused post-confirm
+  first-path proof passed (`14 passed in 1.33s`); wider greenfield artifact
+  proof passed (`162 passed in 192.42s`); and confirmed-create performance
+  proof passed (`1 passed in 9.65s`), preserving the under-30s create gate.
 - 2026-06-04 confirmed Atlas proof-label word-count follow-through moved
   semantic proof checkpoint and proof-review clause thresholds in
   `greenfield_confirmed_diagram_text.py` onto

@@ -9,6 +9,7 @@ from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.common.prose_grammar import third_person_action_verb
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import action_chain_fragment as _action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import clean_first_path_text as _clean
@@ -293,7 +294,7 @@ def _starts_new_action_clause(value: str) -> bool:
         flags=re.IGNORECASE,
     ):
         return True
-    return bool(_MATERIAL_ACTION_RE.match(text) and len(re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text)) >= 2)
+    return bool(_MATERIAL_ACTION_RE.match(text) and len(label_terms(text)) >= 2)
 
 
 def _valid_step(value: str) -> bool:
@@ -302,10 +303,10 @@ def _valid_step(value: str) -> bool:
         return False
     if _is_scope_or_deferred_statement(text):
         return False
-    words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", text)
-    if len(words) < 2:
+    token_count = len(label_terms(text))
+    if token_count < 2:
         return False
-    if len(words) <= 3 and not _MATERIAL_ACTION_RE.search(text):
+    if token_count <= 3 and not _MATERIAL_ACTION_RE.search(text):
         return False
     if re.fullmatch(r"(?:capture|view|edit|create|done|path|mean|person)(?:\s*,\s*(?:capture|view|edit|create|done|path|mean|person))*", text, re.IGNORECASE):
         return False

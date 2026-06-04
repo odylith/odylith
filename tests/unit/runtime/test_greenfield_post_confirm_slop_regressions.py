@@ -11,6 +11,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
@@ -21,12 +23,14 @@ ROOT = Path(__file__).resolve().parents[3]
 FIRST_PATH_SEMANTICS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py"
 FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py"
 FIRST_PATH_TYPES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py"
+DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
 
 
 def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     parser_source = FIRST_PATH_SEMANTICS_PATH.read_text(encoding="utf-8")
     clause_source = FIRST_PATH_CLAUSES_PATH.read_text(encoding="utf-8")
     type_source = FIRST_PATH_TYPES_PATH.read_text(encoding="utf-8")
+    index_source = DOMAIN_TERM_INDEX_PATH.read_text(encoding="utf-8")
 
     assert len(parser_source.splitlines()) < 800
     for moved in (
@@ -43,6 +47,8 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     ):
         assert moved not in parser_source
     assert "def first_path_model" in parser_source
+    assert "greenfield_domain_term_index import label_terms" in parser_source
+    assert "len(re.findall" not in parser_source
     assert "def first_path_clauses" in clause_source
     assert "def action_chain_fragment" in clause_source
     assert "def clean_visible_result_phrase" in clause_source
@@ -50,6 +56,25 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     assert "normalize_domain_token" not in clause_source
     assert "class FirstPathModel" in type_source
     assert "class FirstPathClauses" in type_source
+    assert "def label_terms" in index_source
+    assert label_terms("`AI/ML` reviewer records follow-up notes") == [
+        "AI",
+        "ML",
+        "reviewer",
+        "records",
+        "follow-up",
+        "notes",
+    ]
+
+    model = first_path_model(
+        "A requester opens the app, the AI reviewer records follow-up notes, "
+        "and the product displays decision evidence."
+    )
+    assert model.steps == (
+        "The AI reviewer records follow-up notes",
+        "The product displays decision evidence",
+    )
+    assert model.material_action == "Record follow-up notes"
 
 
 def test_confirmed_completion_repairs_actor_and_visible_result_splices() -> None:

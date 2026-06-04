@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed first-path parser visible step-token thresholds through shared display label terms so action-clause splitting and valid-step filtering no longer carry local regex word counts.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py +1 more
 - **2026-06-04 · Implementation:** Routed confirmed component visible word-count thresholds through shared confirmed text so component responsibility and dependency filtering no longer carry local regex token counts.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed confirmed-artifact Tribunal accepted-text product phrase matching through shared label terms so the substance gate no longer carries a local accepted-term regex.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py +1 more
-- **2026-06-04 · Implementation:** Routed confirmed-intent parser word counting through the shared confirmed-text owner so accepted-intent section inference no longer carries a local word-count helper.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -96,6 +96,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-03: Split confirmed-intent internal-system completion into `greenfield_confirmed_system_completion.py`. The owner now completes internal system rows, fallback systems, system labels, state labels, and context-clause matching while `greenfield_confirmed_intent_completion.py` stays focused on orchestration, core fields, product posture, title repair, and first-path/proof wording. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split Atlas first-path event-step derivation into `greenfield_sequence_steps.py`. The step owner now handles semantic events, launcher-only filtering, first-path fallback parsing, compound-step expansion, and dedupe while `greenfield_sequence_diagram.py` stays below the 800-line soft limit as the participant/component routing and Mermaid rendering owner. The pass also preserves final `act later` decision tails and short role-qualified component artifacts such as `person follow list` in confirmed create output. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Atlas sequence-step display word counts through `greenfield_domain_term_index.label_terms`. `greenfield_sequence_steps.py` keeps event extraction, fallback splitting, launcher filtering, compound expansion, and dedupe while the shared term index owns display-token counting for launcher-only and numbered first-path filtering. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed first-path parser display step-token thresholds through `greenfield_domain_term_index.label_terms`. `greenfield_first_path_semantics.py` keeps prefix stripping, action splitting, role-can normalization, subjectless action normalization, material action selection, visible outcome selection, recovery extraction, and `FirstPathModel` assembly while the shared term index owns display-token counting for new-action clause and valid-step thresholds. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split Domain Intelligence artifact enrichment so `artifact_graph.py` owns graph normalization and `artifact_tribunal_actors.py` owns visible Tribunal actor projection. `artifact_enrichment.py` now stays below the 800-line soft limit as the artifact projection owner, and project-intelligence callers import graph and actor helpers from their dedicated owners. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Split confirmed project-brief rendering into `greenfield_confirmed_project_brief.py` and consolidated greenfield command quoting into `greenfield_command_text.py`. `greenfield_confirmed_components.py` now stays below the 800-line soft limit as the confirmed Registry component generator instead of also owning project-readiness copy and host handoff commands. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-03: Consolidated component-contract phrase and term helper ownership in `greenfield_component_terms.py`. Base contracts, semantic contracts, and contract differentiation now reuse `natural_phrase`, `phrase`, and `domain_terms` instead of carrying local `_term_phrase`, `_phrase`, or `_content_terms` clones, while all touched component-contract files stay below the 800-line soft limit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
@@ -184,6 +185,13 @@ This section captures synchronized requirement and contract signals derived from
   Domain Intelligence may reuse those helpers through
   `greenfield_semantic_quality.py`, but it must not reintroduce first-path
   clause rendering into the parser.
+- First-path parser display step-token thresholds must use
+  `greenfield_domain_term_index.label_terms`.
+  `greenfield_first_path_semantics.py` may own prefix stripping, action
+  splitting, role-can normalization, subjectless action normalization,
+  material action selection, visible outcome selection, recovery extraction,
+  and `FirstPathModel` assembly, but it must not reintroduce local raw
+  word-count regex loops for starts-new-action or valid-step filtering.
 - Atlas first-path step derivation must stay in
   `greenfield_sequence_steps.py`. Sequence and flowchart renderers may call
   `sequence_event_steps`, but they must not re-own semantic event extraction,
