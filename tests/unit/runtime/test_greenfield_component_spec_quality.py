@@ -202,6 +202,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert "def literal_label_terms" in term_windows_source
     assert "def literal_label_compounds" in term_windows_source
     assert "def nearby_domain_terms" in term_windows_source
+    assert "greenfield_domain_term_index import label_terms" in term_windows_source
+    assert "re.findall" not in term_windows_source
     assert "def looks_actor_term" in actor_terms_source
     assert "def generic_actor_label_prefix" in actor_terms_source
     assert "def starts_with_generic_actor_label" in actor_terms_source
@@ -356,6 +358,11 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
         "policy",
         "guardrails",
     ]
+    assert literal_label_terms("Source-backed_review Status Windows Service", noise_terms={"service"}) == [
+        "source-backed_review",
+        "status",
+        "window",
+    ]
     assert literal_label_compounds("AI CRM Status Windows Service", noise_terms={"service"}) == [
         "ai crm",
         "crm status",
@@ -365,12 +372,22 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
         "risk policy",
         "policy guardrails",
     ]
+    assert literal_label_compounds("Source-backed_review Status Windows Service", noise_terms={"service"}) == [
+        "source-backed_review status",
+        "status window",
+    ]
     assert nearby_domain_terms(
         ["window"],
         "Reviewer opens status windows before window proofs capture source-backed audit trails.",
         noise_terms={"service"},
         window=3,
     ) == ["open", "window", "capture", "source-backed"]
+    assert nearby_domain_terms(
+        ["source-backed"],
+        "Source-backed_review windows keep source-backed audit trails and status-window proof.",
+        noise_terms={"service"},
+        window=3,
+    ) == ["source-backed_review", "window", "keep", "source-backed", "audit", "trail"]
     transition = state_transition_text(
         action_terms=("request", "review"),
         object_phrases=("request status", "reviewed note", "open handoff"),

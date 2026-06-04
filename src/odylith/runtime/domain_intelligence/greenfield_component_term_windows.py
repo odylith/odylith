@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import re
 from collections.abc import Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ARTIFACT_CARRIER_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import domain_terms
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -70,7 +70,7 @@ def nearby_domain_terms(label_terms: Sequence[str], context: Any, *, noise_terms
 
 def _domain_token_stream(value: Any, *, noise_terms: set[str]) -> list[str]:
     tokens: list[str] = []
-    for raw in re.findall(r"[a-z0-9][a-z0-9_-]*", _clean(value).casefold()):
+    for raw in label_terms(_clean(value)):
         normalized = domain_terms(raw, noise_terms=noise_terms)
         tokens.append(normalized[0] if normalized else "")
     return tokens
@@ -78,9 +78,9 @@ def _domain_token_stream(value: Any, *, noise_terms: set[str]) -> list[str]:
 
 def _preserved_label_terms(value: Any) -> tuple[str, ...]:
     return tuple(
-        raw
-        for raw in re.findall(r"[a-z0-9][a-z0-9_-]*", _clean(value).casefold())
-        if raw.endswith("s") and raw in ARTIFACT_CARRIER_TERMS
+        token
+        for raw in label_terms(_clean(value))
+        if (token := raw.casefold()).endswith("s") and token in ARTIFACT_CARRIER_TERMS
     )
 
 

@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed Registry component term-window raw display-token extraction through shared greenfield label terms so fallback label and nearby-context windows no longer carry local regex token loops.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
 - **2026-06-04 · Implementation:** Routed Registry semantic compact-artifact phrase token counting through shared greenfield domain label terms so semantic contracts no longer carry a local display-token regex.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py, src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py +1 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed greenfield program wave-to-workstream matching through the shared domain term index so release waves use plural-aware generated-artifact terms instead of a local regex token loop.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_programs.py +1 more
-- **2026-06-04 · Implementation:** Routed proposal validation field-depth checks through shared greenfield text word counting so backlog metrics, rationale lines, and required proposal fields no longer carry a local regex word-count helper.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_text.py, src/odylith/runtime/domain_intelligence/proposal_validation.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -144,6 +144,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed Registry contract differentiation trigger matching through `greenfield_text.visible_words`. `greenfield_component_contract_differentiation.py` keeps fallback-axis scoring, sibling repair, and contract repair decisions while shared text owns reusable visible word splitting for hyphenated trigger phrases such as `status-window proof`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry document-context and status-view profile object labels through `greenfield_domain_term_index.label_terms`. `greenfield_component_contract_profiles.py` keeps profile wording, proof rows, and state-object policy while the shared term index owns visible label tokenization for hyphenated and underscore-separated object labels. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry semantic contract compact-artifact token counting through `greenfield_domain_term_index.label_terms`. `greenfield_component_semantic_contract.py` keeps object-phrase dedupe, compact-artifact preservation, phrase prioritization, and local contract assembly while the shared term index owns display-token parsing for hyphenated and underscore-separated artifact phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed Registry term-window raw display-token extraction through `greenfield_domain_term_index.label_terms`. `greenfield_component_term_windows.py` keeps label-term preservation, compound construction, and nearby context-window policy while the shared term index owns reusable display-token parsing for component labels and context phrases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -238,6 +239,12 @@ This section captures synchronized requirement and contract signals derived from
   compound extraction. The shared owner must preserve short visible labels and
   plural artifact-carrier nouns such as `policy guardrails` while still folding
   ordinary semantic plurals such as `status windows`.
+- Registry component term-window raw display-token extraction must use
+  `greenfield_domain_term_index.label_terms`.
+  `greenfield_component_term_windows.py` may own label-term preservation,
+  compound construction, and nearby context-window policy, but it must not
+  reintroduce local `re.findall` token loops for `_domain_token_stream` or
+  `_preserved_label_terms`.
 - Generated Registry actor-role token detection must stay in
   `greenfield_actor_terms.py`, and action-form classification used by component
   artifact cleanup must stay cached in `greenfield_component_terms.py`.

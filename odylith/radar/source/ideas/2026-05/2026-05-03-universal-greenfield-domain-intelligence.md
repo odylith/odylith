@@ -1816,6 +1816,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   contract proof passed (`2 passed in 0.07s`); wider greenfield artifact proof
   passed (`168 passed in 201.86s`); and confirmed-create performance proof
   passed (`1 passed in 9.61s`), preserving the under-30s create gate.
+- 2026-06-04 Registry term-window raw-token follow-through moved the remaining
+  raw display-token loops in `greenfield_component_term_windows.py` onto
+  `greenfield_domain_term_index.label_terms`. The term-window owner still owns
+  label-term preservation, compound construction, and nearby context-window
+  policy, while the shared domain term index owns reusable display-token
+  parsing for hyphenated and underscore-separated component labels and context
+  phrases. Touched files remain below limits
+  (`greenfield_component_term_windows.py`: 91 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_component_spec_quality.py`: 616 lines). Proof: syntax proof
+  passed for the touched modules and test; focused component proof passed
+  (`12 passed in 0.16s`); paired Registry component/semantic proof passed
+  (`14 passed in 0.13s`); wider greenfield artifact proof passed (`168 passed
+  in 198.38s`); and confirmed-create performance proof passed (`1 passed in
+  9.69s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

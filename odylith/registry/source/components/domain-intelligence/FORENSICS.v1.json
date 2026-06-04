@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 91,
-    "mapped_workstream_evidence_count": 81,
+    "explicit_event_count": 92,
+    "mapped_workstream_evidence_count": 82,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 98,
+    "spec_history_event_count": 99,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 92
+    "timeline_event_count": 93
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,53 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py"
       ],
       "confidence": "high",
-      "event_index": 572,
+      "event_index": 573,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
-      "ts_iso": "2026-06-04T05:03:31-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py",
+      "ts_iso": "2026-06-04T05:17:44-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 572,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed Registry component term-window raw display-token extraction through shared greenfield label terms so fallback label and nearby-context windows no longer carry local regex token loops.",
+      "ts_iso": "2026-06-04T05:17:04-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
