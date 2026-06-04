@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
@@ -146,15 +147,7 @@ def format_proposal_issue_report(label: str, issues: list[str] | tuple[str, ...]
 
 
 def _dedupe_issues(issues: list[str] | tuple[str, ...]) -> list[str]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for issue in issues:
-        token = str(issue or "").strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        result.append(token)
-    return result
+    return dedupe_strings(issues)
 
 
 def _risk_quality_issues(risks: list[Any]) -> list[str]:

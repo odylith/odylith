@@ -4,12 +4,17 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.common.value_coercion import dedupe_strings
+from odylith.runtime.domain_intelligence import greenfield_quality_gate
+from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import proposal_validation
+from odylith.runtime.domain_intelligence import proposal_memory
 from odylith.runtime.domain_intelligence.greenfield_text import word_count
 
 
 ROOT = Path(__file__).resolve().parents[3]
 DOMAIN_INTELLIGENCE = ROOT / "src/odylith/runtime/domain_intelligence"
+COMMON_VALUE_COERCION = ROOT / "src/odylith/runtime/common/value_coercion.py"
 
 
 def test_proposal_validation_word_count_stays_in_text_owner() -> None:
@@ -44,3 +49,40 @@ def test_proposal_validation_word_count_stays_in_text_owner() -> None:
             owner="component row 1",
             min_words=6,
         )
+
+
+def test_issue_and_id_dedupe_stays_in_common_value_owner() -> None:
+    common_source = COMMON_VALUE_COERCION.read_text(encoding="utf-8")
+    callers = [
+        DOMAIN_INTELLIGENCE / "proposal_validation.py",
+        DOMAIN_INTELLIGENCE / "greenfield_quality_gate.py",
+        DOMAIN_INTELLIGENCE / "greenfield_traceability.py",
+        DOMAIN_INTELLIGENCE / "proposal_memory.py",
+    ]
+
+    assert "def dedupe_strings" in common_source
+    assert dedupe_strings([" missing fact ", "missing fact", "", "Other"]) == [
+        "missing fact",
+        "Other",
+    ]
+    report = proposal_validation.format_proposal_issue_report(
+        "validation",
+        [" missing fact ", "missing fact", "", "Other"],
+    )
+    assert "2 issue(s)" in report
+    assert report.count("- missing fact") == 1
+    assert greenfield_quality_gate._dedupe([" issue row ", "issue row", "Other"]) == [
+        "issue row",
+        "Other",
+    ]
+    assert greenfield_traceability._join_ids(["b-001", " B-001 ", "b-002"]) == "B-001,B-002"
+    assert proposal_memory._first_nonempty([" **One** ", "One", "Two", "Three"], limit=2) == [
+        "One",
+        "Two",
+    ]
+
+    for caller in callers:
+        source = caller.read_text(encoding="utf-8")
+        assert "value_coercion import dedupe_strings" in source
+        assert "seen: set[str]" not in source
+        assert "seen.add(" not in source

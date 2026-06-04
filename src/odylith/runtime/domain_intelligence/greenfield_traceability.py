@@ -8,6 +8,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import collect_delimited_text_values
@@ -614,15 +615,7 @@ def _join_ids(values: Sequence[str]) -> str:
 
 
 def _unique(values: Sequence[str]) -> list[str]:
-    seen: set[str] = set()
-    result: list[str] = []
-    for value in values:
-        token = str(value).strip()
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        result.append(token)
-    return result
+    return dedupe_strings(values)
 
 
 def _paragraph(values: Sequence[str]) -> str:

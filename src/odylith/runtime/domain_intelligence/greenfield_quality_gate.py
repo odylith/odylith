@@ -6,6 +6,7 @@ from collections.abc import Mapping
 import re
 from typing import Any
 
+from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
@@ -646,15 +647,7 @@ def _path_preview(paths: list[str]) -> str:
 
 
 def _dedupe(issues: list[str]) -> list[str]:
-    result: list[str] = []
-    seen: set[str] = set()
-    for issue in issues:
-        token = clean_text(issue)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        result.append(token)
-    return result
+    return dedupe_strings(clean_text(issue) for issue in issues)
 
 
 __all__ = ["greenfield_quality_issues"]

@@ -15,6 +15,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import display_text
 from odylith.runtime.common import log_compass_timeline_event
+from odylith.runtime.common.value_coercion import dedupe_strings
 
 ACCEPTED_PROJECT_SOURCE_PATH = "odylith/runtime/source/accepted-project.v1.json"
 
@@ -24,17 +25,7 @@ def _clean(value: Any) -> str:
 
 
 def _first_nonempty(values: Sequence[str], *, limit: int) -> list[str]:
-    rows: list[str] = []
-    seen: set[str] = set()
-    for raw in values:
-        token = _clean(raw)
-        if not token or token in seen:
-            continue
-        seen.add(token)
-        rows.append(token)
-        if len(rows) >= limit:
-            break
-    return rows
+    return dedupe_strings((_clean(raw) for raw in values), limit=limit)
 
 
 def _intent(proposal: Mapping[str, Any]) -> Mapping[str, Any]:

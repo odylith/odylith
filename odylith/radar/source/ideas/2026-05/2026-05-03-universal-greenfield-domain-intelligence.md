@@ -2193,6 +2193,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`16 passed in 6.80s`); wider greenfield artifact proof passed (`193 passed
   in 215.97s`); and confirmed-create performance proof passed (`1 passed in
   11.41s`), preserving the under-30s create gate.
+- 2026-06-04 validation and memory issue-dedupe follow-through routed proposal
+  issue reports, quality-gate issue rows, traceability ID joins, and accepted
+  project memory preview rows through
+  `runtime.common.value_coercion.dedupe_strings`. Proposal validation still owns
+  operator-facing failure copy, quality gate still owns generated artifact
+  policy, traceability still owns ID normalization, and proposal memory still
+  owns accepted-project Markdown cleanup; common value coercion now owns the
+  repeated trim, empty-filter, limit, and exact-order dedupe body. The touched
+  callers no longer keep local `seen` plus `seen.add(...)` loops for exact
+  issue/string rows. Touched files remain below limits (`proposal_validation.py`:
+  364 lines; `greenfield_quality_gate.py`: 653 lines;
+  `greenfield_traceability.py`: 654 lines; `proposal_memory.py`: 258 lines;
+  `value_coercion.py`: 108 lines;
+  `test_greenfield_proposal_validation_text.py`: 88 lines). Proof: syntax
+  proof passed for the touched modules and test; focused validation and
+  traceability proof passed (`66 passed in 29.68s`); wider greenfield artifact
+  proof passed (`194 passed in 211.12s`); and confirmed-create performance proof
+  passed (`1 passed in 11.00s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
