@@ -6,6 +6,7 @@ from collections.abc import Mapping
 import re
 from typing import Any
 
+from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
@@ -172,16 +173,14 @@ def _expand_compound_steps(values: list[str]) -> list[str]:
 
 
 def _dedupe_steps(values: list[str]) -> list[str]:
-    rows: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = _compact_text(value).strip(" .")
-        key = re.sub(r"[^a-z0-9]+", " ", text.casefold()).strip()
-        if not text or key in seen:
-            continue
-        seen.add(key)
-        rows.append(text)
-    return rows
+    return dedupe_by_key(
+        (text for value in values if (text := _compact_text(value).strip(" ."))),
+        _step_dedupe_key,
+    )
+
+
+def _step_dedupe_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", value.casefold()).strip()
 
 
 def _sentence(value: str) -> str:

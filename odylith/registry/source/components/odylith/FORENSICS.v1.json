@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 362,
-    "mapped_workstream_evidence_count": 205,
+    "explicit_event_count": 363,
+    "mapped_workstream_evidence_count": 206,
     "recent_path_match_count": 0,
     "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 362
+    "timeline_event_count": 363
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,46 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/common/value_coercion.py",
+        "src/odylith/runtime/domain_intelligence/artifact_enrichment.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py",
+        "tests/unit/runtime/test_greenfield_confirmed_diagrams.py",
+        "tests/unit/runtime/test_greenfield_proposals.py",
+        "tests/unit/runtime/test_value_coercion.py"
+      ],
+      "confidence": "high",
+      "event_index": 595,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed sequence-step, artifact-enrichment, and component repair-target keyed dedupe through common value coercion while preserving caller-owned equivalence keys, with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T11:09:10-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",

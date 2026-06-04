@@ -2211,6 +2211,24 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   traceability proof passed (`66 passed in 29.68s`); wider greenfield artifact
   proof passed (`194 passed in 211.12s`); and confirmed-create performance proof
   passed (`1 passed in 11.00s`), preserving the under-30s create gate.
+- 2026-06-04 keyed dedupe follow-through moved sequence-step display dedupe,
+  artifact enrichment bullet dedupe, and component repair-target row dedupe
+  through `runtime.common.value_coercion.dedupe_by_key`. Sequence steps still
+  own canonical step keys, artifact enrichment still owns artifact-native
+  bullet keys, and component repair targets still own row-identity keys; common
+  value coercion now owns the repeated key-set/order-preserving body. The
+  touched callers no longer keep local `seen` plus `seen.add(...)` keyed loops.
+  Touched files remain below limits (`value_coercion.py`: 125 lines;
+  `greenfield_sequence_steps.py`: 194 lines; `artifact_enrichment.py`: 222
+  lines; `greenfield_component_contract_targets.py`: 84 lines;
+  `test_value_coercion.py`: 65 lines; `test_greenfield_confirmed_diagrams.py`:
+  222 lines; `test_greenfield_component_spec_quality.py`: 751 lines;
+  `test_greenfield_proposals.py`: 1397 lines). Proof: syntax proof passed for
+  the touched modules and tests; focused keyed-dedupe proof passed (`5 passed in
+  0.33s`); relevant caller proof passed (`75 passed in 15.15s`); wider
+  greenfield artifact proof passed (`194 passed in 206.29s`); and
+  confirmed-create performance proof passed (`1 passed in 14.35s`), preserving
+  the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

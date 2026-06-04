@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-04 · Implementation:** Routed sequence-step, artifact-enrichment, and component repair-target keyed dedupe through common value coercion while preserving caller-owned equivalence keys, with focused, wide, and performance proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/common/value_coercion.py +7 more
 - **2026-06-04 · Implementation:** Routed proposal validation, quality-gate, traceability, and accepted-project memory exact issue/string dedupe through common value coercion while preserving caller-owned cleanup, ID, and limit policy, with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/common/value_coercion.py +5 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-04 · Implementation:** Routed Markdown-cleaned sentence casing for confirmed Atlas diagram text and sequence-step rendering through shared greenfield text with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py +3 more
-- **2026-06-04 · Implementation:** Routed remaining inline Markdown cleanup for confirmed component labels, first-path text, sequence steps, Atlas sentence text, semantic model cleanup, and Registry term windows through shared greenfield text with focused, wide, and performance proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_component_term_windows.py +7 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -167,6 +167,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed first-path and semantic-quality cleaned-text dedupe through `greenfield_text.unique_text`. First-path clauses keep first-path cleanup, first-path semantics keeps step parsing, and semantic quality keeps generated-artifact validation policy while shared greenfield text owns reusable empty filtering and casefolded duplicate suppression. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed exact string row dedupe for component axes, contract differentiation, component contract quality, and apply-write Atlas catalog rows through `runtime.common.value_coercion.dedupe_strings`. Those callers keep their semantic-axis, lowercasing, issue-cleanup, and catalog update policies while common value coercion owns reusable trimmed empty-filtering and exact-order dedupe. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed exact issue/string row dedupe for proposal validation, quality-gate issue rows, traceability ID joins, and accepted-project memory previews through `runtime.common.value_coercion.dedupe_strings`. Those callers keep remediation copy, generated artifact policy, ID normalization, and accepted-project Markdown cleanup while common value coercion owns reusable trimmed empty-filtering, limit handling, and exact-order dedupe. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed keyed dedupe for sequence event steps, artifact enrichment bullets, and component contract repair targets through `runtime.common.value_coercion.dedupe_by_key`. Those callers keep their step canonicalization, artifact-native bullet keys, and row-identity repair-target keys while common value coercion owns reusable first-seen keyed duplicate suppression. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -284,6 +285,12 @@ This section captures synchronized requirement and contract signals derived from
   exact trimmed string dedupe must stay in
   `runtime.common.value_coercion.dedupe_strings`. They must not reintroduce
   local `seen: set[str]` or `seen.add(...)` loops for this cleanup class.
+- Sequence steps, artifact enrichment bullets, and component repair-target
+  parsing may own their key construction for step canonicalization,
+  artifact-native bullet equivalence, and row identity, but reusable
+  order-preserving keyed dedupe must stay in
+  `runtime.common.value_coercion.dedupe_by_key`. They must not reintroduce local
+  `seen`/`seen.add(...)` keyed loops for this cleanup class.
 - Confirmed-create completion must run after normalization and before any
   source-truth write. It fills every deterministic Radar, Registry, Atlas,
   release, risk, proof, and validation field derivable from the accepted intent,

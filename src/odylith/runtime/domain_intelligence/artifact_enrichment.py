@@ -13,6 +13,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.domain_intelligence import artifact_tribunal_actors
 from odylith.runtime.domain_intelligence.artifact_graph import DomainIntelligenceGraph
 from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
@@ -190,17 +191,10 @@ def _labelled_rows(label: str, values: Sequence[str]) -> list[str]:
 
 
 def _bullets(values: Sequence[str]) -> str:
-    rows: list[str] = []
-    seen: set[str] = set()
-    for value in values:
-        text = clean_text(value)
-        if not text:
-            continue
-        key = _bullet_dedupe_key(text)
-        if key in seen:
-            continue
-        seen.add(key)
-        rows.append(text)
+    rows = dedupe_by_key(
+        (text for value in values if (text := clean_text(value))),
+        _bullet_dedupe_key,
+    )
     return "\n".join(f"- {row}" for row in rows)
 
 

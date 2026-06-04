@@ -7,6 +7,8 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from odylith.runtime.common.value_coercion import dedupe_by_key
+
 
 @dataclass(frozen=True)
 class RepairTarget:
@@ -72,15 +74,7 @@ def _operator_issue(issue: str) -> str:
 
 
 def _dedupe_targets(values: Sequence[RepairTarget]) -> list[RepairTarget]:
-    result: list[RepairTarget] = []
-    seen: set[int] = set()
-    for target in values:
-        marker = id(target.row)
-        if marker in seen:
-            continue
-        seen.add(marker)
-        result.append(target)
-    return result
+    return dedupe_by_key(values, lambda target: id(target.row))
 
 
 __all__ = [

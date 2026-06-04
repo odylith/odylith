@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence
+from collections.abc import Callable, Iterable
+from typing import Any, Mapping, Sequence, TypeVar
+
+T = TypeVar("T")
+K = TypeVar("K")
 
 _SCALAR_SEQUENCE_TYPES = (str, bytes, bytearray)
 
@@ -39,6 +43,19 @@ def dedupe_strings(values: Sequence[Any], *, limit: int | None = None) -> list[s
         rows.append(token)
         if cap is not None and len(rows) >= cap:
             break
+    return rows
+
+
+def dedupe_by_key(values: Iterable[T], key: Callable[[T], K]) -> list[T]:
+    """De-duplicate values by a caller-owned stable key while preserving order."""
+    rows: list[T] = []
+    seen: set[K] = set()
+    for item in values:
+        marker = key(item)
+        if marker in seen:
+            continue
+        seen.add(marker)
+        rows.append(item)
     return rows
 
 

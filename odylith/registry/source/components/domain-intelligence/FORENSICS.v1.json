@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 114,
-    "mapped_workstream_evidence_count": 104,
+    "explicit_event_count": 115,
+    "mapped_workstream_evidence_count": 105,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 121,
+    "spec_history_event_count": 122,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 115
+    "timeline_event_count": 116
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,22 +21,61 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
-        "src/odylith/runtime/domain_intelligence/proposal_memory.py",
-        "src/odylith/runtime/domain_intelligence/proposal_validation.py"
+        "src/odylith/runtime/domain_intelligence/artifact_enrichment.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py"
       ],
       "confidence": "high",
-      "event_index": 595,
+      "event_index": 596,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py +3 more",
-      "ts_iso": "2026-06-04T10:53:28-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/artifact_enrichment.py +2 more",
+      "ts_iso": "2026-06-04T11:09:31-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/common/value_coercion.py",
+        "src/odylith/runtime/domain_intelligence/artifact_enrichment.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_targets.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py",
+        "tests/unit/runtime/test_greenfield_confirmed_diagrams.py",
+        "tests/unit/runtime/test_greenfield_proposals.py",
+        "tests/unit/runtime/test_value_coercion.py"
+      ],
+      "confidence": "high",
+      "event_index": 595,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed sequence-step, artifact-enrichment, and component repair-target keyed dedupe through common value coercion while preserving caller-owned equivalence keys, with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T11:09:10-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

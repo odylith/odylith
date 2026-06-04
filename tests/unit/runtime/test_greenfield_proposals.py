@@ -78,8 +78,11 @@ def test_artifact_enrichment_graph_and_tribunal_actors_stay_in_dedicated_owners(
     assert len(enrichment_source.splitlines()) < 800
     assert "artifact_tribunal_actors.tribunal_actor_projection" in enrichment_source
     assert "from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream" in enrichment_source
+    assert "value_coercion import dedupe_by_key" in enrichment_source
     assert "DomainIntelligenceGraph" not in artifact_enrichment.__all__
     assert "domain_graph_from_workstream" not in artifact_enrichment.__all__
+    assert "seen: set[str]" not in enrichment_source
+    assert "seen.add(key)" not in enrichment_source
     for moved in (
         "class DomainIntelligenceGraph",
         "def domain_graph_from_workstream",
@@ -107,6 +110,9 @@ def test_artifact_enrichment_graph_and_tribunal_actors_stay_in_dedicated_owners(
         "def _dedupe_visible_actor_names",
     ):
         assert moved in actors_source
+    assert artifact_enrichment._bullets(["Proof: accepted path", "accepted path", "Risk: review gap"]) == (
+        "- Proof: accepted path\n- Risk: review gap"
+    )
 
 
 def test_product_risk_specificity_uses_shared_term_index() -> None:

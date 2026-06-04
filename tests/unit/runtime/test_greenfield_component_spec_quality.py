@@ -272,6 +272,8 @@ def test_component_contract_targets_stay_in_dedicated_owner() -> None:
     assert "class RepairTarget" in target_source
     assert "def repair_targets_from_spec_issues" in target_source
     assert "def operator_component_spec_issues" in target_source
+    assert "value_coercion import dedupe_by_key" in target_source
+    assert "seen.add(marker)" not in target_source
 
     intake = {"label": "Intake Service"}
     review = {"label": "Review Service"}
@@ -280,9 +282,18 @@ def test_component_contract_targets_stay_in_dedicated_owner() -> None:
         rows_by_label={"Intake Service": intake, "Review Service": review},
         indexes_by_label={"Intake Service": 0, "Review Service": 1},
     )
+    repeated_targets = repair_targets_from_spec_issues(
+        [
+            "component specs `Intake Service` and `Review Service` are too interchangeable",
+            "component specs `Intake Service` and `Review Service` are too interchangeable",
+        ],
+        rows_by_label={"Intake Service": intake, "Review Service": review},
+        indexes_by_label={"Intake Service": 0, "Review Service": 1},
+    )
 
     assert [target.row for target in targets] == [intake, review]
     assert [target.sibling for target in targets] == [review, intake]
+    assert [target.row for target in repeated_targets] == [intake, review]
     assert operator_component_spec_issues(
         ["component spec `Intake Service` does not contain enough component-local terms"]
     ) == [
