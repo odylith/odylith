@@ -7,7 +7,7 @@ from collections.abc import Iterable, Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms, ordered_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -112,17 +112,11 @@ CONFIRMED_DANGLING_WORDS = {
 
 
 def compact_text(value: str) -> str:
-    text = str(value or "").strip()
-    text = text.replace("**", "").replace("__", "").replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return " ".join(text.split())
+    return clean_markdown_text(value)
 
 
 def clean_confirmed_text(value: Any) -> str:
-    text = clean_text(value)
-    text = text.replace("**", "").replace("__", "").replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_markdown_text(value)
 
 
 def confirmed_text_values(value: object) -> list[str]:

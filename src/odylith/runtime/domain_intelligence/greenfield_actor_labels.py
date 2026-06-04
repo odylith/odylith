@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import re
 
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
+
 
 _QUALIFIER_RE = re.compile(
     r"^(?:primary|optional|secondary|main|target|first|initial|prospective|potential)\s+",
@@ -353,9 +355,7 @@ def _key(value: str) -> str:
 
 
 def _clean(value: object) -> str:
-    text = str(value or "").replace("**", "").replace("__", "").replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_markdown_text(value)
 
 
 __all__ = ["accepted_actor_label", "project_specific_actor_row"]

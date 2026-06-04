@@ -2089,6 +2089,23 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   in 0.10s`); wider greenfield artifact proof passed (`187 passed in
   193.63s`); and confirmed-create performance proof passed (`1 passed in
   9.32s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed Markdown-cleanup follow-through moved reusable emphasis
+  token stripping, backtick removal, punctuation-spacing cleanup, and whitespace
+  collapse into `greenfield_text.clean_markdown_text`. Confirmed text still
+  owns confirmed-list coercion, semantic terms, word-count APIs, title/focus
+  labels, and generated sentence shaping; the confirmed-intent parser still
+  owns section parsing and title detection; actor labels still own
+  project-specific role normalization. The touched callers no longer keep local
+  `**`, `__`, or backtick-stripping bodies. Touched files remain below limits
+  (`greenfield_confirmed_intent.py`: 662 lines;
+  `greenfield_confirmed_text.py`: 423 lines; `greenfield_actor_labels.py`: 361
+  lines; `greenfield_text.py`: 262 lines;
+  `test_greenfield_confirmed_text.py`: 194 lines). Proof: syntax proof passed
+  for the touched modules and test; focused Markdown-cleanup proof passed
+  (`3 passed in 0.14s`); broader confirmed text/intent proof passed (`47
+  passed in 38.12s`); wider greenfield artifact proof passed (`188 passed in
+  193.25s`); and confirmed-create performance proof passed (`1 passed in
+  9.39s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

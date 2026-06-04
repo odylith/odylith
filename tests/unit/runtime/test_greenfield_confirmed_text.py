@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_o
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import (
+    clean_markdown_text,
     clip_text_at_word_boundary,
     word_occurrences as generic_word_occurrences,
 )
@@ -46,6 +47,27 @@ def test_confirmed_intent_list_text_coercion_stays_in_text_owner() -> None:
         source = path.read_text(encoding="utf-8")
         assert "def _strings" not in source
         assert "confirmed_text_values" in source
+
+
+def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:
+    text_owner = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
+    callers = [
+        CONFIRMED_TEXT_PATH,
+        DOMAIN_INTELLIGENCE / "greenfield_confirmed_intent.py",
+        DOMAIN_INTELLIGENCE / "greenfield_actor_labels.py",
+    ]
+
+    assert "def clean_markdown_text" in text_owner
+    assert clean_markdown_text(" **Resident** sees `booking` , ready") == "Resident sees booking, ready"
+    assert confirmed_text_values(" **Resident** confirms `booking` ") == ["Resident confirms booking"]
+
+    for caller in callers:
+        source = caller.read_text(encoding="utf-8")
+        assert "clean_markdown_text" in source
+        assert 'replace("**", "")' not in source
+        assert 'replace("__", "")' not in source
+        assert 'replace("`", "")' not in source
+        assert 're.sub(r"\\s+([,.;:?!])", r"\\1", text)' not in source
 
 
 def test_confirmed_intent_semantic_terms_stay_in_text_owner() -> None:

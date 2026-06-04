@@ -23,6 +23,12 @@ def clean_artifact_text(value: Any, *, split_parentheses: bool = False) -> str:
     return clean_text(text)
 
 
+def clean_markdown_text(value: Any) -> str:
+    text = clean_text(value).replace("**", "").replace("__", "").replace("`", "")
+    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
+    return clean_text(text)
+
+
 def word_count(value: Any) -> int:
     return len(visible_words(value))
 

@@ -36,6 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_c
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
 
@@ -645,10 +646,7 @@ def _section_list(sections: Mapping[str, list[str]], key: str) -> list[str]:
 
 
 def _clean(value: object) -> str:
-    text = str(value or "").strip()
-    text = text.replace("**", "").replace("__", "").replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_markdown_text(value)
 
 
 __all__ = [
