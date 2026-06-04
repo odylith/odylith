@@ -19,7 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_index import 
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
@@ -531,9 +531,7 @@ def _context_text(values: Sequence[str]) -> str:
 
 
 def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value)
 
 
 def _sentence(value: Any) -> str:

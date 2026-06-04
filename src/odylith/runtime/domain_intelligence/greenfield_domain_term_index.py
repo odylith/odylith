@@ -7,7 +7,7 @@ from collections.abc import Iterable, Mapping
 from functools import lru_cache
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 
 
@@ -200,9 +200,7 @@ def _label_terms_cached(cleaned_text: str, stopwords: tuple[str, ...]) -> tuple[
 
 
 def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value)
 
 
 __all__ = [

@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import ROLEISH_T
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -743,9 +744,7 @@ def past_tense(value: str) -> str:
 
 
 def clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "").replace("(", " ").replace(")", " ")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value, split_parentheses=True)
 
 
 __all__ = [

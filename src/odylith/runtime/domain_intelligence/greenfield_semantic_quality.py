@@ -8,7 +8,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
@@ -437,9 +437,7 @@ def _ngrams(value: str, *, ngram: int) -> set[tuple[str, ...]]:
 
 
 def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value)
 
 
 def _unique(values: Sequence[str]) -> list[str]:

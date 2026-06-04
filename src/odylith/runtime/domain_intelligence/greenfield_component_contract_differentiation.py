@@ -38,7 +38,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
@@ -690,9 +690,7 @@ def _slug(value: str) -> str:
 
 
 def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value)
 
 
 __all__ = [

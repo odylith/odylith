@@ -15,6 +15,14 @@ def clean_text(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
 
 
+def clean_artifact_text(value: Any, *, split_parentheses: bool = False) -> str:
+    text = clean_text(value).replace("`", "")
+    if split_parentheses:
+        text = text.replace("(", " ").replace(")", " ")
+    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
+    return clean_text(text)
+
+
 def word_count(value: Any) -> int:
     return len(visible_words(value))
 

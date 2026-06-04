@@ -14,7 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import clean
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
@@ -395,9 +395,7 @@ def _clean_boundary_clause(value: str) -> str:
 
 
 def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "").replace("(", " ").replace(")", " ")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value, split_parentheses=True)
 
 
 __all__ = [

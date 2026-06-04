@@ -12,7 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_wi
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import component_local_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -512,9 +512,7 @@ def _has_dangling_tail(value: str) -> bool:
 
 
 def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value)
 
 
 def _sentence(value: Any) -> str:

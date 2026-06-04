@@ -6,7 +6,7 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -361,9 +361,7 @@ def _lifecycle_tracking_phrase(lowered_context: str) -> str:
 
 
 def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value)
 
 
 __all__ = ["document_context_contract", "status_view_contract"]

@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 175,
-    "mapped_workstream_evidence_count": 140,
+    "explicit_event_count": 176,
+    "mapped_workstream_evidence_count": 141,
     "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 175
+    "timeline_event_count": 176
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,42 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_text.py",
+        "tests/unit/runtime/test_greenfield_component_spec_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 587,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed component-contract artifact text cleanup through the shared greenfield text owner and pinned the cleanup with focused, wide, and performance proof.",
+      "ts_iso": "2026-06-04T09:10:17-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",

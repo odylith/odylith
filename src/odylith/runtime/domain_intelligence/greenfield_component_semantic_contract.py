@@ -81,7 +81,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import (
     literal_label_terms as _literal_label_terms,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -613,9 +613,7 @@ def _summary_object_phrases(values: Sequence[str], *, required_phrases: Sequence
 
 
 def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "").replace("(", " ").replace(")", " ")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value, split_parentheses=True)
 
 
 __all__ = ["SemanticComponentContract", "derive_component_semantic_contract"]

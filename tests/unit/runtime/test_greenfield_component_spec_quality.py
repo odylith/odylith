@@ -42,6 +42,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import domain_label
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import progression_marker_count
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
@@ -76,7 +77,11 @@ COMPONENT_CONTRACT_FIELDS_PATH = ROOT / "src/odylith/runtime/domain_intelligence
 COMPONENT_SEMANTIC_CONTRACT_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py"
 )
+COMPONENT_SEMANTIC_CONTEXT_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py"
+)
 COMPONENT_AXES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py"
+SEMANTIC_QUALITY_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py"
 
 
 def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
@@ -124,6 +129,33 @@ def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
         label_slug="permit-review",
         internal_systems=["External-provider adapter - imports permit status from city records."],
     )[0]["kind"] == "adapter"
+
+
+def test_component_contract_artifact_cleaning_stays_in_text_owner() -> None:
+    text_source = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
+    callers = [
+        COMPONENT_CONTRACT_PATH,
+        COMPONENT_CONTRACT_PROFILES_PATH,
+        COMPONENT_CONTRACT_QUALITY_PATH,
+        COMPONENT_CONTRACT_DIFFERENTIATION_PATH,
+        DOMAIN_TERM_INDEX_PATH,
+        SEMANTIC_QUALITY_PATH,
+        COMPONENT_CONTRACT_FIELDS_PATH,
+        COMPONENT_SEMANTIC_CONTEXT_PATH,
+        COMPONENT_SEMANTIC_CONTRACT_PATH,
+        COMPONENT_TERMS_PATH,
+    ]
+
+    assert "def clean_artifact_text" in text_source
+    assert clean_artifact_text("`Risk review` , ready") == "Risk review, ready"
+    assert clean_artifact_text("`Risk review` (blocked) , ready", split_parentheses=True) == "Risk review blocked, ready"
+
+    for caller in callers:
+        source = caller.read_text(encoding="utf-8")
+        assert "clean_artifact_text" in source
+        assert 'clean_text(value).replace("`"' not in source
+        assert 'replace("`", "").replace("(", " ").replace(")", " ")' not in source
+        assert 're.sub(r"\\s+([,.;:?!])", r"\\1", text)' not in source
 
 
 def test_confirmed_project_brief_stays_in_dedicated_owner() -> None:

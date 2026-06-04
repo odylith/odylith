@@ -17,7 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
 )
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action as _strip_action
 from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase as _trim_phrase
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -267,9 +267,7 @@ _CONTEXT_METADATA_LEADS = frozenset(
 
 
 def _clean(value: Any) -> str:
-    text = clean_text(value).replace("`", "").replace("(", " ").replace(")", " ")
-    text = re.sub(r"\s+([,.;:?!])", r"\1", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return clean_artifact_text(value, split_parentheses=True)
 
 
 __all__ = [

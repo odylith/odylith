@@ -2063,6 +2063,32 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   artifact proof passed (`186 passed in 203.82s`); and confirmed-create
   performance proof passed (`1 passed in 9.57s`), preserving the under-30s
   create gate.
+- 2026-06-04 artifact-cleaning follow-through moved reusable backtick removal,
+  punctuation-spacing cleanup, whitespace collapse, and optional parenthesis
+  splitting into `greenfield_text.clean_artifact_text`. Registry component
+  contracts, contract differentiation, contract fields, component profiles,
+  contract quality gates, semantic context, semantic contracts, component
+  terms, the shared domain term index, and semantic quality still own their
+  contract selection, token policy, phrase policy, and validation thresholds,
+  while shared greenfield text owns the repeated generated-artifact cleaning
+  mechanics. The touched callers no longer keep local backtick-removal plus
+  punctuation-spacing regex bodies. Touched files remain below limits
+  (`greenfield_component_terms.py`: 775 lines;
+  `greenfield_component_contract_differentiation.py`: 699 lines;
+  `greenfield_component_semantic_contract.py`: 619 lines;
+  `greenfield_component_contract.py`: 574 lines;
+  `greenfield_component_contract_quality.py`: 535 lines;
+  `greenfield_semantic_quality.py`: 473 lines;
+  `greenfield_component_contract_fields.py`: 412 lines;
+  `greenfield_component_contract_profiles.py`: 367 lines;
+  `greenfield_component_semantic_context.py`: 280 lines;
+  `greenfield_text.py`: 256 lines;
+  `greenfield_domain_term_index.py`: 210 lines). Proof: syntax proof passed
+  for the touched modules and test; focused artifact-cleaning proof passed
+  (`4 passed in 0.14s`); full component-spec quality proof passed (`13 passed
+  in 0.10s`); wider greenfield artifact proof passed (`187 passed in
+  193.63s`); and confirmed-create performance proof passed (`1 passed in
+  9.32s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
