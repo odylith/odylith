@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-03 · Implementation:** Routed greenfield public quality-gate prompt and semantic contract terms through the shared domain term index with caller-owned short-domain-term preservation while preserving focused, broad, and under-30s confirmed-create proof.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py, src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py +1 more
 - **2026-06-03 · Implementation:** Routed Registry component phrase identity and contract-field transition terms through the shared greenfield domain term index, removed a semantic-contract pass-through wrapper, and preserved focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py, src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py +2 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-03 · Implementation:** Routed post-confirm semantic drift and repetition term signatures through the shared greenfield domain term index while preserving focused, broad, and under-30s confirmed-create proof.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py, tests/unit/runtime/test_greenfield_semantic_drift_terms.py
-- **2026-06-03 · Implementation:** Routed generated semantic model ontology, required-field, event-target, and actor term extraction through the shared greenfield domain term index while preserving semantic-model stopwords and under-30s confirmed-create proof.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py, tests/unit/runtime/test_greenfield_intelligence_schema.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -114,6 +114,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed semantic-quality release-scope and scope-context term signatures through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned exact aliases and prefix aliases, while `greenfield_semantic_quality.py` keeps only release-scope stopwords, alias policy, and release-scope decisions instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed accepted-intent semantic term indexing through `greenfield_domain_term_index.ordered_terms` while keeping `greenfield_confirmed_text.semantic_terms` as the confirmed-intent API. The shared term index now accepts caller-owned `stem_ing_minimum_length`, and `greenfield_confirmed_text.py` keeps confirmed Markdown cleanup, stopword defaults, and caller handoff instead of direct token normalization. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed Registry component phrase identity terms and contract-field transition candidates through `greenfield_domain_term_index.ordered_terms`. `greenfield_component_terms.py` keeps artifact-carrier stopword policy, `greenfield_component_contract_fields.py` keeps transition-state decisions, and `greenfield_component_semantic_contract.py` imports the phrase-identity owner directly instead of wrapping it locally. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-04: Routed public quality-gate prompt and semantic-contract term extraction through `greenfield_domain_term_index.ordered_terms`. The shared term index now accepts caller-owned `preserve_terms`, so `greenfield_quality_gate.py` can preserve short domain abbreviations while keeping prompt echo and public artifact quality checks off local regex token loops. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 
 ## Contract
 
@@ -195,9 +196,16 @@ This section captures synchronized requirement and contract signals derived from
   `greenfield_domain_term_index.py`. Radar product-risk specificity,
   component-local term indexing, and future artifact-specific overlap checks
   may pass surface-owned stopwords, exact aliases, prefix aliases, or
-  caller-owned gerund thresholds to `ordered_terms`, but they must not
-  reintroduce private `_domain_terms`, `_term_token`, or regex token loops for
-  generated-artifact specificity.
+  caller-owned gerund thresholds or short-term preservation to
+  `ordered_terms`, but they must not reintroduce private `_domain_terms`,
+  `_term_token`, or regex token loops for generated-artifact specificity.
+- Public quality-gate prompt and semantic-contract term extraction must use
+  `greenfield_domain_term_index.ordered_terms`. `greenfield_quality_gate.py`
+  may own public-quality stopwords, failure messages, and short domain
+  abbreviation choices, but it must pass those choices through
+  `preserve_terms` and must not import `normalize_domain_token`, define
+  `_singular` token wrappers, or loop over regex tokens locally for prompt echo
+  or semantic-contract noun checks.
 - Registry component phrase identity and contract-field transition candidate
   extraction must use `greenfield_domain_term_index.ordered_terms` for reusable
   token indexing. `greenfield_component_terms.py` may retain artifact-carrier

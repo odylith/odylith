@@ -7,9 +7,9 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _CONTROL_PLANE_LEAKS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -295,7 +295,7 @@ def _is_confirmed_generated_proposal(proposal: Mapping[str, Any]) -> bool:
 def _control_plane_leak_issues(public_leaves: list[tuple[str, str]], *, prompt_terms: tuple[str, ...]) -> list[str]:
     issues: list[str] = []
     for label, pattern in _CONTROL_PLANE_LEAKS:
-        if label in {"Radar", "Registry", "Atlas", "Compass", "Tribunal"} and _singular(label.casefold()) in prompt_terms:
+        if label in {"Radar", "Registry", "Atlas", "Compass", "Tribunal"} and label.casefold() in prompt_terms:
             continue
         paths = [path for path, text in public_leaves if pattern.search(text)]
         if paths:
@@ -627,24 +627,14 @@ def _prompt_terms(proposal: Mapping[str, Any]) -> tuple[str, ...]:
 
 
 def _meaningful_terms(text: str) -> tuple[str, ...]:
-    seen: set[str] = set()
-    terms: list[str] = []
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", text.casefold()):
-        token = raw.strip("-_")
-        if not token or token in _TERM_STOPWORDS:
-            continue
-        if len(token) < 3 and token not in _SHORT_DOMAIN_TERMS:
-            continue
-        normalized = _singular(token)
-        if normalized in _TERM_STOPWORDS or normalized in seen:
-            continue
-        seen.add(normalized)
-        terms.append(normalized)
-    return tuple(terms[:12])
-
-
-def _singular(token: str) -> str:
-    return normalize_domain_token(token, minimum=3) or token
+    return tuple(
+        ordered_terms(
+            text,
+            stopwords=_TERM_STOPWORDS,
+            minimum=3,
+            preserve_terms=_SHORT_DOMAIN_TERMS,
+        )[:12]
+    )
 
 
 def _path_preview(paths: list[str]) -> str:

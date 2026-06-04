@@ -1385,6 +1385,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.21s`); wider artifact/proposal proof passed
   (`120 passed in 162.97s`); and confirmed-create performance proof passed
   (`1 passed in 9.72s`), preserving the under-30s create gate.
+- 2026-06-04 public quality-gate term-index follow-through moved prompt echo
+  and semantic contract noun extraction in `greenfield_quality_gate.py` onto
+  `greenfield_domain_term_index.ordered_terms`. The shared index now supports
+  caller-owned `preserve_terms`, so the public quality gate can retain short
+  domain abbreviations such as AI, ML, UI, and UX without owning a local regex
+  token loop or direct `normalize_domain_token` import. Touched files remain
+  below limits (`greenfield_domain_term_index.py`: 103 lines;
+  `greenfield_quality_gate.py`: 659 lines;
+  `test_greenfield_domain_profile_quality.py`: 275 lines). Proof: syntax proof
+  passed for the touched modules and test; focused quality-gate proof passed
+  (`17 passed in 13.90s`); wider greenfield proof passed (`168 passed in
+  226.89s`); and confirmed-create performance proof passed (`1 passed in
+  9.44s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import _meaningful_terms
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 from tests.unit.runtime.greenfield_proposal_fixtures import _host_reasoned_ecommerce_proposal
@@ -196,6 +197,30 @@ def test_quality_gate_allows_domain_specific_actor_names_but_rejects_placeholder
 
     assert not any("Plant operator" in issue for issue in issues)
     assert any("generic actor label `Operator`" in issue for issue in issues)
+
+
+def test_quality_gate_meaningful_terms_use_shared_domain_index() -> None:
+    source_root = (
+        Path(__file__).resolve().parents[3]
+        / "src"
+        / "odylith"
+        / "runtime"
+        / "domain_intelligence"
+    )
+    gate_source = (source_root / "greenfield_quality_gate.py").read_text(encoding="utf-8")
+    term_index_source = (source_root / "greenfield_domain_term_index.py").read_text(encoding="utf-8")
+
+    assert "greenfield_domain_term_index import ordered_terms" in gate_source
+    assert "normalize_domain_token" not in gate_source
+    assert "for raw in re.findall" not in gate_source
+    assert "preserve_terms" in term_index_source
+    assert _meaningful_terms("AI CRM statuses and UI workflows") == (
+        "ai",
+        "crm",
+        "status",
+        "ui",
+        "workflow",
+    )
 
 
 def test_validation_rejects_missing_host_authored_rationale_lines() -> None:

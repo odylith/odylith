@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 129,
-    "mapped_workstream_evidence_count": 94,
+    "explicit_event_count": 130,
+    "mapped_workstream_evidence_count": 95,
     "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 129
+    "timeline_event_count": 130
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py",
+        "tests/unit/runtime/test_greenfield_domain_profile_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 541,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed greenfield public quality-gate prompt and semantic contract terms through the shared domain term index with caller-owned short-domain-term preservation while preserving focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T20:55:22-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_component_contract_fields.py",

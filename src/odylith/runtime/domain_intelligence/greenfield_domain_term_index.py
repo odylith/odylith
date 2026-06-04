@@ -16,6 +16,7 @@ def ordered_terms(
     *,
     stopwords: Iterable[str] = (),
     minimum: int = 4,
+    preserve_terms: Iterable[str] = (),
     stem_ing: bool = False,
     stem_ing_minimum_length: int = 6,
     aliases: Mapping[str, str] | None = None,
@@ -24,6 +25,7 @@ def ordered_terms(
     """Return stable normalized terms after applying caller-owned stopwords and aliases."""
 
     stop = tuple(sorted({str(item or "").casefold() for item in stopwords}))
+    preserved_terms = _preserved_terms(preserve_terms)
     alias_rows = _alias_rows(aliases)
     prefix_alias_rows = tuple(
         sorted(_alias_rows(prefix_aliases), key=lambda row: (-len(row[0]), row[0], row[1]))
@@ -33,10 +35,21 @@ def ordered_terms(
             _clean(value).casefold(),
             stop,
             minimum,
+            preserved_terms,
             stem_ing,
             stem_ing_minimum_length,
             alias_rows,
             prefix_alias_rows,
+        )
+    )
+
+
+def _preserved_terms(terms: Iterable[str]) -> tuple[str, ...]:
+    return tuple(
+        sorted(
+            term
+            for item in terms
+            if (term := str(item or "").strip("-_").casefold())
         )
     )
 
@@ -56,6 +69,7 @@ def _ordered_terms_cached(
     cleaned_text: str,
     stopwords: tuple[str, ...],
     minimum: int,
+    preserve_terms: tuple[str, ...],
     stem_ing: bool,
     stem_ing_minimum_length: int,
     aliases: tuple[tuple[str, str], ...],
@@ -64,8 +78,13 @@ def _ordered_terms_cached(
     result: list[str] = []
     seen: set[str] = set()
     alias_map = dict(aliases)
+    preserved = set(preserve_terms)
     for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", cleaned_text):
-        token = normalize_domain_token(raw, minimum=minimum, stopwords=stopwords)
+        raw_token = raw.strip("-_").casefold()
+        if raw_token in preserved and raw_token not in stopwords:
+            token = raw_token
+        else:
+            token = normalize_domain_token(raw_token, minimum=minimum, stopwords=stopwords)
         if stem_ing and token.endswith("ing") and len(token) > stem_ing_minimum_length:
             token = token[:-3]
         token = alias_map.get(token, token)
