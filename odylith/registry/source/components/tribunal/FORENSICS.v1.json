@@ -30,12 +30,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 120,
-    "mapped_workstream_evidence_count": 107,
+    "explicit_event_count": 121,
+    "mapped_workstream_evidence_count": 108,
     "recent_path_match_count": 0,
     "spec_history_event_count": 6,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 120
+    "timeline_event_count": 121
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -44,6 +44,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py",
+        "tests/unit/runtime/test_greenfield_tribunal_term_index.py"
+      ],
+      "confidence": "high",
+      "event_index": 537,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed artifact Tribunal substance term signatures through the shared greenfield domain term index while preserving focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T19:54:48-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",

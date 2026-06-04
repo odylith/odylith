@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 56,
-    "mapped_workstream_evidence_count": 46,
+    "explicit_event_count": 57,
+    "mapped_workstream_evidence_count": 47,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 64,
+    "spec_history_event_count": 65,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 57
+    "timeline_event_count": 58
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,54 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py"
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py"
       ],
       "confidence": "high",
-      "event_index": 537,
+      "event_index": 538,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py",
-      "ts_iso": "2026-06-03T19:41:44-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py",
+      "ts_iso": "2026-06-03T19:55:13-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py",
+        "tests/unit/runtime/test_greenfield_tribunal_term_index.py"
+      ],
+      "confidence": "high",
+      "event_index": 537,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Routed confirmed artifact Tribunal substance term signatures through the shared greenfield domain term index while preserving focused, broad, and under-30s confirmed-create proof.",
+      "ts_iso": "2026-06-03T19:54:48-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

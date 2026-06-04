@@ -5,8 +5,73 @@ from __future__ import annotations
 import re
 from typing import Any, Mapping, Sequence
 
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_domain_token
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+
+
+_SUBSTANCE_TERM_STOPWORDS = {
+    "accepted",
+    "actor",
+    "after",
+    "before",
+    "blocked",
+    "boundary",
+    "candidate",
+    "component",
+    "context",
+    "decision",
+    "downstream",
+    "evidence",
+    "first",
+    "greenfield",
+    "handoff",
+    "input",
+    "local",
+    "output",
+    "owned",
+    "owner",
+    "path",
+    "product",
+    "proof",
+    "record",
+    "release",
+    "review",
+    "reviewer",
+    "source",
+    "state",
+    "system",
+    "trusted",
+    "upstream",
+    "validation",
+    "visible",
+    "workstream",
+}
+
+_ATLAS_ACTION_ALIASES = {
+    "adds": "add",
+    "approves": "approve",
+    "blocks": "block",
+    "checks": "check",
+    "compares": "compare",
+    "creates": "create",
+    "displays": "display",
+    "enters": "enter",
+    "exports": "export",
+    "imports": "import",
+    "logs": "log",
+    "opens": "open",
+    "publishes": "publish",
+    "reads": "read",
+    "records": "record",
+    "reviews": "review",
+    "saves": "save",
+    "sees": "see",
+    "shows": "show",
+    "submits": "submit",
+    "traces": "trace",
+    "views": "view",
+}
+_ATLAS_ACTION_ROOTS = frozenset(_ATLAS_ACTION_ALIASES.values())
 
 
 def check_confirmed_artifact_substance(
@@ -343,85 +408,15 @@ def _proof_anchor_terms(value: str, *, proof_phrase: str) -> set[str]:
 
 
 def _term_set(value: str) -> set[str]:
-    stop = {
-        "accepted",
-        "actor",
-        "after",
-        "before",
-        "blocked",
-        "boundary",
-        "candidate",
-        "component",
-        "context",
-        "decision",
-        "downstream",
-        "evidence",
-        "first",
-        "greenfield",
-        "handoff",
-        "input",
-        "local",
-        "output",
-        "owned",
-        "owner",
-        "path",
-        "product",
-        "proof",
-        "record",
-        "release",
-        "review",
-        "reviewer",
-        "source",
-        "state",
-        "system",
-        "trusted",
-        "upstream",
-        "validation",
-        "visible",
-        "workstream",
-    }
-    terms: set[str] = set()
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", str(value or "").casefold()):
-        token = normalize_domain_token(raw, stopwords=stop)
-        if token.endswith("ing") and len(token) > 6:
-            token = token[:-3]
-        if token:
-            terms.add(token)
-    return terms
+    return set(ordered_terms(value, stopwords=_SUBSTANCE_TERM_STOPWORDS, stem_ing=True))
 
 
 def _atlas_tail_term_set(value: str) -> set[str]:
     terms = set(_term_set(value))
-    action_aliases = {
-        "adds": "add",
-        "approves": "approve",
-        "blocks": "block",
-        "checks": "check",
-        "compares": "compare",
-        "creates": "create",
-        "displays": "display",
-        "enters": "enter",
-        "exports": "export",
-        "imports": "import",
-        "logs": "log",
-        "opens": "open",
-        "publishes": "publish",
-        "reads": "read",
-        "records": "record",
-        "reviews": "review",
-        "saves": "save",
-        "sees": "see",
-        "shows": "show",
-        "submits": "submit",
-        "traces": "trace",
-        "views": "view",
-    }
-    action_roots = set(action_aliases.values())
-    for raw in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]*", str(value or "").casefold()):
-        token = raw[:-3] if raw.endswith("ing") and len(raw) > 6 else raw
-        token = action_aliases.get(token, token)
-        if token in action_roots:
-            terms.add(token)
+    for token in ordered_terms(value, minimum=3, stem_ing=True):
+        action = _ATLAS_ACTION_ALIASES.get(token, token)
+        if action in _ATLAS_ACTION_ROOTS:
+            terms.add(action)
     return terms
 
 

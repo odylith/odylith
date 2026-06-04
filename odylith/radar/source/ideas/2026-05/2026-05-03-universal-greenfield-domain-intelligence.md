@@ -1321,6 +1321,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`2 passed in 0.11s`); wider artifact/proposal/post-confirm proof passed
   (`101 passed in 164.28s`); and confirmed-create performance proof passed
   (`1 passed in 9.69s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed-artifact Tribunal term-index follow-through moved
+  confirmed Radar substance terms, Registry proof-boundary terms, and Atlas
+  first-path tail terms onto `greenfield_domain_term_index.ordered_terms`.
+  `proposal_tribunal_substance.py` now owns only Tribunal-specific stopwords
+  and Atlas action aliases, and no longer imports `normalize_domain_token` or
+  loops over regex tokens locally. The enforcement guard lives in a dedicated
+  small test instead of growing the oversized aggregate artifact-quality suite.
+  Touched files remain below limits (`proposal_tribunal_substance.py`: 461
+  lines; `test_greenfield_tribunal_term_index.py`: 31 lines). Proof: syntax
+  proof passed for the touched module and test; focused Tribunal proof passed
+  (`4 passed in 6.89s`); wider artifact/proposal/post-confirm proof passed
+  (`102 passed in 162.96s`); and confirmed-create performance proof passed
+  (`1 passed in 9.68s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component
