@@ -9,6 +9,7 @@ from typing import Any
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -58,7 +59,7 @@ def _project_title_needs_repair(value: str) -> bool:
     text = _clean(value)
     if normalize_project_title(text).changed:
         return True
-    words = re.findall(r"[A-Za-z0-9]+", text)
+    words = label_terms(text)
     if not text or not words:
         return True
     if text.casefold() in {"greenfield project", "confirmed project"}:
@@ -122,7 +123,7 @@ def _title_candidate_is_better(value: str, *, current: str) -> bool:
     candidate = _clean(value).strip(" .")
     if not candidate or candidate == current:
         return False
-    words = re.findall(r"[A-Za-z0-9]+", candidate)
+    words = label_terms(candidate)
     if not 2 <= len(words) <= 8:
         return False
     if words[-1].casefold() in {"a", "an", "and", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:

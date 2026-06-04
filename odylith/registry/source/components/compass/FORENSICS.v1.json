@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 261,
-    "mapped_workstream_evidence_count": 187,
+    "explicit_event_count": 262,
+    "mapped_workstream_evidence_count": 188,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 261
+    "timeline_event_count": 262
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "tests/unit/runtime/test_greenfield_confirmed_title_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 576,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed canonical confirmed project-title repair acceptance checks through shared greenfield label terms so slash-separated title candidates such as AI/ML Review Workspace preserve their visible product signal.",
+      "ts_iso": "2026-06-04T06:13:15-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",

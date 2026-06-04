@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import inspect
 import json
 import re
 
+from odylith.runtime.domain_intelligence import greenfield_confirmed_title_repair
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 
 
@@ -194,6 +197,38 @@ def test_confirmed_json_intent_repairs_prompt_shaped_title() -> None:
     )
 
     assert intent["title"] == "Tracked Person Profile Watchlist"
+
+
+def test_confirmed_title_repair_uses_shared_label_terms_for_display_tokens(tmp_path) -> None:
+    source = inspect.getsource(greenfield_confirmed_title_repair)
+
+    assert "greenfield_domain_term_index import label_terms" in source
+    assert 're.findall(r"[A-Za-z0-9]+", text)' not in source
+    assert 're.findall(r"[A-Za-z0-9]+", candidate)' not in source
+    assert label_terms("AI/ML Review Workspace") == ["AI", "ML", "Review", "Workspace"]
+
+    prompt = (
+        "Draft a product-first greenfield proposal for a people activity tracker app that captures "
+        "what specific people are doing so that we can follow the same and make money."
+    )
+    intent = parse_confirmed_intent_text(
+        "People-Driven Activity Watchlist\n\n" + ACTIVITY_WATCHLIST_INTENT,
+        prompt=prompt,
+    )
+    proposal = greenfield_proposals.build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title="People-Driven Activity Watchlist",
+        observed_source={"root": str(tmp_path)},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    stale_title = greenfield_proposals._intent_title(prompt)
+    proposal["intent"]["title"] = stale_title
+    proposal["release_plan"]["label"] = "Ship AI/ML Review Workspace First Release"
+
+    repaired = complete_confirmed_proposal(proposal, release_selector="0.0.1")
+
+    assert repaired["intent"]["title"] == "AI/ML Review Workspace"
 
 
 def test_confirmed_completion_repairs_stale_prompt_shaped_title_bindings(tmp_path) -> None:

@@ -1876,6 +1876,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`9 passed in 0.22s`); wider greenfield artifact proof passed (`177 passed
   in 198.50s`); and confirmed-create performance proof passed (`1 passed in
   9.62s`), preserving the under-30s create gate.
+- 2026-06-04 confirmed title-repair display-token follow-through moved
+  canonical project-title repair acceptance checks in
+  `greenfield_confirmed_title_repair.py` onto
+  `greenfield_domain_term_index.label_terms`. The title-repair owner still
+  owns stale title detection, existing-title candidate selection, proposal-wide
+  replacement, slug repair, and project-intelligence rebinding, while the
+  shared term index owns reusable display-token extraction for slash-separated
+  generated title candidates such as AI/ML Review Workspace. Touched files
+  remain below limits (`greenfield_confirmed_title_repair.py`: 205 lines;
+  `greenfield_domain_term_index.py`: 212 lines;
+  `test_greenfield_confirmed_title_quality.py`: 265 lines). Proof: syntax
+  proof passed for the touched modules and test; focused title-quality proof
+  passed (`8 passed in 7.88s`); wider greenfield artifact proof passed (`178
+  passed in 201.72s`); and confirmed-create performance proof passed (`1
+  passed in 9.49s`), preserving the under-30s create gate.
 
 ## Test Strategy
 - Run focused unit tests for domain intelligence, host routing, component

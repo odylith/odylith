@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 95,
-    "mapped_workstream_evidence_count": 85,
+    "explicit_event_count": 96,
+    "mapped_workstream_evidence_count": 86,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 102,
+    "spec_history_event_count": 103,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 96
+    "timeline_event_count": 97
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,19 +21,53 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_repair.py"
       ],
       "confidence": "high",
-      "event_index": 576,
+      "event_index": 577,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-      "ts_iso": "2026-06-04T06:00:22-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_repair.py",
+      "ts_iso": "2026-06-04T06:13:48-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "tests/unit/runtime/test_greenfield_confirmed_title_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 576,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Routed canonical confirmed project-title repair acceptance checks through shared greenfield label terms so slash-separated title candidates such as AI/ML Review Workspace preserve their visible product signal.",
+      "ts_iso": "2026-06-04T06:13:15-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
