@@ -3360,7 +3360,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-03",
+      "last_reviewed_utc": "2026-06-04",
       "source_mmd": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.mmd",
       "source_svg": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.svg",
       "source_png": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.png",
@@ -3438,7 +3438,7 @@
         "tests/unit/runtime/test_workstream_inference.py": "83426ae92a27cc68dd5b6be2de9ff05823498a21ce782ae27c216f11fe100ace",
         "tests/unit/runtime/test_tooling_context_routing.py": "2437fe6137c7d6b72ccf29bc28e65337e65021b9589e51e4d9389e20d08cf6a8",
         "tests/unit/runtime/test_odylith_benchmark_runner.py": "838ee384b17cf6a64550272a12a11a5198d278bf9fff09626938a52edcdd4720",
-        "tests/unit/runtime/test_hygiene.py": "7bd7ef0984b739044bf5694fc668f6411f390861a8c55dbf78e51b7568d5efdc",
+        "tests/unit/runtime/test_hygiene.py": "2686c701d862780de5e1401b270a329309161760b3265372a139cb06d212e149",
         "odylith/casebook/bugs/2026-04-09-host-contract-drift-leaks-codex-only-policy-into-claude-and-shared-runtime-surfaces.md": "12e0d9d1b31dca776cf53e16b4e151bd5fa0af5fa6a050015abcf7075aad903c"
       },
       "render_source_fingerprint": "228eaec11bc23f845be641b3a1074091f5d3de8564c7041f5e1ec4b314ab72f3"
@@ -3826,7 +3826,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "freedom-research",
-      "last_reviewed_utc": "2026-06-03",
+      "last_reviewed_utc": "2026-06-04",
       "source_mmd": "odylith/atlas/source/odylith-anti-slop-governance-and-host-parity.mmd",
       "source_svg": "odylith/atlas/source/odylith-anti-slop-governance-and-host-parity.svg",
       "source_png": "odylith/atlas/source/odylith-anti-slop-governance-and-host-parity.png",
@@ -4020,7 +4020,7 @@
         "src/odylith/install/bootstrap_assets.py": "0a59393ae5122b3647c69e79b7df4a339d54116a002481a5ea23148deb53b4eb",
         "src/odylith/runtime/evaluation/odylith_benchmark_acceptance.py": "7d9020681e33a717fb1af1a3e0a542a190cadc523f3a21bb5fa8a1fc063fb0a1",
         "src/odylith/runtime/common/repo_path_resolver.py": "27530be9ae5d162479a4ec322460aacce500298ae8d3d8eababaa5c92ab3f6b5",
-        "tests/unit/runtime/test_hygiene.py": "7bd7ef0984b739044bf5694fc668f6411f390861a8c55dbf78e51b7568d5efdc"
+        "tests/unit/runtime/test_hygiene.py": "2686c701d862780de5e1401b270a329309161760b3265372a139cb06d212e149"
       },
       "render_source_fingerprint": "da331df5b769f48bd8182e35dc9f3898f93754830d4f156ef587b0241a7953a9"
     },
@@ -4197,7 +4197,7 @@
         "src/odylith/runtime/surfaces/compass_transaction_runtime.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence": "857e53629e33a3e3e54849b81b209ed566369f9809469b6e589aaf14cac7d300",
+        "src/odylith/runtime/domain_intelligence": "9bc572d6c0a1eb6e92d54e290a6523aba5a2e170287a8ed945d0e412ee13d0d1",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "23bbbbc35b664649d96685a211d05ca06e9c32e5768ff6402d7a30927eef8ae8"
       },
       "render_source_fingerprint": "0cba73f4447003c6316f589dd442b776da7b7ddeaf4cbd3adea3f912db3e4f51"

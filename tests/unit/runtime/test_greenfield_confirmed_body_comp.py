@@ -75,6 +75,59 @@ The first governed product slice should prove that a coordinator can safely crea
 """
 
 
+PEPTIDE_TRACK_INTENT = """# PeptideTrack — Personal Peptide Protocol & Outcome Tracker
+
+Product story
+
+You are running peptide protocols and want one place that turns "what am I taking, how much, and is it working" into a clear, evidence-grounded answer. PeptideTrack holds your peptide regimen, explains each peptide in plain terms, suggests dosage ranges informed by your lab reports and stated conditions, and then closes the loop by correlating your logged usage against body composition changes over time so you can see whether a protocol is actually moving the metrics you care about.
+
+State object
+
+The core unit is a Protocol: a peptide plus its dosing schedule, the lab and condition context that justified it, the usage log against that schedule, and the body composition readings collected while it ran. A user's account is a timeline of these protocols, each progressing from planned, to active, to evaluated against outcomes.
+
+First complete path
+
+A user adds a peptide, enters or imports recent lab values and relevant conditions, and receives a suggested dosage range with an explanation and explicit safety caveats. They log each dose as they take it, periodically record body composition readings, and after enough data the app shows whether the tracked metrics trended with usage for that protocol.
+
+Human actors
+
+- The individual user running and logging their own peptide protocols
+- A coach or clinician the user may share a protocol or outcome summary with (read-oriented)
+
+External systems
+
+- Lab report sources (manual entry first; PDF or portal import later)
+- Body composition data sources such as DEXA, InBody, or smart-scale exports
+- A peptide reference knowledge source for descriptions and typical dosage ranges
+
+Internal product systems
+
+- Peptide reference catalog (descriptions, mechanisms, typical ranges, cautions)
+- Lab and condition profile store
+- Dosage suggestion engine that combines reference ranges with the user's labs and conditions
+- Usage logging and schedule adherence tracking
+- Body composition timeline and outcome correlation view
+
+Critical assumptions
+
+- This is a personal tracking and education tool, not a medical device, and it must surface that dosing output is informational and not a prescription.
+- The user is willing to enter lab values and body composition readings manually for the first version.
+- A curated peptide reference set covers the user's peptides well enough to be useful at launch.
+- Single-user, private data is the starting scope; sharing is a later layer.
+
+Ambiguities
+
+- Regulatory and safety posture: how strongly to gate or disclaimer dosage suggestions, and whether to cap them to reference ranges only.
+- Data sourcing: how much to invest now in automated lab/body-comp import versus manual entry first.
+- Outcome model: simple trend visualization versus a stronger statistical correlation between usage adherence and composition change.
+- Scope of the peptide catalog at launch, including which peptides and where their reference data comes from.
+
+Proof boundary
+
+The product is proven when a user can add a peptide, get a lab- and condition-aware dosage suggestion with its rationale and caveats, log usage against a schedule, record body composition readings, and see a clear view of whether the tracked metrics moved with usage for that protocol.
+"""
+
+
 def test_confirmed_service_readiness_intent_repairs_actor_and_system_labels() -> None:
     intent = parse_confirmed_intent_text(
         SERVICE_READINESS_INTENT,
@@ -139,6 +192,79 @@ def test_confirmed_service_readiness_create_reaches_all_prewrite_gates(tmp_path)
     assert decision.passed
     assert all(row["visible_actor"] != "Primary User" for row in decision.visible_actors)
     assert all(row["visible_actor"] != "Evidence for this slice" for row in decision.visible_actors)
+
+
+def test_confirmed_body_composition_tracker_removes_generated_text_residue(tmp_path) -> None:
+    prompt = "Draft a product-first greenfield proposal for a peptide usage tracker."
+    intent = parse_confirmed_intent_text(PEPTIDE_TRACK_INTENT, prompt=prompt)
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+
+    encoded = json.dumps(proposal)
+    forbidden = (
+        "tracked metrics trended",
+        "tracked metrics moved with",
+        "reach the tracked metrics changed with usage for that protocol",
+        "review the tracked metrics changed with usage for that protocol",
+        "use the tracked metrics changed with usage for that protocol",
+        "shown while the tracked metrics changed with usage for that protocol",
+        "reach usage-linked metric change",
+        "review usage-linked metric change",
+        "use usage-linked metric change",
+        "shown while usage-linked metric change",
+        "from the usage-linked",
+        "using the usage-linked",
+        "The Individual User Running",
+        "This stays narrow so the team can prove the promised user outcome",
+        "Anything not needed for this reviewed behavior waits until the first outcome is proven",
+        "service boundary for combines",
+        "service boundary for evaluates",
+        "for each the accepted state change",
+        "Keep Keep",
+        "And Condition Profile Store can create false confidence",
+        "And Outcome Correlation View can create false confidence",
+        "Security posture: And Condition Profile Store",
+        "Security posture: And Outcome Correlation View",
+        "owns presents",
+        "descriptions mechanism",
+        "mechanism typical",
+        "value relevant condition",
+        "metric moved usage protocol",
+        "metric changed usage protocol",
+        "body composition data such",
+        "data such dexa",
+        "Combines reference ranges",
+        "and iginal input facts",
+        "; without it.",
+    )
+    for phrase in forbidden:
+        assert phrase not in encoded
+    assert "PeptideTrack Personal Peptide" not in encoded
+    assert "Peptide Reference Catalog (descriptions" not in encoded
+    assert "Individual User" in encoded
+    assert "the usage-linked metric change view for that protocol" in encoded
+    assert greenfield_quality_issues(proposal) == []
+    assert component_spec_preflight_issues(proposal) == []
+    rendered_specs = "\n".join(_rendered_component_specs(proposal))
+    rendered_forbidden = (
+        "is the place where the product turns prepared evidence into an explained outcome",
+        "user adds peptide is calculated",
+        "user adds peptide on a successful path",
+        "user adds peptide is missing",
+        "user adds peptide reviewable",
+        "Accepted input context",
+        "while keeping",
+    )
+    for phrase in rendered_forbidden:
+        assert phrase not in rendered_specs
+
+    decision = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    assert decision.passed
 
 
 def _rendered_component_specs(proposal: dict[str, object]) -> list[str]:

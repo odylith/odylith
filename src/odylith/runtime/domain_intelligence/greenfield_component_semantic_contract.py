@@ -237,7 +237,7 @@ def derive_component_semantic_contract(
         "states_or_transitions": states,
         "outside_boundary": _outside_boundary(sibling_focus=sibling_focus),
         "local_proof": proof,
-        "upstream_truth": previous_label or "accepted input context",
+        "upstream_truth": previous_label or "accepted first-path input",
         "downstream_consumers": next_label or "release review",
         "unique_failure": (
             f"{label} can mislead users if {critical} is missing, stale, {failure_cause}, "
@@ -297,6 +297,11 @@ def _looks_generated_scaffold(value: str) -> bool:
             text,
         )
         or ("required inputs" in text and "blocked-case evidence links" in text)
+        or ("accepted inputs" in text and "local refusal evidence" in text)
+        or ("adjacent product decisions stay outside" in text)
+        or ("validation evidence" in text and "local handoff decisions" in text)
+        or ("original input facts stays outside" in text)
+        or ("preserves reviewable evidence" in text and "explains missing or stale inputs" in text)
         or ("handoff boundaries for the confirmed first path" in text)
         or ("failure avoided:" in text)
         or ("transitions" in text and "refusals stay as separate contract fields" in text)
@@ -473,10 +478,22 @@ def _label_compound_phrases(label: str) -> list[str]:
     if 2 <= len(terms) <= 5 and terms[-1] in _ARTIFACT_CARRIER_TERMS:
         rows.append(" ".join(terms))
     for index in range(max(0, len(terms) - 1)):
-        rows.append(f"{terms[index]} {terms[index + 1]}")
+        left = terms[index]
+        right = terms[index + 1]
+        if _descriptor_list_pair(left, right):
+            continue
+        rows.append(f"{left} {right}")
     rows = list(unique_text(rows))
     rows.sort(key=_label_compound_rank)
     return rows[:4]
+
+
+def _descriptor_list_pair(left: str, right: str) -> bool:
+    """Return whether adjacent label terms are list residue, not an artifact."""
+
+    if right in {"typical", "relevant", "optional", "manual", "recent", "suggested", "recommended"}:
+        return True
+    return False
 
 
 def _title_identity_phrases(label_phrases: Sequence[str], summary_phrases: Sequence[str]) -> tuple[str, ...]:
@@ -488,7 +505,7 @@ def _title_identity_phrases(label_phrases: Sequence[str], summary_phrases: Seque
             continue
         if phrase.casefold() in summary:
             continue
-        if words[-1] not in _ARTIFACT_CARRIER_TERMS:
+        if words[-1] not in _ARTIFACT_CARRIER_TERMS and len(_content_terms(phrase)) < 2:
             continue
         if _component_shell_artifact(phrase) or _status_only_artifact_fragment(phrase):
             continue

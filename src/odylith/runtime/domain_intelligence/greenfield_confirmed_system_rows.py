@@ -79,6 +79,7 @@ _SYSTEM_NAME_NOUNS = {
 def confirmed_system_name(value: str) -> str:
     cleaned = _clean(value)
     raw = re.split(r"\s+[—-]\s+|\s*:\s*", cleaned, maxsplit=1)[0].strip()
+    raw = _flatten_parenthetical_label(raw)
     raw, _description = _split_system_action_clause(raw)
     return _clean(raw) or "Product System"
 
@@ -92,9 +93,31 @@ def confirmed_system_description(value: str) -> str:
         body = _clean(parts[1])
         if head_description and _looks_generated_system_description(body):
             return _normalize_system_description(head_description)
+        if _looks_generated_system_description(body):
+            return _normalize_system_description(_concise_system_description(confirmed_system_name(head), context_text=""))
         return _normalize_system_description(body)
     _name, description = _split_system_action_clause(cleaned)
+    if not description and _descriptor_parenthetical(cleaned):
+        return _normalize_system_description(_concise_system_description(confirmed_system_name(cleaned), context_text=""))
     return _normalize_system_description(description or cleaned)
+
+
+def _descriptor_parenthetical(value: str) -> bool:
+    match = re.search(r"\(([^)]{3,160})\)", _clean(value))
+    return bool(match and ("," in match.group(1) or _word_count(match.group(1)) > 4))
+
+
+def _flatten_parenthetical_label(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(r"\(([^)]{3,160})\)", _parenthetical_label_replacement, text)
+    return _clean(text)
+
+
+def _parenthetical_label_replacement(match: re.Match[str]) -> str:
+    body = _clean(match.group(1))
+    if "," in body or _word_count(body) > 4:
+        return ""
+    return f" {body}"
 
 
 def internal_system_rows(
@@ -230,6 +253,7 @@ def contains_generic_system_scaffold(system_rows: list[str]) -> bool:
 def _normalize_system_description(value: str) -> str:
     text = normalize_visible_result_language(_clean(value))
     text = re.sub(r"^(?:hold|holds|holding)\s+", "maintains ", text, flags=re.IGNORECASE)
+    text = re.sub(r"^combines?\s+reference\s+ranges?\s+with\b", "evaluates reference ranges against", text, flags=re.IGNORECASE)
     return _clean(text)
 
 

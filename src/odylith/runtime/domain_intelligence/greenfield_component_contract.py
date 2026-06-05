@@ -154,11 +154,13 @@ def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str
         )
     if _is_status_view(label, owned):
         return _sentence(
-            f"Maintains {_lower_clause(owned)} and produces {_lower_clause(outputs)}"
+            f"Presents {_component_subject(label)}, review status, blocker context, and handoff evidence without rewriting source records"
         )
     subject = _component_subject(label)
     if primary and failure:
-        return _sentence(f"Maintains {_lower_clause(primary)}. Failure avoided: {_lower_clause(failure)}")
+        return _sentence(
+            f"Maintains {_lower_clause(primary)}, preserves reviewable evidence, and explains missing or stale inputs before handoff"
+        )
     if owned:
         return _sentence(f"Maintains {_lower_clause(primary or owned)} for {subject}")
     return _sentence(f"Maintains the {subject} state, recovery context, and local proof boundary")
@@ -166,10 +168,8 @@ def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str
 
 def boundary_from_contract(label: str, contract: Mapping[str, Any]) -> str:
     owned = _clause(contract.get("owned_state"))
-    primary = _first_contract_item(owned) or f"{_component_subject(label)} state"
-    return _sentence(
-        f"{label} owns a {_lower_clause(primary)} boundary; accepted inputs, produced outputs, transitions, and refusals stay as separate contract fields"
-    )
+    primary = _boundary_primary(label, owned)
+    return _sentence(f"{label} owns {_lower_clause(primary)}, validation evidence, and local handoff decisions")
 
 
 def interfaces_from_contract(contract: Mapping[str, Any]) -> list[str]:
@@ -517,8 +517,8 @@ def _outside_boundary(*, kind: str) -> str:
     if kind.casefold() in {"client", "surface", "ui", "web"}:
         return "domain derivation, persistence, original input facts, and release approval unless a later plan assigns them here"
     if kind.casefold() == "adapter":
-        return "original input facts, product decisions, presentation, and release approval"
-    return "presentation, original input facts, adjacent product decisions, and release approval unless explicitly assigned"
+        return "original input facts, product decisions, and release approval"
+    return "original input facts, adjacent product decisions, and release approval unless explicitly assigned"
 
 
 def _component_subject(label: str) -> str:
@@ -555,6 +555,27 @@ def _first_contract_item(value: str) -> str:
     segment = re.split(r",|;", text, maxsplit=1)[0]
     segment = re.sub(r"^(?:and|or)\s+", "", segment, flags=re.IGNORECASE).strip(" .")
     return segment
+
+
+def _boundary_primary(label: str, owned: str) -> str:
+    subject = _component_subject(label)
+    items = [part.strip(" .") for part in re.split(r",|;", _clause(owned)) if part.strip(" .")]
+    subject_terms = set(ordered_domain_terms(subject))
+    for item in items:
+        if subject_terms and not (set(ordered_domain_terms(item)) & subject_terms):
+            continue
+        if re.match(r"^(?:user|actor|customer|patient|client)\s+\w+", item, flags=re.IGNORECASE):
+            continue
+        if item.casefold() in {"source evidence", "blocker state", "next-step context"}:
+            continue
+        return item
+    for item in items:
+        if re.match(r"^(?:user|actor|customer|patient|client)\s+\w+", item, flags=re.IGNORECASE):
+            continue
+        if item.casefold() in {"source evidence", "blocker state", "next-step context"}:
+            continue
+        return item
+    return f"{subject} state"
 
 
 __all__ = [

@@ -1030,7 +1030,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     storefront = next(row for row in component_registry["components"] if row["component_id"] == "commerce-storefront")
     assert storefront["workstreams"] == ["B-002"]
     assert storefront["diagrams"] == []
-    assert storefront["what_it_is"].startswith("Storefront is planned as an application boundary")
+    assert storefront["what_it_is"].startswith("Storefront defines the planned application ownership boundary")
     assert all(
         token in storefront["what_it_is"]
         for token in ("local result", "blocked cases", "recovery path", "review evidence")

@@ -26,7 +26,7 @@ def test_component_register_entry_can_record_user_intent_candidates() -> None:
     assert entry["sources"] == ["user_intent"]
     assert entry["workstreams"] == ["B-200"]
     assert entry["diagrams"] == ["D-200"]
-    assert entry["what_it_is"].startswith("Payments Boundary is planned as an integration boundary")
+    assert entry["what_it_is"].startswith("Payments Boundary defines the planned integration ownership boundary")
     assert "responsible for" not in entry["what_it_is"]
     assert "initial evidence anchor" not in entry["what_it_is"]
     assert "user-stated intent" in entry["why_tracked"]

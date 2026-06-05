@@ -248,7 +248,6 @@ RUNTIME_HOTFILE_LIMITS = {
     "src/odylith/runtime/memory/odylith_memory_backend.py": 1849,
     "src/odylith/runtime/evaluation/odylith_evaluation_ledger.py": 1576,
     "src/odylith/runtime/context_engine/odylith_context_engine_hot_path_scope_runtime.py": 1576,
-    "src/odylith/runtime/project_intelligence/greenfield.py": 1977,
     "src/odylith/runtime/surfaces/compass_dashboard_runtime.py": 1556,
     "src/odylith/runtime/context_engine/odylith_context_engine_grounding_runtime.py": 1508,
 }

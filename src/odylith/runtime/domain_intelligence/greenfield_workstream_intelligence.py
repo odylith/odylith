@@ -198,7 +198,7 @@ def build_workstream_domain_intelligence(
             f"External source boundaries here: {join_items(externals)}.",
         ],
         "constraints": [
-            f"Keep {row_title} inside the accepted first-release scope: {non_goal_text}.",
+            f"Keep this slice inside the accepted first-release scope: {non_goal_text}.",
             f"Do not claim {row_title} ready until validation demonstrates: {validation_summary or proof_boundary}.",
         ],
         "source_of_truth_map": [
@@ -268,7 +268,7 @@ def build_workstream_domain_intelligence(
             f"Source-backed validation beats narrative claims when {row_title} behavior disagrees.",
         ],
         "transfer_priors": [
-            f"Keep {row_title} small enough for concrete behavior proof.",
+            "Keep this slice small enough for concrete behavior proof.",
             "Use confirmed actors, state, systems, outcomes, and failure terms in this slice.",
         ],
     }

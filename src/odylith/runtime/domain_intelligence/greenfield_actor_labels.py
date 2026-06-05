@@ -187,6 +187,11 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         body = body or marker_body
         marker_body_used = not explicit_body and bool(marker_body)
     head = _strip_qualifiers(head).strip(" .")
+    action_head, action_tail = _split_actor_action_tail(head)
+    if action_head:
+        head = action_head
+        body = body or action_tail
+        marker_body_used = marker_body_used or (not explicit_body and bool(action_tail))
     if not head:
         return ""
 
@@ -244,6 +249,44 @@ def _split_description_marker(value: str) -> tuple[str, str]:
         head, sep, tail = lowered.partition(marker)
         if sep and head.strip() and tail.strip():
             return value[: len(head)].strip(" ."), value[len(head) + len(marker) :].strip(" .")
+    return "", ""
+
+
+def _split_actor_action_tail(value: str) -> tuple[str, str]:
+    """Split role labels such as "individual user running..." into label/body."""
+
+    text = _clean(value).strip(" .")
+    if not text:
+        return "", ""
+    words = text.split()
+    if len(words) < 3:
+        return "", ""
+    for index, word in enumerate(words[1:], start=1):
+        token = word.casefold().strip(".,;:")
+        if token not in {
+            "checking",
+            "configuring",
+            "coordinating",
+            "entering",
+            "handling",
+            "logging",
+            "managing",
+            "monitoring",
+            "owning",
+            "reviewing",
+            "running",
+            "sharing",
+            "tracking",
+            "using",
+            "watching",
+        }:
+            continue
+        head = " ".join(words[:index]).strip(" .")
+        head = re.sub(r"^(?:a|an|the)\s+", "", head, flags=re.IGNORECASE).strip(" .")
+        tail = " ".join(words[index:]).strip(" .")
+        role = _role_suffix(head)
+        if role and 1 <= len(head.split()) <= 4 and tail:
+            return head, tail
     return "", ""
 
 

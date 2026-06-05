@@ -142,6 +142,7 @@ def test_visible_result_language_normalization_stays_in_text_owner() -> None:
     assert normalize_visible_result_language(
         "Visible-result event readout plus note on screen, alongside source evidence."
     ) == "visible result readout and note on screen with source evidence."
+    assert normalize_visible_result_language("tracked metrics trended with usage") == "tracked metrics changed with usage"
 
     for caller in callers:
         source = caller.read_text(encoding="utf-8")

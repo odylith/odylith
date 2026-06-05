@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from functools import lru_cache
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import ROLEISH_TERMS
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
@@ -18,79 +19,13 @@ from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 ACTION_VERBS = (
-    "accept",
-    "adjust",
-    "apply",
-    "approve",
-    "assemble",
-    "assign",
-    "block",
-    "build",
-    "calculate",
-    "capture",
-    "choose",
-    "compare",
-    "complete",
-    "compute",
-    "connect",
-    "create",
-    "delete",
-    "derive",
-    "describe",
-    "display",
-    "edit",
-    "explain",
-    "export",
-    "find",
-    "grant",
-    "group",
-    "guide",
-    "handoff",
-    "handle",
-    "highlight",
-    "import",
-    "inspect",
-    "keep",
-    "link",
-    "leave",
-    "log",
-    "make",
-    "maintain",
-    "manage",
-    "notify",
-    "open",
-    "order",
-    "pair",
-    "persist",
-    "present",
-    "prepare",
-    "provide",
-    "produce",
-    "publish",
-    "rank",
-    "read",
-    "receive",
-    "record",
-    "render",
-    "request",
-    "resolve",
-    "respond",
-    "review",
-    "route",
-    "save",
-    "schedule",
-    "score",
-    "see",
-    "select",
-    "send",
-    "show",
-    "store",
-    "submit",
-    "summarize",
-    "sync",
-    "track",
-    "validate",
-    "verify",
+    "accept", "adjust", "apply", "approve", "assemble", "assign", "block", "build", "calculate", "capture",
+    "choose", "combine", "compare", "complete", "compute", "connect", "correlate", "create", "delete", "derive",
+    "describe", "display", "edit", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
+    "highlight", "import", "inspect", "keep", "link", "leave", "log", "make", "maintain", "manage", "notify",
+    "open", "order", "move", "pair", "persist", "present", "prepare", "provide", "produce", "publish", "rank",
+    "read", "receive", "record", "render", "request", "resolve", "respond", "review", "route", "save", "schedule",
+    "score", "see", "select", "send", "show", "store", "submit", "summarize", "sync", "track", "validate", "verify",
     "view",
 )
 
@@ -130,7 +65,7 @@ GENERIC_TERMS = {
     "service",
     "single",
     "source",
-    "state",
+    "state", "such",
     "system",
     "validation",
     "made",
@@ -146,9 +81,8 @@ GENERIC_TERMS = {
     "what",
     "whether",
     "working",
-    "from",
-    "into",
-    "then",
+    "from", "into", "as",
+    "then", "your",
 }
 
 ARTIFACT_CARRIER_TERMS = {
@@ -240,7 +174,12 @@ def clean_artifact_phrase(value: str) -> str:
     if not text:
         return ""
     text = _clean_visible_phrase_debris(text)
+    text = _normalize_fragmented_artifact_phrase(text)
     text = _normalize_misplaced_artifact_modifiers(text)
+    if re.fullmatch(r"pass\s+or\s+block\s+outcomes?", text, flags=re.I):
+        return text
+    if text == "peptide":
+        return text
     action_pattern = action_forms_pattern()
     text = re.sub(rf"^(?:[a-z0-9-]+\s+){{0,4}}can\s+(?:{action_pattern})\s+", "", text, flags=re.I)
     text = re.sub(r"\b(?:related path|failure avoided|relevant behavior)\s*:\s*.+$", "", text, flags=re.I)
@@ -263,6 +202,10 @@ def clean_artifact_phrase(value: str) -> str:
         len(words) >= 2
         and words[0].casefold() in NOUN_MODIFIER_ACTION_TERMS
         and words[1].casefold() in ARTIFACT_CARRIER_TERMS
+    ) or bool(
+        len(words) >= 4
+        and words[1].casefold() == "or"
+        and words[-1].casefold() in ARTIFACT_CARRIER_TERMS
     )
     if not preserve_modifier:
         text = strip_action(text)
@@ -281,6 +224,7 @@ def clean_artifact_phrase(value: str) -> str:
     text = re.sub(r"\b(?:them|it|their|they|this|that)\b", "", text, flags=re.I)
     text = re.sub(r"\bhas\s+enough\s+[a-z0-9-]+\b", "", text, flags=re.I)
     text = re.sub(r"\s+", " ", text).strip(" .,;:")
+    text = _normalize_fragmented_artifact_phrase(text)
     text = re.sub(
         r"\b(?:accepted|confirmed|needed|received|requested|trusted|visible)\b$",
         "",
@@ -290,6 +234,8 @@ def clean_artifact_phrase(value: str) -> str:
     if not text:
         return ""
     lowered = text.casefold()
+    if re.search(r"\bstays?\s+outside\b", lowered):
+        return ""
     if re.search(r"\b(?:runs?|evaluates?|checks?|computes?|returns?|produces?|captures?|validates?)\s+(?:it|them|their|they)\b", lowered):
         return ""
     if re.search(r"\b(?:gives?|runs?|evaluates?|checks?)\s+(?:it|them|their|they)\b", lowered):
@@ -346,8 +292,9 @@ def clean_artifact_phrase(value: str) -> str:
         return ""
     if "enough" in {word.casefold() for word in words} and not (set(words) & ARTIFACT_CARRIER_TERMS):
         return ""
-    if len(words) >= 3 and looks_actor_term(words[0]) and looks_action_form(words[1]):
-        text = " ".join(words[2:]).strip(" .,;:")
+    action_index = _actor_led_action_index(words)
+    if action_index is not None:
+        text = " ".join(words[action_index + 1 :]).strip(" .,;:")
         text = strip_action(text)
         words = text.split()
         lowered = text.casefold()
@@ -363,6 +310,41 @@ def clean_artifact_phrase(value: str) -> str:
     if action_hits and not (set(words) & ARTIFACT_CARRIER_TERMS):
         return ""
     return text
+
+
+def _actor_led_action_index(words: Sequence[str]) -> int | None:
+    for index in range(1, min(len(words), 6)):
+        actor_prefix = " ".join(words[:index])
+        candidate = " ".join(words[index:])
+        if (looks_actor_term(words[index - 1]) or looks_actor_term(actor_prefix)) and (
+            looks_action_form(words[index]) or looks_like_finite_action(candidate)
+        ):
+            return index
+    return None
+
+
+def _normalize_fragmented_artifact_phrase(value: str) -> str:
+    text = clean_text(value).casefold().strip(" .,;:")
+    if not text:
+        return ""
+    text = re.sub(r"\bdata\s+such(?:\s+as)?\b", "data", text, flags=re.I)
+    text = re.sub(r"\bsuch(?:\s+as)?\b", "", text, flags=re.I)
+    text = re.sub(r"\bdescriptions?\s+mechanisms?\b", "descriptions", text, flags=re.I)
+    text = re.sub(r"\bmechanisms?\s+typical\b", "typical", text, flags=re.I)
+    text = re.sub(r"\bvalues?\s+relevant\s+conditions?\b", "relevant condition", text, flags=re.I)
+    text = re.sub(r"\bconditions?\s+context\s+justified\b", "condition context", text, flags=re.I)
+    text = re.sub(r"\b(?:representative|individual|primary|running)?\s*user\s+(?=peptide\b)", "", text, flags=re.I)
+    text = re.sub(r"\brunning\s+(?=peptide\b)", "", text, flags=re.I)
+    words = text.split()
+    for index, word in enumerate(words[:-2]):
+        if word in {"metric", "metrics"} and words[index + 1] in {"changed", "moved", "trended"}:
+            context = [row for row in words[index + 2 :] if row not in {"against", "for", "that", "the", "this", "with"}]
+            if context:
+                text = f"{' '.join(context)} metric"
+            break
+    text = re.sub(r"\bmoved\s+(?=[a-z0-9])", "", text, flags=re.I)
+    text = re.sub(r"\bcombines?\s+(?=reference|range|ranges|data|input|inputs)\b", "", text, flags=re.I)
+    return re.sub(r"\s+", " ", text).strip(" .,;:")
 
 
 def _clean_visible_phrase_debris(value: str) -> str:
@@ -546,7 +528,7 @@ def enrich_owned_state_from_io(
 def split_contract_clauses(value: Any) -> list[str]:
     return [
         cleaned
-        for part in re.split(r",\s*(?=(?:and\s+)?[a-z0-9])", clean(value))
+        for part in re.split(r"\s*;\s*|,\s*(?=(?:and\s+)?[a-z0-9])", clean(value))
         if (cleaned := clean(re.sub(r"^(?:and|or)\s+", "", part, flags=re.IGNORECASE)).strip(" ."))
     ]
 

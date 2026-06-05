@@ -21,6 +21,42 @@ from odylith.runtime.governance import owned_surface_refresh
 _REGISTRY_PATH_RELATIVE = Path("odylith/registry/source/component_registry.v1.json")
 _COMPONENTS_ROOT_RELATIVE = Path("odylith/registry/source/components")
 _SLUGIFY_RE = re.compile(r"[^a-z0-9]+")
+_FINITE_ACTION_LEADS = frozenset(
+    {
+        "accept",
+        "accepts",
+        "apply",
+        "applies",
+        "block",
+        "blocks",
+        "calculate",
+        "calculates",
+        "capture",
+        "captures",
+        "combine",
+        "combines",
+        "compute",
+        "computes",
+        "evaluate",
+        "evaluates",
+        "maintain",
+        "maintains",
+        "own",
+        "owns",
+        "present",
+        "presents",
+        "produce",
+        "produces",
+        "record",
+        "records",
+        "show",
+        "shows",
+        "store",
+        "stores",
+        "track",
+        "tracks",
+    }
+)
 
 
 def _slugify(value: str) -> str:
@@ -117,6 +153,11 @@ def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
     ).strip(" .")
     text = component_spec_rendering.sentence_fragment(responsibility)
     first_clause = re.split(r"\s*;\s*", text, maxsplit=1)[0] if text else ""
+    if label_focus and _starts_with_finite_action(first_clause):
+        action_object = _finite_action_object(first_clause)
+        if action_object:
+            return action_object
+        return label_focus
     first_clause = re.split(r"\b(?:accepts?|produces?|prevents?|blocks?)\b", first_clause, maxsplit=1, flags=re.IGNORECASE)[0]
     first_clause = re.sub(
         r"^(?:owns?|maintains?|coordinates?|records?|captures?|stores?|holds?|tracks?|keeps?|presents?|shows?|displays?|attaches?|assembles?|computes?|applies?|checks?)\s+",
@@ -129,18 +170,29 @@ def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
     return label_focus or label_text or "this boundary"
 
 
+def _starts_with_finite_action(value: str) -> bool:
+    words = component_spec_rendering.sentence_fragment(value).split()
+    return bool(words and words[0].strip(" .,;:").casefold() in _FINITE_ACTION_LEADS)
+
+
+def _finite_action_object(value: str) -> str:
+    words = component_spec_rendering.sentence_fragment(value).split()
+    if len(words) < 3 or words[0].strip(" .,;:").casefold() not in _FINITE_ACTION_LEADS:
+        return ""
+    text = " ".join(words[1:]).strip(" .,:;")
+    if not (2 <= len(text.split()) <= 16):
+        return ""
+    if re.search(r"\b(?:actor identity|validation context|upstream handoff|blocker signal|downstream handoff)\b", text, re.IGNORECASE):
+        return ""
+    return text
+
+
 def _public_what_it_is(*, label: str, kind: str, responsibility: str) -> str:
-    article = _kind_article(kind)
     focus = _registry_focus_phrase(label=label, responsibility=responsibility)
     return (
-        f"{label} is planned as {article} {kind} boundary for {focus}. "
-        "It gives implementation a clear place to keep the local result, blocked cases, recovery path, and review evidence together."
+        f"{label} defines the planned {kind} ownership boundary for {focus}. "
+        "It keeps local result, blocked cases, recovery path, release proof, and review evidence together."
     )
-
-
-def _kind_article(kind: str) -> str:
-    token = str(kind or "").strip().lower()
-    return "an" if token[:1] in {"a", "e", "i", "o", "u"} else "a"
 
 
 def _build_registry_entry(
@@ -182,7 +234,7 @@ def _build_registry_entry(
         "status": status,
         "what_it_is": what_it_is,
         "why_tracked": (
-            f"Tracked from {evidence_phrase} because this boundary must stay understandable before source-backed behavior promotes it."
+            f"Tracked from {evidence_phrase} because this named ownership boundary must stay understandable before source-backed behavior promotes it."
         ),
         "spec_ref": f"odylith/registry/source/components/{component_id}/CURRENT_SPEC.md",
         "sources": normalized_sources or ["manifest"],

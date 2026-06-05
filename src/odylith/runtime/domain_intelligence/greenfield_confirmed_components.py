@@ -75,11 +75,28 @@ _GENERIC_COMPONENT_ROLE_PREFIXES: tuple[tuple[re.Pattern[str], str], ...] = (
 
 def domain_label(title: str, prompt: str) -> str:
     source = title or prompt or "Greenfield Project"
+    brand = _brand_label(source)
+    if brand:
+        return brand
     words = label_terms(source, stopwords=_STOPWORDS)
     if not words:
         words = ["Greenfield", "Workflow"]
     selected = words[:4] if len(words) <= 4 else words[:3]
     return " ".join(_title_word(word) for word in selected)
+
+
+def _brand_label(value: str) -> str:
+    """Prefer an explicit short brand segment over subtitle fragments."""
+
+    head = re.split(r"\s+(?:—|–|-)\s+|:\s+", _plain_text(value), maxsplit=1)[0].strip(" .")
+    if not head:
+        return ""
+    words = label_terms(head, stopwords=_STOPWORDS)
+    if not 1 <= len(words) <= 4:
+        return ""
+    if head.casefold() in {"greenfield project", "confirmed project"}:
+        return ""
+    return " ".join(_title_word(word, first=index == 0) for index, word in enumerate(words))
 
 
 def confirmed_components(
@@ -194,7 +211,7 @@ def _confirmed_system_components(
 def system_component_name(value: str) -> str:
     """Convert actor-placeholder prefixes into capability names for component records."""
 
-    name = _plain_text(value).strip(" .:-")
+    name = _flatten_parenthetical_descriptor(_plain_text(value)).strip(" .:-")
     if not name:
         return ""
     for pattern, replacement in _GENERIC_COMPONENT_ROLE_PREFIXES:
@@ -208,6 +225,19 @@ def system_component_name(value: str) -> str:
             return _sentence_case(rest)
         return f"{replacement} {rest}"
     return name
+
+
+def _flatten_parenthetical_descriptor(value: str) -> str:
+    text = _plain_text(value)
+    text = re.sub(r"\(([^)]{3,160})\)", _parenthetical_descriptor_replacement, text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _parenthetical_descriptor_replacement(match: re.Match[str]) -> str:
+    body = _plain_text(match.group(1))
+    if "," in body or word_count(body) > 4:
+        return ""
+    return f" {body}"
 
 
 def _system_kind(name: str, description: str) -> str:
@@ -356,6 +386,12 @@ def _generated_or_weak(value: Any) -> bool:
         "this responsibility:",
         "first implementation plan must name",
         "selected by the first implementation plan",
+        "boundary; accepted inputs",
+        "accepted inputs, produced outputs",
+        "local refusal evidence",
+        "validation evidence, and local handoff decisions",
+        "owns combines reference ranges",
+        "combines reference ranges with",
     )
     if any(marker in text for marker in generic_markers):
         return True
@@ -399,6 +435,7 @@ def _strip_ownership_verb(value: str) -> str:
         "binds": "binding of",
         "captures": "capture of",
         "computes": "computed result for",
+        "combines": "combined view of",
         "derives": "derivation of",
         "estimates": "estimate of",
         "exports": "export of",
@@ -455,7 +492,7 @@ def _system_action(value: str) -> tuple[str, str]:
         evidence = evidence_parts[1].strip(" .")
         rationale = ". ".join(part for part in (f"Relevant behavior: {evidence}" if evidence else "", rationale) if part)
     action = re.sub(r"^(?:the\s+)?accepted\s+", "", action, flags=re.IGNORECASE).strip(" .")
-    return action, rationale
+    return _normalize_system_action(action), rationale
 
 
 def _responsibility_reference(*, action: str, fallback: str) -> str:
@@ -466,6 +503,17 @@ def _responsibility_reference(*, action: str, fallback: str) -> str:
     if fallback:
         return fallback[:1].lower() + fallback[1:]
     return "this component responsibility"
+
+
+def _normalize_system_action(value: str) -> str:
+    text = str(value or "").strip(" .")
+    text = re.sub(
+        r"^combines?\s+reference\s+ranges?\s+with\b",
+        "evaluates reference ranges against",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return text
 
 
 def _does_clause(action: str, fallback: str) -> str:

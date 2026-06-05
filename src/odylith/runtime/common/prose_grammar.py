@@ -160,6 +160,17 @@ def looks_like_finite_action(value: str) -> bool:
     return token.endswith(_FINITE_ACTION_SUFFIXES)
 
 
+def contains_finite_action(value: str) -> bool:
+    """Return true when any phrase segment starts with a recognizable finite verb."""
+
+    text = re.sub(r"[^A-Za-z0-9'-]+", " ", str(value or " ")).strip()
+    words = text.split()
+    for index in range(max(0, len(words) - 1)):
+        if looks_like_finite_action(" ".join(words[index:])):
+            return True
+    return False
+
+
 def looks_like_action_clause(value: str) -> bool:
     """Return true when a clause starts with a recognizable action verb."""
 

@@ -452,7 +452,18 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("inspector reviews permit note") == "permit note"
     assert clean_artifact_phrase("student submits assignment details") == "assignment details"
     assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
+    assert clean_artifact_phrase("user adds peptide") == "peptide"
+    assert clean_artifact_phrase("individual user adds peptide") == "peptide"
+    assert clean_artifact_phrase("representative user peptide") == "peptide"
+    assert clean_artifact_phrase("running peptide") == "peptide"
     assert clean_artifact_phrase("dashboard visibly updates web/ui surface") == "web/ui surface state"
+    assert clean_artifact_phrase("descriptions mechanism") == "descriptions"
+    assert clean_artifact_phrase("metric moved usage protocol") == "usage protocol metric"
+    assert clean_artifact_phrase("metric changed usage protocol") == "usage protocol metric"
+    assert clean_artifact_phrase("pass or block outcomes") == "pass or block outcomes"
+    assert clean_artifact_phrase("value relevant condition") == "relevant condition"
+    assert clean_artifact_phrase("body composition data such") == "body composition data"
+    assert clean_artifact_phrase("combines reference ranges") == "reference ranges"
     assert visible_words("blocked-state update") == ("blocked", "state", "update")
     assert component_contract._state_terms_from_context(
         "submitted draft was blocked-state, ready, recovered, and ready again"
@@ -697,6 +708,29 @@ def test_greenfield_component_spec_renderer_rejects_mechanical_contract_dump() -
         "runs them against",
     ):
         assert forbidden not in spec
+
+
+def test_rendered_component_spec_quality_rejects_visible_copy_slop() -> None:
+    spec = """
+# Usage Logging Service
+
+## Component Role
+
+Usage Logging Service is the place where the product turns prepared evidence into an explained outcome.
+It should explain how dosage suggestion, user adds peptide, and relevant condition is calculated.
+The summary keeps schedule reviewable while keeping protocol status visible.
+
+### Accepts
+
+Accepted input context.
+"""
+
+    issues = rendered_component_spec_quality_issues({"Usage Logging Service": spec}, project_title="PeptideTrack")
+
+    assert any("generic outcome boilerplate" in issue for issue in issues)
+    assert any("accepted-input placeholder" in issue for issue in issues)
+    assert any("repeated keeping summary" in issue for issue in issues)
+    assert any("treats action user adds peptide as a calculated object" in issue for issue in issues)
 
 
 def test_greenfield_component_ids_remove_product_component_word_overlap() -> None:

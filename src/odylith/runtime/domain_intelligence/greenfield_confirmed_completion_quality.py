@@ -75,6 +75,8 @@ def text_needs_repair(value: Any) -> bool:
             "is not trustworthy when",
             "first release can collect activity",
             "from the product view,",
+            "from the usage-linked",
+            "using the usage-linked",
             " is useful when ",
             " is done when ",
         )
@@ -110,6 +112,8 @@ def sentence_needs_repair(value: Any) -> bool:
     if re.search(r"\brefuses\b[^.]{0,140}\brefuses\b", text, flags=re.IGNORECASE):
         return True
     if re.search(r"\bscor\b", text, flags=re.IGNORECASE):
+        return True
+    if re.search(r"(?:^|[.;]\s+)without it[.!?]?$", text, flags=re.IGNORECASE):
         return True
     return False
 

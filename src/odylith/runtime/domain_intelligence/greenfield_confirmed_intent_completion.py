@@ -193,18 +193,19 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     state_phrase = _state_focus_phrase(state, title=title)
     path_capability = _path_capability(first_path, fallback=f"the first {title.lower()} path")
     needs_verb = _needs_verb(customer_text)
+    decision_phrase = _decision_problem_phrase(outcome_text)
 
     if not _clean(intent.get("problem")):
         intent["problem"] = _sentence(
             _story_problem_sentence(story)
             or (
-                f"{customer_text} {needs_verb} a dependable way to understand {state_phrase} and decide what to do from {outcome_text}; "
+                f"{customer_text} {needs_verb} a dependable way to understand {state_phrase} and {decision_phrase}; "
                 "without it, the work stays scattered, hard to interpret, and easy to act on too late or for the wrong reason."
             )
         )
     elif _problem_needs_repair(intent.get("problem")):
         intent["problem"] = _sentence(
-            f"{customer_text} {needs_verb} a dependable way to understand {state_phrase} and decide what to do from {outcome_text}; "
+            f"{customer_text} {needs_verb} a dependable way to understand {state_phrase} and {decision_phrase}; "
             "without it, the work stays scattered, hard to interpret, and easy to act on too late or for the wrong reason."
         )
     if not _clean(intent.get("customer")) or _customer_needs_repair(intent.get("customer")):
@@ -257,6 +258,13 @@ def _story_problem_sentence(value: str) -> str:
         return ""
     first = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)[0].strip(" .")
     return first if _word_count(first) >= 10 else ""
+
+
+def _decision_problem_phrase(outcome_text: str) -> str:
+    outcome = _clean(outcome_text).rstrip(" .") or "the product result"
+    if outcome.casefold().startswith("the usage-linked metric change view"):
+        return "act on the metric-change view"
+    return f"decide what to do using {outcome}"
 
 
 def _product_view_needs_repair(value: Any) -> bool:
@@ -379,7 +387,7 @@ def _state_focus_phrase(state: str, *, title: str) -> str:
 
 def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
     text = first_path_outcome_phrase(first_path, proof_boundary=proof, fallback="a visible, useful result", limit=190).rstrip(".")
-    if not re.search(r"\b(?:answer|appointment|booking|card|confirmation|decision|outcome|readout|recommendation|report|result|status|summary|view)\b", text, re.I):
+    if not re.search(r"\b(?:answer|appointment|booking|card|confirmation|decision|metrics?|outcome|readout|recommendation|report|result|status|summary|view)\b", text, re.I):
         text = f"a visible outcome from {text}"
     return text
 

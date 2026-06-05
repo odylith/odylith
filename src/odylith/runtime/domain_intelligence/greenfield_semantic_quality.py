@@ -293,6 +293,24 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"actor-led finite action leaked inside user-can clause at {location}")
         if re.search(r"\bsource\s+evidence,\s+visible\s+blockers,\s+and\s+the\s+systems?\s+that\s+own\b", lowered):
             issues.append(f"governance-scaffold problem language leaked at {location}")
+        if re.search(r"\bmetrics?\s+trended\s+with\b", lowered):
+            issues.append(f"malformed metric-trend phrase leaked at {location}")
+        if re.search(r"\bthis\s+stays\s+narrow\s+so\s+the\s+team\s+can\s+prove\b", lowered):
+            issues.append(f"generic narrow-scope rationale leaked at {location}")
+        if re.search(r"\banything\s+not\s+needed\s+for\s+this\s+reviewed\s+behavior\s+waits\b", lowered):
+            issues.append(f"generic deferred-scope rationale leaked at {location}")
+        if re.search(r"\bfor\s+each\s+the\s+accepted\s+state\s+change\b", lowered):
+            issues.append(f"malformed accepted-state-change phrase leaked at {location}")
+        if re.search(r"\bkeep\s+keep\s+", lowered):
+            issues.append(f"duplicated scope-control verb leaked at {location}")
+        if re.search(r"\brisk:\s+(?:and|or)\s+[a-z]", lowered):
+            issues.append(f"connector-clipped risk subject leaked at {location}")
+        if re.search(r"\bsecurity\s+posture:\s+(?:and|or)\s+[a-z]", lowered):
+            issues.append(f"connector-clipped security subject leaked at {location}")
+        if re.search(r"\bservice\s+boundary\s+for\s+(?:combines?|evaluates?)\b", lowered):
+            issues.append(f"action clause leaked into registry boundary summary at {location}")
+        if re.search(r"\bmetrics?\s+changed\s+usage\s+protocol\b", lowered):
+            issues.append(f"malformed metric-change artifact phrase leaked at {location}")
         if re.search(r"\bkeeps?\s+the\s+accepted\s+path\s+step\s+reviewable\b", lowered):
             issues.append(f"mechanical path-review scaffold leaked at {location}")
         if re.search(r"\bproves\s+one\s+successful\s+local\s+state\s+transition\b", lowered):

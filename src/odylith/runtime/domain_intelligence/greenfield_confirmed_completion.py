@@ -205,13 +205,25 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
                 )
             )
             changed = True
-        if not _clean(row.get("domain_risk")) or _text_needs_repair(row.get("domain_risk")):
+        if (
+            not _clean(row.get("domain_risk"))
+            or _text_needs_repair(row.get("domain_risk"))
+            or completion_text.has_connector_clipped_risk_subject(row.get("domain_risk", ""))
+        ):
             row["domain_risk"] = completion_text.workstream_risk(label=label, outcome=outcome, state=state)
             changed = True
-        if not _clean(row.get("security_posture")) or _text_needs_repair(row.get("security_posture")):
+        if (
+            not _clean(row.get("security_posture"))
+            or _text_needs_repair(row.get("security_posture"))
+            or completion_text.has_connector_clipped_risk_subject(row.get("security_posture", ""))
+        ):
             row["security_posture"] = f"Security posture: {label} protects user-entered facts, result history, and recovery details."
             changed = True
-        if not text_values(row.get("risks")) or _sequence_has_text_repair(row.get("risks")):
+        if (
+            not text_values(row.get("risks"))
+            or _sequence_has_text_repair(row.get("risks"))
+            or any(completion_text.has_connector_clipped_risk_subject(value) for value in text_values(row.get("risks")))
+        ):
             row["risks"] = [
                 row["domain_risk"],
                 row["security_posture"],
@@ -264,7 +276,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             metrics = [
                 f"{label} proves one complete user path that reaches {outcome_sentence}.",
                 f"{label} explains blocked, missing, or invalid information before the product shows a result.",
-                f"{label} preserves actor, source, status, result, and recovery context for each {state_object} change.",
+                f"{label} preserves actor, source, status, result, and recovery context for each accepted change to {state_object}.",
             ]
             if completion_text.row_is_release_proof(row):
                 if non_goal_rows:
@@ -278,6 +290,32 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             row["interfaces"] = [
                 f"{label} accepts the facts needed for {focus} and rejects incomplete entries before they look usable.",
                 f"{label} returns the result, correction state, or explanation needed for the next product step.",
+            ]
+            changed = True
+        if (
+            _text_needs_repair(row.get("domain_risk"))
+            or completion_text.has_connector_clipped_risk_subject(row.get("domain_risk", ""))
+            or drifted
+        ):
+            row["domain_risk"] = completion_text.workstream_risk(label=label, outcome=outcome, state=state_object)
+            changed = True
+        if (
+            not _clean(row.get("security_posture"))
+            or _text_needs_repair(row.get("security_posture"))
+            or completion_text.has_connector_clipped_risk_subject(row.get("security_posture", ""))
+            or drifted
+        ):
+            row["security_posture"] = f"Security posture: {label} protects user-entered facts, result history, and recovery details."
+            changed = True
+        if (
+            not text_values(row.get("risks"))
+            or _sequence_has_text_repair(row.get("risks"))
+            or any(completion_text.has_connector_clipped_risk_subject(value) for value in text_values(row.get("risks")))
+            or drifted
+        ):
+            row["risks"] = [
+                row["domain_risk"],
+                row["security_posture"],
             ]
             changed = True
         if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block"), min_items=1) or drifted:

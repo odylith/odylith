@@ -20,9 +20,11 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 _BACKLOG_TERM_STOPWORDS = frozenset(
     {
         "and",
+        "can",
         "for",
         "from",
         "into",
+        "must",
         "that",
         "then",
         "the",
@@ -52,6 +54,7 @@ _PRODUCT_SHARE_STOPWORDS = _BACKLOG_TERM_STOPWORDS | frozenset(
 def proof_claim_summary(value: str, *, limit: int = 260) -> str:
     text = _short_summary(value, limit=limit).strip(" .")
     text = re.sub(r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:the\s+)?product\s+is\s+proven\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^(?:release\s+[0-9.]+\s+)?(?:is\s+)?proven\s+when\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^(?:the\s+)?proof\s+boundary\s+(?:is|means)\s*:?\s*", "", text, flags=re.IGNORECASE)
     return text or _short_summary(value, limit=limit).strip(" .")
@@ -80,6 +83,8 @@ def generic_title_outcome(value: str) -> bool:
         not text
         or text in {"next action", "next step", "what happens next", "a visible result", "a visible, useful result"}
         or re.fullmatch(r"(?:a|an|the)?\s*(?:result|outcome|summary|view|status)", text)
+        or word_count(text) > 7
+        or text.startswith(("whether ", "the tracked metrics ", "tracked metrics "))
     )
 
 
@@ -113,7 +118,7 @@ def semantic_words(value: str) -> set[str]:
 def lead_actor_label(values: list[str]) -> str:
     for value in values:
         text = _label_head(str(value))
-        text = re.split(r"\b(?:who|that|with|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
+        text = re.split(r"\b(?:who|that|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
         if not text:
             continue
         words = text.split()
@@ -126,7 +131,7 @@ def lead_actor_label(values: list[str]) -> str:
 def supporting_actor_label(values: list[str]) -> str:
     for value in values[1:]:
         text = _label_head(str(value))
-        text = re.split(r"\b(?:who|that|with|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
+        text = re.split(r"\b(?:who|that|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
         if not text:
             continue
         words = text.split()
@@ -396,13 +401,43 @@ def rationale_lines(*, label: str, title: str, opportunity: str, first_slice: st
         why_now = "Clarify the accepted product boundary before implementation starts"
     if not expected_outcome:
         expected_outcome = "Produce the first reviewable release outcome"
+    scope_focus = rationale_scope_focus(first_slice, fallback=title)
+    proof_focus = rationale_proof_focus(proof_boundary, fallback=expected_outcome)
+    release_basis = rationale_release_basis(title=title, label=label, first_slice=first_slice, proof_boundary=proof_boundary)
     return [
         f"- why now: {why_now}.",
         f"- expected outcome: {expected_outcome}.",
-        "- tradeoff: This stays narrow so the team can prove the promised user outcome before it widens the product promise.",
-        "- deferred for now: Anything not needed for this reviewed behavior waits until the first outcome is proven.",
-        f"- ranking basis: This work comes before optional scope because {label} needs the user outcome, product state, and release claim to agree.",
+        f"- tradeoff: Keep this slice centered on {scope_focus} so implementation does not absorb unrelated release claims.",
+        f"- deferred for now: Claims beyond {scope_focus} wait for a separate owner, acceptance gate, and proof path.",
+        f"- ranking basis: {release_basis}.",
     ]
+
+
+def rationale_scope_focus(value: str, *, fallback: str) -> str:
+    text = sentence_fragment(value)
+    text = re.sub(r"^(?:deliver|implement|produce|start(?:\s+with)?|build)\s+(?:one\s+)?", "", text, flags=re.IGNORECASE)
+    text = re.split(r"\s+without\s+|\s+and\s+explain\b|\s+and\s+see\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
+    text = _short_summary(text, limit=120).strip(" .")
+    text = re.sub(r"^(?:with|where|when)\s+", "", text, flags=re.IGNORECASE).strip(" .")
+    return text or sentence_fragment(fallback) or "the accepted slice"
+
+
+def rationale_proof_focus(value: str, *, fallback: str) -> str:
+    text = proof_claim_summary(value, limit=160).strip(" .")
+    text = re.split(r"\s+without\s+|\s+and\s+missing\b|\s+and\s+deferred\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
+    if word_count(text) > 14:
+        text = " ".join(text.split()[:14]).strip(" .")
+    return sentence_fragment(text or fallback) or "the proven first path"
+
+
+def rationale_release_basis(*, title: str, label: str, first_slice: str, proof_boundary: str) -> str:
+    title_text = sentence_fragment(title)
+    slice_terms = semantic_words(first_slice)
+    proof_terms = semantic_words(proof_boundary)
+    shared = sorted((slice_terms & proof_terms) - {"can", "must", "release", "result", "state"})
+    if shared:
+        return f"{title_text} ranks before optional expansion because {label} must prove {', '.join(shared[:3])} in the same release story"
+    return f"{title_text} ranks before optional expansion because it ties the accepted path to reviewable {label} release evidence"
 
 
 def looks_mechanical_summary(value: str) -> bool:

@@ -7,8 +7,8 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common import display_text
+from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text, text_values, unique_text
 
@@ -145,29 +145,31 @@ def _narrative_role(
 ) -> str:
     text = " ".join([label, *_string_rows(owns), *_string_rows(accepts), *_string_rows(produces), *_string_rows(transitions), *_string_rows(outside), *_string_rows(proofs)]).casefold()
     label_text = label.casefold()
-    if re.search(r"\b(store|repository|record|records|profile|registry|history|log)\b", label_text):
+    if re.search(r"\b(catalog|knowledge|reference)\b", label_text):
+        return "reference"
+    if re.search(r"\b(store|repository|record|records|profile|registry|history|log|logging|tracking)\b", label_text):
         return "state_store"
     if re.search(r"\b(audit|evidence|file|ledger|provenance|trail)\b", label_text):
         return "evidence"
     if re.search(r"\b(config|configuration|admin|administrator|policy|setting)\b", label_text):
         return "configuration"
+    if re.search(r"\b(view|timeline|dashboard|summary|report|export|surface|display|history|trend)\b", label_text):
+        return "read_model"
     if re.search(r"\b(decision|outcome|reason|approve|approval|decline|explain|rationale|recommendation)\b", label_text):
         return "decision"
     if re.search(r"\b(compute|calculation|calculator|engine|score|rank|compare|threshold|ratio|rule|eligibility|pricing)\b", label_text):
         return "calculation"
     if re.search(r"\b(queue|route|routing|handoff|follow-up|notification|assignment|case)\b", label_text):
         return "handoff"
-    if re.search(r"\b(view|timeline|dashboard|summary|report|export|surface|display|history|trend)\b", label_text):
-        return "read_model"
     if re.search(r"\b(intake|capture|entry|submit|upload|log|record|draft)\b", label_text):
         return "entry"
     role_patterns = (
+        ("read_model", r"\b(view|timeline|dashboard|summary|report|export|surface|display|history|trend)\b"),
         ("decision", r"\b(decision|outcome|reason|approve|approval|decline|qualified|eligible|explain|rationale|recommendation)\b"),
         ("calculation", r"\b(compute|calculate|evaluate|score|rank|compare|threshold|ratio|rule|eligibility|pricing)\b"),
         ("configuration", r"\b(config|configuration|admin|administrator|policy|rule|threshold|template|setting)\b"),
         ("state_store", r"\b(store|repository|record|records|profile|history|log|persist|saved|stored)\b"),
         ("handoff", r"\b(queue|route|routing|handoff|follow-up|notification|assignment|case)\b"),
-        ("read_model", r"\b(view|timeline|dashboard|summary|report|export|surface|display|history|trend)\b"),
         ("evidence", r"\b(audit|evidence|provenance|source|replay|retention|version|history|attachment)\b"),
         ("recovery", r"\b(edit|correction|recover|revision|blocked|blocker|stale|missing|invalid)\b"),
         ("integration", r"\b(adapter|provider|external|import|feed|integration|sync)\b"),
@@ -194,14 +196,22 @@ def _opening_narrative(
         lead = f"{label} is responsible for the first product information this boundary must make reliable."
         body = f"It keeps {focus} together so the next product step can move forward without another boundary guessing what the user meant or what is still missing."
     elif role == "decision":
-        lead = f"{label} is the place where the product turns prepared evidence into an explained outcome."
+        lead = f"{label} turns prepared evidence into a product outcome with an explanation."
         body = f"The spec should stay focused on {output_focus}, because downstream work needs to know not only what happened but why it happened."
     elif role == "calculation":
         lead = f"{label} carries the product logic that interprets accepted inputs before anyone treats the result as true."
         if _phrases_too_similar(input_focus, output_focus):
-            body = f"It should explain how {focus} is calculated, which facts were used, and why the result is safe to show."
+            calculation_focus = _calculation_focus(focus=focus, output_focus=output_focus, label=label)
+            body = (
+                f"It should explain how {calculation_focus} "
+                f"{_present_verb(calculation_focus, singular='is', plural='are')} calculated, "
+                "which facts were used, and why the result is safe to show."
+            )
         else:
             body = f"It should make {input_focus} traceable to {output_focus}, with the rule or calculation context visible enough to review."
+    elif role == "reference":
+        lead = f"{label} is the source for product reference information used by this release."
+        body = f"It should keep {focus} reviewable, explain where those facts came from, and stay separate from user-specific decisions."
     elif role == "configuration":
         lead = f"{label} exists so product rules can change intentionally instead of being hidden in implementation code."
         body = f"It protects {focus} and makes those settings available to the runtime path without turning configuration into a release-review shortcut."
@@ -278,9 +288,13 @@ def _state_narrative(
     owned_rows = _narrative_items(owns, limit=4)
     owned = _human_join(owned_rows)
     material_state = _human_join(_supplemental_state_items(owns, existing=owned_rows, limit=5))
-    accepted = _human_join(_narrative_items(accepts, limit=3))
-    produced = _human_join(_narrative_items(produces, limit=3))
+    accepted_rows = _narrative_items(accepts, limit=3)
+    produced_rows = _narrative_items(produces, limit=3)
+    accepted = _human_join(accepted_rows)
+    produced = _human_join(produced_rows)
+    blocker_state = _human_join(_supplemental_state_items([*accepts, *produces], existing=(*owned_rows, *accepted_rows, *produced_rows), limit=3))
     state_path = _human_join(_transition_items(transitions, limit=12))
+    blocker = f"Specific missing or blocked inputs include {blocker_state}" if role in {"entry", "recovery"} and blocker_state else ""
     if role in {"entry", "recovery"}:
         first = f"It owns {owned}." if owned else f"{label} needs the first implementation plan to name its local state."
         second = f"The component can take in {accepted}, but it should only move forward after required values, corrections, or blockers are explicit." if accepted else ""
@@ -315,7 +329,7 @@ def _state_narrative(
         second = f"It accepts {accepted} and returns {produced} when the next product step can rely on it."
     material = _material_state_sentence(role=role, material_state=material_state)
     transition = f"The important lifecycle is {state_path}." if state_path else ""
-    return _sentences(first, second, material, transition)
+    return _sentences(first, second, blocker, material, transition)
 
 
 def _boundary_narrative(
@@ -527,6 +541,8 @@ def _clean_entity_item(value: str) -> str:
     text = _clean_fragment(value)
     if not text:
         return ""
+    if text.casefold() == "accepted input context":
+        return "accepted first-path input"
     return text[:1].upper() + text[1:] if re.match(r"^[a-z]", text) and re.search(r"\b[A-Z][a-z]", value) else text
 
 
@@ -559,7 +575,7 @@ def _narrative_items(values: Sequence[str], *, limit: int, allow_status: bool = 
         lowered = text.casefold()
         if has_material_alternative and _generated_boundary_state_item(text):
             continue
-        if lowered in filler_status_tokens:
+        if not allow_status and lowered in filler_status_tokens:
             continue
         if re.search(
             r"\b(?:responsibilities not named|adjacent component|silent overwrite|release approval|mutation of original|mutation of upstream|local blockers?|recovery context owned elsewhere|guide path|capture allowed command)\b",
@@ -712,6 +728,16 @@ def _phrases_too_similar(left: str, right: str) -> bool:
     return len(left_terms & right_terms) / max(1, min(len(left_terms), len(right_terms))) >= 0.72
 
 
+def _calculation_focus(*, focus: str, output_focus: str, label: str) -> str:
+    parts = [part.strip(" .") for part in clean_text(focus).replace(", and ", ",").split(",") if part.strip(" .")]
+    noun_parts = [part for part in parts if not contains_finite_action(part)]
+    if noun_parts:
+        return _human_join(noun_parts[:3])
+    if output_focus and not contains_finite_action(output_focus):
+        return output_focus
+    return re.sub(r"\b(?:adapter|component|engine|service|system|view)\b$", "", label, flags=re.I).strip(" .") or "the result"
+
+
 def _string_rows(values: Sequence[str]) -> tuple[str, ...]:
     return tuple(str(item).strip() for item in values if str(item).strip())
 
@@ -748,13 +774,6 @@ def _kind_noun(kind: str) -> str:
     if token in {"library", "module"}:
         return "module boundary"
     return "service boundary"
-
-
-def _proof_handle(label: str, proof: str, *, index: int) -> str:
-    seed = f"{label} {proof}"
-    words = [word for word in slugify(seed).split("-") if word][:7]
-    base = "_".join(words) or "component"
-    return f"{base}_{index}_proof"
 
 
 def _identifier_list(values: Sequence[str]) -> str:

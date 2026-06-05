@@ -112,6 +112,14 @@ def workstream_risk(*, label: str, outcome: str, state: str) -> str:
     )
 
 
+def has_connector_clipped_risk_subject(value: str) -> bool:
+    text = _clean(value).strip()
+    if ":" in text:
+        text = text.split(":", 1)[1].strip()
+    first = text.split(maxsplit=1)[0].casefold() if text.split() else ""
+    return first in {"and", "or"}
+
+
 def component_focus_phrase(*, label: str, contract: Mapping[str, Any], fallback: str) -> str:
     if label_focus := _label_focus_phrase(label):
         return label_focus
@@ -139,7 +147,7 @@ def component_focus_phrase(*, label: str, contract: Mapping[str, Any], fallback:
     }
     candidates: list[str] = []
     for value in text_values(contract.get("owned_state")):
-        for part in re.split(r",|;|\band\b", value):
+        for part in _owned_state_phrases(value):
             phrase = _clean(part).strip(" .")
             terms = keywords([phrase])
             if not phrase or len(phrase.split()) > 5 or not terms or terms <= blocked_terms:
@@ -148,6 +156,16 @@ def component_focus_phrase(*, label: str, contract: Mapping[str, Any], fallback:
     if candidates:
         return _sentence("; ".join(candidates[:2]), fallback=fallback, limit=120).rstrip(".")
     return _sentence(fallback, fallback="component state", limit=120).rstrip(".")
+
+
+def _owned_state_phrases(value: str) -> list[str]:
+    text = _clean(value)
+    rows: list[str] = []
+    for segment in text.replace(";", ",").split(","):
+        phrase = segment.strip(" .")
+        if phrase:
+            rows.append(phrase)
+    return rows or ([text] if text else [])
 
 
 def _label_focus_phrase(label: str) -> str:
@@ -280,6 +298,7 @@ __all__ = [
     "diagram_title",
     "first_path",
     "human_label",
+    "has_connector_clipped_risk_subject",
     "keywords",
     "lower_first",
     "outcome_phrase",

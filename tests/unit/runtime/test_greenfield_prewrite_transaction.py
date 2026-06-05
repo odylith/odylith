@@ -114,7 +114,7 @@ def _prewrite_component_preview(proposal: dict[str, object]) -> tuple[dict[str, 
     return tuple(
         {
             "component_id": str(row.get("component_id", "")),
-            "what_it_is": "Component preview keeps local state, blocked behavior, recovery evidence, and release proof reviewable.",
+            "what_it_is": "Component preview keeps local state, blocked behavior, recovery evidence, release proof, and review context together.",
             "validation_gate": {"status": "passed"},
         }
         for row in proposal.get("components", [])

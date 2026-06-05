@@ -227,7 +227,16 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
     if len(text) <= limit:
         return text
     clipped = clip_text_at_word_boundary(text, limit=limit)
-    return strip_dangling_tail(clipped).rstrip(" ,;:")
+    return _remove_orphan_without_it_tail(strip_dangling_tail(clipped).rstrip(" ,;:"))
+
+
+def _remove_orphan_without_it_tail(value: str) -> str:
+    text = value.rstrip(" ,;:.")
+    lowered = text.casefold()
+    for tail in ("; without it", ". without it"):
+        if lowered.endswith(tail):
+            return text[: -len(tail)].rstrip(" ,;:")
+    return text
 
 
 def _repair_show_actor_artifact(value: str) -> str:

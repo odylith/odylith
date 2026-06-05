@@ -385,12 +385,16 @@ def _clean_boundary_clause(value: str) -> str:
     text = re.sub(r"\b(?:expose|exposes|exposed|exposing)\s+blocked\s+states?\b", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\b(?:local\s+)?blockers?\b", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\brecovery\s+context\s+owned\s+elsewhere\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\brecovery\s+context\s+owned\s+by\s+[^,;]+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bowns?\s+required\s+blocked-case\s+link\s+confirmed\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bmaintains?\s+[a-z0-9 -]*\bcore\s+unit\s+protocol\b", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\bmutation\s+of\s+(?:original|upstream)\s+(?:input\s+)?facts\b", "original input facts", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bcombines?\s+(?=reference|range|ranges|data|input|inputs)\b", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s*,\s*(?:and\s+)?\s*", ", ", text)
     text = re.sub(r"\s*;\s*", "; ", text)
     text = re.sub(r"(?:,\s*){2,}", ", ", text)
-    text = re.sub(r"^\s*(?:(?:and|or)\b|,|;)+\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"\s*(?:(?:and|or)\b|,|;)+\s*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^\s*(?:(?:and|or)\b\s*|,|;)+\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*(?:(?:and|or)\b\s*|,|;)+\s*$", "", text, flags=re.IGNORECASE)
     return _clean(text).strip(" .,;")
 
 

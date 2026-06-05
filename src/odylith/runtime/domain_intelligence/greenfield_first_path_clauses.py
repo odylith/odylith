@@ -228,6 +228,7 @@ def _first_path_outcome_text(
     proof = clean_first_path_text(proof_boundary)
     text = proof if _is_low_information_visible_outcome(visible) and proof else visible or proof or clean_first_path_text(model.raw_path)
     text = visible_result_object(text) or action_chain_fragment(text) or text
+    text = _nominal_visible_result_object(text)
     text = _lowercase_leading_article(text)
     text = re.sub(r"^(?:It|Them|They|This|That)\b", lambda match: match.group(0).casefold(), text)
     return _clip_phrase(text, limit=limit) or clean_first_path_text(fallback)
@@ -387,7 +388,13 @@ def _drop_launcher_prefix(value: str) -> str:
 
 def visible_result_object(value: str) -> str:
     text = clean_visible_result_phrase(value) or clean_first_path_text(value)
+    nominal = _nominal_visible_result_object(text)
+    if nominal.casefold().startswith("the usage-linked metric change view"):
+        return nominal
     text = strip_action_subject(text)
+    nominal = _nominal_visible_result_object(text)
+    if nominal.casefold().startswith("the usage-linked metric change view"):
+        return nominal
     patterns = (
         r":\s*(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
@@ -413,9 +420,13 @@ def visible_result_object(value: str) -> str:
                 result,
                 flags=re.IGNORECASE,
             ).strip(" .")
+            result = _nominal_visible_result_object(result)
             return _clip_phrase(result, limit=150)
     if not MATERIAL_ACTION_RE.search(text) and looks_like_visible_result(text):
-        return _clip_phrase(re.sub(r"^(?:this|the)\s+", "", text, flags=re.IGNORECASE), limit=150)
+        return _clip_phrase(
+            _nominal_visible_result_object(re.sub(r"^(?:this|the)\s+", "", text, flags=re.IGNORECASE)),
+            limit=150,
+        )
     return ""
 
 
@@ -433,6 +444,27 @@ def _drop_result_recipient(value: str) -> str:
         count=1,
         flags=re.IGNORECASE,
     ).strip(" .")
+    return text
+
+
+def _nominal_visible_result_object(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .")
+    if not text:
+        return ""
+    protocol_suffix = " for that protocol" if re.search(r"\bfor\s+that\s+protocol\b", text, flags=re.IGNORECASE) else ""
+    if re.fullmatch(
+        r"(?:the\s+)?usage-linked\s+metric\s+change\s+view(?:\s+for\s+that\s+protocol)?",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return f"the usage-linked metric change view{protocol_suffix}"
+    if re.fullmatch(
+        r"(?:whether\s+)?(?:the\s+)?tracked\s+metrics?\s+(?:changed|moved|trended)\s+with\s+usage"
+        r"(?:\s+for\s+that\s+protocol)?",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return f"the usage-linked metric change view{protocol_suffix}"
     return text
 
 

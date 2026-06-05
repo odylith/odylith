@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
@@ -146,6 +147,13 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("mechanical component section heading", re.compile(r"^##\s+First Release Proof\s*$", re.IGNORECASE | re.MULTILINE)),
     ("mechanical component section heading", re.compile(r"^##\s+Implementation Starting Point\s*$", re.IGNORECASE | re.MULTILINE)),
     ("mechanical component question heading", re.compile(r"^###\s+(?:Owns|Accepts|Produces|Refuses)\s*$", re.IGNORECASE | re.MULTILINE)),
+    ("descriptor-list artifact splice", re.compile(r"\bdescriptions?\s+mechanisms?\b", re.IGNORECASE)),
+    ("descriptor-list artifact splice", re.compile(r"\bmechanisms?\s+typical\b", re.IGNORECASE)),
+    ("metric-movement artifact splice", re.compile(r"\bmetrics?\s+moved\s+(?!with\b|against\b|over\b|toward\b|from\b)[a-z0-9]", re.IGNORECASE)),
+    ("condition-list artifact splice", re.compile(r"\bvalues?\s+relevant\s+conditions?\b", re.IGNORECASE)),
+    ("such-as artifact fragment", re.compile(r"\bdata\s+such\b", re.IGNORECASE)),
+    ("action leaked into artifact noun", re.compile(r"\bcombines?\s+reference\s+ranges?\b", re.IGNORECASE)),
+    ("clipped original-input phrase", re.compile(r"\biginal\s+input\s+facts\b", re.IGNORECASE)),
 )
 
 _DANGLING_WORDS = {
@@ -160,6 +168,15 @@ _DANGLING_WORDS = {
     "to",
     "with",
 }
+
+_BANNED_RENDERED_SPEC_PHRASES: tuple[tuple[str, str], ...] = (
+    (
+        "generic outcome boilerplate",
+        "is the place where the product turns prepared evidence into an explained outcome",
+    ),
+    ("accepted-input placeholder", "Accepted input context"),
+    ("repeated keeping summary", "while keeping"),
+)
 
 def normalize_contract(value: Mapping[str, Any]) -> dict[str, Any]:
     """Normalize a component contract into sentence-shaped public text."""
@@ -249,6 +266,7 @@ def rendered_component_spec_quality_issues(
     for name, text in specs.items():
         for issue in public_prose_quality_issues(text):
             issues.append(f"`{name}` {issue}")
+        issues.extend(_rendered_spec_prose_issues(name=name, text=text))
         issues.extend(_section_overlap_issues(name=name, text=text))
         local_terms = component_local_terms(
             text_terms=spec_term_lookup.get(name, set()),
@@ -279,6 +297,37 @@ def rendered_component_spec_quality_issues(
                     f"component specs `{left_name}` and `{right_name}` reuse the same visible section skeleton"
                 )
     return dedupe_text(issues)
+
+
+def _rendered_spec_prose_issues(*, name: str, text: str) -> list[str]:
+    issues: list[str] = []
+    lowered = _clean(text).casefold()
+    for label, phrase in _BANNED_RENDERED_SPEC_PHRASES:
+        if phrase.casefold() in lowered:
+            issues.append(f"component spec `{name}` uses {label}")
+    for fragment in _calculated_action_fragments(text):
+        issues.append(f"component spec `{name}` treats action `{fragment}` as a calculated object")
+    return issues
+
+
+def _calculated_action_fragments(text: str) -> tuple[str, ...]:
+    fragments: list[str] = []
+    for clause in str(text or "").replace("\n", " ").split("."):
+        lowered = clause.casefold()
+        marker = " is calculated"
+        if marker not in lowered:
+            continue
+        subject = clause[: lowered.find(marker)].strip(" ,;:-")
+        subject_lowered = subject.casefold()
+        if " how " in subject_lowered:
+            subject = subject[subject_lowered.rfind(" how ") + len(" how ") :].strip(" ,;:-")
+        elif subject_lowered.startswith("how "):
+            subject = subject[4:].strip(" ,;:-")
+        for part in subject.replace(", and ", ",").split(","):
+            candidate = _clean(part).strip(" ,;:-")
+            if contains_finite_action(candidate):
+                fragments.append(candidate)
+    return tuple(dedupe_text(fragments))
 
 
 def dedupe_text(values: Sequence[str]) -> list[str]:
@@ -333,12 +382,19 @@ def _is_path_excluded(path: str) -> bool:
 def _pattern_applies_to_path(*, label: str, path: str) -> bool:
     """Keep slot-filling checks scoped to generated contract/proof fields."""
 
+    lowered = path.casefold()
+    if label == "action leaked into artifact noun":
+        return "component_contract" in lowered
     if label not in {
         "verb phrase inserted into contract artifact slot",
         "unnormalized recompute artifact phrase",
+        "descriptor-list artifact splice",
+        "metric-movement artifact splice",
+        "condition-list artifact splice",
+        "such-as artifact fragment",
+        "action leaked into artifact noun",
     }:
         return True
-    lowered = path.casefold()
     return any(
         marker in lowered
         for marker in (

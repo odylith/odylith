@@ -365,7 +365,7 @@ def _fallback_axis(label: str, context: str, *, focus: str = "") -> ComponentAxi
         accepted_inputs=f"{primary} input, {input_focus} context, authorized actor, prior state, and validation notes",
         produced_outputs=f"{primary} result, {output_focus} update, blocked-state explanation, and next-step context",
         states_or_transitions=states,
-        outside_boundary="sibling product responsibilities, upstream source truth, presentation outside the accepted boundary, and release approval",
+        outside_boundary="sibling product responsibilities, upstream source truth, and release approval",
         local_proof=(
             f"{primary} input proves {secondary} before another step depends on it.",
             f"Invalid {input_focus} context blocks the {primary} result.",
@@ -459,13 +459,17 @@ def _clean_contract_clause(value: Any) -> str:
     text = re.sub(r"\b(?:expose|exposes|exposed|exposing)\s+blocked\s+states?\b", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\b(?:local\s+)?blockers?\b", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\brecovery\s+context\s+owned\s+elsewhere\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\brecovery\s+context\s+owned\s+by\s+[^,;]+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bowns?\s+required\s+blocked-case\s+link\s+confirmed\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bmaintains?\s+[a-z0-9 -]*\bcore\s+unit\s+protocol\b", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\bmutation\s+of\s+(?:original|upstream)\s+(?:input\s+)?facts\b", "original input facts", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bcombines?\s+(?=reference|range|ranges|data|input|inputs)\b", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\bsilent\s+overwrite\s+of\s+another\s+component\s+result(?:\s+state)?\b", "another component result", text, flags=re.IGNORECASE)
     text = re.sub(r"\s*;\s*", "; ", text)
     text = re.sub(r"\s*,\s*", ", ", text)
     text = re.sub(r"(?:,\s*){2,}", ", ", text)
-    text = re.sub(r"^\s*(?:and|or|,|;)+\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"\s*(?:and|or|,|;)+\s*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^\s*(?:(?:and|or)\b\s*|,|;)+\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*(?:(?:and|or)\b\s*|,|;)+\s*$", "", text, flags=re.IGNORECASE)
     return _clean(text).strip(" .,;")
 
 
@@ -647,6 +651,11 @@ def _weak_text(value: Any) -> bool:
             "handoff boundaries for the confirmed first path",
             "valid transition, invalid input rejection",
             "responsibility and keeps it tied",
+            "accepted inputs, produced outputs",
+            "local refusal evidence",
+            "validation evidence, and local handoff decisions",
+            "owns combines reference ranges",
+            "combines reference ranges with",
             "component proof",
         )
     )

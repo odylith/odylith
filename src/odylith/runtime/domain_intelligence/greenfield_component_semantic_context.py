@@ -46,6 +46,12 @@ def context_object_phrases(
     carry = 0
     carry_base: tuple[str, ...] = ()
     for clause in clauses(value):
+        data_source = re.search(r"\b(?P<head>[a-z0-9][a-z0-9 '-]{1,80}\s+data)\s+sources?\s+such\s+as\b", clause, flags=re.I)
+        if data_source:
+            source_phrase = f"{_trim_phrase(data_source.group('head'))} source".casefold()
+            if set(_content_terms(source_phrase)) & anchors:
+                rows.append(source_phrase)
+                continue
         stripped_clause = _strip_action(_object_clause_focus(clause))
         stripped_clause = re.sub(
             r"\b(?:before|after|while|because|unless|without)\b.+$",

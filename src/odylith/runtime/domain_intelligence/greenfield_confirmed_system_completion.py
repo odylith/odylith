@@ -71,6 +71,7 @@ def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -
         return ""
     if "—" in raw or ":" in raw:
         name, description = re.split(r"\s+—\s+|:\s*", raw, maxsplit=1)
+        name = _flatten_parenthetical_label(name)
         description = _clean_system_description(description)
         if _system_description_is_enough(description):
             return f"{_title_case(name)} — {description.rstrip('.')}"
@@ -146,7 +147,7 @@ def _clean_system_description(value: str) -> str:
 
 
 def _system_label_head(value: str) -> str:
-    head = _clean(value.split("—", 1)[0].split(":", 1)[0])
+    head = _flatten_parenthetical_label(_clean(value.split("—", 1)[0].split(":", 1)[0]))
     split = re.search(
         r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
         r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
@@ -161,12 +162,25 @@ def _system_label_head(value: str) -> str:
 
 
 def _system_label(row: str, *, title: str) -> str:
-    raw = _clean(row)
+    raw = _flatten_parenthetical_label(_clean(row))
     raw = re.sub(r"^(?:a|an|the)\s+", "", raw, flags=re.IGNORECASE)
     raw = _repair_system_label_tail(raw)
     if _word_count(raw) > 14:
         raw = _compact_system_label(raw)
     return _title_case(raw or f"{_focus_label(title)} system")
+
+
+def _flatten_parenthetical_label(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(r"\(([^)]{3,160})\)", _parenthetical_label_replacement, text)
+    return _clean(text)
+
+
+def _parenthetical_label_replacement(match: re.Match[str]) -> str:
+    body = _clean(match.group(1))
+    if "," in body or _word_count(body) > 4:
+        return ""
+    return f" {body}"
 
 
 def _repair_system_label_tail(value: str) -> str:

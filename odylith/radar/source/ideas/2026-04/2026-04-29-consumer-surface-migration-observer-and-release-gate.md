@@ -2223,3 +2223,37 @@ Validation evidence for the Product Governed Harness Turn Gate browser-surface s
   upgraded installs receive only regenerated read-only surfaces and managed bundle
   assets through the normal install, upgrade, doctor, dashboard, or runtime
   refresh paths.
+- The greenfield component-contract readability and Registry registration wording
+  settlement is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:3686fef8f188`. The pass keeps
+  the operator-facing greenfield and component-register command contracts stable
+  while tightening generated component specs, lifecycle wording, and Registry
+  summaries for future governed records. Existing consumer-owned governance truth
+  remains unchanged; upgraded installs receive only the stricter future generator
+  behavior through the normal managed runtime path.
+- The post-sync generated-surface settlement for that same greenfield
+  component-contract quality pass is covered by
+  `migration-observer:0.1.15:browser-surfaces:e2730daa8132` and
+  `migration-observer:0.1.15:install-managed-assets:e1cbcbcac3e1`. The pass binds
+  the refreshed Atlas, Casebook, Compass, Radar, Registry, shell, and bundled
+  managed HTML mirrors after the full sync settled from source truth. Existing
+  consumer-owned governance records remain unchanged; upgraded installs receive
+  only regenerated read-only dashboard surfaces, refreshed managed bundle assets,
+  and the stricter future generator behavior through normal install, upgrade,
+  doctor, runtime, or dashboard refresh paths.
+- The terminal install-managed bundle marker for that settlement is covered by
+  `migration-observer:0.1.15:install-managed-assets:3c672687436f`. The pass binds
+  the managed bundle assets after the migration assessment itself was rendered
+  into the governed source record. Existing consumer-owned records remain
+  unchanged; upgraded installs receive only refreshed managed dashboard assets and
+  the stricter future generator behavior through the normal managed runtime path.
+- The confirmed-greenfield artifact-language hardening settlement is covered by
+  `migration-observer:0.1.15:operator-cli-contracts:7b49a7fae58e`,
+  `migration-observer:0.1.15:browser-surfaces:2ef7e985d317`, and
+  `migration-observer:0.1.15:install-managed-assets:62aa5fa203ba`. The pass keeps
+  the `odylith greenfield create --confirm` command shape stable while tightening
+  generated Product Intent, backlog, Registry, and component-spec language for
+  future records. Existing consumer-owned governance truth is not rewritten by
+  upgrade; upgraded installs receive the stricter future generator behavior plus
+  regenerated read-only dashboard surfaces and bundled managed HTML mirrors
+  through the normal install, upgrade, doctor, runtime, or dashboard refresh path.
