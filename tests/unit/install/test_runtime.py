@@ -599,6 +599,30 @@ def test_managed_runtime_health_scrubs_macos_metadata_files(tmp_path: Path) -> N
     assert not (version_root / "lib" / "python3.13" / "site-packages" / "._odylith").exists()
 
 
+def test_write_managed_runtime_trust_scrubs_nested_macos_metadata_files(tmp_path: Path) -> None:
+    repo_root = _repo_root(tmp_path)
+    version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"
+    _seed_managed_runtime(version_root, verification={"wheel_sha256": "wheel-1.2.3"})
+    package_root = version_root / "lib" / "python3.13" / "site-packages" / "odylith"
+    package_root.mkdir(parents=True, exist_ok=True)
+    (package_root / "__init__.py").write_text("", encoding="utf-8")
+    sidecar = package_root / ".DS_Store"
+    sidecar.write_text("finder\n", encoding="utf-8")
+
+    trust_env_path, trust_tree_path = runtime_integrity.write_managed_runtime_trust(
+        repo_root=repo_root,
+        version_root=version_root,
+        verification={"wheel_sha256": "wheel-1.2.3"},
+    )
+
+    trust_env = trust_env_path.read_text(encoding="utf-8")
+    trust_tree = json.loads(trust_tree_path.read_text(encoding="utf-8"))
+    assert ".DS_Store" not in trust_env
+    assert all(".DS_Store" not in str(entry.get("path") or "") for entry in trust_tree["entries"])
+    assert not sidecar.exists()
+    assert runtime._managed_runtime_health_reasons(repo_root=repo_root, runtime_root=version_root) == []  # noqa: SLF001
+
+
 def test_managed_runtime_health_tolerates_locked_macos_metadata_files(monkeypatch, tmp_path: Path) -> None:
     repo_root = _repo_root(tmp_path)
     version_root = repo_root / ".odylith" / "runtime" / "versions" / "1.2.3"

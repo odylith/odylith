@@ -178,11 +178,12 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
     outcome_action = completion_text.outcome_action_phrase(outcome)
     state = completion_text.state_object(proposal)
     actors = completion_text.actor_summary(proposal)
+    components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
     for index, row in enumerate(rows, start=1):
         if not isinstance(row, dict):
             continue
         title = _clean(row.get("title")) or f"{completion_text.project_title(proposal)} Workstream {index}"
-        label = completion_text.workstream_subject(row, fallback=title)
+        label = completion_text.workstream_subject(row, fallback=title, components=components)
         if not _clean(row.get("problem")) or _text_needs_repair(row.get("problem")):
             row["problem"] = completion_text.workstream_problem(label=label, action=action, outcome=outcome, state=state)
             changed = True

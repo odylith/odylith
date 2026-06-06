@@ -196,7 +196,7 @@ def _risk_context(
     state = _sentence(state_object)
     proof = _sentence(proof_boundary)
     return _RiskContext(
-        title=title_label(title) or "Greenfield Project",
+        title=compact_text(title) or title_label(title) or "Greenfield Project",
         story=story,
         problem=_sentence(problem),
         first_path=path,

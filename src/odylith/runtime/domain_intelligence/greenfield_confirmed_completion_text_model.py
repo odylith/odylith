@@ -9,6 +9,7 @@ from typing import Any
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import text_needs_repair
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
@@ -68,12 +69,34 @@ def outcome_action_phrase(outcome: str) -> str:
     return f"reach {text}"
 
 
-def workstream_subject(row: Mapping[str, Any], *, fallback: str) -> str:
+def workstream_subject(row: Mapping[str, Any], *, fallback: str, components: Sequence[Mapping[str, Any]] = ()) -> str:
     component = _clean(next(iter(text_values(row.get("component_focus"))), ""))
     title = _clean(row.get("title")) or fallback
     if component:
+        label = _component_label_for_id(component, components)
+        if label:
+            return label
         return human_label(component)
     return re.sub(r"^(?:make|build|show|keep|let)\s+", "", title, flags=re.I).strip(" .") or title
+
+
+def _component_label_for_id(component_id: str, components: Sequence[Mapping[str, Any]]) -> str:
+    key = _slug_key(component_id)
+    if not key:
+        return ""
+    for component in components:
+        candidate_ids = [
+            component.get("component_id"),
+            component.get("id"),
+            component.get("slug"),
+        ]
+        if any(_slug_key(value) == key for value in candidate_ids):
+            return _clean(component.get("label") or component.get("name"))
+    return ""
+
+
+def _slug_key(value: Any) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", _clean(value).casefold()).strip("-")
 
 
 def human_label(value: str) -> str:
@@ -269,12 +292,12 @@ def proof_boundary(proposal: Mapping[str, Any]) -> str:
 def state_object(proposal: Mapping[str, Any]) -> str:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
     if isinstance(intent, Mapping) and _clean(intent.get("state_object")):
-        return _sentence(intent.get("state_object"), fallback="the accepted state")
+        return domain_object_label(_clean(intent.get("state_object")), fallback="the accepted state")
     intelligence = proposal.get("project_intelligence")
     if isinstance(intelligence, Mapping):
         for value in text_values(intelligence.get("ontology")):
             if "state object:" in value.casefold():
-                return _sentence(value.split(":", 1)[1], fallback="the accepted state")
+                return domain_object_label(value.split(":", 1)[1], fallback="the accepted state")
     return "the accepted state"
 
 

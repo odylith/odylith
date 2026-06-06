@@ -336,6 +336,27 @@ def test_product_repo_can_realign_source_local_to_release_target(tmp_path: Path)
     assert "realigning detached source-local runtime" in plan.scenario.reasons[0]
 
 
+def test_same_version_consumer_reinstall_does_not_block_on_migration_required_manifest(tmp_path: Path) -> None:
+    _seed_repo(tmp_path, active_version="0.1.15")
+    runtime_root = _seed_current_runtime(tmp_path, version="0.1.15", verification={"wheel_sha256": "abc123"})
+
+    plan = migration_runtime.plan_release_migrations(
+        repo_root=tmp_path,
+        repo_role="consumer_repo",
+        previous_version="0.1.15",
+        target_version="0.1.15",
+        runtime_root=runtime_root,
+        runtime_verification={"wheel_sha256": "abc123"},
+        pinned_version="0.1.15",
+        release_manifest={"repo_schema_version": 1, "migration_required": True},
+    )
+
+    assert plan.scenario.scenario == migration_runtime.SCENARIO_ALREADY_CURRENT_CONSUMER
+    assert plan.release_manifest_migration_required is True
+    assert plan.satisfies_manifest_requirement() is False
+    assert plan.blocked == ()
+
+
 def test_blocked_reason_deduplicates_repeated_migration_blockers(tmp_path: Path) -> None:
     _seed_repo(tmp_path)
 

@@ -1552,6 +1552,31 @@ def test_start_preflight_accepts_product_repo_source_fallback_when_recorded_fall
     assert preflight.next_command == "./.odylith/bin/odylith start --repo-root ."
 
 
+def test_bootstrap_launcher_handles_empty_runtime_candidates_under_nounset(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    _write_repo_root(repo_root)
+    bootstrap = repo_root / ".odylith" / "bin" / "odylith-bootstrap"
+    bootstrap.parent.mkdir(parents=True, exist_ok=True)
+    bootstrap_body = runtime._bootstrap_launcher_script(  # noqa: SLF001
+        fallback_python=tmp_path / "missing" / "python",
+    )
+    bootstrap.write_text(bootstrap_body, encoding="utf-8")
+    bootstrap.chmod(0o755)
+
+    result = subprocess.run(
+        [str(bootstrap), "doctor", "--repo-root", str(repo_root), "--repair"],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert 'for candidate_python in "${candidates[@]}"; do' not in bootstrap_body
+    assert 'for candidate_python in ${candidates[@]+"${candidates[@]}"}; do' in bootstrap_body
+    assert "unbound variable" not in result.stderr
+
+
 def test_start_preflight_rejects_consumer_source_local_lane(tmp_path: Path) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()

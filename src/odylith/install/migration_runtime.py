@@ -423,15 +423,15 @@ def classify_repo_migration_scenario(
             reasons.append("Odylith product repo is realigning detached source-local runtime to the pinned release target")
         else:
             reasons.append("Odylith product repo is using pinned dogfood posture")
+    elif target and observed_active == target and observed_pin == target:
+        scenario = SCENARIO_ALREADY_CURRENT_CONSUMER
+        reasons.append("active runtime and tracked pin already match the resolved target")
     elif bool(manifest.get("migration_required")):
         scenario = SCENARIO_RELEASE_MIGRATION_REQUIRED
         reasons.append("target release manifest declares migration_required=true")
     elif runtime is not None and not verification and observed_active:
         scenario = SCENARIO_RUNTIME_VERIFICATION_MISSING
         reasons.append("runtime artifact exists but verification evidence is missing")
-    elif target and observed_active == target and observed_pin == target:
-        scenario = SCENARIO_ALREADY_CURRENT_CONSUMER
-        reasons.append("active runtime and tracked pin already match the resolved target")
     elif observed_active and not rollback_target and target and observed_active != target and current_runtime_root(repo_root=root) is None:
         scenario = SCENARIO_ROLLBACK_TARGET_MISSING
         reasons.append("upgrade would replace the active runtime but no rollback target is retained")
@@ -925,7 +925,7 @@ def plan_release_migrations(
             state=scenario.state,
         )
     if (
-        scenario.scenario != SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD
+        scenario.scenario not in {SCENARIO_PRODUCT_REPO_PINNED_DOGFOOD, SCENARIO_ALREADY_CURRENT_CONSUMER}
         and bool(manifest.get("migration_required"))
         and not any(
             _decision_satisfies_manifest_requirement(

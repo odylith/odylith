@@ -17,6 +17,7 @@ from odylith.install.managed_runtime import (
     managed_runtime_site_packages_roots,
 )
 from odylith.install.runtime_tree_policy import is_ignored_runtime_tree_entry
+from odylith.install.runtime_tree_policy import scrub_runtime_tree_metadata
 
 MANAGED_RUNTIME_TRUST_SCHEMA_VERSION = "odylith-managed-runtime-trust.v1"
 MANAGED_RUNTIME_TREE_SCHEMA_VERSION = "odylith-managed-runtime-tree.v1"
@@ -45,6 +46,7 @@ def write_managed_runtime_trust(
 ) -> tuple[Path, Path]:
     trust_root = _trust_dir(repo_root=repo_root)
     trust_root.mkdir(parents=True, exist_ok=True)
+    scrub_runtime_tree_metadata(version_root)
     hot_entries = _hot_entries(version_root)
     tree_entries = _tree_entries(version_root)
     verification_sha256 = _verification_sha256(verification)
@@ -409,6 +411,8 @@ def _hot_entries(version_root: Path) -> list[RuntimeEntry]:
                 continue
             for candidate in sorted(candidate_root.rglob("*")):
                 if candidate.is_file() and not candidate.is_symlink():
+                    if is_ignored_runtime_tree_entry(version_root=version_root, candidate=candidate):
+                        continue
                     relative_path = candidate.relative_to(version_root).as_posix()
                     if _is_generated_python_cache(relative_path):
                         continue

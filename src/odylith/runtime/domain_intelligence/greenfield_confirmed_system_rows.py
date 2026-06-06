@@ -575,7 +575,7 @@ def _contextualized_system_body(*, name: str, body: str, context_text: str) -> s
 
 
 def _repair_system_description(*, name: str, description: str) -> str:
-    text = _clean(description).strip(" .;:")
+    text = normalize_visible_result_language(_clean(description)).strip(" .;:")
     text = re.sub(r"^(?:and|or)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\bRelated path\s*:\s*[^.;]+[.;]?", "", text, flags=re.IGNORECASE).strip(" .;:")
     text = re.sub(r"^for\s+", "covers ", text, flags=re.IGNORECASE)

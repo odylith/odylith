@@ -399,7 +399,9 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert "write_runtime_trust.py" in text
     assert "from odylith.install.runtime_integrity import write_managed_runtime_trust" in text
     assert "\"$version_root/bin/python\" \"$tmpdir/write_runtime_trust.py\" \"$repo_root\" \"$version_root\"" in text
-    assert "rm -rf \"$version_root\"" in text
+    assert "remove_runtime_version_root() {" in text
+    assert 'remove_runtime_version_root "$version_root"' in text
+    assert "rm -rf \"$version_root\"" not in text
     assert "mkdir -p \"$state_root/runtime/versions\" \"$state_root/bin\"" in text
     assert "mv \"$bootstrap_runtime\" \"$version_root\"" in text
     assert "-m sigstore verify identity" in text
@@ -436,6 +438,52 @@ def test_generated_install_script_verifies_signed_release_assets_before_activati
     assert text.index("unset VIRTUAL_ENV") < text.index("bootstrap_python=\"$bootstrap_runtime/bin/python\"")
     assert text.index("detect_repo_root") < text.index("fetch_asset \"$release_base_url/$runtime_asset_name\"")
     assert "AGENTS.md not found" not in text
+
+
+def test_generated_install_script_removes_stale_runtime_root_with_sidecar_retry(tmp_path: Path) -> None:
+    module = _load_module()
+    output_path = tmp_path / "install.sh"
+
+    module._write_install_script(  # noqa: SLF001
+        output_path=output_path,
+        tag="v1.2.3",
+        repo="odylith/odylith",
+        odylith_wheel="odylith-1.2.3-py3-none-any.whl",
+    )
+
+    text = output_path.read_text(encoding="utf-8")
+    assert 'remove_runtime_version_root "$version_root"' in text
+    assert "find \"$target\" \\( -name '.DS_Store' -o -name '._*' \\)" in text
+
+    remove_runtime_version_root = _extract_shell_function(text, "remove_runtime_version_root", "detect_repo_root")
+    helper = tmp_path / "remove-runtime-root.sh"
+    helper.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                remove_runtime_version_root,
+                'remove_runtime_version_root "$1"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    helper.chmod(0o755)
+    version_root = tmp_path / ".odylith" / "runtime" / "versions" / "1.2.3"
+    (version_root / "lib").mkdir(parents=True)
+    (version_root / ".DS_Store").write_text("finder\n", encoding="utf-8")
+    (version_root / "lib" / "._odylith").write_text("appledouble\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        ["bash", str(helper), str(version_root)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    assert not version_root.exists()
 
 
 def test_generated_install_script_requires_explicit_flag_for_localhost_http_assets(tmp_path: Path) -> None:

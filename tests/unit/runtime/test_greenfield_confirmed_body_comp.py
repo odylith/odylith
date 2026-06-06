@@ -327,6 +327,10 @@ def test_confirmed_body_composition_tracker_removes_generated_text_residue(tmp_p
 def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_drift(tmp_path) -> None:
     prompt = "An app that optimizes the production and consumption of solar energy"
     intent = parse_confirmed_intent_text(SUNLEDGER_INTENT, prompt=prompt)
+    intent_encoded = json.dumps(intent)
+    assert "control actions to battery" not in intent_encoded
+    assert "That single path" not in intent_encoded
+    assert "whole product proven end to end" not in intent_encoded
 
     proposal = greenfield_proposals.build_greenfield_proposal(
         repo_root=tmp_path,
@@ -354,6 +358,9 @@ def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_dri
         "That single path",
         "whole product proven end to end",
         "normaliz ",
+        "Sunledger ",
+        "while The core thing",
+        "(charge.",
     )
     for phrase in forbidden:
         assert phrase not in encoded
