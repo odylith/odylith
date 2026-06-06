@@ -35,10 +35,10 @@ TRIVIAL_AUTH_RE = re.compile(
 MATERIAL_ACTION_RE = re.compile(
     r"\b(?:"
     r"accept|accepts|add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
-    r"book|books|check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|correct|corrects|decide|decides|"
-    r"click|clicks|create|creates|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|"
+    r"book|books|check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|decide|decides|"
+    r"click|clicks|compute|computes|create|creates|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|forecast|forecasts|"
     r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|mark|marks|notify|notifies|persist|persists|play|plays|"
-    r"preserve|preserves|produce|produces|provide|provides|publish|publishes|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
+    r"optimize|optimizes|preserve|preserves|produce|produces|provide|provides|publish|publishes|pull|pulls|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
     r"return|returns|route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
     r"show|shows|stop|stops|store|stores|submit|submits|sync|syncs|tap|taps|track|tracks|update|updates|"
     r"validate|validates|view|views"
@@ -261,7 +261,7 @@ def is_system_generated_action(value: str) -> bool:
         return False
     system_verb = (
         r"asks?|calculates?|checks?|computes?|derives?|displays?|evaluates?|generates?|presents?|renders?|returns?|runs?|"
-        r"persists?|saves?|scores?|shows?|stores?|updates?|validates?"
+        r"persists?|pulls?|saves?|scores?|shows?|stores?|updates?|validates?"
     )
     system_subject = (
         r"product|system|app|application|service|platform|tool|workspace|engine|calculator|dashboard|view|model"
@@ -311,6 +311,12 @@ def clean_visible_result_phrase(value: str) -> str:
     )
     text = re.sub(
         r"\b(?:dashboard|screen|view)\s+renders?\s+the\s+visible\s+result\s*:\s*(?:the\s+)?",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\s+[–—-]\s+is\s+(?:the\s+)?(?:whole\s+)?product\s+proven\b.*$",
         "",
         text,
         flags=re.IGNORECASE,
@@ -436,9 +442,13 @@ def _drop_result_recipient(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     if not text:
         return ""
+    words = text.split()
+    for index, word in enumerate(words[:5]):
+        if index > 0 and re.match(r"^[A-Za-z][A-Za-z0-9'-]*'s$", word):
+            return " ".join(words[index:]).strip(" .")
     text = re.sub(
         r"^(?:the\s+)?[A-Za-z][A-Za-z0-9'-]*(?:\s+[A-Za-z][A-Za-z0-9'-]*){0,3}\s+"
-        r"(?=(?:a|an|the|their|its|what|whether|when|where|why)\b)",
+        r"(?=(?:a|an|the|their|its|what|whether|when|where|why|[A-Za-z][A-Za-z0-9'-]*'s)\b)",
         "",
         text,
         count=1,
@@ -576,7 +586,7 @@ def leading_subject_prefix(value: str) -> str:
 
 def _lowercase_leading_article(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
-    return re.sub(r"^(?:A|An|The)\b", lambda match: match.group(0).casefold(), text)
+    return re.sub(r"^(?:A|An|The|Today|Tomorrow|This|That)\b", lambda match: match.group(0).casefold(), text)
 
 
 def _gerund_action_fragment(value: str) -> str:
@@ -639,6 +649,8 @@ def _gerund_action_fragment(value: str) -> str:
         "selects": "selecting",
         "show": "showing",
         "shows": "showing",
+        "pull": "pulling",
+        "pulls": "pulling",
         "store": "storing",
         "stores": "storing",
         "submit": "submitting",
@@ -754,7 +766,14 @@ def _clip_phrase(value: str, *, limit: int) -> str:
 
 
 def clean_first_path_text(value: Any) -> str:
-    return clean_markdown_text(value)
+    text = clean_markdown_text(value)
+    text = re.sub(
+        r"(?:^|(?<=[.!?])\s+)that\s+single\s+(?:path|loop|journey|flow)\s+[–—-]\s*.*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return clean_markdown_text(text)
 
 
 def _unique(values: Sequence[str]) -> list[str]:

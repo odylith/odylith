@@ -358,11 +358,43 @@ def _join_steps(steps: Sequence[str]) -> str:
     rows = [step.strip(" .") for step in steps if step.strip(" .")]
     if not rows:
         return ""
+    rows = _join_subjectless_continuations(rows)
     if len(rows) == 1:
         return rows[0]
     if len(rows) == 2:
         return f"{rows[0]}. {rows[1]}"
     return ". ".join(rows)
+
+
+def _join_subjectless_continuations(steps: Sequence[str]) -> list[str]:
+    rows: list[str] = []
+    for step in steps:
+        if rows and _subjectless_action_continuation(step):
+            rows[-1] = f"{rows[-1]} and {_lower_first(step)}"
+            continue
+        rows.append(step)
+    return rows
+
+
+def _subjectless_action_continuation(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text:
+        return False
+    if re.match(r"^(?:a|an|the|one|this|that)\s+", text, flags=re.IGNORECASE):
+        return False
+    if re.match(r"^[A-Z][A-Za-z0-9_-]{2,}\s+", text) and not re.match(
+        r"^(?:Manually|Periodically|Regularly)\b",
+        text,
+    ):
+        return False
+    return bool(
+        re.match(
+            r"^(?:manually\s+|periodically\s+|regularly\s+)?"
+            r"(?:adds?|attaches?|chooses?|clicks?|enters?|logs?|records?|reviews?|saves?|selects?|submits?|updates?)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _numbered_path_text(value: str) -> str:
@@ -452,7 +484,10 @@ def _looks_like_internal_processing_step(value: str) -> bool:
     text = _clean(value)
     if not text:
         return False
-    system_verb = r"calculates?|computes?|derives?|evaluates?|generates?|renders?|returns?|runs?|scores?|updates?|validates?"
+    system_verb = (
+        r"calculates?|computes?|derives?|evaluates?|forecasts?|generates?|optimizes?|pulls?|renders?|returns?|runs?|"
+        r"scores?|updates?|validates?"
+    )
     if re.match(rf"^(?:the\s+)?(?:product|system|app|application|service|platform|tool)\s+{system_verb}\b", text, flags=re.IGNORECASE):
         return True
     return bool(re.match(rf"^[A-Z][A-Za-z0-9_-]{{2,}}\s+{system_verb}\b", text))
@@ -462,7 +497,7 @@ def _looks_like_user_input_step(value: str) -> bool:
     return bool(
         re.search(
             r"\b(?:accept|accepts|add|adds|attach|attaches|choose|chooses|click|clicks|complete|completes|"
-            r"create|creates|dismiss|dismisses|edit|edits|enter|enters|log|logs|record|records|save|saves|"
+            r"connect|connects|create|creates|dismiss|dismisses|edit|edits|enter|enters|log|logs|record|records|save|saves|"
             r"select|selects|submit|submits|update|updates)\b",
             _clean(value),
             flags=re.IGNORECASE,

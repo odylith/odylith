@@ -241,7 +241,8 @@ def _remove_orphan_without_it_tail(value: str) -> str:
 
 def _repair_show_actor_artifact(value: str) -> str:
     return re.sub(
-        r"\bshows\s+the\s+(?P<actor>[a-z][a-z '-]{1,40})\s+(?P<article>a|an|the)\s+"
+        r"\bshows\s+the\s+(?P<actor>[a-z][a-z'-]*(?:\s+(?!a\b|an\b|the\b)[a-z][a-z'-]*){0,3})\s+"
+        r"(?P<article>a|an|the)\s+"
         r"(?P<object>[a-z][a-z0-9 '&/-]{1,90}?)(?=,\s+and\b|[.;]|$)",
         lambda match: (
             f"shows {match.group('article')} {match.group('object').strip()} "

@@ -340,6 +340,8 @@ def _boundary_narrative(
     downstream: str,
     outside: Sequence[str],
 ) -> str:
+    upstream_text = re.sub(r"^The\s+next\b", "the next", upstream).strip()
+    downstream_text = re.sub(r"^The\s+next\b", "the next", downstream).strip()
     kept = [
         item
         for item in outside
@@ -350,15 +352,15 @@ def _boundary_narrative(
         )
     ]
     outside_text = _human_join(kept[:4])
-    if upstream and downstream:
+    if upstream_text and downstream_text:
         relation = (
-            f"{label} receives its trusted context from {upstream} and prepares work for {downstream}. "
+            f"{label} receives its trusted context from {upstream_text} and prepares work for {downstream_text}. "
             f"That handoff is explicit so ownership does not blur between the two boundaries."
         )
-    elif upstream:
-        relation = f"{label} starts from {upstream} and keeps that input relationship visible."
-    elif downstream:
-        relation = f"{label} prepares state for {downstream} and should not hide blockers from the next step."
+    elif upstream_text:
+        relation = f"{label} starts from {upstream_text} and keeps that input relationship visible."
+    elif downstream_text:
+        relation = f"{label} prepares state for {downstream_text} and should not hide blockers from the next step."
     else:
         relation = f"{label} must keep its state, validation result, blocker state, and evidence together."
     if not kept:
@@ -514,6 +516,12 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
     text = re.sub(r"^(?:them|it|their|they|this|that)\s+(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"^(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"\b(?:them|it|their|they|this|that)\b(?!\s+(?:are|is|was|were)\b)", "", text, flags=re.I)
+    text = re.sub(
+        r"\bbefore\s+(creates?|presents?|shows?|returns?|produces?)\b",
+        r"before it \1",
+        text,
+        flags=re.I,
+    )
     text = re.sub(r"\s+", " ", text).strip(" .;:,")
     if not text:
         return ""

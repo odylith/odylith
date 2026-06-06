@@ -76,6 +76,12 @@ def normalize_visible_result_language(value: Any) -> str:
         text,
         flags=re.IGNORECASE,
     )
+    text = re.sub(
+        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
+        "battery and load control actions",
+        text,
+        flags=re.IGNORECASE,
+    )
     return clean_text(text)
 
 
@@ -174,6 +180,8 @@ def normalize_domain_token(value: Any, *, minimum: int = 4, stopwords: Iterable[
         token = f"{token[:-3]}y"
     elif token == "statuses":
         token = "status"
+    elif token.endswith("izes") and len(token) > 6:
+        token = token[:-1]
     elif token.endswith(("ches", "shes", "xes", "zes", "sses")) and len(token) > 5:
         token = token[:-2]
     elif token.endswith("s") and len(token) > 4 and not token.endswith(("ss", "us", "is")):

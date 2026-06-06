@@ -76,6 +76,12 @@ def _first_path_steps(value: str) -> list[str]:
     for pattern in _FIRST_PATH_PREFIXES:
         text = re.sub(pattern, "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"\bthat\s+single\s+loop\s*[–—-]\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"(?:^|(?<=[.!?])\s+)that\s+single\s+(?:path|loop|journey|flow)\s+[–—-]\s*.*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip()
     value_tail = ""
     value_match = re.search(
         r"\bso\s+the\s+(?:first\s+)?(?:end-to-end\s+)?value\s+is\s*:\s*(?P<tail>.+)$",
@@ -258,7 +264,7 @@ def _split_action_pieces(value: str) -> list[str]:
                 current = _with_carried_subject(part, subject_prefix)
             else:
                 current = f"{current}, {part}" if current else part
-            explicit_subject = _leading_subject_prefix(current)
+            explicit_subject = _carried_subject_prefix(current)
             if explicit_subject:
                 subject_prefix = explicit_subject
         if current:
@@ -275,19 +281,30 @@ def _with_carried_subject(value: str, subject_prefix: str) -> str:
     return text
 
 
+def _carried_subject_prefix(value: str) -> str:
+    subject = _leading_subject_prefix(value)
+    if subject:
+        return subject
+    text = _clean(value).strip()
+    match = re.match(r"^(?P<subject>[A-Z][A-Za-z0-9_-]{2,})\s+(?P<tail>.+)$", text)
+    if match and _MATERIAL_ACTION_RE.match(match.group("tail")):
+        return match.group("subject")
+    return ""
+
+
 def _starts_new_action_clause(value: str) -> bool:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not text:
         return False
     if re.match(
-        r"^(?:a|an|the|one|this|that|each|another|product|system|user|person|actor|app|application|workspace|engine|dashboard|view)\s+"
+        r"^(?:(?:a|an|the|one|this|that|each|another|product|system|user|person|actor|app|application|workspace|engine|dashboard|view)|[A-Z][A-Za-z0-9_-]{2,})\s+"
         r"(?:[A-Za-z0-9'-]+\s+){0,5}?"
         r"(?:"
         r"accept|accepts|add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|book|books|calculate|calculates|capture|captures|"
-        r"check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|correct|corrects|"
-        r"click|clicks|create|creates|decide|decides|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|"
+        r"check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|"
+        r"click|clicks|compute|computes|create|creates|decide|decides|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|forecast|forecasts|"
         r"display|displays|import|imports|inspect|inspects|log|logs|mark|marks|notify|notifies|persist|persists|preserve|preserves|"
-        r"produce|produces|provide|provides|publish|publishes|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|return|returns|route|routes|"
+        r"optimize|optimizes|produce|produces|provide|provides|publish|publishes|pull|pulls|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|return|returns|route|routes|"
         r"run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|show|shows|"
         r"store|stores|submit|submits|sync|syncs|tap|taps|track|tracks|update|updates|validate|validates|view|views"
         r")\b",

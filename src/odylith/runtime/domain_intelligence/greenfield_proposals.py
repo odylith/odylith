@@ -230,7 +230,7 @@ def build_greenfield_proposal(
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-    proposal = ensure_apply_semantic_model(proposal)
+    proposal = ensure_apply_semantic_model(proposal, refresh=True)
     validate_host_reasoned_proposal(proposal)
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     raise_for_failed_greenfield_tribunal(run_greenfield_tribunal(proposal, release_selector=selector))

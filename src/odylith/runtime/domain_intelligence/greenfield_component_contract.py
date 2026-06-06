@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_index import 
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -336,16 +337,20 @@ def _state_label(value: str, *, fallback: str) -> str:
     text = _clean(value)
     if not text:
         return fallback
+    shared_label = _domain_object_label(text, fallback="")
+    if shared_label:
+        return shared_label
     first = re.split(r"[.;]", text, maxsplit=1)[0].strip(" .")
     match = re.search(
-        r"\b(?:state\s+object\s+is|primary\s+state\s+object\s+is|core\s+state\s+object\s+is|is)\s+(?:a|an|the)?\s*(?P<label>[^.;:]+)",
+        r"\b(?:state\s+object\s+is|primary\s+state\s+object\s+is|core\s+state\s+object\s+is|is)\s+"
+        r"(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)",
         first,
         re.IGNORECASE,
     )
     if match:
         return _clean(match.group("label")).strip(" .") or fallback
     match = re.search(
-        r"^(?:a|an|the)\s+(?P<label>.+?)\s+(?:tracks|records|stores|moves|captures|keeps|contains)\b",
+        r"^(?:the|an|a)\s+(?P<label>.+?)\s+(?:tracks|records|stores|moves|captures|keeps|contains)\b",
         first,
         re.IGNORECASE,
     )
@@ -402,7 +407,7 @@ def _action_object_phrase(description: str) -> str:
     if visible:
         return visible
     text = re.sub(
-        r"^(?:accepts?|assembles?|captures?|creates?|displays?|exposes?|handles?|helps?|imports?|keeps?|links?|maintains?|owns?|produces?|records?|renders?|shows?|stores?|tracks?|validates?)\s+",
+        r"^(?:accepts?|assembles?|captures?|computes?|creates?|displays?|exposes?|forecasts?|handles?|helps?|imports?|issues?|keeps?|links?|maintains?|normalizes?|optimizes?|owns?|predicts?|produces?|pulls?|records?|renders?|shows?|stores?|tracks?|validates?)\s+",
         "",
         action,
         flags=re.IGNORECASE,
@@ -417,6 +422,12 @@ def _action_object_phrase(description: str) -> str:
 
 def _clean_focus_object(value: str) -> str:
     text = _clean(value).strip(" .")
+    text = re.sub(
+        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
+        "battery and load control actions",
+        text,
+        flags=re.IGNORECASE,
+    )
     text = re.sub(
         r"\b(?:captures?|capturing)\s+user\s+actions?\b",
         "product interaction",

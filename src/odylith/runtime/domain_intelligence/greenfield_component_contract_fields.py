@@ -38,7 +38,7 @@ def contract_focus(
         rationale = "adjustment rationale" if "rationale" in rationale_terms else "review rationale"
         return f"{adjustment} result, {rationale}, blocked-state detail, and next-step context"
     if role == "input":
-        if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score")):
+        if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "forecast", "optimize", "predict", "score")):
             return f"{focus} inputs, rule context, prior result, and validation command"
         if any(action in action_terms for action in ("capture", "create", "edit", "log", "record", "save", "store", "submit")):
             return f"required {focus} command, required fields, prior state, and explanation context"
@@ -53,7 +53,7 @@ def contract_focus(
         return f"required {focus} input, prior state, explanation context, and validation command"
     if any(action in action_terms for action in ("capture", "create", "edit", "log", "record", "save", "store", "submit")):
         return f"validated {focus} state, correction marker, and replayable change evidence"
-    if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score")):
+    if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "forecast", "optimize", "predict", "score")):
         return f"{focus} result, rule explanation, and review evidence"
     if any(action in action_terms for action in ("compare", "order", "rank")):
         return f"{_ranked_output_artifact(focus)}, comparison explanation, and selection rationale"

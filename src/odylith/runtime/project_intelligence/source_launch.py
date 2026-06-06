@@ -9,6 +9,7 @@ import re
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -75,9 +76,9 @@ def build_source_launch_handoff(
     path = _first_path_phrase(first_path)
     actor = _primary_actor(actors)
     participant = _secondary_actor(actors)
-    capabilities = _capability_phrase(components=components, first_path=path)
+    capabilities = _capability_phrase(components=components, first_path=first_path)
     risk = _risk_phrase(risks)
-    proof = _proof_phrase(validation=validation, first_path=path)
+    proof = _proof_phrase(validation=validation, first_path=first_path)
     excluded = _exclusion_phrase(non_goals)
     boundary = _source_boundary_hint(product)
     language = _language_signal(repo_root)
@@ -384,11 +385,7 @@ def _subjectify_path_step(value: str) -> str:
     if not text:
         return ""
     text = _normalize_embedded_action_verbs(text)
-    if re.match(
-        r"^(?:add|adds|log|logs|manually\s+log|manually\s+logs|enter|enters|select|selects|submit|submits|save|saves|choose|chooses|click|clicks|accept|accepts|dismiss|dismisses|record|records|capture|captures)\b",
-        text,
-        flags=re.IGNORECASE,
-    ):
+    if looks_like_action_clause(text):
         action = base_action_clause(text)
         return f"the user can {action}" if action else text
     return text

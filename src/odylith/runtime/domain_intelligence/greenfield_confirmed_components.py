@@ -205,6 +205,22 @@ def _confirmed_system_components(
         row["risks"] = risks_from_contract(str(row.get("label", "")), contract)
     proposal_context["components"] = rows
     differentiate_component_contracts(proposal_context)
+    for row in rows:
+        contract = row.get("component_contract")
+        if not isinstance(contract, dict):
+            continue
+        label_text = str(row.get("label", "")).strip()
+        if _generated_or_weak(row.get("responsibility")):
+            row["responsibility"] = responsibility_from_contract(label_text, contract)
+        if _generated_or_weak(row.get("boundary")):
+            row["boundary"] = boundary_from_contract(label_text, contract)
+        if _generated_sequence(row.get("interfaces")):
+            row["interfaces"] = interfaces_from_contract(contract)
+        if _generated_sequence(row.get("dependencies")):
+            row["dependencies"] = dependencies_from_contract(contract)
+        if _generated_sequence(row.get("validation")):
+            row["validation"] = validation_from_contract(contract)
+        row["risks"] = risks_from_contract(label_text, contract)
     return rows
 
 
@@ -439,13 +455,19 @@ def _strip_ownership_verb(value: str) -> str:
         "derives": "derivation of",
         "estimates": "estimate of",
         "exports": "export of",
+        "forecasts": "forecast of",
         "handles": "handling of",
         "imports": "import of",
+        "issues": "",
         "links": "links between",
+        "normalizes": "normalized view of",
+        "optimizes": "optimized result for",
         "owns": "",
         "own": "",
         "performs": "",
+        "predicts": "prediction of",
         "preserves": "preservation of",
+        "pulls": "source context for",
         "records": "record of",
         "renders": "rendering of",
         "resolves": "resolution of",

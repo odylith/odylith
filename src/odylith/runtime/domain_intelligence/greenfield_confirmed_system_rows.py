@@ -254,6 +254,12 @@ def _normalize_system_description(value: str) -> str:
     text = normalize_visible_result_language(_clean(value))
     text = re.sub(r"^(?:hold|holds|holding)\s+", "maintains ", text, flags=re.IGNORECASE)
     text = re.sub(r"^combines?\s+reference\s+ranges?\s+with\b", "evaluates reference ranges against", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
+        "battery and load control actions",
+        text,
+        flags=re.IGNORECASE,
+    )
     return _clean(text)
 
 
@@ -353,7 +359,7 @@ def _explicit_system_row(value: str) -> bool:
         return False
     name = _clean(text[: separator.start()])
     body = _clean(text[separator.end() :])
-    return _usable_internal_system_candidate(name) and _word_count(body) >= 4
+    return _usable_explicit_system_candidate(name) and _word_count(body) >= 4
 
 
 def _expanded_system_description(candidate: str, *, context_text: str, rationale: str) -> str:
@@ -512,7 +518,7 @@ def _system_sentence_row(sentence: str, *, context_text: str = "") -> str:
     if separator:
         name = _clean(text[: separator.start()])
         body = _clean(text[separator.end() :])
-        if _usable_internal_system_candidate(name) and _word_count(body) >= 4:
+        if _usable_explicit_system_candidate(name) and _word_count(body) >= 4:
             return _format_system_row(name, body, context_text=context_text)
     relative = re.match(r"(?P<name>.+?)\s+(?:that|which|who|where|whose)\s+(?P<body>.+)$", text, re.IGNORECASE)
     if relative:
@@ -684,6 +690,21 @@ def _usable_internal_system_candidate(candidate: str) -> bool:
     if re.search(r"\b(?:because|matter|must|while|still|enough|first path|product)\b", lowered):
         return False
     return True
+
+
+def _usable_explicit_system_candidate(candidate: str) -> bool:
+    """Allow concise reviewed labels when a row provides its own description."""
+
+    text = _clean(candidate)
+    words = _word_count(text)
+    if words < 1 or words > 9:
+        return False
+    lowered = text.casefold()
+    if lowered in {"internal product systems", "internal systems"}:
+        return False
+    if re.search(r"\b(?:because|matter|must|while|still|enough|first path|product)\b", lowered):
+        return False
+    return bool(re.search(r"[A-Za-z]", text))
 
 
 def _internal_system_rationale(paragraph: str) -> str:

@@ -186,6 +186,7 @@ def build_confirmed_greenfield_proposal(
                 f"{product_story} Release {release} stays bounded to: {first_path}"
             ),
             "product_story": product_story,
+            "state_object": state_object,
             "first_path": first_path,
             "proof_boundary": proof_boundary,
             "human_actors": human_actors,

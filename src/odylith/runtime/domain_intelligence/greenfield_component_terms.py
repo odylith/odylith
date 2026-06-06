@@ -22,11 +22,11 @@ ACTION_VERBS = (
     "accept", "adjust", "apply", "approve", "assemble", "assign", "block", "build", "calculate", "capture",
     "choose", "combine", "compare", "complete", "compute", "connect", "correlate", "create", "delete", "derive",
     "describe", "display", "edit", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
-    "highlight", "import", "inspect", "keep", "link", "leave", "log", "make", "maintain", "manage", "notify",
-    "open", "order", "move", "pair", "persist", "present", "prepare", "provide", "produce", "publish", "rank",
-    "read", "receive", "record", "render", "request", "resolve", "respond", "review", "route", "save", "schedule",
-    "score", "see", "select", "send", "show", "store", "submit", "summarize", "sync", "track", "validate", "verify",
-    "view",
+    "forecast", "highlight", "import", "inspect", "issue", "keep", "link", "leave", "log", "make", "maintain",
+    "manage", "normalize", "notify", "open", "optimize", "order", "move", "pair", "persist", "predict", "present",
+    "prepare", "provide", "produce", "publish", "pull", "rank", "read", "receive", "record", "render", "request",
+    "resolve", "respond", "review", "route", "save", "schedule", "score", "see", "select", "send", "show", "store",
+    "submit", "summarize", "sync", "track", "validate", "verify", "view",
 )
 
 GENERIC_TERMS = {
@@ -333,6 +333,22 @@ def _normalize_fragmented_artifact_phrase(value: str) -> str:
     text = re.sub(r"\bmechanisms?\s+typical\b", "typical", text, flags=re.I)
     text = re.sub(r"\bvalues?\s+relevant\s+conditions?\b", "relevant condition", text, flags=re.I)
     text = re.sub(r"\bconditions?\s+context\s+justified\b", "condition context", text, flags=re.I)
+    text = re.sub(
+        r"\b(?:homeowner\s+plan\s+)?(?:defensible\s+)?projected\s+savings(?:\s+number)?(?:\s+versus\s+(?:no\s+)?optimization)?\b",
+        "projected savings",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(r"\bhomeowner\s+plan\s+defensible\s+projected\b", "projected savings", text, flags=re.I)
+    text = re.sub(r"\bnumber\s+versus\s+(?:no\s+)?optimization\b", "projected savings", text, flags=re.I)
+    if re.search(r"\bversus\s+optimization\b", text, flags=re.I):
+        return ""
+    if re.search(
+        r"\b(?:full\s+closed[- ]loop\s+hardware\s+automation|hardware\s+automation\s+scope|multi[- ]site\s+fleets?|market\s+bidding)\b",
+        text,
+        flags=re.I,
+    ):
+        return ""
     text = re.sub(r"\b(?:representative|individual|primary|running)?\s*user\s+(?=peptide\b)", "", text, flags=re.I)
     text = re.sub(r"\brunning\s+(?=peptide\b)", "", text, flags=re.I)
     words = text.split()
@@ -344,6 +360,13 @@ def _normalize_fragmented_artifact_phrase(value: str) -> str:
             break
     text = re.sub(r"\bmoved\s+(?=[a-z0-9])", "", text, flags=re.I)
     text = re.sub(r"\bcombines?\s+(?=reference|range|ranges|data|input|inputs)\b", "", text, flags=re.I)
+    text = re.sub(
+        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
+        "battery and load control actions",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(r"\bnormalize\s+(?=[a-z0-9])", "normalized ", text, flags=re.I)
     return re.sub(r"\s+", " ", text).strip(" .,;:")
 
 

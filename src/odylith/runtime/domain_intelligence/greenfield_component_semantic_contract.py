@@ -240,7 +240,7 @@ def derive_component_semantic_contract(
         "upstream_truth": previous_label or "accepted first-path input",
         "downstream_consumers": next_label or "release review",
         "unique_failure": (
-            f"{label} can mislead users if {critical} is missing, stale, {failure_cause}, "
+            f"{label} can mislead users if {critical} {_present_verb(critical, singular='is', plural='are')} missing, stale, {failure_cause}, "
             "or shown without enough explanation to recover"
         ),
     }
@@ -631,6 +631,18 @@ def _summary_object_phrases(values: Sequence[str], *, required_phrases: Sequence
 
 def _clean(value: Any) -> str:
     return clean_artifact_text(value, split_parentheses=True)
+
+
+def _present_verb(value: str, *, singular: str, plural: str) -> str:
+    words = [word.casefold() for word in re.findall(r"[a-z][a-z'-]*", _clean(value))]
+    if not words:
+        return singular
+    head = next((word for word in reversed(words) if word not in {"context", "detail", "evidence", "state"}), words[-1])
+    if head.endswith("s") and head not in {"status", "process"}:
+        return plural
+    if " and " in f" {_clean(value).casefold()} ":
+        return plural
+    return singular
 
 
 __all__ = ["SemanticComponentContract", "derive_component_semantic_contract"]

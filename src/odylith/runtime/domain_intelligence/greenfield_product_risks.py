@@ -343,7 +343,7 @@ def _input_focus(first_path: str, *, fallback: str) -> str:
         clause
         for clause in clauses
         if re.search(
-            r"\b(?:adds?|answers?|captures?|chooses?|completes?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\b",
+            r"\b(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\b",
             clause,
             re.IGNORECASE,
         )
@@ -358,7 +358,7 @@ def _input_focus(first_path: str, *, fallback: str) -> str:
     if selected:
         return _lower_first(short_summary(selected, limit=180))
     label = domain_object_label(fallback, fallback="the information the product needs")
-    return _lower_first(label)
+    return _lower_label(label)
 
 
 def _input_activity(ctx: _RiskContext) -> str:
@@ -367,8 +367,13 @@ def _input_activity(ctx: _RiskContext) -> str:
         return f"{_lower_first(ctx.primary_actor)} provides the required information"
     if re.match(r"^(?:a|an|the|one)\s+", focus, flags=re.IGNORECASE):
         return focus
-    if re.match(r"^(?:adds?|answers?|captures?|chooses?|completes?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\b", focus, flags=re.IGNORECASE):
+    if re.match(r"^(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\b", focus, flags=re.IGNORECASE):
         return f"{_lower_first(ctx.primary_actor)} {focus}"
+    if re.match(r"^(?:their|his|her|its|our|my)\b", focus, flags=re.IGNORECASE):
+        verb = "connects" if re.search(r"\bconnects?\b", ctx.first_path, flags=re.IGNORECASE) else "provides"
+        return f"{_lower_first(ctx.primary_actor)} {verb} {focus}"
+    if len(focus.split()) <= 6:
+        return f"{_lower_first(ctx.primary_actor)} provides {focus}"
     return focus
 
 
@@ -458,16 +463,16 @@ def _input_clause_object(value: str) -> str:
     text = compact_text(value).strip(" .")
     subject_verb = re.match(
         r"^(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"
-        r"(?:adds?|answers?|captures?|chooses?|completes?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\s+"
-        r"(?P<object>(?:a|an|the|one)\s+.+)$",
+        r"(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\s+"
+        r"(?P<object>(?:a|an|the|one|their|his|her|its|our|my)\s+.+)$",
         text,
         flags=re.IGNORECASE,
     )
     if subject_verb:
         return _lower_first(short_summary(subject_verb.group("object"), limit=110))
     verb_first = re.match(
-        r"^(?:adds?|answers?|captures?|chooses?|completes?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\s+"
-        r"(?P<object>(?:a|an|the|one)\s+.+)$",
+        r"^(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\s+"
+        r"(?P<object>(?:a|an|the|one|their|his|her|its|our|my)\s+.+)$",
         text,
         flags=re.IGNORECASE,
     )
@@ -545,6 +550,11 @@ def _ensure_sentence(value: str) -> str:
 def _lower_first(value: str) -> str:
     text = compact_text(value)
     return f"{text[:1].lower()}{text[1:]}" if text else ""
+
+
+def _lower_label(value: str) -> str:
+    text = compact_text(value)
+    return text.casefold() if text else ""
 
 
 __all__ = [

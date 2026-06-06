@@ -153,11 +153,12 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
     if not isinstance(validation, list) or _validation_strategy_needs_repair(proposal):
         action = completion_text.action_phrase(proposal)
         outcome = completion_text.outcome_phrase(proposal)
+        outcome_action = completion_text.outcome_action_phrase(outcome)
         proposal["validation_strategy"] = list(
             unique_text(
                 [
                     *(validation if isinstance(validation, list) else []),
-                    f"A representative user completes the first path by {action}; the product reaches {outcome}.",
+                    f"A representative user can {action} and {outcome_action}.",
                     f"{completion_text.state_object(proposal)} can be reconstructed with actor, timestamp, status, and result.",
                     f"Readiness fails when required information, access, privacy, safety, or result explanation is missing.",
                 ]
@@ -174,6 +175,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
     changed = False
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
+    outcome_action = completion_text.outcome_action_phrase(outcome)
     state = completion_text.state_object(proposal)
     actors = completion_text.actor_summary(proposal)
     for index, row in enumerate(rows, start=1):
@@ -198,7 +200,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
             row["success_metrics"] = list(
                 unique_text(
                     [
-                        f"A representative user completes the first path by {action}; the product reaches {outcome}.",
+                        f"A representative user can {action} and {outcome_action}.",
                         f"Missing or incorrect input produces a clear correction path instead of a misleading result.",
                         f"The result can be explained from the recorded {state} without relying on memory or hidden assumptions.",
                     ]
@@ -258,6 +260,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         focus = completion_text.component_focus_phrase(label=label, contract=contract, fallback=state_object)
         action = completion_text.action_phrase(proposal)
         outcome = completion_text.outcome_phrase(proposal)
+        outcome_action = completion_text.outcome_action_phrase(outcome)
         outcome_sentence = completion_text.lower_first(outcome)
         drifted = completion_text.row_drifted_from_component(row, component)
         if _text_needs_repair(row.get("product_view")) or drifted:
@@ -274,7 +277,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             changed = True
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3) or drifted:
             metrics = [
-                f"{label} proves one complete user path that reaches {outcome_sentence}.",
+                f"{label} proves one complete user path where a representative user can {outcome_action}.",
                 f"{label} explains blocked, missing, or invalid information before the product shows a result.",
                 f"{label} preserves actor, source, status, result, and recovery context for each accepted change to {state_object}.",
             ]
@@ -409,6 +412,7 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
     proof_boundary = completion_text.proof_boundary(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
+    outcome_action = completion_text.outcome_action_phrase(outcome)
     proof_success = _sentence(
         f"Release {release} succeeds only when a representative user can {action}, the product shows {outcome}, and {state_object} remains understandable when information is missing or corrected.",
         limit=520,
@@ -426,7 +430,7 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
     release_plan = proposal.get("release_plan")
     if isinstance(release_plan, dict):
         criteria = [
-            _sentence(f"{label} success proof shows a representative user can {action} and reach {outcome}.", limit=520),
+            _sentence(f"{label} success proof shows a representative user can {action} and {outcome_action}.", limit=520),
             _sentence(f"{label} replay proof reconstructs {state_object} with actor, timestamp, status, result, and explanation.", limit=520),
             _sentence(f"{label} blocked-path proof keeps missing input, failed validation, access limits, or privacy issues visible before a result is trusted.", limit=520),
             _sentence(f"{label} release proof stays within the accepted product promise: {proof_boundary}", limit=520),
@@ -444,8 +448,9 @@ def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: s
     state_object = completion_text.state_object(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
+    outcome_action = completion_text.outcome_action_phrase(outcome)
     rows = [
-        _sentence(f"Success proof: release {release} proves the first path by letting a representative user {action}; the product reaches {outcome}.", limit=700),
+        _sentence(f"Success proof: release {release} proves the first path by letting a representative user {action}; the user can {outcome_action}.", limit=700),
         _sentence(f"Blocked-path proof: missing input, invalid state, failed validation, absent explanation, or unresolved review blocks readiness for {state_object}.", limit=520),
         _sentence(f"Replay proof: {state_object} can be reconstructed with actor, timestamp, prior state, current state, result, and explanation.", limit=520),
         _sentence(f"Access and privacy proof: only authorized actors can view or mutate protected state, and audit, retention, privacy, accessibility, and safety obligations stay visible.", limit=520),
@@ -464,11 +469,12 @@ def _repair_backlog_success_language(proposal: dict[str, Any], *, release_select
     state_object = completion_text.state_object(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
+    outcome_action = completion_text.outcome_action_phrase(outcome)
     changed = False
     for row in dict_rows(proposal.get("backlog")):
         title = _clean(row.get("title")) or label
         metrics = [
-            _sentence(f"{title} proves the first path in release {release}: a representative user can {action}, and the product reaches {outcome}.", limit=700),
+            _sentence(f"{title} proves the first path in release {release}: a representative user can {action} and {outcome_action}.", limit=700),
             _sentence(f"{title} explains missing or invalid information before the product shows a result.", limit=500),
             _sentence(f"{title} preserves enough {state_object} context to explain the actor, status, result, and recovery path.", limit=500),
             _sentence(f"{title} stays inside the first-release promise and keeps deferred outcomes out of the success claim.", limit=500),
@@ -492,8 +498,9 @@ def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release
     state_object = completion_text.state_object(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
+    outcome_action = completion_text.outcome_action_phrase(outcome)
     rows = [
-        _sentence(f"Validate that a representative user can {action} and reach {outcome}.", limit=420),
+        _sentence(f"Validate that a representative user can {action} and {outcome_action}.", limit=420),
         _sentence(f"Validate a blocked path where missing input, invalid state, failed validation, or missing explanation prevents readiness.", limit=420),
         _sentence(f"Validate replay for {state_object} with actor, timestamp, status, result, and explanation.", limit=420),
         _sentence(f"Validate role-appropriate access, privacy, audit, retention, accessibility, safety, and recovery behavior before release {release}.", limit=420),
@@ -539,8 +546,9 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
             fallback=f"Security posture: {title} states who can see or change the product state, what sensitive information is involved, and how recovery stays visible before release.",
         )
         if _sequence_has_text_repair(row.get("success_metrics")):
+            outcome_action = completion_text.outcome_action_phrase(outcome)
             metrics = [
-                f"{title} proves the first path in release {release}: a representative user can {action}, and the product reaches {outcome}.",
+                f"{title} proves the first path in release {release}: a representative user can {action} and {outcome_action}.",
                 f"{title} explains missing or invalid information before the product shows a result.",
                 f"{title} preserves enough {state_object} context to explain the actor, status, result, and recovery path.",
                 f"{title} stays inside the first-release promise without borrowing deferred outcomes.",
@@ -597,11 +605,12 @@ def _repair_domain_intelligence_metrics(
         return False
     if not _sequence_has_text_repair(intelligence.get("metrics")):
         return False
+    outcome_action = completion_text.outcome_action_phrase(outcome)
     return _set_list(
         intelligence,
         "metrics",
         [
-            f"{title} proves users can {action} and the product reaches {outcome}.",
+            f"{title} proves users can {action} and {outcome_action}.",
             f"Every readiness assertion for {title} has state, explanation, validation, release-review, and non-goal references.",
             f"{title} keeps {state_object} clear when the result is blocked, corrected, or replayed.",
         ],

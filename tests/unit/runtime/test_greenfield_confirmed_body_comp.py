@@ -8,8 +8,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.governance.component_spec_rendering import build_component_spec
+from odylith.runtime.project_intelligence import builder as project_intelligence_builder
 
 
 SERVICE_READINESS_INTENT = """# Service Readiness Review App
@@ -125,6 +127,61 @@ Ambiguities
 Proof boundary
 
 The product is proven when a user can add a peptide, get a lab- and condition-aware dosage suggestion with its rationale and caveats, log usage against a schedule, record body composition readings, and see a clear view of whether the tracked metrics moved with usage for that protocol.
+"""
+
+
+SUNLEDGER_INTENT = """# SunLedger — Solar Production & Consumption Optimizer
+
+Product story
+
+A homeowner with rooftop solar panels and a battery generates more power some hours and less in others, while their appliances, EV charger, and the grid all pull from the same pool at prices that change through the day. Today that person either ignores the timing entirely or babysits a spreadsheet. SunLedger watches generation, storage, household demand, and grid prices together, then tells the household when to store, when to use, and when to sell back — and automates those decisions where it safely can. The win is concrete: more self-consumed solar, lower bills, and less waste, without anyone having to think about it.
+
+State object
+
+The core thing the system tracks is an energy plan for a single site: a rolling forecast of expected solar generation, predicted household load, current and projected battery state of charge, grid import/export prices, and the resulting recommended dispatch schedule (charge, discharge, export, defer) over the next hours. Each site's plan updates as live readings and new forecasts arrive.
+
+First complete path
+
+A homeowner connects their solar inverter and battery, SunLedger pulls live generation and consumption plus a weather-driven generation forecast and grid price signal, computes a dispatch schedule that maximizes self-consumption and cost savings, and shows the homeowner today's plan with the projected savings versus doing nothing. That single path — connect, forecast, optimize, show the plan and its payoff — is the whole product proven end to end.
+
+Human actors
+
+- Homeowner / prosumer — owns the panels, wants lower bills and more self-used solar
+- Household member — uses appliances and the EV, affected by deferral recommendations
+- Installer or energy advisor — sets up the site, validates hardware, reads performance over time
+
+External systems
+
+- Solar inverter / battery telemetry (e.g. SunSpec, Tesla, Enphase, SolarEdge APIs)
+- Weather / solar irradiance forecast provider
+- Grid pricing / tariff feed (time-of-use or wholesale rates)
+- Smart home / controllable loads (EV charger, thermostat, smart plugs)
+
+Internal product systems
+
+- Telemetry ingestion — normalizes generation, consumption, and battery readings
+- Forecasting — predicts generation and household demand
+- Optimization engine — computes the dispatch schedule against price and storage constraints
+- Dispatch / automation — issues control actions to battery and controllable loads
+- Insights surface — shows the plan, realized savings, and history to the homeowner
+
+Critical assumptions
+
+- A single site (home) is the unit of optimization for the first version; fleets/microgrids come later
+- The user has both generation and some flexibility — a battery and/or shiftable loads — so optimization has something to act on
+- Live telemetry and a price/tariff signal are obtainable via API for at least one hardware ecosystem
+- Recommendations first, automated control second; the household stays in the loop on overrides
+
+Ambiguities
+
+- Recommend-only versus actively control hardware in the first complete path
+- Optimization objective priority: maximize self-consumption, minimize cost, or maximize export revenue when they conflict
+- Residential single-home focus versus commercial / multi-site from the start
+- Battery assumed present, or must the product also help homes with solar but no storage
+
+Proof boundary
+
+The product is proven when one connected site ingests real generation and consumption, produces a forecast-driven dispatch schedule, and shows the homeowner a plan with a defensible projected savings number versus no optimization. Multi-site fleets, market bidding, and full closed-loop hardware automation are out of scope for this first proof.
 """
 
 
@@ -262,6 +319,86 @@ def test_confirmed_body_composition_tracker_removes_generated_text_residue(tmp_p
     )
     for phrase in rendered_forbidden:
         assert phrase not in rendered_specs
+
+    decision = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    assert decision.passed
+
+
+def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_drift(tmp_path) -> None:
+    prompt = "An app that optimizes the production and consumption of solar energy"
+    intent = parse_confirmed_intent_text(SUNLEDGER_INTENT, prompt=prompt)
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+
+    encoded = json.dumps(proposal)
+    generated_posture = json.dumps(
+        {key: intent.get(key) for key in ("opportunity", "problem", "product_view", "success_metrics")}
+    )
+    component_text = json.dumps(proposal["components"])
+    forbidden = (
+        "visible outcome from its payoff",
+        "sunLedger pulls",
+        "compute, ending",
+        "Forecasting — Predicts Generation and Household Demand — owns forecasting",
+        "reach today's plan",
+        "before a visible outcome from",
+        "Core Thing the System",
+        "shows predicts",
+        "shows issues",
+        "control actions to battery",
+        "That single path",
+        "whole product proven end to end",
+        "normaliz ",
+    )
+    for phrase in forbidden:
+        assert phrase not in encoded
+    assert "is the whole product proven end to end" not in generated_posture
+    assert "is the whole product proven end to end" not in component_text
+    assert "Forecasting — predicts generation and household demand" in intent["internal_systems"]
+    assert "connect their solar inverter and battery" in encoded
+    assert "Energy Plan" in encoded
+    assert "today's plan with the projected savings versus doing nothing" in encoded
+    assert "forecast-driven dispatch schedule" in encoded
+    assert "battery and load control actions" in encoded
+    assert generated_semantic_slop_issues(proposal) == []
+    assert greenfield_quality_issues(proposal) == []
+    assert component_spec_preflight_issues(proposal) == []
+    rendered_specs = "\n".join(_rendered_component_specs(proposal))
+    rendered_forbidden = (
+        "shows predicts",
+        "shows issues",
+        "proves the happy path for predicts",
+        "proves the happy path for issues",
+        "control actions to battery and controllable loads is missing",
+        "control actions to battery",
+        "full closed-loop hardware automation",
+        "homeowner plan defensible projected",
+        "before creates",
+        "prepares work for The next",
+        "normaliz ",
+    )
+    for phrase in rendered_forbidden:
+        assert phrase not in rendered_specs
+    assert "load control actions" in rendered_specs
+    accepted_proposal = dict(proposal)
+    accepted_proposal["_accepted_project"] = {"source_path": "odylith/runtime/source/accepted-project.v1.json"}
+    payload = project_intelligence_builder.build_project_intelligence_payload(
+        repo_root=tmp_path,
+        shell_payload={"greenfield_proposal": accepted_proposal},
+    )
+    payload_encoded = json.dumps(payload)
+    assert "and receives today's plan" not in payload_encoded
+    assert "sunLedger pulls" not in payload_encoded
+    assert "while energy Plan" not in payload_encoded
+    assert "capture the information needed to battery" not in payload_encoded
+    assert "That single path" not in payload_encoded
+    assert "whole product proven end to end" not in payload_encoded
+    assert "the user can connect their solar inverter and battery and receive today's plan" in payload_encoded
 
     decision = run_greenfield_tribunal(proposal, release_selector="0.0.1")
     assert decision.passed

@@ -215,20 +215,23 @@ def domain_object_label(value: str, *, fallback: str) -> str:
     first_clause = re.split(r"[.;\n]", text, maxsplit=1)[0].strip(" :.-")
     dash_head = re.split(r"\s+[—-]\s+", first_clause, maxsplit=1)[0].strip(" :.-")
     patterns = (
-        r"\b(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
-        r"\b(?:the\s+)?(?:domain\s+)?object\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
-        r"\b(?:the\s+)?proof\s+record\s+is\s+(?:the\s+)?(?P<label>[^.;:]+)$",
+        r"^(?:the\s+)?(?:core|main|primary)\s+(?:thing|object|record|item)\s+"
+        r"(?:the\s+system\s+)?(?:tracks|records|stores|captures|keeps)\s+is\s+"
+        r"(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
+        r"\b(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
+        r"\b(?:the\s+)?(?:domain\s+)?object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
+        r"\b(?:the\s+)?proof\s+record\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"^(?:the\s+)?product\s+(?:captures?|keeps?|records?|stores?|tracks?)\s+"
-        r"(?:a|an|the)?\s*(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
+        r"(?:(?:the|an|a)\s+)?(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
         r"(?:with|containing|that|for)\b",
-        r"^(?:a|an|the)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
+        r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
         r"(?:tracks|records|stores|captures|moves|starts|changes)\b",
     )
     for pattern in patterns:
         match = re.search(pattern, dash_head, flags=re.IGNORECASE)
         if match:
             candidate = match.group("label").strip(" :.-")
-            return title_label(candidate) or fallback
+            return _domain_label(candidate) or fallback
     if dash_head and not re.search(
         r"\b(is|are|starts?|moves?|changes?|tracks?|records?|captures?|produces?)\b",
         dash_head,
@@ -239,6 +242,18 @@ def domain_object_label(value: str, *, fallback: str) -> str:
     if len(words) <= 7:
         return title_label(text) or fallback
     return fallback
+
+
+def _domain_label(value: str) -> str:
+    text = clean_confirmed_text(value).strip(" :.-")
+    text = re.sub(
+        r"\s+for\s+(?:a|an|the)\s+(?:single\s+)?"
+        r"(?:site|home|household|user|customer|account|team|tenant|organization|project|workspace|case)\b.*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" :.-")
+    return title_label(text)
 
 
 def short_summary(value: str, *, limit: int = 280) -> str:

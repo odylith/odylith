@@ -34,6 +34,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import (
+    clean_first_path_text as _clean_first_path,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -80,7 +83,7 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         "prompt": _canonical_prompt_text(payload.get("prompt") or prompt, title_normalization=title_normalization),
         "product_story": _clean(payload.get("product_story") or payload.get("story")),
         "state_object": _clean(payload.get("state_object") or payload.get("state_object_first_journey")),
-        "first_path": _clean(payload.get("first_path") or payload.get("first_workflow")),
+        "first_path": _clean_first_path(payload.get("first_path") or payload.get("first_workflow")),
         "proof_boundary": _clean(payload.get("proof_boundary")),
         "problem": _clean(payload.get("problem") or payload.get("user_problem") or payload.get("user_problem_and_risk")),
         "customer": _clean(payload.get("customer")),
@@ -186,7 +189,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
         "prompt": _canonical_prompt_text(prompt, title_normalization=title_normalization),
         "product_story": _section_text(sections, "product_story") or structured_preamble_story or derived_story or preamble_story,
         "state_object": _section_text(sections, "state_object") or derived_state,
-        "first_path": _section_text(sections, "first_path") or derived_first_path,
+        "first_path": _clean_first_path(_section_text(sections, "first_path") or derived_first_path),
         "proof_boundary": _section_text(sections, "proof_boundary") or derived_proof,
         "problem": _section_text(sections, "problem"),
         "customer": _section_text(sections, "customer"),

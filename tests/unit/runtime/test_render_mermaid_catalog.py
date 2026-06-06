@@ -958,6 +958,46 @@ def test_atlas_box_explanations_sanitize_greenfield_component_and_scope_copy() -
     assert [box.label for box in boxes].count("Proof boundary") == 1
 
 
+def test_atlas_box_explanations_do_not_prefix_action_component_copy_with_owns() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        "\n".join(
+            [
+                "flowchart LR",
+                '  forecast["Forecasting Service"] --> dispatch["Dispatch / Automation Service"]',
+                '  dispatch --> surface["Insights Surface"]',
+                "",
+            ]
+        ),
+        component_rows=[
+            {
+                "name": "Forecasting Service",
+                "description": "Predicts generation and household demand.",
+            },
+            {
+                "name": "Dispatch / Automation Service",
+                "description": "Issues control actions to battery and controllable loads.",
+            },
+            {
+                "name": "Insights Surface",
+                "description": "Shows the plan, realized savings, and history to the homeowner.",
+            },
+        ],
+        diagram_title="Component Boundary View",
+        diagram_summary="Shows which product systems own SunLedger release responsibilities.",
+    )
+    by_label = {box.label: box.description for box in boxes}
+    rendered = "\n".join(by_label.values())
+
+    assert "Forecasting Service predicts generation and household demand" in by_label["Forecasting Service"]
+    assert "Dispatch / Automation Service issues battery and load control actions" in by_label[
+        "Dispatch / Automation Service"
+    ]
+    assert "Insights Surface shows the plan" in by_label["Insights Surface"]
+    assert "owns predicts" not in rendered
+    assert "owns issues" not in rendered
+    assert "owns shows" not in rendered
+
+
 def test_atlas_box_explanations_parse_sequence_participants_without_broken_labels() -> None:
     boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
         "\n".join(

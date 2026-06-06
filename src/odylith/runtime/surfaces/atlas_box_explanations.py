@@ -43,12 +43,14 @@ _SCOPE_OUT_RE = re.compile(
 _OWNED_ACTION_RE = re.compile(
     r"^owns?\s+"
     r"(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
-    r"links?|maintains?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b",
+    r"issues?|links?|maintains?|normalizes?|optimizes?|performs?|predicts?|preserves?|pulls?|records?|renders?|"
+    r"resolves?|shows?|stores?|tracks?|validates?|writes?)\b",
     re.IGNORECASE,
 )
 _ACTION_START_RE = re.compile(
     r"^(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
-    r"links?|maintains?|performs?|preserves?|records?|renders?|resolves?|stores?|tracks?|validates?|writes?)\b",
+    r"issues?|links?|maintains?|normalizes?|optimizes?|performs?|predicts?|preserves?|pulls?|records?|renders?|"
+    r"resolves?|shows?|stores?|tracks?|validates?|writes?)\b",
     re.IGNORECASE,
 )
 _LEGACY_COMPONENT_APPENDIX_RE = re.compile(
@@ -210,6 +212,12 @@ def clean_component_description(*, name: str, description: str) -> str:
         text,
         flags=re.IGNORECASE,
     ).strip(" ;,")
+    text = re.sub(
+        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
+        "battery and load control actions",
+        text,
+        flags=re.IGNORECASE,
+    )
     text = re.sub(r";\s*serve\s+as\b", "; serves as", text, flags=re.IGNORECASE)
     text = _OWNED_ACTION_RE.sub(lambda match: str(match.group(1)), text).strip()
     text = re.sub(r"^owns?\s+owns?\s+", "owns ", text, flags=re.IGNORECASE).strip()

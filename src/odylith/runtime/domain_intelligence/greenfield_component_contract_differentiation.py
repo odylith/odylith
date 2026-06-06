@@ -38,6 +38,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
 )
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -626,9 +627,12 @@ def _state_label(value: str, *, fallback: str) -> str:
     text = _clean(value)
     if not text:
         return fallback
+    shared_label = _domain_object_label(text, fallback="")
+    if shared_label:
+        return shared_label
     first = re.split(r"[.;]", text, maxsplit=1)[0].strip(" .")
     match = re.search(
-        r"^(?:a|an|the)\s+(?P<label>.+?)\s+(?:tracks|records|stores|moves|captures|keeps|contains)\b",
+        r"^(?:the|an|a)\s+(?P<label>.+?)\s+(?:tracks|records|stores|moves|captures|keeps|contains)\b",
         first,
         re.IGNORECASE,
     )
@@ -662,7 +666,11 @@ def _weak_text(value: Any) -> bool:
 
 
 def _weak_sequence(value: Any) -> bool:
-    return _weak_text(" ".join(text_values(value)))
+    rows = list(text_values(value))
+    starts = [(_clean(row).split(" ", 1)[0] or "").casefold() for row in rows]
+    if any(starts.count(prefix) > 1 for prefix in ("accepts", "produces", "renders")):
+        return True
+    return _weak_text(" ".join(rows))
 
 
 def _sequence_reuses_contract_text(value: Any, contract: Mapping[str, Any]) -> bool:

@@ -126,11 +126,12 @@ def _component_risks(
     contract: Mapping[str, Any],
 ) -> list[str]:
     values = risks_from_contract(label, contract)
-    first_path = completion_text.first_path(proposal)
+    action = completion_text.action_phrase(proposal)
+    outcome = completion_text.outcome_phrase(proposal)
     state_object = completion_text.state_object(proposal)
     context = _best_context_line(row=row, proposal=proposal)
     values.append(
-        f"Operational mitigation: {label} must show blocked and recovery behavior before people rely on {state_object}: {first_path}"
+        f"Operational mitigation: {label} must show blocked and recovery behavior before people rely on {state_object}; the first path must prove {action} leads to {outcome}."
     )
     if context:
         values.append(f"Accepted-intent constraint: {label} must preserve this risk or policy condition: {context}")
@@ -208,6 +209,9 @@ def _component_field_is_weak(value: Any) -> bool:
 def _component_sequence_is_weak(value: Any) -> bool:
     rows = list(text_values(value))
     if not rows:
+        return True
+    starts = [(_clean(row).split(" ", 1)[0] or "").casefold() for row in rows]
+    if any(starts.count(prefix) > 1 for prefix in ("accepts", "produces", "renders")):
         return True
     if _sequence_has_text_repair(rows):
         return True

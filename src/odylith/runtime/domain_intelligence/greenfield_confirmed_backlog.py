@@ -7,6 +7,9 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
+    outcome_action_phrase as _outcome_action_phrase,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import system_component_name
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items as _join_items
@@ -42,7 +45,7 @@ def confirmed_workstream_titles(
     outcome = backlog_text.first_path_outcome(first_path, proof_boundary=proof_boundary)
     if outcome and not backlog_text.generic_title_outcome(outcome):
         workflow_actor = actor or backlog_text.actor_from_action(action) or "user"
-        workflow = f"Let {workflow_actor} reach {outcome}"
+        workflow = f"Let {workflow_actor} {_outcome_action_phrase(outcome)}"
     elif action:
         action_actor, action_tail = backlog_text.actor_action_parts(action)
         workflow_actor = action_actor or actor or "user"
@@ -243,6 +246,7 @@ def confirmed_backlog_rows(
     )
     first_path_full_capability = backlog_text.capability_action_clause(backlog_text.sentence_fragment(clauses.capability_chain) or first_path_capability)
     outcome_summary = backlog_text.sentence_fragment(clauses.visible_result) or backlog_text.first_path_outcome(first_path_summary, proof_boundary=proof_boundary)
+    outcome_action = _outcome_action_phrase(outcome_summary)
     proof_focus = backlog_text.proof_focus_phrase(proof_summary, fallback="release decision")
     dependency_outcome = outcome_summary or "the promised first-path result"
     first_path_action = backlog_text.capability_action_clause(primary_user_action or first_path_entry_text or first_path_capability)
@@ -275,7 +279,7 @@ def confirmed_backlog_rows(
         first_slice=first_slice,
         metrics=[
             *(success_metrics or [])[:1],
-            f"{metric_actor} can {first_path_action} and reach {outcome_summary} without adjacent scope being pulled into the release.",
+            f"{metric_actor} can {first_path_action} and {outcome_action} without adjacent scope being pulled into the release.",
             f"{state_label} remains understandable when input is accepted, blocked, corrected, or reviewed.",
             f"{proof_component} keeps the success evidence replayable so a reviewer can see what happened and why.",
         ],
@@ -317,10 +321,10 @@ def confirmed_backlog_rows(
         ),
         first_slice=(
             f"Start with one representative path where {metric_actor[:1].lower()}{metric_actor[1:]} can {first_path_action}, "
-            f"reach {outcome_summary}, and see what to fix when required information is missing."
+            f"{outcome_action}, and see what to fix when required information is missing."
         ),
         metrics=[
-            f"{metric_actor} can complete the first interaction and reach {outcome_summary}.",
+            f"{metric_actor} can complete the first interaction and {outcome_action}.",
             "Missing or invalid information produces clear correction guidance instead of a misleading result.",
             f"{downstream_subject} can use the saved context without asking the user to repeat the same details.",
         ],

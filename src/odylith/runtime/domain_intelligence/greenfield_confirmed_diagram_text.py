@@ -10,6 +10,7 @@ from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -181,10 +182,13 @@ def brief_object_label(value: str, *, fallback: str) -> str:
     text = compact_text(value)
     if not text:
         return fallback
+    shared_label = domain_object_label(text, fallback="")
+    if shared_label:
+        return trim(shared_label, 72)
     first = text.split("—", 1)[0].split(". ", 1)[0].strip(" .:")
     patterns = (
-        r"\b(?:primary\s+)?state\s+object\s+is\s+(?:a|an|the)?\s*(?P<label>[^.;:]+?)(?:\s+(?:that|which|who|where|tracks?|records?|stores?|captures?|moves?|starts?)\b|$)",
-        r"^(?:a|an|the)\s+(?P<label>[A-Za-z][A-Za-z0-9 _/-]{2,80}?)\s+(?:tracks?|records?|stores?|captures?|moves?|starts?|keeps?)\b",
+        r"\b(?:primary\s+)?state\s+object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+?)(?:\s+(?:that|which|who|where|tracks?|records?|stores?|captures?|moves?|starts?)\b|$)",
+        r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _/-]{2,80}?)\s+(?:tracks?|records?|stores?|captures?|moves?|starts?|keeps?)\b",
     )
     for pattern in patterns:
         match = re.search(pattern, first, flags=re.IGNORECASE)

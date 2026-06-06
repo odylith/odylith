@@ -12,6 +12,9 @@ from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_labels as _actor_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows as _completed_actor_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
+    outcome_action_phrase as _outcome_action_phrase,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import completed_system_rows as _completed_system_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import state_label as _state_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import system_labels as _system_labels
@@ -220,8 +223,9 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         )
     metrics = confirmed_text_values(intent.get("success_metrics"))
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
+        metric_outcome_action = _outcome_action_phrase(outcome_text)
         intent["success_metrics"] = [
-            f"The first release proves the first path when {customer_text} can {path_capability} and reach {outcome_text} without manual interpretation outside the product.",
+            f"The first release proves the first path when {customer_text} can {path_capability} and {metric_outcome_action} without manual interpretation outside the product.",
             f"The product handles missing or incorrect input by explaining what must be fixed before {outcome_text} is treated as real.",
             _proof_boundary_metric(proof, outcome=outcome_text),
         ]
@@ -387,7 +391,9 @@ def _state_focus_phrase(state: str, *, title: str) -> str:
 
 def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
     text = first_path_outcome_phrase(first_path, proof_boundary=proof, fallback="a visible, useful result", limit=190).rstrip(".")
-    if not re.search(r"\b(?:answer|appointment|booking|card|confirmation|decision|metrics?|outcome|readout|recommendation|report|result|status|summary|view)\b", text, re.I):
+    if re.match(r"^why\b", text, flags=re.I):
+        text = f"the explanation for {text}"
+    if not re.search(r"\b(?:answer|appointment|booking|card|confirmation|decision|explanation|metrics?|outcome|plan|readout|recommendation|report|result|schedule|status|summary|view)\b", text, re.I):
         text = f"a visible outcome from {text}"
     return text
 

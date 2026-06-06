@@ -61,6 +61,13 @@ def outcome_phrase(proposal: Mapping[str, Any]) -> str:
     )
 
 
+def outcome_action_phrase(outcome: str) -> str:
+    text = _clean(outcome).rstrip(" .") or "the product result"
+    if re.search(r"\b(?:plan|readout|recommendation|report|schedule|view)\b", text, flags=re.IGNORECASE):
+        return f"use {text}"
+    return f"reach {text}"
+
+
 def workstream_subject(row: Mapping[str, Any], *, fallback: str) -> str:
     component = _clean(next(iter(text_values(row.get("component_focus"))), ""))
     title = _clean(row.get("title")) or fallback
@@ -93,7 +100,7 @@ def workstream_problem(*, label: str, action: str, outcome: str, state: str) -> 
 
 def workstream_opportunity(*, label: str, action: str, outcome: str) -> str:
     return _sentence(
-        f"Build the narrow behavior in {label} that lets one representative user {action} and reach {outcome}.",
+        f"Build the narrow behavior in {label} that lets one representative user {action} and {outcome_action_phrase(outcome)}.",
         limit=420,
     )
 
@@ -301,6 +308,7 @@ __all__ = [
     "has_connector_clipped_risk_subject",
     "keywords",
     "lower_first",
+    "outcome_action_phrase",
     "outcome_phrase",
     "primary_component_for_backlog",
     "project_title",
