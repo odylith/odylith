@@ -266,12 +266,6 @@ def _normalize_system_description(value: str) -> str:
     text = normalize_visible_result_language(_clean(value))
     text = re.sub(r"^(?:hold|holds|holding)\s+", "maintains ", text, flags=re.IGNORECASE)
     text = re.sub(r"^combines?\s+reference\s+ranges?\s+with\b", "evaluates reference ranges against", text, flags=re.IGNORECASE)
-    text = re.sub(
-        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
-        "battery and load control actions",
-        text,
-        flags=re.IGNORECASE,
-    )
     return _clean(text)
 
 

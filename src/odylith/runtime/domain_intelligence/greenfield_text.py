@@ -12,6 +12,10 @@ _LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;)+")
 _COMMA_LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;|,)+")
 _LIST_BULLET_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s*")
 _PUNCTUATION_SPACING_RE = re.compile(r"\s+([,.;:?!])")
+_CONTROL_ACTION_TARGET_RE = re.compile(
+    r"\b(?P<action>control\s+actions?)\s+to\s+(?:the\s+)?(?P<target>[^.;:,]+)",
+    re.IGNORECASE,
+)
 
 
 def clean_text(value: Any) -> str:
@@ -80,13 +84,19 @@ def normalize_visible_result_language(value: Any) -> str:
         text,
         flags=re.IGNORECASE,
     )
-    text = re.sub(
-        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
-        "battery and load control actions",
-        text,
-        flags=re.IGNORECASE,
-    )
+    text = normalize_action_target_language(text)
     return clean_text(text)
+
+
+def normalize_action_target_language(value: Any) -> str:
+    return clean_text(_CONTROL_ACTION_TARGET_RE.sub(_control_action_target_text, clean_text(value)))
+
+
+def _control_action_target_text(match: re.Match[str]) -> str:
+    target = clean_text(match.group("target")).strip(" .")
+    if not target:
+        return match.group(0)
+    return f"{match.group('action')} for {target}"
 
 
 def _replace_casefolded_phrase(value: str, needle: str, replacement: str) -> str:

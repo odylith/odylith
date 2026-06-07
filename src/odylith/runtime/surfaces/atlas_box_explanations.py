@@ -7,6 +7,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_action_target_language
 from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import display_text
 
@@ -212,12 +213,7 @@ def clean_component_description(*, name: str, description: str) -> str:
         text,
         flags=re.IGNORECASE,
     ).strip(" ;,")
-    text = re.sub(
-        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
-        "battery and load control actions",
-        text,
-        flags=re.IGNORECASE,
-    )
+    text = normalize_action_target_language(text)
     text = re.sub(r";\s*serve\s+as\b", "; serves as", text, flags=re.IGNORECASE)
     text = _OWNED_ACTION_RE.sub(lambda match: str(match.group(1)), text).strip()
     text = re.sub(r"^owns?\s+owns?\s+", "owns ", text, flags=re.IGNORECASE).strip()

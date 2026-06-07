@@ -90,6 +90,32 @@ SEMANTIC_QUALITY_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfie
 APPLY_WRITE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py"
 
 
+def test_greenfield_platform_helpers_do_not_hardcode_fixture_domains() -> None:
+    guarded_roots = [
+        ROOT / "src/odylith/runtime/domain_intelligence",
+        ROOT / "src/odylith/runtime/surfaces",
+    ]
+    forbidden_terms = (
+        "battery",
+        "calorie",
+        "controllable loads",
+        "hardware automation",
+        "homeowner",
+        "market bidding",
+        "peptide",
+        "projected savings",
+        "solar",
+        "sunburn",
+        "sunledger",
+        "sunrecover",
+    )
+
+    for path in sorted(path for root in guarded_roots for path in root.rglob("*.py")):
+        source = path.read_text(encoding="utf-8").casefold()
+        for term in forbidden_terms:
+            assert term not in source, f"{path} hardcodes fixture-domain term: {term}"
+
+
 def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
     source = CONFIRMED_COMPONENTS_PATH.read_text(encoding="utf-8")
     text_source = CONFIRMED_TEXT_PATH.read_text(encoding="utf-8")
@@ -452,10 +478,10 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("inspector reviews permit note") == "permit note"
     assert clean_artifact_phrase("student submits assignment details") == "assignment details"
     assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
-    assert clean_artifact_phrase("user adds peptide") == "peptide"
-    assert clean_artifact_phrase("individual user adds peptide") == "peptide"
-    assert clean_artifact_phrase("representative user peptide") == "peptide"
-    assert clean_artifact_phrase("running peptide") == "peptide"
+    assert clean_artifact_phrase("user adds protocol") == "protocol"
+    assert clean_artifact_phrase("individual user adds protocol") == "protocol"
+    assert clean_artifact_phrase("representative user protocol") == "protocol"
+    assert clean_artifact_phrase("running protocol") == "running protocol"
     assert clean_artifact_phrase("dashboard visibly updates web/ui surface") == "web/ui surface state"
     assert clean_artifact_phrase("descriptions mechanism") == "descriptions"
     assert clean_artifact_phrase("metric moved usage protocol") == "usage protocol metric"

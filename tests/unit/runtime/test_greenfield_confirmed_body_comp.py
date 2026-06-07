@@ -371,7 +371,7 @@ def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_dri
     assert "Energy Plan" in encoded
     assert "today's plan with the projected savings versus doing nothing" in encoded
     assert "forecast-driven dispatch schedule" in encoded
-    assert "battery and load control actions" in encoded
+    assert "control actions for battery and controllable loads" in encoded
     assert generated_semantic_slop_issues(proposal) == []
     assert greenfield_quality_issues(proposal) == []
     assert component_spec_preflight_issues(proposal) == []
@@ -391,7 +391,7 @@ def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_dri
     )
     for phrase in rendered_forbidden:
         assert phrase not in rendered_specs
-    assert "load control actions" in rendered_specs
+    assert "control actions for battery and controllable loads" in rendered_specs
     accepted_proposal = dict(proposal)
     accepted_proposal["_accepted_project"] = {"source_path": "odylith/runtime/source/accepted-project.v1.json"}
     payload = project_intelligence_builder.build_project_intelligence_payload(

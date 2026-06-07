@@ -154,8 +154,8 @@ def test_visible_result_language_normalization_stays_in_text_owner() -> None:
         == "a trend the optimizer uses for comparison"
     )
     assert (
-        normalize_visible_result_language("issues control actions to battery and controllable loads")
-        == "issues battery and load control actions"
+        normalize_visible_result_language("issues control actions to downstream systems")
+        == "issues control actions for downstream systems"
     )
 
     for caller in callers:

@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_action_target_language
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
@@ -426,13 +427,7 @@ def _action_object_phrase(description: str) -> str:
 
 
 def _clean_focus_object(value: str) -> str:
-    text = _clean(value).strip(" .")
-    text = re.sub(
-        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
-        "battery and load control actions",
-        text,
-        flags=re.IGNORECASE,
-    )
+    text = normalize_action_target_language(_clean(value)).strip(" .")
     text = re.sub(
         r"\b(?:captures?|capturing)\s+user\s+actions?\b",
         "product interaction",

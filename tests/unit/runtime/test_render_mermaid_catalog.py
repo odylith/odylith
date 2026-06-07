@@ -975,11 +975,11 @@ def test_atlas_box_explanations_do_not_prefix_action_component_copy_with_owns() 
             },
             {
                 "name": "Dispatch / Automation Service",
-                "description": "Issues control actions to battery and controllable loads.",
+                "description": "Issues control actions to downstream devices.",
             },
             {
                 "name": "Insights Surface",
-                "description": "Shows the plan, realized savings, and history to the homeowner.",
+                "description": "Shows the plan, realized result, and history to the operator.",
             },
         ],
         diagram_title="Component Boundary View",
@@ -989,7 +989,7 @@ def test_atlas_box_explanations_do_not_prefix_action_component_copy_with_owns() 
     rendered = "\n".join(by_label.values())
 
     assert "Forecasting Service predicts generation and household demand" in by_label["Forecasting Service"]
-    assert "Dispatch / Automation Service issues battery and load control actions" in by_label[
+    assert "Dispatch / Automation Service issues control actions for downstream devices" in by_label[
         "Dispatch / Automation Service"
     ]
     assert "Insights Surface shows the plan" in by_label["Insights Surface"]

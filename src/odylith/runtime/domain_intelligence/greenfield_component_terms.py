@@ -191,8 +191,6 @@ def clean_artifact_phrase(value: str) -> str:
     text = _normalize_misplaced_artifact_modifiers(text)
     if re.fullmatch(r"pass\s+or\s+block\s+outcomes?", text, flags=re.I):
         return text
-    if text == "peptide":
-        return text
     action_pattern = action_forms_pattern()
     text = re.sub(rf"^(?:[a-z0-9-]+\s+){{0,4}}can\s+(?:{action_pattern})\s+", "", text, flags=re.I)
     text = re.sub(r"\b(?:related path|failure avoided|relevant behavior)\s*:\s*.+$", "", text, flags=re.I)
@@ -317,6 +315,13 @@ def clean_artifact_phrase(value: str) -> str:
         lowered = text.casefold()
         if not text or text in GENERIC_TERMS:
             return ""
+    role_stripped = _strip_leading_artifact_role(text)
+    if role_stripped != text:
+        text = role_stripped
+        words = text.split()
+        lowered = text.casefold()
+        if not text or text in GENERIC_TERMS:
+            return ""
     if not content_terms(text):
         return ""
     action_hits = [
@@ -353,6 +358,21 @@ def _actor_led_action_index(words: Sequence[str]) -> int | None:
     return None
 
 
+def _strip_leading_artifact_role(value: str) -> str:
+    text = clean_text(value).casefold().strip(" .,;:")
+    words = text.split()
+    if len(words) < 2:
+        return text
+    qualifiers = {"active", "current", "example", "individual", "primary", "representative", "sample", "selected"}
+    index = 0
+    while index < len(words) - 1 and words[index] in qualifiers:
+        index += 1
+    candidate = ""
+    if 0 < index < len(words) - 1 and words[index] in ROLEISH_TERMS:
+        candidate = " ".join(words[index + 1 :]).strip(" .,;:")
+    return candidate if candidate and content_terms(candidate) and not looks_like_finite_action(candidate) else text
+
+
 def _normalize_fragmented_artifact_phrase(value: str) -> str:
     text = clean_text(value).casefold().strip(" .,;:")
     if not text:
@@ -363,24 +383,12 @@ def _normalize_fragmented_artifact_phrase(value: str) -> str:
     text = re.sub(r"\bmechanisms?\s+typical\b", "typical", text, flags=re.I)
     text = re.sub(r"\bvalues?\s+relevant\s+conditions?\b", "relevant condition", text, flags=re.I)
     text = re.sub(r"\bconditions?\s+context\s+justified\b", "condition context", text, flags=re.I)
-    text = re.sub(
-        r"\b(?:homeowner\s+plan\s+)?(?:defensible\s+)?projected\s+savings(?:\s+number)?(?:\s+versus\s+(?:no\s+)?optimization)?\b",
-        "projected savings",
-        text,
-        flags=re.I,
-    )
-    text = re.sub(r"\bhomeowner\s+plan\s+defensible\s+projected\b", "projected savings", text, flags=re.I)
-    text = re.sub(r"\bnumber\s+versus\s+(?:no\s+)?optimization\b", "projected savings", text, flags=re.I)
-    if re.search(r"\bversus\s+optimization\b", text, flags=re.I):
-        return ""
     if re.search(
-        r"\b(?:full\s+closed[- ]loop\s+hardware\s+automation|hardware\s+automation\s+scope|multi[- ]site\s+fleets?|market\s+bidding)\b",
+        r"\b(?:out\s+of\s+scope|outside\s+(?:the\s+)?(?:first\s+)?scope|future\s+scope|later\s+wave|not\s+claimed|do\s+not\s+claim)\b",
         text,
         flags=re.I,
     ):
         return ""
-    text = re.sub(r"\b(?:representative|individual|primary|running)?\s*user\s+(?=peptide\b)", "", text, flags=re.I)
-    text = re.sub(r"\brunning\s+(?=peptide\b)", "", text, flags=re.I)
     words = text.split()
     for index, word in enumerate(words[:-2]):
         if word in {"metric", "metrics"} and words[index + 1] in {"changed", "moved", "trended"}:
@@ -390,12 +398,6 @@ def _normalize_fragmented_artifact_phrase(value: str) -> str:
             break
     text = re.sub(r"\bmoved\s+(?=[a-z0-9])", "", text, flags=re.I)
     text = re.sub(r"\bcombines?\s+(?=reference|range|ranges|data|input|inputs)\b", "", text, flags=re.I)
-    text = re.sub(
-        r"\bcontrol\s+actions?\s+to\s+(?:the\s+)?battery\s+and\s+controllable\s+loads?\b",
-        "battery and load control actions",
-        text,
-        flags=re.I,
-    )
     text = re.sub(r"\bnormalize\s+(?=[a-z0-9])", "normalized ", text, flags=re.I)
     return re.sub(r"\s+", " ", text).strip(" .,;:")
 
