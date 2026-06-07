@@ -64,6 +64,7 @@ TERM_STOPWORDS = STRUCTURAL_TERMS | {
     "must",
     "that",
     "this",
+    "through",
     "when",
     "where",
     "which",

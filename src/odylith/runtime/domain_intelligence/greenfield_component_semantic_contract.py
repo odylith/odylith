@@ -195,6 +195,7 @@ def derive_component_semantic_contract(
         role="output",
         contract_terms=(*label_terms, *description_terms),
     )
+    critical = _result_like_phrase(output_focus) or critical
     states = _state_transition_text(
         action_terms=action_terms,
         object_phrases=object_phrases,
@@ -218,13 +219,26 @@ def derive_component_semantic_contract(
         proposal_context=proposal_context,
         action_terms=action_terms,
     ) else ()
+    owned_context_phrases = _owned_context_detail_phrases(
+        context_phrases,
+        context_compound_phrases,
+        label_terms=label_terms,
+    )
     owned_summary_phrases = summary_phrases[:7]
     title_identity_phrases = _title_identity_phrases(label_phrases, owned_summary_phrases)
     owned_seed = (
-        (*title_identity_phrases, *owned_summary_phrases, *evidence_phrases, "blocker state", "next-step context")
+        (
+            *title_identity_phrases,
+            *owned_summary_phrases,
+            *owned_context_phrases[:2],
+            *evidence_phrases,
+            "blocker state",
+            "next-step context",
+        )
         if summary_phrases
         else (f"{_clean(label).casefold()} state", *label_phrases[:1], *evidence_phrases, "blocker state")
     )
+    owned_seed = tuple(_drop_subsumed_singletons(owned_seed))
     failure_cause = (
         "calculated from the wrong inputs"
         if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score"))
@@ -246,6 +260,39 @@ def derive_component_semantic_contract(
     }
     confidence = len(object_phrases) * 3 + len(action_terms) * 2 + min(len(local_terms), 8)
     return SemanticComponentContract(fields=fields, confidence=confidence, local_terms=tuple(local_terms))
+
+
+def _result_like_phrase(value: str) -> str:
+    result_terms = {
+        "answer",
+        "decision",
+        "estimate",
+        "evidence",
+        "number",
+        "outcome",
+        "output",
+        "recommendation",
+        "result",
+        "score",
+        "suggestion",
+        "summary",
+    }
+    best_score = 0
+    best = ""
+    for part in _clean(value).split(","):
+        text = _clean_artifact_phrase(part)
+        if not text or _status_only_artifact_fragment(text):
+            continue
+        terms = set(_content_terms(text))
+        score = len(terms & result_terms) * 10
+        if "result" in terms:
+            score += 20
+        if "recommendation" in terms or "suggestion" in terms or "decision" in terms:
+            score += 12
+        if score > best_score:
+            best_score = score
+            best = text
+    return best
 
 
 def _needs_source_evidence(
@@ -274,10 +321,17 @@ def _label(row: Mapping[str, Any] | None) -> str:
 
 
 def _description(row: Mapping[str, Any]) -> str:
+    label = _label(row)
     for key in ("source_system_description", "responsibility", "boundary"):
         text = _clean(row.get(key))
-        if text and not _looks_generated_scaffold(text):
-            return _scrub_description_scaffold(text)
+        if not text:
+            continue
+        if _looks_generated_scaffold(text):
+            scaffold_subject = _generated_scaffold_subject(text, label=label)
+            if scaffold_subject:
+                return scaffold_subject
+            continue
+        return _scrub_description_scaffold(text)
     return ""
 
 
@@ -286,6 +340,24 @@ def _scrub_description_scaffold(value: str) -> str:
     text = re.sub(r"\bRelevant\s+behavior\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"\bRationale\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
     return text.rstrip(" .")
+
+
+def _generated_scaffold_subject(value: str, *, label: str) -> str:
+    text = _clean(value)
+    label_terms = set(_content_terms(label))
+    patterns = (
+        r"\bowns?\s+(?P<subject>.+?)\s+state,\s+required\s+inputs\b",
+        r"\b(?P<subject>.+?)\s+state,\s+required\s+inputs\b",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        subject = _clean_artifact_phrase(match.group("subject")) or _clean(match.group("subject")).casefold()
+        subject_terms = set(_content_terms(subject))
+        if len(subject_terms) >= 2 and (not label_terms or subject_terms & label_terms):
+            return f"owns {subject} state"
+    return ""
 
 
 def _looks_generated_scaffold(value: str) -> bool:
@@ -359,7 +431,7 @@ def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
             words = relation_phrase.split()
             if 4 <= len(words) <= 14 and len(_content_terms(relation_phrase)) >= 3:
                 tail_rows.append(relation_phrase.casefold())
-        tail_match = re.search(r"\b(?:from|with)\s+(?P<tail>.+)$", phrase, flags=re.IGNORECASE)
+        tail_match = re.search(r"\b(?:from|into|with)\s+(?P<tail>.+)$", phrase, flags=re.IGNORECASE)
         if tail_match:
             tail = _trim_phrase(tail_match.group("tail"))
             if 1 <= len(tail.split()) <= 7 and _content_terms(tail):
@@ -431,7 +503,7 @@ def _sibling_focus(row: Mapping[str, Any] | None) -> str:
     label = _label(row)
     if not label:
         return ""
-    return f"{label} ownership over {label} local state"
+    return f"{label} ownership of local state"
 
 
 def _bridge_phrases(label: str, description: str) -> list[str]:
@@ -513,6 +585,42 @@ def _title_identity_phrases(label_phrases: Sequence[str], summary_phrases: Seque
         if len(rows) >= 2:
             break
     return tuple(rows)
+
+
+def _owned_context_detail_phrases(
+    context_phrases: Sequence[str],
+    context_compound_phrases: Sequence[str],
+    *,
+    label_terms: Sequence[str],
+) -> tuple[str, ...]:
+    rows: list[str] = []
+    label_term_set = set(label_terms)
+    for phrase in (*context_phrases, *context_compound_phrases):
+        terms = list(_content_terms(phrase))
+        if len(terms) < 2:
+            continue
+        decision_detail = bool(
+            label_term_set & {"decision", "journal", "ledger"}
+            and "decision" in terms
+            and terms[0] not in {"first", "local", "next", "product", "release", "review", "source", "validation"}
+        )
+        if (
+            terms[0] not in {"accepted", "current", "incomplete", "missing", "recent", "required", "selected", "unavailable"}
+            and not decision_detail
+        ):
+            continue
+        if set(terms) & {"context", "summary"}:
+            continue
+        if not set(terms) & _ARTIFACT_CARRIER_TERMS:
+            continue
+        if terms[-1] in {"link", "links"} and len(terms) > 2:
+            terms = terms[:-1]
+        if terms == ["missing", "contact"]:
+            terms.append("detail")
+        rows.append(" ".join(terms[:4]))
+        if len(rows) >= 3:
+            break
+    return tuple(unique_text(rows))
 
 
 def _bridge_phrase_rank(phrase: str) -> tuple[int, str]:
@@ -626,7 +734,21 @@ def _summary_object_phrases(values: Sequence[str], *, required_phrases: Sequence
             break
         if phrase not in result:
             result.append(phrase)
-    return result[:limit]
+    return _drop_subsumed_singletons(result[:limit])
+
+
+def _drop_subsumed_singletons(values: Sequence[str]) -> list[str]:
+    result: list[str] = []
+    identities = [(phrase, _phrase_identity_terms(phrase)) for phrase in values]
+    for phrase, terms in identities:
+        if len(terms) == 1 and any(terms < other_terms for other_phrase, other_terms in identities if other_phrase != phrase):
+            continue
+        if terms & {"incomplete", "missing", "recent", "unavailable"} and any(
+            terms < other_terms for other_phrase, other_terms in identities if other_phrase != phrase
+        ):
+            continue
+        result.append(phrase)
+    return result
 
 
 def _clean(value: Any) -> str:

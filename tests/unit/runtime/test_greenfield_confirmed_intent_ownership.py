@@ -340,7 +340,7 @@ Reject: stop without writing records.
         prompt="Draft a product-first greenfield proposal for an inventory service quality tracker.",
     )
 
-    assert intent["state_object"].startswith("The state object is an inventory readiness record")
+    assert intent["state_object"].startswith("an inventory readiness record")
     assert str(intent["first_path"]).startswith("A coordinator imports a small item list")
     assert "Next step" not in str(intent["proof_boundary"])
     assert len(intent["internal_systems"]) == 3

@@ -1140,13 +1140,13 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     titles = [str(row["title"]) for row in accepted["proposal"]["backlog"]]
     assert titles == [
         "Make Decision Review Workspace Useful for One Complete Outcome",
-        "Let Coordinator Reach the Final Status with Source Evidence",
+        "Let Coordinator Use the Final Status with Source Evidence",
         "Keep Decision Record Clear After Quality Review Changes It",
         "Show Why Decision Record Can Be Trusted",
     ]
     assert not any(title.startswith(("Build ", "Implement ", "Ship ")) for title in titles)
     rows_by_title = {str(row["title"]): row for row in accepted["proposal"]["backlog"]}
-    first_path_row = rows_by_title["Let Coordinator Reach the Final Status with Source Evidence"]
+    first_path_row = rows_by_title["Let Coordinator Use the Final Status with Source Evidence"]
     state_row = rows_by_title["Keep Decision Record Clear After Quality Review Changes It"]
     proof_row = rows_by_title["Show Why Decision Record Can Be Trusted"]
 

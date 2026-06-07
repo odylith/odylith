@@ -65,8 +65,12 @@ def word_occurrences(value: Any, word: Any) -> int:
 
 def normalize_visible_result_language(value: Any) -> str:
     text = clean_text(value)
+    text = _replace_casefolded_phrase(text, "reasons against", "uses for comparison")
+    text = _replace_casefolded_phrase(text, "reason against", "use for comparison")
     text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
     text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bagainst\s+(?:the\s+)?target\s+plus\b", "compared with the target and", text, flags=re.IGNORECASE)
+    text = re.sub(r"\bagainst\s+target\b", "against the target", text, flags=re.IGNORECASE)
     text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.IGNORECASE)
     text = re.sub(r"\balongside\b", "with", text, flags=re.IGNORECASE)
     text = re.sub(r"\bmetrics?\s+(?:trended|moved)\s+with\b", "metrics changed with", text, flags=re.IGNORECASE)
@@ -83,6 +87,18 @@ def normalize_visible_result_language(value: Any) -> str:
         flags=re.IGNORECASE,
     )
     return clean_text(text)
+
+
+def _replace_casefolded_phrase(value: str, needle: str, replacement: str) -> str:
+    text = value
+    target = clean_text(needle).casefold()
+    if not target:
+        return text
+    while True:
+        index = text.casefold().find(target)
+        if index < 0:
+            return text
+        text = f"{text[:index]}{replacement}{text[index + len(needle):]}"
 
 
 def normalize_proof_boundary_language(value: Any) -> str:

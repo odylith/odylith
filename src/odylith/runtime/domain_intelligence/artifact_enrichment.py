@@ -61,14 +61,15 @@ def radar_enrichment_sections(
 ) -> dict[str, str]:
     """Return Radar-native sections shaped by domain intelligence."""
 
-    first_slice = clean_text(row.get("recommended_first_slice")) or _first(graph.validation_obligations)
+    first_slice = _workstream_first_slice(row=row, graph=graph)
+    focus = _radar_workstream_focus(row)
     sections: dict[str, str] = {}
 
     first_path = _bullets(
         [
-            _sentence("First path", first_slice),
-            _sentence("State object", _first(graph.state_objects)),
-            _sentence("Boundary", _first(_layer(row, "scope")) or _first(graph.maturity_and_origin)),
+            _scoped_sentence("First path", focus, first_slice),
+            _scoped_sentence("State object", focus, _first(graph.state_objects)),
+            _scoped_sentence("Boundary", focus, _first(_layer(row, "scope")) or _first(graph.maturity_and_origin)),
         ]
     )
     if first_path:
@@ -76,8 +77,8 @@ def radar_enrichment_sections(
 
     proof = _bullets(
         [
-            *_labelled_rows("Proof", graph.proof_standards[:4]),
-            *_labelled_rows("Gate", graph.validation_obligations[:5]),
+            *_scoped_labelled_rows("Proof", focus, graph.proof_standards[:4]),
+            *_scoped_labelled_rows("Gate", focus, graph.validation_obligations[:5]),
         ]
     )
     if proof:
@@ -85,9 +86,9 @@ def radar_enrichment_sections(
 
     ownership = _bullets(
         [
-            *_labelled_rows("Owner", graph.actors[:3]),
-            *_labelled_rows("Risk", graph.risk_owners[:3]),
-            *_labelled_rows("Control", graph.exception_paths[:3]),
+            *_scoped_labelled_rows("Owner", focus, graph.actors[:2]),
+            *_scoped_labelled_rows("Risk", focus, graph.risk_owners[:2]),
+            *_scoped_labelled_rows("Control", focus, graph.exception_paths[:2]),
         ]
     )
     if ownership:
@@ -174,6 +175,16 @@ def _sentence(label: str, value: str) -> str:
     return f"{label}: {text}" if text else ""
 
 
+def _scoped_sentence(label: str, focus: str, value: str) -> str:
+    text = _without_existing_label(label=label, value=clean_text(value))
+    if not text:
+        return ""
+    focus_text = clean_text(focus)
+    if not focus_text:
+        return f"{label}: {text}"
+    return f"{label} for {focus_text}: {text}"
+
+
 def _without_existing_label(*, label: str, value: str) -> str:
     text = clean_text(value)
     if not text:
@@ -186,8 +197,24 @@ def _without_existing_label(*, label: str, value: str) -> str:
     return text
 
 
-def _labelled_rows(label: str, values: Sequence[str]) -> list[str]:
-    return [_sentence(label, value) for value in values if clean_text(value)]
+def _scoped_labelled_rows(label: str, focus: str, values: Sequence[str]) -> list[str]:
+    return [_scoped_sentence(label, focus, value) for value in values if clean_text(value)]
+
+
+def _radar_workstream_focus(row: Mapping[str, Any]) -> str:
+    return clean_text(row.get("title")) or clean_text(row.get("recommended_first_slice")) or "this workstream"
+
+
+def _workstream_first_slice(*, row: Mapping[str, Any], graph: DomainIntelligenceGraph) -> str:
+    explicit = clean_text(row.get("recommended_first_slice")) or clean_text(row.get("first_slice_proof"))
+    if explicit:
+        return explicit
+    for value in [*graph.workflows, *graph.operators, *graph.state_objects, *graph.maturity_and_origin]:
+        text = clean_text(value)
+        if text:
+            return text
+    focus = _radar_workstream_focus(row)
+    return f"Define the smallest source-backed behavior, state boundary, and proof gate for {focus}."
 
 
 def _bullets(values: Sequence[str]) -> str:

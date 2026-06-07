@@ -45,6 +45,7 @@ def _semantic_event_steps(semantic_model: Mapping[str, Any] | None) -> list[str]
     rows = contract.get("events")
     if not isinstance(rows, list):
         return []
+    visible_result = _compact_text(str(contract.get("visible_result") or ""))
     steps: list[str] = []
     for row in rows:
         if not isinstance(row, Mapping):
@@ -52,6 +53,7 @@ def _semantic_event_steps(semantic_model: Mapping[str, Any] | None) -> list[str]
         text = _compact_text(str(row.get("text") or row.get("mutation") or ""))
         if text:
             text = _normalize_event_step(text)
+            text = _anchor_visible_result_step(text, visible_result)
             steps.append(text)
     return _dedupe_steps(_expand_compound_steps(steps))
 
@@ -93,6 +95,106 @@ def _normalize_event_step(value: str) -> str:
         )
     text = normalize_visible_result_language(text)
     return text
+
+
+def _anchor_visible_result_step(value: str, visible_result: str) -> str:
+    text = _compact_text(value).strip(" .")
+    anchored = _compact_text(visible_result).strip(" .")
+    if not text or not anchored:
+        return text
+    result_action = _leading_result_action(text)
+    if result_action:
+        return f"{result_action} {anchored[:1].lower()}{anchored[1:]}"
+    if not _starts_with_unanchored_result_pronoun(text):
+        return text
+    if _starts_with_action_word(anchored):
+        return anchored
+    return f"Show {anchored[:1].lower()}{anchored[1:]}"
+
+
+def _leading_result_action(value: str) -> str:
+    words = _leading_words(value, limit=2)
+    if len(words) < 2 or words[1] not in {"it", "them", "they", "this", "that"}:
+        return ""
+    if words[0] not in {"get", "gets", "read", "reads", "receive", "receives", "see", "sees", "show", "shows", "view", "views"}:
+        return ""
+    return _base_result_action(words[0]).capitalize()
+
+
+def _base_result_action(value: str) -> str:
+    return {
+        "gets": "get",
+        "reads": "read",
+        "receives": "receive",
+        "sees": "see",
+        "shows": "show",
+        "views": "view",
+    }.get(value, value)
+
+
+def _starts_with_unanchored_result_pronoun(value: str) -> bool:
+    first = _leading_word(value)
+    return first in {"it", "them", "they", "this", "that"}
+
+
+def _starts_with_action_word(value: str) -> bool:
+    first = _leading_word(value)
+    return first in {
+        "add",
+        "adjust",
+        "approve",
+        "assign",
+        "attach",
+        "calculate",
+        "capture",
+        "check",
+        "choose",
+        "compare",
+        "complete",
+        "confirm",
+        "create",
+        "delete",
+        "edit",
+        "enter",
+        "export",
+        "fetch",
+        "highlight",
+        "import",
+        "log",
+        "persist",
+        "publish",
+        "rank",
+        "read",
+        "receive",
+        "record",
+        "review",
+        "route",
+        "save",
+        "see",
+        "select",
+        "show",
+        "store",
+        "submit",
+        "update",
+        "validate",
+        "view",
+    }
+
+
+def _leading_word(value: str) -> str:
+    words = _leading_words(value, limit=1)
+    return words[0] if words else ""
+
+
+def _leading_words(value: str, *, limit: int) -> list[str]:
+    words: list[str] = []
+    for raw in _compact_text(value).split():
+        word = raw.strip(".,;:()[]{}").casefold()
+        if word:
+            words.append(word)
+        if len(words) >= limit:
+            break
+    return words
 
 
 def _first_path_steps(value: str) -> list[str]:

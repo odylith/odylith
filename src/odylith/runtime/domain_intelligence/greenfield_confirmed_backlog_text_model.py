@@ -117,28 +117,40 @@ def semantic_words(value: str) -> set[str]:
 
 def lead_actor_label(values: list[str]) -> str:
     for value in values:
-        text = _label_head(str(value))
+        text = _actor_title_head(str(value))
         text = re.split(r"\b(?:who|that|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
         if not text:
             continue
-        words = text.split()
-        if len(words) > 4:
-            text = " ".join(words[:4])
         return sentence_fragment(text)
     return "someone"
 
 
 def supporting_actor_label(values: list[str]) -> str:
     for value in values[1:]:
-        text = _label_head(str(value))
+        text = _actor_title_head(str(value))
         text = re.split(r"\b(?:who|that|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
         if not text:
             continue
-        words = text.split()
-        if len(words) > 4:
-            text = " ".join(words[:4])
         return sentence_fragment(text)
     return ""
+
+
+def _actor_title_head(value: str) -> str:
+    text = _label_head(value)
+    text = re.sub(r"\s*\([^)]*\)\s*", " ", text).strip(" .")
+    words = text.split()
+    for index, word in enumerate(words[1:], start=1):
+        token = word.casefold().strip(".,;:")
+        if token.endswith("ing") and len(words[:index]) >= 2:
+            words = words[:index]
+            break
+    if len(words) > 1 and words[-1].casefold() in {"person", "people", "individual"}:
+        previous = words[-2].casefold()
+        if previous in {"individual", "person", "people", "user", "customer", "owner"}:
+            words = words[:-1]
+    if len(words) > 4:
+        words = words[:4]
+    return " ".join(words).strip(" .")
 
 
 def _label_head(value: str) -> str:
@@ -160,6 +172,8 @@ def imperative_action_phrase(first_path: str) -> str:
         return ""
     actor, action_without_actor = actor_action_parts(text)
     if actor and action_without_actor:
+        if actor.casefold() in {"actor", "customer", "owner", "participant", "person", "someone", "user"}:
+            return normalize_action_clause(action_without_actor)
         return f"{actor} {action_without_actor}"
     return capability_action_clause(text)
 
@@ -325,7 +339,7 @@ def capability_action_clause(value: str) -> str:
 def normalize_action_clause(value: str) -> str:
     text = base_action_clause(sentence_fragment(value))
     text = re.sub(
-        r"^(?:a|an|the)\s+(?:user|owner|person|actor|customer|applicant|participant|operator)\s+",
+        r"^(?:(?:a|an|the)\s+)?(?:user|owner|person|actor|customer|applicant|participant|operator)\s+",
         "",
         text,
         flags=re.IGNORECASE,
@@ -436,7 +450,8 @@ def rationale_release_basis(*, title: str, label: str, first_slice: str, proof_b
     proof_terms = semantic_words(proof_boundary)
     shared = sorted((slice_terms & proof_terms) - {"can", "must", "release", "result", "state"})
     if shared:
-        return f"{title_text} ranks before optional expansion because {label} must prove {', '.join(shared[:3])} in the same release story"
+        proof_focus = rationale_proof_focus(proof_boundary, fallback=first_slice)
+        return f"{title_text} ranks before optional expansion because {label} must prove {proof_focus} in the same release story"
     return f"{title_text} ranks before optional expansion because it ties the accepted path to reviewable {label} release evidence"
 
 

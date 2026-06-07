@@ -453,8 +453,8 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     assert "## Domain Model" not in joined
     assert "## Proof And Acceptance Gates" in joined
     assert "## Ownership And Risk" in joined
-    assert "Proof:" in joined
-    assert "Gate:" in joined
+    assert "Proof for" in joined
+    assert "Gate for" in joined
     assert "source-backed implementation claims" in joined
     parent_spec = specs_by_title["Govern Commerce Launch System"]
     all_radar_text = parent_spec + "\n" + joined
@@ -721,7 +721,8 @@ def test_greenfield_normalization_splits_scalar_quality_fields() -> None:
         "Order idempotency measured by replay contract tests",
     ]
     assert normalized_identity["recommended_first_slice"] == (
-        "Browser proof passes for failed-checkout recovery. Replay proof blocks duplicate order creation."
+        "Start Define Storefront boundary with the smallest source-backed slice for this product view: "
+        "Storefront should own browse, cart entry, checkout entry, and user-visible errors."
     )
     assert normalized["release_plan"]["target_workstreams"] == ["Define Storefront boundary", "Define Catalog boundary"]
     assert normalized["program"]["waves"][0]["validation_gate"] == (
@@ -1041,7 +1042,7 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert "checkout entry" in storefront_spec
     assert "user-facing errors" in storefront_spec
     assert "It owns browse, cart entry, checkout entry, and user-facing errors" not in storefront_spec
-    assert "Trace links: workstreams B-002" in storefront_spec
+    assert "Trace links for Storefront: workstreams B-002" in storefront_spec
     assert "| Workstreams | `B-002` |" not in storefront_spec
     assert "| Diagrams | none yet |" not in storefront_spec
     assert "Browser smoke proof for browse-to-cart and failed-checkout messaging" in storefront_spec
@@ -1167,12 +1168,12 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
     assert "browse, cart entry, checkout entry, and user-facing errors" in storefront_spec
     assert "payment handoff, order draft, idempotency, and recovery boundaries" in checkout_spec
     assert "product facts, price snapshots, inventory visibility, and merchandising review" in catalog_spec
-    assert "Trace links: workstreams B-002" in storefront_spec
-    assert "Trace links: workstreams B-002" in checkout_spec
-    assert "Trace links: workstreams B-003" in catalog_spec
-    assert "Use B-002 (Define Storefront boundary) as the implementation anchor" in storefront_spec
-    assert "Use B-003 (Define Catalog boundary) as the implementation anchor" in catalog_spec
-    assert "Use B-002 (Define Storefront boundary) as the implementation anchor" not in catalog_spec
+    assert "Trace links for Storefront: workstreams B-002" in storefront_spec
+    assert "Trace links for Checkout Orchestrator: workstreams B-002" in checkout_spec
+    assert "Trace links for Catalog Boundary: workstreams B-003" in catalog_spec
+    assert "For Storefront, use B-002 (Define Storefront boundary) as the implementation anchor" in storefront_spec
+    assert "For Catalog Boundary, use B-003 (Define Catalog boundary) as the implementation anchor" in catalog_spec
+    assert "For Catalog Boundary, use B-002 (Define Storefront boundary) as the implementation anchor" not in catalog_spec
     assert "## Component Brief" not in storefront_spec
     assert "## Boundary Narrative" not in storefront_spec
     assert "## First Release Proof" not in checkout_spec

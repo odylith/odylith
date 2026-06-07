@@ -20,13 +20,13 @@ from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 ACTION_VERBS = (
     "accept", "adjust", "apply", "approve", "assemble", "assign", "block", "build", "calculate", "capture",
-    "choose", "combine", "compare", "complete", "compute", "connect", "correlate", "create", "delete", "derive",
-    "describe", "display", "edit", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
+    "choose", "combine", "compare", "complete", "compute", "connect", "convert", "correlate", "create", "delete", "derive",
+    "describe", "display", "edit", "estimate", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
     "forecast", "highlight", "import", "inspect", "issue", "keep", "link", "leave", "log", "make", "maintain",
     "manage", "normalize", "notify", "open", "optimize", "order", "move", "pair", "persist", "predict", "present",
-    "prepare", "provide", "produce", "publish", "pull", "rank", "read", "receive", "record", "render", "request",
-    "resolve", "respond", "review", "route", "save", "schedule", "score", "see", "select", "send", "show", "store",
-    "submit", "summarize", "sync", "track", "validate", "verify", "view",
+    "prepare", "propose", "provide", "produce", "publish", "pull", "rank", "read", "receive", "recommend", "record", "render", "request",
+    "resolve", "respond", "review", "route", "save", "schedule", "score", "see", "select", "send", "set", "show", "store",
+    "submit", "suggest", "summarize", "sync", "track", "validate", "verify", "view",
 )
 
 GENERIC_TERMS = {
@@ -82,7 +82,7 @@ GENERIC_TERMS = {
     "whether",
     "working",
     "from", "into", "as",
-    "then", "your",
+    "then", "through", "your",
 }
 
 ARTIFACT_CARRIER_TERMS = {
@@ -96,6 +96,8 @@ ARTIFACT_CARRIER_TERMS = {
     "blockers",
     "confirmation",
     "confirmations",
+    "contact",
+    "contacts",
     "criteria",
     "context",
     "decision",
@@ -120,6 +122,8 @@ ARTIFACT_CARRIER_TERMS = {
     "ledger",
     "list",
     "lists",
+    "log",
+    "logs",
     "marker",
     "markers",
     "metric",
@@ -137,6 +141,10 @@ ARTIFACT_CARRIER_TERMS = {
     "packet",
     "preference",
     "preferences",
+    "profile",
+    "profiles",
+    "recommendation",
+    "recommendations",
     "rationale",
     "record",
     "records",
@@ -151,6 +159,10 @@ ARTIFACT_CARRIER_TERMS = {
     "signal",
     "state",
     "status",
+    "store",
+    "stores",
+    "suggestion",
+    "suggestions",
     "summary",
     "timeline",
     "unit",
@@ -163,6 +175,7 @@ ARTIFACT_CARRIER_TERMS = {
 }
 
 NOUN_MODIFIER_ACTION_TERMS = {"review"}
+RELATION_TAIL_TERMS = {"against", "by", "for", "from", "into", "plus", "to", "using", "with"}
 
 
 def clean_artifact_phrases(values: Sequence[str]) -> list[str]:
@@ -225,6 +238,8 @@ def clean_artifact_phrase(value: str) -> str:
     text = re.sub(r"\bhas\s+enough\s+[a-z0-9-]+\b", "", text, flags=re.I)
     text = re.sub(r"\s+", " ", text).strip(" .,;:")
     text = _normalize_fragmented_artifact_phrase(text)
+    text = _normalize_misplaced_artifact_modifiers(text)
+    text = _strip_relation_tail(text)
     text = re.sub(
         r"\b(?:accepted|confirmed|needed|received|requested|trusted|visible)\b$",
         "",
@@ -262,6 +277,8 @@ def clean_artifact_phrase(value: str) -> str:
     if len(words) > 8:
         return ""
     if len(words) == 1 and words[0] not in ARTIFACT_CARRIER_TERMS and words[0] != "blocker":
+        return ""
+    if _looks_like_long_command_noun_pile(words):
         return ""
     if set(words) & ARTIFACT_CARRIER_TERMS:
         keep_role_qualified_artifact = (
@@ -310,6 +327,19 @@ def clean_artifact_phrase(value: str) -> str:
     if action_hits and not (set(words) & ARTIFACT_CARRIER_TERMS):
         return ""
     return text
+
+
+def _strip_relation_tail(value: str) -> str:
+    words = clean_text(value).split()
+    while words and words[-1].casefold().strip(".,;:") in RELATION_TAIL_TERMS:
+        words.pop()
+    return " ".join(words).strip(" .,;:")
+
+
+def _looks_like_long_command_noun_pile(words: Sequence[str]) -> bool:
+    if len(words) <= 3 or words[-1].casefold().strip(".,;:") != "command":
+        return False
+    return not any(looks_action_form(word) for word in words[:-1])
 
 
 def _actor_led_action_index(words: Sequence[str]) -> int | None:
@@ -398,6 +428,9 @@ def _normalize_misplaced_artifact_modifiers(value: str) -> str:
     text = clean_text(value).casefold().strip(" .,;:")
     if not text:
         return ""
+    words = text.split()
+    if len(words) >= 3 and words[-1] == "next" and words[-2] in ARTIFACT_CARRIER_TERMS:
+        text = " ".join([words[-1], *words[:-1]])
     required = re.match(r"^[a-z0-9-]+\s+required\s+(?P<object>[a-z0-9][a-z0-9 '-]{1,80})$", text, flags=re.I)
     if required:
         text = f"required {required.group('object')}"
@@ -753,28 +786,10 @@ def clean(value: Any) -> str:
 
 
 __all__ = [
-    "ACTION_VERBS",
-    "ARTIFACT_CARRIER_TERMS",
-    "GENERIC_TERMS",
-    "action_forms_pattern",
-    "action_object_artifact_phrases",
-    "clean_artifact_phrase",
-    "clean_artifact_phrases",
-    "content_terms",
-    "descriptor_anchor_phrases",
-    "domain_terms",
-    "enrich_owned_state_from_io",
-    "local_terms",
-    "looks_action_form",
-    "looks_action_term",
-    "looks_actor_term",
-    "natural_phrase",
-    "object_clause_focus",
-    "phrase",
-    "phrase_identity_terms",
-    "split_contract_clauses",
-    "strip_action",
-    "term_phrase",
-    "trim_phrase",
-    "verb_forms_pattern",
+    "ACTION_VERBS", "ARTIFACT_CARRIER_TERMS", "GENERIC_TERMS",
+    "action_forms_pattern", "action_object_artifact_phrases", "clean_artifact_phrase",
+    "clean_artifact_phrases", "content_terms", "descriptor_anchor_phrases", "domain_terms",
+    "enrich_owned_state_from_io", "local_terms", "looks_action_form", "looks_action_term",
+    "looks_actor_term", "natural_phrase", "object_clause_focus", "phrase", "phrase_identity_terms",
+    "split_contract_clauses", "strip_action", "term_phrase", "trim_phrase", "verb_forms_pattern",
 ]

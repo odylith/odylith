@@ -18,6 +18,22 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_t
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
+_PROOF_RESULT_TERMS = frozenset(
+    {
+        "answer",
+        "decision",
+        "estimate",
+        "evidence",
+        "number",
+        "outcome",
+        "output",
+        "recommendation",
+        "result",
+        "score",
+        "summary",
+    }
+)
+
 
 def contract_focus(
     *,
@@ -29,6 +45,17 @@ def contract_focus(
 ) -> str:
     focus = _safe_artifact_focus(_clean(object_list) or _clean(fallback).casefold() or "accepted state")
     focus = _strip_trailing_status_only_focus(focus)
+    recommendation = (
+        _recommendation_artifact(focus, action_terms=action_terms)
+        if _component_owns_recommendation(action_terms, contract_terms)
+        else ""
+    )
+    if recommendation:
+        support = _supporting_artifacts(focus, exclude_terms=set(content_terms(recommendation)))
+        rationale = _guidance_rationale_noun(recommendation, action_terms=action_terms)
+        if role == "input":
+            return f"{support}, goal or constraint context, prior state, and explanation context"
+        return f"{recommendation}, {rationale}, blocked-state detail, and next-step context"
     adjustment = _adjustment_artifact(focus) if _component_owns_adjustment(contract_terms) else ""
     if adjustment and any(action in action_terms for action in ("adjust", "calculate", "compute", "derive")):
         support = _supporting_artifacts(focus, exclude_terms=set(content_terms(adjustment)))
@@ -150,8 +177,8 @@ def proof_rows(
     ]
     if sibling_label:
         rows.append(
-            f"{sibling_label} can consume the result but cannot rewrite {label}'s local state"
-            + (f" while {sibling_focus} remains sibling-owned." if sibling_focus else ".")
+            f"{sibling_label} can consume {proof_focus} without owning or rewriting {label}'s local state."
+            + (f" {sibling_focus} remains outside {label}'s boundary." if sibling_focus else "")
         )
     return rows
 
@@ -211,7 +238,23 @@ def _contract_text_items(value: str) -> list[str]:
             continue
         if phrase and phrase not in rows:
             rows.append(phrase)
-    return rows
+    return _drop_marked_detail_subsets(rows)
+
+
+def _drop_marked_detail_subsets(values: Sequence[str]) -> list[str]:
+    identities = [(value, _detail_identity_terms(value)) for value in values]
+    result: list[str] = []
+    for value, terms in identities:
+        if terms & {"incomplete", "missing", "recent", "unavailable"} and any(
+            terms < other_terms for other_value, other_terms in identities if other_value != value
+        ):
+            continue
+        result.append(value)
+    return result
+
+
+def _detail_identity_terms(value: str) -> set[str]:
+    return {word.casefold() for word in visible_words(value) if word}
 
 
 def _strip_trailing_status_only_focus(value: str) -> str:
@@ -286,6 +329,61 @@ def _component_owns_adjustment(terms: Sequence[str]) -> bool:
     return bool(local & {"adjustment", "recommendation", "target"} and local & {"plan", "target", "recommendation"})
 
 
+def _component_owns_recommendation(action_terms: Sequence[str], contract_terms: Sequence[str]) -> bool:
+    local = set(contract_terms)
+    actions = set(action_terms)
+    return bool(actions & {"propose", "recommend", "suggest"} or local & {"recommendation", "suggestion", "adjustment"})
+
+
+def _recommendation_artifact(value: str, *, action_terms: Sequence[str] = ()) -> str:
+    text = _clean(value).strip(" .,;")
+    if not text:
+        return f"{_guidance_noun(action_terms)} result"
+    phrases = [phrase.strip() for phrase in text.casefold().split(",") if phrase.strip()]
+    scored: list[tuple[int, int, str]] = []
+    for index, candidate in enumerate(phrases[:8]):
+        terms = set(content_terms(candidate))
+        if not terms:
+            continue
+        score = 0
+        if terms & {"recommendation", "suggestion"}:
+            score += 40
+        if "adjustment" in terms:
+            score += 32
+        if terms & {"next", "action", "option", "choice", "decision", "plan"}:
+            score += 10
+        if terms & {"input", "stats", "body", "field", "fields", "source"}:
+            score -= 12
+        if score > 0:
+            scored.append((score, -index, candidate))
+    if scored:
+        _score, _index, best = max(scored)
+    else:
+        best = phrases[0] if phrases else text
+    best_terms = set(content_terms(best))
+    if best_terms & {"recommendation", "suggestion", "proposal"}:
+        return best
+    return f"{best} {_guidance_noun(action_terms)}"
+
+
+def _guidance_noun(action_terms: Sequence[str]) -> str:
+    actions = set(action_terms)
+    if "suggest" in actions:
+        return "suggestion"
+    if "propose" in actions:
+        return "proposal"
+    return "recommendation"
+
+
+def _guidance_rationale_noun(value: str, *, action_terms: Sequence[str]) -> str:
+    terms = set(content_terms(value))
+    if "suggestion" in terms or "suggest" in set(action_terms):
+        return "suggestion rationale"
+    if "proposal" in terms or "propose" in set(action_terms):
+        return "proposal rationale"
+    return "recommendation rationale"
+
+
 def _supporting_artifacts(value: str, *, exclude_terms: set[str]) -> str:
     phrases: list[str] = []
     for candidate in [part.strip() for part in _clean(value).casefold().split(",") if part.strip()]:
@@ -344,11 +442,13 @@ def _past_tense(value: str) -> str:
         "choose": "chosen",
         "find": "found",
         "keep": "kept",
+        "leave": "left",
         "log": "logged",
         "make": "made",
         "read": "read",
         "see": "seen",
         "send": "sent",
+        "set": "set",
         "show": "shown",
         "submit": "submitted",
     }
@@ -362,7 +462,8 @@ def _past_tense(value: str) -> str:
 
 
 def _proof_focus(*, critical: str, output_focus: str, object_list: str) -> str:
-    for candidate in (critical, output_focus, object_list):
+    preferred = _proof_result_phrase(output_focus) or _proof_result_phrase(object_list)
+    for candidate in (preferred, critical, output_focus, object_list):
         text = clean_artifact_phrase(_clean(candidate))
         if not text:
             continue
@@ -375,6 +476,27 @@ def _proof_focus(*, critical: str, output_focus: str, object_list: str) -> str:
             continue
         return text
     return "the local result"
+
+
+def _proof_result_phrase(value: str) -> str:
+    best_score = 0
+    best = ""
+    for part in _clean(value).split(","):
+        text = clean_artifact_phrase(part)
+        if not text:
+            continue
+        terms = set(content_terms(text))
+        score = len(terms & _PROOF_RESULT_TERMS) * 10
+        if "result" in terms:
+            score += 20
+        if "recommendation" in terms or "decision" in terms:
+            score += 12
+        if status_only_artifact_fragment(text):
+            score -= 30
+        if score > best_score:
+            best_score = score
+            best = text
+    return best
 
 
 def _clean_boundary_clause(value: str) -> str:
@@ -395,7 +517,15 @@ def _clean_boundary_clause(value: str) -> str:
     text = re.sub(r"(?:,\s*){2,}", ", ", text)
     text = re.sub(r"^\s*(?:(?:and|or)\b\s*|,|;)+\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s*(?:(?:and|or)\b\s*|,|;)+\s*$", "", text, flags=re.IGNORECASE)
-    return _clean(text).strip(" .,;")
+    return _strip_dangling_relation_tail(_clean(text).strip(" .,;"))
+
+
+def _strip_dangling_relation_tail(value: str) -> str:
+    words = _clean(value).strip(" .,;").split()
+    dangling = {"against", "by", "for", "from", "into", "paired", "plus", "to", "using", "with", "without"}
+    while words and words[-1].casefold().strip(".,;:") in dangling:
+        words.pop()
+    return " ".join(words).strip(" .,;")
 
 
 def _clean(value: Any) -> str:

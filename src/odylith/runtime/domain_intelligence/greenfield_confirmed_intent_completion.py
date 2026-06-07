@@ -75,10 +75,13 @@ def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
 def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
     """Keep accepted operator wording but remove known non-spec prefixes."""
 
-    for key in ("product_story", "state_object", "first_path", "problem", "product_view"):
+    for key in ("product_story", "first_path", "problem", "product_view"):
         text = _clean(intent.get(key))
         if text:
             intent[key] = _sentence(_normalize_visible_result_language(_strip_prompt_prefixes(text)))
+    state = _clean(intent.get("state_object"))
+    if state:
+        intent["state_object"] = _sentence(_normalize_visible_result_language(_normalize_state_object(state)))
     proof = _clean(intent.get("proof_boundary"))
     if proof:
         intent["proof_boundary"] = _sentence(_normalize_visible_result_language(_normalize_proof_boundary(proof)))
@@ -97,6 +100,18 @@ def _normalize_proof_boundary(value: str) -> str:
     text = _strip_prompt_prefixes(value)
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s*:\s*", "Release 0.0.1 succeeds when ", text, flags=re.I)
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s+", "Release 0.0.1 succeeds when ", text, flags=re.I)
+    return text.strip()
+
+
+def _normalize_state_object(value: str) -> str:
+    text = _strip_prompt_prefixes(value)
+    text = re.sub(
+        r"^(?:the\s+)?(?:central|core|main)\s+(?:object|state|record)\s+is\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"^(?:the\s+)?state\s+object\s+is\s+", "", text, flags=re.IGNORECASE)
     return text.strip()
 
 
@@ -195,6 +210,12 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     outcome_text = _visible_outcome_phrase(first_path, proof=proof)
     state_phrase = _state_focus_phrase(state, title=title)
     path_capability = _path_capability(first_path, fallback=f"the first {title.lower()} path")
+    proof_capability = first_path_capability_phrase(
+        first_path,
+        fallback=path_capability,
+        limit=180,
+        gerund=True,
+    )
     needs_verb = _needs_verb(customer_text)
     decision_phrase = _decision_problem_phrase(outcome_text)
 
@@ -225,7 +246,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
         metric_outcome_action = _outcome_action_phrase(outcome_text)
         intent["success_metrics"] = [
-            f"The first release proves the first path when {customer_text} can {path_capability} and {metric_outcome_action} without manual interpretation outside the product.",
+            f"The first release proves the first path: {proof_capability}; users can {metric_outcome_action} without manual interpretation outside the product.",
             f"The product handles missing or incorrect input by explaining what must be fixed before {outcome_text} is treated as real.",
             _proof_boundary_metric(proof, outcome=outcome_text),
         ]
@@ -245,7 +266,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     if not current_non_goals or _sequence_has_generic_non_goals(current_non_goals):
         extracted_non_goals = _non_goal_rows(intent, title=title)
         intent["non_goals"] = extracted_non_goals or [
-            f"Do not expand beyond {path_capability} until the first outcome works for a representative user.",
+            f"Do not expand beyond {proof_capability} until the first outcome works for a representative user.",
             f"Do not claim adjacent automation, live dependency behavior, or broader operational scale until those outcomes are described and proven separately.",
         ]
     if not story:
@@ -408,10 +429,32 @@ def _non_goal_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
         ]
     ):
         for sentence in re.split(r"(?<=[.!?])\s+|;\s+", _clean(value)):
-            if re.search(r"\b(?:out\s+of\s+scope|defer(?:red)?|later|future|not\s+claim|not\s+cover|without\s+claiming|beyond\s+the\s+first)\b", sentence, re.I):
-                candidates.append(_sentence(sentence))
+            row = _non_goal_row_from_sentence(sentence)
+            if row:
+                candidates.append(row)
     rows = [row for row in unique_text(candidates) if _word_count(row) >= 5]
     return rows[:4]
+
+
+def _non_goal_row_from_sentence(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    lowered = text.casefold()
+    for marker in ("without claiming", "without claim"):
+        index = lowered.find(marker)
+        if index >= 0:
+            tail = text[index + len(marker) :].strip(" ,.;:")
+            return _sentence(f"Do not claim {tail}") if tail else ""
+    for marker in ("not claim", "not cover"):
+        index = lowered.find(marker)
+        if index >= 0:
+            tail = text[index + len(marker) :].strip(" ,.;:")
+            verb = "claim" if "claim" in marker else "cover"
+            return _sentence(f"Do not {verb} {tail}") if tail else ""
+    if any(marker in lowered for marker in ("out of scope", "deferred", "defer ", "later", "future", "beyond the first")):
+        return _sentence(text)
+    return ""
 
 
 def _proof_boundary_metric(proof_boundary: str, *, outcome: str = "") -> str:

@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_c
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -165,6 +166,7 @@ def build_greenfield_semantic_model(
         actor=first_actor,
         state_object=state_label,
         first_path=first_path,
+        proof_boundary=proof_boundary,
         non_goals=non_goals,
     )
     component_refs = tuple(
@@ -235,11 +237,17 @@ def _first_path_contract(
     actor: str,
     state_object: str,
     first_path: str,
+    proof_boundary: str,
     non_goals: Sequence[str],
 ) -> FirstPathContract:
     model = first_path_model(first_path)
     required_fields = tuple(_required_fields(model.steps, state_object=state_object))
     material = _clean(model.material_action) or (model.steps[0] if model.steps else "")
+    visible_result = first_path_outcome_phrase(
+        first_path,
+        proof_boundary=proof_boundary,
+        fallback=_clean(model.visible_outcome) or "the first-path result",
+    )
     return FirstPathContract(
         actor=actor,
         action=_action_label(material),
@@ -247,7 +255,7 @@ def _first_path_contract(
         mutation=material,
         required_fields=required_fields,
         persistence=f"{state_object} must remain replayable after the accepted first path changes it.",
-        visible_result=_clean(model.visible_outcome) or "The user can inspect the first-path result.",
+        visible_result=visible_result or "the first-path result",
         recovery_path=_clean(model.recovery_action) or "Blocked or corrected path state stays visible.",
         deferred_scope=tuple(_clean(row) for row in non_goals if _clean(row)),
         capability=first_path_capability_phrase(first_path, gerund=True),
@@ -366,7 +374,7 @@ def _proof_checkpoint(value: str, *, state_label: str) -> str:
     text = re.split(r"\bwhat\s+must\s+not\s+be\s+claimed\s+yet\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
     clauses = [
         clause.strip(" .")
-        for clause in re.split(r";\s+|(?<=[.!?])\s+|\s+\band\b\s+", text)
+        for clause in re.split(r";\s+|(?<=[.!?])\s+", text)
         if clause.strip(" .")
     ]
     for clause in clauses:
@@ -388,7 +396,7 @@ def _strip_dangling_tail(value: str) -> str:
     text = _clean(value).rstrip(" ,;:.")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|before|by|can|for|from|if|in|into|must|of|on|or|should|the|through|to|when|while|with|without)$",
+            r"\b(?:a|an|and|as|at|because|before|by|can|for|from|if|in|into|must|of|on|or|should|the|through|to|until|when|while|with|without)$",
             "",
             text,
             flags=re.IGNORECASE,

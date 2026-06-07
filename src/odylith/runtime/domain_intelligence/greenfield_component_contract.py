@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence import greenfield_component_contract_profiles as contract_profiles
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
     CONTRACT_KEYS,
@@ -159,6 +160,10 @@ def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str
         )
     subject = _component_subject(label)
     if primary and failure:
+        if looks_like_finite_action(primary):
+            return _sentence(
+                f"{_lower_clause(primary)}, preserves reviewable evidence, and explains missing or stale inputs before handoff"
+            )
         return _sentence(
             f"Maintains {_lower_clause(primary)}, preserves reviewable evidence, and explains missing or stale inputs before handoff"
         )

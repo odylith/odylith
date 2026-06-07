@@ -451,7 +451,7 @@ def _proof_checkpoint_from_visible_result(value: str) -> str:
         flags=re.IGNORECASE,
     ):
         return f"The result on {text[:1].lower()}{text[1:]}"
-    return text
+    return sentence(text).rstrip(".")
 
 
 def _without_ellipsis(value: str) -> str:
@@ -484,7 +484,7 @@ def _strip_dangling_tail(value: str) -> str:
     text = compact_text(value).rstrip(" ,;:.")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|its|lets|must|of|on|or|should|that|the|their|this|through|tied|to|when|while|with|without)$",
+            r"\b(?:a|accepted|actionable|an|and|as|at|because|by|can|clear|complete|concrete|daily|first|for|from|if|in|into|its|lets|must|of|on|one|or|reviewable|should|specific|that|the|their|this|through|tied|to|trusted|until|visible|when|while|with|without)$",
             "",
             text,
             flags=re.IGNORECASE,

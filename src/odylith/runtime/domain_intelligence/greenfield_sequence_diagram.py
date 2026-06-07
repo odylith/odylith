@@ -108,22 +108,27 @@ def first_path_flowchart_mermaid(
     steps = sequence_event_steps(first_path, semantic_model=semantic_model, dedupe=True)
     if not steps:
         steps = ["Start the accepted path", "Record product state and evidence", "Review the outcome and blockers"]
-    visible_steps = steps[:9]
+    visible_steps = _flowchart_visible_steps(steps)
     actor_label = _actor_role_label((actors or [f"{label} user"])[0])
+    previous = "actor"
+    used_components: set[str] = set()
+    step_rows: list[tuple[int, str, str]] = []
+    for index, step in enumerate(visible_steps, start=1):
+        owner = _step_component(step, components=selected, fallback_index=min(index - 1, len(selected) - 1))
+        used_components.add(owner)
+        step_rows.append((index, step, owner))
     lines = [
         "flowchart LR",
         f'  actor["User action<br/>{_flow_label(actor_label, width=26, max_lines=3, limit=72)}"]',
     ]
-    for index, component in enumerate(selected, start=1):
+    used_indexes = sorted(int(node[1:]) for node in used_components if node.startswith("C") and node[1:].isdigit())
+    for index in used_indexes:
+        component = selected[index - 1] if 0 <= index - 1 < len(selected) else {}
         lines.append(
             f'  C{index}["{_flow_label(str(component.get("label", "")) or f"Component {index}", width=28, max_lines=3, limit=84)}"]'
         )
-    previous = "actor"
-    used_components: set[str] = set()
-    for index, step in enumerate(visible_steps, start=1):
+    for index, step, owner in step_rows:
         step_node = f"S{index}"
-        owner = _step_component(step, components=selected, fallback_index=min(index - 1, len(selected) - 1))
-        used_components.add(owner)
         lines.append(f'  {step_node}["{_flow_label(_step_action_label(step), width=30, max_lines=4, limit=112)}"]')
         lines.append(f"  {previous} --> {step_node}")
         lines.append(f"  {step_node} --> {owner}")
@@ -143,6 +148,12 @@ def first_path_flowchart_mermaid(
         ]
     )
     return "\n".join(lines) + "\n"
+
+
+def _flowchart_visible_steps(steps: list[str], *, limit: int = 10) -> list[str]:
+    if len(steps) <= limit:
+        return list(steps)
+    return [*steps[: max(0, limit - 1)], steps[-1]]
 
 
 def best_component_node_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
@@ -264,8 +275,8 @@ def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: in
             row_terms & {"intervention", "dose", "dosing", "adherence", "schedule", "scheduling", "log"}
         ):
             score += 30
-        if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives|metric|metrics|trend|update|updates)\b", text) and (
-            row_terms & {"calculation", "engine", "metric", "metrics", "trend"}
+        if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives|estimate|estimated|estimates|metric|metrics|trend|update|updates)\b", text) and (
+            row_terms & {"calculation", "engine", "estimation", "estimate", "metric", "metrics", "trend"}
         ):
             score += 12
         if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives|evaluate|evaluates)\b", text) and (
@@ -500,7 +511,7 @@ def _handoff_message(next_step: str) -> str:
 
 def _strip_primary_actor_subject(value: str) -> str:
     text = re.sub(
-        r"^(?:(?:a|an|the|one)\s+)?(?:user|person|actor|requester|customer|operator|reviewer)\s+",
+        r"^(?:(?:a|an|the|one)\s+)?(?:user|person|actor|requester|customer|operator|reviewer|coordinator)\s+",
         "",
         _compact_text(value),
         count=1,
@@ -679,7 +690,7 @@ def _strip_dangling_tail(value: str) -> str:
     text = _compact_text(value).rstrip(" ,;:.")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|lets|must|of|on|or|should|that|the|through|tied|to|when|while|with|without|alongside)$",
+            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|lets|must|of|on|or|should|that|the|through|tied|to|until|when|while|with|without|alongside)$",
             "",
             text,
             flags=re.IGNORECASE,

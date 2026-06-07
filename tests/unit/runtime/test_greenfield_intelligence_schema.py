@@ -126,6 +126,4 @@ def test_semantic_model_term_extraction_uses_shared_domain_index() -> None:
         components=[],
         human_actors=["Reviewer"],
     )
-    assert proof_model.diagram_event_graph.proof_checkpoint == (
-        "visible outcome proof: Reviewer saves an AI/ML status note"
-    )
+    assert proof_model.diagram_event_graph.proof_checkpoint == "visible outcome proof: saved AI/ML status note"

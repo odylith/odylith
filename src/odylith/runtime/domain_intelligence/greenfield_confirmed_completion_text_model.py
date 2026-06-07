@@ -29,9 +29,40 @@ _LABEL_FOCUS_STOPWORDS = {
     "view",
 }
 
+_VISIBLE_RESULT_OBJECT_HINTS = {
+    "blocker",
+    "blockers",
+    "card",
+    "decision",
+    "evidence",
+    "note",
+    "notice",
+    "option",
+    "outcome",
+    "plan",
+    "record",
+    "readout",
+    "recommendation",
+    "report",
+    "result",
+    "schedule",
+    "summary",
+    "timeline",
+    "view",
+}
+
 
 def capability_phrase(proposal: Mapping[str, Any]) -> str:
     return first_path_capability_phrase(first_path(proposal), fallback="complete the first product path", limit=220)
+
+
+def proof_capability_phrase(proposal: Mapping[str, Any]) -> str:
+    return first_path_capability_phrase(
+        first_path(proposal),
+        fallback=capability_phrase(proposal),
+        limit=220,
+        gerund=True,
+    )
 
 
 def action_phrase(proposal: Mapping[str, Any]) -> str:
@@ -64,7 +95,9 @@ def outcome_phrase(proposal: Mapping[str, Any]) -> str:
 
 def outcome_action_phrase(outcome: str) -> str:
     text = _clean(outcome).rstrip(" .") or "the product result"
-    if re.search(r"\b(?:plan|readout|recommendation|report|schedule|view)\b", text, flags=re.IGNORECASE):
+    if looks_like_finite_action(text):
+        return base_action_clause(text)
+    if {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()} & _VISIBLE_RESULT_OBJECT_HINTS:
         return f"use {text}"
     return f"reach {text}"
 
@@ -335,6 +368,7 @@ __all__ = [
     "outcome_phrase",
     "primary_component_for_backlog",
     "project_title",
+    "proof_capability_phrase",
     "proof_boundary",
     "row_drifted_from_component",
     "row_is_release_proof",

@@ -63,7 +63,7 @@ def build_narrative_component_spec(
     lines = [
         f"# {label}",
         "",
-        _planning_note(sources=sources, path=path, workstreams=workstreams, diagrams=diagrams),
+        _planning_note(label=label, sources=sources, path=path, workstreams=workstreams, diagrams=diagrams),
         "",
         _opening_narrative(
             label=label,
@@ -115,6 +115,7 @@ def build_narrative_component_spec(
 
 def _planning_note(
     *,
+    label: str,
     sources: Sequence[str],
     path: str,
     workstreams: Sequence[str],
@@ -129,7 +130,7 @@ def _planning_note(
         trace.append(f"workstreams {workstream_text}")
     if diagram_text:
         trace.append(f"diagrams {diagram_text}")
-    trace_text = f" Trace links: {', '.join(trace)}." if trace else ""
+    trace_text = f" Trace links for {label}: {', '.join(trace)}." if trace else ""
     return f"> Planned from {evidence}.{source}{trace_text}"
 
 
@@ -202,8 +203,9 @@ def _opening_narrative(
         lead = f"{label} carries the product logic that interprets accepted inputs before anyone treats the result as true."
         if _phrases_too_similar(input_focus, output_focus):
             calculation_focus = _calculation_focus(focus=focus, output_focus=output_focus, label=label)
+            calculation_subject = _calculation_subject(calculation_focus)
             body = (
-                f"It should explain how {calculation_focus} "
+                f"It should explain how {calculation_subject} "
                 f"{_present_verb(calculation_focus, singular='is', plural='are')} calculated, "
                 "which facts were used, and why the result is safe to show."
             )
@@ -211,7 +213,7 @@ def _opening_narrative(
             body = f"It should make {input_focus} traceable to {output_focus}, with the rule or calculation context visible enough to review."
     elif role == "reference":
         lead = f"{label} is the source for product reference information used by this release."
-        body = f"It should keep {focus} reviewable, explain where those facts came from, and stay separate from user-specific decisions."
+        body = f"It should keep {focus} reviewable, explain the source of those facts, and stay separate from user-specific decisions."
     elif role == "configuration":
         lead = f"{label} exists so product rules can change intentionally instead of being hidden in implementation code."
         body = f"It protects {focus} and makes those settings available to the runtime path without turning configuration into a release-review shortcut."
@@ -328,7 +330,7 @@ def _state_narrative(
         first = f"The useful local state is {owned}."
         second = f"It accepts {accepted} and returns {produced} when the next product step can rely on it."
     material = _material_state_sentence(role=role, material_state=material_state)
-    transition = f"The important lifecycle is {state_path}." if state_path else ""
+    transition = f"For {label}, the important lifecycle is {state_path}." if state_path else ""
     return _sentences(first, second, blocker, material, transition)
 
 
@@ -352,10 +354,15 @@ def _boundary_narrative(
         )
     ]
     outside_text = _human_join(kept[:4])
-    if upstream_text and downstream_text:
+    if upstream_text and downstream_text and _has_no_source_dependency(upstream_text):
+        relation = (
+            f"{label} has no claimed source dependency yet and prepares work for {downstream_text}. "
+            f"For {label}, that handoff keeps upstream ownership and downstream responsibility separate."
+        )
+    elif upstream_text and downstream_text:
         relation = (
             f"{label} receives its trusted context from {upstream_text} and prepares work for {downstream_text}. "
-            f"That handoff is explicit so ownership does not blur between the two boundaries."
+            f"For {label}, that handoff keeps upstream ownership and downstream responsibility separate."
         )
     elif upstream_text:
         relation = f"{label} starts from {upstream_text} and keeps that input relationship visible."
@@ -366,14 +373,19 @@ def _boundary_narrative(
     if not kept:
         boundary = "Unrelated input truth, release approval, and adjacent component state stay outside this component."
     elif role == "configuration":
-        boundary = f"Keep {outside_text} outside this boundary so administrative policy does not become hidden runtime authority."
+        boundary = f"For {label}, keep {outside_text} outside this boundary so administrative policy does not become hidden runtime authority."
     elif role == "state_store":
-        boundary = f"Keep {outside_text} outside this boundary so this component stores the product record without taking over adjacent decisions."
+        boundary = f"For {label}, keep {outside_text} outside this boundary so this component stores the product record without taking over adjacent decisions."
     elif role == "read_model":
-        boundary = f"Keep {outside_text} outside this boundary so display logic does not rewrite original input facts."
+        boundary = f"For {label}, keep {outside_text} outside this boundary so display logic does not rewrite original input facts."
     else:
-        boundary = f"Keep {outside_text} outside this boundary unless a later release explicitly assigns it here."
+        boundary = f"For {label}, keep {outside_text} outside this boundary unless a later release explicitly assigns it here."
     return _sentences(relation, boundary)
+
+
+def _has_no_source_dependency(value: str) -> bool:
+    text = clean_text(value).casefold()
+    return "no source dependency" in text or "no live source dependency" in text
 
 
 def _proof_narrative(*, label: str, role: str, failure: str, proofs: Sequence[str]) -> str:
@@ -417,7 +429,7 @@ def _implementation_narrative(
     parts = [opening]
     if first_workstream:
         title = f" ({first_workstream_title})" if first_workstream_title else ""
-        parts.append(f"Use {first_workstream}{title} as the implementation anchor.")
+        parts.append(f"For {label}, use {first_workstream}{title} as the implementation anchor.")
     if first_slice:
         parts.append(first_slice)
     if wave_label:
@@ -737,13 +749,65 @@ def _phrases_too_similar(left: str, right: str) -> bool:
 
 
 def _calculation_focus(*, focus: str, output_focus: str, label: str) -> str:
-    parts = [part.strip(" .") for part in clean_text(focus).replace(", and ", ",").split(",") if part.strip(" .")]
-    noun_parts = [part for part in parts if not contains_finite_action(part)]
+    output_parts = _calculation_parts(output_focus)
+    focus_parts = _calculation_parts(focus)
+    preferred = _preferred_calculation_result(output_parts) or _preferred_calculation_result(focus_parts)
+    if preferred:
+        return preferred
+    noun_parts = [part for part in focus_parts if not contains_finite_action(part)]
     if noun_parts:
         return _human_join(noun_parts[:3])
     if output_focus and not contains_finite_action(output_focus):
         return output_focus
     return re.sub(r"\b(?:adapter|component|engine|service|system|view)\b$", "", label, flags=re.I).strip(" .") or "the result"
+
+
+def _calculation_parts(value: str) -> list[str]:
+    text = clean_text(value).replace(", and ", ",")
+    return [part.strip(" .") for part in text.split(",") if part.strip(" .")]
+
+
+def _preferred_calculation_result(values: Sequence[str]) -> str:
+    best_score = 0
+    best = ""
+    for value in values:
+        text = clean_text(value).strip(" .")
+        if not text or contains_finite_action(text):
+            continue
+        words = {word.casefold().strip(".,;:") for word in text.split() if word.strip(".,;:")}
+        score = len(words & _CALCULATION_RESULT_TERMS) * 10
+        if "result" in words:
+            score += 20
+        if "recommendation" in words or "decision" in words:
+            score += 12
+        if score > best_score:
+            best_score = score
+            best = text
+    return best
+
+
+def _calculation_subject(value: str) -> str:
+    text = clean_text(value).strip(" .") or "result"
+    first_word = text.split(maxsplit=1)[0].casefold().strip(".,;:")
+    if first_word in {"a", "an", "the", "this", "that", "these", "those"}:
+        return text
+    if text[:1].islower():
+        return f"the {text}"
+    return text
+
+
+_CALCULATION_RESULT_TERMS = {
+    "answer",
+    "decision",
+    "estimate",
+    "number",
+    "outcome",
+    "output",
+    "recommendation",
+    "result",
+    "score",
+    "summary",
+}
 
 
 def _string_rows(values: Sequence[str]) -> tuple[str, ...]:

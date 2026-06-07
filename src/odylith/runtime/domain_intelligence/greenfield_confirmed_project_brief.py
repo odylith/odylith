@@ -6,9 +6,9 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
@@ -36,11 +36,11 @@ def confirmed_project_brief(
     label_lower = label.lower()
     state_label = domain_object_label(state_object, fallback=f"{label} state")
     evidence_label = domain_object_label(evidence_record, fallback=evidence_record)
-    actor_summary = join_items(human_actors) or f"the first {label_lower} operator and reviewer"
+    actor_summary = boundary_clause_text(human_actors) or f"the first {label_lower} operator and reviewer"
     internal_summary = join_system_labels(internal_systems) or (
         f"{state_label.lower()} ownership and {evidence_label.lower()} review"
     )
-    external_summary = join_items(external_systems) or "explicitly deferred external systems"
+    external_summary = boundary_clause_text(external_systems) or "explicitly deferred external systems"
     story = product_story or (
         f"{label} turns the confirmed request into one usable product path with named users, "
         "owned state, and reviewable proof."
@@ -60,15 +60,16 @@ def confirmed_project_brief(
         limit=300,
     )
     non_goal_summary = (
-        join_items(non_goals) or "wider automation, live irreversible integrations, and production scaling"
+        boundary_clause_text(non_goals) or "wider automation, live irreversible integrations, and production scaling"
     )
-    confirm_command = f"odylith greenfield propose --repo-root . --prompt {shell_quote(prompt)}"
+    command_prompt = _command_prompt(label=label, first=first, fallback=prompt)
+    confirm_command = f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}"
     create_command = (
-        f"odylith greenfield create --repo-root . --prompt {shell_quote(prompt)} "
+        f"odylith greenfield create --repo-root . --prompt {shell_quote(command_prompt)} "
         f"--intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release {release}"
     )
     audit_command = (
-        f"odylith greenfield propose --repo-root . --prompt {shell_quote(prompt)} "
+        f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)} "
         "--intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json"
     )
     return {
@@ -136,7 +137,7 @@ def confirmed_project_brief(
             _brief_option(
                 "D4",
                 "External systems",
-                f"Confirm whether release {release} needs {external_summary}.",
+                f"Confirm whether release {release} needs these external systems: {external_summary}.",
                 "Changes adapters, credentials, and failure modes.",
             ),
             _brief_option(
@@ -212,11 +213,29 @@ def _purpose_text(*, story: str, problem: str, first: str) -> str:
     story_text = compact_text(story).strip(" .")
     problem_text = _brief_clause(problem, limit=260)
     if problem_text:
-        return f"{story_text}. Problem to solve: {problem_text}."
+        return f"{_sentence_text(story_text)} Problem to solve: {problem_text}."
     first_text = _brief_clause(first, limit=240)
     if first_text:
-        return f"{story_text}. Without this first path, users cannot trust the product result: {first_text}."
+        return f"{_sentence_text(story_text)} Without this first path, users cannot trust the product result: {first_text}."
     return story_text
+
+
+def _sentence_text(value: str) -> str:
+    text = compact_text(value).strip()
+    if not text:
+        return ""
+    if text[-1] in ".!?":
+        return text
+    if text.endswith(('."', '!"', '?"')):
+        return text
+    return f"{text}."
+
+
+def _command_prompt(*, label: str, first: str, fallback: str) -> str:
+    prompt = compact_text(f"{label}: {first}").strip(" .:")
+    if prompt and len(prompt) <= 240:
+        return prompt
+    return _brief_clause(prompt or fallback or label, limit=240)
 
 
 def _brief_clause(value: str, *, limit: int = 180) -> str:

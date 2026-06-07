@@ -19,11 +19,13 @@ from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 from odylith.runtime.governance import backlog_authoring
+from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
 
@@ -117,6 +119,20 @@ def build_prewrite_completion_package(
             target_root=root,
         )
         rendered_atlas_sources = greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal)
+        materialize_prewrite_backlog_result(staged_backlog_result)
+        diagram_rows = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
+        diagram_ids = greenfield_apply_diagrams.allocated_diagram_ids(prewrite_root, len(diagram_rows), rows=diagram_rows)
+        traceability_plan = greenfield_traceability.build_traceability_plan(
+            proposal=proposal,
+            created_backlog=staged_backlog_result["created"],
+            diagram_ids=diagram_ids,
+        )
+        greenfield_traceability.apply_backlog_traceability(
+            repo_root=prewrite_root,
+            proposal=proposal,
+            plan=traceability_plan,
+        )
+        staged_backlog_result = refresh_prewrite_backlog_result(staged_backlog_result)
         backlog_result = remap_prewrite_backlog_result(
             staged_backlog_result,
             source_root=prewrite_root,
@@ -233,6 +249,57 @@ def remap_prewrite_backlog_result(
         target_root=real_root,
     )
     return remapped
+
+
+def materialize_prewrite_backlog_result(backlog_result: Mapping[str, Any]) -> None:
+    """Write in-memory Radar previews into the staged repo for enrichment passes."""
+
+    index_path = str(backlog_result.get("backlog_index", "")).strip()
+    index_text = str(backlog_result.get("backlog_index_text", "") or "")
+    if index_path and index_text:
+        atomic_write_text(Path(index_path).expanduser().resolve(), index_text, encoding="utf-8")
+    for raw_path, text in _as_mapping(backlog_result.get("idea_files")).items():
+        path = Path(str(raw_path)).expanduser().resolve()
+        if str(path):
+            atomic_write_text(path, str(text or ""), encoding="utf-8")
+
+
+def _as_mapping(value: Any) -> Mapping[Any, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def refresh_prewrite_backlog_result(backlog_result: Mapping[str, Any]) -> dict[str, Any]:
+    """Reload staged Radar files after traceability enrichment mutates them."""
+
+    refreshed: dict[str, Any] = dict(backlog_result)
+    idea_files: dict[str, str] = {}
+    candidate_specs = (
+        dict(refreshed.get("_candidate_idea_specs"))
+        if isinstance(refreshed.get("_candidate_idea_specs"), Mapping)
+        else {}
+    )
+    for row in mapping_rows(refreshed.get("created")):
+        path_text = str(row.get("idea_path", "")).strip()
+        if not path_text:
+            continue
+        path = Path(path_text).expanduser().resolve()
+        if not path.exists():
+            continue
+        idea_files[str(path)] = path.read_text(encoding="utf-8")
+        metadata, sections = backlog_authoring._parse_metadata_and_sections(path)
+        idea_id = str(metadata.get("idea_id", "")).strip().upper()
+        if idea_id:
+            candidate_specs[idea_id] = backlog_contract.IdeaSpec(
+                path=path,
+                metadata=metadata,
+                sections=set(sections),
+                section_bodies=dict(sections),
+            )
+    if idea_files:
+        refreshed["idea_files"] = idea_files
+    if candidate_specs:
+        refreshed["_candidate_idea_specs"] = candidate_specs
+    return refreshed
 
 
 def remap_prewrite_component_items(

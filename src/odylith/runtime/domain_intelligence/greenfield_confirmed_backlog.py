@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import proble
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import (
     build_workstream_domain_intelligence,
@@ -250,6 +251,12 @@ def confirmed_backlog_rows(
     proof_focus = backlog_text.proof_focus_phrase(proof_summary, fallback="release decision")
     dependency_outcome = outcome_summary or "the promised first-path result"
     first_path_action = backlog_text.capability_action_clause(primary_user_action or first_path_entry_text or first_path_capability)
+    first_path_proof_capability = first_path_capability_phrase(
+        first_path_summary,
+        fallback=first_path_action,
+        gerund=True,
+        limit=340,
+    )
     path_entry_story = backlog_text.sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
     metric_actor = backlog_text.problem_actor_subject(actors, fallback=f"{label} user")
     downstream_actor = backlog_text.supporting_actor_label(human_actors)
@@ -279,8 +286,8 @@ def confirmed_backlog_rows(
         first_slice=first_slice,
         metrics=[
             *(success_metrics or [])[:1],
-            f"{metric_actor} can {first_path_action} and {outcome_action} without adjacent scope being pulled into the release.",
-            f"{state_label} remains understandable when input is accepted, blocked, corrected, or reviewed.",
+            f"Success proof connects {first_path_proof_capability} to {outcome_summary} without adjacent scope being pulled into the release.",
+            f"{state_label} state responsibility remains understandable when input is accepted, blocked, corrected, or reviewed.",
             f"{proof_component} keeps the success evidence replayable so a reviewer can see what happened and why.",
         ],
         component_focus=component_ids,
@@ -324,7 +331,7 @@ def confirmed_backlog_rows(
             f"{outcome_action}, and see what to fix when required information is missing."
         ),
         metrics=[
-            f"{metric_actor} can complete the first interaction and {outcome_action}.",
+            f"The first interaction proves {first_path_proof_capability} and {outcome_summary}.",
             "Missing or invalid information produces clear correction guidance instead of a misleading result.",
             f"{downstream_subject} can use the saved context without asking the user to repeat the same details.",
         ],

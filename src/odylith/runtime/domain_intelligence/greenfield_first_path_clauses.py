@@ -228,9 +228,15 @@ def _first_path_outcome_text(
     proof = clean_first_path_text(proof_boundary)
     text = proof if _is_low_information_visible_outcome(visible) and proof else visible or proof or clean_first_path_text(model.raw_path)
     text = visible_result_object(text) or action_chain_fragment(text) or text
+    if _starts_with_unanchored_result_pronoun(text) and proof:
+        proof_result = visible_result_object(proof) or action_chain_fragment(proof) or proof
+        proof_result = _visible_proof_result_clause(proof_result)
+        if proof_result and not _starts_with_unanchored_result_pronoun(proof_result):
+            text = proof_result
     text = _nominal_visible_result_object(text)
+    text = re.sub(r"^(?:her|his|its|our|their|your)\s+", "", text, flags=re.IGNORECASE)
     text = _lowercase_leading_article(text)
-    text = re.sub(r"^(?:It|Them|They|This|That)\b", lambda match: match.group(0).casefold(), text)
+    text = re.sub(r"^(?:Her|His|Its|It|Our|Them|Their|They|This|That|Your)\b", lambda match: match.group(0).casefold(), text)
     return _clip_phrase(text, limit=limit) or clean_first_path_text(fallback)
 
 
@@ -244,6 +250,46 @@ def _is_low_information_visible_outcome(value: str) -> bool:
         "what happened next",
         "what happens next",
     }
+
+
+def _starts_with_unanchored_result_pronoun(value: str) -> bool:
+    return bool(re.match(r"^(?:it|them|they|this|that)\b", clean_first_path_text(value), flags=re.IGNORECASE))
+
+
+def _visible_proof_result_clause(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .")
+    if not text:
+        return ""
+    for marker in (", and ", "; and ", ". And "):
+        if marker not in text:
+            continue
+        head, tail = text.split(marker, 1)
+        if _looks_like_state_or_recovery_clause(tail):
+            return head.strip(" ,.;")
+    return text
+
+
+def _looks_like_state_or_recovery_clause(value: str) -> bool:
+    words = {word.strip(".,;:").casefold() for word in clean_first_path_text(value).split()}
+    return bool(
+        words
+        & {
+            "blocked",
+            "corrected",
+            "correction",
+            "degraded",
+            "fallback",
+            "missing",
+            "recover",
+            "recovery",
+            "remain",
+            "remains",
+            "replay",
+            "replayed",
+            "replayable",
+            "understandable",
+        }
+    )
 
 
 def visible_action_clause(value: str) -> str:
@@ -260,7 +306,7 @@ def is_system_generated_action(value: str) -> bool:
     if not text:
         return False
     system_verb = (
-        r"asks?|calculates?|checks?|computes?|derives?|displays?|evaluates?|generates?|presents?|renders?|returns?|runs?|"
+        r"asks?|calculates?|checks?|computes?|derives?|displays?|evaluates?|generates?|marks?|notifies?|presents?|preserves?|renders?|returns?|routes?|runs?|"
         r"persists?|pulls?|saves?|scores?|shows?|stores?|updates?|validates?"
     )
     system_subject = (
@@ -461,6 +507,9 @@ def _nominal_visible_result_object(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     if not text:
         return ""
+    nominal = _nominalize_leading_result_action(text)
+    if nominal:
+        return nominal
     protocol_suffix = " for that protocol" if re.search(r"\bfor\s+that\s+protocol\b", text, flags=re.IGNORECASE) else ""
     if re.fullmatch(
         r"(?:the\s+)?usage-linked\s+metric\s+change\s+view(?:\s+for\s+that\s+protocol)?",
@@ -476,6 +525,44 @@ def _nominal_visible_result_object(value: str) -> str:
     ):
         return f"the usage-linked metric change view{protocol_suffix}"
     return text
+
+
+_RESULT_ACTION_NOMINALS = {
+    "capture": "captured",
+    "captures": "captured",
+    "confirm": "confirmed",
+    "confirms": "confirmed",
+    "export": "exported",
+    "exports": "exported",
+    "preserve": "preserved",
+    "preserves": "preserved",
+    "publish": "published",
+    "publishes": "published",
+    "record": "recorded",
+    "records": "recorded",
+    "save": "saved",
+    "saves": "saved",
+    "select": "selected",
+    "selects": "selected",
+    "store": "stored",
+    "stores": "stored",
+}
+
+
+def _nominalize_leading_result_action(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .")
+    first, separator, rest = text.partition(" ")
+    nominal = _RESULT_ACTION_NOMINALS.get(first.casefold().strip(".,:;"))
+    if not nominal or not separator:
+        return ""
+    return f"{nominal} {_drop_leading_article(rest.strip())}".strip()
+
+
+def _drop_leading_article(value: str) -> str:
+    first, separator, rest = clean_first_path_text(value).strip(" .").partition(" ")
+    if separator and first.casefold() in {"a", "an", "the"}:
+        return rest.strip()
+    return clean_first_path_text(value).strip(" .")
 
 
 def _outcome_capability_fragment(value: str) -> str:
@@ -494,6 +581,8 @@ def strip_action_subject(value: str) -> str:
     match = MATERIAL_ACTION_RE.search(text)
     if match and match.start() > 0:
         prefix = text[: match.start()].strip(" ,")
+        if match.end() == len(text) and re.match(r"^(?:a|an|the)\s+", prefix, flags=re.IGNORECASE):
+            return text
         if re.search(r"\b(?:if|that|when|where|which|while)\b", prefix, flags=re.IGNORECASE):
             return text
         if len(label_terms(prefix)) <= 6 and (
@@ -589,78 +678,102 @@ def _lowercase_leading_article(value: str) -> str:
     return re.sub(r"^(?:A|An|The|Today|Tomorrow|This|That)\b", lambda match: match.group(0).casefold(), text)
 
 
+_GERUND_ACTION_VERBS = {
+    "add": "adding",
+    "adds": "adding",
+    "adjust": "adjusting",
+    "adjusts": "adjusting",
+    "approve": "approving",
+    "approves": "approving",
+    "block": "blocking",
+    "blocks": "blocking",
+    "calculate": "calculating",
+    "calculates": "calculating",
+    "check": "checking",
+    "checks": "checking",
+    "choose": "choosing",
+    "chooses": "choosing",
+    "click": "clicking",
+    "clicks": "clicking",
+    "compare": "comparing",
+    "compares": "comparing",
+    "complete": "completing",
+    "completes": "completing",
+    "create": "creating",
+    "creates": "creating",
+    "display": "displaying",
+    "displays": "displaying",
+    "edit": "editing",
+    "edits": "editing",
+    "enter": "entering",
+    "enters": "entering",
+    "export": "exporting",
+    "exports": "exporting",
+    "fetch": "fetching",
+    "fetches": "fetching",
+    "finalize": "finalizing",
+    "finalizes": "finalizing",
+    "highlight": "highlighting",
+    "highlights": "highlighting",
+    "import": "importing",
+    "imports": "importing",
+    "let": "letting",
+    "lets": "letting",
+    "log": "logging",
+    "logs": "logging",
+    "mark": "marking",
+    "marks": "marking",
+    "open": "opening",
+    "opens": "opening",
+    "produce": "producing",
+    "produces": "producing",
+    "publish": "publishing",
+    "publishes": "publishing",
+    "pull": "pulling",
+    "pulls": "pulling",
+    "rank": "ranking",
+    "ranks": "ranking",
+    "read": "reading",
+    "reads": "reading",
+    "receive": "receiving",
+    "receives": "receiving",
+    "record": "recording",
+    "records": "recording",
+    "render": "rendering",
+    "renders": "rendering",
+    "resolve": "resolving",
+    "resolves": "resolving",
+    "return": "returning",
+    "returns": "returning",
+    "review": "reviewing",
+    "reviews": "reviewing",
+    "save": "saving",
+    "saves": "saving",
+    "see": "seeing",
+    "sees": "seeing",
+    "select": "selecting",
+    "selects": "selecting",
+    "show": "showing",
+    "shows": "showing",
+    "store": "storing",
+    "stores": "storing",
+    "submit": "submitting",
+    "submits": "submitting",
+    "update": "updating",
+    "updates": "updating",
+    "validate": "validating",
+    "validates": "validating",
+    "view": "viewing",
+    "views": "viewing",
+}
+
+
 def _gerund_action_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+and,\s+if\b.+$", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
-    verb_map = {
-        "add": "adding",
-        "adds": "adding",
-        "adjust": "adjusting",
-        "adjusts": "adjusting",
-        "approve": "approving",
-        "approves": "approving",
-        "check": "checking",
-        "checks": "checking",
-        "choose": "choosing",
-        "chooses": "choosing",
-        "compare": "comparing",
-        "compares": "comparing",
-        "complete": "completing",
-        "completes": "completing",
-        "create": "creating",
-        "creates": "creating",
-        "edit": "editing",
-        "edits": "editing",
-        "enter": "entering",
-        "enters": "entering",
-        "export": "exporting",
-        "exports": "exporting",
-        "fetch": "fetching",
-        "fetches": "fetching",
-        "finalize": "finalizing",
-        "finalizes": "finalizing",
-        "highlight": "highlighting",
-        "highlights": "highlighting",
-        "import": "importing",
-        "imports": "importing",
-        "let": "letting",
-        "lets": "letting",
-        "log": "logging",
-        "logs": "logging",
-        "publish": "publishing",
-        "publishes": "publishing",
-        "rank": "ranking",
-        "ranks": "ranking",
-        "read": "reading",
-        "reads": "reading",
-        "receive": "receiving",
-        "receives": "receiving",
-        "record": "recording",
-        "records": "recording",
-        "review": "reviewing",
-        "reviews": "reviewing",
-        "save": "saving",
-        "saves": "saving",
-        "see": "seeing",
-        "sees": "seeing",
-        "select": "selecting",
-        "selects": "selecting",
-        "show": "showing",
-        "shows": "showing",
-        "pull": "pulling",
-        "pulls": "pulling",
-        "store": "storing",
-        "stores": "storing",
-        "submit": "submitting",
-        "submits": "submitting",
-        "validate": "validating",
-        "validates": "validating",
-        "view": "viewing",
-        "views": "viewing",
-    }
-    pattern = "|".join(re.escape(item) for item in sorted(verb_map, key=len, reverse=True))
+    pattern = "|".join(re.escape(item) for item in sorted(_GERUND_ACTION_VERBS, key=len, reverse=True))
     for match in re.finditer(rf"\b(?P<verb>{pattern})\b", text, flags=re.IGNORECASE):
         verb = match.group("verb").casefold()
         tail = text[match.end() :]
@@ -670,52 +783,43 @@ def _gerund_action_fragment(value: str) -> str:
             flags=re.IGNORECASE,
         ):
             continue
-        return _gerund_following_action_verbs(f"{verb_map[verb]}{tail}").strip(" ,.")
+        return _gerund_following_action_verbs(f"{_GERUND_ACTION_VERBS[verb]}{tail}").strip(" ,.")
     return text[:1].casefold() + text[1:] if text else ""
 
 
 def _gerund_following_action_verbs(value: str) -> str:
     text = clean_first_path_text(value)
-    verb_pairs = {
-        "add": "adding",
-        "adds": "adding",
-        "calculate": "calculating",
-        "calculates": "calculating",
-        "click": "clicking",
-        "clicks": "clicking",
-        "display": "displaying",
-        "displays": "displaying",
-        "enter": "entering",
-        "enters": "entering",
-        "log": "logging",
-        "logs": "logging",
-        "produce": "producing",
-        "produces": "producing",
-        "record": "recording",
-        "records": "recording",
-        "render": "rendering",
-        "renders": "rendering",
-        "return": "returning",
-        "returns": "returning",
-        "save": "saving",
-        "saves": "saving",
-        "see": "seeing",
-        "sees": "seeing",
-        "show": "showing",
-        "shows": "showing",
-        "submit": "submitting",
-        "submits": "submitting",
-        "update": "updating",
-        "updates": "updating",
-    }
-    for finite, gerund in verb_pairs.items():
-        text = re.sub(
-            rf"\b(and|or)\s+((?:[a-z]+ly\s+)?)({finite})\b",
-            rf"\1 \2{gerund}",
-            text,
-            flags=re.IGNORECASE,
-        )
-    return re.sub(r",\s+and\s+", " and ", text, flags=re.IGNORECASE)
+    segments = [_gerund_segment_actions(segment.strip()) for segment in text.split(",")]
+    return ", ".join(segment for segment in segments if segment).replace(", and ", " and ")
+
+
+def _gerund_segment_actions(value: str) -> str:
+    words = value.split()
+    converted: list[str] = []
+    convert_next_action = True
+    for word in words:
+        token = word.strip(".,:;").casefold()
+        gerund = _GERUND_ACTION_VERBS.get(token)
+        if gerund and convert_next_action:
+            converted.append(_replace_word_token(word, gerund))
+            convert_next_action = False
+            continue
+        converted.append(word)
+        if token in {"and", "or"}:
+            convert_next_action = True
+        elif token.endswith("ly") and convert_next_action:
+            convert_next_action = True
+        else:
+            convert_next_action = False
+    return " ".join(converted).strip(" ,.")
+
+
+def _replace_word_token(value: str, replacement: str) -> str:
+    suffix = ""
+    while value and value[-1] in ".,:;":
+        suffix = value[-1] + suffix
+        value = value[:-1]
+    return f"{replacement}{suffix}"
 
 
 def _join_series(values: Sequence[str]) -> str:

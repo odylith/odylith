@@ -6,6 +6,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -39,6 +40,8 @@ def text_needs_repair(value: Any) -> bool:
         return False
     if public_prose_quality_issues(text):
         return True
+    if generated_public_copy_issues("confirmed completion text", text):
+        return True
     if sentence_needs_repair(text):
         return True
     lowered = text.casefold()
@@ -53,9 +56,6 @@ def text_needs_repair(value: Any) -> bool:
     return any(
         marker in lowered
         for marker in (
-            "actor identity, validation context, and upstream handoff",
-            "blocker signal, review rationale, and downstream handoff",
-            "expected local output:",
             "responsibility and keeps it tied",
             "with clear ownership, protected access, required",
             "accepted path lets users",

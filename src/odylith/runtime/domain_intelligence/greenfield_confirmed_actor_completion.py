@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
@@ -146,28 +147,28 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     terms = _semantic_terms(label)
     if not terms:
         return ""
-    context = _clean(". ".join(value.strip(" .") for value in (first_path, state) if value))
-    if not context:
+    sources = [(first_path, 12), (state, 0)]
+    if not any(_clean(value) for value, _bonus in sources):
         return ""
-    clauses = _path_clauses(context)
-    scored: list[tuple[int, int, str]] = []
-    for index, clause in enumerate(clauses):
-        overlap = len(terms & _semantic_terms(clause))
-        if overlap <= 0:
-            continue
-        scored.append((overlap, -index, clause))
+    scored: list[tuple[int, int, int, str]] = []
+    for source, source_bonus in sources:
+        clauses = _path_clauses(source)
+        for index, clause in enumerate(clauses):
+            overlap = len(terms & _semantic_terms(clause))
+            if overlap <= 0:
+                continue
+            scored.append((overlap * 10 + source_bonus, overlap, -index, clause))
     if not scored:
         return ""
     scored.sort(reverse=True)
-    clause = _short(scored[0][2], limit=170)
+    clause = _short(scored[0][3], limit=170)
     if not clause:
         return ""
     clause = re.sub(r"^(?:a|an|the)\s+", "", clause, flags=re.IGNORECASE)
     clause = _strip_actor_subject_from_clause(clause, label=label)
     if not clause:
         return ""
-    return f"uses the product around {clause[:1].lower() + clause[1:]} and needs the outcome to remain clear enough to act on"
-
+    return f"uses the product to {base_action_clause(clause)} and needs the outcome to remain clear enough to act on"
 
 def _strip_actor_subject_from_clause(value: str, *, label: str) -> str:
     """Remove a role label when it was copied into a clause as the subject."""

@@ -60,11 +60,14 @@ _ROLE_WORDS = {
     "engineer",
     "evaluator",
     "inspector",
+    "individual",
     "lead",
     "manager",
     "operator",
     "owner",
     "participant",
+    "people",
+    "person",
     "planner",
     "preparer",
     "recipient",
@@ -93,6 +96,9 @@ _GENERIC_HEADS = {
     "implementation owner",
     "operator",
     "owner",
+    "individual",
+    "people",
+    "person",
     "primary user",
     "product operator",
     "project operator",
@@ -112,6 +118,9 @@ _GENERIC_ROLE_ONLY = {
     "operator",
     "owner",
     "participant",
+    "individual",
+    "people",
+    "person",
     "reviewer",
     "support",
     "user",
@@ -208,7 +217,12 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         marker_body_used and lower_head == role and role in _ROLE_WORDS
     )
     if needs_focus:
-        if marker_body_used:
+        if marker_body_used and role in {"operator", "owner", "support", "user"}:
+            if _body_names_control_focus(body):
+                focus = _focus_from_text(body or text, role=role) or _focus_from_text(project_focus, role=role)
+            else:
+                focus = _focus_from_text(project_focus, role=role) or _focus_from_text(body or text, role=role)
+        elif marker_body_used:
             focus = _focus_from_text(body or text, role=role) or _focus_from_text(project_focus, role=role)
         else:
             focus = _focus_from_text(project_focus, role=role) or _focus_from_text(body or text, role=role)
@@ -263,6 +277,9 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
         return "", ""
     for index, word in enumerate(words[1:], start=1):
         token = word.casefold().strip(".,;:")
+        head_candidate = " ".join(words[:index]).strip(" .")
+        if token == "being":
+            continue
         if token not in {
             "checking",
             "configuring",
@@ -279,12 +296,14 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
             "tracking",
             "using",
             "watching",
-        }:
+        } and not (token.endswith("ing") and _generic_person_head(head_candidate)):
             continue
-        head = " ".join(words[:index]).strip(" .")
+        head = head_candidate
         head = re.sub(r"^(?:a|an|the)\s+", "", head, flags=re.IGNORECASE).strip(" .")
         tail = " ".join(words[index:]).strip(" .")
         role = _role_suffix(head)
+        if not role and _generic_person_head(head):
+            role = "user"
         if role and 1 <= len(head.split()) <= 4 and tail:
             return head, tail
     return "", ""
@@ -338,11 +357,21 @@ def _role_suffix(value: str) -> str:
     if not words:
         return ""
     two_word = " ".join(words[-2:])
-    if two_word in _ROLE_WORDS:
+    if len(words) >= 2 and two_word in _ROLE_WORDS:
         return two_word
     if words[-1] in _ROLE_WORDS:
-        return words[-1]
+        return "user" if words[-1] in {"individual", "people", "person"} else words[-1]
     return ""
+
+
+def _generic_person_head(value: str) -> bool:
+    words = [word.casefold().strip(".,;:()") for word in _clean(value).split()]
+    return bool(words and words[-1] in {"individual", "people", "person", "user"})
+
+
+def _body_names_control_focus(value: str) -> bool:
+    words = {word.casefold().strip(".,;:()") for word in _clean(value).split()}
+    return bool(words & {"content", "policy", "privacy", "risk", "safety"})
 
 
 def _focus_from_text(value: str, *, role: str) -> str:

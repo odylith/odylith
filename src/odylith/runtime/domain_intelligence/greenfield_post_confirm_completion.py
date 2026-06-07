@@ -14,6 +14,10 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
+from odylith.runtime.artifact_quality.greenfield_package_quality import (
+    greenfield_rendered_package_quality_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     component_contract_issues,
     rendered_component_spec_quality_issues,
@@ -276,7 +280,7 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
             issues.append("prewrite Radar package must render one workstream file per created workstream")
         if not clean_text(backlog_result.get("backlog_index_text")):
             issues.append("prewrite Radar package missing rendered backlog index text")
-        issues.extend(_mechanical_public_copy_issues("prewrite Radar package", " ".join(str(value or "") for value in idea_files.values())))
+        issues.extend(generated_public_copy_issues("prewrite Radar package", idea_files))
         validation_gate = backlog_result.get("validation_gate") if isinstance(backlog_result.get("validation_gate"), Mapping) else {}
         if clean_text(validation_gate.get("status")) != "passed":
             issues.append("prewrite Radar package validation gate did not pass")
@@ -316,7 +320,7 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
             gate = row.get("validation_gate") if isinstance(row.get("validation_gate"), Mapping) else {}
             if clean_text(gate.get("status")) != "passed":
                 issues.append("prewrite component authoring preview validation gate did not pass")
-        issues.extend(_mechanical_public_copy_issues("prewrite Registry preview", " ".join(text_values(component_preview))))
+        issues.extend(generated_public_copy_issues("prewrite Registry preview", component_preview))
     if backlog_result and not project_brief_preview:
         issues.append("prewrite package must include project brief preview")
     if project_brief_preview:
@@ -329,7 +333,7 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
         issues.append("prewrite package must include accepted-project memory preview")
     if accepted_preview:
         issues.extend(_accepted_project_preview_issues(package, accepted_preview, component_preview, atlas_sources))
-        issues.extend(_mechanical_public_copy_issues("accepted-project memory preview", " ".join(text_values(accepted_preview))))
+        issues.extend(generated_public_copy_issues("accepted-project memory preview", accepted_preview))
     if backlog_result and component_preview and atlas_sources and not compass_preview:
         issues.append("prewrite package must include Compass memory event preview")
     if compass_preview:
@@ -367,6 +371,7 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
             if clean_text(target_release.get("release_id")) and clean_text(assignment_release.get("release_id")):
                 if clean_text(target_release.get("release_id")) != clean_text(assignment_release.get("release_id")):
                     issues.append("prewrite release target preview drifted from release assignment preview")
+    issues.extend(greenfield_rendered_package_quality_issues(package))
     return issues
 
 
@@ -454,24 +459,7 @@ def _next_steps_preview_issues(
 
 
 def _operator_next_step_copy_issues(next_steps_preview: Mapping[str, Any]) -> list[str]:
-    return _mechanical_public_copy_issues("operator next-steps preview", " ".join(text_values(next_steps_preview)))
-
-
-def _mechanical_public_copy_issues(scope: str, value: str) -> list[str]:
-    issues: list[str] = []
-    text = clean_text(value)
-    lowered = text.casefold()
-    if re.search(r"\bcan\s+act\s+where\s+the\s+accepted\s+path\s+requires\b", lowered):
-        issues.append(f"{scope} leaked mechanical actor-path prose")
-    if re.search(r"\bexpected\s+local\s+output\s*:", lowered):
-        issues.append(f"{scope} leaked generic local-output prose")
-    if re.search(r"\bactor\s+identity,\s+validation\s+context,\s+and\s+upstream\s+handoff\b", lowered):
-        issues.append(f"{scope} leaked Registry contract tuple prose")
-    if re.search(r"\bblocker\s+signal,\s+review\s+rationale,\s+and\s+downstream\s+handoff\b", lowered):
-        issues.append(f"{scope} leaked produced-output tuple prose")
-    if re.search(r"\bvalidate\s+that\s+.+?\bsatisfies\s+its\s+local\s+success\s+criteria\s*:", lowered):
-        issues.append(f"{scope} leaked raw success-metric gate prose")
-    return issues
+    return list(generated_public_copy_issues("operator next-steps preview", next_steps_preview))
 
 
 def _require_preview_text(

@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import greenfield_component_contract_targets as contract_targets
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
@@ -471,7 +472,17 @@ def _clean_contract_clause(value: Any) -> str:
     text = re.sub(r"(?:,\s*){2,}", ", ", text)
     text = re.sub(r"^\s*(?:(?:and|or)\b\s*|,|;)+\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s*(?:(?:and|or)\b\s*|,|;)+\s*$", "", text, flags=re.IGNORECASE)
-    return _clean(text).strip(" .,;")
+    if looks_like_action_clause(text):
+        return ""
+    return _strip_dangling_relation_tail(_clean(text).strip(" .,;"))
+
+
+def _strip_dangling_relation_tail(value: str) -> str:
+    words = _clean(value).strip(" .,;").split()
+    dangling = {"against", "by", "for", "from", "into", "paired", "plus", "to", "using", "with", "without"}
+    while words and words[-1].casefold().strip(".,;:") in dangling:
+        words.pop()
+    return " ".join(words).strip(" .,;")
 
 
 def _local_proof(*, axis: ComponentAxis, label: str, sibling_label: str) -> list[str]:

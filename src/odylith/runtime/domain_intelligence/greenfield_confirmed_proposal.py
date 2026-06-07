@@ -22,9 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
 )
 from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items as _join_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels as _join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import problem_text as _problem_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
@@ -36,6 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_intent_summary,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import health_safety_obligations
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
@@ -170,6 +171,7 @@ def build_confirmed_greenfield_proposal(
             workstreams=backlog_rows,
         )
     )
+    first_path_capability = first_path_capability_phrase(first_path, fallback=first_path, limit=260, gerund=True)
     proposal: dict[str, Any] = {
         "schema_version": "odylith.greenfield.proposal.v1",
         "mode": "host_reasoned_greenfield_proposal",
@@ -265,7 +267,7 @@ def build_confirmed_greenfield_proposal(
             ),
         ),
         "validation_strategy": [
-            f"The accepted first path passes end to end: {first_path}",
+            f"The accepted first path proves {first_path_capability}.",
             f"{state_label} can be reconstructed and reviewed.",
             f"The release proof explains the promised user-visible result: {proof_boundary}",
             *health_safety_obligations(
@@ -431,8 +433,8 @@ def _project_intelligence(
     state_summary = _state_detail_summary(state_object, state_label=state_label, limit=260)
     actors = join_actor_labels(human_actors) or _short_summary(customer, limit=220) or f"the first {label_lower} operator and reviewer"
     internals = _join_system_labels(internal_systems) or f"{state_lower} owner and {evidence_lower} owner"
-    externals = _join_items(external_systems) or "explicitly deferred external systems"
-    non_goal_text = _join_items(non_goals) or "broad platform automation and live irreversible integrations"
+    externals = boundary_clause_text(external_systems) or "explicitly deferred external systems"
+    non_goal_text = boundary_clause_text(non_goals) or "broad platform automation and live irreversible integrations"
     rows = {
         "intent": [
             story_summary or f"{label} gives a named operator one accountable path instead of an unbounded product outcome.",
@@ -559,7 +561,6 @@ def _project_intelligence(
         ],
         **rows,
     }
-
 
 def _parent_workstream_title(*, label: str, first_path: str) -> str:
     return (

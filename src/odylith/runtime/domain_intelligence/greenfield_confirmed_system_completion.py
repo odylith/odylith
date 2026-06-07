@@ -107,7 +107,8 @@ def _system_description_is_enough(value: str) -> bool:
         _word_count(text) >= 3
         and re.search(
             r"\b(?:captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
-            r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+            r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
+            r"returns?|returning|routes?|routing|records?|recording|stores?|storing|"
             r"configures?|configuring|owned\s+by|keeps?)\b",
             text,
             re.IGNORECASE,
@@ -158,7 +159,8 @@ def _system_label_head(value: str) -> str:
     head = _flatten_parenthetical_label(_clean(value.split("—", 1)[0].split(":", 1)[0]))
     split = re.search(
         r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
-        r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+        r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
+        r"returns?|returning|routes?|routing|records?|recording|stores?|storing|"
         r"shows?|showing|renders?|rendering|generates?|generating|calculates?|calculating|"
         r"configures?|configuring|groups?|grouping|aligns?|aligning|tracks?|tracking|manages?|managing)\b)",
         head,

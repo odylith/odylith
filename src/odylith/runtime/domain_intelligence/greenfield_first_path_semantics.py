@@ -139,6 +139,8 @@ def _visible_outcome(steps: Sequence[str]) -> str:
     for step in reversed(steps):
         if _is_meta_visible_result_summary(step) or _is_scope_or_deferred_statement(step):
             continue
+        if _is_routing_handoff_step(step):
+            continue
         if _looks_like_visible_result(step):
             cleaned = _clean_visible_result_phrase(step) or step
             if re.search(r"\b(?:see|sees|show|shows|view|views|receive|receives|render|renders|return|returns|display|displays|produce|produces)\b", cleaned, flags=re.IGNORECASE) and not re.search(
@@ -157,6 +159,15 @@ def _visible_outcome(steps: Sequence[str]) -> str:
         if not _is_scope_or_deferred_statement(step):
             return _sentence_case(step)
     return ""
+
+
+def _is_routing_handoff_step(value: str) -> bool:
+    words = {
+        word.strip(".,:;").casefold()
+        for word in _clean(value).replace("-", " ").split()
+        if word.strip(".,:;")
+    }
+    return bool(words & {"route", "routed", "routes", "send", "sends"} and "to" in words)
 
 
 def _is_meta_visible_result_summary(value: str) -> bool:

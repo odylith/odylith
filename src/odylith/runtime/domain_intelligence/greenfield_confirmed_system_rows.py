@@ -236,7 +236,8 @@ def has_meaningful_system_description(row: str, *, minimum_words: int = 5) -> bo
         _word_count(description) >= 3
         and re.search(
             r"\b(?:captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
-            r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+            r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
+            r"returns?|returning|routes?|routing|records?|recording|stores?|storing|"
             r"configures?|configuring|owned\s+by)\b",
             description,
             re.IGNORECASE,
@@ -283,7 +284,8 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
     split_pattern = re.compile(
         r"\s+(?=(?:owned\s+by|"
         r"captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
-        r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+        r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
+        r"returns?|returning|routes?|routing|records?|recording|stores?|storing|"
         r"shows?|showing|renders?|rendering|generates?|generating|calculates?|calculating|"
         r"configures?|configuring|groups?|grouping|aligns?|aligning|tracks?|tracking|manages?|managing)\b)",
         re.IGNORECASE,
@@ -317,7 +319,7 @@ def _row_detail_score(row: str) -> int:
     if name and name != description:
         score += 8
     if re.search(
-        r"\b(?:receives?|produces?|records?|stores?|tracks?|links?|derives?|controls?|reviews?|"
+        r"\b(?:receives?|produces?|proposes?|recommends?|suggests?|records?|stores?|tracks?|links?|derives?|controls?|reviews?|"
         r"explains?|validates?|normalizes?|preserves?|routes?|captures?)\b",
         description,
         re.IGNORECASE,

@@ -221,8 +221,11 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         r"\b(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"\b(?:the\s+)?(?:domain\s+)?object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"\b(?:the\s+)?proof\s+record\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
+        r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s*:",
         r"^(?:the\s+)?product\s+(?:captures?|keeps?|records?|stores?|tracks?)\s+"
         r"(?:(?:the|an|a)\s+)?(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
+        r"(?:with|containing|that|for)\b",
+        r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
         r"(?:with|containing|that|for)\b",
         r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
         r"(?:tracks|records|stores|captures|moves|starts|changes)\b",
@@ -246,6 +249,7 @@ def domain_object_label(value: str, *, fallback: str) -> str:
 
 def _domain_label(value: str) -> str:
     text = clean_confirmed_text(value).strip(" :.-")
+    text = re.sub(r"^(?:a|an|one|the)\s+", "", text, flags=re.IGNORECASE).strip(" :.-")
     text = re.sub(
         r"\s+for\s+(?:a|an|the)\s+(?:single\s+)?"
         r"(?:site|home|household|user|customer|account|team|tenant|organization|project|workspace|case)\b.*$",
@@ -354,11 +358,12 @@ def _system_label(value: str) -> str:
     if not text:
         return ""
     head = re.split(r"\s+[—-]\s+|:\s+", text, maxsplit=1)[0].strip(" .:-")
+    head = re.split(r"\s+that\s+", head, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .:-")
     split = re.search(
-        r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
-        r"produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+        r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|converts?|converting|"
+        r"evaluates?|evaluating|produces?|producing|returns?|returning|routes?|routing|records?|recording|stores?|storing|"
         r"shows?|showing|renders?|rendering|generates?|generating|calculates?|calculating|"
-        r"configures?|configuring|groups?|grouping|aligns?|aligning|tracks?|tracking|manages?|managing)\b)",
+        r"configures?|configuring|groups?|grouping|aligns?|aligning|tracks?|tracking|manages?|managing)\b\s+\S)",
         head,
         flags=re.IGNORECASE,
     )
@@ -402,6 +407,38 @@ def join_brief_items(items: list[str] | None, *, limit: int = 3, item_limit: int
         return ""
     selected = values[:limit]
     return "; ".join(selected)
+
+
+def boundary_clause_text(items: list[str] | None, *, limit: int = 4, item_limit: int = 180) -> str:
+    values = [
+        clause
+        for item in (items or [])
+        if (clause := boundary_clause_item(str(item), limit=item_limit))
+    ]
+    return "; ".join(values[:limit])
+
+
+def boundary_clause_item(value: str, *, limit: int = 180) -> str:
+    text = short_summary(value, limit=limit).strip(" .")
+    if not text:
+        return ""
+    if text.startswith("Whether "):
+        rest = text[len("Whether ") :].strip(" .")
+        lowered = rest.casefold()
+        for marker in (" is in scope", " are in scope"):
+            marker_index = lowered.find(marker)
+            if marker_index > 0:
+                subject = rest[:marker_index].strip(" .")
+                return f"{_lower_first(subject)} scope remains deferred"
+        return f"the question of whether {_lower_first(rest)} remains open"
+    return text
+
+
+def _lower_first(value: str) -> str:
+    text = value.strip()
+    if not text:
+        return ""
+    return text[:1].lower() + text[1:]
 
 
 def clean_generated_text(value: Any) -> str:

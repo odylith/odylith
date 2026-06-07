@@ -15,6 +15,7 @@ from typing import Any
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_text_list
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -332,12 +333,7 @@ def _normalize_backlog(
         _normalize_list_fields(row, _BACKLOG_TEXT_LIST_FIELDS)
         _normalize_list_fields(row, _BACKLOG_REF_LIST_FIELDS, split_commas=True)
         row.setdefault("evidence_tier", "user_intent" if index == 1 else "odylith_assumption")
-        first_slice = clean_text(row.get("recommended_first_slice")) or clean_text(row.get("first_slice_proof"))
-        if not first_slice:
-            first_slice = join_sentence_text(row.get("validation")) or _release_gate_for(
-                row.get("release"),
-                release_rows=release_rows,
-            )
+        first_slice = _recommended_first_slice(row, release_rows=release_rows)
         if first_slice:
             row["recommended_first_slice"] = first_slice
         if "related_components" in row and "component_focus" not in row:
@@ -346,6 +342,37 @@ def _normalize_backlog(
             row["related_diagram_slugs"] = _remap_diagram_refs(row.get("related_diagram_slugs"), slug_map)
         rows.append(row)
     return rows
+
+
+def _recommended_first_slice(row: Mapping[str, Any], *, release_rows: Sequence[Mapping[str, Any]]) -> str:
+    explicit = clean_text(row.get("recommended_first_slice")) or clean_text(row.get("first_slice_proof"))
+    if explicit:
+        return explicit
+    return _derived_first_slice(row, release_rows=release_rows)
+
+
+def _derived_first_slice(row: Mapping[str, Any], *, release_rows: Sequence[Mapping[str, Any]]) -> str:
+    title = _brief_fragment(row.get("title"), fallback="this workstream", limit=90)
+    product_view = _brief_fragment(row.get("product_view"), limit=220)
+    if product_view:
+        return f"Start {title} with the smallest source-backed slice for this product view: {product_view}."
+    opportunity = _brief_fragment(row.get("opportunity"), limit=220)
+    if opportunity:
+        return f"Start {title} with the smallest source-backed slice for this opportunity: {opportunity}."
+    problem = _brief_fragment(row.get("problem"), limit=220)
+    if problem:
+        return f"Start {title} by proving the smallest behavior that addresses this problem: {problem}."
+    release_gate = _brief_fragment(_release_gate_for(row.get("release"), release_rows=release_rows), limit=180)
+    if release_gate:
+        return f"Start {title} by defining the smallest source-backed behavior needed before this release gate: {release_gate}."
+    return f"Start {title} by defining the smallest source-backed behavior, owned state, and proof gate."
+
+
+def _brief_fragment(value: Any, *, fallback: str = "", limit: int = 220) -> str:
+    text = clean_text(value) or fallback
+    if not text:
+        return ""
+    return clip_text_at_word_boundary(text, limit=limit, strip_edges=" .").strip(" ,;:")
 
 
 def _normalize_components(value: Any) -> list[Any]:

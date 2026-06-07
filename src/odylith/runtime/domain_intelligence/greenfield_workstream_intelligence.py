@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_brief_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
@@ -160,7 +161,7 @@ def build_workstream_domain_intelligence(
     internals = internal_systems or [f"{state_object}: owns domain state.", f"{evidence_record}: owns release review."]
     internal_labels = join_system_labels(internals) or join_items(internals)
     externals = external_systems or ["No live external system is accepted for the first release."]
-    non_goal_text = join_items(non_goals) or "unconfirmed broader platform behavior"
+    non_goal_text = boundary_clause_text(list(non_goals), item_limit=150) or "unconfirmed broader platform behavior"
     focus = short_summary(product_view or first_slice or opportunity, limit=360)
     risk = short_summary(problem, limit=300) or f"{label} can fail if {row_title} is too vague to implement."
     build_scope = short_summary(first_slice or first_path, limit=320)
@@ -206,7 +207,7 @@ def build_workstream_domain_intelligence(
             f"{evidence_record} is the source of truth for review readiness and release confidence.",
         ],
         "evidence_model": [
-            f"Review check: {validation_summary or proof_boundary}.",
+            f"Review evidence belongs in {evidence_record}; validation gates stay separate from narrative claims.",
             f"{evidence_record} must show the accepted input, changed state, validation result, decision, and visible outcome.",
         ],
         "decisions": [

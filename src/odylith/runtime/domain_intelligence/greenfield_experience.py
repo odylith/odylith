@@ -157,8 +157,7 @@ def build_component_handoffs(
         wave = _wave_for_workstream(program_result=program_result, workstream_id=start_id)
         title = str(by_id.get(start_id, {}).get("title", "")).strip()
         first_slice = _first_slice_text(proposal_row)
-        if not _workstream_title_matches_component(title, row):
-            first_slice = _component_local_first_slice(row, fallback=first_slice)
+        first_slice = _component_local_first_slice(row, fallback=first_slice)
         handoffs[key] = {
             **project_context,
             "workstream_id": start_id,
@@ -369,13 +368,21 @@ def _component_local_first_slice(row: Mapping[str, Any], *, fallback: str) -> st
     inputs = _short_contract_text(contract.get("accepted_inputs") if isinstance(contract, Mapping) else "")
     outputs = _short_contract_text(contract.get("produced_outputs") if isinstance(contract, Mapping) else "")
     proof = _short_contract_text(_first_contract_text(contract.get("local_proof")) if isinstance(contract, Mapping) else "")
+    responsibility = _short_contract_text(row.get("responsibility") or row.get("boundary"))
+    validation = _short_contract_text(_first_contract_text(row_text_tuple(row, "validation", "test_strategy")))
     if label and proof:
         return (
-            f"Implement {label} local proof: {proof}. Block missing or invalid inputs and keep the result, explanation, "
-            "and recovery path reviewable."
+            f"Implement {label} local proof: {proof}. When {label} receives missing or invalid input, keep the "
+            "result, explanation, and recovery path reviewable."
         )
     if label and inputs and outputs:
         return f"Implement {label} local contract: accept {inputs}, produce {outputs}, and block invalid or missing state."
+    if label and responsibility and validation:
+        return f"Implement {label} inside this boundary: {responsibility}. Prove it with {validation}."
+    if label and validation:
+        return f"Implement {label} so its local validation can show: {validation}."
+    if label and responsibility:
+        return f"Implement {label} inside this boundary: {responsibility}."
     return fallback
 
 

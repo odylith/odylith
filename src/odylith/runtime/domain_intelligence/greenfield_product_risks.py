@@ -393,6 +393,7 @@ def _outcome_clause_as_noun(value: str) -> str:
     text = normalize_visible_result_language(compact_text(value)).strip(" .")
     text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
     text = re.sub(r"^(?:and|then|finally)\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:her|his|its|our|their|your)\s+", "", text, flags=re.IGNORECASE)
     subject_verb = re.match(
         r"^(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"
         r"(?:can\s+)?(?:acts?\s+on|approves?|blocks?|decides?|displays?|explains?|gets?|inspects?|receives?|reviews?|sees?|shows?|uses?)\s+"

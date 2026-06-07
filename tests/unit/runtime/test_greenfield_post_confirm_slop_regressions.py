@@ -142,7 +142,17 @@ def test_visible_result_language_normalization_stays_in_text_owner() -> None:
     assert normalize_visible_result_language(
         "Visible-result event readout plus note on screen, alongside source evidence."
     ) == "visible result readout and note on screen with source evidence."
+    assert normalize_visible_result_language(
+        "estimated total burn against target plus one concrete recommendation"
+    ) == "estimated total burn compared with the target and one concrete recommendation"
+    assert normalize_visible_result_language("estimated total burn against target") == (
+        "estimated total burn against the target"
+    )
     assert normalize_visible_result_language("tracked metrics trended with usage") == "tracked metrics changed with usage"
+    assert (
+        normalize_visible_result_language("a trend the optimizer reasons against")
+        == "a trend the optimizer uses for comparison"
+    )
     assert (
         normalize_visible_result_language("issues control actions to battery and controllable loads")
         == "issues battery and load control actions"
@@ -321,7 +331,8 @@ Release 0.0.1 succeeds when one requester can submit a complete request, see a d
     )
     rendered = json.dumps(proposal, sort_keys=True)
 
-    assert intent["state_object"].startswith("The central object is a tracked request")
+    assert intent["state_object"].startswith("a tracked request")
+    assert "central object is" not in intent["state_object"].casefold()
     assert intent["first_path"].startswith("A requester opens the web app")
     assert intent["proof_boundary"].startswith("Release 0.0.1 succeeds when one requester")
     assert "Release 0.0.1 succeeds" not in intent["first_path"]
@@ -605,7 +616,7 @@ The first release succeeds when one requester can submit a complete request and 
     assert "before this component can guide" not in rendered.casefold()
     assert all("Multi-team Routing" not in title for title in titles)
     assert all(len(title.split()) <= 12 for title in titles)
-    assert any(title.startswith("Let Requester Reach A Decision Summary") for title in titles)
+    assert any(title.startswith("Let Requester Use A Decision Summary") for title in titles)
     assert "long-term analytics" not in proposal["semantic_model"]["first_path_contract"]["visible_result"].casefold()
     assert generated_semantic_slop_issues(proposal) == []
 

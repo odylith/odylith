@@ -132,6 +132,12 @@ def needs_context_backfill(
     )
     if broad_detail.search(_clean(description)) or any(broad_detail.search(_clean(phrase)) for phrase in description_phrases):
         return True
+    generated_boundary = re.compile(
+        r"\b(?:required\s+inputs|blocked-case\s+evidence|handoff\s+boundaries|confirmed\s+first\s+path)\b",
+        flags=re.IGNORECASE,
+    )
+    if generated_boundary.search(_clean(description)):
+        return True
     local_terms = set(_content_terms(description))
     context_text = " ".join(context_required_phrases)
     if local_terms & {"measurement", "metric", "metrics", "value", "unit"} and re.search(
@@ -140,6 +146,8 @@ def needs_context_backfill(
         flags=re.IGNORECASE,
     ):
         return True
+    if description_phrases and len(local_terms) >= 5:
+        return False
     if any(set(_content_terms(phrase)) & _ARTIFACT_CARRIER_TERMS for phrase in description_phrases):
         return False
     return bool(len(description_phrases) <= 3 and context_required_phrases)

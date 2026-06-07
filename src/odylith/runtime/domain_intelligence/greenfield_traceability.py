@@ -312,11 +312,16 @@ def _patch_sections(
 ) -> None:
     first_slice = str(row.get("recommended_first_slice", "")).strip()
     product_view = str(row.get("product_view", "")).strip()
+    focus = _workstream_focus(row)
     if product_view or first_slice:
         sections["Proposed Solution"] = _paragraph(
             [
-                product_view,
-                f"First slice: {first_slice}" if first_slice else "",
+                f"Start with this implementation slice: {first_slice}" if first_slice else "",
+                (
+                    f"Keep {focus} tied to its validation gates before expanding adjacent source ownership."
+                    if focus
+                    else ""
+                ),
             ]
         )
     sections["Scope"] = _bullets(
@@ -328,8 +333,8 @@ def _patch_sections(
     sections["Non-Goals"] = _bullets(
         _section_items(row.get("non_goals", []))
         or [
-            "Do not claim source-backed implementation ownership until code exists.",
-            "Do not promote research or product claims without the listed validation gates.",
+            f"Do not claim source-backed implementation ownership for {focus} until code exists.",
+            f"Do not promote {focus} claims without its listed validation gates.",
         ]
     )
     sections["Risks"] = _bullets(_risk_lines(row.get("risks", [])) or risks[:3])
@@ -348,7 +353,7 @@ def _patch_sections(
     sections["Test Strategy"] = _bullets(
         _section_items(row.get("test_strategy", []))
         or [
-            "Turn each success metric into a focused reproducibility, contract, or smoke proof before source implementation starts.",
+            f"Turn {focus} success metrics into focused reproducibility, contract, or smoke proof before source implementation starts.",
         ]
     )
     sections["Impacted Components"] = _bullets(
@@ -372,8 +377,11 @@ def _patch_sections(
             "Keep the workstream queued until the first implementation plan binds scope, proof, and release gates.",
         ]
     )
-    sections["Why Now"] = str(row.get("opportunity", "")).strip() or sections.get("Why Now", "")
-    sections["Open Questions"] = _bullets(_question_lines(row.get("open_questions", [])) or open_questions[:3])
+    sections["Why Now"] = _why_now_text(row=row, focus=focus, first_slice=first_slice) or sections.get("Why Now", "")
+    sections["Open Questions"] = _bullets(
+        _question_lines(row.get("open_questions", []))
+        or _scoped_question_lines(open_questions[:3], focus=focus)
+    )
     sections.update(build_artifact_enrichment(row=row, proposal=proposal).radar_sections)
 
 
@@ -395,6 +403,47 @@ def _section_items(value: Any) -> list[str]:
 
 def _clean(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
+
+
+def _workstream_focus(row: Mapping[str, Any]) -> str:
+    return _clean(row.get("title")) or _clean(row.get("recommended_first_slice")) or "this workstream"
+
+
+def _why_now_text(*, row: Mapping[str, Any], focus: str, first_slice: str) -> str:
+    title = _clean(focus) or "this workstream"
+    if first_slice:
+        return (
+            f"Do this before implementation expands so {title} has a tested first slice, clear ownership, "
+            "and a release boundary the team can review."
+        )
+    opportunity = _clean(row.get("opportunity"))
+    if not opportunity:
+        return ""
+    return f"Do this now because the opportunity is ready to turn into reviewable scope: {opportunity}"
+
+
+def _scoped_question_lines(values: Sequence[str], *, focus: str) -> list[str]:
+    focus_text = _clean(focus) or "this workstream"
+    rows: list[str] = []
+    for value in values:
+        text = _clean(value)
+        if not text:
+            continue
+        question, impact = _split_question_impact(text)
+        if impact:
+            rows.append(f"For {focus_text}: {question.rstrip(' ?.')}. Impact for {focus_text}: {impact.rstrip(' .')}.")
+        else:
+            rows.append(f"For {focus_text}: {text}")
+    return rows
+
+
+def _split_question_impact(value: str) -> tuple[str, str]:
+    marker = " Impact:"
+    text = _clean(value)
+    if marker not in text:
+        return text, ""
+    question, impact = text.split(marker, 1)
+    return _clean(question), _clean(impact)
 
 
 def _mapping_line(row: Mapping[str, Any]) -> list[str]:
