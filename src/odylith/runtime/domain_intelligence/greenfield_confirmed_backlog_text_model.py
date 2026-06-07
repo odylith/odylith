@@ -52,12 +52,104 @@ _PRODUCT_SHARE_STOPWORDS = _BACKLOG_TERM_STOPWORDS | frozenset(
 
 
 def proof_claim_summary(value: str, *, limit: int = 260) -> str:
-    text = _short_summary(value, limit=limit).strip(" .")
-    text = re.sub(r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?product\s+is\s+proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:release\s+[0-9.]+\s+)?(?:is\s+)?proven\s+when\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^(?:the\s+)?proof\s+boundary\s+(?:is|means)\s*:?\s*", "", text, flags=re.IGNORECASE)
-    return text or _short_summary(value, limit=limit).strip(" .")
+    raw_text = _compact_text(value).strip(" .")
+    text = _strip_proof_claim_intro(raw_text)
+    text = _drop_secondary_ranking_claims(text)
+    text = _short_summary(text, limit=limit).strip(" .")
+    text = _trim_incomplete_terminal_phrase(text)
+    return text or _trim_incomplete_terminal_phrase(_short_summary(raw_text, limit=limit).strip(" ."))
+
+
+def _strip_proof_claim_intro(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    patterns = (
+        r"^(?:the\s+)?first\s+version\s+is\s+proven\s+when\s+",
+        r"^(?:the\s+)?product\s+is\s+proven\s+when\s+",
+        r"^(?:release\s+[0-9.]+\s+)?(?:is\s+)?proven\s+when\s+",
+        r"^(?:the\s+)?proof\s+boundary\s+(?:is|means)\s*:?\s*",
+        r"^(?:the\s+)?first\s+thing\s+(?:the\s+)?product\s+must\s+prove\s+(?:is\s+)?(?:that\s+)?",
+        r"^(?:the\s+)?first\s+complete\s+path\s+(?:the\s+)?product\s+must\s+prove\s+(?:is\s+)?(?:that\s+)?",
+        r"^(?:the\s+)?first\s+release\s+must\s+prove\s+(?:that\s+)?",
+    )
+    previous = ""
+    while text and text != previous:
+        previous = text
+        for pattern in patterns:
+            text = re.sub(pattern, "", text, count=1, flags=re.IGNORECASE).strip(" .")
+    return text
+
+
+def _drop_secondary_ranking_claims(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return ""
+    return re.split(
+        r"\s+(?:A\s+close\s+second|Close\s+second|Second(?:arily)?|Next)\s+(?:is|would\s+be|should\s+be)\b",
+        text,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0].strip(" .")
+
+
+_INCOMPLETE_TERMINAL_WORDS = frozenset(
+    {
+        "a",
+        "against",
+        "an",
+        "and",
+        "around",
+        "as",
+        "at",
+        "because",
+        "between",
+        "for",
+        "from",
+        "into",
+        "of",
+        "or",
+        "plus",
+        "the",
+        "this",
+        "through",
+        "to",
+        "toward",
+        "towards",
+        "until",
+        "via",
+        "when",
+        "while",
+        "with",
+        "without",
+    }
+)
+_INCOMPLETE_TERMINAL_MODIFIERS = frozenset(
+    {
+        "actionable",
+        "accepted",
+        "clear",
+        "complete",
+        "concrete",
+        "daily",
+        "first",
+        "reviewable",
+        "safe",
+        "safety",
+        "specific",
+        "trusted",
+        "visible",
+    }
+)
+
+
+def _trim_incomplete_terminal_phrase(value: str) -> str:
+    text = _compact_text(value).strip(" .,;:")
+    words = text.split()
+    while words:
+        tail = words[-1].casefold().strip(".,;:'")
+        if tail not in _INCOMPLETE_TERMINAL_WORDS and tail not in _INCOMPLETE_TERMINAL_MODIFIERS:
+            break
+        words.pop()
+    return " ".join(words).strip(" .,;:")
 
 
 def join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
@@ -172,9 +264,7 @@ def imperative_action_phrase(first_path: str) -> str:
         return ""
     actor, action_without_actor = actor_action_parts(text)
     if actor and action_without_actor:
-        if actor.casefold() in {"actor", "customer", "owner", "participant", "person", "someone", "user"}:
-            return normalize_action_clause(action_without_actor)
-        return f"{actor} {action_without_actor}"
+        return normalize_action_clause(action_without_actor)
     return capability_action_clause(text)
 
 
@@ -244,13 +334,13 @@ def proof_title_object(value: str) -> str:
     text = re.sub(r"\bwithout\b.+$", "", text, flags=re.IGNORECASE).strip(" .,;:")
     if len(text.split()) > 9:
         text = " ".join(text.split()[:9])
-    return sentence_fragment(text)
+    return sentence_fragment(_drop_adjacent_duplicate_words(text))
 
 
 def workstream_subject(value: str) -> str:
     text = _compact_text(value)
     text = re.sub(r"\s+(Service|Surface|Component|Boundary)$", "", text, flags=re.IGNORECASE).strip()
-    return text or value
+    return _drop_adjacent_duplicate_words(text) or value
 
 
 def component_label_at(components: list[dict[str, Any]], index: int, *, fallback: str) -> str:
@@ -372,12 +462,25 @@ def normalize_action_clause(value: str) -> str:
 
 
 def sentence_fragment(value: str) -> str:
-    text = _short_summary(value, limit=260).strip(" .")
+    text = _drop_adjacent_duplicate_words(_short_summary(value, limit=260).strip(" ."))
     if not text:
         return ""
     if re.match(r"^[A-Z]{2,}\b", text):
         return text
     return text[:1].casefold() + text[1:]
+
+
+def _drop_adjacent_duplicate_words(value: str) -> str:
+    words = str(value or "").split()
+    cleaned: list[str] = []
+    previous = ""
+    for word in words:
+        normalized = re.sub(r"[^a-z0-9]+", "", word.casefold())
+        if normalized and normalized == previous and len(normalized) >= 4:
+            continue
+        cleaned.append(word)
+        previous = normalized
+    return " ".join(cleaned)
 
 
 def proof_focus_phrase(value: str, *, fallback: str) -> str:
@@ -440,8 +543,24 @@ def rationale_proof_focus(value: str, *, fallback: str) -> str:
     text = proof_claim_summary(value, limit=160).strip(" .")
     text = re.split(r"\s+without\s+|\s+and\s+missing\b|\s+and\s+deferred\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
     if word_count(text) > 14:
-        text = " ".join(text.split()[:14]).strip(" .")
+        text = _bounded_complete_proof_focus(text, max_words=18)
     return sentence_fragment(text or fallback) or "the proven first path"
+
+
+def _bounded_complete_proof_focus(value: str, *, max_words: int) -> str:
+    text = _compact_text(value).strip(" .")
+    comma_segments = [segment.strip(" .") for segment in re.split(r"\s*,\s*", text) if segment.strip(" .")]
+    if len(comma_segments) > 1:
+        selected: list[str] = []
+        for segment in comma_segments:
+            selected.append(segment)
+            candidate = _trim_incomplete_terminal_phrase(", ".join(selected))
+            if candidate and candidate == ", ".join(selected).strip(" .,;:") and word_count(candidate) >= 7:
+                return candidate
+    words = text.split()
+    if len(words) <= max_words:
+        return _trim_incomplete_terminal_phrase(text)
+    return _trim_incomplete_terminal_phrase(" ".join(words[:max_words]))
 
 
 def rationale_release_basis(*, title: str, label: str, first_slice: str, proof_boundary: str) -> str:

@@ -10,6 +10,7 @@ from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
@@ -77,7 +78,7 @@ def brief_proof_boundary(value: str) -> str:
     text = compact_text(value)
     if not text:
         return ""
-    text = normalize_proof_boundary_language(text)
+    text = proof_claim_summary(normalize_proof_boundary_language(text), limit=180)
     text = text.split(". ", 1)[0]
     return trim(text.strip(" .:"), 150)
 
@@ -461,7 +462,7 @@ def _without_ellipsis(value: str) -> str:
 def _role_or_short_label(value: str) -> str:
     text = str(value or "").split("—", 1)[0].split(":", 1)[0].strip()
     text = text.replace("(", " ").replace(")", " ")
-    text = re.sub(r"\bprimary\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"(?<!-)\bprimary\b(?!-)", "", text, flags=re.IGNORECASE)
     text = re.split(
         r"\b(?:who|that|where|when|while|with|filling|reading|reviewing|configuring|tracking|using|entering|submitting|following|managing|auditing|approving)\b",
         text,
@@ -484,7 +485,7 @@ def _strip_dangling_tail(value: str) -> str:
     text = compact_text(value).rstrip(" ,;:.")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|accepted|actionable|an|and|as|at|because|by|can|clear|complete|concrete|daily|first|for|from|if|in|into|its|lets|must|of|on|one|or|reviewable|should|specific|that|the|their|this|through|tied|to|trusted|until|visible|when|while|with|without)$",
+            r"\b(?:a|accepted|actionable|an|and|as|at|because|by|can|capturing|clear|comparing|complete|concrete|daily|first|for|from|if|in|into|its|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|their|this|through|tied|to|trusted|until|visible|warning|when|while|with|without)$",
             "",
             text,
             flags=re.IGNORECASE,

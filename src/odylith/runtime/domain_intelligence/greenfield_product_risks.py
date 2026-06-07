@@ -470,7 +470,7 @@ def _input_clause_object(value: str) -> str:
         flags=re.IGNORECASE,
     )
     if subject_verb:
-        return _lower_first(short_summary(subject_verb.group("object"), limit=110))
+        return _lower_first(short_summary(_clean_input_object(subject_verb.group("object")), limit=110))
     verb_first = re.match(
         r"^(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\s+"
         r"(?P<object>(?:a|an|the|one|their|his|her|its|our|my)\s+.+)$",
@@ -478,8 +478,19 @@ def _input_clause_object(value: str) -> str:
         flags=re.IGNORECASE,
     )
     if verb_first:
-        return _lower_first(short_summary(verb_first.group("object"), limit=110))
-    return _lower_first(short_summary(text, limit=110))
+        return _lower_first(short_summary(_clean_input_object(verb_first.group("object")), limit=110))
+    return _lower_first(short_summary(_clean_input_object(text), limit=110))
+
+
+def _clean_input_object(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    text = re.sub(
+        r"\s+and\s+(?:manually\s+)?(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\s+",
+        " and ",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return compact_text(text).strip(" .")
 
 
 def _external_focus(values: Sequence[str]) -> str:

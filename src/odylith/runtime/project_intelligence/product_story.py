@@ -498,7 +498,8 @@ def _what_happens_when_used(*, first_path: str, fallback: str) -> str:
         return ""
     if re.match(r"^user\s+", path, flags=re.IGNORECASE):
         path = f"the {path[:1].lower()}{path[1:]}"
-    return _ensure_period(f"When someone uses it, {_lower_first(path).rstrip('.')}")
+    path = _capitalize_sentence_starts(_lower_first(path).rstrip("."))
+    return _ensure_period(f"When someone uses it, {path}")
 
 
 def _surrounding_ecosystem_paragraph(
@@ -663,23 +664,42 @@ def _subjectify_path_step(value: str) -> str:
     text = _normalize_embedded_action_verbs(text)
     subject_action = re.match(
         r"^(?P<subject>(?:the\s+)?(?:user|person|customer|actor|operator|participant|owner|requester|applicant|performer))\s+"
-        r"(?P<verb>add|adds|log|logs|enter|enters|select|selects|submit|submits|save|saves|choose|chooses|click|clicks|accept|accepts|dismiss|dismisses|record|records|capture|captures|tap|taps|play|plays)\b(?P<tail>.*)$",
+        r"(?P<verb>add|adds|answer|answers|capture|captures|choose|chooses|click|clicks|dismiss|dismisses|enter|enters|log|logs|play|plays|record|records|save|saves|select|selects|submit|submits|tap|taps)\b(?P<tail>.*)$",
         text,
         flags=re.IGNORECASE,
     )
     if subject_action:
         subject = subject_action.group("subject")
         verb = third_person_action_verb(subject_action.group("verb"))
-        return f"{_lower_first(subject)} {verb}{subject_action.group('tail')}".strip()
+        tail = _third_person_compound_tail(subject_action.group("tail"))
+        return f"{_lower_first(subject)} {verb}{tail}".strip()
+    adverb_action = re.match(
+        r"^(?P<prefix>immediately|later|then)\s+(?P<verb>receive|receives|see|sees|view|views|read|reads|get|gets)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if adverb_action:
+        prefix = adverb_action.group("prefix").casefold()
+        verb = third_person_action_verb(adverb_action.group("verb"))
+        return f"the user {prefix} {verb}{adverb_action.group('tail')}".strip()
+    product_action = re.match(
+        r"^(?P<verb>compare|compares|mark|marks|prompt|prompts|return|returns|show|shows|surface|surfaces|update|updates)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if product_action:
+        verb = third_person_action_verb(product_action.group("verb"))
+        return f"the product {verb}{product_action.group('tail')}".strip()
     action = re.match(
-        r"^(?P<prefix>manually\s+)?(?P<verb>add|adds|log|logs|enter|enters|select|selects|submit|submits|save|saves|choose|chooses|click|clicks|accept|accepts|dismiss|dismisses|record|records|capture|captures|tap|taps)\b(?P<tail>.*)$",
+        r"^(?P<prefix>manually\s+)?(?P<verb>add|adds|answer|answers|capture|captures|choose|chooses|click|clicks|dismiss|dismisses|enter|enters|log|logs|record|records|save|saves|select|selects|submit|submits|tap|taps)\b(?P<tail>.*)$",
         text,
         flags=re.IGNORECASE,
     )
     if action:
         prefix = action.group("prefix") or ""
         verb = third_person_action_verb(action.group("verb"))
-        return f"the user {prefix}{verb}{action.group('tail')}".strip()
+        tail = _third_person_compound_tail(action.group("tail"))
+        return f"the user {prefix}{verb}{tail}".strip()
     return text
 
 
@@ -710,8 +730,17 @@ def _clean_opening_launcher_step(value: str) -> str:
 
 def _normalize_embedded_action_verbs(value: str) -> str:
     return re.sub(
-        r",\s+and\s+(manually\s+)?(logs?|enters?|selects?|submits?|saves?|chooses?|clicks?|accepts?|dismisses?|records?|captures?|reviews?|taps?)\b",
+        r",\s+and\s+(manually\s+)?(answers?|logs?|enters?|selects?|submits?|saves?|chooses?|clicks?|accepts?|dismisses?|records?|captures?|reviews?|taps?)\b",
         r" and \1\2",
+        value,
+        flags=re.IGNORECASE,
+    )
+
+
+def _third_person_compound_tail(value: str) -> str:
+    return re.sub(
+        r"\b(and|or)\s+(answer|answers|capture|captures|choose|chooses|click|clicks|dismiss|dismisses|enter|enters|log|logs|record|records|save|saves|select|selects|submit|submits|tap|taps)\b",
+        lambda match: match.group(0) if match.group(2)[:1].isupper() else f"{match.group(1)} {third_person_action_verb(match.group(2))}",
         value,
         flags=re.IGNORECASE,
     )
@@ -874,6 +903,10 @@ def _lower_first(value: str) -> str:
     return f"{text[:1].lower()}{text[1:]}" if text else ""
 
 
+def _capitalize_sentence_starts(value: str) -> str:
+    return re.sub(r"(?<=[.!?])\s+([a-z])", lambda match: f" {match.group(1).upper()}", sentence(value).strip())
+
+
 def _story_actor_items(actors: Sequence[tuple[str, str, str]]) -> list[dict[str, str]]:
     return [
         {"role": display_text(role), "title": display_text(title), "body": _actor_story_detail(body)}
@@ -957,8 +990,8 @@ def _proof_claim(value: str, *, first_path: str) -> str:
             text = head
     if _same_story(text, first_path):
         return "the first path happened, stayed inside its accepted boundary, and left reviewer-visible evidence"
-    if len(text) > 180:
-        text = _story_excerpt(text, limit=170).rstrip(".")
+    if len(text) > 260:
+        text = _story_excerpt(text, limit=240).rstrip(".")
     return text
 
 

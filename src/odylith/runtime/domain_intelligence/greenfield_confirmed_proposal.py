@@ -267,9 +267,9 @@ def build_confirmed_greenfield_proposal(
             ),
         ),
         "validation_strategy": [
-            f"The accepted first path proves {first_path_capability}.",
-            f"{state_label} can be reconstructed and reviewed.",
-            f"The release proof explains the promised user-visible result: {proof_boundary}",
+            f"Success proof covers {first_path_capability}.",
+            f"Replay proof reconstructs {state_label} with actor, timestamp, status, result, and review context.",
+            f"The release proof must show this user-visible result: {proof_claim_summary(proof_boundary, limit=300)}.",
             *health_safety_obligations(
                 product_title,
                 product_story,

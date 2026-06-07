@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_component_completi
     complete_component_rows,
     repair_component_sentence_lists,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_intelligence import complete_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_repair import repair_project_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prewrite_gate import complete_semantic_model as _complete_semantic_model
@@ -152,14 +153,16 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
         changed = True
     validation = proposal.get("validation_strategy")
     if not isinstance(validation, list) or _validation_strategy_needs_repair(proposal):
-        action = completion_text.action_phrase(proposal)
         outcome = completion_text.outcome_phrase(proposal)
         proof_capability = completion_text.proof_capability_phrase(proposal)
+        proof_summary = _validation_proof_summary(proposal)
         proposal["validation_strategy"] = list(
             unique_text(
                 [
                     *(validation if isinstance(validation, list) else []),
-                    f"Success proof covers {proof_capability} and {outcome}.",
+                    f"Success proof covers {proof_capability}.",
+                    f"Result proof shows {outcome} and explains the visible result.",
+                    f"Release proof stays inside this promise: {proof_summary}.",
                     f"{completion_text.state_object(proposal)} can be reconstructed with actor, timestamp, status, and result.",
                     f"Readiness fails when required input, access, privacy, safety, or result explanation is missing.",
                 ]
@@ -206,7 +209,8 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
             row["success_metrics"] = list(
                 unique_text(
                     [
-                        f"Success proof covers {proof_capability} and {outcome}.",
+                        f"Success proof covers {proof_capability}.",
+                        f"Result proof shows {outcome} with a clear explanation.",
                         f"Missing or incorrect input produces a clear correction path instead of a misleading result.",
                         f"The result can be explained from the recorded {state} without relying on memory or hidden assumptions.",
                     ]
@@ -421,7 +425,7 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = completion_text.project_title(proposal)
     state_object = completion_text.state_object(proposal)
-    proof_boundary = completion_text.proof_boundary(proposal)
+    proof_summary = _validation_proof_summary(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     outcome_action = completion_text.outcome_action_phrase(outcome)
@@ -445,7 +449,7 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
             _sentence(f"{label} success proof shows a representative user can {action} and {outcome_action}.", limit=520),
             _sentence(f"{label} replay proof reconstructs {state_object} with actor, timestamp, status, result, and explanation.", limit=520),
             _sentence(f"{label} blocked-path proof keeps missing input, failed validation, access limits, or privacy issues visible before a result is trusted.", limit=520),
-            _sentence(f"{label} release proof stays within the accepted product promise: {proof_boundary}", limit=520),
+            _sentence(f"{label} release proof stays within the accepted product promise: {proof_summary}.", limit=520),
         ]
         changed |= _set_list(release_plan, "promotion_criteria", criteria)
         stages = release_plan.get("release_stages")
@@ -458,11 +462,13 @@ def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: s
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = completion_text.project_title(proposal)
     state_object = completion_text.state_object(proposal)
-    action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     proof_capability = completion_text.proof_capability_phrase(proposal)
+    proof_summary = _validation_proof_summary(proposal)
     rows = [
-        _sentence(f"Success proof: release {release} proves {proof_capability} and shows {outcome}.", limit=700),
+        _sentence(f"Success proof for release {release} covers {proof_capability}.", limit=700),
+        _sentence(f"Result proof shows {outcome} and explains the visible result.", limit=520),
+        _sentence(f"Evidence proof stays inside this first-release promise: {proof_summary}.", limit=620),
         _sentence(f"Blocked-path proof: missing input, invalid state, failed validation, absent explanation, or unresolved review blocks readiness for {state_object}.", limit=520),
         _sentence(f"Replay proof: {state_object} can be reconstructed with actor, timestamp, prior state, current state, result, and explanation.", limit=520),
         _sentence(f"Access and privacy proof: only authorized actors can view or mutate protected state, and audit, retention, privacy, accessibility, and safety obligations stay visible.", limit=520),
@@ -475,18 +481,23 @@ def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: s
     return _set_list(proposal, "validation_strategy", rows)
 
 
+def _validation_proof_summary(proposal: Mapping[str, Any], *, limit: int = 300) -> str:
+    summary = proof_claim_summary(completion_text.proof_boundary(proposal), limit=limit).strip(" .")
+    return _sentence(summary, fallback="the promised user-visible result", limit=limit).rstrip(".")
+
+
 def _repair_backlog_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = completion_text.project_title(proposal)
     state_object = completion_text.state_object(proposal)
-    action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     proof_capability = completion_text.proof_capability_phrase(proposal)
     changed = False
     for row in dict_rows(proposal.get("backlog")):
         title = _clean(row.get("title")) or label
         metrics = [
-            _sentence(f"{title} proves the first path in release {release}: {proof_capability} and {outcome}.", limit=700),
+            _sentence(f"{title} success proof for release {release} covers {proof_capability}.", limit=700),
+            _sentence(f"{title} result proof shows {outcome} with a clear explanation.", limit=500),
             _sentence(f"{title} explains missing or invalid input before the product shows a result.", limit=500),
             _sentence(f"{title} preserves enough {state_object} context to explain the actor, status, result, and recovery path.", limit=500),
             _sentence(f"{title} stays inside the first-release promise and keeps deferred outcomes out of the success claim.", limit=500),
@@ -512,7 +523,8 @@ def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release
     outcome = completion_text.outcome_phrase(proposal)
     proof_capability = completion_text.proof_capability_phrase(proposal)
     rows = [
-        _sentence(f"Validate {proof_capability} and {outcome}.", limit=420),
+        _sentence(f"Validate that success proof covers {proof_capability}.", limit=420),
+        _sentence(f"Validate that result proof shows {outcome} with a clear explanation.", limit=420),
         _sentence(f"Validate a blocked path where missing input, invalid state, failed validation, or missing explanation prevents readiness.", limit=420),
         _sentence(f"Validate replay for {state_object} with actor, timestamp, status, result, and explanation.", limit=420),
         _sentence(f"Validate role-appropriate access, privacy, audit, retention, accessibility, safety, and recovery behavior before release {release}.", limit=420),
@@ -563,7 +575,8 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
         if _sequence_has_text_repair(row.get("success_metrics")):
             proof_capability = completion_text.proof_capability_phrase(proposal)
             metrics = [
-                f"{title} proves the first path in release {release}: {proof_capability} and {outcome}.",
+                f"{title} success proof for release {release} covers {proof_capability}.",
+                f"{title} result proof shows {outcome} with a clear explanation.",
                 f"{title} explains missing or invalid input before the product shows a result.",
                 f"{title} preserves enough {state_object} context to explain the actor, status, result, and recovery path.",
                 f"{title} stays inside the first-release promise without borrowing deferred outcomes.",
@@ -625,7 +638,8 @@ def _repair_domain_intelligence_metrics(
         intelligence,
         "metrics",
         [
-            f"{title} proves users can {action} and {outcome_action}.",
+            f"{title} proof covers users who can {action}.",
+            f"{title} result evidence shows {outcome_action}.",
             f"Every readiness assertion for {title} has state, explanation, validation, release-review, and non-goal references.",
             f"{title} keeps {state_object} clear when the result is blocked, corrected, or replayed.",
         ],

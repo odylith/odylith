@@ -945,10 +945,10 @@
         "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
         "provider": "codex-cli",
         "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. WARNING: proceeding, even though we could not update PATH: Operation not permitted (os error 1) Error loading config.toml: unknown variant `priority`, expected `fast` or `flex` in `service_tier`",
+        "provider_failure_detail": "Codex CLI exited with status 1. WARNING: proceeding, even though we could not update PATH: Operation not permitted (os error 1) Error loading config.toml: unknown variant `default`, expected `fast` or `flex` in `service_tier`",
         "provider_model": "gpt-5.3-codex-spark",
         "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-06-07T04:07:45Z"
+        "next_retry_utc": "2026-06-07T22:07:45Z"
       },
       "evidence_lookup": {}
     },
@@ -969,10 +969,10 @@
         "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
         "provider": "codex-cli",
         "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. WARNING: proceeding, even though we could not update PATH: Operation not permitted (os error 1) Error loading config.toml: unknown variant `priority`, expected `fast` or `flex` in `service_tier`",
+        "provider_failure_detail": "Codex CLI exited with status 1. WARNING: proceeding, even though we could not update PATH: Operation not permitted (os error 1) Error loading config.toml: unknown variant `default`, expected `fast` or `flex` in `service_tier`",
         "provider_model": "gpt-5.3-codex-spark",
         "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-06-07T04:07:45Z"
+        "next_retry_utc": "2026-06-07T22:07:45Z"
       },
       "evidence_lookup": {}
     }

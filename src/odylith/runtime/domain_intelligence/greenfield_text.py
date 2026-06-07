@@ -105,6 +105,17 @@ def normalize_proof_boundary_language(value: Any) -> str:
     text = clean_text(value).strip(" .:")
     if not text:
         return ""
+    sentences = [
+        sentence.strip()
+        for sentence in re.split(r"(?<=[.!?])\s+", text)
+        if sentence.strip()
+    ]
+    if len(sentences) > 1 and re.search(
+        r"\b(?:confirmation-only|confirmed?\s+draft|no\s+product\s+code\s+exists)\b",
+        sentences[0],
+        flags=re.IGNORECASE,
+    ):
+        text = " ".join(sentences[1:]).strip(" .:")
     replacements = (
         (r"^what\s+would\s+count\s+as\s+evidence[^:]*:\s*", ""),
         (r"^(?:accepted\s+first\s+path|visible\s+outcome)\s+proof\s*:\s*", ""),

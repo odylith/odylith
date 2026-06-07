@@ -465,6 +465,8 @@ def _compact_desired_text(value: object) -> str:
     text = re.sub(r"\b\d+[.)]\s+[A-Z].*", "", text).strip(" .")
     text = text.replace("The desired operational reality is that ", "")
     text = text.replace("the desired operational reality is that ", "")
+    text = text.replace("The first thing the product must prove is that ", "The accepted scenario is ")
+    text = text.replace("the first thing the product must prove is that ", "the accepted scenario is ")
     text = text.replace("The first complete path the product must prove is ", "The accepted scenario is ")
     text = text.replace("The accepted first path passes end to end:", "")
     text = _dashboard_excerpt(text, limit=150)
@@ -481,9 +483,11 @@ def _looks_proof_or_scope_line(value: object) -> bool:
             "what would count as evidence",
             "proof must show",
             "release proof",
+            "first thing the product must prove",
             "must not be claimed",
             "no accuracy numbers",
             "passes end to end",
+            "product must prove",
         )
     )
 
@@ -503,6 +507,8 @@ def _risk_without_embedded_path(value: object) -> str:
 def _clean_project_purpose(value: object) -> str:
     text = sentence(value)
     lowered = text.casefold()
+    if lowered.startswith("explain why ") and "what stays outside the first release" in lowered:
+        return ""
     if lowered.startswith("make ") and "concrete product program before implementation starts" in lowered:
         return ""
     if _looks_generated_project_purpose(text):
@@ -528,6 +534,9 @@ def _looks_generated_project_purpose(value: object) -> bool:
 def _clean_proof_summary(value: object, *, first_path: str) -> str:
     text = sentence(value).strip()
     lowered = text.casefold()
+    accepted_match = re.match(r"^(?:the\s+)?accepted\s+first\s+path\s+proves\s+(?P<body>.+)$", text, flags=re.IGNORECASE)
+    if accepted_match:
+        return f"The release proof covers {accepted_match.group('body').strip(' .')}."
     if (
         "success proof:" in lowered
         or "letting a representative user" in lowered
@@ -673,7 +682,7 @@ def _scenario_body(*, project: Mapping[str, Any], first_path: str, validation: S
     purpose = short(
         _clean_project_purpose(project.get("purpose")) or _clean_objective_sentence(project_intent_line(project, "project objective")),
         limit=260,
-        fallback="The proposal names the first project shape.",
+        fallback="",
     )
     path = (summarize_first_path(first_path) or sentence(first_path)).rstrip(".")
     proof_text = _proof_body(validation=validation, first_path=first_path).rstrip(".")

@@ -86,7 +86,18 @@ def confirmed_system_name(value: str) -> str:
 
 def confirmed_system_description(value: str) -> str:
     cleaned = _clean(value)
-    parts = re.split(r"\s+[—-]\s+|\s*:\s*", cleaned, maxsplit=1)
+    parts = re.split(r"\s+[—-]\s+|\s*:\s*", cleaned, maxsplit=2)
+    if len(parts) > 2:
+        middle = _clean(parts[1])
+        body = _clean(parts[2])
+        if middle and _looks_generated_system_description(body):
+            if _word_count(middle) < 5:
+                return _normalize_system_description(
+                    f"{middle} while keeping required inputs, blockers, and proof evidence clear"
+                )
+            return _normalize_system_description(middle)
+        if middle and not _looks_generated_system_description(middle):
+            return _normalize_system_description(middle)
     if len(parts) > 1:
         head = _clean(parts[0])
         _name, head_description = _split_system_action_clause(head)
@@ -237,7 +248,7 @@ def has_meaningful_system_description(row: str, *, minimum_words: int = 5) -> bo
         and re.search(
             r"\b(?:captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
             r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
-            r"returns?|returning|routes?|routing|records?|recording|stores?|storing|"
+            r"returns?|returning|routes?|routing|records?|recording|stores?|storing|preserves?|preserving|"
             r"configures?|configuring|owned\s+by)\b",
             description,
             re.IGNORECASE,
@@ -284,6 +295,7 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
     split_pattern = re.compile(
         r"\s+(?=(?:owned\s+by|"
         r"captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+        r"exposes?|exposing|"
         r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
         r"returns?|returning|routes?|routing|records?|recording|stores?|storing|"
         r"shows?|showing|renders?|rendering|generates?|generating|calculates?|calculating|"
@@ -304,7 +316,7 @@ def _system_name_head_is_plausible(value: str) -> bool:
         return False
     return bool(
         re.search(
-            r"\b(adapter|application|dashboard|engine|flow|ledger|log|portal|queue|registry|service|store|surface|tracker|trail|view|workspace)\b",
+            r"\b(adapter|application|console|dashboard|engine|flow|ledger|log|portal|queue|record|registry|service|store|surface|tracker|trail|view|workspace)\b",
             head,
             flags=re.IGNORECASE,
         )

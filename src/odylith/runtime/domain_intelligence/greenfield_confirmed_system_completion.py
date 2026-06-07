@@ -88,15 +88,45 @@ def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -
         return ""
     clause = _best_context_clause(name, context)
     if explicit:
-        if clause:
-            return f"{name} — {_short(clause, limit=180)}"
-        return name
+        return f"{name} — {_explicit_system_description(name, context_clause=clause)}"
     if clause:
         return (
             f"{name} — owns its accepted inputs, blocked states, produced outputs, and handoff evidence. "
             f"Context: {_short(clause, limit=180)}"
         )
     return f"{name} — owns input capture, state change, validation evidence, blocked states, and handoff for the accepted {title.lower()} path"
+
+
+def _explicit_system_description(name: str, *, context_clause: str) -> str:
+    topic = _system_topic(name)
+    lowered = name.casefold()
+    path = "the accepted first path"
+    if any(token in lowered for token in ("generator", "generation", "planner", "recommend", "suggest")):
+        return f"generates {topic} for {path} and keeps required inputs, blocked cases, visible result, and handoff evidence clear"
+    if any(token in lowered for token in ("assessment", "scoring", "model", "estimation", "calculation")):
+        return f"evaluates {topic} for {path} and keeps input facts, result explanation, blocked cases, and review evidence together"
+    if any(token in lowered for token in ("tracker", "history", "log", "store", "record")):
+        return f"maintains {topic} state for {path} with actor, source, status, result, blocker, and recovery context visible"
+    if any(token in lowered for token in ("rule", "guard", "safety", "escalation", "policy")):
+        return f"checks {topic} rules for {path} and makes the reason, threshold, blocked state, and recovery action reviewable"
+    if any(token in lowered for token in ("notification", "reminder", "handoff", "referral")):
+        return f"delivers {topic} handoff for {path} without hiding the source context, owner, next action, or blocked state"
+    if context_clause:
+        return "owns the component responsibility named by the accepted intent while keeping required inputs, visible result, blockers, and proof evidence clear"
+    return f"owns {topic} behavior for {path} with required input, visible result, blocker, and proof evidence clear"
+
+
+def _system_topic(name: str) -> str:
+    text = _clean(name).casefold().replace("/", " and ").replace("-", " ")
+    text = re.sub(
+        r"\b(?:service|services|system|systems|engine|engines|store|stores|surface|surfaces|"
+        r"adapter|adapters|queue|queues|view|views|flow|flows|tracker|trackers|ledger|ledgers|"
+        r"module|modules|dashboard|dashboards|record|records|manager|managers|generator|generators|"
+        r"generation|planner|planners|recommender|recommenders|suggester|suggesters)\b",
+        "",
+        text,
+    )
+    return _clean(text).strip(" -_/") or _clean(name).casefold() or "component"
 
 
 def _system_description_is_enough(value: str) -> bool:

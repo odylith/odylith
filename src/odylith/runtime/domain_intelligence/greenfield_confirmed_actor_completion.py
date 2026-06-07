@@ -135,8 +135,7 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
         if path_role:
             return f"{label}: {path_role}."
         body = (
-            "contributes information, review, or action needed for the first product outcome and needs the result, limits, "
-            "and next step to stay understandable"
+            "supplies context, reviews the result, or takes the next step named by the first release"
         )
     return f"{label}: {body}."
 

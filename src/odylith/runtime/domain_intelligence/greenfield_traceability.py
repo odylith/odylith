@@ -313,12 +313,13 @@ def _patch_sections(
     first_slice = str(row.get("recommended_first_slice", "")).strip()
     product_view = str(row.get("product_view", "")).strip()
     focus = _workstream_focus(row)
+    focus_ref = _workstream_reference(focus)
     if product_view or first_slice:
         sections["Proposed Solution"] = _paragraph(
             [
                 f"Start with this implementation slice: {first_slice}" if first_slice else "",
                 (
-                    f"Keep {focus} tied to its validation gates before expanding adjacent source ownership."
+                    f"Keep validation gates tied to this workstream before expanding adjacent source ownership: {focus}."
                     if focus
                     else ""
                 ),
@@ -333,8 +334,8 @@ def _patch_sections(
     sections["Non-Goals"] = _bullets(
         _section_items(row.get("non_goals", []))
         or [
-            f"Do not claim source-backed implementation ownership for {focus} until code exists.",
-            f"Do not promote {focus} claims without its listed validation gates.",
+            f"Do not claim source-backed implementation ownership before code exists for: {focus}.",
+            f"Do not promote claims before validation gates pass for: {focus}.",
         ]
     )
     sections["Risks"] = _bullets(_risk_lines(row.get("risks", [])) or risks[:3])
@@ -353,7 +354,7 @@ def _patch_sections(
     sections["Test Strategy"] = _bullets(
         _section_items(row.get("test_strategy", []))
         or [
-            f"Turn {focus} success metrics into focused reproducibility, contract, or smoke proof before source implementation starts.",
+            f"Turn this workstream's success metrics into focused reproducibility, contract, or smoke proof before source implementation starts: {focus}.",
         ]
     )
     sections["Impacted Components"] = _bullets(
@@ -409,12 +410,23 @@ def _workstream_focus(row: Mapping[str, Any]) -> str:
     return _clean(row.get("title")) or _clean(row.get("recommended_first_slice")) or "this workstream"
 
 
+def _workstream_reference(value: str) -> str:
+    text = _clean(value)
+    if not text:
+        return "this workstream"
+    first = text.split(maxsplit=1)[0].casefold().strip(".,;:")
+    if first in {"build", "define", "deliver", "establish", "keep", "let", "make", "prepare", "prove", "show"}:
+        return "this workstream"
+    return text
+
+
 def _why_now_text(*, row: Mapping[str, Any], focus: str, first_slice: str) -> str:
     title = _clean(focus) or "this workstream"
     if first_slice:
         return (
-            f"Do this before implementation expands so {title} has a tested first slice, clear ownership, "
-            "and a release boundary the team can review."
+            f"Do this before implementation expands so the workstream has a tested first slice, clear ownership, "
+            "and a release boundary the team can review"
+            + (f" for {title}." if title != "this workstream" else ".")
         )
     opportunity = _clean(row.get("opportunity"))
     if not opportunity:
@@ -431,9 +443,9 @@ def _scoped_question_lines(values: Sequence[str], *, focus: str) -> list[str]:
             continue
         question, impact = _split_question_impact(text)
         if impact:
-            rows.append(f"For {focus_text}: {question.rstrip(' ?.')}. Impact for {focus_text}: {impact.rstrip(' .')}.")
+            rows.append(f"For this workstream ({focus_text}): {question.rstrip(' ?.')}. Impact for {focus_text}: {impact.rstrip(' .')}.")
         else:
-            rows.append(f"For {focus_text}: {text}")
+            rows.append(f"For this workstream ({focus_text}): {text}")
     return rows
 
 

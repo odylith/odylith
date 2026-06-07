@@ -20,7 +20,8 @@ from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 TRIVIAL_START_RE = re.compile(
     r"^(?:a|an|the)?\s*[^,.;]{0,40}?\b(?:open|opens|launch|launches|start|starts)\s+"
-    r"(?:the\s+)?(?:(?:web\s+)?app(?:lication)?|product|tool|site|website|screen|page|dashboard|portal|console)\b\s*$",
+    r"(?:the\s+)?(?:(?:web\s+)?app(?:lication)?|product|tool|site|website|screen|page|dashboard|portal|console)\b"
+    r"(?:\s+(?:after|before|during|for|in|on|with)\b[^,.;]*)?\s*$",
     re.IGNORECASE,
 )
 TRIVIAL_NAMED_PRODUCT_START_RE = re.compile(
@@ -34,13 +35,13 @@ TRIVIAL_AUTH_RE = re.compile(
 
 MATERIAL_ACTION_RE = re.compile(
     r"\b(?:"
-    r"accept|accepts|add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
+    r"accept|accepts|add|adds|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
     r"book|books|check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|decide|decides|"
     r"click|clicks|compute|computes|create|creates|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|forecast|forecasts|"
     r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|mark|marks|notify|notifies|persist|persists|play|plays|"
-    r"optimize|optimizes|preserve|preserves|produce|produces|provide|provides|publish|publishes|pull|pulls|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
+    r"optimize|optimizes|preserve|preserves|produce|produces|prompt|prompts|provide|provides|publish|publishes|pull|pulls|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
     r"return|returns|route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
-    r"show|shows|stop|stops|store|stores|submit|submits|sync|syncs|tap|taps|track|tracks|update|updates|"
+    r"show|shows|stop|stops|store|stores|submit|submits|surface|surfaces|sync|syncs|tap|taps|track|tracks|update|updates|"
     r"validate|validates|view|views"
     r")\b",
     re.IGNORECASE,
@@ -178,7 +179,7 @@ def _first_path_capability_text(
         outcome = visible_result_object(model.visible_outcome) or clean_first_path_text(model.visible_outcome)
         if outcome:
             fragments.append(_outcome_capability_fragment(outcome))
-    text = _join_series(fragments[: max(1, max_fragments)]) or clean_first_path_text(fallback)
+    text = _join_fragments_within_limit(fragments[: max(1, max_fragments)], limit=limit) or clean_first_path_text(fallback)
     return _clip_phrase(text, limit=limit) or clean_first_path_text(fallback)
 
 
@@ -683,6 +684,8 @@ _GERUND_ACTION_VERBS = {
     "adds": "adding",
     "adjust": "adjusting",
     "adjusts": "adjusting",
+    "answer": "answering",
+    "answers": "answering",
     "approve": "approving",
     "approves": "approving",
     "block": "blocking",
@@ -727,6 +730,8 @@ _GERUND_ACTION_VERBS = {
     "opens": "opening",
     "produce": "producing",
     "produces": "producing",
+    "prompt": "prompting",
+    "prompts": "prompting",
     "publish": "publishing",
     "publishes": "publishing",
     "pull": "pulling",
@@ -759,6 +764,8 @@ _GERUND_ACTION_VERBS = {
     "stores": "storing",
     "submit": "submitting",
     "submits": "submitting",
+    "surface": "surfacing",
+    "surfaces": "surfacing",
     "update": "updating",
     "updates": "updating",
     "validate": "validating",
@@ -775,6 +782,10 @@ def _gerund_action_fragment(value: str) -> str:
     text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
     pattern = "|".join(re.escape(item) for item in sorted(_GERUND_ACTION_VERBS, key=len, reverse=True))
     for match in re.finditer(rf"\b(?P<verb>{pattern})\b", text, flags=re.IGNORECASE):
+        if (match.start() > 0 and text[match.start() - 1] == "-") or (
+            match.end() < len(text) and text[match.end()] == "-"
+        ):
+            continue
         verb = match.group("verb").casefold()
         tail = text[match.end() :]
         if verb in {"record", "records"} and re.match(
@@ -833,6 +844,22 @@ def _join_series(values: Sequence[str]) -> str:
     return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
+def _join_fragments_within_limit(values: Sequence[str], *, limit: int) -> str:
+    rows = [clean_first_path_text(value).strip(" .") for value in values if clean_first_path_text(value).strip(" .")]
+    if not rows:
+        return ""
+    selected: list[str] = []
+    for row in rows:
+        candidate = _join_series([*selected, row])
+        if len(candidate) <= limit:
+            selected.append(row)
+            continue
+        if selected:
+            break
+        return _clip_phrase(row, limit=limit)
+    return _join_series(selected) or _clip_phrase(rows[0], limit=limit)
+
+
 def _clip_phrase(value: str, *, limit: int) -> str:
     text = clean_first_path_text(value).strip(" .")
     if len(text) <= limit:
@@ -842,12 +869,15 @@ def _clip_phrase(value: str, *, limit: int) -> str:
         limit=max(0, limit - 1),
         dangling_words={
             "a",
+            "against",
             "alongside",
             "an",
             "and",
+            "around",
             "as",
             "at",
             "because",
+            "between",
             "by",
             "for",
             "from",
@@ -857,14 +887,21 @@ def _clip_phrase(value: str, *, limit: int) -> str:
             "of",
             "on",
             "or",
+            "plus",
             "required",
             "that",
             "the",
             "this",
             "to",
+            "toward",
+            "towards",
+            "through",
+            "until",
+            "via",
             "when",
             "while",
             "with",
+            "without",
         },
     )
 

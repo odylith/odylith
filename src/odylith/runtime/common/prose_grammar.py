@@ -14,6 +14,7 @@ _INFINITIVE_TO_FINITE = {
     "accept": "accepts",
     "add": "adds",
     "allow": "allows",
+    "answer": "answers",
     "apply": "applies",
     "assemble": "assembles",
     "ask": "asks",
@@ -52,6 +53,7 @@ _INFINITIVE_TO_FINITE = {
     "enter": "enters",
     "estimate": "estimates",
     "evaluate": "evaluates",
+    "expose": "exposes",
     "explain": "explains",
     "export": "exports",
     "fetch": "fetches",
@@ -89,6 +91,7 @@ _INFINITIVE_TO_FINITE = {
     "prevent": "prevents",
     "persist": "persists",
     "play": "plays",
+    "prompt": "prompts",
     "pull": "pulls",
     "produce": "produces",
     "propose": "proposes",
@@ -123,6 +126,7 @@ _INFINITIVE_TO_FINITE = {
     "submit": "submits",
     "suggest": "suggests",
     "support": "supports",
+    "surface": "surfaces",
     "sync": "syncs",
     "tap": "taps",
     "track": "tracks",
@@ -185,6 +189,8 @@ def looks_like_action_clause(value: str) -> bool:
 
     first, separator, _rest = str(value or "").strip().partition(" ")
     token = first.casefold().strip(".,:;")
+    if separator and token.endswith("ly"):
+        return looks_like_action_clause(_rest)
     return bool(separator) and (looks_like_finite_action(value) or token in _INFINITIVE_TO_FINITE)
 
 
@@ -283,6 +289,10 @@ def _base_action_part(value: str) -> str:
     prefix_match = re.match(r"^((?:and|or)\s+)?(.+)$", core, flags=re.I)
     prefix = (prefix_match.group(1) or "") if prefix_match else ""
     body = prefix_match.group(2) if prefix_match else core
+    adverb_match = re.match(r"^(?P<adverb>[A-Za-z]+ly\s+)(?P<body>.+)$", body)
+    if adverb_match and looks_like_action_clause(adverb_match.group("body")):
+        prefix = f"{prefix}{adverb_match.group('adverb')}"
+        body = adverb_match.group("body")
     first, separator, rest = body.partition(" ")
     verb = first.casefold().strip(".,:;")
     if not separator and verb not in _FINITE_ACTION_VERBS:

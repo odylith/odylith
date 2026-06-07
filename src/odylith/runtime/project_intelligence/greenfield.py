@@ -175,7 +175,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
         "scenario": [
             "Proposed first path",
             title,
-            short(first_path_summary, limit=150, fallback="First proposed path"),
+            short(first_path_summary, limit=220, fallback="First proposed path"),
             "Evidence is user-stated or inferred; source validation has not happened yet.",
             _scenario_body(project=project, first_path=first_path, validation=validation),
         ],

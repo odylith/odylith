@@ -64,6 +64,10 @@ def context_object_phrases(
             r"\btimeline\b", clause, flags=re.IGNORECASE
         ):
             rows.append("aligned timeline")
+            if re.search(r"\binterventions?\b", clause, flags=re.IGNORECASE):
+                rows.append("aligns interventions")
+            if re.search(r"\bmeasurements?\b", clause, flags=re.IGNORECASE):
+                rows.append("aligns measurements")
         anchored = bool(terms and (not anchors or set(terms) & anchors))
         if anchored:
             carry = 3 if _opens_detail_list(clause) else 0

@@ -66,7 +66,8 @@ def contract_focus(
         return f"{adjustment} result, {rationale}, blocked-state detail, and next-step context"
     if role == "input":
         if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "forecast", "optimize", "predict", "score")):
-            return f"{focus} inputs, rule context, prior result, and validation command"
+            input_focus = f"input facts for {focus}" if _ends_with_term(focus, "state") else f"{focus} inputs"
+            return f"{input_focus}, rule context, prior result, and validation command"
         if any(action in action_terms for action in ("capture", "create", "edit", "log", "record", "save", "store", "submit")):
             return f"required {focus} command, required fields, prior state, and explanation context"
         if any(action in action_terms for action in ("compare", "order", "rank")):
@@ -79,7 +80,7 @@ def contract_focus(
             return f"{focus}, actor context, prior state, and validation context"
         return f"required {focus} input, prior state, explanation context, and validation command"
     if any(action in action_terms for action in ("capture", "create", "edit", "log", "record", "save", "store", "submit")):
-        return f"validated {focus} state, correction marker, and replayable change evidence"
+        return f"validated {_state_focus(focus)}, correction marker, and replayable change evidence"
     if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "forecast", "optimize", "predict", "score")):
         return f"{focus} result, rule explanation, and review evidence"
     if any(action in action_terms for action in ("compare", "order", "rank")):
@@ -91,6 +92,18 @@ def contract_focus(
     if "request" in action_terms:
         return f"{focus} state update, allowed or blocked marker, and next-step context"
     return f"{focus} result, state update, and review detail"
+
+
+def _ends_with_term(value: str, term: str) -> bool:
+    words = visible_words(value)
+    return bool(words and words[-1].casefold() == term.casefold())
+
+
+def _state_focus(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if _ends_with_term(text, "state"):
+        return text
+    return f"{text} state" if text else "state"
 
 
 def produced_outputs_text(output_focus: str) -> str:

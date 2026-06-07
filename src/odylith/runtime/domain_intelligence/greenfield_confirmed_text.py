@@ -215,6 +215,8 @@ def domain_object_label(value: str, *, fallback: str) -> str:
     first_clause = re.split(r"[.;\n]", text, maxsplit=1)[0].strip(" :.-")
     dash_head = re.split(r"\s+[—-]\s+", first_clause, maxsplit=1)[0].strip(" :.-")
     patterns = (
+        r"\b(?:the\s+)?(?:unit\s+of\s+truth|source\s+of\s+truth|central\s+object|core\s+unit|core\s+record|main\s+record)\s+is\s+"
+        r"(?:(?:the|an|a|one)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"^(?:the\s+)?(?:core|main|primary)\s+(?:thing|object|record|item)\s+"
         r"(?:the\s+system\s+)?(?:tracks|records|stores|captures|keeps)\s+is\s+"
         r"(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.utils import display_text, sentence, strings
 
@@ -283,6 +284,7 @@ def _clean_first_path(value: str) -> str:
         if steps:
             steps[0] = _clean_opening_launcher_step(steps[0])
             steps = [step for step in steps if step]
+            steps = [_subjectify_story_step(step) for step in steps]
         if len(steps) >= 2 and _same_visible_outcome(steps[-2], steps[-1]):
             steps = steps[:-1]
         if steps:
@@ -346,6 +348,52 @@ def _clean_opening_launcher_step(value: str) -> str:
     return _lower_first(_clean(text).strip(" ."))
 
 
+def _subjectify_story_step(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    subject_action = re.match(
+        r"^(?P<subject>(?:a|the)\s+(?:user|person|customer|actor|operator|participant|owner|requester|applicant|performer))\s+"
+        r"(?P<verb>add|adds|answer|answers|capture|captures|choose|chooses|click|clicks|dismiss|dismisses|enter|enters|log|logs|record|records|save|saves|select|selects|submit|submits|tap|taps)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if subject_action:
+        verb = third_person_action_verb(subject_action.group("verb"))
+        tail = _third_person_compound_tail(subject_action.group("tail"))
+        return f"{_lower_first(subject_action.group('subject'))} {verb}{tail}".strip()
+    adverb_action = re.match(
+        r"^(?P<prefix>immediately|later|then)\s+(?P<verb>receive|receives|see|sees|view|views|read|reads|get|gets)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if adverb_action:
+        verb = third_person_action_verb(adverb_action.group("verb"))
+        return f"the user {adverb_action.group('prefix').casefold()} {verb}{adverb_action.group('tail')}".strip()
+    product_action = re.match(
+        r"^(?P<verb>compare|compares|mark|marks|prompt|prompts|return|returns|show|shows|surface|surfaces|update|updates)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if product_action:
+        verb = third_person_action_verb(product_action.group("verb"))
+        return f"the product {verb}{product_action.group('tail')}".strip()
+    action = re.match(
+        r"^(?P<prefix>manually\s+|periodically\s+|regularly\s+)?"
+        r"(?P<verb>add|adds|answer|answers|capture|captures|choose|chooses|click|clicks|dismiss|dismisses|enter|enters|log|logs|record|records|save|saves|select|selects|submit|submits|tap|taps)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if action:
+        prefix = action.group("prefix") or ""
+        verb = third_person_action_verb(action.group("verb"))
+        tail = _third_person_compound_tail(action.group("tail"))
+        if prefix:
+            return f"{prefix.casefold()}{verb}{tail}".strip()
+        return f"the user {prefix}{verb}{tail}".strip()
+    return text
+
+
 def _same_visible_outcome(previous: str, current: str) -> bool:
     if re.search(r"\b(?:accept|accepts|click|clicks|choose|chooses|dismiss|dismisses)\b", current, flags=re.IGNORECASE):
         return False
@@ -359,6 +407,7 @@ def _join_steps(steps: Sequence[str]) -> str:
     if not rows:
         return ""
     rows = _join_subjectless_continuations(rows)
+    rows = [rows[0], *[_upper_first(row) for row in rows[1:]]] if rows else rows
     if len(rows) == 1:
         return rows[0]
     if len(rows) == 2:
@@ -369,11 +418,31 @@ def _join_steps(steps: Sequence[str]) -> str:
 def _join_subjectless_continuations(steps: Sequence[str]) -> list[str]:
     rows: list[str] = []
     for step in steps:
+        if rows:
+            same_subject_tail = _same_subject_continuation(rows[-1], step)
+            if same_subject_tail:
+                rows[-1] = f"{rows[-1]} and {same_subject_tail}"
+                continue
         if rows and _subjectless_action_continuation(step):
             rows[-1] = f"{rows[-1]} and {_lower_first(step)}"
             continue
         rows.append(step)
     return rows
+
+
+def _same_subject_continuation(previous: str, current: str) -> str:
+    previous_text = _clean(previous).strip(" .")
+    current_text = _clean(current).strip(" .")
+    for subject in ("the user", "the owner", "the operator", "the participant", "the customer", "the applicant"):
+        if not previous_text.casefold().startswith(f"{subject} "):
+            continue
+        prefix = f"{subject} "
+        if not current_text.casefold().startswith(prefix):
+            continue
+        tail = current_text[len(prefix) :].strip(" .")
+        if re.match(r"^(?:manually|periodically|regularly)\s+", tail, flags=re.IGNORECASE) and _subjectless_action_continuation(tail):
+            return _lower_first(tail)
+    return ""
 
 
 def _subjectless_action_continuation(value: str) -> bool:
@@ -473,9 +542,18 @@ def _join_input_segments(values: Sequence[str]) -> str:
 def _normalize_embedded_action_verbs(value: str) -> str:
     text = _clean(value).strip(" .")
     return re.sub(
-        r",\s+and\s+(manually\s+)?(logs?|enters?|selects?|submits?|saves?|chooses?|clicks?|accepts?|dismisses?|records?|captures?|reviews?)\b",
+        r",\s+and\s+(manually\s+)?(answers?|logs?|enters?|selects?|submits?|saves?|chooses?|clicks?|accepts?|dismisses?|records?|captures?|reviews?)\b",
         r" and \1\2",
         text,
+        flags=re.IGNORECASE,
+    )
+
+
+def _third_person_compound_tail(value: str) -> str:
+    return re.sub(
+        r"\b(and|or)\s+(answer|answers|capture|captures|choose|chooses|click|clicks|dismiss|dismisses|enter|enters|log|logs|record|records|save|saves|select|selects|submit|submits|tap|taps)\b",
+        lambda match: match.group(0) if match.group(2)[:1].isupper() else f"{match.group(1)} {third_person_action_verb(match.group(2))}",
+        value,
         flags=re.IGNORECASE,
     )
 
@@ -497,7 +575,7 @@ def _looks_like_user_input_step(value: str) -> bool:
     return bool(
         re.search(
             r"\b(?:accept|accepts|add|adds|attach|attaches|choose|chooses|click|clicks|complete|completes|"
-            r"connect|connects|create|creates|dismiss|dismisses|edit|edits|enter|enters|log|logs|record|records|save|saves|"
+            r"answer|answers|capture|captures|connect|connects|create|creates|dismiss|dismisses|edit|edits|enter|enters|log|logs|record|records|save|saves|"
             r"select|selects|submit|submits|update|updates)\b",
             _clean(value),
             flags=re.IGNORECASE,

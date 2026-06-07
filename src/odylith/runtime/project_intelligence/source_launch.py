@@ -130,8 +130,8 @@ def build_source_launch_handoff(
 def _language_prompt(*, product: str, path: str, language: _LanguageSignal | None) -> dict[str, str]:
     if language:
         prompt = (
-            f"Odylith, prepare {product} for implementation in {language.name}. Confirm that {language.reason} is still "
-            f"the right runtime for this accepted product. Use the accepted first path as the only initial scope: {path}. "
+            f"Odylith, prepare {product} for implementation in {language.name}. Current signal: {language.reason}. "
+            f"Confirm that {language.name} is still the right runtime for this accepted product. Use the accepted first path as the only initial scope: {path}. "
             "Before editing source, show the package layout, runtime assumptions, test approach, tradeoffs, and any reason "
             "to choose a different language."
         )
@@ -222,7 +222,7 @@ def _proof_prompt(*, product: str, path: str, risk: str, proof: str) -> dict[str
         "label": "Add tests and proof",
         "when": "Use this after the first runnable slice exists.",
         "prompt": prompt,
-        "result": f"Tests and validation evidence showing {proof}.",
+        "result": f"Tests and validation evidence covering {proof}.",
         "stop": "Stop if validation fails. Do not refresh governed records until the failed behavior is fixed or recorded.",
     }
 
@@ -288,9 +288,11 @@ def _secondary_actor(actors: Sequence[tuple[str, str, str]]) -> str:
 
 def _actor_at(actors: Sequence[tuple[str, str, str]], index: int) -> str:
     try:
-        return sentence(actors[index][1])
+        text = sentence(actors[index][1])
     except IndexError:
         return ""
+    text = re.split(r"\s+[—-]\s+|:", text, maxsplit=1)[0].strip(" .")
+    return text
 
 
 def _capability_phrase(*, components: Sequence[Mapping[str, Any]], first_path: str) -> str:
@@ -323,7 +325,10 @@ def _risk_phrase(risks: Sequence[Any]) -> str:
         else:
             text = sentence(risk)
         if text:
-            return _prompt_phrase(text, fallback="the real-world failure modes named by the accepted product direction", limit=180)
+            first_sentence = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)[0].strip()
+            if first_sentence:
+                text = first_sentence
+            return _prompt_phrase(text, fallback="the real-world failure modes named by the accepted product direction", limit=260)
     return "the real-world failure modes named by the accepted product direction"
 
 
@@ -331,12 +336,13 @@ def _proof_phrase(*, validation: Sequence[str], first_path: str) -> str:
     for row in validation:
         text = sentence(row)
         if text:
-            clean = _prompt_phrase(text, fallback="", limit=180)
+            clean = _prompt_phrase(text, fallback="", limit=260)
             if _looks_scaffolded_proof(clean):
                 outcome = first_path_outcome_phrase(first_path, fallback="", limit=110)
                 if outcome:
                     return f"the accepted path returns {outcome} with repeatable evidence"
                 return "the accepted path returns its promised result with repeatable evidence"
+            clean = re.sub(r"^(?:the\s+)?accepted\s+first\s+path\s+proves\s+", "", clean, flags=re.IGNORECASE).strip(" .")
             return clean
     return short(f"the accepted path produces its intended result: {first_path}", limit=220)
 

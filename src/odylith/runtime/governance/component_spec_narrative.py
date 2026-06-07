@@ -305,7 +305,8 @@ def _state_narrative(
             first = f"The useful state is the explanation that connects incoming {accepted} to {produced}."
         else:
             first = f"{label} must keep its input facts, calculation context, and visible result together."
-        second = f"That relationship is what makes the outcome reviewable instead of a black-box claim."
+        review_subject = produced or owned or f"{label} result"
+        second = f"For {label}, that link keeps {review_subject} explainable instead of turning the outcome into a black-box claim."
     elif role == "configuration":
         first = f"The owned state is {owned}, and changes to it should read like intentional product policy."
         second = f"The runtime can consume those settings, but configuration itself should not mutate downstream results."

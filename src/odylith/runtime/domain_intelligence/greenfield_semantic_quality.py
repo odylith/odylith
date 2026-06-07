@@ -250,7 +250,7 @@ def health_safety_obligations(*values: Any) -> tuple[str, ...]:
     return (
         "Safety posture: the product records accepted user-entered facts without expanding into advice, authority, or decisions outside the confirmed boundary.",
         "Escalation posture: high-risk or explicitly restricted states must block ordinary readiness and route to the owner or external authority named by the accepted intent.",
-        "Sensitive-data posture: protected state, lifecycle actions, retention, consent, and access require explicit policy and audit evidence when the accepted intent names them.",
+        "Sensitive-data posture and privacy posture: protected state, lifecycle actions, retention, consent, and access require explicit policy and audit evidence when the accepted intent names them.",
     )
 
 

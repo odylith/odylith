@@ -63,6 +63,50 @@ A person sets a goal and basic body stats, logs or imports a day's activities, a
 ## Proof boundary
 Proven when one person can set a goal, log a day of activity, see an estimated total burn against target, and receive one next-day adjustment recommendation - using manual entry and standard estimation, no wearable sync required.
 """
+SUN_BURN_CONFIRMED_INTENT_TEXT = """## SunRecover — sunburn relief and skin-recovery coach
+
+### Product story
+A person comes home from a day outside with a painful burn, an uneven tan they want gone, and worry about lasting skin damage. SunRecover meets them in that moment: they snap a photo of the affected skin and answer a few quick questions about pain, timing, and skin type, and the app returns a clear, staged recovery plan — what to do in the next hour, the next few days, and the next couple of weeks to calm the burn, fade the tan evenly, and support the skin's own repair. It tracks healing day over day, adjusts the plan as the skin changes, and flags when something looks serious enough to see a clinician rather than treat at home.
+
+### State object
+The unit of truth is a recovery episode: one sunburn or sun-exposure event for one person, holding the initial assessment (severity, body area, skin type, time since exposure), the staged care plan, the daily check-in log with photos and symptom scores, and the healing trajectory derived from those check-ins. An episode moves from assessed, to active recovery, to healed or escalated-to-care.
+
+### First complete path
+A user opens the app after a burn, captures a photo and answers the intake questions, and immediately receives a severity read and a first-24-hours action plan. Over the following days the app prompts daily check-ins, compares new photos and symptom scores against the baseline, updates the plan as the burn settles and the tan fades, and marks the episode healed — or surfaces a clear escalation warning if severity or warning signs cross a safety threshold.
+
+### Human actors
+- Sun-exposed individual recovering a burn, fading a tan, and minimizing skin damage
+- Caregiver managing recovery on behalf of a child or family member
+- Dermatology or primary-care clinician receiving an escalation hand-off or shared episode summary
+
+### External systems
+- Device camera and photo library for capturing and storing skin images
+- A skin-assessment model or service that grades burn severity and tracks change from images
+- UV index and location weather data to time care and warn about re-exposure
+- Optional clinician or telehealth channel for escalation referrals
+
+### Internal product systems
+- Intake and severity assessment engine
+- Staged recovery-plan generator (burn relief, even-tan fading, repair support)
+- Daily check-in and healing-trajectory tracker
+- Safety and escalation rules engine
+- Episode history and reminder/notification service
+
+### Critical assumptions
+- Image-based severity grading is good enough to guide self-care and trigger escalation, but never replaces medical diagnosis
+- Care guidance is grounded in established dermatology and sun-care evidence, not invented remedies
+- Users will complete short daily check-ins for the recovery window
+- "Remove tan quickly and optimally" means safe, evidence-based fading and repair, not aggressive or risky methods
+
+### Ambiguities
+- Scope of "skin damage": short-term burn recovery only, or also longer-term concerns like pigmentation, peeling, and aging signs?
+- Regulatory posture: positioned as general wellness guidance, or pursuing a medical-device/clinical claim that changes the proof and compliance bar?
+- Product recommendations: does the app suggest or sell specific products (aftercare, SPF), or stay vendor-neutral?
+- Platform target: mobile-first native, or web?
+
+### Proof boundary
+This is a confirmation-only draft, so no product code exists yet. The first thing the product must prove is that the intake-to-first-plan path produces a safe, evidence-grounded recovery plan and correctly raises an escalation warning when severity or warning signs cross a safety threshold. A close second is that day-over-day check-ins reliably detect whether skin is healing or worsening.
+"""
 
 
 def test_greenfield_apply_prewrite_component_and_diagram_phases_stay_dedicated() -> None:
@@ -346,6 +390,87 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_
     assert "No explicit dependency recorded yet" not in idea_text
     assert "Run focused validation for the touched paths once implementation begins" not in idea_text
     assert "Queue now, then bind a technical plan when the implementation wave starts" not in idea_text
+
+
+def test_greenfield_prewrite_package_passes_sun_burn_quality_regression(tmp_path: Path) -> None:
+    prompt = "Draft a greenfield proposal for a sunburn relief and skin-recovery coach"
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=parse_confirmed_intent_text(SUN_BURN_CONFIRMED_INTENT_TEXT, prompt=prompt),
+    )
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+
+    report = build_greenfield_package_report(prewrite.package)
+    encoded = json.dumps(proposal)
+    artifact_encoded = json.dumps(
+        {
+            key: value
+            for key, value in proposal.items()
+            if key not in {"intent", "semantic_model"}
+        }
+    )
+    idea_text = "\n".join(str(value) for value in prewrite.backlog_result.get("idea_files", {}).values())
+    component_text = "\n".join(str(value) for value in (prewrite.package.rendered_component_specs or {}).values())
+    atlas_text = "\n".join(str(value) for value in (prewrite.package.rendered_atlas_sources or {}).values())
+    preview_text = "\n".join(
+        [
+            json.dumps(prewrite.package.project_brief_preview),
+            json.dumps(prewrite.package.next_steps_preview),
+        ]
+    )
+    narrative_text = "\n".join([idea_text, component_text, preview_text])
+    rendered_text = "\n".join(
+        [
+            narrative_text,
+            atlas_text,
+        ]
+    )
+
+    assert report.passed, "\n".join(report.issues)
+    assert "Recovery Episode" in encoded
+    assert "Episode History and Reminder and Notification" in rendered_text
+    assert "safe, evidence-grounded recovery plan" in rendered_text
+    assert "first-24-hours action plan" in rendered_text
+    assert "warning when safety threshold" in rendered_text
+    assert "is crossed" in rendered_text
+    for forbidden in (
+        "Unit of Truth Is A Recovery Episode",
+        "Reminder/notification",
+        "Dermatology or -care",
+        "checking-ins",
+        "against;",
+        "returns a clear.",
+        "produces a in the same release story",
+        "the first thing the product must prove is that",
+        "The accepted first path proves",
+        "A close second is",
+        "contributes information",
+        "actor actor",
+        "action action",
+        "state state",
+        "proof proof",
+        "validation validation",
+        "decision decision",
+        "release release",
+        "and and",
+        "episode history and reminder and and",
+        "Success proof covers answering the intake questions, receiving a severity read and a first-24-hours action plan, prompting daily check-ins, and comparing new photos and symptom scores against the baseline and a first-24-hours action plan",
+        "confirmation-only draft",
+        "Keep Keep",
+        "That relationship is what makes the outcome reviewable instead of a black-box claim",
+    ):
+        assert forbidden not in rendered_text
+        assert forbidden not in artifact_encoded
 
 
 def test_greenfield_package_gate_requires_prewrite_atlas_sources(tmp_path: Path) -> None:
@@ -735,6 +860,20 @@ def test_greenfield_package_gate_rejects_clipped_terminal_modifier(tmp_path: Pat
 
     assert not report.passed
     assert "clipped modifier phrase" in "\n".join(report.issues)
+
+
+def test_greenfield_package_gate_rejects_clipped_terminal_article(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    backlog_result = _prewrite_backlog_result(proposal)
+    first_path = next(iter(backlog_result["idea_files"]))
+    backlog_result["idea_files"][first_path] += "\nThe ranking basis says this path produces a.\n"
+
+    report = build_greenfield_package_report(
+        _package_for_quality_report(proposal, backlog_result=backlog_result)
+    )
+
+    assert not report.passed
+    assert "clipped article phrase" in "\n".join(report.issues)
 
 
 def test_greenfield_package_gate_rejects_invalid_lifecycle_inflection(tmp_path: Path) -> None:

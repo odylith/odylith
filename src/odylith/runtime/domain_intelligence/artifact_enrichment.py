@@ -182,7 +182,19 @@ def _scoped_sentence(label: str, focus: str, value: str) -> str:
     focus_text = clean_text(focus)
     if not focus_text:
         return f"{label}: {text}"
+    if _scope_value_boundary_repeats(focus_text, text):
+        return f"{label}: {text}"
     return f"{label} for {focus_text}: {text}"
+
+
+def _scope_value_boundary_repeats(focus: str, value: str) -> bool:
+    focus_words = re.findall(r"[A-Za-z0-9-]+", clean_text(focus))
+    value_words = re.findall(r"[A-Za-z0-9-]+", clean_text(value))
+    if not focus_words or not value_words:
+        return False
+    left = focus_words[-1].casefold()
+    right = value_words[0].casefold()
+    return len(left) >= 4 and left == right
 
 
 def _without_existing_label(*, label: str, value: str) -> str:

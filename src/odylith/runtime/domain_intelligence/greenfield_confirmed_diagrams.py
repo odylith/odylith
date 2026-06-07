@@ -250,11 +250,11 @@ def _context_mermaid(
         lines.append(f'  {node}["{diagram_text.flow_label(external, limit=96)}"] --> {target_component}')
     lines.extend(
         [
-            "  classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
+            "  classDef personStyle fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
             "  classDef boundary fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;",
             "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
             "  classDef external fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
-            "  class " + ",".join(_node_id("actor", index) for index in range(1, min(len(actors), 5) + 1)) + " actor;",
+            "  class " + ",".join(_node_id("actor", index) for index in range(1, min(len(actors), 5) + 1)) + " personStyle;",
             "  class " + ",".join(_node_id("component", index) for index in range(1, max(1, min(len(components), 7)) + 1)) + " service;",
         ]
     )
@@ -314,20 +314,20 @@ def _state_evidence_mermaid(
     lines = [
         "flowchart LR",
         f'  action["First action<br/>{actor_label}"] --> owner1["{diagram_text.escape_label(first_owner)}"]',
-        f'  owner1 --> state["State object<br/>{diagram_text.escape_label(diagram_text.trim(state_object, 62))}"]',
-        f'  state --> owner2["{diagram_text.escape_label(evidence_owner)}"]',
+        f'  owner1 --> domain_state["State object<br/>{diagram_text.escape_label(diagram_text.trim(state_object, 62))}"]',
+        f'  domain_state --> owner2["{diagram_text.escape_label(evidence_owner)}"]',
         f'  owner2 --> evidence_record["Evidence record<br/>{diagram_text.escape_label(diagram_text.trim(evidence_record, 62))}"]',
         f'  evidence_record --> owner3["{diagram_text.escape_label(review_owner)}"]',
         f'  owner3 --> review["Proof check<br/>{diagram_text.escape_label(diagram_text.trim(proof_label, 62))}"]',
         '  review --> correction["Blocked or corrected<br/>path stays visible"]',
-        "  classDef action fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
+        "  classDef personActionStyle fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
         "  classDef owner fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
-        "  classDef state fill:#F5F3FF,stroke:#C4B5FD,color:#17233A,stroke-width:1px;",
+        "  classDef domainObjectStyle fill:#F5F3FF,stroke:#C4B5FD,color:#17233A,stroke-width:1px;",
         "  classDef evidence fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
         "  classDef review fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;",
-        "  class action action;",
+        "  class action personActionStyle;",
         "  class owner1,owner2,owner3 owner;",
-        "  class state state;",
+        "  class domain_state domainObjectStyle;",
         "  class evidence_record evidence;",
         "  class review,correction review;",
     ]
@@ -384,14 +384,14 @@ def _component_boundary_mermaid(
             "  classDef product fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;",
             "  classDef owned fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
             "  classDef external fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
-            "  classDef deferred fill:#FEF2F2,stroke:#FCA5A5,color:#17233A,stroke-width:1px;",
+            "  classDef laterScopeStyle fill:#FEF2F2,stroke:#FCA5A5,color:#17233A,stroke-width:1px;",
             "  class " + ",".join(_node_id("boundary", index) for index in range(1, len(selected_components) + 1)) + " owned;",
         ]
     )
     if external_systems:
         lines.append("  class " + ",".join(_node_id("input", index) for index in range(1, min(len(external_systems), 3) + 1)) + " external;")
     if deferred_items:
-        lines.append("  class " + ",".join(_node_id("deferred", index) for index in range(1, min(len(deferred_items), 3) + 1)) + " deferred;")
+        lines.append("  class " + ",".join(_node_id("deferred", index) for index in range(1, min(len(deferred_items), 3) + 1)) + " laterScopeStyle;")
     return "\n".join(lines) + "\n"
 
 
@@ -410,28 +410,28 @@ def _proof_review_mermaid(
     evidence_label = diagram_text.proof_evidence_label(components=components, fallback=evidence_record)
     lines = [
         "flowchart LR",
-        f'  outcome["Visible result<br/>{diagram_text.escape_label(diagram_text.trim(outcome_label, 72))}"] --> state',
-        f'  state["Domain state<br/>{diagram_text.escape_label(diagram_text.trim(state_object, 58))}"] --> evidence_record',
-        f'  evidence_record["Evidence record<br/>{diagram_text.escape_label(diagram_text.trim(evidence_label, 72))}"] --> validation',
-        f'  validation["Proof checkpoint<br/>{diagram_text.escape_label(proof_label)}"] --> decision',
-        '  decision["Release decision<br/>accept, revise, or block"] --> release',
-        '  release["Release claim<br/>matches the promised outcome"]',
+        f'  outcome["Visible result<br/>{diagram_text.escape_label(diagram_text.trim(outcome_label, 72))}"] --> domain_state',
+        f'  domain_state["Domain state<br/>{diagram_text.escape_label(diagram_text.trim(state_object, 58))}"] --> evidence_record',
+        f'  evidence_record["Evidence record<br/>{diagram_text.escape_label(diagram_text.trim(evidence_label, 72))}"] --> proof_gate',
+        f'  proof_gate["Proof checkpoint<br/>{diagram_text.escape_label(proof_label)}"] --> release_decision',
+        '  release_decision["Release decision<br/>accept, revise, or block"] --> release_claim',
+        '  release_claim["Release claim<br/>matches the promised outcome"]',
         "  classDef outcomeClass fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
-        "  classDef state fill:#F5F3FF,stroke:#C4B5FD,color:#17233A,stroke-width:1px;",
+        "  classDef domainObjectStyle fill:#F5F3FF,stroke:#C4B5FD,color:#17233A,stroke-width:1px;",
         "  classDef evidence fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
         "  classDef gate fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
         "  class outcome outcomeClass;",
-        "  class state state;",
+        "  class domain_state domainObjectStyle;",
         "  class evidence_record evidence;",
-        "  class validation,decision,release gate;",
+        "  class proof_gate,release_decision,release_claim gate;",
     ]
     if non_goals:
         deferred = diagram_text.trim(non_goals[0], 64)
-        lines.insert(7, f'  deferred["Outside release<br/>{diagram_text.escape_label(deferred)}"] -. not claimed .-> decision')
+        lines.insert(7, f'  deferred["Outside release<br/>{diagram_text.escape_label(deferred)}"] -. not claimed .-> release_decision')
         lines.extend(
             [
-                "  classDef deferred fill:#FEF2F2,stroke:#FCA5A5,color:#17233A,stroke-width:1px;",
-                "  class deferred deferred;",
+                "  classDef laterScopeStyle fill:#FEF2F2,stroke:#FCA5A5,color:#17233A,stroke-width:1px;",
+                "  class deferred laterScopeStyle;",
             ]
         )
     return "\n".join(lines) + "\n"

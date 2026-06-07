@@ -70,12 +70,14 @@ _TERMINAL_MODIFIER_WORDS = frozenset(
         "daily",
         "first",
         "reviewable",
+        "safety",
         "specific",
         "trusted",
         "visible",
     }
 )
 _TERMINAL_MODIFIER_PRECEDERS = frozenset({"a", "an", "one", "the", "this", "that"})
+_TERMINAL_ARTICLE_WORDS = frozenset({"a", "an", "that", "the", "their", "this"})
 _INVALID_INFLECTIONS = frozenset({"seted"})
 _VAGUE_MISSING_SUBJECTS = frozenset({"anything", "something", "stuff", "things"})
 _CAPITALIZED_CLAUSE_STARTERS = frozenset({"How", "What", "When", "Where", "Whether", "Who", "Why"})
@@ -185,12 +187,62 @@ def _chunk_language_issues(artifact: RenderedArtifact, chunk: str) -> list[str]:
             if looks_like_action_clause(f"{lowered[index + 1]} placeholder"):
                 phrase = " ".join(tokens[index : index + 3])
                 issues.append(f"{artifact.identity} has possessive/action title drift near `{phrase}`")
+    issues.extend(_coordinated_modal_drift_issues(artifact, tokens, lowered))
+    issues.extend(_adjacent_repeated_word_issues(artifact, text, tokens, lowered))
     tail = lowered[-1].strip("'")
     if tail in _INVALID_INFLECTIONS:
         issues.append(f"{artifact.identity} has invalid verb inflection near `{tokens[-1]}`")
+    if tail in _TERMINAL_ARTICLE_WORDS:
+        issues.append(f"{artifact.identity} has a clipped article phrase ending in `{tokens[-1]}`")
     if tail in _DANGLING_TAIL_WORDS:
         issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
     return issues
+
+
+def _coordinated_modal_drift_issues(
+    artifact: RenderedArtifact,
+    tokens: Sequence[str],
+    lowered: Sequence[str],
+) -> list[str]:
+    issues: list[str] = []
+    for modal_index, token in enumerate(lowered):
+        if token not in {"can", "could", "may", "might", "must", "shall", "should", "will", "would"}:
+            continue
+        if token == "can" and lowered[modal_index : modal_index + 3] == ["can", "be", "trusted"]:
+            continue
+        window_end = min(len(lowered), modal_index + 18)
+        for index in range(modal_index + 1, window_end):
+            if lowered[index] not in {"and", "or"}:
+                continue
+            candidate_index = index + 1
+            if candidate_index < window_end and lowered[candidate_index].endswith("ly"):
+                candidate_index += 1
+            if candidate_index < window_end and _looks_like_finite_verb(lowered[candidate_index]):
+                phrase = " ".join(tokens[index : candidate_index + 1])
+                issues.append(f"{artifact.identity} has coordinated modal grammar drift near `{phrase}`")
+    return issues
+
+
+def _adjacent_repeated_word_issues(
+    artifact: RenderedArtifact,
+    text: str,
+    tokens: Sequence[str],
+    lowered: Sequence[str],
+) -> list[str]:
+    if _looks_like_link_or_path_chunk(text):
+        return []
+    issues: list[str] = []
+    for index, token in enumerate(lowered[:-1]):
+        if len(token) < 4:
+            continue
+        if token == lowered[index + 1]:
+            issues.append(f"{artifact.identity} repeats adjacent word `{tokens[index]} {tokens[index + 1]}`")
+    return issues
+
+
+def _looks_like_link_or_path_chunk(value: str) -> bool:
+    text = str(value or "")
+    return bool("](" in text or "://" in text or "/" in text or "\\" in text)
 
 
 def _surface_terminal_chunks(artifact: RenderedArtifact) -> list[str]:
@@ -528,7 +580,9 @@ def _node_id_from_tail(segment: str) -> str:
 def _preview_text(value: Any) -> str:
     if not isinstance(value, Mapping):
         return ""
-    return normalize_string(" ".join(text_values(value)))
+    rows = [normalize_string(row).strip() for row in text_values(value)]
+    bounded = [row if not row or row[-1] in ".!?" else f"{row}." for row in rows if row]
+    return "\n".join(bounded)
 
 
 def _as_mapping(value: Any) -> Mapping[Any, Any]:

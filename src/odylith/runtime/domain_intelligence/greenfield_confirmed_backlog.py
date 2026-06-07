@@ -78,7 +78,8 @@ def confirmed_evidence_record_label(*, label: str, proof_boundary: str, internal
         name = first.casefold()
         if any(token in name for token in ("evidence", "audit", "proof", "ledger", "history", "trace")):
             if first:
-                return f"{system_component_name(first)} proof record"
+                component_name = _title_label(system_component_name(first)) or system_component_name(first)
+                return f"{component_name} proof record"
     if proof_boundary:
         return f"{label} proof record"
     return f"{label} proof record"
@@ -249,6 +250,7 @@ def confirmed_backlog_rows(
     outcome_summary = backlog_text.sentence_fragment(clauses.visible_result) or backlog_text.first_path_outcome(first_path_summary, proof_boundary=proof_boundary)
     outcome_action = _outcome_action_phrase(outcome_summary)
     proof_focus = backlog_text.proof_focus_phrase(proof_summary, fallback="release decision")
+    state_responsibility = _state_responsibility_label(state_label)
     dependency_outcome = outcome_summary or "the promised first-path result"
     first_path_action = backlog_text.capability_action_clause(primary_user_action or first_path_entry_text or first_path_capability)
     first_path_proof_capability = first_path_capability_phrase(
@@ -287,7 +289,7 @@ def confirmed_backlog_rows(
         metrics=[
             *(success_metrics or [])[:1],
             f"Success proof connects {first_path_proof_capability} to {outcome_summary} without adjacent scope being pulled into the release.",
-            f"{state_label} state responsibility remains understandable when input is accepted, blocked, corrected, or reviewed.",
+            f"{state_responsibility} remains understandable when input is accepted, blocked, corrected, or reviewed.",
             f"{proof_component} keeps the success evidence replayable so a reviewer can see what happened and why.",
         ],
         component_focus=component_ids,
@@ -430,6 +432,15 @@ def confirmed_backlog_rows(
         non_goals=non_goals,
     )
     return [parent, workflow, boundary, proof]
+
+
+def _state_responsibility_label(state_label: str) -> str:
+    text = str(state_label or "").strip(" .")
+    if not text:
+        return "State responsibility"
+    if text.casefold().endswith(" state"):
+        return f"{text} responsibility"
+    return f"{text} state responsibility"
 
 
 def _backlog_row(

@@ -239,7 +239,14 @@ def _label_focus_phrase(label: str) -> str:
             stopwords=_LABEL_FOCUS_STOPWORDS,
         )
     ]
-    return " ".join(words[:5]).strip()
+    return _trim_terminal_connector(" ".join(words[:6]).strip())
+
+
+def _trim_terminal_connector(value: str) -> str:
+    words = value.split()
+    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "plus"}:
+        words.pop()
+    return " ".join(words).strip()
 
 
 def primary_component_for_backlog(

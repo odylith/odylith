@@ -6,6 +6,7 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
@@ -51,14 +52,11 @@ def confirmed_project_brief(
         or f"The first release proves one {label_lower} path from intake through state update and evidence review.",
         limit=300,
     )
-    proof = _brief_clause(
-        proof_boundary
-        or (
-            f"Release {release} succeeds only when {state_label.lower()} and "
-            f"{evidence_label.lower()} can be reviewed together."
-        ),
-        limit=300,
+    proof_source = proof_boundary or (
+        f"Release {release} succeeds only when {state_label.lower()} and "
+        f"{evidence_label.lower()} can be reviewed together."
     )
+    proof = _brief_clause(proof_claim_summary(proof_source, limit=300), limit=300)
     non_goal_summary = (
         boundary_clause_text(non_goals) or "wider automation, live irreversible integrations, and production scaling"
     )

@@ -12,6 +12,7 @@ from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_labels as _actor_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows as _completed_actor_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
     outcome_action_phrase as _outcome_action_phrase,
 )
@@ -98,9 +99,21 @@ def _strip_prompt_prefixes(value: str) -> str:
 
 def _normalize_proof_boundary(value: str) -> str:
     text = _strip_prompt_prefixes(value)
+    sentences = [
+        sentence.strip()
+        for sentence in re.split(r"(?<=[.!?])\s+", text)
+        if sentence.strip()
+    ]
+    if len(sentences) > 1 and re.search(
+        r"\b(?:confirmation-only|confirmed?\s+draft|no\s+product\s+code\s+exists)\b",
+        sentences[0],
+        flags=re.IGNORECASE,
+    ):
+        text = " ".join(sentences[1:]).strip()
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s*:\s*", "Release 0.0.1 succeeds when ", text, flags=re.I)
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s+", "Release 0.0.1 succeeds when ", text, flags=re.I)
-    return text.strip()
+    summarized = proof_claim_summary(text, limit=420)
+    return (summarized or text).strip()
 
 
 def _normalize_state_object(value: str) -> str:

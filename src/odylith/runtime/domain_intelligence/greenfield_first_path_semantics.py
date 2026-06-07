@@ -311,13 +311,13 @@ def _starts_new_action_clause(value: str) -> bool:
         r"^(?:(?:a|an|the|one|this|that|each|another|product|system|user|person|actor|app|application|workspace|engine|dashboard|view)|[A-Z][A-Za-z0-9_-]{2,})\s+"
         r"(?:[A-Za-z0-9'-]+\s+){0,5}?"
         r"(?:"
-        r"accept|accepts|add|adds|adjust|adjusts|approve|approves|assign|assigns|attach|attaches|book|books|calculate|calculates|capture|captures|"
+        r"accept|accepts|add|adds|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|book|books|calculate|calculates|capture|captures|"
         r"check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|"
         r"click|clicks|compute|computes|create|creates|decide|decides|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|forecast|forecasts|"
         r"display|displays|import|imports|inspect|inspects|log|logs|mark|marks|notify|notifies|persist|persists|preserve|preserves|"
-        r"optimize|optimizes|produce|produces|provide|provides|publish|publishes|pull|pulls|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|return|returns|route|routes|"
+        r"optimize|optimizes|produce|produces|prompt|prompts|provide|provides|publish|publishes|pull|pulls|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|return|returns|route|routes|"
         r"run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|show|shows|"
-        r"store|stores|submit|submits|sync|syncs|tap|taps|track|tracks|update|updates|validate|validates|view|views"
+        r"store|stores|submit|submits|surface|surfaces|sync|syncs|tap|taps|track|tracks|update|updates|validate|validates|view|views"
         r")\b",
         text,
         flags=re.IGNORECASE,

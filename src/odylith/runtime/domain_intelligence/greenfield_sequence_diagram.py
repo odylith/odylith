@@ -137,14 +137,14 @@ def first_path_flowchart_mermaid(
     lines.append(f"  {previous} --> proof")
     lines.extend(
         [
-            "  classDef actor fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
+            "  classDef personStyle fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
             "  classDef step fill:#FFFFFF,stroke:#CBD5E1,color:#17233A,stroke-width:1px;",
             "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
-            "  classDef proof fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
-            "  class actor actor;",
+            "  classDef evidenceStyle fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
+            "  class actor personStyle;",
             "  class " + ",".join(f"S{index}" for index in range(1, len(visible_steps) + 1)) + " step;",
             "  class " + ",".join(sorted(used_components) or ["C1"]) + " service;",
-            "  class proof proof;",
+            "  class proof evidenceStyle;",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -439,7 +439,7 @@ def _step_message(value: str, *, keep_actor_subject: bool = True) -> str:
 
 
 def _step_action_label(value: str) -> str:
-    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _strip_dangling_tail(_trim(value, 130)), flags=re.IGNORECASE)
+    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _strip_dangling_tail(_trim(value, 220)), flags=re.IGNORECASE)
     text = re.sub(r"^(?:the\s+)?(?:product|app|application|system)\s+", "", text, flags=re.IGNORECASE)
     role_can = re.match(
         r"^(?:a|an|the|one)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+can\s+(?P<verb>[A-Za-z]+)\b(?P<rest>.*)$",
@@ -455,7 +455,32 @@ def _step_action_label(value: str) -> str:
     text = _strip_primary_actor_subject(text)
     text = re.sub(r"^(?:they|them|their)\s+", "", text, flags=re.IGNORECASE).strip(" .")
     text = _imperative_handoff_focus(text)
+    text = _compress_step_action_label(text)
     return text[:1].upper() + text[1:] if text else "Advance accepted path"
+
+
+def _compress_step_action_label(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    text = re.sub(
+        r"^over\s+the\s+following\s+days\s+(?:the\s+)?(?:app|application|product|system)\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\bif\s+[^.]{1,120}?\b(?:cross|crosses)\s+(?:a\s+)?safety\s+threshold\b",
+        "when safety threshold is crossed",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\bif\s+[^.]{1,120}?\b(?:trigger|triggers)\s+(?:an?\s+)?(?:escalation\s+)?warning\b",
+        "when warning signs trigger",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"\s+", " ", text).strip(" .")
+    return _strip_dangling_tail(text)
 
 
 def _third_person_verb(value: str) -> str:
@@ -650,7 +675,7 @@ def _actor_role_label(value: object) -> str:
     text = display_text.strip_inline_markdown_emphasis_tokens(str(value or ""))
     text = re.split(r"\s+[—-]\s+|:", text, maxsplit=1)[0]
     text = text.replace("(", " ").replace(")", " ")
-    text = re.sub(r"\bprimary\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"(?<!-)\bprimary\b(?!-)", "", text, flags=re.IGNORECASE)
     text = re.split(
         r"\b(?:who|that|where|when|while|with|filling|reading|reviewing|configuring|tracking|using|entering|submitting|following|managing|auditing|approving)\b",
         text,
@@ -690,7 +715,7 @@ def _strip_dangling_tail(value: str) -> str:
     text = _compact_text(value).rstrip(" ,;:.")
     while True:
         cleaned = re.sub(
-            r"\b(?:a|an|and|as|at|because|by|can|for|from|if|in|into|lets|must|of|on|or|should|that|the|through|tied|to|until|when|while|with|without|alongside)$",
+            r"\b(?:a|accepted|actionable|an|and|as|at|because|by|can|capturing|clear|comparing|complete|concrete|daily|first|for|from|if|in|into|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|through|tied|to|trusted|until|visible|warning|when|while|with|without|alongside)$",
             "",
             text,
             flags=re.IGNORECASE,

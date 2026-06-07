@@ -142,7 +142,7 @@ def _confirmed_system_components(
     path_slug = _path_slug(label_slug)
     for index, system in enumerate(internal_systems, start=1):
         name = system_component_name(confirmed_system_name(system))
-        description = confirmed_system_description(system)
+        description = confirmed_system_description(system).replace("/", " and ")
         component_slug = slugify(name) or f"{label_slug}-component-{index}"
         if not component_slug.startswith(label_slug) and len(component_slug.split("-")) <= 2:
             component_id = _component_id(label_slug, component_slug)
@@ -227,7 +227,7 @@ def _confirmed_system_components(
 def system_component_name(value: str) -> str:
     """Convert actor-placeholder prefixes into capability names for component records."""
 
-    name = _flatten_parenthetical_descriptor(_plain_text(value)).strip(" .:-")
+    name = _flatten_parenthetical_descriptor(_plain_text(value)).replace("/", " and ").strip(" .:-")
     if not name:
         return ""
     for pattern, replacement in _GENERIC_COMPONENT_ROLE_PREFIXES:

@@ -53,6 +53,18 @@ def sanitize_actor_body(value: object) -> str:
         text,
         flags=re.IGNORECASE,
     )
+    text = re.sub(
+        r"\bcontributes\s+information,\s+review,\s+or\s+action\s+needed\s+for\s+the\s+first\s+product\s+outcome\s+and\s+needs\s+the\s+result,\s+limits,\s+and\s+next\s+step\s+to\s+stay\s+understandable\b",
+        "supplies context, reviews the result, or takes the next step named by the first release",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\bcontributes\s+information,\s+review,\s+or\s+action\s+needed\b",
+        "supplies context or reviews the result",
+        text,
+        flags=re.IGNORECASE,
+    )
     text = re.sub(r"\bwhen the path is\.$", "when the path is incomplete.", text, flags=re.IGNORECASE)
     text = re.sub(r"\bverifies that The\b", "verifies that the", text)
     text = re.sub(r"\s+([,.;:?!])", r"\1", text)
