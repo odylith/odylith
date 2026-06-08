@@ -165,7 +165,7 @@ def _context_body(*, title: str, context: str) -> str:
         return "Reviews product outcomes, decides what needs attention, and helps the next responsible person act with confidence."
     if any(
         token in lowered
-        for token in ("applicant", "author", "borrower", "customer", "client", "requester", "submitter", "user", "person")
+        for token in ("applicant", "author", "customer", "client", "requester", "submitter", "user", "person")
     ):
         return "Uses the product to provide information, understand the result, and decide what to do next."
     if any(token in lowered for token in ("operator", "coordinator", "steward", "maintainer")):
@@ -206,7 +206,6 @@ def _looks_product_story_body(*, title: str, body: str) -> bool:
         "administrator",
         "applicant",
         "author",
-        "borrower",
         "chair",
         "client",
         "coordinator",

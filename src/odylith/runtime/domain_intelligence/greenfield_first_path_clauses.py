@@ -588,7 +588,7 @@ def strip_action_subject(value: str) -> str:
             return text
         if len(label_terms(prefix)) <= 6 and (
             re.search(
-                r"\b(?:actor|applicant|borrower|coordinator|customer|owner|participant|patient|person|requester|reviewer|supervisor|user)\b",
+                r"\b(?:actor|applicant|coordinator|customer|owner|participant|person|requester|reviewer|supervisor|user)\b",
                 prefix,
                 flags=re.IGNORECASE,
             )
@@ -615,7 +615,7 @@ def _actor_signature(value: str) -> str:
             candidate = text[: match.start()].strip(" ,")
             if len(label_terms(candidate)) <= 6 and (
                 re.search(
-                    r"\b(?:actor|applicant|borrower|coordinator|customer|owner|participant|patient|person|requester|reviewer|supervisor|user)\b",
+                    r"\b(?:actor|applicant|coordinator|customer|owner|participant|person|requester|reviewer|supervisor|user)\b",
                     candidate,
                     flags=re.IGNORECASE,
                 )

@@ -18,7 +18,6 @@ ROLEISH_TERMS = {
     "participant",
     "person",
     "requester",
-    "resident",
     "reviewer",
     "submitter",
     "user",
@@ -37,15 +36,12 @@ ACTOR_LEAD_TERMS = ROLEISH_TERMS | {
     "lead",
     "member",
     "officer",
-    "patient",
     "scheduler",
     "specialist",
     "staff",
-    "student",
     "supervisor",
     "support",
     "team",
-    "technician",
 }
 
 GENERIC_ACTOR_LABELS = (

@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import leading_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -41,13 +42,11 @@ _ROLE_WORDS = {
     "planner",
     "reviewer",
     "requester",
-    "resident",
     "staff",
     "submitter",
     "supervisor",
     "support",
     "team",
-    "technician",
     "user",
     "volunteer",
 }
@@ -116,7 +115,7 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
         body = "reviews access, privacy, policy, risk, and evidence boundaries"
     elif re.search(r"\b(user|researcher|investor|analyst|operator)\b", label_text):
         body = f"uses {title} to reach a clear outcome, compare it with their goal, and decide what to do next"
-    elif re.search(r"\b(author|applicant|submitter|requester|customer|client|resident|buyer|seller)\b", label_text):
+    elif re.search(r"\b(author|applicant|submitter|requester|customer|client)\b", label_text):
         body = "provides the information the product needs and expects a clear result, explanation, and next step"
     elif re.search(r"\b(editor|manager|chair|coordinator|operator|supervisor|lead|owner|director)\b", label_text):
         body = "keeps the product outcome aligned with the real operational goal and decides when exceptions need human judgment"
@@ -242,6 +241,9 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str) -> list[str]
 def _role_candidates(text: str) -> list[str]:
     candidates: list[str] = []
     for sentence in re.split(r"(?<=[.!?])\s+|;\s+", _clean(text)):
+        subject = _subject_candidate(sentence)
+        if subject:
+            candidates.append(subject)
         words = _label_terms(sentence)
         for index, word in enumerate(words):
             if word.casefold() not in _ROLE_WORDS:
@@ -272,6 +274,40 @@ def _role_candidates(text: str) -> list[str]:
             ):
                 candidates.append(phrase)
     return list(unique_text(candidates))
+
+
+def _subject_candidate(sentence: str) -> str:
+    subject = leading_subject_prefix(sentence)
+    if not subject:
+        return ""
+    subject = _actor_head_before_setup_action(subject) or subject
+    subject = re.sub(r"^(?:a|an|the|one|this|that|each|another)\s+", "", subject, flags=re.IGNORECASE).strip(" .")
+    words = subject.split()
+    if not 1 <= len(words) <= 4:
+        return ""
+    lowered = subject.casefold()
+    if lowered in {"app", "application", "product", "service", "system", "tool", "workspace"}:
+        return ""
+    if re.search(r"\b(?:app|application|engine|platform|product|service|system|tool|workspace)\b", lowered):
+        return ""
+    return _trim_non_actor_lead_words(subject)
+
+
+def _actor_head_before_setup_action(subject: str) -> str:
+    tokens = [token.strip(".,;:()") for token in _clean(subject).split()]
+    if len(tokens) < 3 or tokens[0].casefold() not in {"a", "an", "the", "one", "this", "that", "each", "another"}:
+        return ""
+    setup_verbs = {"open", "opens", "launch", "launches", "start", "starts", "enter", "enters"}
+    for index, token in enumerate(tokens[1:], start=1):
+        lower = token.casefold()
+        if lower in setup_verbs or (
+            lower in {"log", "logs", "sign", "signs"} and index + 1 < len(tokens) and tokens[index + 1].casefold() == "in"
+        ):
+            actor_words = tokens[1:index]
+            if 1 <= len(actor_words) <= 4:
+                return " ".join([tokens[0], *actor_words])
+            return ""
+    return ""
 
 
 def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:

@@ -575,13 +575,13 @@ def _boundary_primary(label: str, owned: str) -> str:
     for item in items:
         if subject_terms and not (set(ordered_domain_terms(item)) & subject_terms):
             continue
-        if re.match(r"^(?:user|actor|customer|patient|client)\s+\w+", item, flags=re.IGNORECASE):
+        if re.match(r"^(?:user|actor|customer|client)\s+\w+", item, flags=re.IGNORECASE):
             continue
         if item.casefold() in {"source evidence", "blocker state", "next-step context"}:
             continue
         return item
     for item in items:
-        if re.match(r"^(?:user|actor|customer|patient|client)\s+\w+", item, flags=re.IGNORECASE):
+        if re.match(r"^(?:user|actor|customer|client)\s+\w+", item, flags=re.IGNORECASE):
             continue
         if item.casefold() in {"source evidence", "blocker state", "next-step context"}:
             continue

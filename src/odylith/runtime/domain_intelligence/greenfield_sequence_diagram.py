@@ -548,7 +548,7 @@ def _strip_primary_actor_subject(value: str) -> str:
         flags=re.IGNORECASE,
     )
     if match and re.search(
-        r"\b(?:actor|applicant|borrower|coordinator|customer|owner|participant|patient|person|requester|reviewer|supervisor|user)\b",
+        r"\b(?:actor|applicant|coordinator|customer|owner|participant|person|requester|reviewer|supervisor|user)\b",
         match.group("subject"),
         flags=re.IGNORECASE,
     ):

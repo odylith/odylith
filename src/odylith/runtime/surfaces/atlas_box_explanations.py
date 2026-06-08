@@ -317,7 +317,17 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
         )
     if _has_any(
         lowered,
-        ("musician", "performer", "student", "teacher", "arranger", "beneficiary", "customer", "user"),
+        (
+            "performer",
+            "participant",
+            "beneficiary",
+            "customer",
+            "client",
+            "applicant",
+            "requester",
+            "reviewer",
+            "user",
+        ),
     ) and not _has_any(
         lowered,
         ("service", "provider", "adapter", "interface", "surface", "engine", "store"),

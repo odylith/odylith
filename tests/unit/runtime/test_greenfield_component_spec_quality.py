@@ -93,21 +93,32 @@ APPLY_WRITE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_ap
 def test_greenfield_platform_helpers_do_not_hardcode_fixture_domains() -> None:
     guarded_roots = [
         ROOT / "src/odylith/runtime/domain_intelligence",
+        ROOT / "src/odylith/runtime/project_intelligence",
         ROOT / "src/odylith/runtime/surfaces",
     ]
     forbidden_terms = (
+        "arranger",
         "battery",
+        "borrower",
+        "buyer",
         "calorie",
         "controllable loads",
         "hardware automation",
         "homeowner",
         "market bidding",
+        "musician",
+        "patient",
         "peptide",
         "projected savings",
+        "resident",
+        "seller",
         "solar",
+        "student",
         "sunburn",
         "sunledger",
         "sunrecover",
+        "teacher",
+        "technician",
     )
 
     for path in sorted(path for root in guarded_roots for path in root.rglob("*.py")):
@@ -476,7 +487,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert localize_generic_actor_label("Operator approval packet") == "local operator approval packet"
     assert localize_generic_actor_label("Build owner proof") == "local build owner proof"
     assert clean_artifact_phrase("inspector reviews permit note") == "permit note"
-    assert clean_artifact_phrase("student submits assignment details") == "assignment details"
+    assert clean_artifact_phrase("participant submits intake package") == "intake package"
     assert clean_artifact_phrase("operator approves safety guardrails") == "safety guardrails"
     assert clean_artifact_phrase("user adds protocol") == "protocol"
     assert clean_artifact_phrase("individual user adds protocol") == "protocol"
