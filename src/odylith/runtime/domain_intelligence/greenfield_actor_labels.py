@@ -8,7 +8,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_t
 
 
 _QUALIFIER_RE = re.compile(
-    r"^(?:primary|optional|secondary|main|target|first|initial|prospective|potential)\s+",
+    r"^(?:primary|optional|optionally|secondary|main|target|first|initial|prospective|potential)\s*,?\s+",
     re.IGNORECASE,
 )
 
@@ -152,12 +152,14 @@ _FOCUS_STOPWORDS = {
     "of",
     "on",
     "or",
+    "own",
     "review",
     "reviewing",
     "service",
     "state",
     "system",
     "the",
+    "their",
     "through",
     "to",
     "tool",
@@ -193,7 +195,12 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         head, marker_body = marker_head, marker_tail
         body = body or marker_body
         marker_body_used = not explicit_body and bool(marker_body)
-    head = _strip_qualifiers(head).strip(" .")
+    head = _strip_actor_head_articles(_strip_qualifiers(head).strip(" ."))
+    shared_head, shared_tail = _split_shared_subject_tail(head)
+    if shared_head:
+        head = shared_head
+        body = body or shared_tail
+        marker_body_used = marker_body_used or (not explicit_body and bool(shared_tail))
     action_head, action_tail = _split_actor_action_tail(head)
     if action_head:
         head = action_head
@@ -208,6 +215,15 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         return head
     if explicit_body and _is_concrete_actor_head(head, lower_head=lower_head, role=role):
         return head
+    activity_label = _generic_person_activity_label(
+        head,
+        lower_head=lower_head,
+        role=role,
+        body=body,
+        marker_body_used=marker_body_used,
+    )
+    if activity_label:
+        return activity_label
     composite_label = _project_specific_composite_head(head, lower_head=lower_head, project_focus=project_focus)
     if composite_label:
         return composite_label
@@ -260,6 +276,17 @@ def _split_description_marker(value: str) -> tuple[str, str]:
     for marker in _DESCRIPTION_MARKERS:
         head, sep, tail = lowered.partition(marker)
         if sep and head.strip() and tail.strip():
+            if _generic_person_head(head) and marker.strip() in {
+                "checking",
+                "configuring",
+                "coordinating",
+                "handling",
+                "managing",
+                "owning",
+                "reviewing",
+                "using",
+            }:
+                return "", ""
             return value[: len(head)].strip(" ."), value[len(head) + len(marker) :].strip(" .")
     return "", ""
 
@@ -307,6 +334,55 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
     return "", ""
 
 
+def _split_shared_subject_tail(value: str) -> tuple[str, str]:
+    text = _clean(value).strip(" .")
+    match = re.match(
+        r"(?P<head>.+?)\s+(?P<tail>(?:the|a|an)\s+"
+        r"[A-Za-z][A-Za-z-]*(?:\s+[A-Za-z][A-Za-z-]*){0,3}\s+"
+        r"(?:shares?|sends?|gives?|provides?|submits?|uploads?|forwards?)\b.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return "", ""
+    head = _strip_actor_head_articles(match.group("head"))
+    if not head or len(head.split()) > 6:
+        return "", ""
+    return head, match.group("tail").strip(" .")
+
+
+def _generic_person_activity_label(
+    head: str,
+    *,
+    lower_head: str,
+    role: str,
+    body: str,
+    marker_body_used: bool,
+) -> str:
+    if not marker_body_used or role != "user" or lower_head not in {"person", "people", "individual", "user"}:
+        return ""
+    text = _strip_parenthetical_qualifiers(body)
+    match = re.match(r"(?P<verb>[A-Za-z]+ing)\s+(?P<tail>.+)$", text, flags=re.IGNORECASE)
+    if not match:
+        return ""
+    focus = _focus_from_text(match.group("tail"), role="")
+    if not focus:
+        return ""
+    head_label = "Person" if lower_head in {"person", "people", "individual"} else "User"
+    return _title_label(f"{head_label} {match.group('verb')} {focus}")
+
+
+def _strip_parenthetical_qualifiers(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(
+        r"\([^)]*\b(?:primary|secondary|optional|later|read-only|self|tracking|user|role)\b[^)]*\)",
+        " ",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return _clean(text)
+
+
 def _strip_qualifiers(value: str) -> str:
     text = _clean(value)
     while True:
@@ -314,6 +390,10 @@ def _strip_qualifiers(value: str) -> str:
         if replacement == text:
             return replacement
         text = replacement
+
+
+def _strip_actor_head_articles(value: str) -> str:
+    return re.sub(r"^(?:a|an|the)\s+", "", _clean(value), flags=re.IGNORECASE).strip(" .")
 
 
 def _head_needs_focus(lower_head: str, *, role: str) -> bool:
@@ -373,7 +453,7 @@ def _body_names_control_focus(value: str) -> bool:
 
 
 def _focus_from_text(value: str, *, role: str) -> str:
-    text = re.sub(r"[/]", " ", _clean(value))
+    text = re.sub(r"[/]", " ", _strip_parenthetical_qualifiers(value))
     tokens = [token.strip(";:()").rstrip(".") for token in text.split()]
     selected: list[str] = []
     selected_count = 0

@@ -1378,6 +1378,15 @@ def test_greenfield_quality_gate_rejects_split_release_title_fragments(tmp_path:
     assert any("references workstream title" in issue for issue in issues)
 
 
+def test_greenfield_quality_gate_rejects_central_thing_placeholder(tmp_path: Path) -> None:
+    proposal = _service_goal_proposal(tmp_path)
+    proposal["backlog"][0]["title"] = "Keep Central Thing the Product Clear and Reviewable"  # type: ignore[index]
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert any("Central Thing the Product" in issue for issue in issues)
+
+
 def test_greenfield_component_contract_normalizes_capability_phrases_into_artifacts() -> None:
     contract = derive_component_semantic_contract(
         {

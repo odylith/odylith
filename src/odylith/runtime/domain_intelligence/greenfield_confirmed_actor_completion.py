@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import leading_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -142,7 +142,7 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
 def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     """Prefer accepted-path language over generic role templates."""
 
-    terms = _semantic_terms(label)
+    terms = _actor_path_terms(label)
     if not terms:
         return ""
     sources = [(first_path, 12), (state, 0)]
@@ -167,6 +167,25 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     if not clause:
         return ""
     return f"uses the product to {base_action_clause(clause)} and needs the outcome to remain clear enough to act on"
+
+
+def _actor_path_terms(label: str) -> set[str]:
+    return _semantic_terms(label) - {
+        "actor",
+        "client",
+        "customer",
+        "individual",
+        "manage",
+        "manager",
+        "managing",
+        "owner",
+        "participant",
+        "people",
+        "person",
+        "track",
+        "tracking",
+        "user",
+    }
 
 def _strip_actor_subject_from_clause(value: str, *, label: str) -> str:
     """Remove a role label when it was copied into a clause as the subject."""

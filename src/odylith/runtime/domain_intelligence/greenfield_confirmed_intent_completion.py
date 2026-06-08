@@ -119,6 +119,13 @@ def _normalize_proof_boundary(value: str) -> str:
 def _normalize_state_object(value: str) -> str:
     text = _strip_prompt_prefixes(value)
     text = re.sub(
+        r"^(?:the\s+)?(?:central|core|main|primary)\s+(?:thing|object|record|item|state)\s+"
+        r"(?:the\s+product\s+|the\s+system\s+)?(?:tracks|records|stores|captures|keeps)\s+is\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
         r"^(?:the\s+)?(?:central|core|main)\s+(?:object|state|record)\s+is\s+",
         "",
         text,

@@ -6,8 +6,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     CONFIRMED_INTENT_VALIDATION_STOPWORDS,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_terms
@@ -15,7 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import sentence as diagram_sentence
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import clean_first_path_text
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
@@ -57,6 +59,29 @@ def test_confirmed_intent_list_text_coercion_stays_in_text_owner() -> None:
         assert "confirmed_text_values" in source
 
 
+def test_state_object_label_handles_central_thing_tracking_language() -> None:
+    label = domain_object_label(
+        (
+            "The central thing the product tracks is a person's comfort timeline: "
+            "a sequence of dated entries with ratings, factors, actions, and derived trends."
+        ),
+        fallback="Pattern state",
+    )
+
+    assert label == "Person's Comfort Timeline"
+    assert "Central Thing" not in label
+    assert "Product" not in label
+    assert domain_object_label(
+        (
+            "The central thing the product tracks is a person's neck-pain timeline: "
+            "dated entries with pain levels, factors, actions, and derived trends."
+        ),
+        fallback="Pattern state",
+    ) == "Person's Neck Pain Timeline"
+    assert title_label("source-backed review record") == "Source-backed Review Record"
+    assert title_label("high-risk case review") == "High-risk Case Review"
+
+
 def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:
     text_owner = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
     callers = [
@@ -81,7 +106,7 @@ def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:
 def test_inline_markdown_cleanup_shared_by_confirmed_text_callers() -> None:
     callers = [
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_components.py",
-        DOMAIN_INTELLIGENCE / "greenfield_first_path_clauses.py",
+        DOMAIN_INTELLIGENCE / "greenfield_first_path_fragments.py",
         DOMAIN_INTELLIGENCE / "greenfield_sequence_steps.py",
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_diagram_text.py",
         DOMAIN_INTELLIGENCE / "greenfield_semantic_model.py",
@@ -215,7 +240,7 @@ def test_word_boundary_clipping_stays_in_text_owner() -> None:
     text_owner = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
     touched_callers = [
         "greenfield_confirmed_text.py",
-        "greenfield_first_path_clauses.py",
+        "greenfield_first_path_fragments.py",
         "greenfield_semantic_model.py",
         "greenfield_confirmed_system_rows.py",
         "greenfield_confirmed_diagram_text.py",

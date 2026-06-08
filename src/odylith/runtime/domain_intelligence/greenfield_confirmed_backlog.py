@@ -217,9 +217,10 @@ def confirmed_backlog_rows(
     opportunity_summary = _short_summary(opportunity, limit=360)
     product_view_summary = _short_summary(product_view, limit=360)
     first_path_summary = _short_summary(first_path, limit=380)
+    first_path_for_clauses = first_path or first_path_summary
     proof_summary = backlog_text.proof_claim_summary(proof_boundary, limit=340)
     clauses = first_path_clauses(
-        first_path_summary,
+        first_path_for_clauses,
         proof_boundary=proof_summary,
         action_fallback=backlog_text.first_action_clause(first_path_summary) or "complete the accepted product path",
         capability_fallback=backlog_text.first_action_clause(first_path_summary) or "complete the accepted product path",
@@ -236,7 +237,7 @@ def confirmed_backlog_rows(
     proof_record_label = _title_label(f"{proof_component} proof record") or evidence_label
     primary_user_action = backlog_text.sentence_fragment(
         first_path_action_phrase(
-            first_path_summary,
+            first_path_for_clauses,
             fallback=clauses.action_chain or clauses.model.material_action or "complete the accepted product path",
             max_fragments=3,
             limit=180,
@@ -254,7 +255,7 @@ def confirmed_backlog_rows(
     dependency_outcome = outcome_summary or "the promised first-path result"
     first_path_action = backlog_text.capability_action_clause(primary_user_action or first_path_entry_text or first_path_capability)
     first_path_proof_capability = first_path_capability_phrase(
-        first_path_summary,
+        first_path_for_clauses,
         fallback=first_path_action,
         gerund=True,
         limit=340,

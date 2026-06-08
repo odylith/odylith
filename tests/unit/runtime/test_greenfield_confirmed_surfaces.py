@@ -8,6 +8,7 @@ from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import expand_internal_system_rows
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 
 
@@ -159,6 +160,97 @@ def test_confirmed_greenfield_noun_phrase_responsibilities_stay_grammatical() ->
     )
     assert "Coordinates follow-up actions, reviewer handoff, and blocked-state recovery" in encoded
     assert "each responsibility transfer, failure state, recovery action, and final outcome" in encoded
+
+
+def test_parenthetical_system_descriptor_stays_one_component_row() -> None:
+    rows = expand_internal_system_rows(
+        ["Trend and correlation view (pattern over time, action-to-outcome signal)"],
+        context_text="",
+    )
+
+    assert len(rows) == 1
+    assert rows[0].startswith("Trend and Correlation View — ")
+    assert "pattern over time" in rows[0]
+    assert "action-to-outcome signal" in rows[0]
+    assert "Correlation View (pattern Over" not in rows[0]
+
+
+def test_purpose_clause_system_row_keeps_purpose_out_of_component_identity() -> None:
+    rows = expand_internal_system_rows(
+        ["Reminder/streak nudge to sustain the daily habit"],
+        context_text="",
+    )
+    components = confirmed_components(
+        label="Habit Tracker",
+        label_slug="habit-tracker",
+        internal_systems=rows,
+    )
+
+    assert rows == ["Reminder and Streak Nudge — helps sustain the daily habit"]
+    assert components[0]["label"] == "Reminder and Streak Nudge Service"
+    assert components[0]["component_id"] == "reminder-and-streak-nudge"
+    assert "to Sustain" not in components[0]["label"]
+
+
+def test_confirmed_personal_pattern_artifacts_do_not_leak_placeholder_labels(tmp_path: Path) -> None:
+    intent = parse_confirmed_intent_text(
+        """Pattern Relief Notebook
+
+Product story
+A person tracking recurring discomfort wants to understand which self-care actions appear to help over time. The product turns scattered daily notes into a small personal feedback loop: record how the day felt, record what action was tried, and review the pattern before deciding what to try next.
+
+State object
+The central thing the product tracks is a person's comfort timeline: a sequence of dated entries, each holding a rating, contributing factors, and the self-care actions tried. Around that sit saved routines and derived trends that connect actions to outcomes.
+
+First complete path
+A new user logs one entry. The entry captures a rating for the day, the factors that applied, and one action that was tried. The next day the user logs another entry. After several entries, the app builds a simple trend over time. The app then highlights which logged actions line up with better days. The user reviews that trend and sees the first signal connecting an action to better days.
+
+Human actors
+- Person managing their own discomfort (primary user, self-tracking)
+- Optionally, a coach or clinician the person shares a summary with (read-only, later)
+
+External systems
+- None required for the first complete path
+
+Internal product systems
+- Entry logging and daily check-in
+- Routine library (saved activities the user can attach to an entry)
+- Trend and correlation view (pattern over time, action-to-outcome signal)
+- Daily reminder and streak tracking
+
+Critical assumptions
+- Single-user, self-reported data; no diagnosis is claimed.
+
+Ambiguities
+- Platform: native mobile, web app, or both.
+
+Proof boundary
+The first version is proven when a user can log entries over several days and the app renders an honest trend plus an action-to-outcome signal from their own data. External integrations, sharing, and reminders are outside the first proof bar.
+""",
+        prompt="Draft a greenfield proposal for a personal pattern tracker.",
+    )
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a greenfield proposal for a personal pattern tracker.",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+    titles = [row["title"] for row in proposal["backlog"]]
+    components = [row["label"] for row in proposal["components"]]
+
+    assert "Person Managing Discomfort" in rendered
+    assert "Coach or Clinician" in rendered
+    assert "Pattern Relief User" not in rendered
+    assert "Central Thing the Product" not in rendered
+    assert "the optionally" not in rendered.casefold()
+    assert "uses the product to central thing" not in rendered.casefold()
+    assert "uses the product to person's" not in rendered.casefold()
+    assert "after several entries, the app builds" not in rendered
+    assert "Trend and Correlation View (pattern Over" not in rendered
+    assert any(title == "Keep Person's Comfort Timeline Clear and Reviewable" for title in titles)
+    assert any(component == "Trend and Correlation View Service" for component in components)
+    assert not greenfield_quality_issues(proposal)
 
 
 def test_mermaid_text_normalizes_sequence_labels_notes_and_messages() -> None:

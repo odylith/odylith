@@ -34,7 +34,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import (
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     clean_first_path_text as _clean_first_path,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model

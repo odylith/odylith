@@ -110,6 +110,31 @@ CONFIRMED_DANGLING_WORDS = {
     "without",
 }
 
+_TITLE_CONNECTOR_WORDS = {"and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
+_TITLE_ACRONYMS = {"ai", "api", "crm", "gis", "iot", "llm", "ml", "pwa", "ui", "ux"}
+_TITLE_HYPHEN_MODIFIERS = {
+    "back",
+    "cross",
+    "end",
+    "first",
+    "front",
+    "high",
+    "last",
+    "long",
+    "low",
+    "medium",
+    "multi",
+    "near",
+    "read",
+    "real",
+    "self",
+    "short",
+    "single",
+    "source",
+    "user",
+    "write",
+}
+
 
 def compact_text(value: str) -> str:
     return clean_markdown_text(value)
@@ -177,15 +202,13 @@ def semantic_overlap(left: str, right: str) -> int:
 
 def title_case_text(value: str) -> str:
     words: list[str] = []
-    connectors = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
+    connectors = {"a", "an", *_TITLE_CONNECTOR_WORDS}
     for index, word in enumerate(clean_confirmed_text(value).split()):
         lower = word.casefold()
-        if lower in {"ai", "api", "crm", "gis", "iot", "llm", "ml", "ui", "ux"}:
-            words.append(lower.upper())
-        elif index > 0 and lower in connectors:
+        if index > 0 and lower in connectors:
             words.append(lower)
         else:
-            words.append(word[:1].upper() + word[1:])
+            words.append(_title_label_word(word))
     return " ".join(words)
 
 
@@ -220,16 +243,19 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         r"^(?:the\s+)?(?:core|main|primary)\s+(?:thing|object|record|item)\s+"
         r"(?:the\s+system\s+)?(?:tracks|records|stores|captures|keeps)\s+is\s+"
         r"(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
+        r"^(?:the\s+)?(?:central|core|main|primary)\s+(?:thing|object|record|item|state)\s+"
+        r"(?:the\s+product\s+|the\s+system\s+)?(?:tracks|records|stores|captures|keeps)\s+is\s+"
+        r"(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"\b(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"\b(?:the\s+)?(?:domain\s+)?object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"\b(?:the\s+)?proof\s+record\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
-        r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s*:",
+        r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s*:",
         r"^(?:the\s+)?product\s+(?:captures?|keeps?|records?|stores?|tracks?)\s+"
-        r"(?:(?:the|an|a)\s+)?(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
+        r"(?:(?:the|an|a)\s+)?(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:with|containing|that|for)\b",
-        r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
+        r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:with|containing|that|for)\b",
-        r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _-]{1,80}?)\s+"
+        r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:tracks|records|stores|captures|moves|starts|changes)\b",
     )
     for pattern in patterns:
@@ -380,14 +406,43 @@ def title_label(value: str) -> str:
         lower = word.casefold()
         if index == 0 and lower in {"a", "an", "the"}:
             continue
-        if lower in {"and", "or", "of", "the", "to", "for", "in", "on", "with"} and words:
+        if lower in _TITLE_CONNECTOR_WORDS and words:
             words.append(lower)
             continue
-        if lower in {"ai", "api", "crm", "gis", "iot", "llm", "ml", "pwa", "ui", "ux"}:
-            words.append(lower.upper())
-            continue
-        words.append(word[:1].upper() + word[1:])
+        words.append(_title_label_word(word))
     return " ".join(words).strip()
+
+
+def _title_label_word(value: str) -> str:
+    word = value.strip()
+    if not word:
+        return ""
+    suffix = ""
+    while word and word[-1] in ",.;:!?":
+        suffix = word[-1] + suffix
+        word = word[:-1]
+    lower = word.casefold()
+    if lower in _TITLE_ACRONYMS:
+        return lower.upper() + suffix
+    if _should_split_human_hyphen_label(word):
+        return " ".join(_title_label_word(part) for part in word.split("-") if part) + suffix
+    return word[:1].upper() + word[1:] + suffix
+
+
+def _should_split_human_hyphen_label(value: str) -> bool:
+    if "-" not in value or "/" in value:
+        return False
+    parts = [part for part in value.split("-") if part]
+    if len(parts) < 2 or len(parts) != len(value.split("-")):
+        return False
+    lowered = [part.casefold() for part in parts]
+    if any(part in _TITLE_CONNECTOR_WORDS for part in lowered):
+        return False
+    if lowered[0] in _TITLE_HYPHEN_MODIFIERS:
+        return False
+    if any(part.endswith(("ed", "ing")) for part in lowered[1:]):
+        return False
+    return all(re.fullmatch(r"[A-Za-z0-9]+(?:'[A-Za-z0-9]+)?", part) for part in parts)
 
 
 def join_items(items: list[str] | None, *, limit: int = 4) -> str:

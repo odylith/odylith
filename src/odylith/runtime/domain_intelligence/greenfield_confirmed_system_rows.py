@@ -21,60 +21,15 @@ _GENERIC_SYSTEM_NAME_KEYS = {
     "evidence review",
 }
 
-_SYSTEM_NAME_NOUNS = {
-    "adapter",
-    "adapters",
-    "api",
-    "apis",
-    "client",
-    "clients",
-    "console",
-    "consoles",
-    "controller",
-    "controllers",
-    "coordinator",
-    "coordinators",
-    "dashboard",
-    "dashboards",
-    "engine",
-    "engines",
-    "flow",
-    "flows",
-    "gateway",
-    "gateways",
-    "harness",
-    "harnesses",
-    "integration",
-    "integrations",
-    "ledger",
-    "ledgers",
-    "manager",
-    "managers",
-    "module",
-    "modules",
-    "pipeline",
-    "pipelines",
-    "queue",
-    "queues",
-    "record",
-    "records",
-    "recorder",
-    "recorders",
-    "screen",
-    "screens",
-    "service",
-    "services",
-    "store",
-    "stores",
-    "surface",
-    "surfaces",
-    "tracker",
-    "trackers",
-    "view",
-    "views",
-    "workflow",
-    "workflows",
-}
+_SYSTEM_NAME_NOUNS = frozenset(
+    """
+    adapter adapters api apis client clients console consoles controller controllers coordinator coordinators
+    dashboard dashboards engine engines flow flows gateway gateways harness harnesses integration integrations
+    libraries library ledger ledgers manager managers module modules nudge nudges pipeline pipelines queue queues
+    record records recorder recorders reminder reminders screen screens service services store stores surface surfaces
+    tracker trackers view views workflow workflows
+    """.split()
+)
 
 def confirmed_system_name(value: str) -> str:
     cleaned = _clean(value)
@@ -108,14 +63,22 @@ def confirmed_system_description(value: str) -> str:
             return _normalize_system_description(_concise_system_description(confirmed_system_name(head), context_text=""))
         return _normalize_system_description(body)
     _name, description = _split_system_action_clause(cleaned)
-    if not description and _descriptor_parenthetical(cleaned):
-        return _normalize_system_description(_concise_system_description(confirmed_system_name(cleaned), context_text=""))
+    descriptor = _descriptor_parenthetical_text(cleaned)
+    if not description and descriptor:
+        return _normalize_system_description(
+            _descriptor_system_description(confirmed_system_name(cleaned), descriptor)
+        )
     return _normalize_system_description(description or cleaned)
 
 
-def _descriptor_parenthetical(value: str) -> bool:
+def _descriptor_parenthetical_text(value: str) -> str:
     match = re.search(r"\(([^)]{3,160})\)", _clean(value))
-    return bool(match and ("," in match.group(1) or _word_count(match.group(1)) > 4))
+    if not match:
+        return ""
+    body = _clean(match.group(1))
+    if "," in body or _word_count(body) > 4:
+        return body
+    return ""
 
 
 def _flatten_parenthetical_label(value: str) -> str:
@@ -169,6 +132,10 @@ def preferred_internal_rows(rows: list[str], component_rows: list[str]) -> list[
 
 def expand_internal_system_rows(rows: list[str], *, context_text: str = "") -> list[str]:
     cleaned = [_clean(row) for row in rows if _clean(row)]
+    if len(cleaned) == 1:
+        descriptor_row = _descriptor_system_row(cleaned[0], context_text=context_text)
+        if descriptor_row:
+            return [descriptor_row]
     if len(cleaned) == 1 and _explicit_system_row(cleaned[0]):
         return [_system_sentence_row(cleaned[0], context_text=context_text) or cleaned[0]]
     sentence_rows = _system_sentence_rows(" ".join(cleaned), context_text=context_text)
@@ -177,6 +144,10 @@ def expand_internal_system_rows(rows: list[str], *, context_text: str = "") -> l
     if len(cleaned) != 1:
         expanded: list[str] = []
         for row in cleaned:
+            descriptor_row = _descriptor_system_row(row, context_text=context_text)
+            if descriptor_row:
+                expanded.append(descriptor_row)
+                continue
             expanded.append(
                 _system_sentence_row(row, context_text=context_text)
                 or _concise_system_row(row, context_text=context_text)
@@ -186,6 +157,9 @@ def expand_internal_system_rows(rows: list[str], *, context_text: str = "") -> l
     paragraph = cleaned[0]
     candidates = _extract_internal_system_candidates(paragraph)
     if len(candidates) < 2:
+        system_name, description = _split_system_action_clause(paragraph)
+        if description:
+            return [_format_system_row(system_name, description, context_text=context_text)]
         return cleaned
     rationale = _internal_system_rationale(paragraph)
     expanded: list[str] = []
@@ -286,6 +260,9 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
     text = _clean(value)
     if not text:
         return "", ""
+    purpose = _split_system_purpose_clause(text)
+    if purpose[0] or purpose[1]:
+        return purpose
     split_pattern = re.compile(
         r"\s+(?=(?:owned\s+by|"
         r"captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
@@ -300,8 +277,26 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
         head = text[: match.start()].strip(" .")
         tail = text[match.start() :].strip(" .")
         if _system_name_head_is_plausible(head) and _word_count(tail) >= 2:
-            return head, tail
-    return text, ""
+            return _clean_system_name_head(head), tail
+    return _clean_system_name_head(text), ""
+
+
+def _split_system_purpose_clause(value: str) -> tuple[str, str]:
+    text = _clean(value)
+    match = re.match(r"(?P<head>.+?)\s+to\s+(?P<purpose>[a-z][A-Za-z0-9 ',/&-]{3,120})$", text, flags=re.IGNORECASE)
+    if not match:
+        return "", ""
+    head = _clean(match.group("head")).strip(" .")
+    purpose = _clean(match.group("purpose")).strip(" .")
+    if not _system_name_head_is_plausible(head) or _word_count(purpose) < 3:
+        return "", ""
+    return _clean_system_name_head(head), f"helps {purpose}"
+
+
+def _clean_system_name_head(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(r"\s*/\s*", " and ", text)
+    return _clean(text)
 
 
 def _system_name_head_is_plausible(value: str) -> bool:
@@ -310,7 +305,7 @@ def _system_name_head_is_plausible(value: str) -> bool:
         return False
     return bool(
         re.search(
-            r"\b(adapter|application|console|dashboard|engine|flow|ledger|log|portal|queue|record|registry|service|store|surface|tracker|trail|view|workspace)\b",
+            r"\b(adapter|application|console|dashboard|engine|flow|ledger|library|log|nudge|portal|queue|record|registry|reminder|service|store|surface|tracker|trail|view|workspace)\b",
             head,
             flags=re.IGNORECASE,
         )
@@ -447,6 +442,38 @@ def _extract_internal_system_candidates(paragraph: str) -> list[str]:
             if normalized.casefold() not in {value.casefold() for value in candidates}:
                 candidates.append(normalized)
     return candidates[:8]
+
+
+def _descriptor_system_row(value: str, *, context_text: str = "") -> str:
+    descriptor = _descriptor_parenthetical_text(value)
+    if not descriptor:
+        return ""
+    name = confirmed_system_name(value)
+    if not _usable_internal_system_candidate(name):
+        return ""
+    return _format_system_row(
+        name,
+        _descriptor_system_description(name, descriptor),
+        context_text=context_text,
+    )
+
+
+def _descriptor_system_description(name: str, descriptor: str) -> str:
+    subject = _readable_descriptor_list(descriptor)
+    name_text = _clean(name).casefold()
+    if re.search(r"\b(?:view|surface|dashboard|interface|screen|portal)\b", name_text):
+        return f"presents {subject} while keeping source facts and blockers clear"
+    if re.search(r"\b(?:library|store|registry|ledger|log|record|tracker)\b", name_text):
+        return f"keeps {subject} with required inputs, blockers, and proof evidence clear"
+    return f"covers {subject} while keeping required inputs, blockers, and proof evidence clear"
+
+
+def _readable_descriptor_list(value: str) -> str:
+    text = _clean(value).strip(" .")
+    parts = [_clean(part).strip(" .") for part in text.split(",") if _clean(part).strip(" .")]
+    if len(parts) >= 2:
+        return ", ".join(parts[:-1]) + f" and {parts[-1]}"
+    return text
 
 
 def _row_from_mapping(value: Mapping[str, Any]) -> str:

@@ -10,15 +10,25 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import action_chain_fragment as _action_chain_fragment
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import clean_first_path_text as _clean
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import clean_visible_result_phrase as _clean_visible_result_phrase
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import is_trivial_start as _is_trivial_start
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import leading_subject_prefix as _leading_subject_prefix
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import looks_like_visible_result as _looks_like_visible_result
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import visible_action_clause as _visible_action_clause
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import visible_result_object as _visible_result_object
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment as _action_chain_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import clean_first_path_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    clean_visible_result_phrase as _clean_visible_result_phrase,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import is_trivial_start as _is_trivial_start
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    leading_subject_prefix as _leading_subject_prefix,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    looks_like_visible_result as _looks_like_visible_result,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    visible_action_clause as _visible_action_clause,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    visible_result_object as _visible_result_object,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 

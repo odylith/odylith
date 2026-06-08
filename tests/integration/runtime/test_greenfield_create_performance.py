@@ -59,6 +59,40 @@ The first proof is one home completing one daily loop: ingest telemetry and weat
 - Reject: stop without creating project records.
 """
 
+PATTERN_CONFIRMED_INTENT_TEXT = """Pattern Relief Notebook
+
+## Product story
+A person tracking recurring discomfort wants to understand which self-care actions appear to help over time. The product turns scattered daily notes into a small personal feedback loop: record how the day felt, record what action was tried, and review the pattern before deciding what to try next.
+
+## State object
+The central thing the product tracks is a person's comfort timeline: a sequence of dated entries, each holding a rating, contributing factors, and the self-care actions tried. Around that sit saved routines and derived trends that connect actions to outcomes.
+
+## First complete path
+A new user records their first entry — rates today's status, taps the factors that applied, and logs one action they tried. The next day the user logs another entry. After several entries, the app builds a simple trend over time. The app then highlights which logged actions line up with better days. The user reviews that trend and sees the first signal connecting an action to better days.
+
+## Human actors
+- Person managing their own discomfort (primary user, self-tracking)
+- Optionally, a coach or clinician the person shares a summary with (read-only, later)
+
+## External systems
+- None required for the first complete path
+
+## Internal product systems
+- Entry logging and daily check-in
+- Routine library (saved activities the user can attach to an entry)
+- Trend and correlation view (pattern over time, action-to-outcome signal)
+- Reminder/streak nudge to sustain the daily habit
+
+## Critical assumptions
+- Single-user, self-reported data; no diagnosis is claimed.
+
+## Ambiguities
+- Platform: native mobile, web app, or both.
+
+## Proof boundary
+The first version is proven when a user can log entries over several days and the app renders an honest trend plus an action-to-outcome signal from their own data. External integrations, sharing, and reminders are outside the first proof bar.
+"""
+
 
 def test_greenfield_create_confirm_full_refresh_stays_under_thirty_seconds(tmp_path, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
@@ -149,3 +183,64 @@ def test_solar_greenfield_create_refreshes_semantic_model_and_stays_under_thirty
     )
     assert "visible outcome from" not in written_payload
     assert "control actions to battery" not in written_payload
+
+
+def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thirty_seconds(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(PATTERN_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a personal pattern tracker",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    elapsed = time.perf_counter() - started
+    payload = json.loads(capsys.readouterr().out)
+    rendered_payload = json.dumps(payload)
+    written_payload = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (
+            tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json",
+            tmp_path / "odylith/runtime/source/accepted-project.v1.json",
+            tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json",
+        )
+    )
+
+    assert rc == 0
+    assert elapsed < 30.0
+    assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+    assert payload["dashboard_refresh"]["status"] == "passed"
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) == 4
+    assert len(payload["diagrams"]) == 6
+    for banned in (
+        "Central Thing the Product",
+        "Pattern Relief User",
+        "Trend and Correlation View (pattern Over",
+        "the optionally",
+        "uses the product to central thing",
+        "uses the product to person's",
+        "after several entries, the app builds",
+        "Record Their First",
+        "record-their-first",
+        "Reminder and Streak Nudge to Sustain",
+        "reminder-and-streak-nudge-to-sustain",
+    ):
+        assert banned not in rendered_payload
+        assert banned not in written_payload
+    assert any(row.get("title") == "Let Person Managing Discomfort Record First Entry" for row in payload["backlog"])
+    assert any(row.get("label") == "Reminder and Streak Nudge Service" for row in payload["components"])

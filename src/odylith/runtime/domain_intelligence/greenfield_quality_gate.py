@@ -46,6 +46,7 @@ _STALE_GENERIC_TERMS: tuple[str, ...] = (
     "Operator Workspace",
     "Product Model",
     "Evidence Harness",
+    "Central Thing the Product",
 )
 
 _GENERIC_ACTOR_LABELS: tuple[str, ...] = (

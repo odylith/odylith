@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
@@ -25,6 +26,7 @@ from odylith.runtime.governance.component_spec_narrative import build_narrative_
 ROOT = Path(__file__).resolve().parents[3]
 FIRST_PATH_SEMANTICS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py"
 FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py"
+FIRST_PATH_FRAGMENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py"
 FIRST_PATH_TYPES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py"
 DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
 GREENFIELD_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_text.py"
@@ -42,10 +44,13 @@ CONFIRMED_DIAGRAM_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/gr
 def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     parser_source = FIRST_PATH_SEMANTICS_PATH.read_text(encoding="utf-8")
     clause_source = FIRST_PATH_CLAUSES_PATH.read_text(encoding="utf-8")
+    fragment_source = FIRST_PATH_FRAGMENTS_PATH.read_text(encoding="utf-8")
     type_source = FIRST_PATH_TYPES_PATH.read_text(encoding="utf-8")
     index_source = DOMAIN_TERM_INDEX_PATH.read_text(encoding="utf-8")
 
     assert len(parser_source.splitlines()) < 800
+    assert len(clause_source.splitlines()) < 800
+    assert len(fragment_source.splitlines()) < 800
     for moved in (
         "def first_path_clauses",
         "def first_path_action_phrase",
@@ -54,21 +59,30 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
         "def _first_path_capability_text",
         "def _first_path_action_text",
         "def _first_path_outcome_text",
+    ):
+        assert moved not in parser_source
+        assert moved in clause_source
+    for moved in (
         "def clean_visible_result_phrase",
         "def visible_result_object",
         "def action_chain_fragment",
+        "def clean_first_path_text",
     ):
         assert moved not in parser_source
+        assert moved not in clause_source
+        assert moved in fragment_source
     assert "def first_path_model" in parser_source
     assert "greenfield_domain_term_index import label_terms" in parser_source
     assert "len(re.findall" not in parser_source
     assert "def first_path_clauses" in clause_source
-    assert "def action_chain_fragment" in clause_source
-    assert "def clean_visible_result_phrase" in clause_source
-    assert "greenfield_domain_term_index import label_terms" in clause_source
-    assert "greenfield_domain_term_index import ordered_terms" in clause_source
+    assert "greenfield_first_path_fragments import action_chain_fragment" in clause_source
+    assert "greenfield_domain_term_index import label_terms" not in clause_source
+    assert "greenfield_domain_term_index import ordered_terms" not in clause_source
     assert "normalize_domain_token" not in clause_source
     assert "len(re.findall" not in clause_source
+    assert "greenfield_domain_term_index import label_terms" in fragment_source
+    assert "greenfield_domain_term_index import ordered_terms" in fragment_source
+    assert "len(re.findall" not in fragment_source
     assert "class FirstPathModel" in type_source
     assert "class FirstPathClauses" in type_source
     assert "def label_terms" in index_source
@@ -129,7 +143,7 @@ def test_cleaned_text_dedupe_stays_in_text_owner() -> None:
 def test_visible_result_language_normalization_stays_in_text_owner() -> None:
     text_source = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
     callers = [
-        FIRST_PATH_CLAUSES_PATH,
+        FIRST_PATH_FRAGMENTS_PATH,
         SEQUENCE_STEPS_PATH,
         COMPONENT_TERMS_PATH,
         CONFIRMED_SYSTEM_ROWS_PATH,
@@ -262,7 +276,12 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
         "The AI reviewer records a decision. The product displays the decision queue. "
         "A reviewer approves final status."
     )
+    dash_explainer_path = (
+        "A new user records their first entry — rates today's status, taps the factors that applied, "
+        "and logs one action they tried. The product shows a trend with the first useful signal."
+    )
     short_actor = first_path_clauses(short_actor_path)
+    dash_explainer = first_path_clauses(dash_explainer_path)
 
     assert request.action_chain == "select a request type and enter amount, constraints and contact details"
     assert request.visible_result == "a decision with reason notes"
@@ -277,6 +296,11 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
     assert short_actor.action_chain == "record a decision"
     assert short_actor.capability_chain == "record a decision and see the decision queue"
     assert "approve final status" not in short_actor.capability_chain
+    assert action_chain_fragment("A new user records their first entry — rates today's status") == "record first entry"
+    assert dash_explainer.action_chain == "record first entry"
+    assert "rates today's status" not in dash_explainer.action_chain
+    assert "their first" not in dash_explainer.capability_chain
+    assert "rates today's status" not in dash_explainer.capability_chain
     assert base_action_clause("logs progress and reviews weekly status") == "log progress and review weekly status"
     assert (
         base_action_clause("requests a slot, receives confirmation, and records next steps")
