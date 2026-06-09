@@ -446,7 +446,7 @@ def _scoped_question_lines(values: Sequence[str], *, focus: str) -> list[str]:
             continue
         question, impact = _split_question_impact(text)
         if impact:
-            rows.append(f"Question: {question.rstrip(' ?.')} Impact: {impact.rstrip(' .')}.")
+            rows.append(_question_impact_line(question, impact, prefix=True))
         else:
             rows.append(f"Question: {text}")
     return rows
@@ -532,11 +532,22 @@ def _question_lines(value: Any) -> list[str]:
             if isinstance(item, Mapping):
                 question = _clean(item.get("question")) or _clean(item.get("prompt"))
                 impact = _clean(item.get("impact"))
-                lines.append(f"{question} Impact: {impact}" if question and impact else question)
+                lines.append(_question_impact_line(question, impact, prefix=False) if question and impact else question)
             else:
                 lines.extend(_section_items(item))
         return _unique([line for line in lines if line])
     return _section_items(value)
+
+
+def _question_impact_line(question: str, impact: str, *, prefix: bool) -> str:
+    question_text = _clean(question).strip()
+    impact_text = _clean(impact).strip()
+    if question_text and question_text[-1:] not in {".", "?", "!"}:
+        question_text = f"{question_text}."
+    if impact_text:
+        impact_text = impact_text.rstrip(" .")
+    head = f"Question: {question_text}" if prefix else question_text
+    return f"{head} Impact: {impact_text}." if impact_text else head
 
 
 def _milestone_lines(value: Any) -> list[str]:

@@ -232,10 +232,18 @@ def _preview_question_lines(value: Any, *, limit: int) -> list[str]:
     for row in rows[:limit]:
         if isinstance(row, Mapping):
             question = str(row.get("question", "")).strip()
+            impact = str(row.get("impact", "")).strip()
         else:
             question = str(row).strip()
+            impact = ""
         if question:
-            questions.append(_compact_text(question, max_chars=180))
+            question_text = _compact_text(question, max_chars=180)
+            if question_text[-1:] not in {".", "?", "!"}:
+                question_text = f"{question_text}."
+            line = f"Question: {question_text}"
+            if impact:
+                line += f" Impact: {_compact_text(impact.rstrip(' .'), max_chars=140)}."
+            questions.append(line)
     return questions
 
 
@@ -447,7 +455,7 @@ def _format_governed_proposal_text(
     for item in proposal.get("open_questions", []):
         rendered = _render_evidence_item(item, "question")
         if rendered:
-            lines.append(f"- {rendered}")
+            lines.append(f"- Question: {rendered}")
     lines.extend(["", "Confirmed create"])
     lines.append("No files changed. Confirmed write path:")
     request_commands = request_context.get("apply_commands", [])

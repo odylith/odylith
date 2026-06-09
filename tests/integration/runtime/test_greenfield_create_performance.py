@@ -323,6 +323,59 @@ A researcher opens the lab, defines a new E91 run (source, two stations, bases, 
 The product is proven when a researcher can configure an E91 run, launch it on the real rig, watch coincidences and the CHSH value stream live, and end with a saved run that reports the Bell-inequality verdict (secure link or not), the QBER, and the established key — then find that run in history and compare it to another. Formal security certification and hardware safety-certification of the rig are beyond this first proof.
 """
 
+SIGNAL_PROCESSING_CONFIRMED_INTENT_TEXT = """# Realtime Signal Processing Pipeline
+
+## Product story
+
+A system that ingests continuous streams of sensor or device signals, processes them as they arrive, and emits derived results - filtered waveforms, detected events, feature vectors - with low and predictable latency. The value is acting on signals while they still matter: catching an anomaly, triggering an alert, or feeding a downstream model the instant the data lands, instead of in a nightly batch. Operators configure what counts as a signal of interest and watch the pipeline stay healthy under continuous load.
+
+## State object
+
+A live processing pipeline holding ordered streams of signal samples, each moving through a chain of stages (ingest, transform, detect, emit). The durable state is the stage configuration, the per-stream processing offset, and the emitted results; the in-flight state is the bounded window of samples currently being processed.
+
+## First complete path
+
+A signal source connects and pushes a stream of samples; the pipeline ingests them, applies a configured transform (for example a filter or FFT window), evaluates a detection rule, and emits a result event to a sink - all within a bounded latency target, with the stream offset advanced so processing is resumable.
+
+## Human actors
+
+- Pipeline operator - configures stages, thresholds, and sinks; monitors health and latency.
+- Integration engineer - connects signal sources and downstream consumers to the pipeline.
+- Analyst or on-call responder - consumes emitted events and acts on detected conditions.
+
+## External systems
+
+- Signal sources (sensors, devices, upstream message brokers) producing sample streams.
+- Result sinks (alerting, dashboards, data stores, downstream models) consuming emitted events.
+- Time source / clock for latency measurement and windowing.
+
+## Internal product systems
+
+- Ingest layer - accepts streams, normalizes samples, tracks per-stream offsets.
+- Processing core - staged transform and detection chain operating over bounded windows.
+- Emit layer - delivers results to configured sinks with delivery guarantees.
+- Control plane - stage configuration, thresholds, and pipeline lifecycle.
+- Observability - latency, throughput, and backpressure health signals.
+
+## Critical assumptions
+
+- Streams are ordered or can be ordered per source, and bounded-window processing is acceptable rather than full-history reprocessing.
+- A latency target exists and matters more than maximizing batch throughput.
+- Signal types and transforms are configurable rather than hard-coded to one domain.
+- Single-tenant operation to start; multi-tenant isolation is out of scope for the first path.
+
+## Ambiguities
+
+- Domain: audio, biomedical, RF/telemetry, industrial/IoT, or general-purpose? This shapes the default transforms.
+- Latency class: sub-millisecond hard-realtime, or soft-realtime in the tens-to-hundreds of milliseconds?
+- Delivery semantics: at-least-once, exactly-once, or best-effort on the emit side?
+- Scale: one stream or thousands concurrent? This drives the backpressure and partitioning design.
+
+## Proof boundary
+
+The first path is proven when a sample stream flows end to end - ingest, transform, detect, emit - under a stated latency target with a resumable offset, demonstrated on at least one source-to-sink configuration. Multi-source scale, exactly-once delivery, and domain-specific transform libraries are beyond this first boundary.
+"""
+
 GLP1_CONFIRMED_INTENT_TEXT = """# GLP-1 Companion - Medication Tracking App
 
 ## Product story
@@ -807,6 +860,73 @@ def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_sco
         "visible-result event",
     ):
         assert banned not in rendered_payload
+        assert banned not in generated_payload
+        assert banned not in visible_surface_payload
+
+
+def test_greenfield_create_completes_signal_processing_pipeline_without_sentence_fragment_slop_under_sixty_seconds(
+    tmp_path,
+    capsys,
+) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(SIGNAL_PROCESSING_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a real-time signal processing pipeline",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    elapsed = time.perf_counter() - started
+    payload = json.loads(capsys.readouterr().out)
+    generated_payload = _generated_source_payload(tmp_path)
+    visible_surface_payload = _generated_visible_surface_payload(tmp_path)
+    accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
+    proposal = accepted["proposal"]
+
+    assert rc == 0
+    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+    assert payload["dashboard_refresh"]["status"] == "passed"
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) == 5
+    assert len(payload["diagrams"]) == 6
+    assert proposal["backlog"][0]["product_view"] == (
+        "Ingest Layer Service is complete when the user can connect and push a stream of samples, "
+        "see a result event to a sink, and recover cleanly from a bad or incomplete attempt."
+    )
+    for required_file in (
+        "odylith/radar/radar.html",
+        "odylith/registry/registry.html",
+        "odylith/atlas/atlas.html",
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+    ):
+        assert (tmp_path / required_file).is_file()
+    assert len(list((tmp_path / "odylith/atlas/source").glob("*.svg"))) == len(payload["diagrams"])
+    assert len(list((tmp_path / "odylith/atlas/source").glob("*.png"))) == len(payload["diagrams"])
+    for banned in (
+        "understand Pipeline",
+        "connect and pushes",
+        "Question Question",
+        "This shapes the default transforms Impact:",
+        "sentence fragment leaked after understand",
+        "greenfield proposal confirmed completion failed",
+    ):
         assert banned not in generated_payload
         assert banned not in visible_surface_payload
 

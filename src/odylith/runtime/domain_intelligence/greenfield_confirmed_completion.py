@@ -560,7 +560,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
         changed |= _repair_bad_scalar(
             row,
             "product_view",
-            fallback=f"{title} is useful when users can {action}, {completion_text.outcome_action_phrase(outcome)}, and recover from bad or incomplete input.",
+            fallback=f"{title} is complete when users can {action}, {completion_text.outcome_action_phrase(outcome)}, and recover from bad or incomplete input.",
         )
         changed |= _repair_bad_scalar(
             row,

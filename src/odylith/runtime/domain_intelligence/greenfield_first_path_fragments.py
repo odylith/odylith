@@ -35,12 +35,12 @@ MATERIAL_ACTION_RE = re.compile(
     r"\b(?:"
     r"accept|accepts|add|adds|advance|advances|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
     r"book|books|check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|decide|decides|"
-    r"click|clicks|compute|computes|create|creates|define|defines|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|end|ends|enter|enters|export|exports|fetch|fetches|finalize|finalizes|find|finds|forecast|forecasts|"
-    r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|make|makes|mark|marks|notify|notifies|open|opens|persist|persists|pick|picks|play|plays|"
-    r"optimize|optimizes|preserve|preserves|produce|produces|prompt|prompts|provide|provides|publish|publishes|pull|pulls|rank|ranks|rate|rates|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
+    r"click|clicks|compute|computes|create|creates|define|defines|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|emit|emits|end|ends|enter|enters|export|exports|fetch|fetches|finalize|finalizes|find|finds|forecast|forecasts|"
+    r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|make|makes|mark|marks|monitor|monitors|notify|notifies|open|opens|persist|persists|pick|picks|play|plays|"
+    r"optimize|optimizes|preserve|preserves|produce|produces|prompt|prompts|provide|provides|publish|publishes|pull|pulls|push|pushes|rank|ranks|rate|rates|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
     r"report|reports|return|returns|route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
     r"show|shows|stop|stops|store|stores|submit|submits|surface|surfaces|sync|syncs|tap|taps|track|tracks|update|updates|"
-    r"validate|validates|view|views|watch|watches"
+    r"transform|transforms|validate|validates|view|views|watch|watches"
     r")\b",
     re.IGNORECASE,
 )
@@ -65,11 +65,11 @@ def is_system_generated_action(value: str) -> bool:
     if not text:
         return False
     system_verb = (
-        r"advances?|asks?|calculates?|checks?|computes?|derives?|displays?|evaluates?|generates?|marks?|notifies?|presents?|preserves?|records?|renders?|returns?|routes?|runs?|"
-        r"persists?|pulls?|saves?|scores?|shows?|stores?|updates?|validates?"
+        r"advances?|applies?|asks?|calculates?|checks?|computes?|derives?|displays?|emits?|evaluates?|generates?|ingests?|marks?|monitors?|normalizes?|notifies?|presents?|preserves?|processes?|records?|renders?|returns?|routes?|runs?|"
+        r"persists?|pulls?|pushes?|saves?|scores?|shows?|stores?|transforms?|updates?|validates?"
     )
     system_subject = (
-        r"product|system|app|application|service|platform|tool|workspace|engine|calculator|dashboard|view|model"
+        r"product|system|app|application|service|platform|tool|workspace|engine|pipeline|calculator|dashboard|view|model"
     )
     if re.match(rf"^(?:the\s+)?(?:{system_subject})\s+(?:{system_verb})\b", text, flags=re.IGNORECASE):
         return True
@@ -80,12 +80,12 @@ def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
     return bool(
         re.search(
-            r"\b(?:compare|compares|decide|decides|display|displays|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
+            r"\b(?:compare|compares|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
             text,
             re.IGNORECASE,
         )
         or re.search(
-            r"\b(?:available|card|dashboard|indicator|readout|recommendation|result|saved|summary|timeline|trend|view|viewable)\b",
+            r"\b(?:available|card|dashboard|event|indicator|readout|recommendation|result|saved|summary|timeline|trend|view|viewable)\b",
             text,
             re.IGNORECASE,
         )
@@ -237,13 +237,14 @@ def visible_result_object(value: str) -> str:
     patterns = (
         r":\s*(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
-        r"\b(?:compares?|decides?|displays?|finds?|highlights?|presents?|produces?|reports?|renders?|returns?|saves?|sees?|shows?|views?|receives?|gets?|reads?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"\b(?:compares?|decides?|displays?|emits?|finds?|highlights?|presents?|produces?|reports?|renders?|returns?|saves?|sees?|shows?|views?|receives?|gets?|reads?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
         if match:
             result = match.group("object")
             result = re.split(r"(?<=[.!?])\s+", result, maxsplit=1)[0]
+            result = re.split(r"\s+[–—-]\s+(?:all|under|while|with|within)\b", result, maxsplit=1, flags=re.IGNORECASE)[0]
             result = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", result, flags=re.IGNORECASE)
             result = re.sub(r"^(?:it|them)\s+(?=(?:on|in|with|as)\b)", "the result ", result, flags=re.IGNORECASE)
             result = _drop_result_recipient(result)
@@ -275,6 +276,13 @@ def _drop_result_recipient(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     if not text:
         return ""
+    if re.match(
+        r"^(?:a|an|the)\s+(?:[A-Za-z][A-Za-z0-9'-]*\s+){0,3}"
+        r"(?:event|outcome|readout|record|report|result|summary|view)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return text
     words = text.split()
     for index, word in enumerate(words[:5]):
         if index > 0 and re.match(r"^[A-Za-z][A-Za-z0-9'-]*'s$", word):
@@ -321,6 +329,8 @@ _RESULT_ACTION_NOMINALS = {
     "confirms": "confirmed",
     "export": "exported",
     "exports": "exported",
+    "emit": "emitted",
+    "emits": "emitted",
     "preserve": "preserved",
     "preserves": "preserved",
     "publish": "published",

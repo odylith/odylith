@@ -99,6 +99,8 @@ def sentence_needs_repair(value: Any) -> bool:
         flags=re.IGNORECASE,
     ):
         return True
+    if re.search(r"\bunderstand\s+[A-Z]", text):
+        return True
     if re.search(r"\bneed\s+[A-Z]?[A-Za-z0-9][^.;]{0,120}\s+to\s+turn\b", text):
         return True
     if re.search(

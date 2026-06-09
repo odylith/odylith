@@ -11,7 +11,10 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_product_view
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
@@ -190,6 +193,37 @@ def test_outcome_action_phrase_does_not_wrap_action_outcomes_as_visible_objects(
     assert outcome_action_phrase("a simple recap showing what the child explored") == (
         "see a simple recap showing what the child explored"
     )
+
+
+def test_signal_pipeline_first_path_phrases_do_not_leak_modal_or_understand_fragments() -> None:
+    proposal = {
+        "intent": {
+            "first_path": (
+                "A signal source connects and pushes a stream of samples; the pipeline ingests them, "
+                "applies a configured transform, evaluates a detection rule, and emits a result event "
+                "to a sink - all within a bounded latency target."
+            ),
+            "proof_boundary": (
+                "The first path is proven when a sample stream flows end to end - ingest, transform, "
+                "detect, emit - under a stated latency target with a resumable offset."
+            ),
+        }
+    }
+
+    action = action_phrase(proposal)
+    outcome = outcome_phrase(proposal)
+    product_view = workstream_product_view(
+        label="Realtime Signal Processing Pipeline",
+        action=action,
+        outcome=outcome,
+    )
+
+    assert action == "connect and push a stream of samples"
+    assert outcome == "a result event to a sink"
+    assert "understand Pipeline" not in product_view
+    assert "connect and pushes" not in product_view
+    assert "see a result event to a sink" in product_view
+    assert generated_semantic_slop_issues({"product_view": product_view}) == []
 
 
 def test_completed_internal_system_rows_strip_relative_action_clause_from_label() -> None:

@@ -406,6 +406,7 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
         first_path.get("capability"),
         first_path.get("visible_result"),
         ontology.get("proof_boundary"),
+        *_open_question_repetition_values(proposal.get("open_questions")),
         *[
             f"{component.get('component_id', '')} {component.get('label', '')}"
             for component in components
@@ -419,6 +420,24 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
             if key:
                 keys.add(key)
     return keys
+
+
+def _open_question_repetition_values(value: Any) -> list[str]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return text_values(value)
+    rows: list[str] = []
+    for item in value:
+        if isinstance(item, Mapping):
+            question = normalize_string(item.get("question") or item.get("prompt"))
+            impact = normalize_string(item.get("impact"))
+            if question and impact:
+                question_text = question if question[-1:] in {".", "?", "!"} else f"{question}."
+                rows.append(f"{question_text} Impact: {impact.rstrip(' .')}.")
+            elif question:
+                rows.append(question)
+            continue
+        rows.extend(text_values(item))
+    return rows
 
 
 def _actor_label_summary(values: list[str]) -> str:

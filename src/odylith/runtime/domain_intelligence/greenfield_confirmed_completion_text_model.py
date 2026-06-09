@@ -36,6 +36,7 @@ _VISIBLE_RESULT_OBJECT_HINTS = {
     "card",
     "decision",
     "evidence",
+    "event",
     "note",
     "notice",
     "option",
@@ -57,6 +58,7 @@ _VISIBLE_SEE_RESULT_HINTS = {
     "consequence",
     "date",
     "deadline",
+    "event",
     "history",
     "notice",
     "outcome",
@@ -189,8 +191,9 @@ def workstream_opportunity(*, label: str, action: str, outcome: str) -> str:
 
 
 def workstream_product_view(*, label: str, action: str, outcome: str) -> str:
+    outcome_action = outcome_action_phrase(outcome)
     return _sentence(
-        f"{label} is complete when the user can {action}, understand {outcome}, and recover cleanly from a bad or incomplete attempt.",
+        f"{label} is complete when the user can {action}, {outcome_action}, and recover cleanly from a bad or incomplete attempt.",
         limit=520,
     )
 
