@@ -10,6 +10,20 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governan
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
 
 
+def _generated_source_payload(root) -> str:
+    return "\n".join(
+        path.read_text(encoding="utf-8")
+        for source_root in (
+            root / "odylith/runtime/source",
+            root / "odylith/radar/source",
+            root / "odylith/registry/source",
+            root / "odylith/atlas/source",
+        )
+        for path in source_root.rglob("*")
+        if path.is_file() and path.suffix in {".json", ".jsonl", ".md", ".mmd"}
+    )
+
+
 SOLAR_CONFIRMED_INTENT_TEXT = """SunLedger
 
 ## Product story
@@ -69,7 +83,7 @@ A person tracking recurring discomfort wants to understand which self-care actio
 The central thing the product tracks is a person's comfort timeline: a sequence of dated entries, each holding a rating, contributing factors, and the self-care actions tried. Around that sit saved routines and derived trends that connect actions to outcomes.
 
 ## First complete path
-A new user records their first entry — rates today's status, taps the factors that applied, and logs one action they tried. The next day the user logs another entry. After several entries, the app builds a simple trend over time. The app then highlights which logged actions line up with better days. The user reviews that trend and sees the first signal connecting an action to better days.
+A new user records their first entry — rates today's status, taps the factors that applied, and logs one action they tried. The next day they log again. After a handful of entries, the app shows a simple trend: status over time, and which logged actions line up with better days. That loop — log, repeat, see the pattern — is the smallest version of the whole product working end to end.
 
 ## Human actors
 - Person managing their own discomfort (primary user, self-tracking)
@@ -260,7 +274,7 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
             tmp_path / "odylith/runtime/source/accepted-project.v1.json",
             tmp_path / "odylith/atlas/source/catalog/diagrams.v1.json",
         )
-    )
+    ) + "\n" + _generated_source_payload(tmp_path)
 
     assert rc == 0
     assert elapsed < 30.0
@@ -278,6 +292,12 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
         "uses the product to central thing",
         "uses the product to person's",
         "after several entries, the app builds",
+        "the pattern — is the smallest version",
+        "smallest version of the whole product",
+        "That loop",
+        "reach the pattern",
+        "Maintains sustain",
+        "helps sustain the daily habit",
         "Record Their First",
         "record-their-first",
         "Reminder and Streak Nudge to Sustain",
@@ -287,6 +307,10 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
         assert banned not in written_payload
     assert any(row.get("title") == "Let Person Managing Discomfort Record First Entry" for row in payload["backlog"])
     assert any(row.get("label") == "Reminder and Streak Nudge Service" for row in payload["components"])
+    visible_actors = payload["validation_gate"]["visible_actors"]
+    assert visible_actors[0]["visible_actor"] == "Person Managing Discomfort"
+    assert visible_actors[1]["visible_actor"] == "Person Managing Discomfort workflow operator"
+    assert "Coach" not in " ".join(row["visible_actor"] for row in visible_actors[:2])
 
 
 def test_multi_actor_greenfield_create_preserves_actor_ownership_and_copy_under_thirty_seconds(tmp_path, capsys) -> None:
@@ -323,17 +347,7 @@ def test_multi_actor_greenfield_create_preserves_actor_ownership_and_copy_under_
     proposal = accepted["proposal"]
     first_path = proposal["semantic_model"]["first_path_contract"]
     rendered_payload = json.dumps(payload)
-    generated_payload = "\n".join(
-        path.read_text(encoding="utf-8")
-        for root in (
-            tmp_path / "odylith/runtime/source",
-            tmp_path / "odylith/radar/source",
-            tmp_path / "odylith/registry/source",
-            tmp_path / "odylith/atlas/source",
-        )
-        for path in root.rglob("*")
-        if path.is_file() and path.suffix in {".json", ".jsonl", ".md", ".mmd"}
-    )
+    generated_payload = _generated_source_payload(tmp_path)
 
     assert first_path["actor"] == "Parent"
     assert first_path["visible_result"] == "a short reflection"
@@ -366,6 +380,74 @@ def test_multi_actor_greenfield_create_preserves_actor_ownership_and_copy_under_
     ):
         assert banned not in rendered_payload
         assert banned not in generated_payload
+
+
+def test_greenfield_create_rerun_replaces_previous_greenfield_workstreams_under_thirty_seconds(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(MULTI_ACTOR_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    first_started = time.perf_counter()
+    first_rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a learner choice practice journal",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    first_elapsed = time.perf_counter() - first_started
+    first_payload = json.loads(capsys.readouterr().out)
+    old_ids = {row["idea_id"] for row in first_payload["backlog"]}
+
+    revised_text = MULTI_ACTOR_CONFIRMED_INTENT_TEXT.replace(
+        "- Learner, a child aged eight to ten",
+        "- Child learner, a kid aged eight to ten",
+    )
+    intent_path.write_text(revised_text, encoding="utf-8")
+    second_started = time.perf_counter()
+    second_rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a learner choice practice journal",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    second_elapsed = time.perf_counter() - second_started
+    second_payload = json.loads(capsys.readouterr().out)
+    new_ids = {row["idea_id"] for row in second_payload["backlog"]}
+
+    assert first_rc == 0
+    assert second_rc == 0
+    assert first_elapsed < 30.0
+    assert second_elapsed < 30.0
+    assert second_payload["validation_gate"]["status"] == "passed"
+    assert old_ids != new_ids
+    assert generated_semantic_slop_issues(second_payload) == []
+    generated_payload = _generated_source_payload(tmp_path)
+    for old_id in old_ids - new_ids:
+        assert old_id not in generated_payload
+    idea_files = list((tmp_path / "odylith/radar/source/ideas").rglob("*.md"))
+    assert len(idea_files) == len(second_payload["backlog"])
+    release_events = (tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl").read_text(encoding="utf-8")
+    for old_id in old_ids - new_ids:
+        assert old_id not in release_events
 
 
 def test_multi_actor_greenfield_create_rerun_is_idempotent_under_thirty_seconds(tmp_path, capsys) -> None:

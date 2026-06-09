@@ -39,6 +39,10 @@ def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
             findings.append(GeneratedCopyFinding("terminal_result_chain", f"{scope} leaked terminal action inside result prose"))
         if _has_awkward_visible_result_action(lowered):
             findings.append(GeneratedCopyFinding("awkward_visible_result_action", f"{scope} leaked awkward visible-result action prose"))
+        if _has_meta_loop_outcome(lowered):
+            findings.append(GeneratedCopyFinding("meta_loop_outcome", f"{scope} leaked meta loop summary as product outcome"))
+        if _has_malformed_component_responsibility(lowered):
+            findings.append(GeneratedCopyFinding("malformed_component_responsibility", f"{scope} leaked malformed component responsibility prose"))
     return unique_text(finding.message for finding in findings)
 
 
@@ -83,6 +87,26 @@ def _has_awkward_visible_result_action(tokens: tuple[str, ...]) -> bool:
     result_words = {"consequence", "outcome", "readout", "reflection", "result", "summary", "view"}
     for index, token in enumerate(tokens[:-1]):
         if token in {"reach", "use"} and any(item in result_words for item in tokens[index + 1 : min(len(tokens), index + 5)]):
+            return True
+    return False
+
+
+def _has_meta_loop_outcome(tokens: tuple[str, ...]) -> bool:
+    for index, token in enumerate(tokens):
+        if token not in {"loop", "path", "journey", "flow", "pattern"}:
+            continue
+        window = tokens[index + 1 : min(len(tokens), index + 16)]
+        if _has_ordered_terms(window, ("smallest", "version", "whole", "product"), max_gap=2):
+            return True
+        if _has_ordered_terms(window, ("working", "end", "to", "end"), max_gap=1):
+            return True
+    return False
+
+
+def _has_malformed_component_responsibility(tokens: tuple[str, ...]) -> bool:
+    malformed_verbs = {"continue", "keep", "maintain", "sustain"}
+    for index, token in enumerate(tokens[:-1]):
+        if token == "maintains" and tokens[index + 1] in malformed_verbs:
             return True
     return False
 

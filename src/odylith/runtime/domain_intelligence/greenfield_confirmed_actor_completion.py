@@ -121,8 +121,8 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
         body = "is represented by lawful source records, evidence, confidence, and privacy limits; the product must not imply private access, endorsement, or guaranteed outcome"
     elif re.search(r"\b(compliance|policy|privacy|legal|risk|safety)\b", label_text):
         body = "reviews access, privacy, policy, risk, and evidence boundaries"
-    elif re.search(r"\b(user|researcher|investor|analyst|operator)\b", label_text):
-        body = f"uses {title} to reach a clear outcome, compare it with their goal, and decide what to do next"
+    elif re.search(r"\b(user|person|people|individual|patient|researcher|investor|analyst|operator)\b", label_text):
+        body = f"uses {title} to complete the first product path, review the result, and decide what to do next"
     elif re.search(r"\b(author|applicant|submitter|requester|customer|client)\b", label_text):
         body = "provides the information the product needs and expects a clear result, explanation, and next step"
     elif re.search(r"\b(editor|manager|chair|coordinator|operator|supervisor|lead|owner|director)\b", label_text):
@@ -160,6 +160,8 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     for source, source_bonus in sources:
         clauses = _path_clauses(source)
         for index, clause in enumerate(clauses):
+            if source_bonus <= 0 and _state_definition_clause(clause):
+                continue
             if not _clause_subject_matches_actor(clause, label=label):
                 continue
             overlap = len(terms & _semantic_terms(clause))
@@ -187,7 +189,19 @@ def _clause_subject_matches_actor(value: str, *, label: str) -> bool:
         return True
     subject_terms = _semantic_terms(subject)
     actor_terms = _actor_path_terms(label)
+    generic_subject = subject_terms & {"person", "user", "participant", "customer", "client"}
+    if generic_subject and re.search(r"\b(person|user|participant|customer|client)\b", label, re.IGNORECASE):
+        return True
     return bool(subject_terms & actor_terms)
+
+
+def _state_definition_clause(value: str) -> bool:
+    text = _clean(value).casefold()
+    return bool(
+        re.search(r"\b(?:central|core|main|primary)\s+(?:thing|object|record|state)\s+the\s+product\s+tracks\b", text)
+        or re.search(r"\b(?:unit\s+of\s+truth|state\s+object|central\s+state)\b", text)
+        or re.search(r"\bthe\s+product\s+(?:tracks|keeps|stores|records)\s+(?:is\s+)?(?:a|an|the)\b", text)
+    )
 
 
 def _actor_path_terms(label: str) -> set[str]:
@@ -218,6 +232,14 @@ def _strip_actor_subject_from_clause(value: str, *, label: str) -> str:
     if label_terms:
         lead = r"(?:a|an|the|one)?\s*(?:" + "|".join(re.escape(term) for term in label_terms) + r")"
         text = re.sub(rf"^{lead}\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
+    if re.search(r"\b(person|user|participant|customer|client)\b", label, re.IGNORECASE):
+        text = re.sub(
+            r"^(?:a|an|the|one)\s+(?:new\s+)?(?:person|user|participant|customer|client)\s+",
+            "",
+            text,
+            count=1,
+            flags=re.IGNORECASE,
+        ).strip(" .")
     text = re.sub(
         r"^(?:signs?|opens?|starts?)\s+(?:in|into|the\s+app|the\s+product|the\s+site|the\s+web\s+app)\b[,.]?\s*",
         "",

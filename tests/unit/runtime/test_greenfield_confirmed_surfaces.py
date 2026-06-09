@@ -186,9 +186,11 @@ def test_purpose_clause_system_row_keeps_purpose_out_of_component_identity() -> 
         internal_systems=rows,
     )
 
-    assert rows == ["Reminder and Streak Nudge — helps sustain the daily habit"]
+    assert rows == ["Reminder and Streak Nudge — supports the daily habit"]
     assert components[0]["label"] == "Reminder and Streak Nudge Service"
     assert components[0]["component_id"] == "reminder-and-streak-nudge"
+    assert "Maintains sustain" not in json.dumps(components)
+    assert "helps sustain" not in json.dumps(components)
     assert "to Sustain" not in components[0]["label"]
 
 

@@ -764,6 +764,73 @@ def _rewrite_active_backlog_section(
     return content
 
 
+def remove_workstreams_from_backlog_index_text(
+    content: str,
+    *,
+    stale_ids: Sequence[str],
+    today: dt.date,
+) -> str:
+    """Remove queued workstream rows and rationale blocks from rendered Radar index text."""
+
+    tokens = {str(value).strip().upper() for value in stale_ids if str(value).strip()}
+    if not tokens:
+        return content
+    lines = str(content or "").splitlines()
+    active_start, active_end = _find_section_bounds(lines, "## Ranked Active Backlog")
+    if active_start == -1:
+        return content
+    row_indexes = _collect_table_row_indexes(lines, section_start=active_start, section_end=active_end)
+    kept_rows: list[list[str]] = []
+    for row_index in row_indexes:
+        cells = _split_table_cells(lines[row_index].strip())
+        if len(cells) != len(backlog_contract._INDEX_COLS):
+            continue
+        if cells[1].strip().upper() in tokens:
+            continue
+        kept_rows.append(cells)
+    for rank, cells in enumerate(kept_rows, start=1):
+        cells[0] = str(rank)
+    if row_indexes:
+        first_row = row_indexes[0]
+        del lines[first_row : row_indexes[-1] + 1]
+        for offset, row in enumerate(kept_rows):
+            lines.insert(first_row + offset, _format_table_row(row))
+
+    rationale_start, rationale_end = _find_section_bounds(lines, "## Reorder Rationale Log")
+    if rationale_start != -1:
+        lines[rationale_start:rationale_end] = _filtered_reorder_rationale_lines(
+            lines[rationale_start:rationale_end],
+            stale_ids=tokens,
+        )
+    filtered = "\n".join(lines)
+    filtered = _update_backlog_last_updated(filtered, today=today)
+    if not filtered.endswith("\n"):
+        filtered += "\n"
+    return filtered
+
+
+def _filtered_reorder_rationale_lines(lines: Sequence[str], *, stale_ids: set[str]) -> list[str]:
+    if not lines:
+        return []
+    result: list[str] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if line.startswith("### "):
+            heading_id = line[4:].split(None, 1)[0].strip().upper()
+            block = [line]
+            index += 1
+            while index < len(lines) and not lines[index].startswith("### "):
+                block.append(lines[index])
+                index += 1
+            if heading_id not in stale_ids:
+                result.extend(block)
+            continue
+        result.append(line)
+        index += 1
+    return result
+
+
 def create_queued_backlog_items(
     *,
     repo_root: Path,

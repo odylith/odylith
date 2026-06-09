@@ -223,7 +223,7 @@ def has_meaningful_system_description(row: str, *, minimum_words: int = 5) -> bo
             r"\b(?:captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
             r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
             r"returns?|returning|routes?|routing|records?|recording|stores?|storing|preserves?|preserving|"
-            r"configures?|configuring|owned\s+by)\b",
+            r"configures?|configuring|supports?|supporting|owned\s+by)\b",
             description,
             re.IGNORECASE,
         )
@@ -290,7 +290,22 @@ def _split_system_purpose_clause(value: str) -> tuple[str, str]:
     purpose = _clean(match.group("purpose")).strip(" .")
     if not _system_name_head_is_plausible(head) or _word_count(purpose) < 3:
         return "", ""
-    return _clean_system_name_head(head), f"helps {purpose}"
+    return _clean_system_name_head(head), f"supports {_purpose_object(purpose)}"
+
+
+def _purpose_object(value: str) -> str:
+    text = _clean(value).strip(" .")
+    match = re.match(
+        r"^(?:accept|act|add|advance|alert|approve|build|capture|check|choose|compare|complete|connect|create|decide|deliver|display|explain|"
+        r"help|highlight|improve|keep|log|lower|maintain|make|notify|process|record|reduce|remind|review|route|send|show|store|support|"
+        r"sustain|track|update|validate)\s+(?P<object>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return text
+    obj = _clean(match.group("object")).strip(" .")
+    return obj or text
 
 
 def _clean_system_name_head(value: str) -> str:

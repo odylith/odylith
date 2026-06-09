@@ -347,6 +347,13 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"sentence fragment leaked after understand at {location}")
         if re.search(r"\b(?:reach|use)\s+(?:a|an|the\s+)?(?:reflection|result|summary|view|readout|outcome|consequence)\b", lowered):
             issues.append(f"awkward visible-result action leaked at {location}")
+        if re.search(
+            r"\b(?:that|this)\s+(?:path|loop|journey|flow)\s+[–—-][^.]{0,160}\b(?:smallest\s+version\s+of\s+the\s+whole\s+product|working\s+end\s+to\s+end)\b",
+            lowered,
+        ) or re.search(r"\bthe\s+pattern\s+[–—-]\s+is\s+the\s+smallest\s+version\s+of\s+the\s+whole\s+product\b", lowered):
+            issues.append(f"meta loop summary leaked as product outcome at {location}")
+        if re.search(r"\bmaintains\s+(?:continue|keep|maintain|sustain)\b", lowered):
+            issues.append(f"malformed component responsibility leaked at {location}")
         if (
             re.search(r"\bas a later\s*[.]?$", lowered)
             or re.search(r"\bvalid\s+transition\s+display,\s*stale\b", lowered)

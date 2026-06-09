@@ -429,6 +429,12 @@ def _action_object_phrase(description: str) -> str:
 def _clean_focus_object(value: str) -> str:
     text = normalize_action_target_language(_clean(value)).strip(" .")
     text = re.sub(
+        r"^(?:continue|continues|keep|keeps|maintain|maintains|sustain|sustains)\s+(?:the\s+)?",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    text = re.sub(
         r"\b(?:captures?|capturing)\s+user\s+actions?\b",
         "product interaction",
         text,

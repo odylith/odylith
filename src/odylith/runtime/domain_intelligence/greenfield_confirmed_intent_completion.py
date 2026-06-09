@@ -79,7 +79,8 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
     for key in ("product_story", "first_path", "problem", "product_view"):
         text = _clean(intent.get(key))
         if text:
-            intent[key] = _sentence(_normalize_visible_result_language(_strip_prompt_prefixes(text)))
+            normalized = _normalize_first_path(text) if key == "first_path" else _normalize_visible_result_language(_strip_prompt_prefixes(text))
+            intent[key] = _sentence(normalized)
     state = _clean(intent.get("state_object"))
     if state:
         intent["state_object"] = _sentence(_normalize_visible_result_language(_normalize_state_object(state)))
@@ -119,6 +120,12 @@ def _normalize_proof_boundary(value: str) -> str:
 def _normalize_state_object(value: str) -> str:
     text = _strip_prompt_prefixes(value)
     text = re.sub(
+        r"^(?:the\s+)?(?:unit|source)\s+of\s+truth\s+is\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
         r"^(?:the\s+)?(?:central|core|main|primary)\s+(?:thing|object|record|item|state)\s+"
         r"(?:the\s+product\s+|the\s+system\s+)?(?:tracks|records|stores|captures|keeps)\s+is\s+",
         "",
@@ -144,6 +151,27 @@ def _normalize_visible_result_language(value: str) -> str:
         flags=re.IGNORECASE,
     )
     return _clean(_normalize_visible_result_terms(text))
+
+
+def _normalize_first_path(value: str) -> str:
+    text = _normalize_visible_result_language(_strip_prompt_prefixes(value))
+    sentences = [
+        sentence.strip()
+        for sentence in re.split(r"(?<=[.!?])\s+", text)
+        if sentence.strip()
+    ]
+    if not sentences:
+        return text
+    kept = [sentence for sentence in sentences if not _is_terminal_meta_loop_summary(sentence)]
+    return " ".join(kept or sentences).strip()
+
+
+def _is_terminal_meta_loop_summary(value: str) -> bool:
+    text = _clean(value).strip()
+    return bool(
+        re.search(r"^(?:this|that)\s+(?:loop|path|journey|flow)\b", text, flags=re.IGNORECASE)
+        and re.search(r"\b(?:smallest\s+version|whole\s+product|end\s+to\s+end|working)\b", text, flags=re.IGNORECASE)
+    )
 
 
 def _completion_seed_is_sufficient(intent: Mapping[str, Any]) -> bool:
@@ -334,6 +362,7 @@ def _problem_needs_repair(value: Any) -> bool:
         return True
     return bool(
         re.search(r"\bis\s+not\s+trustworthy\s+when\b", text, re.I)
+        or re.search(r"\bunderstand\s+(?:A|An|The)\b", text)
         or re.search(r"\bsource\s+evidence|visible\s+blockers|systems?\s+that\s+own\s+the\s+handoff\b", text, re.I)
         or re.search(r"\bfirst\s+path\s+entry\b", text, re.I)
         or re.search(r"\bactive\s+and\s+decide\b", text, re.I)

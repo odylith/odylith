@@ -51,7 +51,7 @@ def write_greenfield_proposal(
         path = Path(str(raw_path))
         if path.is_file():
             path.unlink()
-    _remove_stale_workstream_artifacts(root=root, stale_ids=backlog_result.get("stale_idea_ids", []))
+    greenfield_apply_prewrite.remove_stale_workstream_artifacts(root=root, stale_ids=backlog_result.get("stale_idea_ids", []))
     if release_selector:
         release_bootstrap = greenfield_apply_prewrite.ensure_release_target(
             repo_root=root,
@@ -426,37 +426,6 @@ def _raise_for_component_spec_quality(
     if issues:
         detail = "\n".join(f"- {issue}" for issue in operator_component_spec_issues(issues))
         raise ValueError(f"greenfield component spec quality gate failed with {len(issues)} issue(s):\n{detail}")
-
-
-def _remove_stale_workstream_artifacts(*, root: Path, stale_ids: object) -> None:
-    tokens = {
-        str(value).strip().upper()
-        for value in (stale_ids if isinstance(stale_ids, Sequence) and not isinstance(stale_ids, str) else [])
-        if str(value).strip()
-    }
-    if not tokens:
-        return
-    for token in tokens:
-        program_path = root / "odylith" / "radar" / "source" / "programs" / f"{token}.execution-waves.v1.json"
-        if program_path.is_file():
-            program_path.unlink()
-    release_events = root / "odylith" / "radar" / "source" / "releases" / "release-assignment-events.v1.jsonl"
-    if not release_events.is_file():
-        return
-    kept: list[str] = []
-    changed = False
-    for line in release_events.read_text(encoding="utf-8").splitlines():
-        try:
-            payload = json.loads(line)
-        except json.JSONDecodeError:
-            kept.append(line)
-            continue
-        if str(payload.get("workstream_id", "")).strip().upper() in tokens:
-            changed = True
-            continue
-        kept.append(line)
-    if changed:
-        release_events.write_text(("\n".join(kept).rstrip() + "\n") if kept else "", encoding="utf-8")
 
 
 __all__ = [

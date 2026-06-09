@@ -87,7 +87,7 @@ def _first_path_steps(value: str) -> list[str]:
         text = re.sub(pattern, "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"\bthat\s+single\s+loop\s*[–—-]\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(
-        r"(?:^|(?<=[.!?])\s+)that\s+single\s+(?:path|loop|journey|flow)\s+[–—-]\s*.*$",
+        r"(?:^|(?<=[.!?])\s+)(?:this|that)\s+(?:single\s+)?(?:path|loop|journey|flow)\s+[–—-]\s*.*$",
         "",
         text,
         flags=re.IGNORECASE,
@@ -187,9 +187,27 @@ def _is_meta_visible_result_summary(value: str) -> bool:
     if not text:
         return False
     lowered = text.casefold()
+    if _is_meta_loop_summary(text):
+        return True
     if "visible-result event" in lowered:
         return True
     return bool(re.match(r"^(?:this|the)\s+.+\bis\s+the\s+visible\s+result\b", text, flags=re.IGNORECASE))
+
+
+def _is_meta_loop_summary(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text:
+        return False
+    lowered = text.casefold()
+    if re.match(r"^(?:this|that)\s+(?:single\s+)?(?:path|loop|journey|flow)\b", lowered):
+        return True
+    return bool(
+        re.search(
+            r"\b(?:smallest\s+version\s+of\s+the\s+whole\s+product|whole\s+product\s+working\s+end\s+to\s+end)\b",
+            lowered,
+        )
+        and re.search(r"\b(?:path|loop|journey|flow)\b", lowered)
+    )
 
 
 def _recovery_action(steps: Sequence[str]) -> str:
@@ -372,6 +390,8 @@ def _valid_step(value: str) -> bool:
     if re.match(r"^(?:this|that)\s+is\s+one\s+full\s+loop\b", text, flags=re.IGNORECASE):
         return False
     if re.match(r"^one\s+full\s+loop\s+from\b", text, flags=re.IGNORECASE):
+        return False
+    if _is_meta_loop_summary(text):
         return False
     if _is_scope_or_deferred_statement(text):
         return False

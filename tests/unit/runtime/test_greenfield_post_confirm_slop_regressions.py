@@ -309,6 +309,22 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
     assert base_action_clause("comments, checks, and final status") == "comments, checks, and final status"
 
 
+def test_first_path_model_drops_meta_loop_summary_from_visible_outcome() -> None:
+    model = first_path_model(
+        "A new user records their first entry — rates today's status, taps the factors that applied, "
+        "and logs one action they tried. The next day they log again. After a handful of entries, "
+        "the app shows a simple trend: status over time, and which logged actions line up with better days. "
+        "That loop — log, repeat, see the pattern — is the smallest version of the whole product working end to end."
+    )
+
+    rendered = " ".join([*model.steps, model.visible_outcome, model.material_action])
+
+    assert model.visible_outcome == "A simple trend: status over time, and which logged actions line up with better days"
+    assert "That loop" not in rendered
+    assert "smallest version of the whole product" not in rendered
+    assert generated_semantic_slop_issues({"first_path": model.visible_outcome}) == []
+
+
 def test_multi_actor_first_path_assigns_event_actors_and_cleans_result_copy() -> None:
     markdown = """
 # Choice Practice Journal

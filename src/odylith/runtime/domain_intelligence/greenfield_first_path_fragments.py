@@ -100,6 +100,12 @@ def clean_visible_result_phrase(value: str) -> str:
         return ""
     text = re.sub(r"^on\s+save,\s*", "", text, flags=re.IGNORECASE)
     text = normalize_visible_result_language(text)
+    text = re.sub(
+        r"\s+[–—-]\s+is\s+the\s+smallest\s+version\s+of\s+the\s+whole\s+product\b.*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
     match = re.match(
         r"^(?:this|the)\s+(?P<head>.+?)\s+[–—-]\s+(?P<detail>.+?)\s+[–—-]\s+is\s+the\s+visible\s+result\b.*$",
         text,

@@ -60,6 +60,7 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
     compact = _compact_lens_name(graph)
     proposal_actors = _proposal_actor_candidates(proposal)
     actors = _role_candidates([*proposal_actors, *graph.actors])
+    first_path_actor = _first_path_contract_actor(proposal)
     operators = _role_specific_candidates(
         [*proposal_actors, *graph.operators, *graph.actors],
         ("operator", "ops", "workflow", "maintainer", "coordinator", "lead"),
@@ -82,7 +83,7 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
     )
     names = {
         "beneficiary_advocate": _actor_label(actors, fallback=f"{compact} beneficiary advocate"),
-        "domain_operator": _actor_label(operators, fallback=actors[1] if len(actors) > 1 else f"{compact} operator"),
+        "domain_operator": _actor_label(operators, fallback=first_path_actor or f"{compact} operator"),
         "risk_owner": _actor_label(risk_owners, fallback=f"{compact} risk reviewer"),
         "evidence_owner": _actor_label(
             evidence_owners,
@@ -108,6 +109,17 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
         ),
     }
     return _dedupe_visible_actor_names(names)
+
+
+def _first_path_contract_actor(proposal: Mapping[str, Any]) -> str:
+    semantic_model = proposal.get("semantic_model")
+    if not isinstance(semantic_model, Mapping):
+        return ""
+    contract = semantic_model.get("first_path_contract")
+    if not isinstance(contract, Mapping):
+        return ""
+    actor = _actor_candidate_label(clean_text(contract.get("actor")))
+    return actor if actor and _looks_like_actor_label(actor) else ""
 
 
 def _dedupe_visible_actor_names(names: Mapping[str, str]) -> dict[str, str]:
@@ -251,18 +263,25 @@ def _looks_like_actor_label(value: str) -> bool:
         "editor",
         "engineer",
         "evaluator",
+        "guardian",
         "inspector",
         "lead",
+        "learner",
         "manager",
         "operator",
         "owner",
         "participant",
+        "parent",
+        "people",
+        "person",
         "planner",
         "preparer",
         "recipient",
         "requester",
         "researcher",
         "reviewer",
+        "student",
+        "teacher",
         "specialist",
         "submitter",
         "support",
