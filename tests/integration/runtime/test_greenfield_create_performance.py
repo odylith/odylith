@@ -582,6 +582,7 @@ def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_und
     for banned in (
         "Tracking Their Own Treatment",
         "Caregiver Helping",
+        "Caregiver need",
         "Durable Thing the Product Holds",
         "Durable Thing The Product Holds",
         "Glp 1 Companion",
@@ -603,6 +604,8 @@ def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_und
         "and lets the person on the GLP-1 see the next due date, and see what to fix",
         "lets the caregiver reach",
         "lets the next participant reach",
+        "Medication and Titration Schedule Model That Knows Dose Steps and Timing Service",
+        "Weight and Side Effect Tracking with Trend Views Over Time Service",
         "Proof proof reviewer",
         "Proof build owner",
         "Proof release reviewer",
@@ -622,6 +625,11 @@ def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_und
     assert "GLP-1 Companion - Medication Tracking App" in visible_surface_payload
     assert "They optionally log their weight" in visible_surface_payload
     assert "The app advances them along their titration schedule" in visible_surface_payload
+    assert "Caregiver: supplies context" in rendered_payload
+    assert "deferred from the first path" in rendered_payload
+    component_labels = {row["label"] for row in payload["components"]}
+    assert "Medication and Titration Schedule Model Service" in component_labels
+    assert "Weight and Side Effect Tracking Service" in component_labels
 
 
 def test_greenfield_create_rerun_replaces_previous_greenfield_workstreams_under_thirty_seconds(tmp_path, capsys) -> None:

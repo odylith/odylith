@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
@@ -907,6 +908,26 @@ def test_greenfield_completion_package_report_passes_with_prewrite_radar_and_rel
     assert report.passed, report.issues
     assert report.artifact_counts["rendered_workstream_files"] == len(proposal["backlog"])
     assert report.artifact_counts["release_workstream_ids"] == 1
+
+
+def test_rendered_package_quality_flags_explanatory_component_labels() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "components": [
+                {
+                    "component_id": "dose-model",
+                    "label": "Medication and Titration Schedule Model That Knows Dose Steps and Timing Service",
+                }
+            ]
+        }
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert list(issues) == [
+        "greenfield component `dose-model` has explanatory component label "
+        "`Medication and Titration Schedule Model That Knows Dose Steps and Timing Service`"
+    ]
 
 
 def test_greenfield_completion_package_report_fails_incomplete_prewrite_radar_bundle(tmp_path: Path) -> None:

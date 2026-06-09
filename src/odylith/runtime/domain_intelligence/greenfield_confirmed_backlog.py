@@ -229,7 +229,9 @@ def confirmed_backlog_rows(
     component_ids = [str(row["component_id"]) for row in components]
     state_label = _domain_object_label(state_object, fallback=f"{label} state")
     evidence_label = _domain_object_label(evidence_record, fallback=evidence_record)
+    first_release_human_actors = backlog_text.first_release_actor_rows(human_actors)
     problem_summary = _problem_text(label=label, problem=problem, product_story=product_story, first_path=first_path)
+    problem_summary = _first_release_problem_summary(problem_summary, human_actors)
     opportunity_summary = _short_summary(opportunity, limit=360)
     product_view_summary = _short_summary(product_view, limit=360)
     first_path_summary = _short_summary(first_path, limit=380)
@@ -243,7 +245,7 @@ def confirmed_backlog_rows(
         capability_limit=340,
         outcome_limit=240,
     )
-    actors = backlog_text.join_actor_labels(human_actors) or _short_summary(customer, limit=260) or f"{label} users and reviewers"
+    actors = backlog_text.join_actor_labels(first_release_human_actors) or _short_summary(customer, limit=260) or f"{label} users and reviewers"
     non_goal_text = _join_items(non_goals) or "broader automation, live integrations, and production-scale decisions"
     primary_component = backlog_text.workstream_subject(backlog_text.component_label_at(components, 0, fallback=f"{label} first path"))
     second_component = backlog_text.workstream_subject(backlog_text.component_label_at(components, 1, fallback=primary_component))
@@ -277,9 +279,9 @@ def confirmed_backlog_rows(
         limit=340,
     )
     path_entry_story = backlog_text.sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
-    workflow_actor_label = backlog_text.lead_actor_label(human_actors) or f"{label} user"
+    workflow_actor_label = backlog_text.lead_actor_label(first_release_human_actors) or f"{label} user"
     metric_actor = backlog_text.problem_actor_subject(workflow_actor_label, fallback=f"{label} user")
-    downstream_candidate = backlog_text.supporting_actor_label(human_actors)
+    downstream_candidate = backlog_text.supporting_actor_label(first_release_human_actors)
     downstream_actor = downstream_candidate if _actor_appears_in_path(first_path_for_clauses, downstream_candidate) else ""
     downstream_subject = backlog_text.problem_actor_subject(downstream_actor, fallback="the next participant") if downstream_actor else "The next participant"
     outcome_recipient = downstream_subject if downstream_actor else metric_actor
@@ -369,7 +371,7 @@ def confirmed_backlog_rows(
         evidence_record=evidence_label,
         first_path=first_path_summary,
         proof_boundary=proof_summary,
-        human_actors=human_actors,
+        human_actors=first_release_human_actors,
         internal_systems=internal_systems,
         external_systems=external_systems,
         non_goals=non_goals,
@@ -409,7 +411,7 @@ def confirmed_backlog_rows(
         evidence_record=evidence_label,
         first_path=first_path_summary,
         proof_boundary=proof_summary,
-        human_actors=human_actors,
+        human_actors=first_release_human_actors,
         intelligence_actors=[value for value in (workflow_actor_label, downstream_actor) if value],
         internal_systems=internal_systems,
         external_systems=external_systems,
@@ -448,7 +450,7 @@ def confirmed_backlog_rows(
         evidence_record=evidence_label,
         first_path=first_path_summary,
         proof_boundary=proof_summary,
-        human_actors=human_actors,
+        human_actors=first_release_human_actors,
         intelligence_actors=[value for value in (workflow_actor_label, downstream_actor) if value],
         internal_systems=internal_systems,
         external_systems=external_systems,
@@ -491,7 +493,7 @@ def confirmed_backlog_rows(
         evidence_record=proof_record_label,
         first_path=first_path_summary,
         proof_boundary=proof_summary,
-        human_actors=human_actors,
+        human_actors=first_release_human_actors,
         intelligence_actors=[proof_audience],
         internal_systems=internal_systems,
         external_systems=external_systems,
@@ -507,6 +509,28 @@ def _state_responsibility_label(state_label: str) -> str:
     if text.casefold().endswith(" state"):
         return f"{text} responsibility"
     return f"{text} state responsibility"
+
+
+def _first_release_problem_summary(value: str, human_actors: list[str]) -> str:
+    if not value:
+        return ""
+    deferred_labels = [
+        backlog_text.actor_label(actor)
+        for actor in human_actors
+        if backlog_text.is_deferred_actor(actor) and backlog_text.actor_label(actor)
+    ]
+    if _mentions_actor_label(value, deferred_labels):
+        return ""
+    return value
+
+
+def _mentions_actor_label(value: str, labels: list[str]) -> bool:
+    text = str(value or "").casefold()
+    for label in labels:
+        normalized = str(label or "").strip(" .").casefold()
+        if normalized and normalized in text:
+            return True
+    return False
 
 
 def _prefer_outcome_title(value: str) -> bool:

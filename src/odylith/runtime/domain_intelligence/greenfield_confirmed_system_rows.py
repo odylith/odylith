@@ -25,9 +25,10 @@ _SYSTEM_NAME_NOUNS = frozenset(
     """
     adapter adapters api apis client clients console consoles controller controllers coordinator coordinators
     dashboard dashboards engine engines flow flows gateway gateways harness harnesses integration integrations
-    libraries library ledger ledgers manager managers module modules nudge nudges pipeline pipelines queue queues
-    record records recorder recorders reminder reminders screen screens service services store stores surface surfaces
-    tracker trackers view views workflow workflows
+    libraries library ledger ledgers log logging manager managers model models module modules monitor monitoring
+    nudge nudges pipeline pipelines queue queues record records recorder recorders reminder reminders schedule
+    schedules scheduling screen screens service services store stores surface surfaces tracker trackers tracking view
+    views workflow workflows
     """.split()
 )
 
@@ -263,6 +264,9 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
     purpose = _split_system_purpose_clause(text)
     if purpose[0] or purpose[1]:
         return purpose
+    descriptor = _split_system_descriptor_clause(text)
+    if descriptor[0] or descriptor[1]:
+        return descriptor
     relative = _split_relative_system_action_clause(text)
     if relative[0] or relative[1]:
         return relative
@@ -288,8 +292,8 @@ def _split_relative_system_action_clause(value: str) -> tuple[str, str]:
     text = _clean(value)
     match = re.match(
         r"(?P<head>.+?\b(?:adapter|application|boundary|capture|console|dashboard|engine|flow|ledger|"
-        r"library|log|management|manager|module|nudge|portal|queue|record|reminder|service|store|"
-        r"surface|tracker|view|workspace))\s+(?:that|which|who)\s+(?P<body>.+)$",
+        r"library|log|management|manager|model|module|nudge|portal|queue|record|reminder|schedule|service|store|"
+        r"surface|tracker|tracking|view|workspace))\s+(?:that|which|who)\s+(?P<body>.+)$",
         text,
         flags=re.IGNORECASE,
     )
@@ -299,6 +303,24 @@ def _split_relative_system_action_clause(value: str) -> tuple[str, str]:
     body = _clean(match.group("body")).strip(" .")
     if _system_name_head_is_plausible(head) and _word_count(body) >= 2 and looks_like_finite_action(body):
         return _clean_system_name_head(head), body
+    return "", ""
+
+
+def _split_system_descriptor_clause(value: str) -> tuple[str, str]:
+    text = _clean(value)
+    match = re.match(
+        r"(?P<head>.+?\b(?:adapter|application|capture|console|dashboard|engine|flow|ledger|library|log|"
+        r"management|manager|model|module|nudge|portal|queue|record|reminder|schedule|service|store|"
+        r"surface|tracker|tracking|view|workspace))\s+with\s+(?P<body>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return "", ""
+    head = _clean(match.group("head")).strip(" .")
+    body = _clean(match.group("body")).strip(" .")
+    if _system_name_head_is_plausible(head) and _word_count(body) >= 2:
+        return _clean_system_name_head(head), f"supports {body}"
     return "", ""
 
 
@@ -341,7 +363,7 @@ def _system_name_head_is_plausible(value: str) -> bool:
         return False
     return bool(
         re.search(
-            r"\b(adapter|application|console|dashboard|engine|flow|ledger|library|log|nudge|portal|queue|record|registry|reminder|service|store|surface|tracker|trail|view|workspace)\b",
+            r"\b(adapter|application|console|dashboard|engine|flow|ledger|library|log|logging|model|monitoring|nudge|portal|queue|record|registry|reminder|schedule|scheduling|service|store|surface|tracker|tracking|trail|view|workspace)\b",
             head,
             flags=re.IGNORECASE,
         )

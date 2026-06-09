@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label as _focus_label
@@ -67,9 +68,14 @@ def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
         original = rows[index] if index < len(rows) else label
         description = actor_row_description(original)
         if description and _actor_label(original, title=title).casefold() == label.casefold():
-            completed.append(f"{label}: {description}")
+            completed.append(_preserve_deferred_scope(f"{label}: {description}", original))
             continue
-        completed.append(_actor_description(label=label, index=index, title=title, first_path=first_path, state=state))
+        completed.append(
+            _preserve_deferred_scope(
+                _actor_description(label=label, index=index, title=title, first_path=first_path, state=state),
+                original,
+            )
+        )
     return list(unique_text(completed))
 
 
@@ -82,7 +88,7 @@ def actor_labels(intent: Mapping[str, Any]) -> list[str]:
 
 def actor_row_description(value: str) -> str:
     text = _clean(value)
-    for separator in (" — ", " – ", " - ", ":"):
+    for separator in (":", " — ", " – ", " - "):
         head, sep, body = text.partition(separator)
         body = body.strip(" .")
         if (
@@ -101,6 +107,13 @@ def actor_row_description(value: str) -> str:
     if comma and 1 <= _word_count(comma.group("head")) <= 5 and _word_count(comma.group("body")) >= 2:
         return comma.group("body").strip(" .")
     return ""
+
+
+def _preserve_deferred_scope(row: str, source: str) -> str:
+    text = _clean(row).rstrip(".")
+    if not text or not is_deferred_actor(source) or is_deferred_actor(text):
+        return row
+    return f"{text}; deferred from the first path."
 
 
 def _actor_row_is_meta(value: str) -> bool:

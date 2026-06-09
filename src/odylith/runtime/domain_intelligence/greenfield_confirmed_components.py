@@ -71,6 +71,7 @@ _GENERIC_COMPONENT_ROLE_PREFIXES: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"^evidence\s+owner\b", re.IGNORECASE), "Evidence Ownership"),
     (re.compile(r"^build\s+owner\b", re.IGNORECASE), "Build Ownership"),
 )
+_EXPLANATORY_NAME_CONNECTORS = frozenset({"because", "that", "when", "where", "which", "while", "who", "with"})
 
 
 def domain_label(title: str, prompt: str) -> str:
@@ -231,6 +232,7 @@ def system_component_name(value: str) -> str:
     if not name:
         return ""
     name = _normalize_repeated_and_chain(name)
+    name = _trim_explanatory_system_name(name)
     for pattern, replacement in _GENERIC_COMPONENT_ROLE_PREFIXES:
         match = pattern.match(name)
         if not match:
@@ -242,6 +244,18 @@ def system_component_name(value: str) -> str:
             return _sentence_case(rest)
         return f"{replacement} {rest}"
     return name
+
+
+def _trim_explanatory_system_name(value: str) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
+    words = text.split()
+    if len(words) <= 6:
+        return text
+    for index, word in enumerate(words):
+        token = word.casefold().strip(".,;:")
+        if token in _EXPLANATORY_NAME_CONNECTORS and index >= 3 and len(words) - index >= 2:
+            return " ".join(words[:index]).strip(" .")
+    return text
 
 
 def _normalize_repeated_and_chain(value: str) -> str:

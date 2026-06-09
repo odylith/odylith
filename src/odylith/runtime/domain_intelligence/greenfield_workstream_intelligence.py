@@ -200,7 +200,7 @@ def build_workstream_domain_intelligence(
         ],
         "constraints": [
             f"Keep this slice inside the accepted first-release scope: {non_goal_text}.",
-            f"Do not claim {row_title} ready until validation demonstrates: {validation_summary or proof_boundary}.",
+            f"Do not claim this slice ready until validation demonstrates: {validation_summary or proof_boundary}.",
         ],
         "source_of_truth_map": [
             f"{state_object} is the source of truth for current first-path state.",
@@ -232,9 +232,9 @@ def build_workstream_domain_intelligence(
         ],
         "validation_obligations": [
             *(validation or []),
-            f"Validate that {row_title} preserves {state_object} and {evidence_record} in domain terms.",
-            f"Validate that {row_title} proves success, blocked input, recovery, and next-step context without restating the full component contract.",
-            f"Validate that {row_title} handles a blocked or recovery path without hiding missing information.",
+            f"Validate that this slice preserves {state_object} and {evidence_record} in domain terms.",
+            "Validate that this slice proves success, blocked input, recovery, and next-step context without restating the full component contract.",
+            "Validate that this slice handles a blocked or recovery path without hiding missing information.",
         ],
         "artifacts": [
             f"{state_object} history captures the local states needed by {row_title}.",

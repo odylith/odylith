@@ -49,6 +49,17 @@ _PRODUCT_SHARE_STOPWORDS = _BACKLOG_TERM_STOPWORDS | frozenset(
         "user",
     }
 )
+_DEFERRED_ACTOR_MARKERS = (
+    "deferred",
+    "fast-follow",
+    "future",
+    "later",
+    "not first path",
+    "not in the first path",
+    "optional",
+    "read-only",
+    "separate release",
+)
 
 
 def proof_claim_summary(value: str, *, limit: int = 260) -> str:
@@ -155,6 +166,8 @@ def _trim_incomplete_terminal_phrase(value: str) -> str:
 def join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
     labels: list[str] = []
     for value in values or []:
+        if is_deferred_actor(str(value)):
+            continue
         label = _label_head(str(value))
         if label and label.casefold() not in {"other accepted items"}:
             labels.append(label)
@@ -162,6 +175,21 @@ def join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
     if not selected:
         return ""
     return ", ".join(selected)
+
+
+def first_release_actor_rows(values: list[str] | None) -> list[str]:
+    rows = [str(value) for value in values or [] if str(value).strip()]
+    first_release = [value for value in rows if not is_deferred_actor(value)]
+    return first_release or rows
+
+
+def is_deferred_actor(value: str) -> bool:
+    text = _compact_text(value).casefold()
+    return bool(text and any(marker in text for marker in _DEFERRED_ACTOR_MARKERS))
+
+
+def actor_label(value: str) -> str:
+    return sentence_fragment(_actor_title_head(value))
 
 
 def actor_from_action(value: str) -> str:
@@ -219,6 +247,8 @@ def lead_actor_label(values: list[str]) -> str:
 
 def supporting_actor_label(values: list[str]) -> str:
     for value in values[1:]:
+        if is_deferred_actor(str(value)):
+            continue
         text = _actor_title_head(str(value))
         text = re.split(r"\b(?:who|that|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
         if not text:

@@ -75,7 +75,7 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
     assert 'S1["Open LiveScore"]' in sequence["mermaid_source"]
     assert 'S2["Tap Record"]' in sequence["mermaid_source"]
     assert "roughly 30-second<br/>monophonic line" in sequence["mermaid_source"]
-    assert "downloadable PDF and<br/>MusicXML" in sequence["mermaid_source"]
+    assert "downloadable PDF<br/>and MusicXML" in sequence["mermaid_source"]
     assert "state, evidence, and next action stay visible" in sequence["mermaid_source"]
     assert "sequenceDiagram" not in sequence["mermaid_source"]
     assert "participant C" not in sequence["mermaid_source"]
@@ -192,6 +192,31 @@ def test_purpose_clause_system_row_keeps_purpose_out_of_component_identity() -> 
     assert "Maintains sustain" not in json.dumps(components)
     assert "helps sustain" not in json.dumps(components)
     assert "to Sustain" not in components[0]["label"]
+
+
+def test_long_system_descriptors_do_not_become_component_identity() -> None:
+    rows = expand_internal_system_rows(
+        [
+            "Medication and titration-schedule model that knows dose steps and timing",
+            "Weight and side effect tracking with trend views over time",
+        ],
+        context_text="",
+    )
+    components = confirmed_components(
+        label="Medication Companion",
+        label_slug="medication-companion",
+        internal_systems=rows,
+    )
+    encoded = json.dumps(components)
+
+    assert components[0]["component_id"] == "medication-and-titration-schedule-model"
+    assert components[0]["label"] == "Medication and Titration Schedule Model Service"
+    assert components[0]["source_system_description"] == "knows dose steps and timing"
+    assert components[1]["component_id"] == "weight-and-side-effect-tracking"
+    assert components[1]["label"] == "Weight and Side Effect Tracking Service"
+    assert components[1]["source_system_description"] == "supports trend views over time"
+    assert "That Knows" not in encoded
+    assert "with Trend Views" not in encoded
 
 
 def test_confirmed_personal_pattern_artifacts_do_not_leak_placeholder_labels(tmp_path: Path) -> None:

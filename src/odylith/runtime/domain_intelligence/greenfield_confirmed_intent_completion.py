@@ -9,9 +9,11 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
-from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_labels as _actor_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows as _completed_actor_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
+    first_release_actor_rows as _first_release_actor_rows,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
     outcome_action_phrase as _outcome_action_phrase,
@@ -190,7 +192,7 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
     state = _clean(intent.get("state_object"))
     first_path = _clean(intent.get("first_path"))
     proof = _clean(intent.get("proof_boundary"))
-    actors = _actor_labels(intent)
+    actors = _first_release_actor_labels(intent)
     systems = _system_labels(intent)
 
     if _story_needs_completion(story):
@@ -247,8 +249,27 @@ def _story_needs_completion(value: str) -> bool:
     return True
 
 
+def _first_release_actor_rows_for_intent(intent: Mapping[str, Any]) -> list[str]:
+    rows = confirmed_text_values(intent.get("human_actors"))
+    return _first_release_actor_rows(rows)
+
+
+def _first_release_actor_labels(intent: Mapping[str, Any]) -> list[str]:
+    return _actor_labels_from_rows(_first_release_actor_rows_for_intent(intent))
+
+
+def _actor_labels_from_rows(rows: Sequence[str]) -> list[str]:
+    labels: list[str] = []
+    for row in rows:
+        label = _clean(str(row).split("—", 1)[0].split(":", 1)[0]).strip(" .")
+        if label:
+            labels.append(label)
+    return labels
+
+
 def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
-    actors = _actor_labels(intent)
+    actor_rows = _first_release_actor_rows_for_intent(intent)
+    actors = _actor_labels_from_rows(actor_rows)
     systems = _system_labels(intent)
     story = _clean(intent.get("product_story"))
     state = _clean(intent.get("state_object"))
@@ -282,7 +303,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
             "without it, the work stays scattered, hard to interpret, and easy to misuse."
         )
     if not _clean(intent.get("customer")) or _customer_needs_repair(intent.get("customer")):
-        intent["customer"] = _sentence(_customer_sentence(actors, title=title, first_path=first_path))
+        intent["customer"] = _sentence(_customer_sentence(actor_rows, title=title, first_path=first_path))
     if not _clean(intent.get("opportunity")):
         intent["opportunity"] = _sentence(
             f"Make the first version valuable by proving the smallest complete outcome: {path_capability}, ending in {outcome_text}."

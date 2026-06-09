@@ -85,6 +85,10 @@ _CAPITALIZED_CLAUSE_STARTERS = frozenset({"How", "What", "When", "Where", "Wheth
 _MERMAID_EDGE_OPERATORS = ("-->>", "-.->", "==>", "-->", "->>", "---")
 _REPETITION_MIN_WORDS = 9
 _REPETITION_MIN_CHARS = 68
+_COMPONENT_LABEL_MAX_WORDS = 8
+_EXPLANATORY_COMPONENT_CONNECTORS = frozenset(
+    {"because", "that", "when", "where", "which", "while", "who", "with", "without"}
+)
 
 
 def greenfield_rendered_package_quality_issues(package: Any) -> list[str]:
@@ -96,6 +100,7 @@ def greenfield_rendered_package_quality_issues(package: Any) -> list[str]:
         issues.extend(_artifact_language_issues(artifact))
         if artifact.kind == "mermaid":
             issues.extend(_mermaid_connectivity_issues(artifact))
+    issues.extend(_package_component_identity_issues(package))
     issues.extend(_package_repetition_issues(package, artifacts))
     return unique_text(issues)
 
@@ -323,7 +328,7 @@ def _package_repetition_issues(package: Any, artifacts: list[RenderedArtifact]) 
         chunks = _mermaid_label_chunks(artifact.text) if artifact.kind == "mermaid" else _repetition_chunks(artifact.text)
         for chunk in chunks:
             key = _sentence_key(chunk)
-            if key and key not in allowed:
+            if key and key not in allowed and not _allowed_structured_repetition_key(key):
                 occurrences.setdefault(key, []).append((artifact, normalize_string(chunk)))
     issues: list[str] = []
     for key, rows in occurrences.items():
@@ -335,6 +340,43 @@ def _package_repetition_issues(package: Any, artifacts: list[RenderedArtifact]) 
             "greenfield rendered package repeats a noncanonical sentence across "
             f"{len(identities)} artifacts: `{_clip(sample, 140)}`"
         )
+    return issues
+
+
+def _allowed_structured_repetition_key(key: str) -> bool:
+    return key.startswith(
+        (
+            "boundary ",
+            "control ",
+            "gate ",
+            "owner ",
+            "proof ",
+            "question ",
+            "risk ",
+            "state object ",
+        )
+    )
+
+
+def _package_component_identity_issues(package: Any) -> list[str]:
+    proposal = _as_mapping(getattr(package, "proposal", None))
+    rows = proposal.get("components", [])
+    if not isinstance(rows, Sequence) or isinstance(rows, str):
+        return []
+    issues: list[str] = []
+    for row in rows:
+        if not isinstance(row, Mapping):
+            continue
+        label = normalize_string(row.get("label"))
+        tokens = _word_tokens(label)
+        if len(tokens) <= _COMPONENT_LABEL_MAX_WORDS:
+            continue
+        lowered = {token.casefold().strip("'") for token in tokens}
+        if lowered & _EXPLANATORY_COMPONENT_CONNECTORS:
+            component_id = normalize_string(row.get("component_id")) or "unknown"
+            issues.append(
+                f"greenfield component `{component_id}` has explanatory component label `{_clip(label, 120)}`"
+            )
     return issues
 
 

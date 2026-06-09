@@ -453,8 +453,10 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     assert "## Domain Model" not in joined
     assert "## Proof And Acceptance Gates" in joined
     assert "## Ownership And Risk" in joined
-    assert "Proof for" in joined
-    assert "Gate for" in joined
+    assert "Proof:" in joined
+    assert "Gate:" in joined
+    assert "Proof for" not in joined
+    assert "Gate for" not in joined
     assert "source-backed implementation claims" in joined
     parent_spec = specs_by_title["Govern Commerce Launch System"]
     all_radar_text = parent_spec + "\n" + joined
