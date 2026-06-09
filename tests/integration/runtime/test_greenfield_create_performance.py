@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 import time
+from pathlib import Path
 
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
+
+POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS = 60.0
 
 
 def _generated_source_payload(root) -> str:
@@ -30,6 +36,65 @@ def _generated_visible_surface_payload(root) -> str:
         for path in (root / "odylith").rglob("*")
         if path.is_file() and path.suffix in {".html", ".js"}
     )
+
+
+def _assert_whole_project_completed(payload: dict, root: Path, *, elapsed: float) -> None:
+    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+    assert payload["dashboard_refresh"]["status"] == "passed"
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) >= 4
+    assert len(payload["diagrams"]) == 6
+    assert (root / ".odylith/runtime/greenfield/confirmed-intent.json").is_file()
+    assert (root / "odylith/runtime/source/accepted-project.v1.json").is_file()
+    assert (root / "odylith/radar/radar.html").is_file()
+    assert (root / "odylith/registry/registry.html").is_file()
+    assert (root / "odylith/atlas/atlas.html").is_file()
+    assert (root / "odylith/compass/compass.html").is_file()
+    assert (root / "odylith/index.html").is_file()
+    assert len(list((root / "odylith/atlas/source").glob("*.svg"))) == len(payload["diagrams"])
+    assert len(list((root / "odylith/atlas/source").glob("*.png"))) == len(payload["diagrams"])
+
+
+def test_greenfield_create_cli_completes_whole_project_under_sixty_seconds(tmp_path) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    _write_confirmed_intent(tmp_path)
+
+    repo_root = Path(__file__).resolve().parents[3]
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(repo_root / "src") + os.pathsep + env.get("PYTHONPATH", "")
+    started = time.perf_counter()
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "odylith.cli",
+            "greenfield",
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a municipal permit review workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ],
+        check=False,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS,
+    )
+    elapsed = time.perf_counter() - started
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    payload = json.loads(result.stdout)
+    _assert_whole_project_completed(payload, tmp_path, elapsed=elapsed)
 
 
 SOLAR_CONFIRMED_INTENT_TEXT = """SunLedger
