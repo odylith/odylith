@@ -35,12 +35,12 @@ MATERIAL_ACTION_RE = re.compile(
     r"\b(?:"
     r"accept|accepts|add|adds|advance|advances|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
     r"book|books|check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|decide|decides|"
-    r"click|clicks|compute|computes|create|creates|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|forecast|forecasts|"
+    r"click|clicks|compute|computes|create|creates|define|defines|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|end|ends|enter|enters|export|exports|fetch|fetches|finalize|finalizes|find|finds|forecast|forecasts|"
     r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|make|makes|mark|marks|notify|notifies|open|opens|persist|persists|pick|picks|play|plays|"
     r"optimize|optimizes|preserve|preserves|produce|produces|prompt|prompts|provide|provides|publish|publishes|pull|pulls|rank|ranks|rate|rates|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
-    r"return|returns|route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
+    r"report|reports|return|returns|route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
     r"show|shows|stop|stops|store|stores|submit|submits|surface|surfaces|sync|syncs|tap|taps|track|tracks|update|updates|"
-    r"validate|validates|view|views"
+    r"validate|validates|view|views|watch|watches"
     r")\b",
     re.IGNORECASE,
 )
@@ -80,12 +80,12 @@ def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
     return bool(
         re.search(
-            r"\b(?:decide|decides|display|displays|export|exports|highlight|highlights|present|presents|produce|produces|publish|publishes|render|renders|return|returns|see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
+            r"\b(?:compare|compares|decide|decides|display|displays|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
             text,
             re.IGNORECASE,
         )
         or re.search(
-            r"\b(?:card|dashboard|indicator|readout|recommendation|result|summary|timeline|trend|view)\b",
+            r"\b(?:available|card|dashboard|indicator|readout|recommendation|result|saved|summary|timeline|trend|view|viewable)\b",
             text,
             re.IGNORECASE,
         )
@@ -237,7 +237,7 @@ def visible_result_object(value: str) -> str:
     patterns = (
         r":\s*(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
-        r"\b(?:decides?|displays?|highlights?|presents?|produces?|renders?|returns?|sees?|shows?|views?|receives?|gets?|reads?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"\b(?:compares?|decides?|displays?|finds?|highlights?|presents?|produces?|reports?|renders?|returns?|saves?|sees?|shows?|views?|receives?|gets?|reads?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
@@ -327,6 +327,8 @@ _RESULT_ACTION_NOMINALS = {
     "publishes": "published",
     "record": "recorded",
     "records": "recorded",
+    "report": "reported",
+    "reports": "reported",
     "save": "saved",
     "saves": "saved",
     "select": "selected",

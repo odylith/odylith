@@ -57,6 +57,7 @@ _VISIBLE_SEE_RESULT_HINTS = {
     "consequence",
     "date",
     "deadline",
+    "history",
     "notice",
     "outcome",
     "recap",
@@ -69,7 +70,9 @@ _VISIBLE_SEE_RESULT_HINTS = {
     "timeline",
     "trend",
     "view",
+    "viewable",
     "window",
+    "saved",
 }
 
 

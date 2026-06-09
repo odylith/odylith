@@ -23,6 +23,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
     build_greenfield_completion_report,
     build_greenfield_package_report,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
+    rendered_spec_alignment_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import (
     generated_semantic_slop_issues,
     material_first_path_action,
@@ -1004,6 +1007,26 @@ def test_greenfield_post_confirm_completion_fails_on_rendered_registry_scope_dri
     joined = "\n".join(report.issues)
     assert "missing rendered active component spec" in joined
     assert "outside active release scope" in joined
+
+
+def test_rendered_registry_scope_alignment_ignores_deferred_components(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["components"].append(
+        {
+            "component_id": "later-analytics",
+            "label": "Later Analytics Service",
+            "release_scope": "deferred",
+        }
+    )
+    rendered_specs = {
+        str(row["label"]): f"# {row['label']}\n\nRendered spec."
+        for row in proposal["components"]
+        if row.get("release_scope") != "deferred"
+    }
+
+    issues = rendered_spec_alignment_issues(proposal, rendered_specs)
+
+    assert issues == []
 
 
 def test_greenfield_post_confirm_completion_fails_provider_call_leak(tmp_path: Path) -> None:

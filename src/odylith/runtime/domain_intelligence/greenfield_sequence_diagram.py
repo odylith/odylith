@@ -17,10 +17,10 @@ from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_wor
 
 _BASE_ACTION_VERB_PATTERN = (
     r"add|advance|adjust|approve|assign|attach|calculate|capture|check|choose|close|collect|compare|complete|compute|"
-    r"confirm|correct|create|decide|decline|delete|derive|edit|enter|evaluate|export|fetch|find|get|group|hand|"
-    r"highlight|import|inspect|keep|link|log|notify|open|order|persist|preserve|produce|publish|rank|read|receive|"
-    r"record|reject|render|request|resolve|return|review|route|run|save|schedule|screen|see|select|send|show|store|"
-    r"submit|supply|track|validate|verify|view|vote"
+    r"confirm|correct|create|decide|decline|define|delete|derive|edit|end|enter|evaluate|export|fetch|find|get|group|hand|"
+    r"highlight|import|inspect|keep|launch|link|log|notify|open|order|persist|preserve|produce|publish|rank|read|receive|"
+    r"record|reject|render|report|request|resolve|return|review|route|run|save|schedule|screen|see|select|send|show|store|"
+    r"submit|supply|track|validate|verify|view|vote|watch"
 )
 
 _SEQUENCE_TERM_STOPWORDS = {
@@ -109,6 +109,7 @@ def first_path_flowchart_mermaid(
     if not steps:
         steps = ["Start the accepted path", "Record product state and evidence", "Review the outcome and blockers"]
     visible_steps = _flowchart_visible_steps(steps)
+    terminal_outcome = _semantic_visible_result(semantic_model)
     actor_label = _actor_role_label((actors or [f"{label} user"])[0])
     previous = "actor"
     used_components: set[str] = set()
@@ -129,11 +130,16 @@ def first_path_flowchart_mermaid(
         )
     for index, step, owner in step_rows:
         step_node = f"S{index}"
-        lines.append(f'  {step_node}["{_flow_label(_step_action_label(step), width=30, max_lines=4, limit=112)}"]')
+        is_terminal = index == len(step_rows)
+        step_label = _terminal_step_label(step, terminal_outcome) if is_terminal else _step_action_label(step)
+        lines.append(
+            f'  {step_node}["{_flow_label(step_label, width=30, max_lines=5 if is_terminal else 4, limit=168 if is_terminal else 112)}"]'
+        )
         lines.append(f"  {previous} --> {step_node}")
         lines.append(f"  {step_node} --> {owner}")
         previous = owner
-    lines.append('  proof["Outcome<br/>state, evidence, and next action stay visible"]')
+    proof_label = _flow_label(terminal_outcome, width=30, max_lines=5, limit=168) if terminal_outcome else "state, evidence, and next action stay visible"
+    lines.append(f'  proof["Outcome<br/>{proof_label}"]')
     lines.append(f"  {previous} --> proof")
     lines.extend(
         [
@@ -154,6 +160,22 @@ def _flowchart_visible_steps(steps: list[str], *, limit: int = 10) -> list[str]:
     if len(steps) <= limit:
         return list(steps)
     return [*steps[: max(0, limit - 1)], steps[-1]]
+
+
+def _semantic_visible_result(semantic_model: Mapping[str, Any] | None) -> str:
+    if not isinstance(semantic_model, Mapping):
+        return ""
+    contract = semantic_model.get("first_path_contract")
+    if not isinstance(contract, Mapping):
+        return ""
+    return _compact_text(str(contract.get("visible_result") or "")).strip(" .")
+
+
+def _terminal_step_label(step: str, visible_result: str) -> str:
+    outcome = _compact_text(visible_result).strip(" .")
+    if not outcome:
+        return _step_action_label(step)
+    return f"Show outcome: {outcome}"
 
 
 def best_component_node_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
@@ -243,6 +265,16 @@ def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: in
         for index, row in enumerate(rows):
             row_terms = _sequence_terms(row)
             if row_terms & {"comparison", "display", "presentation", "review", "selected", "selection", "surface", "view"}:
+                return index
+    if re.search(r"\b(?:configure|configures|configuration|define|defines|parameter|parameters|setting|settings|setup|validate|validates)\b", text):
+        for index, row in enumerate(rows):
+            row_terms = _sequence_terms(row)
+            if row_terms & {"config", "configuration", "intake", "parameter", "parameters", "setting", "settings", "setup", "validation"}:
+                return index
+    if re.search(r"\b(?:available|compare|compares|find|finds|history|report|reports|result|results|save|saves|saved|viewable)\b", text):
+        for index, row in enumerate(rows):
+            row_terms = _sequence_terms(row)
+            if row_terms & {"archive", "history", "record", "result", "results", "review", "store", "stored"}:
                 return index
     if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives)\b", text) and re.search(
         r"\b(?:price|pricing|cost|discount|quote|quoted)\b",

@@ -174,7 +174,7 @@ def rendered_spec_alignment_issues(proposal: Mapping[str, Any], rendered_specs: 
     active_labels = {
         clean_text(row.get("label"))
         for row in mapping_rows(proposal.get("components"))
-        if clean_text(row.get("label")) and clean_text(row.get("release_scope")) != "out_of_scope"
+        if clean_text(row.get("label")) and _is_first_release_scope(row.get("release_scope"))
     }
     rendered_labels = {clean_text(label) for label in rendered_specs}
     issues: list[str] = []

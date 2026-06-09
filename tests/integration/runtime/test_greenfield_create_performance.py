@@ -270,6 +270,59 @@ A parent or teacher creates an account, adds a child, and picks an age band. The
 Done means: a grown-up can create an account and a child profile, the child can complete one scenario end to end with a recorded choice and reflection, and the grown-up can open a recap of it — with children's data kept private to that account. Authoring depth, multiple age bands, and reminders are out of scope for this first proof.
 """
 
+QUANTUM_CONFIRMED_INTENT_TEXT = """# Quantum Link Lab
+
+## Product story
+
+A lab application for a research team running entanglement-based quantum communication on real hardware. A researcher configures a run — entangled-photon source, the two measurement stations, basis settings, and channel conditions — launches it, and watches the link behave live: entangled pairs distributed, coincidence counts, the measured Bell/CHSH parameter, error rate (QBER), and sifted/final key bits. The headline question each run answers is whether the entanglement survived the channel well enough to certify a secure link, judged by the Bell-inequality violation. The app is the bench where an E91 experiment is set up, driven on the actual rig, observed, and compared against earlier runs.
+
+## State object
+
+A communication run: its E91 parameters and measurement-basis configuration, the bound source and two station endpoints, the live and final measurements (distributed pairs, coincidence counts, CHSH/S value, QBER, sifted and final key length), its status from configured through running to completed or aborted, and the timestamped record for later review and comparison.
+
+## First complete path
+
+A researcher opens the lab, defines a new E91 run (source, two stations, bases, channel/integration settings), launches it against the hardware, watches coincidences and the live CHSH value stream in, and ends with a completed run that reports whether the Bell inequality was violated (link certified secure or not), the QBER, and the key established — saved and viewable alongside prior runs.
+
+## Human actors
+
+- Researcher — configures and launches E91 runs, reads live and historical results
+- Lab lead — reviews run history, compares configurations, judges link viability
+- Lab technician / operator — manages source and station hardware setup, monitors active runs
+
+## External systems
+
+- Entangled-photon source rig and its control interface
+- Two measurement stations (detectors + basis selection) and their control/readout interface
+- Coincidence-counting / time-tagging electronics
+- Shared clock / synchronization source across the two stations
+
+## Internal product systems
+
+- Run configuration and validation (E91 parameters, bases, bound endpoints)
+- Hardware control and run execution (drives source + stations, sequences a run)
+- Live telemetry stream (coincidences, CHSH, QBER as the run progresses)
+- Security/verification logic (Bell-inequality test -> secure verdict, key sifting)
+- Results store and run history (persisted runs, comparison, review)
+
+## Critical assumptions
+
+- v1 drives real lab hardware through a control interface; the rig is available and exposes commands/readout the app can call
+- E91 is the one headline protocol; CHSH/Bell violation is the security test that defines a "good" run
+- A run is owned by one researcher session at a time; concurrent control of the same hardware is out of first scope
+- Live telemetry and persisted, comparable run history are both required from day one
+
+## Ambiguities
+
+- Hardware interface contract — is there a documented control API/SDK for the source and stations, or does the app need a driver/adapter layer built first?
+- Safety/interlock requirements for driving the rig (laser/detector safety gating) — in v1 scope or assumed external?
+- Single shared lab instrument set, or multiple rigs the app must select between?
+
+## Proof boundary
+
+The product is proven when a researcher can configure an E91 run, launch it on the real rig, watch coincidences and the CHSH value stream live, and end with a saved run that reports the Bell-inequality verdict (secure link or not), the QBER, and the established key — then find that run in history and compare it to another. Formal security certification and hardware safety-certification of the rig are beyond this first proof.
+"""
+
 GLP1_CONFIRMED_INTENT_TEXT = """# GLP-1 Companion - Medication Tracking App
 
 ## Product story
@@ -695,6 +748,67 @@ def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_und
     component_labels = {row["label"] for row in payload["components"]}
     assert "Medication and Titration Schedule Model Service" in component_labels
     assert "Weight and Side Effect Tracking Service" in component_labels
+
+
+def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_scope_under_sixty_seconds(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(QUANTUM_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a lab app where we are building quantum communication",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    elapsed = time.perf_counter() - started
+    payload = json.loads(capsys.readouterr().out)
+    rendered_payload = json.dumps(payload)
+    generated_payload = _generated_source_payload(tmp_path)
+    visible_surface_payload = _generated_visible_surface_payload(tmp_path)
+    accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
+    first_path = accepted["proposal"]["semantic_model"]["first_path_contract"]
+    sequence = next(row for row in accepted["proposal"]["diagrams"] if row["title"] == "First Path Sequence")
+    sequence_source = sequence["mermaid_source"].casefold()
+
+    assert rc == 0
+    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+    assert payload["dashboard_refresh"]["status"] == "passed"
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) == 4
+    assert len(payload["diagrams"]) == 6
+    assert "the QBER and the key established" in first_path["visible_result"]
+    assert "saved and viewable with prior runs" in first_path["visible_result"]
+    assert any(row.get("visible_result") for row in first_path["events"])
+    for term in ("qber", "key", "saved", "viewable", "prior"):
+        assert term in sequence_source
+    component_labels = {row["label"] for row in payload["components"]}
+    assert "Live Telemetry Stream Service" not in component_labels
+    for banned in (
+        "semantic_model first_path_contract has no visible-result event",
+        "confirmed Atlas flowchart `First Path Sequence` omits the tail",
+        "prewrite Registry package missing rendered active component spec",
+        "accepted result for review",
+        "lets the lab lead reach",
+        "lets the next participant reach",
+        "visible-result event",
+    ):
+        assert banned not in rendered_payload
+        assert banned not in generated_payload
+        assert banned not in visible_surface_payload
 
 
 def test_greenfield_create_rerun_replaces_previous_greenfield_workstreams_under_thirty_seconds(tmp_path, capsys) -> None:

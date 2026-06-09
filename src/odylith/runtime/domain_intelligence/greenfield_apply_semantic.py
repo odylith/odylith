@@ -71,7 +71,7 @@ def _first_nonempty_backlog_value(rows: list[Mapping[str, Any]], key: str) -> st
 
 
 _VISIBLE_RESULT_RE = re.compile(
-    r"\b(?:available|choose|chooses|highlight|highlights|inspect|inspects|ready|see|sees|select|selects|show|shows|view|views|review|reviews|receive|receives|publish|publishes|restored)\b",
+    r"\b(?:available|choose|chooses|compare|compares|find|finds|highlight|highlights|inspect|inspects|ready|report|reports|save|saves|saved|see|sees|select|selects|show|shows|view|views|viewable|review|reviews|receive|receives|publish|publishes|restored)\b",
     re.IGNORECASE,
 )
 

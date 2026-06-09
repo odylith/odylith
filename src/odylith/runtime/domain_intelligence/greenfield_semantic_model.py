@@ -465,12 +465,12 @@ def _event_target(step: str, *, state_object: str) -> str:
 def _is_visible_result(value: str) -> bool:
     return bool(
         re.search(
-            r"\b(?:available|choose|chooses|display|displays|highlight|highlights|inspect|inspects|present|presents|produce|produces|ready|render|renders|return|returns|see|sees|select|selects|show|shows|view|views|review|reviews|receive|receives|publish|publishes|restored)\b",
+            r"\b(?:available|choose|chooses|compare|compares|display|displays|find|finds|highlight|highlights|inspect|inspects|present|presents|produce|produces|ready|report|reports|render|renders|return|returns|save|saves|see|sees|select|selects|show|shows|view|views|review|reviews|receive|receives|publish|publishes|restored|viewable)\b",
             value,
             re.IGNORECASE,
         )
         or re.search(
-            r"\b(?:card|dashboard|indicator|readout|result|summary|timeline|trend|view)\b",
+            r"\b(?:card|dashboard|indicator|readout|result|saved|summary|timeline|trend|view)\b",
             value,
             re.IGNORECASE,
         )
@@ -483,7 +483,7 @@ def _is_recovery_path(value: str) -> bool:
 
 def _action_label(value: str) -> str:
     match = re.search(
-        r"\b(adds?|adjusts?|approves?|captures?|checks?|chooses?|compares?|completes?|creates?|displays?|edits?|enters?|exports?|imports?|logs?|opens?|produces?|publishes?|ranks?|records?|renders?|returns?|reviews?|saves?|sees?|shows?|stores?|submits?|tracks?|updates?|views?)\b",
+        r"\b(adds?|adjusts?|approves?|captures?|checks?|chooses?|compares?|completes?|creates?|defines?|displays?|edits?|ends?|enters?|exports?|finds?|imports?|launches?|logs?|opens?|produces?|publishes?|ranks?|records?|reports?|renders?|returns?|reviews?|saves?|sees?|shows?|stores?|submits?|tracks?|updates?|views?|watches?)\b",
         _clean(value),
         re.IGNORECASE,
     )

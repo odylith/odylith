@@ -153,7 +153,7 @@ def _visible_outcome(steps: Sequence[str]) -> str:
             continue
         if _looks_like_visible_result(step):
             cleaned = _clean_visible_result_phrase(step) or step
-            if re.search(r"\b(?:see|sees|show|shows|view|views|receive|receives|render|renders|return|returns|display|displays|produce|produces)\b", cleaned, flags=re.IGNORECASE) and not re.search(
+            if re.search(r"\b(?:compare|compares|display|displays|find|finds|produce|produces|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|view|views|receive|receives)\b", cleaned, flags=re.IGNORECASE) and not re.search(
                 r"\b(?:accept|accepts|click|clicks|choose|chooses|dismiss|dismisses)\b",
                 cleaned,
                 flags=re.IGNORECASE,

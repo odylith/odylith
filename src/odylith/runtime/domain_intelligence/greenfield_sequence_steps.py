@@ -16,10 +16,10 @@ from odylith.runtime.domain_intelligence.greenfield_text import normalize_visibl
 ACTION_VERB_PATTERN = (
     r"adds?|advances?|adjusts?|approves?|assigns?|attaches?|calculates?|captures?|checks?|chooses?|closes?|collects?|"
     r"compares?|completes?|computes?|confirms?|corrects?|creates?|decides?|declines?|deletes?|derives?|edits?|"
-    r"enters?|evaluates?|exports?|fetches?|finds?|gets?|groups?|hands?|highlights?|imports?|lets?|links?|logs?|"
-    r"displays?|moves?|notifies?|opens?|orders?|persists?|preserves?|produces?|publishes?|ranks?|reads?|receives?|records?|rejects?|"
+    r"defines?|ends?|enters?|evaluates?|exports?|fetches?|finds?|gets?|groups?|hands?|highlights?|imports?|launches?|lets?|links?|logs?|"
+    r"displays?|moves?|notifies?|opens?|orders?|persists?|preserves?|produces?|publishes?|ranks?|reads?|receives?|records?|rejects?|reports?|"
     r"renders?|requests?|resolves?|returns?|reviews?|routes?|runs?|saves?|schedules?|screens?|sees?|selects?|sends?|"
-    r"shows?|stores?|submits?|supplies?|tracks?|validates?|verifies?|views?|votes?"
+    r"shows?|stores?|submits?|supplies?|tracks?|validates?|verifies?|views?|votes?|watches?"
 )
 _SPLIT_ACTION_VERB_PATTERN = ACTION_VERB_PATTERN.replace("schedules?", "schedules").replace("views?", "views")
 
@@ -153,13 +153,17 @@ def _starts_with_action_word(value: str) -> bool:
         "complete",
         "confirm",
         "create",
+        "define",
         "delete",
         "edit",
+        "end",
         "enter",
         "export",
         "fetch",
+        "find",
         "highlight",
         "import",
+        "launch",
         "log",
         "persist",
         "publish",
@@ -167,6 +171,7 @@ def _starts_with_action_word(value: str) -> bool:
         "read",
         "receive",
         "record",
+        "report",
         "review",
         "route",
         "save",
@@ -178,6 +183,7 @@ def _starts_with_action_word(value: str) -> bool:
         "update",
         "validate",
         "view",
+        "watch",
     }
 
 
