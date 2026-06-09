@@ -438,7 +438,7 @@ def test_greenfield_prewrite_package_passes_sun_burn_quality_regression(tmp_path
 
     assert report.passed, "\n".join(report.issues)
     assert "Recovery Episode" in encoded
-    assert "Episode History and Reminder and Notification" in rendered_text
+    assert "Episode History, Reminder, and Notification" in rendered_text
     assert "safe, evidence-grounded recovery plan" in rendered_text
     assert "first-24-hours action plan" in rendered_text
     assert "warning when safety threshold" in rendered_text

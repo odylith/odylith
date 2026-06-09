@@ -1,6 +1,8 @@
 - Bug ID: CB-198
 
-- Status: Open
+- Status: FixedPendingRelease
+
+- Fixed: Pending
 
 - Created: 2026-05-11
 
@@ -42,9 +44,15 @@
 
 - Solution: Preserve product-derived rationale through backlog authoring and use compact domain artifact slugs for generated Registry and Atlas artifacts.
 
+- Follow-Up Evidence (2026-06-09 / Dignity-shaped confirmed create): A v0.1.15 local install transcript for a dignity-and-agency app exposed a broader comprehension failure: child workstreams could inherit parent setup actions, action-shaped outcomes rendered as object phrases such as `shows open`, component labels repeated conjunctions, `Grown-up` casing flattened, and repetitive implementation-slice template text appeared across Radar surfaces even when the post-confirm gate passed.
+
+- Follow-Up Root Cause (2026-06-09): Confirmed-create used the same first-path action string across program and child rows without preserving actor ownership, downstream completion/enrichment layers treated action-shaped outcomes as visible objects, generated-copy gates did not reject presentational/action splices or repeated implementation templates, and component/title normalization did not distinguish setup actions, terminal outcomes, weak reflection artifacts, hyphenated role terms, or repeated conjunction chains.
+
+- Follow-Up Solution (2026-06-09): Preserve actor-owned workflow actions for child titles and copy, prefer terminal outcome titles only for strong outcome nouns, render action-shaped outcomes as user capabilities instead of objects, gate presentational/action splices and repeated implementation-slice templates, normalize repeated component conjunction chains, preserve hyphenated terms such as `Grown-up`, and repair gerund/base-form conversion for action chains such as accepting or dismissing a suggestion.
+
 - Rollback/Forward Fix: Forward fix in Domain Intelligence and Radar authoring; existing generated consumer repos should be regenerated or repaired from their accepted project source.
 
-- Verification: pytest tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_project_intelligence.py -q
+- Verification: pytest tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_project_intelligence.py -q. Follow-up proof: `PYTHONPATH=src ./.venv/bin/python -m pytest -q tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py tests/unit/runtime/test_greenfield_artifact_language_quality.py tests/unit/runtime/test_greenfield_prewrite_transaction.py tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py` passed (`72 passed`); `PYTHONPATH=src ./.venv/bin/python -m pytest -q tests/integration/runtime/test_greenfield_create_performance.py` passed (`7 passed`). A fresh Dignity-shaped confirmed-create replay completed in 12.296s and produced zero hits for `visible outcome from`, `uses the product to`, `understand The`, `Start with this implementation slice`, `representative user can`, `Let Child Learner Create An Account`, `shows open`, `Grown Up Recap`, and the old `Scenario Library and Authoring and Curation` label.
 
 - Prevention: Regression tests assert compact domain artifact IDs, no raw prompt slug in project payload, no generic queued-workstream rationale in greenfield Radar output, and Project tab projection from accepted-project and Tribunal state.
 

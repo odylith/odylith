@@ -263,6 +263,9 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
     purpose = _split_system_purpose_clause(text)
     if purpose[0] or purpose[1]:
         return purpose
+    relative = _split_relative_system_action_clause(text)
+    if relative[0] or relative[1]:
+        return relative
     split_pattern = re.compile(
         r"\s+(?=(?:owned\s+by|"
         r"captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
@@ -279,6 +282,24 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
         if _system_name_head_is_plausible(head) and _word_count(tail) >= 2:
             return _clean_system_name_head(head), tail
     return _clean_system_name_head(text), ""
+
+
+def _split_relative_system_action_clause(value: str) -> tuple[str, str]:
+    text = _clean(value)
+    match = re.match(
+        r"(?P<head>.+?\b(?:adapter|application|boundary|capture|console|dashboard|engine|flow|ledger|"
+        r"library|log|management|manager|module|nudge|portal|queue|record|reminder|service|store|"
+        r"surface|tracker|view|workspace))\s+(?:that|which|who)\s+(?P<body>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return "", ""
+    head = _clean(match.group("head")).strip(" .")
+    body = _clean(match.group("body")).strip(" .")
+    if _system_name_head_is_plausible(head) and _word_count(body) >= 2 and looks_like_finite_action(body):
+        return _clean_system_name_head(head), body
+    return "", ""
 
 
 def _split_system_purpose_clause(value: str) -> tuple[str, str]:

@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
@@ -83,6 +84,9 @@ def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -
         description = _clean_system_description(description)
         if _system_description_is_enough(description):
             return f"{_title_case(name)} — {description.rstrip('.')}"
+    relative_name, relative_description = _relative_system_label_parts(raw)
+    if relative_name and _system_description_is_enough(relative_description):
+        return f"{_title_case(relative_name)} — {_clean_system_description(relative_description)}"
     name = _system_label(raw, title=title)
     if not name:
         return ""
@@ -187,6 +191,7 @@ def _clean_system_description(value: str) -> str:
 
 def _system_label_head(value: str) -> str:
     head = _flatten_parenthetical_label(_clean(value.split("—", 1)[0].split(":", 1)[0]))
+    head = _strip_relative_system_label_clause(head)
     split = re.search(
         r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
         r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
@@ -204,10 +209,35 @@ def _system_label_head(value: str) -> str:
 def _system_label(row: str, *, title: str) -> str:
     raw = _flatten_parenthetical_label(_clean(row))
     raw = re.sub(r"^(?:a|an|the)\s+", "", raw, flags=re.IGNORECASE)
+    raw = _strip_relative_system_label_clause(raw)
     raw = _repair_system_label_tail(raw)
     if _word_count(raw) > 14:
         raw = _compact_system_label(raw)
     return _title_case(raw or f"{_focus_label(title)} system")
+
+
+def _strip_relative_system_label_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    head, _body = _relative_system_label_parts(text)
+    return head or text
+
+
+def _relative_system_label_parts(value: str) -> tuple[str, str]:
+    text = _clean(value).strip(" .")
+    match = re.match(
+        r"(?P<head>.+?\b(?:adapter|application|boundary|capture|console|dashboard|engine|flow|ledger|"
+        r"library|log|management|manager|module|nudge|portal|queue|record|reminder|service|store|"
+        r"surface|tracker|view|workspace))\s+(?:that|which|who)\s+(?P<body>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return "", ""
+    head = _clean(match.group("head")).strip(" .")
+    body = _clean(match.group("body")).strip(" .")
+    if head and _word_count(head) <= 12 and _word_count(body) >= 2 and looks_like_finite_action(body):
+        return head, body
+    return "", ""
 
 
 def _flatten_parenthetical_label(value: str) -> str:

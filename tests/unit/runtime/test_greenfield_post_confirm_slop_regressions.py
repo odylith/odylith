@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
@@ -10,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
@@ -178,6 +180,41 @@ def test_visible_result_language_normalization_stays_in_text_owner() -> None:
         assert r"\breadout\s+plus\b" not in source
         assert r"\bon\s+screen,\s+alongside\b" not in source
         assert 'r"\\balongside\\b", "with"' not in source
+
+
+def test_outcome_action_phrase_does_not_wrap_action_outcomes_as_visible_objects() -> None:
+    assert (
+        outcome_action_phrase("open a simple recap showing what the child explored and what it was teaching")
+        == "open a simple recap showing what the child explored and what it was teaching"
+    )
+    assert outcome_action_phrase("a simple recap showing what the child explored") == (
+        "see a simple recap showing what the child explored"
+    )
+
+
+def test_completed_internal_system_rows_strip_relative_action_clause_from_label() -> None:
+    completed = complete_confirmed_intent(
+        {
+            "title": "Choice Practice",
+            "product_story": "A learner practices choices and a trusted adult reviews a simple recap.",
+            "state_object": "A learner practice record with selected choice, consequence note, recap status, and privacy boundary.",
+            "first_path": (
+                "A parent creates an account and adds a learner. The learner opens a scenario and makes a choice. "
+                "The parent opens a recap."
+            ),
+            "proof_boundary": (
+                "Release 0.0.1 succeeds when the parent can create the learner record, the learner can complete "
+                "one scenario, and the parent can open the recap."
+            ),
+            "human_actors": ["Learner", "Parent"],
+            "internal_systems": ["Choice-and-consequence engine that records each decision"],
+        }
+    )
+
+    rendered = json.dumps(completed, ensure_ascii=False, sort_keys=True)
+
+    assert "Choice-and-consequence Engine — records each decision" in rendered
+    assert "Engine That" not in rendered
 
 
 def test_proof_boundary_language_normalization_stays_in_text_owner() -> None:
@@ -389,13 +426,30 @@ The first release succeeds when a parent can create an account and learner profi
         "see a consequence and a short reflection, and see",
         "learner can create an account",
         "where learner can create",
-        "Start with this implementation slice: Start with",
+        "Start with this implementation slice",
+        "representative user can",
+        "shows open",
         "should support the user action: create an account",
         "Build the smallest behavior in Account",
         "The product checks the details, explains missing information before it produces a result, and shows a short reflection",
     ):
         assert banned not in rendered
     assert generated_semantic_slop_issues(proposal) == []
+
+
+def test_generated_public_copy_rejects_action_shaped_result_and_template_prefix() -> None:
+    assert generated_public_copy_issues(
+        "Radar workstream",
+        "The product checks the details and shows open a simple recap.",
+    ) == ("Radar workstream leaked presentational verb/action splice prose",)
+    assert generated_public_copy_issues(
+        "Radar workstream",
+        "Start with this implementation slice: prove the first path.",
+    ) == ("Radar workstream leaked repetitive implementation-slice template prose",)
+    assert generated_public_copy_issues(
+        "Radar workstream",
+        "The product shows a short reflection with a clear explanation.",
+    ) == ()
 
 
 def test_first_path_clauses_separate_user_action_from_internal_processing() -> None:
@@ -730,7 +784,7 @@ The first release succeeds when one requester can submit a complete request and 
     assert "before this component can guide" not in rendered.casefold()
     assert all("Multi-team Routing" not in title for title in titles)
     assert all(len(title.split()) <= 12 for title in titles)
-    assert any(title.startswith("Let Requester See A Decision Summary") for title in titles)
+    assert any(title.startswith("Let Requester See a Decision Summary") for title in titles)
     assert "long-term analytics" not in proposal["semantic_model"]["first_path_contract"]["visible_result"].casefold()
     assert generated_semantic_slop_issues(proposal) == []
 
@@ -780,7 +834,7 @@ Proof boundary:
     assert "Participants Resident" not in rendered
     assert "Resident Resident" not in rendered
     assert "Need A Calmer Way" not in " ".join(titles)
-    assert any(title == "Let Resident Reach A Confirmed Booking" for title in titles)
+    assert any(title == "Let Resident Reach a Confirmed Booking" for title in titles)
     generated_backlog_text = json.dumps(
         [
             {
@@ -796,7 +850,7 @@ Proof boundary:
         sort_keys=True,
     )
     workflow = proposal["backlog"][1]
-    assert workflow["problem"].startswith("The resident needs the first interaction to end in a confirmed booking")
+    assert workflow["problem"].startswith("The resident needs the first interaction to let them reach a confirmed booking")
     assert "where trust can be lost first" not in generated_backlog_text.casefold()
     assert "replaying the whole workflow by hand" not in generated_backlog_text.casefold()
     assert "proof boundary" not in workflow["problem"].casefold()

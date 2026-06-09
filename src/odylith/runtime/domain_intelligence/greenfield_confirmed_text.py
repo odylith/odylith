@@ -110,7 +110,7 @@ CONFIRMED_DANGLING_WORDS = {
     "without",
 }
 
-_TITLE_CONNECTOR_WORDS = {"and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
+_TITLE_CONNECTOR_WORDS = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
 _TITLE_ACRONYMS = {"ai", "api", "crm", "gis", "iot", "llm", "ml", "pwa", "ui", "ux"}
 _TITLE_HYPHEN_MODIFIERS = {
     "back",
@@ -118,6 +118,7 @@ _TITLE_HYPHEN_MODIFIERS = {
     "end",
     "first",
     "front",
+    "grown",
     "high",
     "last",
     "long",

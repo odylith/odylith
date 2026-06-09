@@ -211,9 +211,9 @@ Release 0.0.1 succeeds when one owner can add the asset, log usage, receive a gr
     assert ", and manually logs" not in generated
     assert "Manually logs" not in generated
     assert "Accepts or dismisses" not in generated
-    assert "Manually log several usage" in generated
+    assert "Log Several Usage" in generated
     assert "Accept or dismisses" not in generated
-    assert "Accept or dismiss" in generated
+    assert "accepting or dismissing" in generated
 
     first_row = proposal["backlog"][0]
     child_row = proposal["backlog"][1]

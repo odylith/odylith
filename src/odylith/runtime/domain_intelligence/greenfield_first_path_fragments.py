@@ -467,6 +467,8 @@ def lowercase_leading_article(value: str) -> str:
 
 
 _GERUND_ACTION_VERBS = {
+    "accept": "accepting",
+    "accepts": "accepting",
     "add": "adding",
     "adds": "adding",
     "adjust": "adjusting",
@@ -493,6 +495,8 @@ _GERUND_ACTION_VERBS = {
     "creates": "creating",
     "display": "displaying",
     "displays": "displaying",
+    "dismiss": "dismissing",
+    "dismisses": "dismissing",
     "edit": "editing",
     "edits": "editing",
     "enter": "entering",

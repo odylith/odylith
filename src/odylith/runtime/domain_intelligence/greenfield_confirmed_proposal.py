@@ -432,6 +432,7 @@ def _project_intelligence(
     proof_summary = proof_claim_summary(proof_boundary, limit=320)
     state_summary = _state_detail_summary(state_object, state_label=state_label, limit=260)
     actors = join_actor_labels(human_actors) or _short_summary(customer, limit=220) or f"the first {label_lower} operator and reviewer"
+    actor_boundary = _actor_boundary_summary(human_actors, fallback=actors)
     internals = _join_system_labels(internal_systems) or f"{state_lower} owner and {evidence_lower} owner"
     externals = boundary_clause_text(external_systems) or "explicitly deferred external systems"
     non_goal_text = boundary_clause_text(non_goals) or "broad platform automation and live irreversible integrations"
@@ -440,7 +441,7 @@ def _project_intelligence(
             story_summary or f"{label} gives a named operator one accountable path instead of an unbounded product outcome.",
             problem_summary,
             f"Release {release} proves the accepted first path before wider automation, integrations, or scaling claims are allowed: {first_path_summary}",
-            f"The product outcome is useful only when {actors} can see what changed, why it changed, and what evidence supports the result.",
+            "The product outcome is useful only when each accepted role can see the part of the result, explanation, and evidence it is responsible for.",
         ],
         "scope": [
             f"In scope: {first_path_summary}",
@@ -448,7 +449,7 @@ def _project_intelligence(
             f"Out of scope: {non_goal_text} until the first path holds.",
         ],
         "ontology": [
-            f"{label} actor: one of the people or teams named in the confirmed intent: {actors}.",
+            f"{label} actor: one of the people or teams named in the confirmed intent. Boundary: {actor_boundary}.",
             f"{state_label}: the domain object that changes through the accepted first journey. {state_summary}",
             f"{evidence_label}: the proof record that ties the first-path result, validation output, state replay, and release decision together.",
             f"{label} release gate: the decision point that blocks promotion when first-path, state, access, or evidence proof is missing.",
@@ -458,7 +459,7 @@ def _project_intelligence(
             f"State changes stay versioned so the visible {label_lower} result can be replayed instead of explained from memory.",
         ],
         "operators": [
-            f"Actors involved in the first release are {actors}.",
+            f"Actors involved in the first release stay limited to {actor_boundary}.",
             f"Route state-changing actions only through the systems named in the confirmed intent: {internals}.",
             f"Assemble {evidence_lower} from the first-path result, state replay, validation output, and release decision.",
         ],
@@ -480,7 +481,7 @@ def _project_intelligence(
             f"Delay broader platform behavior until {state_lower} and {evidence_lower} survive validation.",
         ],
         "assumptions": [
-            f"The first actor set can be named before implementation starts: {actors}.",
+            f"The first actor set must stay explicit before implementation starts. Boundary: {actor_boundary}.",
             f"External systems remain simulated, sandboxed, or deferred unless the first path cannot be proven without them.",
         ],
         "topology": [
@@ -506,7 +507,7 @@ def _project_intelligence(
             f"{evidence_label} captures validation output, replay output, release decision, and release scope.",
         ],
         "owners": [
-            f"The first-release actors are: {actors}.",
+            f"The release owner keeps the accepted actor boundary explicit before promotion: {actor_boundary}.",
             f"The proof owner owns release-evidence completeness, release decision, and release-readiness language.",
         ],
         "execution_memory": [
@@ -550,7 +551,7 @@ def _project_intelligence(
             f"The first path is: {first_path_summary}",
             f"State ownership centers on {state_lower} and its version history.",
             f"Evidence review centers on {evidence_lower} and release proof: {proof_summary}",
-            f"Security covers authorization, private data, credential isolation, and abuse resistance across {actors}.",
+            f"Security covers authorization, private data, credential isolation, and abuse resistance across the accepted actor boundary: {actor_boundary}.",
             f"{label} release {release} remains limited to the first path and explicit non-goals.",
         ],
         "customization_flow": [
@@ -593,6 +594,19 @@ def _actor_focus_label(label: str) -> str:
     )
     text = " ".join(text.replace(":", " ").split()).strip(" -")
     return text or str(label or "Project").strip() or "Project"
+
+
+def _actor_boundary_summary(values: list[str] | None, *, fallback: str) -> str:
+    labels = [str(value or "").split("—", 1)[0].strip(" .") for value in values or [] if str(value or "").strip()]
+    if not labels:
+        return fallback
+    if len(labels) == 1:
+        return labels[0]
+    first_two = join_actor_labels(labels[:2], limit=2)
+    remaining = len(labels) - 2
+    if remaining <= 0:
+        return first_two
+    return f"{first_two}, plus {remaining} additional accepted role{'s' if remaining != 1 else ''}"
 
 
 __all__ = ["build_confirmed_greenfield_proposal"]

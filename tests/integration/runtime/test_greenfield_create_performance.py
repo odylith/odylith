@@ -150,6 +150,53 @@ A parent creates an account, adds a learner profile, and picks the age band of e
 The first release succeeds when a parent can create an account and learner profile, the learner can complete one scenario with a selected choice and reflection, and the parent can open a recap. Multiple age bands, authoring workflows, reminders, and live classroom management are outside the first proof.
 """
 
+NARRATIVE_AGENCY_CONFIRMED_INTENT_TEXT = """Stand Tall — a dignity and agency app for kids
+
+## Product story
+Kids are constantly told what to do, but rarely get safe practice at the harder skills underneath: noticing how they feel, setting a boundary, making a choice and owning it, and treating others as people who matter. Stand Tall gives a child short, story-driven moments where they make real decisions — speak up or stay quiet, share or keep, forgive or hold the line — and then see the consequences play out kindly. A trusted grown-up sets it up and can look in on what their kid is exploring, but the child's own choices stay the heart of it. The goal isn't points or streaks; it's a kid who walks away feeling a little more like the author of their own actions and a little more aware that everyone around them deserves the same respect.
+
+## State object
+The unit of truth is a child's growing sense of agency: their profile, the dignity and choice scenarios they've worked through, the decisions they made inside each one, and the reflections a grown-up can gently see — all tied to one kid and held privately under that grown-up's account.
+
+## First complete path
+A parent or teacher creates an account, adds a child, and picks an age band. The child opens an illustrated scenario, makes a choice at the decision point, sees a caring consequence and a one-line reflection, and finishes the moment. The grown-up later opens a simple recap showing what the child explored and what it was teaching — one full loop from setup to a child's choice to a grown-up's view.
+
+## Human actors
+- Child learner — makes the choices and does the reflecting
+- Parent — sets up the child, picks scenarios, reviews progress at home
+- Teacher or counselor — runs it for a small group or a specific kid
+- Content author — writes and curates the dignity and agency scenarios
+
+## External systems
+- Email or sign-in provider for the grown-up account
+- Asset/media hosting for illustrations and audio
+- Push or email reminders for grown-ups (optional, off by default)
+
+## Internal product systems
+- Account and child-profile management with age bands
+- Scenario library and authoring/curation
+- Choice-and-consequence engine that records each decision
+- Reflection capture for the child
+- Grown-up recap and progress view
+- Privacy and consent boundary around children's data
+
+## Critical assumptions
+- A grown-up always owns the account; children don't self-register
+- Single-device, turn-based use to start; no live multiplayer
+- Content is pre-authored and curated, not kid-generated, in the first release
+- "Progress" is qualitative reflection, not scores or rankings
+- Children's data is minimized and never used for ads or external sharing
+
+## Ambiguities
+- Target age band for v1 — early (5–7), middle (8–10), or tween (11–13)?
+- Primary setting — home/parent-led, or classroom/teacher-led with groups?
+- Does the child read independently, or is narration/audio required?
+- How much can a grown-up see — full choice history, or only gentle summaries?
+
+## Proof boundary
+Done means: a grown-up can create an account and a child profile, the child can complete one scenario end to end with a recorded choice and reflection, and the grown-up can open a recap of it — with children's data kept private to that account. Authoring depth, multiple age bands, and reminders are out of scope for this first proof.
+"""
+
 
 def test_greenfield_create_confirm_full_refresh_stays_under_thirty_seconds(tmp_path, capsys) -> None:
     _seed_empty_governance_repo(tmp_path)
@@ -373,13 +420,77 @@ def test_multi_actor_greenfield_create_preserves_actor_ownership_and_copy_under_
         "complete path where",
         "learner can create an account",
         "where learner can create",
-        "Start with this implementation slice: Start with",
+        "Start with this implementation slice",
+        "representative user can",
+        "shows open",
         "should support the user action: create an account",
         "Build the smallest behavior in Account",
         "The product checks the details, explains missing information before it produces a result, and shows a short reflection",
     ):
         assert banned not in rendered_payload
         assert banned not in generated_payload
+
+
+def test_narrative_greenfield_create_normalizes_action_outcome_under_thirty_seconds(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(NARRATIVE_AGENCY_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a child agency practice app",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    elapsed = time.perf_counter() - started
+    payload = json.loads(capsys.readouterr().out)
+    rendered_payload = json.dumps(payload)
+    generated_payload = _generated_source_payload(tmp_path)
+
+    assert rc == 0
+    assert elapsed < 30.0
+    assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+    assert payload["dashboard_refresh"]["status"] == "passed"
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) >= 5
+    assert len(payload["diagrams"]) == 6
+    for banned in (
+        "see open",
+        "users can see open",
+        "Choice-and-consequence Engine That",
+        "ending in `That`",
+        "understand The",
+        "The unit of truth is",
+        "Let Child Learner Makes",
+        "Let Child Learner Create an Account",
+        "Let Child Learner Create An Account",
+        "let one representative user creates an account",
+        "representative user can",
+        "visible outcome from",
+        "uses the product to parent creates",
+        "shows open",
+        "Grown Up Recap",
+        "Scenario Library and Authoring and Curation",
+        "for a reviewer to.",
+        "Start with this implementation slice",
+    ):
+        assert banned not in rendered_payload
+        assert banned not in generated_payload
+    component_labels = {row["label"] for row in payload["components"]}
+    assert "Scenario Library, Authoring, and Curation Service" in component_labels
+    assert "Grown-up Recap and Progress View Service" in component_labels
 
 
 def test_greenfield_create_rerun_replaces_previous_greenfield_workstreams_under_thirty_seconds(tmp_path, capsys) -> None:

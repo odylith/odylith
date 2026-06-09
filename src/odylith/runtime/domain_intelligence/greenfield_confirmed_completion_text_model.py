@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import text_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
@@ -55,6 +56,7 @@ _VISIBLE_SEE_RESULT_HINTS = {
     "consequence",
     "notice",
     "outcome",
+    "recap",
     "readout",
     "reflection",
     "report",
@@ -109,7 +111,7 @@ def outcome_phrase(proposal: Mapping[str, Any]) -> str:
 
 def outcome_action_phrase(outcome: str) -> str:
     text = _clean(outcome).rstrip(" .") or "the product result"
-    if looks_like_finite_action(text):
+    if looks_like_action_clause(text):
         return base_action_clause(text)
     words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
     if words & _VISIBLE_SEE_RESULT_HINTS:

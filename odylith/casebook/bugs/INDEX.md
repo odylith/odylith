@@ -1,6 +1,6 @@
 # Bug Index
 
-Last updated (UTC): 2026-06-05
+Last updated (UTC): 2026-06-09
 
 ## Open Bugs
 
@@ -12,7 +12,7 @@ Last updated (UTC): 2026-06-05
 | CB-200 | 2026-05-12 | Local dist handoff still depends on chat memory instead of a surfaced recipe | P2 | Install / Upgrade / Migration Runtime; Operator Experience | Open | [2026-05-12-local-dist-handoff-still-depends-on-chat-memory-instead-of-a-surfaced-recipe.md](2026-05-12-local-dist-handoff-still-depends-on-chat-memory-instead-of-a-surfaced-recipe.md) |
 | CB-197 | 2026-05-11 | Greenfield umbrella workstream described governance spine instead of business problem | P1 | domain-intelligence | Open | [2026-05-11-greenfield-umbrella-workstream-described-governance-spine-instead-of-business-pr.md](2026-05-11-greenfield-umbrella-workstream-described-governance-spine-instead-of-business-pr.md) |
 | CB-199 | 2026-05-11 | Greenfield project tab rendered blank or templated after accepted proposal | P1 | dashboard | FixedPendingRelease | [2026-05-11-greenfield-project-tab-rendered-blank-or-templated-after-accepted-proposal.md](2026-05-11-greenfield-project-tab-rendered-blank-or-templated-after-accepted-proposal.md) |
-| CB-198 | 2026-05-11 | Greenfield child artifacts failed product manager comprehension | P1 | domain-intelligence | Open | [2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md](2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md) |
+| CB-198 | 2026-05-11 | Greenfield child artifacts failed product manager comprehension | P1 | domain-intelligence | FixedPendingRelease | [2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md](2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md) |
 | CB-194 | 2026-05-09 | Greenfield propose dumped deep record instead of staged product review | P1 | domain-intelligence | FixedPendingRelease | [2026-05-09-greenfield-propose-dumped-deep-record-instead-of-staged-product-review.md](2026-05-09-greenfield-propose-dumped-deep-record-instead-of-staged-product-review.md) |
 | CB-195 | 2026-05-09 | Greenfield diagrams repeated full project prompt in view titles | P1 | domain-intelligence | FixedPendingRelease | [2026-05-09-greenfield-diagrams-repeated-full-project-prompt-in-view-titles.md](2026-05-09-greenfield-diagrams-repeated-full-project-prompt-in-view-titles.md) |
 | CB-191 | 2026-05-09 | Greenfield atlas diagrams modeled odylith surfaces as product topology | P1 | domain-intelligence-greenfield | Open | [2026-05-09-greenfield-atlas-diagrams-modeled-odylith-surfaces-as-product-topology.md](2026-05-09-greenfield-atlas-diagrams-modeled-odylith-surfaces-as-product-topology.md) |

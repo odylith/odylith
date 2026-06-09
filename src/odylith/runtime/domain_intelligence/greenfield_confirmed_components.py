@@ -230,6 +230,7 @@ def system_component_name(value: str) -> str:
     name = _flatten_parenthetical_descriptor(_plain_text(value)).replace("/", " and ").strip(" .:-")
     if not name:
         return ""
+    name = _normalize_repeated_and_chain(name)
     for pattern, replacement in _GENERIC_COMPONENT_ROLE_PREFIXES:
         match = pattern.match(name)
         if not match:
@@ -241,6 +242,16 @@ def system_component_name(value: str) -> str:
             return _sentence_case(rest)
         return f"{replacement} {rest}"
     return name
+
+
+def _normalize_repeated_and_chain(value: str) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
+    parts = [part.strip(" .") for part in re.split(r"\s+and\s+", text, flags=re.IGNORECASE) if part.strip(" .")]
+    if len(parts) < 3:
+        return text
+    if any(word_count(part) > 5 for part in parts[1:]):
+        return text
+    return f"{parts[0]}, {', '.join(parts[1:-1])}, and {parts[-1]}"
 
 
 def _flatten_parenthetical_descriptor(value: str) -> str:

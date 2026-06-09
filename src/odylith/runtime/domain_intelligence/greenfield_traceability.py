@@ -317,7 +317,7 @@ def _patch_sections(
     if product_view or first_slice:
         sections["Proposed Solution"] = _paragraph(
             [
-                f"Start with this implementation slice: {first_slice}" if first_slice else "",
+                f"Implementation slice: {first_slice}" if first_slice else "",
                 (
                     f"Keep validation gates tied to this workstream before expanding adjacent source ownership: {focus}."
                     if focus

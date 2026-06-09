@@ -47,10 +47,17 @@ def confirmed_workstream_titles(
     ]
     actor = backlog_text.lead_actor_label(human_actors)
     action = backlog_text.imperative_action_phrase(first_path)
+    actor_owned_action = _workflow_title_action(first_path=first_path, actor=actor, fallback=action)
     state_label = _domain_object_label(state_object, fallback=f"{label} state")
     proof_label = labels[-1] if len(labels) > 2 else (labels[0] if labels else label)
     outcome = backlog_text.first_path_outcome(first_path, proof_boundary=proof_boundary)
-    if outcome and not backlog_text.generic_title_outcome(outcome):
+    if outcome and not backlog_text.generic_title_outcome(outcome) and _prefer_outcome_title(outcome):
+        workflow_actor = actor or backlog_text.actor_from_action(action) or "user"
+        workflow = f"Let {workflow_actor} {_outcome_action_phrase(outcome)}"
+    elif actor_owned_action:
+        workflow_actor = actor or backlog_text.actor_from_action(actor_owned_action) or "user"
+        workflow = f"Let {workflow_actor} {actor_owned_action}"
+    elif outcome and not backlog_text.generic_title_outcome(outcome):
         workflow_actor = actor or backlog_text.actor_from_action(action) or "user"
         workflow = f"Let {workflow_actor} {_outcome_action_phrase(outcome)}"
     elif action:
@@ -267,9 +274,14 @@ def confirmed_backlog_rows(
         limit=340,
     )
     path_entry_story = backlog_text.sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
-    metric_actor = backlog_text.problem_actor_subject(actors, fallback=f"{label} user")
+    workflow_actor_label = backlog_text.lead_actor_label(human_actors) or f"{label} user"
+    metric_actor = backlog_text.problem_actor_subject(workflow_actor_label, fallback=f"{label} user")
     downstream_actor = backlog_text.supporting_actor_label(human_actors)
     downstream_subject = backlog_text.problem_actor_subject(downstream_actor, fallback="the next participant") if downstream_actor else "The next participant"
+    recipient_phrase = _recipient_phrase(downstream_subject)
+    workflow_audience = _join_distinct_labels([workflow_actor_label, downstream_actor])
+    boundary_audience = workflow_audience or f"{label} operators and reviewers"
+    proof_audience = downstream_actor or f"{label} proof reviewer"
     parent_problem = backlog_text.program_problem(
         label=label,
         actors=actors,
@@ -278,29 +290,46 @@ def confirmed_backlog_rows(
         outcome=outcome_summary,
         fallback=problem_summary,
     )
-    parent_opportunity = f"Ship one complete outcome: a representative user can {first_path_action} and {outcome_action} to decide what to do next."
-    parent_view = f"{label} should feel complete when {actors} can {first_path_action}, see {outcome_summary}, and understand what remains outside the first release."
+    parent_opportunity = _parent_opportunity_sentence(
+        capability=first_path_proof_capability,
+        outcome_action=outcome_action,
+        state_label=state_label,
+        recipient=recipient_phrase,
+    )
+    parent_view = _parent_product_view_sentence(
+        label=label,
+        capability=first_path_proof_capability,
+        outcome_action=outcome_action,
+        state_label=state_label,
+        recipient=recipient_phrase,
+    )
     first_slice_action = first_path_full_capability or first_path_action
     outcome_terms = backlog_text.semantic_words(outcome_summary)
     action_terms = backlog_text.semantic_words(first_slice_action)
     outcome_already_covered = bool(outcome_terms and outcome_terms <= action_terms)
     if outcome_summary and not outcome_already_covered and not backlog_text.shares_product_terms(first_slice_action, outcome_summary):
-        first_slice = f"Prove one first-release path: a user can {first_slice_action} and see {outcome_summary}."
+        first_slice = f"Prove one first-release path: {first_path_proof_capability}, then let {recipient_phrase} {outcome_action}."
     else:
-        first_slice = f"Prove one first-release path: a user can {first_slice_action}."
+        first_slice = f"Prove one first-release path: {first_path_proof_capability}."
     first_slice = _dedupe_repeated_visible_result_tail(first_slice)
     workflow_action = _actor_interaction_action(
         first_path=first_path_for_clauses,
-        actor=metric_actor,
+        actor=workflow_actor_label,
         fallback=first_path_action,
     )
     workflow_outcome_action = _append_outcome_action(
         action=workflow_action,
         outcome=outcome_summary,
         outcome_action=outcome_action,
+        recipient=downstream_subject,
     )
     workflow_missing_input_tail = _missing_input_tail(action=workflow_action, outcome=outcome_summary)
-    workflow_result_sentence = _workflow_result_sentence(action=workflow_action, outcome=outcome_summary)
+    workflow_result_sentence = _workflow_result_sentence(
+        action=workflow_action,
+        outcome=outcome_summary,
+        outcome_action=outcome_action,
+        recipient=downstream_subject,
+    )
     parent = _backlog_row(
         label=label,
         title=parent_title,
@@ -340,12 +369,13 @@ def confirmed_backlog_rows(
         label=label,
         title=workflow_title,
         problem=(
-            f"{metric_actor} needs the first interaction to end in {outcome_summary}, not just captured input. "
+            f"{metric_actor} needs the first interaction to let them {outcome_action}, not just captured input. "
             f"If the path accepts incomplete details or hides why it stopped, {downstream_subject[:1].lower()}{downstream_subject[1:]} cannot act on the result with confidence."
         ),
-        customer=actors,
+        customer=workflow_actor_label,
         opportunity=(
-            f"Turn the first user action into a complete, reviewable outcome: the user provides what the product needs, sees {outcome_summary}, and leaves enough context for follow-up."
+            f"Turn the first actor-owned action into a complete, reviewable outcome: {metric_actor[:1].lower()}{metric_actor[1:]} provides what the product needs, "
+            f"leaves enough context for follow-up, and lets {recipient_phrase} {outcome_action}."
         ),
         product_view=(
             f"{metric_actor} can {workflow_action}. The product checks the details, explains missing information before it produces a result, "
@@ -356,7 +386,7 @@ def confirmed_backlog_rows(
             f"{workflow_outcome_action}{workflow_missing_input_tail}."
         ),
         metrics=[
-            f"The first interaction proves {first_path_proof_capability} and {outcome_summary}.",
+            f"The first interaction proves {first_path_proof_capability} and lets {recipient_phrase} {outcome_action}.",
             "Missing or invalid information produces clear correction guidance instead of a misleading result.",
             f"{downstream_subject} can use the saved context without asking the user to repeat the same details.",
         ],
@@ -370,6 +400,7 @@ def confirmed_backlog_rows(
         first_path=first_path_summary,
         proof_boundary=proof_summary,
         human_actors=human_actors,
+        intelligence_actors=[value for value in (workflow_actor_label, downstream_actor) if value],
         internal_systems=internal_systems,
         external_systems=external_systems,
         non_goals=non_goals,
@@ -378,7 +409,7 @@ def confirmed_backlog_rows(
         label=label,
         title=boundary_title,
         problem=f"{state_label} becomes untrustworthy when a visible change cannot explain who made it, what status it reached, or why it is blocked.",
-        customer=actors,
+        customer=boundary_audience,
         opportunity=(
             f"Give the product a durable memory of {state_label}: current status, source reference, blocker, recovery note, and what should happen next."
         ),
@@ -408,6 +439,7 @@ def confirmed_backlog_rows(
         first_path=first_path_summary,
         proof_boundary=proof_summary,
         human_actors=human_actors,
+        intelligence_actors=[value for value in (workflow_actor_label, downstream_actor) if value],
         internal_systems=internal_systems,
         external_systems=external_systems,
         non_goals=non_goals,
@@ -418,7 +450,7 @@ def confirmed_backlog_rows(
         problem=(
             "Release review is not credible when the product can show an outcome but cannot explain the evidence, limits, and decision behind it."
         ),
-        customer=actors,
+        customer=proof_audience,
         opportunity=(
             "Turn the completed path into a reviewable release claim that connects validation results, state references, "
             "the release decision, and deferred scope."
@@ -450,6 +482,7 @@ def confirmed_backlog_rows(
         first_path=first_path_summary,
         proof_boundary=proof_summary,
         human_actors=human_actors,
+        intelligence_actors=[proof_audience],
         internal_systems=internal_systems,
         external_systems=external_systems,
         non_goals=non_goals,
@@ -466,7 +499,69 @@ def _state_responsibility_label(state_label: str) -> str:
     return f"{text} state responsibility"
 
 
+def _prefer_outcome_title(value: str) -> bool:
+    text = str(value or "").casefold()
+    words = set(re.findall(r"[a-z][a-z0-9'-]*", text))
+    weak = {"consequence", "recap", "reflection"}
+    if words & weak:
+        return False
+    strong = {
+        "booking",
+        "confirmation",
+        "decision",
+        "estimate",
+        "plan",
+        "recommendation",
+        "report",
+        "result",
+        "summary",
+    }
+    return bool(words & strong)
+
+
+def _workflow_title_action(*, first_path: str, actor: str, fallback: str) -> str:
+    fragments = _actor_owned_action_fragments(first_path=first_path, actor=actor, include_visible=False, max_fragments=4)
+    selected = _preferred_title_fragment(fragments)
+    action = backlog_text.base_leading_action(backlog_text.sentence_fragment(selected))
+    if action:
+        return action
+    return backlog_text.base_leading_action(backlog_text.sentence_fragment(fallback))
+
+
+def _preferred_title_fragment(values: list[str]) -> str:
+    fragments = [backlog_text.sentence_fragment(value) for value in values if backlog_text.sentence_fragment(value)]
+    if not fragments:
+        return ""
+    first = fragments[0]
+    if not _skip_title_setup_fragment(first):
+        return first
+    for fragment in fragments[1:]:
+        if not _skip_title_setup_fragment(fragment):
+            return fragment
+    return first
+
+
+def _skip_title_setup_fragment(value: str) -> bool:
+    text = str(value or "").strip()
+    if re.match(r"^(?:open|launch|start|visit|view)\b", text, flags=re.IGNORECASE):
+        return True
+    return bool(
+        re.match(
+            r"^(?:add|create|set\s+up)\s+(?:one\s+|a\s+|an\s+|the\s+)?"
+            r"(?:account|asset|child|learner\s+profile|profile|record|workspace)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
 def _actor_interaction_action(*, first_path: str, actor: str, fallback: str) -> str:
+    selected = _actor_owned_action_fragments(first_path=first_path, actor=actor, include_visible=True, max_fragments=3)
+    action = _join_action_fragments(selected)
+    return backlog_text.capability_action_clause(action or fallback)
+
+
+def _actor_owned_action_fragments(*, first_path: str, actor: str, include_visible: bool, max_fragments: int) -> list[str]:
     actor_terms = _actor_match_terms(actor)
     selected: list[str] = []
     selected_keys: set[str] = set()
@@ -480,22 +575,25 @@ def _actor_interaction_action(*, first_path: str, actor: str, fallback: str) -> 
                 if selected and visible_seen:
                     break
                 continue
+        step_visible = bool(visible_result_object(step) or looks_like_visible_result(step))
+        if step_visible and not include_visible:
+            if selected:
+                break
+            continue
         fragment = backlog_text.sentence_fragment(action_chain_fragment(step))
         key = fragment.casefold()
         if fragment and key not in selected_keys:
             selected.append(fragment)
             selected_keys.add(key)
-        step_visible = bool(visible_result_object(step) or looks_like_visible_result(step))
         visible_seen = visible_seen or step_visible
         if step_visible and selected:
             break
-        if len(selected) >= 3:
+        if len(selected) >= max_fragments:
             break
-    action = _join_action_fragments(selected)
-    return backlog_text.capability_action_clause(action or fallback)
+    return selected
 
 
-def _append_outcome_action(*, action: str, outcome: str, outcome_action: str) -> str:
+def _append_outcome_action(*, action: str, outcome: str, outcome_action: str, recipient: str) -> str:
     action_terms = backlog_text.semantic_words(action)
     outcome_terms = backlog_text.semantic_words(outcome)
     outcome_action_terms = backlog_text.semantic_words(outcome_action)
@@ -503,7 +601,7 @@ def _append_outcome_action(*, action: str, outcome: str, outcome_action: str) ->
         outcome_action_terms and outcome_action_terms <= action_terms
     ):
         return ""
-    return f", {outcome_action}" if outcome_action else ""
+    return f", and lets {_recipient_phrase(recipient)} {outcome_action}" if outcome_action else ""
 
 
 def _missing_input_tail(*, action: str, outcome: str) -> str:
@@ -514,17 +612,72 @@ def _missing_input_tail(*, action: str, outcome: str) -> str:
     return ", and see what to fix when required information is missing"
 
 
-def _workflow_result_sentence(*, action: str, outcome: str) -> str:
+def _workflow_result_sentence(*, action: str, outcome: str, outcome_action: str, recipient: str) -> str:
     action_terms = backlog_text.semantic_words(action)
     outcome_terms = backlog_text.semantic_words(outcome)
+    outcome_action_terms = backlog_text.semantic_words(outcome_action)
     if outcome_terms and outcome_terms <= action_terms:
         return "and keeps the saved result reviewable"
-    return f"and shows {outcome}"
+    if outcome_action_terms and outcome_action_terms <= action_terms:
+        return "and keeps the saved result reviewable"
+    return f"and lets {_recipient_phrase(recipient)} {outcome_action}"
+
+
+def _parent_opportunity_sentence(*, capability: str, outcome_action: str, state_label: str, recipient: str) -> str:
+    if outcome_action and not _terms_covered(outcome_action, capability):
+        return f"Ship one complete outcome: prove {capability} and let {recipient} {outcome_action}."
+    return f"Ship one complete outcome: prove {capability} with reviewable {state_label}."
+
+
+def _parent_product_view_sentence(*, label: str, capability: str, outcome_action: str, state_label: str, recipient: str) -> str:
+    if outcome_action and not _terms_covered(outcome_action, capability):
+        return (
+            f"{label} should feel complete when the accepted first path proves {capability}, "
+            f"lets {recipient} {outcome_action}, and keeps the first-release boundary clear."
+        )
+    return (
+        f"{label} should feel complete when the accepted first path proves {capability}, "
+        f"keeps {state_label} clear, and makes the first-release boundary explicit."
+    )
+
+
+def _terms_covered(needle: str, haystack: str) -> bool:
+    needle_terms = backlog_text.semantic_words(needle)
+    if not needle_terms:
+        return False
+    return needle_terms <= backlog_text.semantic_words(haystack)
+
+
+def _recipient_phrase(value: str) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
+    if not text:
+        return "the user"
+    text = re.sub(r"^The\s+", "the ", text)
+    if text.startswith("the "):
+        return text
+    if re.match(r"^[A-Z][A-Za-z0-9' -]*$", text):
+        return f"the {text[:1].lower()}{text[1:]}"
+    return f"{text[:1].lower()}{text[1:]}"
+
+
+def _join_distinct_labels(values: list[str | None]) -> str:
+    labels: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip(" .")
+        if not text:
+            continue
+        key = text.casefold()
+        if key in seen:
+            continue
+        labels.append(text)
+        seen.add(key)
+    return backlog_text.join_actor_labels(labels, limit=3)
 
 
 def _actor_match_terms(value: str) -> set[str]:
     terms = {word.casefold() for word in re.findall(r"[A-Za-z][A-Za-z0-9'-]{2,}", str(value or ""))}
-    return terms - {"actor", "later", "owner", "primary", "reviewer", "user"}
+    return terms - {"actor", "later", "primary", "reviewer", "user"}
 
 
 def _join_action_fragments(values: list[str]) -> str:
@@ -580,6 +733,7 @@ def _backlog_row(
     internal_systems: list[str],
     external_systems: list[str],
     non_goals: list[str],
+    intelligence_actors: list[str] | None = None,
     workstream_type: str = "implementation",
 ) -> dict[str, Any]:
     return {
@@ -623,7 +777,7 @@ def _backlog_row(
             evidence_record=evidence_record,
             first_path=first_path,
             proof_boundary=proof_boundary,
-            human_actors=human_actors,
+            human_actors=intelligence_actors or human_actors,
             internal_systems=internal_systems,
             external_systems=external_systems,
             non_goals=non_goals,

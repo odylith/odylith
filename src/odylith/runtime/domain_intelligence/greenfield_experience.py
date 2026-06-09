@@ -367,7 +367,10 @@ def _component_local_first_slice(row: Mapping[str, Any], *, fallback: str) -> st
     contract = row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else {}
     inputs = _short_contract_text(contract.get("accepted_inputs") if isinstance(contract, Mapping) else "")
     outputs = _short_contract_text(contract.get("produced_outputs") if isinstance(contract, Mapping) else "")
-    proof = _short_contract_text(_first_contract_text(contract.get("local_proof")) if isinstance(contract, Mapping) else "")
+    proof = _short_contract_text(
+        _first_contract_text(contract.get("local_proof")) if isinstance(contract, Mapping) else "",
+        limit=260,
+    )
     responsibility = _short_contract_text(row.get("responsibility") or row.get("boundary"))
     validation = _short_contract_text(_first_contract_text(row_text_tuple(row, "validation", "test_strategy")))
     if label and proof:
@@ -395,7 +398,12 @@ def _first_contract_text(value: Any) -> str:
 
 
 def _short_contract_text(value: Any, *, limit: int = 180) -> str:
-    return clip_text_at_word_boundary(value, limit=limit, strip_edges=" .").strip(" ,;:")
+    return clip_text_at_word_boundary(
+        value,
+        limit=limit,
+        strip_edges=" .",
+        dangling_words={"a", "an", "and", "for", "from", "of", "or", "the", "to", "with"},
+    ).strip(" ,;:")
 
 
 def _workstream_title_matches_component(title: str, row: Mapping[str, Any]) -> bool:

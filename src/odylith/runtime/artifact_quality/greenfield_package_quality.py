@@ -304,6 +304,17 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
     semantic_model = _as_mapping(proposal.get("semantic_model"))
     first_path = _as_mapping(semantic_model.get("first_path_contract"))
     ontology = _as_mapping(semantic_model.get("domain_ontology"))
+    component_rows = proposal.get("components", [])
+    component_sequence = (
+        component_rows
+        if isinstance(component_rows, Sequence) and not isinstance(component_rows, str)
+        else []
+    )
+    components = [
+        row
+        for row in component_sequence
+        if isinstance(row, Mapping)
+    ]
     values = [
         intent.get("title"),
         intent.get("first_path"),
@@ -313,6 +324,11 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
         first_path.get("capability"),
         first_path.get("visible_result"),
         ontology.get("proof_boundary"),
+        *[
+            f"{component.get('component_id', '')} {component.get('label', '')}"
+            for component in components
+            if normalize_string(component.get("component_id")) and normalize_string(component.get("label"))
+        ],
     ]
     keys: set[str] = set()
     for value in values:

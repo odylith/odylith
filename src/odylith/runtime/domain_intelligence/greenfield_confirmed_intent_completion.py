@@ -222,8 +222,9 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
     if _word_count(proof) < CORE_FIELD_MIN_WORDS["proof_boundary"]:
         action = first_path_action_phrase(first_path or story, fallback="complete the first useful product action", max_fragments=1)
         outcome = _visible_outcome_phrase(first_path or story, proof=proof).rstrip(" .") or "a clear, useful result"
+        outcome_action = _outcome_action_phrase(outcome)
         intent["proof_boundary"] = _sentence(
-            f"The first release works when a representative user can {action}, the product shows {outcome}, and missing or invalid information leaves a clear correction path instead of a misleading result. "
+            f"The first release works when a representative user can {action}, the product confirms the user can {outcome_action}, and missing or invalid information leaves a clear correction path instead of a misleading result. "
             f"It must not claim live integrations, broad automation, regulated correctness, or production-scale operation beyond the confirmed {title.lower()} boundary."
         )
 
