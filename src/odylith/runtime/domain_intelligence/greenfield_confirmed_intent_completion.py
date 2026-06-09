@@ -244,13 +244,13 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
             _story_problem_sentence(story)
             or (
                 f"{customer_text} {needs_verb} a dependable way to understand {state_phrase} and {decision_phrase}; "
-                "without it, the work stays scattered, hard to interpret, and easy to act on too late or for the wrong reason."
+                "without it, the work stays scattered, hard to interpret, and easy to misuse."
             )
         )
     elif _problem_needs_repair(intent.get("problem")):
         intent["problem"] = _sentence(
             f"{customer_text} {needs_verb} a dependable way to understand {state_phrase} and {decision_phrase}; "
-            "without it, the work stays scattered, hard to interpret, and easy to act on too late or for the wrong reason."
+            "without it, the work stays scattered, hard to interpret, and easy to misuse."
         )
     if not _clean(intent.get("customer")) or _customer_needs_repair(intent.get("customer")):
         intent["customer"] = _sentence(_customer_sentence(actors, title=title, first_path=first_path))
@@ -259,8 +259,9 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
             f"Make the first version valuable by proving the smallest complete outcome: {path_capability}, ending in {outcome_text}."
         )
     if not _clean(intent.get("product_view")) or _product_view_needs_repair(intent.get("product_view")):
+        outcome_action = _outcome_action_phrase(outcome_text)
         intent["product_view"] = _sentence(
-            f"{title} is useful when {customer_text} can {path_capability} and confidently use {outcome_text} to decide the next action."
+            f"{title} is useful when {customer_text} can {path_capability} and confidently {outcome_action} to decide the next action."
         )
     metrics = confirmed_text_values(intent.get("success_metrics"))
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
@@ -423,6 +424,12 @@ def _state_focus_phrase(state: str, *, title: str) -> str:
     text = _clean(state)
     if not text:
         return f"{_focus_label(title).lower()} state"
+    state_label = _state_label(text, title=title)
+    if 2 <= _word_count(state_label) <= 8:
+        label = state_label.casefold()
+        if not label.startswith(("a ", "an ", "the ")):
+            label = f"the {label}"
+        return label
     text = re.sub(r"^(?:the\s+)?(?:core|main|primary)\s+state\s+(?:is|object\s+is)\s+", "", text, flags=re.I)
     text = re.sub(r"^a\s+", "the ", text, flags=re.I)
     first_clause = re.split(r";|(?<=[.!?])\s+", text, maxsplit=1)[0].strip(" .")
@@ -434,8 +441,8 @@ def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
     text = first_path_outcome_phrase(first_path, proof_boundary=proof, fallback="a visible, useful result", limit=190).rstrip(".")
     if re.match(r"^why\b", text, flags=re.I):
         text = f"the explanation for {text}"
-    if not re.search(r"\b(?:answer|appointment|booking|card|confirmation|decision|explanation|metrics?|outcome|plan|readout|recommendation|report|result|schedule|status|summary|view)\b", text, re.I):
-        text = f"a visible outcome from {text}"
+    if not re.search(r"\b(?:answer|appointment|booking|card|confirmation|consequence|decision|explanation|metrics?|outcome|plan|readout|recommendation|reflection|report|result|schedule|status|summary|view)\b", text, re.I):
+        text = f"the visible result produced by {text}"
     return text
 
 

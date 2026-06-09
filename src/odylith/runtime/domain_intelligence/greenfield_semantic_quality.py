@@ -335,6 +335,18 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"clipped out-of-scope sentence leaked at {location}")
         if re.search(r"\bhand\s+[a-z][a-z-]*(?:\s+[a-z][a-z-]*){0,4}\s+(?:identity|state|evidence|result|record)\b", lowered):
             issues.append(f"handoff verb leaked as an artifact noun at {location}")
+        if re.search(r"\buses\s+the\s+product\s+to\s+(?:a|an|the\s+)?[a-z][a-z '-]{0,80}\s+(?:adds|creates|makes|opens|picks|sees)\b", lowered):
+            issues.append(f"actor/action splice leaked at {location}")
+        if re.search(r"\badd\s+[^.;]{1,100}\band\s+picks\b", lowered) or re.search(
+            r"\bcreate\s+[^.;]{1,100}\band\s+adds\b", lowered
+        ) or re.search(r"\bmake\s+[^.;]{1,100}\band\s+sees\b", lowered):
+            issues.append(f"mixed infinitive/finite action chain leaked at {location}")
+        if re.search(r"\b(?:reflection|result|summary|view|readout|outcome|consequence)\s+and\s+(?:completes?|ends?|finishes?)\b", lowered):
+            issues.append(f"terminal action leaked into visible result noun at {location}")
+        if re.search(r"\bunderstand\s+[A-Z]", text):
+            issues.append(f"sentence fragment leaked after understand at {location}")
+        if re.search(r"\b(?:reach|use)\s+(?:a|an|the\s+)?(?:reflection|result|summary|view|readout|outcome|consequence)\b", lowered):
+            issues.append(f"awkward visible-result action leaked at {location}")
         if (
             re.search(r"\bas a later\s*[.]?$", lowered)
             or re.search(r"\bvalid\s+transition\s+display,\s*stale\b", lowered)

@@ -50,6 +50,20 @@ _VISIBLE_RESULT_OBJECT_HINTS = {
     "timeline",
     "view",
 }
+_VISIBLE_SEE_RESULT_HINTS = {
+    "card",
+    "consequence",
+    "notice",
+    "outcome",
+    "readout",
+    "reflection",
+    "report",
+    "result",
+    "summary",
+    "timeline",
+    "trend",
+    "view",
+}
 
 
 def capability_phrase(proposal: Mapping[str, Any]) -> str:
@@ -97,7 +111,10 @@ def outcome_action_phrase(outcome: str) -> str:
     text = _clean(outcome).rstrip(" .") or "the product result"
     if looks_like_finite_action(text):
         return base_action_clause(text)
-    if {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()} & _VISIBLE_RESULT_OBJECT_HINTS:
+    words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
+    if words & _VISIBLE_SEE_RESULT_HINTS:
+        return f"see {text}"
+    if words & _VISIBLE_RESULT_OBJECT_HINTS:
         return f"use {text}"
     return f"reach {text}"
 

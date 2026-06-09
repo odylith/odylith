@@ -8,6 +8,7 @@ retrieve without re-asking the same scope questions.
 
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -151,7 +152,7 @@ def build_accepted_project_source_payload(
         "accepted_at": _clean(accepted_at),
         "title": _clean(intent.get("title")) or "Greenfield Project",
         "source": "greenfield_apply",
-        "proposal": dict(proposal),
+        "proposal": _accepted_memory_proposal(proposal),
         "created": {
             "workstreams": [dict(row) for row in backlog_items],
             "components": [dict(row) for row in component_items],
@@ -162,6 +163,79 @@ def build_accepted_project_source_payload(
         "validation_gate": dict(validation_gate or {}),
     }
     return dict(display_text.strip_inline_markdown_emphasis_tree(payload))
+
+
+def _accepted_memory_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the proposal shape stored in accepted memory."""
+
+    payload = copy.deepcopy(dict(proposal))
+    first_path = _normalized_first_path_from_events(payload)
+    if not first_path:
+        return payload
+
+    intent = _mutable_child(payload, "intent")
+    raw_first_path = _clean(intent.get("first_path"))
+    intent["first_path"] = first_path
+    summary = _clean(intent.get("summary"))
+    if summary:
+        if raw_first_path and raw_first_path in summary:
+            summary = summary.replace(raw_first_path, first_path)
+        else:
+            marker = " stays bounded to: "
+            index = summary.casefold().find(marker)
+            if index >= 0:
+                summary = f"{summary[: index + len(marker)]}{first_path}"
+            elif first_path not in summary:
+                summary = f"{summary.rstrip('.')} First path: {first_path}"
+        intent["summary"] = summary
+
+    semantic = _mutable_child(payload, "semantic_model")
+    contract = _mutable_child(semantic, "first_path_contract")
+    if contract:
+        contract["raw_path"] = first_path
+    return payload
+
+
+def _mutable_child(payload: dict[str, Any], key: str) -> dict[str, Any]:
+    value = payload.get(key)
+    if isinstance(value, Mapping):
+        if isinstance(value, dict):
+            return value
+        child = dict(value)
+    else:
+        child = {}
+    payload[key] = child
+    return child
+
+
+def _normalized_first_path_from_events(proposal: Mapping[str, Any]) -> str:
+    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    contract = (
+        semantic.get("first_path_contract")
+        if isinstance(semantic.get("first_path_contract"), Mapping)
+        else {}
+    )
+    events = contract.get("events") if isinstance(contract, Mapping) else ()
+    if not isinstance(events, Sequence) or isinstance(events, (str, bytes, bytearray)):
+        return ""
+    sentences = _first_nonempty(
+        [
+            _clean(event.get("text") or event.get("mutation"))
+            for event in events
+            if isinstance(event, Mapping)
+        ],
+        limit=12,
+    )
+    return _join_sentences(sentences)
+
+
+def _join_sentences(values: Sequence[str]) -> str:
+    sentences = []
+    for value in values:
+        text = _clean(value).strip(" .")
+        if text:
+            sentences.append(f"{text}.")
+    return " ".join(sentences)
 
 
 def _write_accepted_project_source(
@@ -224,7 +298,9 @@ def record_greenfield_acceptance(
         release_id=release_id,
     )
     stream_path = root / agent_runtime_contract.AGENT_STREAM_PATH
-    payload = log_compass_timeline_event.append_event(
+    existing_payload = _matching_acceptance_event(repo_root=root, stream_path=stream_path, event_preview=event_preview)
+    reused_existing = existing_payload is not None
+    payload = existing_payload or log_compass_timeline_event.append_event(
         repo_root=root,
         stream_path=stream_path,
         kind="decision",
@@ -252,7 +328,57 @@ def record_greenfield_acceptance(
     )
     return {
         "recorded": True,
+        "reused_existing": reused_existing,
         "stream": str(stream_path),
         "accepted_project": str(accepted_project_path),
         "event": payload,
     }
+
+
+def _matching_acceptance_event(
+    *,
+    repo_root: Path,
+    stream_path: Path,
+    event_preview: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    if not stream_path.is_file():
+        return None
+    expected = _acceptance_event_signature(repo_root=repo_root, event=event_preview)
+    for line in stream_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, Mapping):
+            continue
+        if _acceptance_event_signature(repo_root=repo_root, event=event) == expected:
+            return dict(event)
+    return None
+
+
+def _acceptance_event_signature(*, repo_root: Path, event: Mapping[str, Any]) -> tuple[Any, ...]:
+    return (
+        _clean(event.get("kind")) or "decision",
+        _clean(event.get("summary")),
+        tuple(sorted(_clean(value).upper() for value in event.get("workstreams", []) if _clean(value))),
+        tuple(sorted(_artifact_signature(repo_root=repo_root, value=value) for value in event.get("artifacts", []) if _clean(value))),
+        tuple(sorted(_clean(value) for value in event.get("components", []) if _clean(value))),
+        _clean(event.get("source")) or "domain-intelligence",
+        _clean(event.get("evidence_tier")) or "user_intent",
+        _clean(event.get("work_category")) or "governance",
+    )
+
+
+def _artifact_signature(*, repo_root: Path, value: Any) -> str:
+    token = _clean(value)
+    if not token:
+        return ""
+    path = Path(token).expanduser()
+    if path.is_absolute():
+        try:
+            return str(path.resolve().relative_to(repo_root))
+        except ValueError:
+            return str(path.resolve())
+    return token[2:] if token.startswith("./") else token

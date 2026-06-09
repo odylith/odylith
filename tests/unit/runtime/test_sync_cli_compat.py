@@ -883,6 +883,37 @@ def test_dashboard_refresh_skips_component_spec_sync_for_shell_facing_refresh(tm
     assert "odylith.runtime.surfaces.render_registry_dashboard" not in modules
 
 
+def test_dashboard_refresh_runs_atlas_sync_after_mutating_surfaces(tmp_path: Path, monkeypatch) -> None:
+    calls: list[tuple[str, tuple[str, ...]]] = []
+
+    def _fake_parallel(**kwargs) -> list[dict[str, object]]:  # noqa: ANN003
+        selected = tuple(str(surface) for surface in kwargs["selected"])
+        calls.append(("parallel", selected))
+        return [{"surface": surface, "status": "passed", "fallback_used": False} for surface in selected]
+
+    def _fake_single(**kwargs) -> tuple[str, dict[str, object]]:  # noqa: ANN003
+        surface = str(kwargs["surface"])
+        calls.append(("single", (surface,)))
+        return "", {"surface": surface, "status": "passed", "fallback_used": False}
+
+    monkeypatch.setattr(sync_workstream_artifacts, "_refresh_surfaces_parallel", _fake_parallel)
+    monkeypatch.setattr(sync_workstream_artifacts, "_run_surface_worker", _fake_single)
+
+    rc = sync_workstream_artifacts.refresh_dashboard_surfaces(
+        repo_root=tmp_path,
+        surfaces=("radar", "registry", "atlas", "compass", "tooling_shell"),
+        runtime_mode="auto",
+        atlas_sync=True,
+    )
+
+    assert rc == 0
+    assert calls == [
+        ("parallel", ("radar", "registry", "compass")),
+        ("single", ("atlas",)),
+        ("single", ("tooling_shell",)),
+    ]
+
+
 def test_dashboard_refresh_bootstraps_upgrade_residue_before_shell_render(
     tmp_path: Path,
     monkeypatch,  # noqa: ANN001

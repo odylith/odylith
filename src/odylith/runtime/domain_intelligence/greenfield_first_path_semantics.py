@@ -214,6 +214,12 @@ def _clean_step(value: str) -> str:
     if _is_meta_visible_result_summary(text):
         return ""
     text = _clean_visible_result_phrase(text) or text
+    text = re.sub(
+        r",?\s+and\s+(?:completes?|ends?|finishes?)\s+(?:the\s+)?(?:flow|journey|loop|moment|path|session)\b.*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
     text = _normalize_role_can_step(text)
     text = _normalize_subjectless_action_step(text)
     return _sentence_case(text)
@@ -276,15 +282,15 @@ def _normalize_subjectless_action_step(value: str) -> str:
 
 def _split_action_pieces(value: str) -> list[str]:
     pieces: list[str] = []
+    subject_prefix = ""
     for segment in [part.strip(" .") for part in _ACTION_SPLIT_RE.split(value) if part.strip(" .")]:
         current = ""
-        subject_prefix = ""
         for part in [piece.strip(" .") for piece in re.split(r",\s+", segment) if piece.strip(" .")]:
             if current and _starts_new_action_clause(part):
                 pieces.append(current.strip(" ."))
                 current = _with_carried_subject(part, subject_prefix)
             else:
-                current = f"{current}, {part}" if current else part
+                current = f"{current}, {part}" if current else _with_carried_subject(part, subject_prefix)
             explicit_subject = _carried_subject_prefix(current)
             if explicit_subject:
                 subject_prefix = explicit_subject
@@ -297,6 +303,29 @@ def _with_carried_subject(value: str, subject_prefix: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not subject_prefix or _leading_subject_prefix(text):
         return text
+    adverbial = re.match(
+        rf"^(?P<prefix>[A-Za-z]+ly\s+)(?P<verb>{_ACTION_BASE_VERB_PATTERN})\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if adverbial and _MATERIAL_ACTION_RE.match(adverbial.group("verb")):
+        return (
+            f"{subject_prefix} {adverbial.group('prefix').casefold()}"
+            f"{third_person_action_verb(adverbial.group('verb'))}{adverbial.group('tail')}"
+        )
+    finite_adverbial = re.match(
+        r"^(?P<prefix>[A-Za-z]+ly\s+)(?P<verb>[A-Za-z]+)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if finite_adverbial and _MATERIAL_ACTION_RE.match(finite_adverbial.group("verb")):
+        return (
+            f"{subject_prefix} {finite_adverbial.group('prefix').casefold()}"
+            f"{finite_adverbial.group('verb')}{finite_adverbial.group('tail')}"
+        )
+    action = re.match(rf"^(?P<verb>{_ACTION_BASE_VERB_PATTERN})\b(?P<tail>.*)$", text, flags=re.IGNORECASE)
+    if action and _MATERIAL_ACTION_RE.match(action.group("verb")):
+        return f"{subject_prefix} {third_person_action_verb(action.group('verb'))}{action.group('tail')}"
     if _MATERIAL_ACTION_RE.match(text):
         return f"{subject_prefix} {text[:1].lower()}{text[1:]}"
     return text
@@ -324,7 +353,7 @@ def _starts_new_action_clause(value: str) -> bool:
         r"accept|accepts|add|adds|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|book|books|calculate|calculates|capture|captures|"
         r"check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|"
         r"click|clicks|compute|computes|create|creates|decide|decides|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|forecast|forecasts|"
-        r"display|displays|import|imports|inspect|inspects|log|logs|mark|marks|notify|notifies|persist|persists|preserve|preserves|"
+        r"display|displays|import|imports|inspect|inspects|log|logs|make|makes|mark|marks|notify|notifies|open|opens|persist|persists|pick|picks|preserve|preserves|"
         r"optimize|optimizes|produce|produces|prompt|prompts|provide|provides|publish|publishes|pull|pulls|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|return|returns|route|routes|"
         r"run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|show|shows|"
         r"store|stores|submit|submits|surface|surfaces|sync|syncs|tap|taps|track|tracks|update|updates|validate|validates|view|views"
@@ -339,6 +368,10 @@ def _starts_new_action_clause(value: str) -> bool:
 def _valid_step(value: str) -> bool:
     text = _clean(value).strip(" .")
     if not text:
+        return False
+    if re.match(r"^(?:this|that)\s+is\s+one\s+full\s+loop\b", text, flags=re.IGNORECASE):
+        return False
+    if re.match(r"^one\s+full\s+loop\s+from\b", text, flags=re.IGNORECASE):
         return False
     if _is_scope_or_deferred_statement(text):
         return False
@@ -366,7 +399,7 @@ def _is_scope_or_deferred_statement(value: str) -> bool:
             return False
     if re.search(
         r"\b(?:out\s+of\s+scope|outside\s+(?:the\s+)?(?:first\s+)?release|outside\s+scope|"
-        r"stay\s+outside|stays\s+outside|deferred|later|future|not\s+included|not\s+claim|"
+        r"stay\s+outside|stays\s+outside|deferred|future|not\s+included|not\s+claim|"
         r"must\s+not\s+claim|does\s+not\s+claim)\b",
         lowered,
     ):

@@ -1965,6 +1965,25 @@ def _refresh_surfaces_parallel(
     return ordered_results
 
 
+def _dashboard_refresh_surface_groups(*, selected: Sequence[str], atlas_sync: bool) -> list[list[str]]:
+    ordered = [str(surface).strip() for surface in selected if str(surface).strip()]
+    if len(ordered) <= 1:
+        return [ordered] if ordered else []
+    tooling_group = ["tooling_shell"] if "tooling_shell" in ordered else []
+    non_tooling = [surface for surface in ordered if surface != "tooling_shell"]
+    groups: list[list[str]] = []
+    if atlas_sync and "atlas" in non_tooling:
+        pre_atlas = [surface for surface in non_tooling if surface != "atlas"]
+        if pre_atlas:
+            groups.append(pre_atlas)
+        groups.append(["atlas"])
+    elif non_tooling:
+        groups.append(non_tooling)
+    if tooling_group:
+        groups.append(tooling_group)
+    return groups
+
+
 def refresh_dashboard_surfaces(
     *,
     repo_root: Path,
@@ -2005,14 +2024,10 @@ def refresh_dashboard_surfaces(
         os.environ[_SYNC_SKIP_GENERATED_REFRESH_GUARD_ENV] = "1"
     try:
         with session_context:
-            surface_groups: list[list[str]]
-            if "tooling_shell" in selected and len(selected) > 1:
-                surface_groups = [
-                    [surface for surface in selected if surface != "tooling_shell"],
-                    ["tooling_shell"],
-                ]
-            else:
-                surface_groups = [list(selected)]
+            surface_groups = _dashboard_refresh_surface_groups(
+                selected=selected,
+                atlas_sync=atlas_sync,
+            )
             for surface_group in surface_groups:
                 if not surface_group:
                     continue

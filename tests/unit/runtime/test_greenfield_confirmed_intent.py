@@ -96,6 +96,49 @@ Release 0.0.1 succeeds when one planner can enter a request, compare three optio
     assert "workspace status" not in encoded.casefold()
 
 
+def test_confirmed_intent_parser_normalizes_terminal_loop_narration() -> None:
+    intent = parse_confirmed_intent_text(
+        """Practice Journal
+
+Product story
+A learner uses a short guided practice flow so an adult can review what happened without turning the result into a score.
+
+State object
+The product tracks a practice record with account owner, learner profile, scenario id, selected choice, reflection, recap status, and review boundary.
+
+First complete path
+A parent creates an account, adds a learner profile, and picks the first release band. The learner opens a scenario, makes a choice, sees a consequence and a short reflection, and finishes the moment. The parent later opens a simple recap. This is one full loop from setup to learner choice to adult review.
+
+Human actors
+- Learner, a child using the practice flow.
+- Parent, the account owner who reviews the recap.
+
+External systems
+- Sign-in provider for the adult account.
+
+Internal product systems
+- Account service.
+- Scenario service.
+- Reflection service.
+- Recap service.
+
+Critical assumptions
+- The adult owns the account and the learner does not self-register.
+
+Ambiguities
+- Whether narration is required for the first release.
+
+Proof boundary
+The first release succeeds when a parent can create an account and learner profile, the learner can complete one scenario with a selected choice and reflection, and the parent can open a recap.
+""",
+        prompt="Draft a practice journal",
+    )
+
+    assert "and finishes the moment" not in intent["first_path"]
+    assert "one full loop" not in intent["first_path"]
+    assert "The parent later opens a simple recap." in intent["first_path"]
+
+
 def test_confirmed_intent_parser_accepts_domain_specific_evidence_review_surface(tmp_path: Path) -> None:
     intent = parse_confirmed_intent_text(
         """Equipment Reliability Review Workspace — Product Intent Confirmation
@@ -1152,7 +1195,7 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
 
     assert "final status with source evidence" in first_path_row["problem"]
     assert "import one observation" in first_path_row["product_view"]
-    assert "show the final status with source evidence" in first_path_row["product_view"]
+    assert "shows the final status with source evidence" in first_path_row["product_view"]
     assert "quality evidence" in encoded
     assert "Decision Record" in state_row["product_view"]
     assert "actor, source, status" in " ".join(state_row["success_metrics"])

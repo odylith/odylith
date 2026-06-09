@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -168,6 +169,7 @@ def build_greenfield_semantic_model(
         first_path=first_path,
         proof_boundary=proof_boundary,
         non_goals=non_goals,
+        human_actors=human_actors,
     )
     component_refs = tuple(
         _component_ref(
@@ -239,6 +241,7 @@ def _first_path_contract(
     first_path: str,
     proof_boundary: str,
     non_goals: Sequence[str],
+    human_actors: Sequence[str],
 ) -> FirstPathContract:
     model = first_path_model(first_path)
     required_fields = tuple(_required_fields(model.steps, state_object=state_object))
@@ -248,8 +251,10 @@ def _first_path_contract(
         proof_boundary=proof_boundary,
         fallback=_clean(model.visible_outcome) or "the first-path result",
     )
+    events = tuple(_first_path_events(model.steps, actor=actor, state_object=state_object, human_actors=human_actors))
+    contract_actor = events[0].actor if events and events[0].actor else actor
     return FirstPathContract(
-        actor=actor,
+        actor=contract_actor,
         action=_action_label(material),
         entity=state_object,
         mutation=material,
@@ -260,20 +265,29 @@ def _first_path_contract(
         deferred_scope=tuple(_clean(row) for row in non_goals if _clean(row)),
         capability=first_path_capability_phrase(first_path, gerund=True),
         raw_path=_clean(first_path),
-        events=tuple(_first_path_events(model.steps, actor=actor, state_object=state_object)),
+        events=events,
     )
 
 
-def _first_path_events(steps: Sequence[str], *, actor: str, state_object: str) -> list[FirstPathEvent]:
+def _first_path_events(
+    steps: Sequence[str],
+    *,
+    actor: str,
+    state_object: str,
+    human_actors: Sequence[str],
+) -> list[FirstPathEvent]:
     events: list[FirstPathEvent] = []
+    current_actor = actor
     for index, step in enumerate(steps, start=1):
         text = _clean(step)
+        event_actor = _event_actor(text, human_actors=human_actors, fallback=current_actor or actor)
+        current_actor = event_actor or current_actor
         action = _action_label(text)
         target = _event_target(text, state_object=state_object)
         events.append(
             FirstPathEvent(
                 index=index,
-                actor=actor,
+                actor=event_actor or actor,
                 action=action,
                 target_entity=target,
                 mutation=text,
@@ -283,6 +297,26 @@ def _first_path_events(steps: Sequence[str], *, actor: str, state_object: str) -
             )
         )
     return events
+
+
+def _event_actor(value: str, *, human_actors: Sequence[str], fallback: str) -> str:
+    signature = actor_signature(value)
+    if not signature:
+        return fallback
+    signature_terms = set(ordered_terms(signature, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS))
+    if not signature_terms:
+        return fallback
+    candidates: list[tuple[int, int, str]] = []
+    for row in human_actors:
+        label = _actor_label([row], fallback="")
+        label_terms = set(ordered_terms(label, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS))
+        overlap = len(signature_terms & label_terms)
+        if overlap:
+            candidates.append((overlap, -len(label_terms), label))
+    if not candidates:
+        return fallback
+    candidates.sort(reverse=True)
+    return candidates[0][2]
 
 
 def _component_ref(
@@ -449,7 +483,7 @@ def _is_recovery_path(value: str) -> bool:
 
 def _action_label(value: str) -> str:
     match = re.search(
-        r"\b(adds?|adjusts?|approves?|captures?|checks?|chooses?|compares?|completes?|creates?|displays?|edits?|enters?|exports?|imports?|logs?|produces?|publishes?|ranks?|records?|renders?|returns?|reviews?|saves?|sees?|shows?|stores?|submits?|tracks?|updates?|views?)\b",
+        r"\b(adds?|adjusts?|approves?|captures?|checks?|chooses?|compares?|completes?|creates?|displays?|edits?|enters?|exports?|imports?|logs?|opens?|produces?|publishes?|ranks?|records?|renders?|returns?|reviews?|saves?|sees?|shows?|stores?|submits?|tracks?|updates?|views?)\b",
         _clean(value),
         re.IGNORECASE,
     )

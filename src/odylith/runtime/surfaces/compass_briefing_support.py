@@ -34,6 +34,10 @@ _WHY_PRIORITY_LEAD_RE = re.compile(
     r"^(?:for\s+)?(?:[-*]\s*)?(?:primary|secondary|tertiary)\s*:\s*",
     re.IGNORECASE,
 )
+_DANGLING_FRAGMENT_END_RE = re.compile(
+    r"(?:\b(?:a|an|and|at|before|by|for|from|in|into|of|on|or|the|to|using|when|where|while|with)\s*)+$",
+    re.IGNORECASE,
+)
 _CHECKLIST_RATIO_RE = re.compile(r"checklist\s+\d+\s*/\s*\d+\s+complete", re.IGNORECASE)
 _GENERIC_CHURN_RE = re.compile(
     r"^(?:updated|modified|touched)\s+(?:tooling assets?|dashboard assets?|generated artifacts?|tooling(?:\s+\w+)*)\b|"
@@ -116,12 +120,25 @@ def _sentence_without_period(text: str) -> str:
     return compass_base._normalize_sentence(text).rstrip(" .")
 
 
+def _trim_dangling_fragment(text: str) -> str:
+    token = compass_base._normalize_sentence(text).strip()
+    token = re.sub(r"\.{3}$", "", token).rstrip(" ,;:-")
+    while token:
+        cleaned = _DANGLING_FRAGMENT_END_RE.sub("", token).rstrip(" ,;:-")
+        if cleaned == token:
+            return token
+        token = cleaned
+    return ""
+
+
 def _use_story_text(*, customer: str, problem: str, fallback: str = "") -> str:
-    customer_token = _sentence_without_period(customer)
-    problem_token = _sentence_without_period(problem)
-    fallback_token = _sentence_without_period(fallback)
+    customer_token = _trim_dangling_fragment(_sentence_without_period(customer))
+    problem_token = _trim_dangling_fragment(_sentence_without_period(problem))
+    fallback_token = _trim_dangling_fragment(_sentence_without_period(fallback))
     if customer_token and problem_token:
         lowered_problem = problem_token.lower()
+        if re.match(r"^[A-Za-z][A-Za-z0-9 ,&'/-]{1,140}\s+needs?\b", problem_token):
+            return _periodize(problem_token)
         if lowered_problem.startswith("need "):
             return f"{customer_token} need {problem_token[5:]}."
         if lowered_problem.startswith("needs "):
@@ -135,18 +152,18 @@ def _use_story_text(*, customer: str, problem: str, fallback: str = "") -> str:
 
 
 def _normalize_why_fragment(text: str) -> str:
-    token = _sentence_without_period(text)
+    token = _trim_dangling_fragment(_sentence_without_period(text))
     while token:
         normalized = _WHY_PRIORITY_LEAD_RE.sub("", token, count=1).strip()
         if normalized == token:
-            return token
+            return _trim_dangling_fragment(token)
         token = normalized
     return ""
 
 
 def _architecture_consequence_text(*, proposed_solution: str, benefit: str) -> str:
-    solution_token = _sentence_without_period(proposed_solution)
-    benefit_token = _sentence_without_period(benefit)
+    solution_token = _trim_dangling_fragment(_sentence_without_period(proposed_solution))
+    benefit_token = _trim_dangling_fragment(_sentence_without_period(benefit))
     if solution_token:
         solution_clause = _decapitalize_clause(solution_token)
         move_clause = solution_clause if solution_clause.lower().startswith("to ") else f"to {solution_clause}"

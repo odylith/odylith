@@ -33,6 +33,12 @@ def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
             findings.append(GeneratedCopyFinding("produced_output_tuple", f"{scope} leaked produced-output tuple prose"))
         if _has_raw_success_metric_gate(lowered):
             findings.append(GeneratedCopyFinding("raw_success_metric_gate", f"{scope} leaked raw success-metric gate prose"))
+        if _has_actor_action_splice(lowered):
+            findings.append(GeneratedCopyFinding("actor_action_splice", f"{scope} leaked actor/action splice prose"))
+        if _has_terminal_result_chain(lowered):
+            findings.append(GeneratedCopyFinding("terminal_result_chain", f"{scope} leaked terminal action inside result prose"))
+        if _has_awkward_visible_result_action(lowered):
+            findings.append(GeneratedCopyFinding("awkward_visible_result_action", f"{scope} leaked awkward visible-result action prose"))
     return unique_text(finding.message for finding in findings)
 
 
@@ -46,6 +52,39 @@ def _has_expected_local_output_clause(tokens: tuple[str, ...]) -> bool:
 
 def _has_raw_success_metric_gate(tokens: tuple[str, ...]) -> bool:
     return _has_ordered_terms(tokens, ("validate", "that", "satisfies", "local", "success", "criteria"), max_gap=12)
+
+
+def _has_actor_action_splice(tokens: tuple[str, ...]) -> bool:
+    finite_actions = {"adds", "creates", "makes", "opens", "picks", "sees"}
+    for index in range(0, max(0, len(tokens) - 4)):
+        if tokens[index : index + 4] != ("uses", "the", "product", "to"):
+            continue
+        window = tokens[index + 4 : min(len(tokens), index + 11)]
+        for offset, token in enumerate(window):
+            if offset == 0 or token not in finite_actions:
+                continue
+            return True
+    return False
+
+
+def _has_terminal_result_chain(tokens: tuple[str, ...]) -> bool:
+    result_words = {"consequence", "outcome", "readout", "reflection", "result", "summary", "view"}
+    terminal_words = {"complete", "completes", "end", "ends", "finish", "finishes"}
+    for index, token in enumerate(tokens):
+        if token not in result_words:
+            continue
+        window = tokens[index + 1 : min(len(tokens), index + 5)]
+        if "and" in window and any(item in terminal_words for item in window):
+            return True
+    return False
+
+
+def _has_awkward_visible_result_action(tokens: tuple[str, ...]) -> bool:
+    result_words = {"consequence", "outcome", "readout", "reflection", "result", "summary", "view"}
+    for index, token in enumerate(tokens[:-1]):
+        if token in {"reach", "use"} and any(item in result_words for item in tokens[index + 1 : min(len(tokens), index + 5)]):
+            return True
+    return False
 
 
 def _concept_tuple_hits(tokens: tuple[str, ...], concepts: tuple[tuple[str, ...], ...]) -> int:

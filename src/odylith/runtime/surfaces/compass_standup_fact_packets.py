@@ -54,6 +54,7 @@ _scoped_fallback_next_text = compass_briefing_support._scoped_fallback_next_text
 _scoped_fallback_risk_text = compass_briefing_support._scoped_fallback_risk_text
 _standup_fact = compass_briefing_support._standup_fact
 _timeline_clause = compass_briefing_support._timeline_clause
+_trim_dangling_fragment = compass_briefing_support._trim_dangling_fragment
 _wave_context_summary = compass_briefing_support._wave_context_summary
 _ws_label = compass_briefing_support._ws_label
 _ws_why_context = compass_briefing_support._ws_why_context
@@ -144,12 +145,14 @@ def _direction_clause_for_story(
         " which gives operators a clearer contract and lower coordination risk.",
         "",
     ).strip()
+    direction_source = _trim_dangling_fragment(direction_source)
     if direction_source.lower().startswith(("this gives operators a clearer contract", "gives operators a clearer contract")):
         direction_source = _narrative_excerpt(
             purpose or benefit or use_story or label,
             max_sentences=1,
             max_chars=180,
         )
+        direction_source = _trim_dangling_fragment(direction_source)
     direction_lead = direction_source.lstrip("`'\"“”‘’").replace("`", "")
     if _ACTION_LEAD_RE.match(direction_lead):
         return direction_source

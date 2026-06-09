@@ -90,3 +90,28 @@ def test_confirmed_backlog_rationale_keeps_proof_focus_complete() -> None:
         "SunRecover must prove the intake-to-first-plan path produces a safe, evidence-grounded recovery plan"
         in rationale
     )
+
+
+def test_confirmed_backlog_rationale_uses_distinct_bullet_jobs() -> None:
+    lines = rationale_lines(
+        label="Choice Practice Journal",
+        title="Make Choice Practice Journal Useful for One Complete Outcome",
+        opportunity=(
+            "Ship one complete outcome: a representative user can create an account, add a learner profile, "
+            "pick the age band, open a scenario, make a choice, and see a short reflection."
+        ),
+        first_slice=(
+            "Deliver one complete path where a user can create an account, add a learner profile, pick the age band, "
+            "open a scenario, make a choice, and see a short reflection."
+        ),
+        proof_boundary=(
+            "The first release succeeds when a parent can create an account and learner profile, the learner can "
+            "complete one scenario with a selected choice and reflection, and the parent can open a recap. "
+            "Multiple age bands, authoring workflows, reminders, and live classroom management are outside the first proof."
+        ),
+    )
+    text = "\n".join(lines)
+
+    assert text.count("complete path where") <= 1
+    assert "Adjacent Choice Practice Journal workflows" not in text
+    assert "Multiple age bands, authoring workflows, reminders, and live classroom management" in text

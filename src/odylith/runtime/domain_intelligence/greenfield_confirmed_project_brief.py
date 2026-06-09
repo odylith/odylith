@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 
@@ -47,7 +48,7 @@ def confirmed_project_brief(
         "owned state, and reviewable proof."
     )
     story_brief = _brief_clause(story, limit=420)
-    first = _brief_clause(
+    first = _first_path_brief(
         first_path
         or f"The first release proves one {label_lower} path from intake through state update and evidence review.",
         limit=300,
@@ -245,6 +246,13 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
         return text
     clipped = clip_text_at_word_boundary(text, limit=limit)
     return _remove_orphan_without_it_tail(strip_dangling_tail(clipped).rstrip(" ,;:"))
+
+
+def _first_path_brief(value: str, *, limit: int = 180) -> str:
+    steps = first_path_steps(value)
+    if steps:
+        return _brief_clause(". ".join(steps), limit=limit)
+    return _brief_clause(value, limit=limit)
 
 
 def _remove_orphan_without_it_tail(value: str) -> str:

@@ -309,6 +309,79 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
     assert base_action_clause("comments, checks, and final status") == "comments, checks, and final status"
 
 
+def test_multi_actor_first_path_assigns_event_actors_and_cleans_result_copy() -> None:
+    markdown = """
+# Choice Practice Journal
+
+## Product story
+Choice Practice Journal gives a learner short practice scenarios and gives a trusted adult a simple recap. The product helps the learner make one choice, understand the immediate consequence, and leave a short reflection without turning the experience into a score, ranking, or behavior label. The adult owns setup and privacy, while the learner remains the person completing the practice moment.
+
+## State object
+The product keeps a learner practice record with account owner, learner profile, scenario id, selected choice, consequence note, reflection, recap status, and privacy boundary.
+
+## First complete path
+A parent creates an account, adds a learner profile, and picks the age band of eight to ten for the first release. The learner opens an illustrated scenario, makes a choice at the decision point, sees a consequence and a short reflection, and finishes the session. The parent later opens a simple recap of what the learner explored.
+
+## Human actors
+- Learner, a child aged eight to ten
+- Parent, the account owner at home
+- Facilitator, a small-group reviewer
+- Scenario author, a content writer
+
+## Internal product systems
+- Account and learner profile service
+- Scenario library service
+- Choice consequence engine
+- Reflection capture service
+- Adult recap service
+- Learner privacy service
+
+## Proof boundary
+The first release succeeds when a parent can create an account and learner profile, the learner can complete one scenario with a selected choice and reflection, and the parent can open a recap. Multiple age bands, authoring workflows, reminders, and live classroom management are outside the first proof.
+"""
+    intent = parse_confirmed_intent_text(markdown)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt="Draft a greenfield proposal for a learner choice practice journal.",
+        title="Choice Practice Journal",
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    first_path = proposal["semantic_model"]["first_path_contract"]
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert first_path["actor"] == "Parent"
+    assert first_path["visible_result"] == "a short reflection"
+    assert [(event["actor"], event["action"]) for event in first_path["events"]] == [
+        ("Parent", "creates"),
+        ("Parent", "adds"),
+        ("Parent", "advance"),
+        ("Learner", "opens"),
+        ("Learner", "advance"),
+        ("Learner", "sees"),
+        ("Parent", "opens"),
+    ]
+    for banned in (
+        "Learner, A Child",
+        "uses the product to parent creates",
+        "add a learner profile and picks",
+        "reflection and finishes",
+        "understand The",
+        "reach a short reflection",
+        "use a short reflection",
+        "visible outcome from a short reflection",
+        "see a consequence and a short reflection, and see",
+        "learner can create an account",
+        "where learner can create",
+        "Start with this implementation slice: Start with",
+        "should support the user action: create an account",
+        "Build the smallest behavior in Account",
+        "The product checks the details, explains missing information before it produces a result, and shows a short reflection",
+    ):
+        assert banned not in rendered
+    assert generated_semantic_slop_issues(proposal) == []
+
+
 def test_first_path_clauses_separate_user_action_from_internal_processing() -> None:
     path = (
         "The requester enters the request type, amount, timing constraints, and contact details. "
@@ -611,6 +684,7 @@ The first release succeeds when one requester can submit a complete request and 
     assert "Chasing the Team" not in rendered
     assert "Notes a Reviewer" not in rendered
     assert "And One Reviewer" not in rendered
+    assert "Reviewer Can" not in rendered
     assert "other accepted items" not in rendered.casefold()
     assert "other accepted actors" not in rendered.casefold()
     generated_backlog_text = json.dumps(
@@ -640,7 +714,7 @@ The first release succeeds when one requester can submit a complete request and 
     assert "before this component can guide" not in rendered.casefold()
     assert all("Multi-team Routing" not in title for title in titles)
     assert all(len(title.split()) <= 12 for title in titles)
-    assert any(title.startswith("Let Requester Use A Decision Summary") for title in titles)
+    assert any(title.startswith("Let Requester See A Decision Summary") for title in titles)
     assert "long-term analytics" not in proposal["semantic_model"]["first_path_contract"]["visible_result"].casefold()
     assert generated_semantic_slop_issues(proposal) == []
 

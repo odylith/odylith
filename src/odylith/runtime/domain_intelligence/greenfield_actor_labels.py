@@ -181,7 +181,7 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         return ""
     head, body = _split_actor_row(text)
     explicit_body = bool(body)
-    original_head = _strip_qualifiers(head).strip(" .")
+    original_head = _strip_modal_actor_tail(_strip_qualifiers(head).strip(" ."))
     original_role = _role_suffix(original_head)
     if explicit_body and _is_concrete_actor_head(
         original_head,
@@ -195,7 +195,7 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         head, marker_body = marker_head, marker_tail
         body = body or marker_body
         marker_body_used = not explicit_body and bool(marker_body)
-    head = _strip_actor_head_articles(_strip_qualifiers(head).strip(" ."))
+    head = _strip_actor_head_articles(_strip_modal_actor_tail(_strip_qualifiers(head).strip(" .")))
     shared_head, shared_tail = _split_shared_subject_tail(head)
     if shared_head:
         head = shared_head
@@ -268,6 +268,14 @@ def _split_actor_row(value: str) -> tuple[str, str]:
         head, sep, body = value.partition(separator)
         if sep and head.strip():
             return head.strip(" ."), body.strip(" .")
+    comma = re.match(
+        r"^(?P<head>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?),\s+"
+        r"(?P<body>(?:a|an|the|one)\s+[A-Za-z][A-Za-z0-9 /&'()-]{2,120})$",
+        value,
+        flags=re.IGNORECASE,
+    )
+    if comma and 1 <= len(comma.group("head").split()) <= 5:
+        return comma.group("head").strip(" ."), comma.group("body").strip(" .")
     return value, ""
 
 
@@ -394,6 +402,15 @@ def _strip_qualifiers(value: str) -> str:
 
 def _strip_actor_head_articles(value: str) -> str:
     return re.sub(r"^(?:a|an|the)\s+", "", _clean(value), flags=re.IGNORECASE).strip(" .")
+
+
+def _strip_modal_actor_tail(value: str) -> str:
+    text = _clean(value).strip(" .")
+    words = text.split()
+    if len(words) < 2 or words[-1].casefold().strip(".,;:") not in {"can", "must", "should"}:
+        return text
+    head = " ".join(words[:-1]).strip(" .")
+    return head if _role_suffix(head) else text
 
 
 def _head_needs_focus(lower_head: str, *, role: str) -> bool:

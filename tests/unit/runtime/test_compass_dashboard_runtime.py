@@ -803,6 +803,63 @@ def test_build_scoped_standup_fact_packet_avoids_conditional_direction_fragment(
     assert "Cross-Surface Runtime Freshness and UX Browser Hardening" in next_fact["text"]
 
 
+def test_scoped_standup_fact_packet_trims_dangling_generated_fragments() -> None:
+    row = {
+        "idea_id": "B-001",
+        "title": "Make Practice Tool Useful for One Complete Outcome",
+        "status": "queued",
+        "why": {
+            "problem": (
+                "Learner and adult need a dependable way to understand the practice record and decide what to do "
+                "using a short reflection; without it, the work stays scattered, hard to interpret, and easy to misuse."
+            ),
+            "customer": "Learner, adult reviewer, facilitator, content author",
+            "proposed_solution": (
+                "Start with this implementation slice: Prove one first-release path: a user can create an account, "
+                "add a profile, pick the first release band, open an illustrated scenario, make a choice at the "
+                "decision point, see a consequence and a short reflection. Keep validation gates tied to this workstream."
+            ),
+            "opportunity": (
+                "Ship one complete outcome: a representative user can create an account, add a profile, pick the "
+                "first release band, and see a short reflection to decide what to do next."
+            ),
+        },
+        "plan": {
+            "progress_ratio": 0.0,
+            "done_tasks": 0,
+            "total_tasks": 0,
+        },
+        "timeline": {
+            "last_activity_iso": "2026-04-11T07:30:00Z",
+        },
+    }
+
+    why_context = runtime._ws_why_context(row)
+    packet = runtime._build_scoped_standup_fact_packet(
+        row=row,
+        next_actions=[],
+        recent_completed=[],
+        window_events=[],
+        window_transactions=[],
+        execution_updates=[],
+        transaction_updates=[],
+        window_hours=24,
+        risk_rows={"bugs": [], "traceability": [], "stale_diagrams": []},
+        risk_summary="Risk posture: no critical blockers are currently surfaced.",
+        self_host_snapshot={},
+        now=dt.datetime(2026, 4, 11, 8, 0, 0, tzinfo=dt.timezone.utc),
+    )
+
+    current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
+    direction_fact = next(fact for fact in current_execution["facts"] if fact["kind"] == "direction")
+    assert " to;" not in direction_fact["text"]
+    assert why_context["use_story"].startswith("Learner and adult need")
+    assert "For Learner and adult" not in why_context["use_story"]
+    assert " easy to act on too" not in why_context["use_story"]
+    assert " at, which" not in why_context["architecture_consequence"]
+    assert not why_context["architecture_consequence"].endswith((" at.", " to."))
+
+
 def test_build_global_standup_fact_packet_surfaces_live_self_host_risk() -> None:
     risks = runtime._self_host_risk_rows(
         snapshot={

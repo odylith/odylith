@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import time
 
+from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -91,6 +92,48 @@ A new user records their first entry — rates today's status, taps the factors 
 
 ## Proof boundary
 The first version is proven when a user can log entries over several days and the app renders an honest trend plus an action-to-outcome signal from their own data. External integrations, sharing, and reminders are outside the first proof bar.
+"""
+
+MULTI_ACTOR_CONFIRMED_INTENT_TEXT = """Choice Practice Journal
+
+## Product story
+Choice Practice Journal gives a learner short practice scenarios and gives a trusted adult a simple recap. The product is not a game score or a behavior ranking. It helps the learner make a choice, see a clear consequence, and leave a short reflection the adult can review later.
+
+## State object
+The product keeps a learner practice record with the adult-owned account, learner profile, scenario id, selected choice, consequence note, reflection, recap status, and privacy boundary.
+
+## First complete path
+A parent creates an account, adds a learner profile, and picks the age band of eight to ten for the first release. The learner opens an illustrated scenario, makes a choice at the decision point, sees a consequence and a short reflection, and finishes the session. The parent later opens a simple recap of what the learner explored.
+
+## Human actors
+- Learner, a child aged eight to ten
+- Parent, the account owner at home
+- Facilitator, a small-group reviewer
+- Scenario author, a content writer
+
+## External systems
+- Sign-in provider for the adult account
+- Media hosting for illustrations
+
+## Internal product systems
+- Account and learner profile service
+- Scenario library service
+- Choice consequence engine
+- Reflection capture service
+- Adult recap service
+- Learner privacy service
+
+## Critical assumptions
+- The adult owns the account; learners do not self-register.
+- The first release targets one age band and one parent-led setting.
+- Scenario content is pre-authored and curated.
+
+## Ambiguities
+- Whether the learner reads independently or needs narration.
+- Whether the adult sees full history or a brief recap only.
+
+## Proof boundary
+The first release succeeds when a parent can create an account and learner profile, the learner can complete one scenario with a selected choice and reflection, and the parent can open a recap. Multiple age bands, authoring workflows, reminders, and live classroom management are outside the first proof.
 """
 
 
@@ -244,3 +287,128 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
         assert banned not in written_payload
     assert any(row.get("title") == "Let Person Managing Discomfort Record First Entry" for row in payload["backlog"])
     assert any(row.get("label") == "Reminder and Streak Nudge Service" for row in payload["components"])
+
+
+def test_multi_actor_greenfield_create_preserves_actor_ownership_and_copy_under_thirty_seconds(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(MULTI_ACTOR_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a learner choice practice journal",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    elapsed = time.perf_counter() - started
+    payload = json.loads(capsys.readouterr().out)
+
+    assert rc == 0
+    assert elapsed < 30.0
+    assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+
+    accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
+    proposal = accepted["proposal"]
+    first_path = proposal["semantic_model"]["first_path_contract"]
+    rendered_payload = json.dumps(payload)
+    generated_payload = "\n".join(
+        path.read_text(encoding="utf-8")
+        for root in (
+            tmp_path / "odylith/runtime/source",
+            tmp_path / "odylith/radar/source",
+            tmp_path / "odylith/registry/source",
+            tmp_path / "odylith/atlas/source",
+        )
+        for path in root.rglob("*")
+        if path.is_file() and path.suffix in {".json", ".jsonl", ".md", ".mmd"}
+    )
+
+    assert first_path["actor"] == "Parent"
+    assert first_path["visible_result"] == "a short reflection"
+    assert [(event["actor"], event["action"]) for event in first_path["events"]] == [
+        ("Parent", "creates"),
+        ("Parent", "adds"),
+        ("Parent", "advance"),
+        ("Learner", "opens"),
+        ("Learner", "advance"),
+        ("Learner", "sees"),
+        ("Parent", "opens"),
+    ]
+    for banned in (
+        "Learner, A Child",
+        "uses the product to parent creates",
+        "add a learner profile and picks",
+        "reflection and finishes",
+        "understand The",
+        "reach a short reflection",
+        "use a short reflection",
+        "visible outcome from a short reflection",
+        "see a consequence and a short reflection, and see",
+        "complete path where",
+        "learner can create an account",
+        "where learner can create",
+        "Start with this implementation slice: Start with",
+        "should support the user action: create an account",
+        "Build the smallest behavior in Account",
+        "The product checks the details, explains missing information before it produces a result, and shows a short reflection",
+    ):
+        assert banned not in rendered_payload
+        assert banned not in generated_payload
+
+
+def test_multi_actor_greenfield_create_rerun_is_idempotent_under_thirty_seconds(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(MULTI_ACTOR_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    payloads = []
+    elapsed_runs = []
+    for _index in range(2):
+        started = time.perf_counter()
+        rc = greenfield_proposals.main(
+            [
+                "create",
+                "--repo-root",
+                str(tmp_path),
+                "--prompt",
+                "Draft a greenfield proposal for a learner choice practice journal",
+                "--intent-file",
+                ".odylith/runtime/greenfield/confirmed-intent.md",
+                "--release",
+                "0.0.1",
+                "--confirm",
+                "--json",
+            ]
+        )
+        elapsed_runs.append(time.perf_counter() - started)
+        payload = json.loads(capsys.readouterr().out)
+        assert rc == 0
+        assert elapsed_runs[-1] < 30.0
+        payloads.append(payload)
+
+    assert [row["idea_id"] for row in payloads[0]["backlog"]] == [row["idea_id"] for row in payloads[1]["backlog"]]
+    assert payloads[0]["diagrams"] == payloads[1]["diagrams"]
+    assert payloads[1]["memory"]["recorded"] is True
+    assert payloads[1]["memory"]["reused_existing"] is True
+    assert len(list((tmp_path / "odylith/radar/source/ideas").rglob("*.md"))) == 4
+    stream = tmp_path / agent_runtime_contract.AGENT_STREAM_PATH
+    events = [json.loads(line) for line in stream.read_text(encoding="utf-8").splitlines() if line.strip()]
+    acceptance_events = [
+        event
+        for event in events
+        if str(event.get("summary", "")).startswith("Accepted greenfield proposal for Choice Practice Journal:")
+    ]
+    assert len(acceptance_events) == 1

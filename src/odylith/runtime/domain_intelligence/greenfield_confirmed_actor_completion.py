@@ -92,6 +92,14 @@ def actor_row_description(value: str) -> str:
             and not re.search(r"\b(can act|supports the accepted path|additional accepted items)\b", body, re.IGNORECASE)
         ):
             return body
+    comma = re.match(
+        r"^(?P<head>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?),\s+"
+        r"(?P<body>(?:a|an|the|one)\s+[A-Za-z][A-Za-z0-9 /&'()-]{2,120})$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if comma and 1 <= _word_count(comma.group("head")) <= 5 and _word_count(comma.group("body")) >= 2:
+        return comma.group("body").strip(" .")
     return ""
 
 
@@ -152,6 +160,8 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     for source, source_bonus in sources:
         clauses = _path_clauses(source)
         for index, clause in enumerate(clauses):
+            if not _clause_subject_matches_actor(clause, label=label):
+                continue
             overlap = len(terms & _semantic_terms(clause))
             if overlap <= 0:
                 continue
@@ -167,6 +177,17 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     if not clause:
         return ""
     return f"uses the product to {base_action_clause(clause)} and needs the outcome to remain clear enough to act on"
+
+
+def _clause_subject_matches_actor(value: str, *, label: str) -> bool:
+    """Reject object-term overlap when another actor owns the clause."""
+
+    subject = leading_subject_prefix(value)
+    if not subject:
+        return True
+    subject_terms = _semantic_terms(subject)
+    actor_terms = _actor_path_terms(label)
+    return bool(subject_terms & actor_terms)
 
 
 def _actor_path_terms(label: str) -> set[str]:
@@ -301,6 +322,7 @@ def _subject_candidate(sentence: str) -> str:
         return ""
     subject = _actor_head_before_setup_action(subject) or subject
     subject = re.sub(r"^(?:a|an|the|one|this|that|each|another)\s+", "", subject, flags=re.IGNORECASE).strip(" .")
+    subject = re.sub(r"\s+can\s*$", "", subject, flags=re.IGNORECASE).strip(" .")
     words = subject.split()
     if not 1 <= len(words) <= 4:
         return ""

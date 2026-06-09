@@ -276,19 +276,19 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         outcome_action = completion_text.outcome_action_phrase(outcome)
         outcome_sentence = completion_text.lower_first(outcome)
         drifted = completion_text.row_drifted_from_component(row, component)
-        if _text_needs_repair(row.get("product_view")) or drifted:
+        if _text_needs_repair(row.get("product_view")):
             row["product_view"] = (
                 f"{label} should support the user action: {action}. "
                 f"It should check required input before it presents a result, then show {outcome_sentence}."
             )
             changed = True
-        if _text_needs_repair(row.get("recommended_first_slice")) or drifted:
+        if _text_needs_repair(row.get("recommended_first_slice")):
             row["recommended_first_slice"] = (
                 f"Build the smallest behavior in {label} that supports this path: {action}. It should show {outcome_sentence} "
                 "and explain missing or invalid input before presenting a result."
             )
             changed = True
-        if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3) or drifted:
+        if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3):
             metrics = [
                 f"{label} proves one complete user path and shows {outcome}.",
                 f"{label} explains blocked, missing, or invalid input before the product shows a result.",

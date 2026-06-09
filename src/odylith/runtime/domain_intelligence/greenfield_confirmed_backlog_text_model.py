@@ -507,7 +507,15 @@ def proof_focus_phrase(value: str, *, fallback: str) -> str:
     return candidates[0][2]
 
 
-def rationale_lines(*, label: str, title: str, opportunity: str, first_slice: str, proof_boundary: str) -> list[str]:
+def rationale_lines(
+    *,
+    label: str,
+    title: str,
+    opportunity: str,
+    first_slice: str,
+    proof_boundary: str,
+    deferred_scope: Sequence[str] = (),
+) -> list[str]:
     why_now = _short_summary(opportunity, limit=180).strip(" .")
     expected_outcome = _short_summary(first_slice, limit=200).strip(" .")
     if looks_mechanical_summary(why_now):
@@ -519,13 +527,23 @@ def rationale_lines(*, label: str, title: str, opportunity: str, first_slice: st
     if not expected_outcome:
         expected_outcome = "Produce the first reviewable release outcome"
     scope_focus = rationale_scope_focus(first_slice, fallback=title)
+    if _too_similar(why_now, expected_outcome):
+        why_now = f"{title} gives release planning one complete, reviewable outcome before optional scope expands"
+    if _too_similar(scope_focus, expected_outcome):
+        scope_focus = _short_summary(title, limit=90).strip(" .") or _short_summary(label, limit=90).strip(" .") or "the accepted slice"
+    deferred_focus = rationale_deferred_focus(
+        value=proof_boundary,
+        label=label,
+        fallback=scope_focus,
+        deferred_scope=deferred_scope,
+    )
     proof_focus = rationale_proof_focus(proof_boundary, fallback=expected_outcome)
     release_basis = rationale_release_basis(title=title, label=label, first_slice=first_slice, proof_boundary=proof_boundary)
     return [
         f"- why now: {why_now}.",
         f"- expected outcome: {expected_outcome}.",
         f"- tradeoff: Keep this slice centered on {scope_focus} so implementation does not absorb unrelated release claims.",
-        f"- deferred for now: Claims beyond {scope_focus} wait for a separate owner, acceptance gate, and proof path.",
+        f"- deferred for now: {deferred_focus} wait for a separate owner, acceptance gate, and proof path.",
         f"- ranking basis: {release_basis}.",
     ]
 
@@ -547,6 +565,43 @@ def rationale_proof_focus(value: str, *, fallback: str) -> str:
     return sentence_fragment(text or fallback) or "the proven first path"
 
 
+def rationale_deferred_focus(*, value: str, label: str, fallback: str, deferred_scope: Sequence[str] = ()) -> str:
+    """Return the explicit deferred scope without repeating the first-slice path."""
+
+    for row in deferred_scope:
+        selected = _deferred_focus_sentence(row)
+        if selected and not _too_similar(selected, fallback):
+            return selected[:1].upper() + selected[1:]
+    text = _compact_text(value).strip(" .")
+    deferred: list[str] = []
+    for sentence in re.split(r"(?<=[.!?])\s+", text):
+        cleaned = _deferred_focus_sentence(sentence)
+        if cleaned:
+            deferred.append(cleaned)
+    selected = _short_summary(deferred[0], limit=120).strip(" .") if deferred else ""
+    if selected and not _too_similar(selected, fallback):
+        return selected[:1].upper() + selected[1:]
+    label_text = _short_summary(label, limit=90).strip(" .")
+    return f"Adjacent {label_text or 'product'} workflows"
+
+
+def _deferred_focus_sentence(value: str) -> str:
+    cleaned = _compact_text(value).strip(" .")
+    if not cleaned:
+        return ""
+    lowered = cleaned.casefold()
+    if not re.search(r"\b(?:out\s+of\s+scope|outside|deferred|future|later|not\s+included|must\s+not\s+claim|does\s+not\s+claim)\b", lowered):
+        return ""
+    cleaned = re.sub(
+        r"\s+(?:are|is|stay|stays|remain|remains)\s+(?:out\s+of\s+scope|outside\s+(?:the\s+)?(?:first\s+)?(?:proof|release|scope))\b.*$",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    cleaned = re.sub(r"^(?:outside\s+(?:the\s+)?(?:first\s+)?(?:proof|release|scope)\s*:?\s*)", "", cleaned, flags=re.IGNORECASE)
+    return _short_summary(cleaned, limit=120).strip(" .")
+
+
 def _bounded_complete_proof_focus(value: str, *, max_words: int) -> str:
     text = _compact_text(value).strip(" .")
     comma_segments = [segment.strip(" .") for segment in re.split(r"\s*,\s*", text) if segment.strip(" .")]
@@ -564,7 +619,7 @@ def _bounded_complete_proof_focus(value: str, *, max_words: int) -> str:
 
 
 def rationale_release_basis(*, title: str, label: str, first_slice: str, proof_boundary: str) -> str:
-    title_text = sentence_fragment(title)
+    title_text = _short_summary(title, limit=90).strip(" .") or sentence_fragment(title)
     slice_terms = semantic_words(first_slice)
     proof_terms = semantic_words(proof_boundary)
     shared = sorted((slice_terms & proof_terms) - {"can", "must", "release", "result", "state"})
@@ -572,6 +627,15 @@ def rationale_release_basis(*, title: str, label: str, first_slice: str, proof_b
         proof_focus = rationale_proof_focus(proof_boundary, fallback=first_slice)
         return f"{title_text} ranks before optional expansion because {label} must prove {proof_focus} in the same release story"
     return f"{title_text} ranks before optional expansion because it ties the accepted path to reviewable {label} release evidence"
+
+
+def _too_similar(left: str, right: str) -> bool:
+    left_terms = semantic_words(left)
+    right_terms = semantic_words(right)
+    if len(left_terms) < 4 or len(right_terms) < 4:
+        return False
+    overlap = len(left_terms & right_terms) / max(1, min(len(left_terms), len(right_terms)))
+    return overlap >= 0.65
 
 
 def looks_mechanical_summary(value: str) -> bool:

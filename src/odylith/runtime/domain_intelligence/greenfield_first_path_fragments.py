@@ -36,7 +36,7 @@ MATERIAL_ACTION_RE = re.compile(
     r"accept|accepts|add|adds|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
     r"book|books|check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|decide|decides|"
     r"click|clicks|compute|computes|create|creates|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|forecast|forecasts|"
-    r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|mark|marks|notify|notifies|persist|persists|play|plays|"
+    r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|make|makes|mark|marks|notify|notifies|open|opens|persist|persists|pick|picks|play|plays|"
     r"optimize|optimizes|preserve|preserves|produce|produces|prompt|prompts|provide|provides|publish|publishes|pull|pulls|rank|ranks|rate|rates|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
     r"return|returns|route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
     r"show|shows|stop|stops|store|stores|submit|submits|surface|surfaces|sync|syncs|tap|taps|track|tracks|update|updates|"
@@ -248,7 +248,7 @@ def visible_result_object(value: str) -> str:
                 flags=re.IGNORECASE,
             ).strip(" .")
             result = re.sub(
-                r",?\s+and\s+(?:adds?|checks?|makes?|places?|records?|routes?|saves?|stores?|updates?)\b.+$",
+                r",?\s+and\s+(?:adds?|checks?|completes?|ends?|finishes?|makes?|places?|records?|routes?|saves?|stores?|updates?)\b.+$",
                 "",
                 result,
                 flags=re.IGNORECASE,
@@ -449,6 +449,7 @@ def leading_subject_prefix(value: str) -> str:
     subject = text[: match.start()].strip()
     if not re.match(r"^(?:a|an|the|one|this|that|each|another)\s+", subject, flags=re.IGNORECASE):
         return ""
+    subject = re.sub(r"\s+[A-Za-z]+ly$", "", subject, flags=re.IGNORECASE).strip()
     if len(label_terms(subject)) > 6:
         return ""
     return subject
@@ -504,10 +505,14 @@ _GERUND_ACTION_VERBS = {
     "lets": "letting",
     "log": "logging",
     "logs": "logging",
+    "make": "making",
+    "makes": "making",
     "mark": "marking",
     "marks": "marking",
     "open": "opening",
     "opens": "opening",
+    "pick": "picking",
+    "picks": "picking",
     "produce": "producing",
     "produces": "producing",
     "prompt": "prompting",
@@ -662,7 +667,20 @@ def clip_first_path_phrase(value: str, *, limit: int) -> str:
 def clean_first_path_text(value: Any) -> str:
     text = clean_markdown_text(value)
     text = re.sub(
+        r",?\s+and\s+(?:completes?|ends?|finishes?)\s+(?:the\s+)?(?:flow|journey|loop|moment|path|session)\b[^.!?]*(?=[.!?]|$)",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
         r"(?:^|(?<=[.!?])\s+)that\s+single\s+(?:path|loop|journey|flow)\s+[–—-]\s*.*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"(?:^|(?<=[.!?])\s+)(?:this|that)\s+is\s+(?:one\s+)?(?:full|complete)\s+"
+        r"(?:path|loop|journey|flow)\b.*$",
         "",
         text,
         flags=re.IGNORECASE,
