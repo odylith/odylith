@@ -33,7 +33,7 @@ TRIVIAL_AUTH_RE = re.compile(
 
 MATERIAL_ACTION_RE = re.compile(
     r"\b(?:"
-    r"accept|accepts|add|adds|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
+    r"accept|accepts|add|adds|advance|advances|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
     r"book|books|check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|decide|decides|"
     r"click|clicks|compute|computes|create|creates|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|forecast|forecasts|"
     r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|make|makes|mark|marks|notify|notifies|open|opens|persist|persists|pick|picks|play|plays|"
@@ -65,7 +65,7 @@ def is_system_generated_action(value: str) -> bool:
     if not text:
         return False
     system_verb = (
-        r"asks?|calculates?|checks?|computes?|derives?|displays?|evaluates?|generates?|marks?|notifies?|presents?|preserves?|renders?|returns?|routes?|runs?|"
+        r"advances?|asks?|calculates?|checks?|computes?|derives?|displays?|evaluates?|generates?|marks?|notifies?|presents?|preserves?|records?|renders?|returns?|routes?|runs?|"
         r"persists?|pulls?|saves?|scores?|shows?|stores?|updates?|validates?"
     )
     system_subject = (
@@ -471,6 +471,8 @@ _GERUND_ACTION_VERBS = {
     "accepts": "accepting",
     "add": "adding",
     "adds": "adding",
+    "advance": "advancing",
+    "advances": "advancing",
     "adjust": "adjusting",
     "adjusts": "adjusting",
     "answer": "answering",
@@ -491,6 +493,8 @@ _GERUND_ACTION_VERBS = {
     "compares": "comparing",
     "complete": "completing",
     "completes": "completing",
+    "confirm": "confirming",
+    "confirms": "confirming",
     "create": "creating",
     "creates": "creating",
     "display": "displaying",

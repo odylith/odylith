@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compac
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels as _join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import problem_text as _problem_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label as _sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary as _state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
@@ -66,7 +67,7 @@ def build_confirmed_greenfield_proposal(
     if title_normalization.changed:
         prompt_text = prompt_text.replace(title_normalization.raw_title, product_title).strip() or product_title
     label = domain_label(product_title, prompt_text)
-    label_lower = label.lower()
+    label_lower = _sentence_label(label)
     label_slug = slugify(label)
     product_story = confirmed_intent_summary(
         confirmed_intent,
@@ -419,11 +420,11 @@ def _project_intelligence(
     external_systems: list[str] | None = None,
     non_goals: list[str] | None = None,
 ) -> dict[str, Any]:
-    label_lower = label.lower()
+    label_lower = _sentence_label(label)
     state_label = _domain_object_label(state_object, fallback=f"{label} state")
     evidence_label = _domain_object_label(evidence_record, fallback=evidence_record)
-    state_lower = state_label.lower()
-    evidence_lower = evidence_label.lower()
+    state_lower = _sentence_label(state_label)
+    evidence_lower = _sentence_label(evidence_label)
     story_summary = _short_summary(product_story, limit=360)
     problem_summary = _problem_text(label=label, problem=problem, product_story=product_story, first_path=first_path)
     opportunity_summary = _short_summary(opportunity, limit=320) or "The accepted first path becomes the planning boundary for source work and proof."

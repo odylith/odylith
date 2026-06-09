@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items as _join_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import problem_text as _problem_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label as _sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
@@ -108,6 +109,7 @@ def confirmed_program(
     proof_title: str,
     components: list[dict[str, Any]],
 ) -> dict[str, Any]:
+    label_ref = _sentence_label(label)
     component_ids = [str(row["component_id"]) for row in components]
     return {
         "shape": "program_with_waves",
@@ -117,7 +119,7 @@ def confirmed_program(
             "program_type": "greenfield_program",
             "parent_workstream": parent_title,
             "child_workstream_strategy": (
-                f"Build the first usable {label.lower()} path, then harden its state handoffs and proof review."
+                f"Build the first usable {label_ref} path, then harden its state handoffs and proof review."
             ),
             "child_workstreams": [workflow_title, boundary_title, proof_title],
             "wave_to_workstream_policy": "Waves follow product build order; each child owns a distinct implementation slice.",
@@ -133,7 +135,7 @@ def confirmed_program(
             {
                 "wave": 1,
                 "label": f"{label} first-path proof",
-                "goal": f"Prove the accepted {label.lower()} first path from intake to release-review outcome.",
+                "goal": f"Prove the accepted {label_ref} first path from intake to release-review outcome.",
                 "validation_gate": f"{label} success, validation failure, and recovery path tests pass.",
                 "workstream_titles": [workflow_title],
                 "component_focus": component_ids[:2],
@@ -142,7 +144,7 @@ def confirmed_program(
             {
                 "wave": 2,
                 "label": f"{label} state and evidence boundary",
-                "goal": f"Make {label.lower()} state, proof packet, ownership, and review boundaries explicit.",
+                "goal": f"Make {label_ref} state, proof packet, ownership, and review boundaries explicit.",
                 "validation_gate": f"{label} state replay and release-evidence traceability tests pass.",
                 "workstream_titles": [boundary_title],
                 "component_focus": component_ids,
@@ -170,11 +172,12 @@ def confirmed_release_plan(
     boundary_title: str,
     proof_title: str,
 ) -> dict[str, Any]:
+    label_ref = _sentence_label(label)
     return {
         "selector": release,
         "label": f"{label} {release} first path",
         "provisional_release_id": f"release-{label_slug}-{slugify(release)}",
-        "strategy": f"Promote {label.lower()} only after first-path, state replay, access, and evidence review proof pass.",
+        "strategy": f"Promote {label_ref} only after first-path, state replay, access, and evidence review proof pass.",
         "target_workstream_titles": [workflow_title, boundary_title, proof_title],
         "release_stages": [
             {
@@ -187,7 +190,7 @@ def confirmed_release_plan(
         "milestones": [
             {
                 "name": f"{label} release review accepted",
-                "exit_criteria": f"The product owner accepts the {label.lower()} first path, non-goals, and release proof.",
+                "exit_criteria": f"The product owner accepts the {label_ref} first path, non-goals, and release proof.",
             }
         ],
         "promotion_criteria": [
@@ -276,9 +279,12 @@ def confirmed_backlog_rows(
     path_entry_story = backlog_text.sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
     workflow_actor_label = backlog_text.lead_actor_label(human_actors) or f"{label} user"
     metric_actor = backlog_text.problem_actor_subject(workflow_actor_label, fallback=f"{label} user")
-    downstream_actor = backlog_text.supporting_actor_label(human_actors)
+    downstream_candidate = backlog_text.supporting_actor_label(human_actors)
+    downstream_actor = downstream_candidate if _actor_appears_in_path(first_path_for_clauses, downstream_candidate) else ""
     downstream_subject = backlog_text.problem_actor_subject(downstream_actor, fallback="the next participant") if downstream_actor else "The next participant"
-    recipient_phrase = _recipient_phrase(downstream_subject)
+    outcome_recipient = downstream_subject if downstream_actor else metric_actor
+    recipient_phrase = _recipient_phrase(outcome_recipient)
+    follow_up_subject = downstream_subject if downstream_actor else metric_actor
     workflow_audience = _join_distinct_labels([workflow_actor_label, downstream_actor])
     boundary_audience = workflow_audience or f"{label} operators and reviewers"
     proof_audience = downstream_actor or f"{label} proof reviewer"
@@ -321,14 +327,18 @@ def confirmed_backlog_rows(
         action=workflow_action,
         outcome=outcome_summary,
         outcome_action=outcome_action,
-        recipient=downstream_subject,
+        recipient=outcome_recipient,
     )
-    workflow_missing_input_tail = _missing_input_tail(action=workflow_action, outcome=outcome_summary)
+    workflow_missing_input_tail = _missing_input_tail(
+        action=workflow_action,
+        outcome=outcome_summary,
+        outcome_already_appended=bool(workflow_outcome_action),
+    )
     workflow_result_sentence = _workflow_result_sentence(
         action=workflow_action,
         outcome=outcome_summary,
         outcome_action=outcome_action,
-        recipient=downstream_subject,
+        recipient=outcome_recipient,
     )
     parent = _backlog_row(
         label=label,
@@ -370,7 +380,7 @@ def confirmed_backlog_rows(
         title=workflow_title,
         problem=(
             f"{metric_actor} needs the first interaction to let them {outcome_action}, not just captured input. "
-            f"If the path accepts incomplete details or hides why it stopped, {downstream_subject[:1].lower()}{downstream_subject[1:]} cannot act on the result with confidence."
+            f"If the path accepts incomplete details or hides why it stopped, {follow_up_subject[:1].lower()}{follow_up_subject[1:]} cannot act on the result with confidence."
         ),
         customer=workflow_actor_label,
         opportunity=(
@@ -379,7 +389,7 @@ def confirmed_backlog_rows(
         ),
         product_view=(
             f"{metric_actor} can {workflow_action}. The product checks the details, explains missing information before it produces a result, "
-            f"{workflow_result_sentence}. {downstream_subject} receives the saved context needed to continue without reinterpreting the user's intent."
+            f"{workflow_result_sentence}. {follow_up_subject} receives the saved context needed to continue without reinterpreting the user's intent."
         ),
         first_slice=(
             f"One representative path where {metric_actor[:1].lower()}{metric_actor[1:]} can {workflow_action}"
@@ -388,7 +398,7 @@ def confirmed_backlog_rows(
         metrics=[
             f"The first interaction proves {first_path_proof_capability} and lets {recipient_phrase} {outcome_action}.",
             "Missing or invalid information produces clear correction guidance instead of a misleading result.",
-            f"{downstream_subject} can use the saved context without asking the user to repeat the same details.",
+            f"{follow_up_subject} can use the saved context without asking the user to repeat the same details.",
         ],
         component_focus=component_ids[: max(1, min(2, len(component_ids)))],
         diagram_focus=[diagram_slugs["context"], diagram_slugs["sequence"], diagram_slugs["state_evidence"]],
@@ -604,7 +614,9 @@ def _append_outcome_action(*, action: str, outcome: str, outcome_action: str, re
     return f", and lets {_recipient_phrase(recipient)} {outcome_action}" if outcome_action else ""
 
 
-def _missing_input_tail(*, action: str, outcome: str) -> str:
+def _missing_input_tail(*, action: str, outcome: str, outcome_already_appended: bool = False) -> str:
+    if outcome_already_appended:
+        return " while giving clear correction guidance when required information is missing"
     action_terms = backlog_text.semantic_words(action)
     outcome_terms = backlog_text.semantic_words(outcome)
     if outcome_terms and outcome_terms <= action_terms:
@@ -678,6 +690,20 @@ def _join_distinct_labels(values: list[str | None]) -> str:
 def _actor_match_terms(value: str) -> set[str]:
     terms = {word.casefold() for word in re.findall(r"[A-Za-z][A-Za-z0-9'-]{2,}", str(value or ""))}
     return terms - {"actor", "later", "primary", "reviewer", "user"}
+
+
+def _actor_appears_in_path(first_path: str, actor: str) -> bool:
+    actor_terms = _actor_match_terms(actor)
+    if not actor_terms:
+        return False
+    for step in first_path_steps(first_path):
+        signature_terms = _actor_match_terms(actor_signature(step))
+        if signature_terms and signature_terms & actor_terms:
+            return True
+        step_terms = _actor_match_terms(step)
+        if step_terms and step_terms & actor_terms:
+            return True
+    return False
 
 
 def _join_action_fragments(values: list[str]) -> str:

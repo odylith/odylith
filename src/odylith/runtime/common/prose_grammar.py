@@ -13,6 +13,7 @@ import re
 _INFINITIVE_TO_FINITE = {
     "accept": "accepts",
     "add": "adds",
+    "advance": "advances",
     "allow": "allows",
     "answer": "answers",
     "apply": "applies",

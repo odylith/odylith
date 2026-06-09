@@ -329,7 +329,7 @@ def _with_carried_subject(value: str, subject_prefix: str) -> str:
     if adverbial and _MATERIAL_ACTION_RE.match(adverbial.group("verb")):
         return (
             f"{subject_prefix} {adverbial.group('prefix').casefold()}"
-            f"{third_person_action_verb(adverbial.group('verb'))}{adverbial.group('tail')}"
+            f"{_carried_subject_action_verb(subject_prefix, adverbial.group('verb'))}{adverbial.group('tail')}"
         )
     finite_adverbial = re.match(
         r"^(?P<prefix>[A-Za-z]+ly\s+)(?P<verb>[A-Za-z]+)\b(?P<tail>.*)$",
@@ -343,10 +343,17 @@ def _with_carried_subject(value: str, subject_prefix: str) -> str:
         )
     action = re.match(rf"^(?P<verb>{_ACTION_BASE_VERB_PATTERN})\b(?P<tail>.*)$", text, flags=re.IGNORECASE)
     if action and _MATERIAL_ACTION_RE.match(action.group("verb")):
-        return f"{subject_prefix} {third_person_action_verb(action.group('verb'))}{action.group('tail')}"
+        return f"{subject_prefix} {_carried_subject_action_verb(subject_prefix, action.group('verb'))}{action.group('tail')}"
     if _MATERIAL_ACTION_RE.match(text):
         return f"{subject_prefix} {text[:1].lower()}{text[1:]}"
     return text
+
+
+def _carried_subject_action_verb(subject_prefix: str, verb: str) -> str:
+    subject = _clean(subject_prefix).casefold()
+    if subject in {"they", "we"}:
+        return base_action_clause(verb)
+    return third_person_action_verb(verb)
 
 
 def _carried_subject_prefix(value: str) -> str:
@@ -354,6 +361,10 @@ def _carried_subject_prefix(value: str) -> str:
     if subject:
         return subject
     text = _clean(value).strip()
+    pronoun = re.match(r"^(?P<subject>they|we|he|she|it)\s+(?P<tail>.+)$", text, flags=re.IGNORECASE)
+    if pronoun and _MATERIAL_ACTION_RE.match(pronoun.group("tail")):
+        raw_subject = pronoun.group("subject").casefold()
+        return raw_subject[:1].upper() + raw_subject[1:]
     match = re.match(r"^(?P<subject>[A-Z][A-Za-z0-9_-]{2,})\s+(?P<tail>.+)$", text)
     if match and _MATERIAL_ACTION_RE.match(match.group("tail")):
         return match.group("subject")
@@ -364,6 +375,9 @@ def _starts_new_action_clause(value: str) -> bool:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not text:
         return False
+    adverbial_action = re.match(r"^[A-Za-z]+ly\s+(?P<tail>.+)$", text, flags=re.IGNORECASE)
+    if adverbial_action and _MATERIAL_ACTION_RE.match(adverbial_action.group("tail")) and len(label_terms(text)) >= 2:
+        return True
     if re.match(
         r"^(?:(?:a|an|the|one|this|that|each|another|product|system|user|person|actor|app|application|workspace|engine|dashboard|view)|[A-Z][A-Za-z0-9_-]{2,})\s+"
         r"(?:[A-Za-z0-9'-]+\s+){0,5}?"

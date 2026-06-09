@@ -38,6 +38,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_windows impor
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import contract_focus
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import contract_list_text
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import proof_rows
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import produced_outputs_text
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import status_only_artifact_fragment
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
@@ -674,6 +676,29 @@ def test_greenfield_component_spec_renderer_cleans_guardrail_verb_phrases() -> N
     assert "example explains" not in spec.casefold()
     assert "guide path capture allowed command" not in spec.casefold()
     assert "capture allowed command" not in spec.casefold()
+
+
+def test_greenfield_component_proof_rows_collapse_repeated_result_phrase() -> None:
+    rows = proof_rows(
+        label="Release Guardrail Service",
+        object_list="result result, known limit, recovery condition",
+        critical="result result",
+        input_focus="known limit",
+        output_focus="result result, recovery condition",
+        sibling_label="Evidence Log Service",
+        sibling_focus="evidence log state",
+    )
+    text = " ".join(rows).casefold()
+
+    assert "result result" not in text
+    assert "trusted result" in text
+
+
+def test_greenfield_component_output_text_collapse_repeated_result_phrase() -> None:
+    text = produced_outputs_text("decision ledger, result result, state update")
+
+    assert "result result" not in text.casefold()
+    assert "decision ledger" in text
 
 
 def test_greenfield_component_spec_renderer_rejects_mechanical_contract_dump() -> None:

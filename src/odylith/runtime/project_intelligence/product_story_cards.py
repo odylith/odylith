@@ -8,6 +8,9 @@ import re
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import third_person_action_verb
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
+    outcome_action_phrase as _outcome_action_phrase,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.utils import display_text, sentence, strings
 
@@ -164,9 +167,10 @@ def _user_problem_card(ctx: _StoryCardContext) -> str:
     if source and _specific_enough(source, ctx):
         return _limit_card(_ensure_period(source), limit=520)
     outcome = _lower_first(_outcome_phrase(ctx))
+    outcome_action = _outcome_action_phrase(outcome)
     actor = _lower_first(ctx.actor)
     return _ensure_period(
-        f"{ctx.actor} needs a clear way to reach {outcome}. Without {ctx.title}, {actor} has to piece together "
+        f"{ctx.actor} needs a clear way to {outcome_action}. Without {ctx.title}, {actor} has to piece together "
         "inputs, decisions, and follow-up by hand, which creates delay, uncertainty, and avoidable mistakes."
     )
 
@@ -229,7 +233,9 @@ def _repair_card(*, label: str, body: str, ctx: _StoryCardContext) -> str:
     if not _weak_card(fallback, ctx):
         return fallback
     outcome = _outcome_phrase(ctx)
-    return _ensure_period(f"{ctx.title} is useful when {ctx.actor} can reach {outcome} and {ctx.participant} can understand what happened next")
+    return _ensure_period(
+        f"{ctx.title} is useful when {ctx.actor} can {_outcome_action_phrase(outcome)} and {ctx.participant} can understand what happened next"
+    )
 
 
 def _weak_card(value: str, ctx: _StoryCardContext) -> bool:

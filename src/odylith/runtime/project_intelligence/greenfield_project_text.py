@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.project_intelligence.greenfield_sources import _first_slice_from_validation
@@ -208,23 +209,7 @@ def _partition_casefold(value: str, marker: str) -> tuple[str, str, str]:
 
 
 def _title_case(value: str) -> str:
-    preserve = {"AI", "API", "CLI", "CI", "DeFi", "SMB", "UI", "UX"}
-    minor_words = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
-    tokens: list[str] = []
-    raw_tokens = _clean_display_title(value).replace("-", " ").split()
-    for index, token in enumerate(raw_tokens):
-        matched = next((word for word in preserve if token.lower() == word.lower()), "")
-        if matched:
-            tokens.append(matched)
-            continue
-        if _has_internal_capital(token):
-            tokens.append(token)
-            continue
-        if index > 0 and token.casefold().strip(":") in minor_words and not raw_tokens[index - 1].endswith(":"):
-            tokens.append(token.lower())
-            continue
-        tokens.append(token[:1].upper() + token[1:].lower())
-    return " ".join(tokens)
+    return title_label(_clean_display_title(value))
 
 
 def _clean_display_title(value: str) -> str:
@@ -232,11 +217,6 @@ def _clean_display_title(value: str) -> str:
     text = re.sub(r"^[\s\-–—:·|]+", "", text)
     text = re.sub(r"[\s\-–—:·|]+$", "", text)
     return text.strip()
-
-
-def _has_internal_capital(value: str) -> bool:
-    token = value.strip(".,;:!?()[]{}")
-    return any(char.islower() for char in token) and any(char.isupper() for char in token[1:])
 
 
 def _dashboard_open_items(*, questions: Sequence[str], risks: Sequence[str]) -> list[str]:

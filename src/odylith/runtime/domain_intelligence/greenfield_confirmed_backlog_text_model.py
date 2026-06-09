@@ -412,7 +412,19 @@ def problem_actor_subject(actors: str, *, fallback: str) -> str:
     lowered = text.casefold()
     if re.match(r"^(?:a|an|the|one|this|that|each|people|users|customers|operators|reviewers)\b", lowered):
         return text[:1].upper() + text[1:]
-    return f"The {lowered}"
+    return f"The {_lower_actor_label_start(text)}"
+
+
+def _lower_actor_label_start(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    words = text.split(maxsplit=1)
+    first = words[0]
+    rest = f" {words[1]}" if len(words) > 1 else ""
+    if first.isupper() and len(first) > 1:
+        return f"{first}{rest}"
+    return f"{first[:1].casefold()}{first[1:]}{rest}"
 
 
 def capability_action_clause(value: str) -> str:

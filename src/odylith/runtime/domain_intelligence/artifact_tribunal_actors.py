@@ -9,6 +9,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.artifact_graph import DomainIntelligenceGraph
 from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_acronym_number_tokens
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -57,7 +58,7 @@ def _first_domain_graph(proposal: Mapping[str, Any]) -> DomainIntelligenceGraph:
 
 
 def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str, Any]) -> dict[str, str]:
-    compact = _compact_lens_name(graph)
+    compact = _compact_lens_name(graph, proposal=proposal)
     proposal_actors = _proposal_actor_candidates(proposal)
     actors = _role_candidates([*proposal_actors, *graph.actors])
     first_path_actor = _first_path_contract_actor(proposal)
@@ -69,17 +70,21 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
     risk_owners = _role_specific_candidates(
         [*proposal_actors, *graph.risk_owners, *graph.actors],
         ("risk", "safety", "compliance", "loss"),
+        ownerish_fallback=False,
     )
     evidence_owners = _role_specific_candidates(
         [*proposal_actors, *graph.evidence_types, *graph.proof_standards, *graph.actors],
         ("proof", "evidence", "validation"),
+        ownerish_fallback=False,
     )
     implementation_owners = _role_specific_candidates(
         [*proposal_actors, *graph.invariants, *graph.validation_obligations, *graph.actors],
         ("build", "builder", "implementation", "source", "engineer"),
+        ownerish_fallback=False,
     ) or _role_specific_candidates(
         [*proposal_actors, *graph.invariants, *graph.validation_obligations, *graph.actors],
         ("maintainer",),
+        ownerish_fallback=False,
     )
     names = {
         "beneficiary_advocate": _actor_label(actors, fallback=f"{compact} beneficiary advocate"),
@@ -333,12 +338,33 @@ def _role_phrase_label(label: str) -> str:
     return ""
 
 
-def _compact_lens_name(graph: DomainIntelligenceGraph) -> str:
+def _compact_lens_name(graph: DomainIntelligenceGraph, *, proposal: Mapping[str, Any] | None = None) -> str:
     label = clean_text(graph.primary_lens).split(":", 1)[0].strip()
     if not label:
         return "Project"
+    source_title = ""
+    if isinstance(proposal, Mapping):
+        intent = proposal.get("intent")
+        if isinstance(intent, Mapping):
+            source_title = clean_text(intent.get("title"))
+        if not source_title:
+            source_title = clean_text(proposal.get("title"))
+    source_label = _source_title_lens(source_title)
+    if source_label and _looks_like_role_lens(label):
+        label = source_label
     words = label.replace("_", " ").split()
-    return " ".join(word[:1].upper() + word[1:] for word in words[:3])
+    text = " ".join(word[:1].upper() + word[1:] for word in words[:3])
+    return restore_source_acronym_number_tokens(text, source_title or label)
+
+
+def _looks_like_role_lens(value: str) -> bool:
+    lowered = clean_text(value).casefold()
+    return bool(re.search(r"\b(?:build|evidence|owner|proof|release|reviewer|risk|validation)\b", lowered))
+
+
+def _source_title_lens(value: str) -> str:
+    text = re.split(r"\s+[—–]\s+|:", clean_text(value), maxsplit=1)[0].strip(" .")
+    return text
 
 
 def _role_candidates(values: Sequence[str]) -> list[str]:
@@ -391,16 +417,6 @@ def _derived_role_label(
     label = _actor_label(explicit, fallback="")
     if label:
         return label
-    for value in values:
-        candidate = _actor_candidate_label(value)
-        label = _actor_label([candidate], fallback="")
-        if label:
-            return label
-    for value in values:
-        candidate = _actor_candidate_label(value)
-        prefix = _actor_label_prefix(candidate)
-        if prefix:
-            return f"{prefix} {role_suffix}"
     return f"{fallback_lens} {role_suffix}"
 
 
@@ -475,8 +491,24 @@ def _actor_label(values: Sequence[str], *, fallback: str) -> str:
             }
             and len(label.split()) <= 14
         ):
-            return label
+            return _normalize_role_suffix_case(label)
     return fallback
+
+
+def _normalize_role_suffix_case(label: str) -> str:
+    text = clean_text(label)
+    suffixes = (
+        "Beneficiary Advocate",
+        "Workflow Operator",
+        "Risk Reviewer",
+        "Proof Reviewer",
+        "Build Owner",
+        "Release Reviewer",
+    )
+    for suffix in suffixes:
+        if text.endswith(suffix):
+            return f"{text[: -len(suffix)]}{suffix.casefold()}"
+    return text
 
 
 __all__ = ["TRIBUNAL_STABLE_ROLES", "tribunal_actor_projection"]

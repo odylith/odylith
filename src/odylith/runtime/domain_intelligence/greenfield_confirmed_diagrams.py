@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_confirmed_diagram_text as diagram_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
@@ -49,6 +50,7 @@ def confirmed_diagrams(
     proof_brief = diagram_text.brief_proof_boundary(proof_boundary)
     state_label = diagram_text.brief_object_label(state_object, fallback=f"{label} state")
     evidence_label = diagram_text.brief_object_label(evidence_record, fallback=f"{label} evidence record")
+    label_ref = sentence_label(label)
     return [
         {
             "slug": diagram_slugs["context"],
@@ -111,11 +113,11 @@ def confirmed_diagrams(
             "title": "State and Evidence View",
             "kind": "flowchart",
             "summary": (
-                f"Show how {state_label} becomes reviewable {label.lower()} evidence in the first release. "
+                f"Show how {state_label} becomes reviewable {label_ref} evidence in the first release. "
                 f"The evidence record is {evidence_label}."
             ),
             "read_guide": (
-                f"Read this as the {label.lower()} state trail. Start with {actor_phrase}, then follow state, evidence, "
+                f"Read this as the {label_ref} state trail. Start with {actor_phrase}, then follow state, evidence, "
                 "proof, and correction points before trusting the release claim."
             ),
             "owner": "repo",
@@ -170,7 +172,7 @@ def confirmed_diagrams(
                 f"Trace release ownership for {label} from product-owned components to the product result supported by {state_label} and {evidence_label}"
             ),
             "read_guide": (
-                f"Read from each state or evidence owner toward the proof boundary. A box matters when it owns {label.lower()} data, "
+                f"Read from each state or evidence owner toward the proof boundary. A box matters when it owns {label_ref} data, "
                 "access, derivation, export, display, or review needed to trust the first release."
             ),
             "owner": "repo",
@@ -196,7 +198,7 @@ def confirmed_diagrams(
                 f"Show which first-path result, state replay, evidence check, access proof, and release decision must exist before {label} trust increases"
             ),
             "read_guide": (
-                f"Read this as the {label.lower()} release gate. The product result, {state_label}, {evidence_label}, "
+                f"Read this as the {label_ref} release gate. The product result, {state_label}, {evidence_label}, "
                 "validation output, and release decision must all be present; deferred scope stays outside the claim."
             ),
             "owner": "repo",

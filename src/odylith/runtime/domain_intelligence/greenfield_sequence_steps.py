@@ -14,7 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import normalize_visibl
 
 
 ACTION_VERB_PATTERN = (
-    r"adds?|adjusts?|approves?|assigns?|attaches?|calculates?|captures?|checks?|chooses?|closes?|collects?|"
+    r"adds?|advances?|adjusts?|approves?|assigns?|attaches?|calculates?|captures?|checks?|chooses?|closes?|collects?|"
     r"compares?|completes?|computes?|confirms?|corrects?|creates?|decides?|declines?|deletes?|derives?|edits?|"
     r"enters?|evaluates?|exports?|fetches?|finds?|gets?|groups?|hands?|highlights?|imports?|lets?|links?|logs?|"
     r"displays?|moves?|notifies?|opens?|orders?|persists?|preserves?|produces?|publishes?|ranks?|reads?|receives?|records?|rejects?|"
@@ -114,7 +114,7 @@ def _anchor_visible_result_step(value: str, visible_result: str) -> str:
 
 def _leading_result_action(value: str) -> str:
     words = _leading_words(value, limit=2)
-    if len(words) < 2 or words[1] not in {"it", "them", "they", "this", "that"}:
+    if len(words) < 2 or words[1] not in {"it", "them", "this", "that"}:
         return ""
     if words[0] not in {"get", "gets", "read", "reads", "receive", "receives", "see", "sees", "show", "shows", "view", "views"}:
         return ""
@@ -134,7 +134,7 @@ def _base_result_action(value: str) -> str:
 
 def _starts_with_unanchored_result_pronoun(value: str) -> bool:
     first = _leading_word(value)
-    return first in {"it", "them", "they", "this", "that"}
+    return first in {"it", "them", "this", "that"}
 
 
 def _starts_with_action_word(value: str) -> bool:

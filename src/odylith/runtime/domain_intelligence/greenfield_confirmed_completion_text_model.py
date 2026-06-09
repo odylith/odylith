@@ -52,8 +52,11 @@ _VISIBLE_RESULT_OBJECT_HINTS = {
     "view",
 }
 _VISIBLE_SEE_RESULT_HINTS = {
+    "appointment",
     "card",
     "consequence",
+    "date",
+    "deadline",
     "notice",
     "outcome",
     "recap",
@@ -61,10 +64,12 @@ _VISIBLE_SEE_RESULT_HINTS = {
     "reflection",
     "report",
     "result",
+    "slot",
     "summary",
     "timeline",
     "trend",
     "view",
+    "window",
 }
 
 

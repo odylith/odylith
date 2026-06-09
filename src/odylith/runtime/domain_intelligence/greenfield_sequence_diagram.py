@@ -16,7 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_wor
 
 
 _BASE_ACTION_VERB_PATTERN = (
-    r"add|adjust|approve|assign|attach|calculate|capture|check|choose|close|collect|compare|complete|compute|"
+    r"add|advance|adjust|approve|assign|attach|calculate|capture|check|choose|close|collect|compare|complete|compute|"
     r"confirm|correct|create|decide|decline|delete|derive|edit|enter|evaluate|export|fetch|find|get|group|hand|"
     r"highlight|import|inspect|keep|link|log|notify|open|order|persist|preserve|produce|publish|rank|read|receive|"
     r"record|reject|render|request|resolve|return|review|route|run|save|schedule|screen|see|select|send|show|store|"
@@ -440,6 +440,9 @@ def _step_message(value: str, *, keep_actor_subject: bool = True) -> str:
 
 def _step_action_label(value: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _strip_dangling_tail(_trim(value, 220)), flags=re.IGNORECASE)
+    if _retains_readable_step_subject(text):
+        text = _compress_step_action_label(text)
+        return text[:1].upper() + text[1:] if text else "Advance accepted path"
     text = re.sub(r"^(?:the\s+)?(?:product|app|application|system)\s+", "", text, flags=re.IGNORECASE)
     role_can = re.match(
         r"^(?:a|an|the|one)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+can\s+(?P<verb>[A-Za-z]+)\b(?P<rest>.*)$",
@@ -457,6 +460,16 @@ def _step_action_label(value: str) -> str:
     text = _imperative_handoff_focus(text)
     text = _compress_step_action_label(text)
     return text[:1].upper() + text[1:] if text else "Advance accepted path"
+
+
+def _retains_readable_step_subject(value: str) -> bool:
+    return bool(
+        re.match(
+            r"^(?:they|we|he|she|it|the\s+(?:product|app|application|system))\s+",
+            _compact_text(value),
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _compress_step_action_label(value: str) -> str:

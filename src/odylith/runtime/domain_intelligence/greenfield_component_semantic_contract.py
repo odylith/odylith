@@ -129,6 +129,7 @@ def derive_component_semantic_contract(
     label_phrases = _label_compound_phrases(label)
     bridge_phrases = _bridge_phrases(label, description)
     lifecycle_phrases = _lifecycle_phrases(label, description)
+    role_phrases = _component_role_phrases(label=label, description=description)
     context_required_phrases = semantic_context.context_required_phrases(
         context_phrases,
         label_terms=label_terms,
@@ -138,7 +139,7 @@ def derive_component_semantic_contract(
         proposal_context,
         anchor_terms=unique_text([*label_terms, *description_terms]),
     )
-    local_phrases = [*description_phrases, *label_phrases, *bridge_phrases, *lifecycle_phrases]
+    local_phrases = [*description_phrases, *label_phrases, *bridge_phrases, *lifecycle_phrases, *role_phrases]
     needs_context_backfill = semantic_context.needs_context_backfill(
         description=description,
         description_phrases=description_phrases,
@@ -161,6 +162,7 @@ def derive_component_semantic_contract(
             *label_phrases[:3],
             *bridge_phrases[:2],
             *lifecycle_phrases,
+            *role_phrases,
             *([] if not needs_context_backfill else context_compound_phrases[:4]),
         ]
     else:
@@ -168,6 +170,7 @@ def derive_component_semantic_contract(
             *label_phrases[:3],
             *bridge_phrases[:2],
             *lifecycle_phrases,
+            *role_phrases,
             *context_required_phrases[:3],
             *context_compound_phrases[:3],
         ]
@@ -230,6 +233,7 @@ def derive_component_semantic_contract(
         (
             *title_identity_phrases,
             *owned_summary_phrases,
+            *role_phrases[:3],
             *owned_context_phrases[:2],
             *evidence_phrases,
             "blocker state",
@@ -280,7 +284,7 @@ def _result_like_phrase(value: str) -> str:
     best_score = 0
     best = ""
     for part in _clean(value).split(","):
-        text = _clean_artifact_phrase(part)
+        text = _dedupe_adjacent_words(_clean_artifact_phrase(part))
         if not text or _status_only_artifact_fragment(text):
             continue
         terms = set(_content_terms(text))
@@ -293,6 +297,30 @@ def _result_like_phrase(value: str) -> str:
             best_score = score
             best = text
     return best
+
+
+def _component_role_phrases(*, label: str, description: str) -> tuple[str, ...]:
+    text = _clean(" ".join([label, description])).casefold()
+    phrases: list[str] = []
+    if re.search(r"\b(?:audit|evidence|ledger|log|proof|replay|reviewable|trace)\b", text):
+        phrases.extend(["audit trail", "replay packet", "decision ledger"])
+    if re.search(r"\b(?:failure|blocked|invalid|missing|recovery)\b", text):
+        phrases.append("failure reason ledger")
+    if re.search(r"\b(?:guardrail|limit|rollout|release)\b", text):
+        phrases.extend(["known-limit checkpoint", "recovery-condition ledger"])
+    return tuple(unique_text(phrases))
+
+
+def _dedupe_adjacent_words(value: str) -> str:
+    words = _clean(value).split()
+    result: list[str] = []
+    for word in words:
+        current = word.casefold().strip(".,;:")
+        previous = result[-1].casefold().strip(".,;:") if result else ""
+        if current and current == previous:
+            continue
+        result.append(word)
+    return " ".join(result).strip(" .,;")
 
 
 def _needs_source_evidence(

@@ -362,6 +362,22 @@ def test_first_path_model_drops_meta_loop_summary_from_visible_outcome() -> None
     assert generated_semantic_slop_issues({"first_path": model.visible_outcome}) == []
 
 
+def test_first_path_model_keeps_carried_plural_subject_grammar() -> None:
+    model = first_path_model(
+        "A user sets up their medication, current dose, and weekly injection day. When a dose is due, "
+        "the app reminds them; they confirm the injection, optionally log their weight and any side effects, "
+        "and the app records it, advances them along their titration schedule, and shows the next due date."
+    )
+
+    rendered = " ".join(model.steps)
+
+    assert "They optionally log their weight and any side effects" in model.steps
+    assert "The app advances them along their titration schedule" in model.steps
+    assert "They optionally logs" not in rendered
+    assert "Optionally log their weight" not in rendered
+    assert "Advances them along" not in rendered
+
+
 def test_multi_actor_first_path_assigns_event_actors_and_cleans_result_copy() -> None:
     markdown = """
 # Choice Practice Journal

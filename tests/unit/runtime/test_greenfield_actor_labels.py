@@ -8,7 +8,7 @@ def test_generic_composite_actor_label_gets_project_focus() -> None:
         project_focus="Protocol outcome notebook",
     )
 
-    assert row == "Protocol Outcome Notebook Reviewer Or Collaborator"
+    assert row == "Protocol Outcome Notebook Reviewer or Collaborator"
     assert not row.startswith("Reviewer")
 
 
@@ -20,4 +20,23 @@ def test_generic_person_actor_uses_accepted_activity_not_project_fallback() -> N
     assert accepted_actor_label(
         "Optionally, a coach or clinician the person shares a summary with (read-only, later)",
         project_focus="Pattern Relief",
-    ) == "Coach Or Clinician"
+    ) == "Coach or Clinician"
+
+
+def test_actor_label_keeps_comma_gerund_descriptions_out_of_visible_actor_names() -> None:
+    assert accepted_actor_label(
+        "The person on the GLP-1 medication, tracking their own treatment (the only first-class user)",
+        project_focus="Medication Companion",
+    ) == "Person on the GLP-1 Medication"
+    assert accepted_actor_label(
+        "Optionally, a caregiver helping that person stay on schedule (later, not in the first path)",
+        project_focus="Medication Companion",
+    ) == "Caregiver"
+    assert "Tracking Their Own Treatment" not in project_specific_actor_row(
+        "The person on the GLP-1 medication, tracking their own treatment (the only first-class user)",
+        project_focus="Medication Companion",
+    )
+    assert "Caregiver Helping" not in project_specific_actor_row(
+        "Optionally, a caregiver helping that person stay on schedule (later, not in the first path)",
+        project_focus="Medication Companion",
+    )

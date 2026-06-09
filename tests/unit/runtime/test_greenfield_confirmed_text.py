@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confir
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
@@ -80,6 +81,17 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
     ) == "Person's Neck Pain Timeline"
     assert title_label("source-backed review record") == "Source-backed Review Record"
     assert title_label("high-risk case review") == "High-risk Case Review"
+    assert title_label("GLP-1 medication journey") == "GLP-1 Medication Journey"
+    assert sentence_label("GLP-1 Companion") == "GLP-1 companion"
+    assert sentence_label("AI/ML Review API") == "AI/ML review API"
+    assert focus_label("GLP-1 Companion — Medication Tracking App") == "GLP-1 Companion Medication Tracking"
+    assert domain_object_label(
+        (
+            "The durable thing the product holds is a single user's medication journey: "
+            "current medication, dose, schedule, injection history, weight readings, and side effects."
+        ),
+        fallback="Medication journey",
+    ) == "Single User's Medication Journey"
 
 
 def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:

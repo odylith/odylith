@@ -806,6 +806,39 @@ def test_greenfield_package_gate_rejects_rendered_modal_grammar_drift(tmp_path: 
     assert "modal/base-form grammar drift" in "\n".join(report.issues)
 
 
+def test_greenfield_package_gate_allows_title_case_possessive_pronouns(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    backlog_result = _prewrite_backlog_result(proposal)
+    first_path = next(iter(backlog_result["idea_files"]))
+    backlog_result["idea_files"][first_path] += (
+        "\n\n## Let Person On The GLP-1 Medication Set Up Their Medication Current Dose and Weekly Injection Day\n"
+        "\nKeep validation gates tied to this workstream before expanding adjacent source ownership: "
+        "Let Person On The GLP-1 Medication Set Up Their Medication.\n"
+    )
+
+    report = build_greenfield_package_report(
+        _package_for_quality_report(proposal, backlog_result=backlog_result)
+    )
+
+    assert report.passed, "\n".join(report.issues)
+
+
+def test_greenfield_package_gate_still_rejects_prose_capitalization_drift(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    backlog_result = _prewrite_backlog_result(proposal)
+    first_path = next(iter(backlog_result["idea_files"]))
+    backlog_result["idea_files"][first_path] += (
+        "\nThe product records the injection and Their next due date stays visible.\n"
+    )
+
+    report = build_greenfield_package_report(
+        _package_for_quality_report(proposal, backlog_result=backlog_result)
+    )
+
+    assert not report.passed
+    assert "mid-sentence capitalization drift near `Their`" in "\n".join(report.issues)
+
+
 def test_greenfield_package_gate_rejects_lowercase_fragment_bullets(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     backlog_result = _prewrite_backlog_result(proposal)

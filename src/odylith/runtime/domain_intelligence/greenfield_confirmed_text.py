@@ -229,7 +229,7 @@ def focus_label(title: str) -> str:
     ]
     if not words:
         words = label_terms(title)[:3]
-    return title_case_text(" ".join(words[:4]) or "Project")
+    return restore_source_acronym_number_tokens(title_case_text(" ".join(words[:4]) or "Project"), title)
 
 
 def domain_object_label(value: str, *, fallback: str) -> str:
@@ -246,6 +246,9 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         r"(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"^(?:the\s+)?(?:central|core|main|primary)\s+(?:thing|object|record|item|state)\s+"
         r"(?:the\s+product\s+|the\s+system\s+)?(?:tracks|records|stores|captures|keeps)\s+is\s+"
+        r"(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
+        r"^(?:the\s+)?(?:durable\s+thing|durable\s+object|durable\s+record)\s+"
+        r"(?:the\s+product\s+|the\s+system\s+)?(?:holds|tracks|records|stores|captures|keeps)\s+is\s+"
         r"(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"\b(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
         r"\b(?:the\s+)?(?:domain\s+)?object\s+is\s+(?:(?:the|an|a)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
@@ -337,17 +340,18 @@ def problem_text(*, label: str, problem: str, product_story: str, first_path: st
         return explicit
     story = short_summary(product_story, limit=240)
     path = short_summary(first_path, limit=180)
+    label_ref = sentence_label(label)
     if story and path:
         return (
-            f"Without a clear first path, users cannot trust whether {label.lower()} solves the accepted problem: "
+            f"Without a clear first path, users cannot trust whether {label_ref} solves the accepted problem: "
             f"{story} The proof path is {path}."
         )
     if story:
         return (
-            f"Without source-backed proof, users cannot trust whether {label.lower()} solves the accepted problem: {story}."
+            f"Without source-backed proof, users cannot trust whether {label_ref} solves the accepted problem: {story}."
         )
     return (
-        f"Without an explicit problem, first path, and proof boundary, {label.lower()} cannot be trusted as "
+        f"Without an explicit problem, first path, and proof boundary, {label_ref} cannot be trusted as "
         "implementation-ready."
     )
 
@@ -423,11 +427,52 @@ def _title_label_word(value: str) -> str:
         suffix = word[-1] + suffix
         word = word[:-1]
     lower = word.casefold()
+    if _looks_like_preserved_acronym_token(word):
+        return word + suffix
     if lower in _TITLE_ACRONYMS:
         return lower.upper() + suffix
     if _should_split_human_hyphen_label(word):
         return " ".join(_title_label_word(part) for part in word.split("-") if part) + suffix
     return word[:1].upper() + word[1:] + suffix
+
+
+def _looks_like_preserved_acronym_token(value: str) -> bool:
+    letters = [char for char in value if char.isalpha()]
+    if len(letters) < 2 or not all(char.isupper() for char in letters):
+        return False
+    return any(not char.isalpha() for char in value)
+
+
+def sentence_label(value: str) -> str:
+    """Return a sentence-safe label without losing source acronym tokens."""
+
+    text = compact_text(value).strip()
+    if not text:
+        return ""
+    return restore_source_acronym_number_tokens(text.casefold(), text)
+
+
+def restore_source_acronym_number_tokens(label: str, source: str) -> str:
+    """Preserve source tokens like AI, API-2, or ISO-27001 after label shaping."""
+
+    return _restore_source_acronym_number_tokens(label, source)
+
+
+def _restore_source_acronym_number_tokens(label: str, source: str) -> str:
+    text = label
+    for match in re.finditer(r"\b[A-Z]{2,}(?:[/-][A-Za-z0-9]+)*\b", source):
+        token = match.group(0)
+        variants = {
+            token,
+            token.replace("-", " "),
+            token.replace("/", " "),
+            token.replace("-", " ").replace("/", " "),
+        }
+        for variant in variants:
+            if not variant.strip():
+                continue
+            text = re.sub(rf"\b{re.escape(variant)}\b", token, text, flags=re.IGNORECASE)
+    return text
 
 
 def _should_split_human_hyphen_label(value: str) -> bool:

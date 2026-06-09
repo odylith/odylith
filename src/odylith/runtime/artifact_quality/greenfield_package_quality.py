@@ -59,6 +59,7 @@ _DANGLING_TAIL_WORDS = frozenset(
 _MID_SENTENCE_CAPITALIZED_PRONOUNS = frozenset({"Her", "His", "Its", "Our", "Their", "Your"})
 _POSSESSIVE_PRONOUNS = frozenset({"her", "his", "its", "our", "their", "your"})
 _OBJECT_MARKERS = frozenset({"a", "an", "one", "the", "their", "this"})
+_TITLE_CONNECTOR_WORDS = frozenset({"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"})
 _LOWERCASE_FRAGMENT_STARTS = frozenset({"and", "for", "from", "or", "to", "with", "without"})
 _TERMINAL_MODIFIER_WORDS = frozenset(
     {
@@ -179,8 +180,13 @@ def _chunk_language_issues(artifact: RenderedArtifact, chunk: str) -> list[str]:
             issues.append(f"{artifact.identity} has modal/base-form grammar drift near `{tokens[index]} {tokens[index + 1]}`")
         if token in _PREPOSITION_BASE_CONTEXTS and _looks_like_finite_verb(next_token):
             issues.append(f"{artifact.identity} has preposition/action grammar drift near `{tokens[index]} {tokens[index + 1]}`")
+    title_like_chunk = _looks_like_title_case_chunk(tokens)
     for index, token in enumerate(tokens[1:], start=1):
-        if token in _MID_SENTENCE_CAPITALIZED_PRONOUNS:
+        if (
+            token in _MID_SENTENCE_CAPITALIZED_PRONOUNS
+            and not title_like_chunk
+            and not _capitalized_pronoun_is_inside_title_suffix(tokens, index)
+        ):
             issues.append(f"{artifact.identity} has mid-sentence capitalization drift near `{tokens[index]}`")
     for index, token in enumerate(lowered[:-2]):
         if token in _POSSESSIVE_PRONOUNS and lowered[index + 2] in _OBJECT_MARKERS:
@@ -243,6 +249,40 @@ def _adjacent_repeated_word_issues(
 def _looks_like_link_or_path_chunk(value: str) -> bool:
     text = str(value or "")
     return bool("](" in text or "://" in text or "/" in text or "\\" in text)
+
+
+def _looks_like_title_case_chunk(tokens: Sequence[str]) -> bool:
+    if len(tokens) < 3 or len(tokens) > 24:
+        return False
+    meaningful = 0
+    title_shaped = 0
+    for token in tokens:
+        stripped = token.strip("-'")
+        if not stripped:
+            continue
+        lower = stripped.casefold()
+        if lower in _TITLE_CONNECTOR_WORDS:
+            continue
+        meaningful += 1
+        if stripped[:1].isupper() or stripped[:1].isdigit() or _looks_like_acronym_token(stripped):
+            title_shaped += 1
+    return meaningful >= 2 and title_shaped / meaningful >= 0.75
+
+
+def _looks_like_acronym_token(value: str) -> bool:
+    letters = [char for char in value if char.isalpha()]
+    return len(letters) >= 2 and all(char.isupper() for char in letters)
+
+
+def _capitalized_pronoun_is_inside_title_suffix(tokens: Sequence[str], index: int) -> bool:
+    start_floor = max(0, index - 10)
+    for start in range(start_floor, index + 1):
+        suffix = tokens[start:]
+        if len(suffix) < 3:
+            continue
+        if _looks_like_title_case_chunk(suffix):
+            return True
+    return False
 
 
 def _surface_terminal_chunks(artifact: RenderedArtifact) -> list[str]:

@@ -107,7 +107,7 @@ def _state_focus(value: str) -> str:
 
 
 def produced_outputs_text(output_focus: str) -> str:
-    text = _clean(output_focus).rstrip(" .")
+    text = _dedupe_adjacent_words(_clean(output_focus).rstrip(" ."))
     lowered = text.casefold()
     suffixes = []
     if "blocked-state" not in lowered and "blocker" not in lowered:
@@ -244,7 +244,7 @@ def _contract_text_items(value: str) -> list[str]:
     rows: list[str] = []
     for raw in re.split(r",\s+", _clean(value), flags=re.IGNORECASE):
         raw = re.sub(r"^(?:and|or)\s+", "", raw, flags=re.IGNORECASE)
-        phrase = _ranked_contract_phrase(raw) or clean_artifact_phrase(raw)
+        phrase = _dedupe_adjacent_words(_ranked_contract_phrase(raw) or clean_artifact_phrase(raw))
         if component_shell_artifact(phrase):
             continue
         if status_only_artifact_fragment(phrase):
@@ -477,7 +477,7 @@ def _past_tense(value: str) -> str:
 def _proof_focus(*, critical: str, output_focus: str, object_list: str) -> str:
     preferred = _proof_result_phrase(output_focus) or _proof_result_phrase(object_list)
     for candidate in (preferred, critical, output_focus, object_list):
-        text = clean_artifact_phrase(_clean(candidate))
+        text = _dedupe_adjacent_words(clean_artifact_phrase(_clean(candidate)))
         if not text:
             continue
         lowered = text.casefold()
@@ -495,7 +495,7 @@ def _proof_result_phrase(value: str) -> str:
     best_score = 0
     best = ""
     for part in _clean(value).split(","):
-        text = clean_artifact_phrase(part)
+        text = _dedupe_adjacent_words(clean_artifact_phrase(part))
         if not text:
             continue
         terms = set(content_terms(text))
@@ -510,6 +510,18 @@ def _proof_result_phrase(value: str) -> str:
             best_score = score
             best = text
     return best
+
+
+def _dedupe_adjacent_words(value: str) -> str:
+    words = _clean(value).split()
+    result: list[str] = []
+    for word in words:
+        current = word.casefold().strip(".,;:")
+        previous = result[-1].casefold().strip(".,;:") if result else ""
+        if current and current == previous:
+            continue
+        result.append(word)
+    return " ".join(result).strip(" .,;")
 
 
 def _clean_boundary_clause(value: str) -> str:

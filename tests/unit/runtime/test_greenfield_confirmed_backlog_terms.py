@@ -12,6 +12,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
     proof_claim_summary,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
+    problem_actor_subject,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
     rationale_lines,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
@@ -115,3 +118,8 @@ def test_confirmed_backlog_rationale_uses_distinct_bullet_jobs() -> None:
     assert text.count("complete path where") <= 1
     assert "Adjacent Choice Practice Journal workflows" not in text
     assert "Multiple age bands, authoring workflows, reminders, and live classroom management" in text
+
+
+def test_problem_actor_subject_preserves_acronym_number_tokens() -> None:
+    assert problem_actor_subject("Person on the GLP-1 Medication", fallback="user") == "The person on the GLP-1 Medication"
+    assert problem_actor_subject("API Owner", fallback="user") == "The API Owner"

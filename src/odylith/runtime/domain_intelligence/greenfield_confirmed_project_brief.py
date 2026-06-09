@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import bounda
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
@@ -35,12 +36,14 @@ def confirmed_project_brief(
     ambiguities: list[str] | None = None,
     non_goals: list[str] | None = None,
 ) -> dict[str, Any]:
-    label_lower = label.lower()
+    label_lower = sentence_label(label)
     state_label = domain_object_label(state_object, fallback=f"{label} state")
     evidence_label = domain_object_label(evidence_record, fallback=evidence_record)
+    state_ref = sentence_label(state_label)
+    evidence_ref = sentence_label(evidence_label)
     actor_summary = boundary_clause_text(human_actors) or f"the first {label_lower} operator and reviewer"
     internal_summary = join_system_labels(internal_systems) or (
-        f"{state_label.lower()} ownership and {evidence_label.lower()} review"
+        f"{state_ref} ownership and {evidence_ref} review"
     )
     external_summary = boundary_clause_text(external_systems) or "explicitly deferred external systems"
     story = product_story or (
@@ -54,8 +57,8 @@ def confirmed_project_brief(
         limit=300,
     )
     proof_source = proof_boundary or (
-        f"Release {release} succeeds only when {state_label.lower()} and "
-        f"{evidence_label.lower()} can be reviewed together."
+        f"Release {release} succeeds only when {state_ref} and "
+        f"{evidence_ref} can be reviewed together."
     )
     proof = _brief_clause(proof_claim_summary(proof_source, limit=300), limit=300)
     non_goal_summary = (
@@ -161,11 +164,11 @@ def confirmed_project_brief(
             ),
             _checkpoint(
                 "State ownership accepted",
-                f"Does one component own {state_label.lower()} and its version history?",
+                f"Does one component own {state_ref} and its version history?",
             ),
             _checkpoint(
                 "Evidence path accepted",
-                f"Can reviewers inspect {evidence_label.lower()} without trusting implementation prose?",
+                f"Can reviewers inspect {evidence_ref} without trusting implementation prose?",
             ),
             _checkpoint(
                 "Release proof accepted",

@@ -24,6 +24,14 @@ def _generated_source_payload(root) -> str:
     )
 
 
+def _generated_visible_surface_payload(root) -> str:
+    return "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (root / "odylith").rglob("*")
+        if path.is_file() and path.suffix in {".html", ".js"}
+    )
+
+
 SOLAR_CONFIRMED_INTENT_TEXT = """SunLedger
 
 ## Product story
@@ -195,6 +203,48 @@ A parent or teacher creates an account, adds a child, and picks an age band. The
 
 ## Proof boundary
 Done means: a grown-up can create an account and a child profile, the child can complete one scenario end to end with a recorded choice and reflection, and the grown-up can open a recap of it — with children's data kept private to that account. Authoring depth, multiple age bands, and reminders are out of scope for this first proof.
+"""
+
+GLP1_CONFIRMED_INTENT_TEXT = """# GLP-1 Companion - Medication Tracking App
+
+## Product story
+People starting or maintaining a GLP-1 medication take it on a weekly cadence, titrate doses upward on a schedule, and live with side effects that change week to week. This product gives one person a calm, private place to log each injection, follow their titration schedule without second-guessing the dose, watch weight and side effects trend over time, and avoid missing or double-recording a dose. It is a personal adherence and self-knowledge companion, not a clinical or prescribing tool.
+
+## State object
+The durable thing the product holds is a single user's medication journey: their current medication and dose, their titration schedule, a dated history of injections taken, recorded weight readings, and logged side effects.
+
+## First complete path
+A user sets up their medication, current dose, and weekly injection day. When a dose is due, the app reminds them; they confirm the injection, optionally log their weight and any side effects, and the app records it, advances them along their titration schedule, and shows the next due date.
+
+## Human actors
+- The person on the GLP-1 medication, tracking their own treatment (the only first-class user)
+- Optionally, a caregiver helping that person stay on schedule (later, not in the first path)
+
+## External systems
+- Push or local notification delivery for dose reminders
+- Optional calendar export for injection days (later)
+- No EHR, pharmacy, or prescriber integration in the first version
+
+## Internal product systems
+- Medication and titration-schedule model that knows dose steps and timing
+- Injection log that records each taken dose and computes the next due date
+- Weight and side-effect tracking with trend views over time
+- Reminder/adherence engine that flags missed or upcoming doses and guards against double-dosing
+
+## Critical assumptions
+- Single-user, personal-use app; no multi-tenant accounts or provider dashboards in v1
+- The user, not a clinician, enters their prescribed medication and dose
+- Weekly-injection GLP-1s are the primary cadence; the schedule model should not hard-code one drug
+- Data is private to the user and stored for them; sharing or sync is out of scope for the first path
+
+## Ambiguities
+- Platform: native mobile, web, or both
+- Whether titration schedules are picked from built-in presets per drug or fully hand-entered by the user
+- How far to go on side-effect tracking
+- Whether weight tracking is core to v1 or a fast-follow
+
+## Proof boundary
+The product is proven when one user can set up a medication and dose, receive a reminder when a dose is due, confirm an injection, see the schedule advance to the correct next dose and date, and review their injection, weight, and side-effect history as a trend — with missed-dose and double-dose cases handled correctly.
 """
 
 
@@ -491,6 +541,87 @@ def test_narrative_greenfield_create_normalizes_action_outcome_under_thirty_seco
     component_labels = {row["label"] for row in payload["components"]}
     assert "Scenario Library, Authoring, and Curation Service" in component_labels
     assert "Grown-up Recap and Progress View Service" in component_labels
+
+
+def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_under_thirty_seconds(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(GLP1_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a GLP-1 medication tracking app",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    elapsed = time.perf_counter() - started
+    payload = json.loads(capsys.readouterr().out)
+    rendered_payload = json.dumps(payload)
+    generated_payload = _generated_source_payload(tmp_path)
+    visible_surface_payload = _generated_visible_surface_payload(tmp_path)
+
+    assert rc == 0
+    assert elapsed < 30.0
+    assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+    assert payload["dashboard_refresh"]["status"] == "passed"
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) == 4
+    assert len(payload["diagrams"]) == 6
+    for banned in (
+        "Tracking Their Own Treatment",
+        "Caregiver Helping",
+        "Durable Thing the Product Holds",
+        "Durable Thing The Product Holds",
+        "Glp 1 Companion",
+        "glp 1 companion",
+        "The glp-1 companion",
+        "Promote glp-1 companion",
+        "External dependencies for glp-1 companion",
+        "providers for glp-1 companion",
+        "for glp-1 companion stay",
+        "Person On The GLP-1",
+        "the person on the glp-1",
+        "The person on the glp-1",
+        "Optionally log their weight",
+        "Advances them along their titration schedule",
+        "and advances them along their titration schedule",
+        "They optionally logs",
+        "reach the next due date",
+        "and see what to fix when required information is missing",
+        "and lets the person on the GLP-1 see the next due date, and see what to fix",
+        "lets the caregiver reach",
+        "lets the next participant reach",
+        "Proof proof reviewer",
+        "Proof build owner",
+        "Proof release reviewer",
+        "result result",
+        "has mid-sentence capitalization drift near `Their`",
+        "does not contain at least four component-local domain terms",
+        "greenfield post-confirm completion failed",
+    ):
+        assert banned not in rendered_payload
+        assert banned not in generated_payload
+        assert banned not in visible_surface_payload
+    actor_labels = [row["visible_actor"] for row in payload["validation_gate"]["visible_actors"]]
+    assert actor_labels[0] == "Person on the GLP-1 Medication"
+    assert "GLP-1 Companion risk reviewer" in actor_labels
+    assert "GLP-1 Companion proof reviewer" in actor_labels
+    assert "Single User's Medication Journey" in generated_payload
+    assert "GLP-1 Companion - Medication Tracking App" in visible_surface_payload
+    assert "They optionally log their weight" in visible_surface_payload
+    assert "The app advances them along their titration schedule" in visible_surface_payload
 
 
 def test_greenfield_create_rerun_replaces_previous_greenfield_workstreams_under_thirty_seconds(tmp_path, capsys) -> None:

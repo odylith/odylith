@@ -49,6 +49,7 @@ _ROLE_WORDS = {
     "auditor",
     "author",
     "beneficiary",
+    "caregiver",
     "chair",
     "client",
     "coach",
@@ -171,6 +172,7 @@ _FOCUS_STOPWORDS = {
     "with",
     "workspace",
 }
+_TITLE_CONNECTORS = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
 
 
 def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
@@ -228,7 +230,7 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
     if composite_label:
         return composite_label
     needs_focus = _head_needs_focus(lower_head, role=role) or (
-        marker_body_used and lower_head == role and role in _ROLE_WORDS
+        marker_body_used and lower_head == role and role in _GENERIC_ROLE_ONLY
     )
     if needs_focus:
         if marker_body_used and role in {"operator", "owner", "support", "user"}:
@@ -264,10 +266,20 @@ def project_specific_actor_row(row: str, *, project_focus: str) -> str:
 
 
 def _split_actor_row(value: str) -> tuple[str, str]:
+    value = _strip_qualifiers(value).strip(" .")
     for separator in (" — ", " – ", " - ", ":"):
         head, sep, body = value.partition(separator)
         if sep and head.strip():
             return head.strip(" ."), body.strip(" .")
+    comma_descriptor = re.match(
+        r"^(?P<head>[A-Za-z][A-Za-z0-9 /&'()-]{1,100}?),\s+"
+        r"(?P<body>(?:[A-Za-z]+ing\b\s+|(?:a|an|the|one)\s+)[A-Za-z][A-Za-z0-9 /&'()-]{2,160})$",
+        value,
+        flags=re.IGNORECASE,
+    )
+    if comma_descriptor and 1 <= len(comma_descriptor.group("head").split()) <= 8:
+        head = _title_label(_strip_actor_head_articles(comma_descriptor.group("head").strip(" .")))
+        return head, comma_descriptor.group("body").strip(" .")
     comma = re.match(
         r"^(?P<head>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?),\s+"
         r"(?P<body>(?:a|an|the|one)\s+[A-Za-z][A-Za-z0-9 /&'()-]{2,120})$",
@@ -306,7 +318,7 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
     if not text:
         return "", ""
     words = text.split()
-    if len(words) < 3:
+    if len(words) < 2:
         return "", ""
     for index, word in enumerate(words[1:], start=1):
         token = word.casefold().strip(".,;:")
@@ -319,6 +331,7 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
             "coordinating",
             "entering",
             "handling",
+            "helping",
             "logging",
             "managing",
             "monitoring",
@@ -509,11 +522,24 @@ def _title_label(value: str) -> str:
         lower = stripped.casefold().strip(".,;:()")
         if not stripped:
             continue
+        if index > 0 and lower in _TITLE_CONNECTORS:
+            words.append(lower)
+            continue
+        if _looks_like_preserved_acronym_token(stripped.strip(".,;:()")):
+            words.append(stripped)
+            continue
         if lower in {"ai", "api", "crm", "gis", "iot", "llm", "ml", "ui", "ux"}:
             words.append(stripped.upper())
             continue
         words.append(stripped[:1].upper() + stripped[1:])
     return " ".join(words).strip()
+
+
+def _looks_like_preserved_acronym_token(value: str) -> bool:
+    letters = [char for char in value if char.isalpha()]
+    if len(letters) < 2 or not all(char.isupper() for char in letters):
+        return False
+    return any(not char.isalpha() for char in value)
 
 
 def _key(value: str) -> str:

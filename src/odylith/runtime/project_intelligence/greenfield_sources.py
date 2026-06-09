@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_acronym_number_tokens
 from odylith.runtime.project_intelligence.product_story import summarize_first_path
 from odylith.runtime.project_intelligence.product_story import summarize_proof
 from odylith.runtime.project_intelligence.utils import dict_value, display_text, list_value, sentence, short, strings
@@ -116,19 +117,30 @@ def _lens(*, proposal: Mapping[str, Any], backlog: Sequence[Mapping[str, Any]], 
     for key in ("primary_lens", "domain_lens", "family"):
         token = sentence(classification.get(key))
         if token:
-            return token.lower()
+            return _lens_label(token, proposal=proposal)
     for row in backlog:
         intelligence = row.get("domain_intelligence")
         if not isinstance(intelligence, Mapping):
             continue
         graph = domain_graph_from_workstream(intelligence, row=row, proposal=proposal)
         if graph.primary_lens:
-            return graph.primary_lens
+            return _lens_label(graph.primary_lens, proposal=proposal)
     for component in components:
         token = sentence(component.get("kind") or component.get("label"))
         if token:
-            return token.lower()
+            return _lens_label(token, proposal=proposal)
     return "greenfield"
+
+
+def _lens_label(value: str, *, proposal: Mapping[str, Any]) -> str:
+    text = sentence(value).lower()
+    source = ""
+    intent = proposal.get("intent")
+    if isinstance(intent, Mapping):
+        source = sentence(intent.get("title"))
+    if not source:
+        source = sentence(proposal.get("title"))
+    return restore_source_acronym_number_tokens(text, source)
 
 
 def _first_path(
