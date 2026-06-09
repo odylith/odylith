@@ -92,6 +92,16 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
         ),
         fallback="Medication journey",
     ) == "Single User's Medication Journey"
+    assert (
+        domain_object_label(
+            (
+                "A live processing pipeline holding ordered streams of signal samples, "
+                "each moving through a chain of stages."
+            ),
+            fallback="Pipeline state",
+        )
+        == "Live Processing Pipeline"
+    )
 
 
 def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:

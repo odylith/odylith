@@ -895,6 +895,13 @@ def test_greenfield_create_completes_signal_processing_pipeline_without_sentence
     visible_surface_payload = _generated_visible_surface_payload(tmp_path)
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     proposal = accepted["proposal"]
+    project_payload = json.dumps(
+        {
+            "project_brief": proposal.get("project_brief", {}),
+            "next_steps": payload.get("next_steps", {}),
+        },
+        sort_keys=True,
+    )
 
     assert rc == 0
     assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
@@ -909,6 +916,15 @@ def test_greenfield_create_completes_signal_processing_pipeline_without_sentence
         "Ingest Layer Service is complete when the user can connect and push a stream of samples, "
         "see a result event to a sink, and recover cleanly from a bad or incomplete attempt."
     )
+    assert "Confirm this as the versioned state object:" in project_payload
+    assert any(row["title"] == "Keep Live Processing Pipeline Clear and Reviewable" for row in proposal["backlog"])
+    assert any(row["title"] == "Show Why Live Processing Pipeline Can Be Trusted" for row in proposal["backlog"])
+    for bad_label in (
+        "Live Processing Pipeline Holding Ordered Streams",
+        "Each Moving Through a Chain of Stages",
+    ):
+        assert bad_label not in project_payload
+        assert bad_label not in generated_payload
     for required_file in (
         "odylith/radar/radar.html",
         "odylith/registry/registry.html",

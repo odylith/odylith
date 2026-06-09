@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import state_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_product_view
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
@@ -78,6 +79,7 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
         assert moved in fragment_source
     assert "def first_path_model" in parser_source
     assert "greenfield_domain_term_index import label_terms" in parser_source
+
     assert "len(re.findall" not in parser_source
     assert "def first_path_clauses" in clause_source
     assert "greenfield_first_path_fragments import action_chain_fragment" in clause_source
@@ -109,6 +111,34 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
         "The product displays decision evidence",
     )
     assert model.material_action == "Record follow-up notes"
+
+
+def test_state_reference_preserves_sentence_form_for_long_state_descriptions() -> None:
+    proposal = {
+        "intent": {
+            "state_object": (
+                "A live processing pipeline holding ordered streams of signal samples, each moving through "
+                "a chain of stages (ingest, transform, detect, emit)."
+            )
+        }
+    }
+
+    assert state_reference(proposal) == (
+        "a live processing pipeline holding ordered streams of signal samples, each moving through "
+        "a chain of stages (ingest, transform, detect, emit)"
+    )
+    assert "Live Processing Pipeline Holding" not in state_reference(proposal)
+
+    structured = {
+        "intent": {
+            "state_object": (
+                "The unit of truth is a child's growing sense of agency: their profile, "
+                "the scenarios they've worked through, and the decisions they made."
+            )
+        }
+    }
+    assert state_reference(structured) == "child's growing sense of agency"
+    assert "worked through" not in state_reference(structured)
 
 
 def test_cleaned_text_dedupe_stays_in_text_owner() -> None:

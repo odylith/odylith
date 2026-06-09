@@ -164,7 +164,7 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
                     f"Success proof covers {proof_capability}.",
                     f"Result proof confirms the user can {outcome_action} and explains the visible result.",
                     f"Release proof stays inside this promise: {proof_summary}.",
-                    f"{completion_text.state_object(proposal)} can be reconstructed with actor, timestamp, status, and result.",
+                    f"{completion_text.state_reference(proposal)} can be reconstructed with actor, timestamp, status, and result.",
                     f"Readiness fails when required input, access, privacy, safety, or result explanation is missing.",
                 ]
             )
@@ -182,7 +182,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
     outcome = completion_text.outcome_phrase(proposal)
     outcome_action = completion_text.outcome_action_phrase(outcome)
     proof_capability = completion_text.proof_capability_phrase(proposal)
-    state = completion_text.state_object(proposal)
+    state = completion_text.state_reference(proposal)
     actors = completion_text.actor_summary(proposal)
     components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
     for index, row in enumerate(rows, start=1):
@@ -272,6 +272,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             continue
         label = completion_text.component_label(component, 0)
         state_object = completion_text.state_object(proposal)
+        state_ref = completion_text.state_reference(proposal)
         focus = completion_text.component_focus_phrase(label=label, contract=contract, fallback=state_object)
         action = completion_text.action_phrase(proposal)
         outcome = completion_text.outcome_phrase(proposal)
@@ -293,7 +294,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             metrics = [
                 f"{label} proves one complete user path and lets the user {outcome_action}.",
                 f"{label} explains blocked, missing, or invalid input before the product shows a result.",
-                f"{label} preserves state responsibility, actor, source, status, result, and recovery context for each accepted change to {state_object}.",
+                f"{label} preserves state responsibility, actor, source, status, result, and recovery context for each accepted change to {state_ref}.",
             ]
             if completion_text.row_is_release_proof(row):
                 if non_goal_rows:
@@ -425,7 +426,7 @@ def _repair_preflight_issues(
 def _repair_release_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = completion_text.project_title(proposal)
-    state_object = completion_text.state_object(proposal)
+    state_object = completion_text.state_reference(proposal)
     proof_summary = _validation_proof_summary(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
@@ -462,7 +463,7 @@ def _repair_release_success_language(proposal: dict[str, Any], *, release_select
 def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: str) -> bool:
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = completion_text.project_title(proposal)
-    state_object = completion_text.state_object(proposal)
+    state_object = completion_text.state_reference(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     proof_capability = completion_text.proof_capability_phrase(proposal)
     proof_summary = _validation_proof_summary(proposal)
@@ -490,7 +491,7 @@ def _validation_proof_summary(proposal: Mapping[str, Any], *, limit: int = 300) 
 def _repair_backlog_success_language(proposal: dict[str, Any], *, release_selector: str) -> bool:
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
     label = completion_text.project_title(proposal)
-    state_object = completion_text.state_object(proposal)
+    state_object = completion_text.state_reference(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     outcome_action = completion_text.outcome_action_phrase(outcome)
     proof_capability = completion_text.proof_capability_phrase(proposal)
@@ -520,7 +521,7 @@ def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release
     if not isinstance(intelligence, dict):
         return False
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
-    state_object = completion_text.state_object(proposal)
+    state_object = completion_text.state_reference(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     outcome_action = completion_text.outcome_action_phrase(outcome)
@@ -539,7 +540,7 @@ def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release
 def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_selector: str) -> bool:
     changed = False
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
-    state_object = completion_text.state_object(proposal)
+    state_object = completion_text.state_reference(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     if _validation_strategy_needs_repair(proposal):

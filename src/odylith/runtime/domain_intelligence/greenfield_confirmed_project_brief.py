@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -38,6 +39,7 @@ def confirmed_project_brief(
 ) -> dict[str, Any]:
     label_lower = sentence_label(label)
     state_label = domain_object_label(state_object, fallback=f"{label} state")
+    state_reference = _state_reference_text(state_object, state_label=state_label)
     evidence_label = domain_object_label(evidence_record, fallback=evidence_record)
     state_ref = sentence_label(state_label)
     evidence_ref = sentence_label(evidence_label)
@@ -101,7 +103,7 @@ def confirmed_project_brief(
             {
                 "section": "State and ownership",
                 "must_capture": (
-                    f"{state_label} changes through the first journey; {internal_summary} own the domain "
+                    f"{state_reference} changes through the first journey; {internal_summary} own the domain "
                     "records needed to trust it."
                 ),
                 "why_it_matters": "Clear ownership prevents silent state changes and unclear accountability.",
@@ -127,7 +129,7 @@ def confirmed_project_brief(
             _brief_option(
                 "D2",
                 "State object",
-                f"Confirm this as the versioned state object: {state_label}.",
+                f"Confirm this as the versioned state object: {state_reference}.",
                 "Changes storage ownership and replay proof.",
             ),
             _brief_option(
@@ -289,6 +291,17 @@ def _brief_option(identifier: str, decision: str, recommended: str, impact: str)
         "choices": ["accept default", "revise before apply", "defer from first release"],
         "impact": impact,
     }
+
+
+def _state_reference_text(state_object: str, *, state_label: str) -> str:
+    text = compact_text(state_object)
+    if text and ":" not in text:
+        sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
+        if len(sentences) <= 1:
+            detail = state_detail_summary(text, state_label=state_label, limit=220)
+            if detail and not detail.casefold().endswith((" and", " for", " of", " through", " with")):
+                return sentence_label(detail)
+    return sentence_label(state_label)
 
 
 def _checkpoint(name: str, question: str) -> dict[str, str]:

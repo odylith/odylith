@@ -229,7 +229,7 @@ def focus_label(title: str) -> str:
     ]
     if not words:
         words = label_terms(title)[:3]
-    return restore_source_acronym_number_tokens(title_case_text(" ".join(words[:4]) or "Project"), title)
+    return title_case_text(" ".join(words[:4]) or "Project")
 
 
 def domain_object_label(value: str, *, fallback: str) -> str:
@@ -259,6 +259,8 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         r"(?:with|containing|that|for)\b",
         r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:with|containing|that|for)\b",
+        r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
+        r"(?:holding|carrying|containing)\b",
         r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:tracks|records|stores|captures|moves|starts|changes)\b",
     )
@@ -268,7 +270,7 @@ def domain_object_label(value: str, *, fallback: str) -> str:
             candidate = match.group("label").strip(" :.-")
             return _domain_label(candidate) or fallback
     if dash_head and not re.search(
-        r"\b(is|are|starts?|moves?|changes?|tracks?|records?|captures?|produces?)\b",
+        r"\b(is|are|starts?|moves?|changes?|tracks?|records?|captures?|produces?|holding|carrying|containing)\b",
         dash_head,
         re.IGNORECASE,
     ):

@@ -10,9 +10,11 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import text_needs_repair
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -360,15 +362,45 @@ def proof_boundary(proposal: Mapping[str, Any]) -> str:
 
 
 def state_object(proposal: Mapping[str, Any]) -> str:
+    raw_state = _state_object_source(proposal)
+    if raw_state:
+        return domain_object_label(raw_state, fallback="the accepted state")
+    return "the accepted state"
+
+
+def state_reference(proposal: Mapping[str, Any]) -> str:
+    label = state_object(proposal)
+    raw_state = _state_object_source(proposal)
+    if raw_state:
+        detail = _state_reference_detail(raw_state, state_label=label)
+        if detail:
+            return sentence_label(detail)
+    return sentence_label(label)
+
+
+def _state_reference_detail(raw_state: str, *, state_label: str) -> str:
+    text = _clean(raw_state)
+    if not text or ":" in text:
+        return ""
+    sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
+    if len(sentences) > 1:
+        return ""
+    detail = state_detail_summary(text, state_label=state_label, limit=220)
+    if not detail or detail.casefold().endswith((" and", " for", " of", " through", " with")):
+        return ""
+    return detail
+
+
+def _state_object_source(proposal: Mapping[str, Any]) -> str:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
     if isinstance(intent, Mapping) and _clean(intent.get("state_object")):
-        return domain_object_label(_clean(intent.get("state_object")), fallback="the accepted state")
+        return _clean(intent.get("state_object"))
     intelligence = proposal.get("project_intelligence")
     if isinstance(intelligence, Mapping):
         for value in text_values(intelligence.get("ontology")):
             if "state object:" in value.casefold():
-                return domain_object_label(value.split(":", 1)[1], fallback="the accepted state")
-    return "the accepted state"
+                return _clean(value.split(":", 1)[1])
+    return ""
 
 
 def actor_summary(proposal: Mapping[str, Any]) -> str:
