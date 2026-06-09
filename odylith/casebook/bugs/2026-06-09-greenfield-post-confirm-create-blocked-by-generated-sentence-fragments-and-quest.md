@@ -1,6 +1,6 @@
 - Bug ID: CB-205
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-06-09
 

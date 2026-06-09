@@ -6,7 +6,7 @@ Last updated (UTC): 2026-06-09
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-205 | 2026-06-09 | Greenfield post-confirm create blocked by generated sentence fragments and question-impact repetition | P1 | domain-intelligence | Open | [2026-06-09-greenfield-post-confirm-create-blocked-by-generated-sentence-fragments-and-quest.md](2026-06-09-greenfield-post-confirm-create-blocked-by-generated-sentence-fragments-and-quest.md) |
+| CB-205 | 2026-06-09 | Greenfield post-confirm create blocked by generated sentence fragments and question-impact repetition | P1 | domain-intelligence | FixedPendingRelease | [2026-06-09-greenfield-post-confirm-create-blocked-by-generated-sentence-fragments-and-quest.md](2026-06-09-greenfield-post-confirm-create-blocked-by-generated-sentence-fragments-and-quest.md) |
 | CB-204 | 2026-06-09 | Greenfield post confirm create blocked terminal reported results and deferred co | P1 | odylith | Open | [2026-06-09-greenfield-post-confirm-create-blocked-terminal-reported-results-and-deferred-co.md](2026-06-09-greenfield-post-confirm-create-blocked-terminal-reported-results-and-deferred-co.md) |
 | CB-203 | 2026-05-19 | Project tab chips bypass shared dashboard controls | P2 | dashboard | Open | [2026-05-19-project-tab-chips-bypass-shared-dashboard-controls.md](2026-05-19-project-tab-chips-bypass-shared-dashboard-controls.md) |
 | CB-202 | 2026-05-15 | Confirmed greenfield create must fail closed without accepted product narrative | P0 | greenfield-governance | Open | [2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md](2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md) |
