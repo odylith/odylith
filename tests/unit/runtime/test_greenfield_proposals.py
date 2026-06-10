@@ -9,6 +9,7 @@ import pytest
 from odylith.runtime.domain_intelligence import artifact_enrichment
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lookup_for
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
@@ -403,6 +404,18 @@ def test_greenfield_tribunal_rejects_unbound_artifact_projection(tmp_path) -> No
     assert any("project_intelligence_binding" in issue for issue in decision.issues)
 
 
+def test_traceability_open_questions_render_without_repeated_labels() -> None:
+    line = greenfield_traceability._question_impact_line(
+        "Does the first release need applicant self-service?",
+        "Changes the visible flow and validation target",
+        prefix=False,
+    )
+
+    assert line == "Does the first release need applicant self-service? Changes the visible flow and validation target."
+    assert "Question:" not in line
+    assert "Impact:" not in line
+
+
 def test_artifact_enrichment_projects_domain_graph_into_native_artifact_shapes(tmp_path) -> None:
     from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 
@@ -453,10 +466,10 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     assert "## Domain Model" not in joined
     assert "## Proof And Acceptance Gates" in joined
     assert "## Ownership And Risk" in joined
-    assert "Proof:" in joined
-    assert "Gate:" in joined
-    assert "Proof for" not in joined
-    assert "Gate for" not in joined
+    assert "Evidence record:" in joined
+    assert "Validation gate:" in joined
+    assert "\n- Proof:" not in joined
+    assert "\n- Gate:" not in joined
     assert "source-backed implementation claims" in joined
     parent_spec = specs_by_title["Govern Commerce Launch System"]
     all_radar_text = parent_spec + "\n" + joined

@@ -556,10 +556,13 @@ def _prefer_outcome_title(value: str) -> bool:
 def _workflow_title_action(*, first_path: str, actor: str, fallback: str) -> str:
     fragments = _actor_owned_action_fragments(first_path=first_path, actor=actor, include_visible=False, max_fragments=4)
     selected = _preferred_title_fragment(fragments)
-    action = backlog_text.base_leading_action(backlog_text.sentence_fragment(selected))
-    if action:
-        return action
-    return backlog_text.base_leading_action(backlog_text.sentence_fragment(fallback))
+    if selected:
+        action = backlog_text.capability_action_clause(backlog_text.sentence_fragment(selected))
+        if action:
+            return action
+    if fallback:
+        return backlog_text.capability_action_clause(backlog_text.sentence_fragment(fallback))
+    return ""
 
 
 def _preferred_title_fragment(values: list[str]) -> str:

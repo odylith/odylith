@@ -77,8 +77,16 @@ def radar_enrichment_sections(
 
     proof = _bullets(
         [
-            *_scoped_labelled_rows("Proof", focus, graph.proof_standards[:4]),
-            *_scoped_labelled_rows("Gate", focus, graph.validation_obligations[:5]),
+            *_scoped_named_rows(
+                ("Evidence record", "Evidence contents", "Review condition", "Trace requirement"),
+                focus,
+                graph.proof_standards[:4],
+            ),
+            *_scoped_named_rows(
+                ("Validation gate", "State gate", "Recovery gate", "Scope gate", "Readiness gate"),
+                focus,
+                graph.validation_obligations[:5],
+            ),
         ]
     )
     if proof:
@@ -200,6 +208,17 @@ def _without_existing_label(*, label: str, value: str) -> str:
 
 def _scoped_labelled_rows(label: str, focus: str, values: Sequence[str]) -> list[str]:
     return [_scoped_sentence(label, focus, value) for value in values if clean_text(value)]
+
+
+def _scoped_named_rows(labels: Sequence[str], focus: str, values: Sequence[str]) -> list[str]:
+    rows: list[str] = []
+    fallback = clean_text(labels[-1]) if labels else "Detail"
+    for index, value in enumerate(values):
+        label = clean_text(labels[index]) if index < len(labels) else fallback
+        row = _scoped_sentence(label or fallback, focus, value)
+        if row:
+            rows.append(row)
+    return rows
 
 
 def _radar_workstream_focus(row: Mapping[str, Any]) -> str:

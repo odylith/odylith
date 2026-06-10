@@ -125,12 +125,38 @@ def outcome_action_phrase(outcome: str) -> str:
     text = _clean(outcome).rstrip(" .") or "the product result"
     if looks_like_action_clause(text):
         return base_action_clause(text)
+    if _looks_like_question_result(text):
+        return f"see {text}"
+    if _looks_like_predicate_result(text):
+        return f"see that {text}"
     words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
     if words & _VISIBLE_SEE_RESULT_HINTS:
         return f"see {text}"
     if words & _VISIBLE_RESULT_OBJECT_HINTS:
         return f"use {text}"
     return f"reach {text}"
+
+
+def _looks_like_question_result(value: str) -> bool:
+    return bool(re.match(r"^(?:if|whether|why|when|where)\b", _clean(value), flags=re.IGNORECASE))
+
+
+def _looks_like_predicate_result(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text:
+        return False
+    return bool(
+        re.match(
+            r"^(?:the|a|an|one|this|that)\s+"
+            r"(?:[A-Za-z0-9][A-Za-z0-9'/-]*\s+){0,8}?"
+            r"(?:"
+            r"changed|decreased|failed|improved|increased|met|moved|passed|reduced|succeeded|"
+            r"violated|was|were"
+            r")\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def workstream_subject(row: Mapping[str, Any], *, fallback: str, components: Sequence[Mapping[str, Any]] = ()) -> str:

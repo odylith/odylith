@@ -206,10 +206,13 @@ def title_case_text(value: str) -> str:
     connectors = {"a", "an", *_TITLE_CONNECTOR_WORDS}
     for index, word in enumerate(clean_confirmed_text(value).split()):
         lower = word.casefold()
+        label_word = _title_label_word(word)
+        if _append_slash_conjunction_title_word(words, raw_word=word, label_word=label_word):
+            continue
         if index > 0 and lower in connectors:
             words.append(lower)
         else:
-            words.append(_title_label_word(word))
+            words.append(label_word)
     return " ".join(words)
 
 
@@ -413,29 +416,59 @@ def title_label(value: str) -> str:
         lower = word.casefold()
         if index == 0 and lower in {"a", "an", "the"}:
             continue
+        label_word = _title_label_word(word)
+        if _append_slash_conjunction_title_word(words, raw_word=word, label_word=label_word):
+            continue
         if lower in _TITLE_CONNECTOR_WORDS and words:
             words.append(lower)
             continue
-        words.append(_title_label_word(word))
+        words.append(label_word)
     return " ".join(words).strip()
+
+
+def _append_slash_conjunction_title_word(words: list[str], *, raw_word: str, label_word: str) -> bool:
+    if not words or words[-1].casefold() != "and":
+        return False
+    if "/" not in raw_word or " and " not in label_word or re.search(r"://|^/", raw_word):
+        return False
+    parts = [part.strip() for part in label_word.split(" and ") if part.strip()]
+    if len(parts) < 2:
+        return False
+    words.pop()
+    if words:
+        words[-1] = words[-1].rstrip(",") + ","
+    for part in parts[:-1]:
+        words.append(part.rstrip(",") + ",")
+    words.append("and")
+    words.append(parts[-1])
+    return True
 
 
 def _title_label_word(value: str) -> str:
     word = value.strip()
     if not word:
         return ""
+    prefix = ""
+    while word and word[0] in "([{":
+        prefix += word[0]
+        word = word[1:]
     suffix = ""
-    while word and word[-1] in ",.;:!?":
+    while word and word[-1] in ")]},.;:!?":
         suffix = word[-1] + suffix
         word = word[:-1]
+    if "/" in word and not re.search(r"://|^/", word):
+        parts = [part for part in word.split("/") if part]
+        if len(parts) > 1 and all(re.search(r"[A-Za-z]", part) for part in parts):
+            label = " and ".join(_title_label_word(part) for part in parts)
+            return prefix + label + suffix
     lower = word.casefold()
     if _looks_like_preserved_acronym_token(word):
-        return word + suffix
+        return prefix + word + suffix
     if lower in _TITLE_ACRONYMS:
-        return lower.upper() + suffix
+        return prefix + lower.upper() + suffix
     if _should_split_human_hyphen_label(word):
-        return " ".join(_title_label_word(part) for part in word.split("-") if part) + suffix
-    return word[:1].upper() + word[1:] + suffix
+        return prefix + " ".join(_title_label_word(part) for part in word.split("-") if part) + suffix
+    return prefix + word[:1].upper() + word[1:] + suffix
 
 
 def _looks_like_preserved_acronym_token(value: str) -> bool:

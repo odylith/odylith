@@ -210,8 +210,13 @@ def _first_path_outcome_text(
 ) -> str:
     visible = clean_first_path_text(model.visible_outcome)
     proof = clean_first_path_text(proof_boundary)
+    visible_selected = bool(visible) and not (_is_low_information_visible_outcome(visible) and proof)
     text = proof if _is_low_information_visible_outcome(visible) and proof else visible or proof or clean_first_path_text(model.raw_path)
-    text = visible_result_object(text) or action_chain_fragment(text) or text
+    object_text = visible_result_object(text)
+    if object_text:
+        text = object_text
+    elif not visible_selected:
+        text = action_chain_fragment(text) or text
     if _starts_with_unanchored_result_pronoun(text) and proof:
         proof_result = visible_result_object(proof) or action_chain_fragment(proof) or proof
         proof_result = _visible_proof_result_clause(proof_result)

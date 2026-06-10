@@ -375,11 +375,16 @@ def _patch_sections(
         ]
     )
     sections["Why Now"] = _why_now_text(row=row, focus=scope_ref, first_slice=first_slice) or sections.get("Why Now", "")
-    sections["Open Questions"] = _bullets(
-        _question_lines(row.get("open_questions", []))
-        or _scoped_question_lines(open_questions[:3], focus=focus)
-    )
+    row_questions = _question_lines(row.get("open_questions", []))
+    if not row_questions and _is_parent_workstream(row):
+        row_questions = _scoped_question_lines(open_questions[:3], focus=focus)
+    sections["Open Questions"] = _bullets(row_questions)
     sections.update(build_artifact_enrichment(row=row, proposal=proposal).radar_sections)
+
+
+def _is_parent_workstream(row: Mapping[str, Any]) -> bool:
+    text = _clean(row.get("workstream_type") or row.get("type") or row.get("shape")).casefold()
+    return text in {"program_parent", "umbrella", "parent", "program"}
 
 
 def _section_items(value: Any) -> list[str]:
@@ -446,9 +451,9 @@ def _scoped_question_lines(values: Sequence[str], *, focus: str) -> list[str]:
             continue
         question, impact = _split_question_impact(text)
         if impact:
-            rows.append(_question_impact_line(question, impact, prefix=True))
+            rows.append(_question_impact_line(question, impact, prefix=False))
         else:
-            rows.append(f"Question: {text}")
+            rows.append(text)
     return rows
 
 
@@ -547,7 +552,7 @@ def _question_impact_line(question: str, impact: str, *, prefix: bool) -> str:
     if impact_text:
         impact_text = impact_text.rstrip(" .")
     head = f"Question: {question_text}" if prefix else question_text
-    return f"{head} Impact: {impact_text}." if impact_text else head
+    return f"{head} {impact_text}." if impact_text else head
 
 
 def _milestone_lines(value: Any) -> list[str]:

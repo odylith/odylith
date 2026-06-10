@@ -843,7 +843,8 @@ def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_sco
     assert len(payload["backlog"]) == 4
     assert len(payload["components"]) == 4
     assert len(payload["diagrams"]) == 6
-    assert "the QBER and the key established" in first_path["visible_result"]
+    assert "the Bell inequality was violated" in first_path["visible_result"]
+    assert "the QBER, and the key established" in first_path["visible_result"]
     assert "saved and viewable with prior runs" in first_path["visible_result"]
     assert any(row.get("visible_result") for row in first_path["events"])
     for term in ("qber", "key", "saved", "viewable", "prior"):

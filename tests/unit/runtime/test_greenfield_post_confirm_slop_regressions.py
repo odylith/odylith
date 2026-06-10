@@ -16,7 +16,11 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_mo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import state_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_product_view
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
+from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
@@ -256,6 +260,133 @@ def test_signal_pipeline_first_path_phrases_do_not_leak_modal_or_understand_frag
     assert generated_semantic_slop_issues({"product_view": product_view}) == []
 
 
+def test_predicate_visible_outcome_does_not_become_user_import_action() -> None:
+    first_path = (
+        "A homeowner connects inverter, meter, battery, and weather sources. "
+        "SunLedger pulls readings and weather, forecasts today's production and demand, "
+        "builds a battery and load control plan, shows the homeowner why it should reduce grid draw, "
+        "lets them approve it, issues the approved control actions, monitors the result, "
+        "and reports whether the plan reduced grid imports without violating reserve or comfort limits."
+    )
+    proposal = {
+        "intent": {
+            "first_path": first_path,
+            "proof_boundary": (
+                "The first proof is one home completing one daily loop: ingest telemetry and weather, "
+                "forecast production and demand, create a defensible plan, receive homeowner approval, "
+                "dispatch approved battery and load control actions, and report grid-import reduction "
+                "against reserve and comfort constraints."
+            ),
+        }
+    }
+
+    clauses = first_path_clauses(first_path)
+    outcome = outcome_phrase(proposal)
+    product_view = workstream_product_view(
+        label="Energy Telemetry Ingestion Service",
+        action=action_phrase(proposal),
+        outcome=outcome,
+    )
+
+    assert clauses.visible_result == "the plan reduced grid imports without violating reserve or comfort limits"
+    assert outcome == "the plan reduced grid imports without violating reserve or comfort limits"
+    assert outcome_action_phrase(outcome) == "see that the plan reduced grid imports without violating reserve or comfort limits"
+    assert "import without violating" not in product_view
+    assert "see that the plan reduced grid imports" in product_view
+    assert generated_semantic_slop_issues({"product_view": product_view}) == []
+
+
+def test_actor_owned_workstream_title_base_forms_all_action_verbs() -> None:
+    workflow_title, _boundary_title, _proof_title = confirmed_workstream_titles(
+        label="Quantum Link Lab",
+        components=[
+            {"label": "Run Configuration and Validation Service"},
+            {"label": "Hardware Control and Run Execution Service"},
+            {"label": "Security and Verification Logic Service"},
+            {"label": "Results Store and Run History"},
+        ],
+        internal_systems=[
+            "Run configuration and validation",
+            "Hardware control and run execution",
+            "Security and verification logic",
+            "Results store and run history",
+        ],
+        first_path=(
+            "A researcher defines a new E91 run (source, two stations, bases, channel/integration settings), "
+            "launches it against the hardware, then sees the Bell inequality was violated and the key established."
+        ),
+        state_object="A communication run with run configuration, station events, QBER, verification status, and key material.",
+        proof_boundary="The proof is one run showing verification status and key establishment.",
+        human_actors=["Researcher"],
+    )
+
+    assert "Launches" not in workflow_title
+    assert workflow_title == "Let Researcher Define a New E91 Run (Source, Two Stations, Bases, Channel and Integration Settings), Launch It Against the Hardware"
+
+
+def test_actor_owned_workstream_title_uses_first_path_action_when_actor_alias_misses() -> None:
+    workflow_title, _boundary_title, _proof_title = confirmed_workstream_titles(
+        label="Pattern Relief Notebook",
+        components=[
+            {"label": "Entry Logging Service"},
+            {"label": "Routine Library Service"},
+            {"label": "Trend and Correlation View Service"},
+            {"label": "Reminder and Streak Nudge Service"},
+        ],
+        internal_systems=[
+            "Entry Logging — daily check-in",
+            "Routine Library — saved activities",
+            "Trend and Correlation View — trend readout",
+            "Reminder and Streak Nudge — reminder controls",
+        ],
+        first_path=(
+            "A new user records their first entry — rates today's status, taps the factors that applied, "
+            "and logs one action they tried. The next day they log again. After a handful of entries, "
+            "the app shows a simple trend: status over time, and which logged actions line up with better days."
+        ),
+        state_object=(
+            "A person's comfort timeline: dated entries, ratings, contributing factors, actions tried, "
+            "saved routines, and derived trends."
+        ),
+        proof_boundary="The proof is one user logging entries and seeing an honest trend.",
+        human_actors=[
+            "Person Managing Discomfort: uses Pattern Relief Notebook to complete the first product path."
+        ],
+    )
+
+    assert workflow_title == "Let Person Managing Discomfort Record First Entry"
+    assert "Complete the Accepted Path" not in workflow_title
+
+
+def test_title_labels_render_and_slash_compounds_as_comma_lists() -> None:
+    value = "Scenario library and authoring/curation"
+
+    assert title_label(value) == "Scenario Library, Authoring, and Curation"
+    assert title_case_text(value) == "Scenario Library, Authoring, and Curation"
+
+
+def test_component_responsibility_does_not_prefix_action_clause_with_owns() -> None:
+    components = confirmed_components(
+        label="Realtime Signal Processing Pipeline",
+        label_slug="realtime-signal-processing-pipeline",
+        internal_systems=[
+            "Ingest layer - accepts streams, normalizes samples, tracks per-stream offsets.",
+            "Emit layer - delivers results to configured sinks with delivery guarantees.",
+        ],
+        first_path=(
+            "A signal source connects and pushes a stream of samples. The pipeline emits a result event to a sink."
+        ),
+        state_object="A live processing pipeline with streams, stage configuration, offsets, and emitted results.",
+        proof_boundary="The first path is proven when one stream emits one result event to a sink.",
+    )
+    rendered = json.dumps(components, sort_keys=True)
+    emit = next(row for row in components if row["label"] == "Emit Layer Service")
+
+    assert "Owns delivers" not in rendered
+    assert emit["responsibility"].startswith("Delivers results to configured sinks")
+    assert generated_semantic_slop_issues(components) == []
+
+
 def test_completed_internal_system_rows_strip_relative_action_clause_from_label() -> None:
     completed = complete_confirmed_intent(
         {
@@ -393,7 +524,7 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
     assert "signs in" not in care.action_chain
     assert care.visible_result == "a clear prompt, updated status, and next action"
     assert review.action_chain == "import one permit application, record a zoning check, and submit one revision"
-    assert review.visible_result == "the decision package with traceable documents, comments, checks and final status"
+    assert review.visible_result == "the decision package with traceable documents, comments, checks, and final status"
     assert short_actor.action_chain == "record a decision"
     assert short_actor.capability_chain == "record a decision and see the decision queue"
     assert "approve final status" not in short_actor.capability_chain

@@ -348,12 +348,22 @@ def _allowed_structured_repetition_key(key: str) -> bool:
         (
             "boundary ",
             "control ",
+            "evidence ",
+            "evidence contents ",
+            "evidence record ",
             "gate ",
             "owner ",
             "proof ",
             "question ",
+            "readiness gate ",
+            "recovery gate ",
+            "review condition ",
             "risk ",
+            "scope gate ",
             "state object ",
+            "state gate ",
+            "trace requirement ",
+            "validation gate ",
         )
     )
 
