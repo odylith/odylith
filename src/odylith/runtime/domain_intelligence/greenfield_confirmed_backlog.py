@@ -638,12 +638,12 @@ def _append_outcome_action(*, action: str, outcome: str, outcome_action: str, re
         outcome_action_terms and outcome_action_terms <= action_terms
     ):
         return ""
-    return f", and lets {_recipient_phrase(recipient)} {outcome_action}" if outcome_action else ""
+    return f", and {_recipient_phrase(recipient)} can {outcome_action}" if outcome_action else ""
 
 
 def _missing_input_tail(*, action: str, outcome: str, outcome_already_appended: bool = False) -> str:
     if outcome_already_appended:
-        return " while giving clear correction guidance when required information is missing"
+        return " while the product gives clear correction guidance when required information is missing"
     action_terms = backlog_text.semantic_words(action)
     outcome_terms = backlog_text.semantic_words(outcome)
     if outcome_terms and outcome_terms <= action_terms:

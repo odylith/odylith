@@ -10,6 +10,7 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
@@ -454,7 +455,12 @@ def _lower_actor_label_start(value: str) -> str:
     rest = f" {words[1]}" if len(words) > 1 else ""
     if first.isupper() and len(first) > 1:
         return f"{first}{rest}"
-    return f"{first[:1].casefold()}{first[1:]}{rest}"
+    lowered = f"{first[:1].casefold()}{first[1:]}{rest}"
+    return re.sub(
+        r"\b(?:Actor|Applicant|Customer|Manager|Operator|Owner|Participant|Reviewer|User)\b",
+        lambda match: match.group(0).casefold(),
+        lowered,
+    )
 
 
 def capability_action_clause(value: str) -> str:
@@ -494,12 +500,6 @@ def normalize_action_clause(value: str) -> str:
     }.items():
         text = re.sub(rf"\b(and|then)\s+{re.escape(inflected)}\b", rf"\1 {base}", text, flags=re.IGNORECASE)
         text = re.sub(rf"\b(and|then)\s+manually\s+{re.escape(inflected)}\b", rf"\1 manually {base}", text, flags=re.IGNORECASE)
-    text = re.sub(
-        r",\s+and\s+(manually\s+)?(log|enter|select|submit|save|choose|click|accept|dismiss|record|capture|review)\b",
-        r" and \1\2",
-        text,
-        flags=re.IGNORECASE,
-    )
     return re.sub(r"\s+", " ", text).strip(" .") or "complete the accepted path"
 
 
@@ -581,11 +581,12 @@ def rationale_lines(
     )
     proof_focus = rationale_proof_focus(proof_boundary, fallback=expected_outcome)
     release_basis = rationale_release_basis(title=title, label=label, first_slice=first_slice, proof_boundary=proof_boundary)
+    deferred_rationale = _deferred_rationale_sentence(deferred_focus)
     return [
         f"- why now: {why_now}.",
         f"- expected outcome: {expected_outcome}.",
         f"- tradeoff: Keep this slice centered on {scope_focus} so implementation does not absorb unrelated release claims.",
-        f"- deferred for now: {deferred_focus} wait for a separate owner, acceptance gate, and proof path.",
+        f"- deferred for now: {deferred_rationale}.",
         f"- ranking basis: {release_basis}.",
     ]
 
@@ -611,7 +612,7 @@ def rationale_deferred_focus(*, value: str, label: str, fallback: str, deferred_
     """Return the explicit deferred scope without repeating the first-slice path."""
 
     for row in deferred_scope:
-        selected = _deferred_focus_sentence(row)
+        selected = boundary_clause_item(str(row), limit=120) or _deferred_focus_sentence(row)
         if selected and not _too_similar(selected, fallback):
             return selected[:1].upper() + selected[1:]
     text = _compact_text(value).strip(" .")
@@ -625,6 +626,15 @@ def rationale_deferred_focus(*, value: str, label: str, fallback: str, deferred_
         return selected[:1].upper() + selected[1:]
     label_text = _short_summary(label, limit=90).strip(" .")
     return f"Adjacent {label_text or 'product'} workflows"
+
+
+def _deferred_rationale_sentence(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return "Adjacent scope waits for a separate owner, acceptance gate, and proof path"
+    if text.casefold().endswith("scope remains deferred") or text.casefold().startswith("scope question remains open"):
+        return f"{text}; separate owner, acceptance gate, and proof path required"
+    return f"{text} waits for a separate owner, acceptance gate, and proof path"
 
 
 def _deferred_focus_sentence(value: str) -> str:

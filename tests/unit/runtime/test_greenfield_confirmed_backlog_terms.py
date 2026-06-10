@@ -2,8 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import (
+    confirmed_backlog_rows,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
     looks_mechanical_summary,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
+    normalize_action_clause,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
     proof_focus_phrase,
@@ -118,6 +124,76 @@ def test_confirmed_backlog_rationale_uses_distinct_bullet_jobs() -> None:
     assert text.count("complete path where") <= 1
     assert "Adjacent Choice Practice Journal workflows" not in text
     assert "Multiple age bands, authoring workflows, reminders, and live classroom management" in text
+
+
+def test_confirmed_backlog_rationale_does_not_splice_scope_question_into_wait_clause() -> None:
+    lines = rationale_lines(
+        label="Cellar",
+        title="Make Cellar Useful for One Complete Outcome",
+        opportunity="Prove the first vineyard management outcome before optional scope expands.",
+        first_slice="Define a block and review the season timeline.",
+        proof_boundary="The release works when the block timeline can be reviewed.",
+        deferred_scope=("Is regulatory spray compliance in scope for v1 or later?",),
+    )
+    text = "\n".join(lines)
+
+    assert "? wait" not in text
+    assert (
+        "- deferred for now: Regulatory spray compliance scope remains deferred; separate owner, acceptance gate, and proof path required."
+        in text
+    )
+
+
+def test_confirmed_backlog_first_slice_preserves_object_lists_and_can_clause_grammar() -> None:
+    first_path = (
+        "A grower defines a block (variety, area, planting year), logs a spray application "
+        "against it with product, rate, and date, and at harvest records the picked weight "
+        "— then opens the block and sees its season timeline plus this year's yield against last year's."
+    )
+    rows = confirmed_backlog_rows(
+        label="Cellar",
+        parent_title="Make Cellar Useful for One Complete Outcome",
+        workflow_title="Let Grower Owner Define a Block",
+        boundary_title="Keep Block Clear and Reviewable",
+        proof_title="Show Why Block Can Be Trusted",
+        state_object="Block",
+        evidence_record="Task Planning Proof Record",
+        product_story="A working grower needs one place to run the vineyard year.",
+        first_path=first_path,
+        proof_boundary=(
+            "v1 is proven when a grower can define a block, log a dated spray and a harvest weight "
+            "against it, and open that block to see its season timeline and yield."
+        ),
+        human_actors=["Grower / owner - defines blocks and reviews the season."],
+        internal_systems=["Block registry", "Activity log", "Task planning"],
+        external_systems=[],
+        non_goals=[],
+        components=[
+            {"component_id": "block-record-service", "label": "Block Record Service"},
+            {"component_id": "activity-log-service", "label": "Activity Log Service"},
+            {"component_id": "task-planning-service", "label": "Task Planning Service"},
+        ],
+        diagram_slugs={
+            "context": "context",
+            "sequence": "sequence",
+            "state_evidence": "state-evidence",
+            "component_boundaries": "component-boundaries",
+            "ownership": "ownership",
+            "proof_review": "proof-review",
+        },
+    )
+    workflow_first_slice = rows[1]["recommended_first_slice"]
+
+    assert (
+        normalize_action_clause(
+            "define a block, log a spray application with product, rate and date, and record the picked weight"
+        )
+        == "define a block, log a spray application with product, rate and date, and record the picked weight"
+    )
+    assert "rate and date and record" not in workflow_first_slice
+    assert "and lets" not in workflow_first_slice
+    assert ", and the grower / owner can see" in workflow_first_slice
+    assert "while the product gives clear correction guidance" in workflow_first_slice
 
 
 def test_problem_actor_subject_preserves_acronym_number_tokens() -> None:

@@ -321,6 +321,19 @@ def _with_carried_subject(value: str, subject_prefix: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not subject_prefix or _leading_subject_prefix(text):
         return text
+    temporal_action = re.match(
+        r"^(?P<prefix>(?:at|after|before|during|on|when)\s+[A-Za-z0-9][A-Za-z0-9 '/-]{1,40}?)\s+"
+        r"(?P<verb>[A-Za-z]+)\b(?P<tail>.*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if temporal_action and _MATERIAL_ACTION_RE.match(temporal_action.group("verb")):
+        tail = temporal_action.group("tail").strip(" ,")
+        tail = f" {tail}" if tail else ""
+        return (
+            f"{subject_prefix} {third_person_action_verb(temporal_action.group('verb'))}"
+            f"{tail} {temporal_action.group('prefix').casefold()}"
+        )
     adverbial = re.match(
         rf"^(?P<prefix>[A-Za-z]+ly\s+)(?P<verb>{_ACTION_BASE_VERB_PATTERN})\b(?P<tail>.*)$",
         text,
@@ -375,6 +388,14 @@ def _starts_new_action_clause(value: str) -> bool:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not text:
         return False
+    temporal_action = re.match(
+        r"^(?:at|after|before|during|on|when)\s+[A-Za-z0-9][A-Za-z0-9 '/-]{1,40}?\s+"
+        r"(?P<verb>[A-Za-z]+)\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if temporal_action and _MATERIAL_ACTION_RE.match(temporal_action.group("verb")):
+        return True
     adverbial_action = re.match(r"^[A-Za-z]+ly\s+(?P<tail>.+)$", text, flags=re.IGNORECASE)
     if adverbial_action and _MATERIAL_ACTION_RE.match(adverbial_action.group("tail")) and len(label_terms(text)) >= 2:
         return True

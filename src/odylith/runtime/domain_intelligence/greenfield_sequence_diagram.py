@@ -175,6 +175,10 @@ def _terminal_step_label(step: str, visible_result: str) -> str:
     outcome = _compact_text(visible_result).strip(" .")
     if not outcome:
         return _step_action_label(step)
+    step_terms = _sequence_terms(step)
+    outcome_terms = _sequence_terms(outcome)
+    if step_terms and not step_terms <= outcome_terms:
+        return _step_action_label(step)
     return f"Show outcome: {outcome}"
 
 

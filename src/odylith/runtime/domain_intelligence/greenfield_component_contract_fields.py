@@ -184,13 +184,13 @@ def proof_rows(
 ) -> list[str]:
     proof_focus = _proof_focus(critical=critical, output_focus=output_focus, object_list=object_list)
     rows = [
-        f"{label} shows {proof_focus} on a successful path with enough explanation for a reviewer to understand it.",
-        f"When required input is missing or malformed, {label} stops before showing a trusted result and explains what must change.",
-        f"A replay of {label} still connects the actor, input facts, status, and explanation.",
+        f"Successful path evidence for {label}: {proof_focus}, required inputs, visible result, and reviewer explanation.",
+        f"Blocked input evidence for {label}: missing or malformed input, stops before a trusted result, and recovery explanation.",
+        f"Replay evidence for {label}: actor, input facts, status, explanation, and proof trail.",
     ]
     if sibling_label:
         rows.append(
-            f"{sibling_label} can consume {proof_focus} without owning or rewriting {label}'s local state."
+            f"Handoff evidence for {sibling_label}: {sibling_label} can consume {proof_focus} without owning or rewriting {label}'s local state."
             + (f" {sibling_focus} remains outside {label}'s boundary." if sibling_focus else "")
         )
     return rows

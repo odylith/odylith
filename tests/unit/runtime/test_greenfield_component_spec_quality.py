@@ -42,6 +42,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import produced_outputs_text
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import status_only_artifact_fragment
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_anchor_compounds
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
@@ -212,6 +214,7 @@ def test_component_contract_artifact_sentence_stays_in_text_owner() -> None:
 
     assert "def clean_artifact_sentence" in text_source
     assert clean_artifact_sentence("`risk review` , ready") == "Risk review, ready."
+    assert clean_artifact_sentence("`risk review` , ready?") == "Risk review, ready?"
     assert normalize_contract({"owned_state": "`Risk reviewer` guardrails , ready"})[
         "owned_state"
     ] == "Local risk reviewer guardrails, ready."
@@ -624,7 +627,7 @@ def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sec
 
     assert "Suggested fixture:" not in spec
     assert "Run one Planning Engine example" not in spec
-    assert "Planning Engine shows" in spec
+    assert "Successful path evidence for Planning Engine" in spec
     assert "reaches the visible result" not in spec
     assert "example explains" not in spec
     assert "stops before a trusted result" in spec
@@ -823,6 +826,53 @@ def test_greenfield_quality_gate_rejects_verb_phrase_slot_filling() -> None:
     )
 
     assert any("verb phrase inserted into contract artifact slot" in issue for issue in issues)
+
+
+def test_greenfield_quality_gate_allows_block_record_component_labels_in_proof_slots() -> None:
+    rows = proof_rows(
+        label="Block Record Service",
+        object_list="block record, unit truth block, registry state",
+        critical="block record",
+        input_focus="required block record input",
+        output_focus="block record result, registry state, and review evidence",
+        sibling_label="Activity Log Service",
+        sibling_focus="activity log state",
+    )
+
+    issues = public_prose_quality_issues(
+        {
+            "components": [
+                {
+                    "validation": rows,
+                    "component_contract": {"local_proof": rows},
+                }
+            ],
+            "semantic_model": {"components": [{"proof_obligations": rows}]},
+        }
+    )
+
+    assert not issues
+    assert rows[0].startswith("Successful path evidence for Block Record Service:")
+    assert "Block Record Service shows" not in " ".join(rows)
+
+
+def test_greenfield_truth_unit_context_renders_artifact_record_not_word_soup() -> None:
+    text = (
+        "The core unit of truth is a Block: a named, mapped planting of one grape variety. "
+        "Each block carries its vines and activity history."
+    )
+
+    phrases = context_object_phrases(
+        text,
+        label_terms=("block",),
+        description_terms=("block", "registry", "record"),
+    )
+    compounds = context_anchor_compounds(text, anchor_terms=("block", "registry", "record"))
+
+    assert "block record" in phrases
+    assert "block record" in compounds
+    assert "unit truth block" not in phrases
+    assert "unit truth block" not in compounds
 
 
 def test_greenfield_quality_gate_rejects_generic_governance_posture_filler() -> None:

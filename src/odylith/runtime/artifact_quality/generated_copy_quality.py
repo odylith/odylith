@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from collections.abc import Mapping, Sequence
+import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -39,7 +40,7 @@ def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
             findings.append(GeneratedCopyFinding("terminal_result_chain", f"{scope} leaked terminal action inside result prose"))
         if _has_awkward_visible_result_action(lowered):
             findings.append(GeneratedCopyFinding("awkward_visible_result_action", f"{scope} leaked awkward visible-result action prose"))
-        if _has_presentational_action_splice(lowered):
+        if _has_presentational_action_splice(text.casefold()):
             findings.append(GeneratedCopyFinding("presentational_action_splice", f"{scope} leaked presentational verb/action splice prose"))
         if _has_template_slice_prefix(lowered):
             findings.append(GeneratedCopyFinding("template_slice_prefix", f"{scope} leaked repetitive implementation-slice template prose"))
@@ -95,26 +96,15 @@ def _has_awkward_visible_result_action(tokens: tuple[str, ...]) -> bool:
     return False
 
 
-def _has_presentational_action_splice(tokens: tuple[str, ...]) -> bool:
-    presentation_verbs = {"display", "displays", "present", "presents", "show", "showing", "shown", "shows"}
-    action_verbs = {
-        "add",
-        "choose",
-        "complete",
-        "create",
-        "enter",
-        "log",
-        "make",
-        "open",
-        "pick",
-        "reach",
-        "record",
-        "review",
-        "select",
-        "submit",
-        "use",
-    }
-    return any(token in presentation_verbs and tokens[index + 1] in action_verbs for index, token in enumerate(tokens[:-1]))
+def _has_presentational_action_splice(text: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:display|displays|present|presents|show|showing|shown|shows)\s+"
+            r"(?:add|choose|complete|create|enter|log|make|open|pick|reach|record|review|select|submit|use)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _has_template_slice_prefix(tokens: tuple[str, ...]) -> bool:

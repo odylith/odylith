@@ -46,6 +46,10 @@ def context_object_phrases(
     carry = 0
     carry_base: tuple[str, ...] = ()
     for clause in clauses(value):
+        truth_unit = _truth_unit_artifact(clause)
+        if truth_unit:
+            rows.append(truth_unit)
+            continue
         data_source = re.search(r"\b(?P<head>[a-z0-9][a-z0-9 '-]{1,80}\s+data)\s+sources?\s+such\s+as\b", clause, flags=re.I)
         if data_source:
             source_phrase = f"{_trim_phrase(data_source.group('head'))} source".casefold()
@@ -163,6 +167,10 @@ def context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: 
         return []
     rows: list[str] = []
     for clause in re.split(r"(?<=[.!?])\s+|[,;]", _clean(value)):
+        truth_unit = _truth_unit_artifact(clause)
+        if truth_unit:
+            rows.append(truth_unit)
+            continue
         clause = _object_clause_focus(clause)
         clause = re.sub(
             r"\b(?:before|after|while|because|unless|without)\b.+$",
@@ -187,6 +195,26 @@ def context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: 
             if len(rows) >= limit:
                 return unique_text(rows)
     return unique_text(rows)
+
+
+def _truth_unit_artifact(value: str) -> str:
+    match = re.search(
+        r"\b(?:core\s+)?(?:unit|source)\s+of\s+truth\s+is\s+(?:a|an|the)?\s*(?P<object>[^:.;,]+)",
+        _clean(value),
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    terms = [
+        term
+        for term in _content_terms(match.group("object"))
+        if term not in {"core", "truth", "unit", "source"}
+    ]
+    if not terms:
+        return ""
+    if terms[-1] in _ARTIFACT_CARRIER_TERMS:
+        return " ".join(terms[:4])
+    return f"{' '.join(terms[:3])} record"
 
 
 def expanded_context_anchors(anchors: set[str]) -> set[str]:

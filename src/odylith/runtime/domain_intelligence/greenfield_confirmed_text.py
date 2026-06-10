@@ -569,7 +569,29 @@ def boundary_clause_item(value: str, *, limit: int = 180) -> str:
                 subject = rest[:marker_index].strip(" .")
                 return f"{_lower_first(subject)} scope remains deferred"
         return f"the question of whether {_lower_first(rest)} remains open"
+    if text.endswith("?"):
+        question = text.rstrip("?").strip()
+        scope = _scope_question_boundary(question)
+        if scope:
+            return scope
+        return f"scope question remains open: {_lower_first(question)}"
     return text
+
+
+def _scope_question_boundary(value: str) -> str:
+    text = value.strip()
+    if not text:
+        return ""
+    match = re.match(
+        r"^(?:Is|Are)\s+(?P<subject>.+?)\s+in\s+scope(?:\s+[^?]*)?$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        subject = re.sub(r"\s+", " ", match.group("subject")).strip(" .")
+        if subject:
+            return f"{_lower_first(subject)} scope remains deferred"
+    return ""
 
 
 def _lower_first(value: str) -> str:

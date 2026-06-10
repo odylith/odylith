@@ -8,6 +8,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps as semantic_first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 
@@ -323,8 +324,12 @@ def _check_atlas_source_preserves_first_path_tail(
     first_path = " ".join(text_values(intent.get("first_path")))
     if not first_path:
         return
-    final_clause = re.split(r",\s+and\s+|;\s+and\s+|[.!?]\s+", first_path.strip(" ."))[-1]
-    tail = final_clause if len(_term_set(final_clause)) >= 2 else " ".join(first_path.split()[max(0, len(first_path.split()) - 18) :])
+    semantic_steps = [step for step in semantic_first_path_steps(first_path) if len(_term_set(step)) >= 2]
+    if semantic_steps:
+        tail = semantic_steps[-1]
+    else:
+        final_clause = re.split(r",\s+and\s+|;\s+and\s+|[.!?]\s+", first_path.strip(" ."))[-1]
+        tail = final_clause if len(_term_set(final_clause)) >= 2 else " ".join(first_path.split()[max(0, len(first_path.split()) - 18) :])
     tail_terms = _atlas_tail_term_set(tail)
     if not tail_terms:
         return

@@ -886,7 +886,7 @@ def test_component_spec_narration_rejects_derived_system_description_debris() ->
     assert "blocked states, and next visible step" not in spec
     assert "run one request workflow planner" not in spec
     assert "run one blocked" not in spec
-    assert "a replay of request workflow planner surface still connects" in spec
+    assert "replay evidence for request workflow planner surface" in spec
     assert generated_semantic_slop_issues(contract) == []
 
 

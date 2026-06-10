@@ -591,38 +591,28 @@ def gerund_action_fragment(value: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+and,\s+if\b.+$", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
-    pattern = "|".join(re.escape(item) for item in sorted(_GERUND_ACTION_VERBS, key=len, reverse=True))
-    for match in re.finditer(rf"\b(?P<verb>{pattern})\b", text, flags=re.IGNORECASE):
-        if (match.start() > 0 and text[match.start() - 1] == "-") or (
-            match.end() < len(text) and text[match.end()] == "-"
-        ):
-            continue
-        verb = match.group("verb").casefold()
-        tail = text[match.end() :]
-        if verb in {"record", "records"} and re.match(
-            r"\s+(?:owner|reviewer|recipient|actor|user|operator|publisher)\b",
-            tail,
-            flags=re.IGNORECASE,
-        ):
-            continue
-        return _gerund_following_action_verbs(f"{_GERUND_ACTION_VERBS[verb]}{tail}").strip(" ,.")
-    return text[:1].casefold() + text[1:] if text else ""
+    text = action_chain_fragment(text) or text
+    return _gerund_following_action_verbs(text).strip(" ,.") or (text[:1].casefold() + text[1:] if text else "")
 
 
 def _gerund_following_action_verbs(value: str) -> str:
     text = clean_first_path_text(value)
-    segments = [_gerund_segment_actions(segment.strip()) for segment in text.split(",")]
-    return ", ".join(segment for segment in segments if segment).replace(", and ", " and ")
+    return _gerund_segment_actions(text)
 
 
 def _gerund_segment_actions(value: str) -> str:
     words = value.split()
     converted: list[str] = []
     convert_next_action = True
-    for word in words:
+    for index, word in enumerate(words):
         token = word.strip(".,:;").casefold()
-        gerund = _GERUND_ACTION_VERBS.get(token)
+        tail = " ".join(words[index + 1 :])
+        gerund = _gerund_for_action_token(token)
         if gerund and convert_next_action:
+            if _looks_like_ambiguous_artifact_noun(token, tail):
+                converted.append(word)
+                convert_next_action = False
+                continue
             converted.append(_replace_word_token(word, gerund))
             convert_next_action = False
             continue
@@ -634,6 +624,35 @@ def _gerund_segment_actions(value: str) -> str:
         else:
             convert_next_action = False
     return " ".join(converted).strip(" ,.")
+
+
+def _gerund_for_action_token(token: str) -> str:
+    mapped = _GERUND_ACTION_VERBS.get(token)
+    if mapped:
+        return mapped
+    if re.fullmatch(action_base_verb_pattern(), token):
+        return _regular_gerund(token)
+    return ""
+
+
+def _regular_gerund(token: str) -> str:
+    if token.endswith("ie"):
+        return f"{token[:-2]}ying"
+    if token.endswith("e") and not token.endswith(("ee", "oe", "ye")):
+        return f"{token[:-1]}ing"
+    return f"{token}ing"
+
+
+def _looks_like_ambiguous_artifact_noun(token: str, tail: str) -> bool:
+    if token in {"record", "records"} and re.match(
+        r"^(?:owner|reviewer|recipient|actor|user|operator|publisher)\b",
+        tail,
+        flags=re.IGNORECASE,
+    ):
+        return True
+    if token in {"block", "blocks"} and (not tail or tail.lstrip().startswith("(")):
+        return True
+    return False
 
 
 def _replace_word_token(value: str, replacement: str) -> str:
@@ -692,6 +711,10 @@ def clip_first_path_phrase(value: str, *, limit: int) -> str:
 
 def clean_first_path_text(value: Any) -> str:
     text = clean_markdown_text(value)
+    text = re.sub(r"\s+[–—-]\s*,\s+(?=(?:and|then|finally|later)\b)", ", ", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+[–—-]\s+(?=(?:and|then|finally|later)\b)", ", ", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+[–—-]\s*(?=[,.;:])", "", text)
+    text = re.sub(r"\s+[–—-]\s*$", "", text)
     text = re.sub(
         r",?\s+and\s+(?:completes?|ends?|finishes?)\s+(?:the\s+)?(?:flow|journey|loop|moment|path|session)\b[^.!?]*(?=[.!?]|$)",
         "",

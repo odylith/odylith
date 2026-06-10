@@ -113,12 +113,13 @@ _BANNED_PROSE_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
         "verb phrase inserted into contract artifact slot",
         re.compile(
-            r"\b(?:accepts?|produces?|blocks?|proves?|coverage\s+for)\s+"
+            r"\b(?:(?:accepts?|produces?|proves?|coverage\s+for)\s+|blocks?\s+(?!records?\b))"
             r"(?:recomputes|computes?|calculates?|generates?|derives?|exports?|deletes?|records?|tracks?|validates?)\s+"
             r"[^.]{0,120}\b(?:input|result|output|state)\b",
             re.IGNORECASE,
         ),
     ),
+    ("truth-unit artifact splice", re.compile(r"\bunit\s+truth\s+[a-z0-9-]+", re.IGNORECASE)),
     (
         "unnormalized recompute artifact phrase",
         re.compile(r"\brecomputes\s+[^.]{0,100}\b(?:input|result|output|state)\b", re.IGNORECASE),

@@ -5,6 +5,7 @@ from pathlib import Path
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     CONFIRMED_INTENT_VALIDATION_STOPWORDS,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label
@@ -18,7 +19,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import sentence as diagram_sentence
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import clean_first_path_text
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
@@ -175,6 +179,7 @@ def test_markdown_sentence_casing_stays_in_text_owner() -> None:
 
     assert "def clean_markdown_sentence" in text_owner
     assert clean_markdown_sentence(" **ops** sees `status` , ready.") == "Ops sees status, ready."
+    assert clean_markdown_sentence(" **ops** sees `status` , ready?") == "Ops sees status, ready?"
     assert diagram_sentence(" **ops** sees `status` , ready.") == "Ops sees status, ready."
     assert sequence_event_steps("1. Open app. 2. **ops** sees `status` , ready.") == [
         "Ops sees status, ready"
@@ -185,6 +190,54 @@ def test_markdown_sentence_casing_stays_in_text_owner() -> None:
         assert "clean_markdown_sentence" in source
         assert "text[:1].upper() + text[1:]" not in source
         assert 'return f"{text}." if text else ""' not in source
+
+
+def test_first_path_cleanup_normalizes_dash_continuations() -> None:
+    assert (
+        clean_first_path_text("Records the picked weight —, and opens the timeline.")
+        == "Records the picked weight, and opens the timeline."
+    )
+    assert (
+        clean_first_path_text("Logs a reading — then reviews the trend.")
+        == "Logs a reading, then reviews the trend."
+    )
+
+
+def test_first_path_gerunds_use_action_phrase_not_object_nouns() -> None:
+    assert (
+        gerund_action_fragment("A grower defines a block (variety, area, planting year)")
+        == "defining a block (variety, area, planting year)"
+    )
+    assert gerund_action_fragment("A user provides a report") == "providing a report"
+    assert gerund_action_fragment("blocks invalid input") == "blocking invalid input"
+
+
+def test_first_path_temporal_actions_do_not_gerund_object_lists() -> None:
+    first_path = (
+        "A grower defines a block (variety, area, planting year), logs a spray application "
+        "against it with product, rate, and date, and at harvest records the picked weight "
+        "— then opens the block and sees its season timeline plus this year's yield against last year's."
+    )
+
+    steps = first_path_steps(first_path)
+    capability = first_path_capability_phrase(first_path, gerund=True, max_fragments=7, limit=320)
+
+    assert "A grower records the picked weight at harvest" in steps
+    assert "defining a block" in capability
+    assert "logging a spray application against it with product, rate and date" in capability
+    assert "recording the picked weight at harvest" in capability
+    assert "rating and date" not in capability
+
+
+def test_boundary_clause_questions_become_declarative_scope_text() -> None:
+    assert (
+        boundary_clause_item("Is regulatory spray compliance in scope for v1 or later?")
+        == "regulatory spray compliance scope remains deferred"
+    )
+    assert (
+        boundary_clause_item("Does this need offline mobile logging?")
+        == "scope question remains open: does this need offline mobile logging"
+    )
 
 
 def test_confirmed_intent_semantic_terms_stay_in_text_owner() -> None:

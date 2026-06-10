@@ -251,7 +251,15 @@ def _first_path_contract(
         proof_boundary=proof_boundary,
         fallback=_clean(model.visible_outcome) or "the first-path result",
     )
-    events = tuple(_first_path_events(model.steps, actor=actor, state_object=state_object, human_actors=human_actors))
+    events = tuple(
+        _first_path_events(
+            model.steps,
+            actor=actor,
+            state_object=state_object,
+            human_actors=human_actors,
+            visible_result=visible_result,
+        )
+    )
     contract_actor = events[0].actor if events and events[0].actor else actor
     return FirstPathContract(
         actor=contract_actor,
@@ -275,25 +283,28 @@ def _first_path_events(
     actor: str,
     state_object: str,
     human_actors: Sequence[str],
+    visible_result: str = "",
 ) -> list[FirstPathEvent]:
     events: list[FirstPathEvent] = []
     current_actor = actor
     for index, step in enumerate(steps, start=1):
         text = _clean(step)
+        is_visible = _is_visible_result(text)
+        event_text = _clean(visible_result) if is_visible and _clean(visible_result) else text
         event_actor = _event_actor(text, human_actors=human_actors, fallback=current_actor or actor)
         current_actor = event_actor or current_actor
         action = _action_label(text)
-        target = _event_target(text, state_object=state_object)
+        target = _event_target(event_text, state_object=state_object)
         events.append(
             FirstPathEvent(
                 index=index,
                 actor=event_actor or actor,
                 action=action,
                 target_entity=target,
-                mutation=text,
-                visible_result=_is_visible_result(text),
+                mutation=event_text,
+                visible_result=is_visible,
                 recovery_path=_is_recovery_path(text),
-                text=text,
+                text=event_text,
             )
         )
     return events

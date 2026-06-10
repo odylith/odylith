@@ -134,7 +134,7 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
         body = "is represented by lawful source records, evidence, confidence, and privacy limits; the product must not imply private access, endorsement, or guaranteed outcome"
     elif re.search(r"\b(compliance|policy|privacy|legal|risk|safety)\b", label_text):
         body = "reviews access, privacy, policy, risk, and evidence boundaries"
-    elif re.search(r"\b(user|person|people|individual|patient|researcher|investor|analyst|operator)\b", label_text):
+    elif re.search(r"\b(user|person|people|individual|researcher|investor|analyst|operator)\b", label_text):
         body = f"uses {title} to complete the first product path, review the result, and decide what to do next"
     elif re.search(r"\b(author|applicant|submitter|requester|customer|client)\b", label_text):
         body = "provides the information the product needs and expects a clear result, explanation, and next step"

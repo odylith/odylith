@@ -237,9 +237,9 @@ def _generic_contract(
         "states_or_transitions": ", ".join(states),
         "outside_boundary": _outside_boundary(kind=kind),
         "local_proof": [
-            f"{label} proves the happy path for {focus} with a visible result and persisted explanation.",
-            f"{label} rejects or blocks invalid input covering {focus} before it creates a misleading result.",
-            f"{label} exposes recovery context and next-step history for {focus}.",
+            f"Successful path evidence for {label}: {focus}, visible result, and persisted explanation.",
+            f"Blocked input evidence for {label}: invalid input covering {focus}, no misleading result, and recovery explanation.",
+            f"Recovery evidence for {label}: recovery context, next-step history, and proof trail for {focus}.",
         ],
         "upstream_truth": upstream,
         "downstream_consumers": downstream,

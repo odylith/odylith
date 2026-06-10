@@ -285,8 +285,6 @@ def _looks_like_actor_label(value: str) -> bool:
         "requester",
         "researcher",
         "reviewer",
-        "student",
-        "teacher",
         "specialist",
         "submitter",
         "support",

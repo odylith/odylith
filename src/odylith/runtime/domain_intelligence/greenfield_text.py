@@ -31,10 +31,11 @@ def clean_artifact_text(value: Any, *, split_parentheses: bool = False) -> str:
 
 
 def clean_artifact_sentence(value: Any, *, split_parentheses: bool = False) -> str:
-    text = clean_artifact_text(value, split_parentheses=split_parentheses).strip(" .")
+    text = clean_artifact_text(value, split_parentheses=split_parentheses).strip()
     if not text:
         return ""
-    return text[:1].upper() + text[1:] + "."
+    text = text[:1].upper() + text[1:]
+    return text if text[-1] in ".!?" else f"{text}."
 
 
 def clean_markdown_text(value: Any) -> str:
@@ -44,10 +45,12 @@ def clean_markdown_text(value: Any) -> str:
 
 
 def clean_markdown_sentence(value: Any) -> str:
-    text = clean_markdown_text(value).rstrip(".")
+    text = clean_markdown_text(value).strip()
     if text:
         text = text[:1].upper() + text[1:]
-    return f"{text}." if text else ""
+    if not text:
+        return ""
+    return text if text[-1] in ".!?" else f"{text}."
 
 
 def word_count(value: Any) -> int:
