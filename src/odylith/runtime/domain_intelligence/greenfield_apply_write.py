@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from odylith.runtime.common.value_coercion import dedupe_strings
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_experience
@@ -23,6 +25,8 @@ from odylith.runtime.domain_intelligence.greenfield_apply_diagrams import alloca
 from odylith.runtime.domain_intelligence.greenfield_component_contract import rendered_component_spec_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract_targets import operator_component_spec_issues
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_completion_report
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.governance import component_authoring
@@ -42,11 +46,14 @@ def write_greenfield_proposal(
     release_selector: str,
     tribunal: Any,
     backlog_result: Mapping[str, Any],
+    prewrite_package: GreenfieldCompletionPackage | None = None,
 ) -> dict[str, Any]:
     """Apply accepted Radar, Registry, Atlas, release, and memory records."""
 
     release_bootstrap = None
     release_targeting = None
+    rendered_atlas_sources = dict(prewrite_package.rendered_atlas_sources or {}) if prewrite_package else {}
+    rendered_component_specs = dict(prewrite_package.rendered_component_specs or {}) if prewrite_package else {}
     for raw_path in backlog_result.get("stale_idea_files", []):
         path = Path(str(raw_path))
         if path.is_file():
@@ -107,6 +114,7 @@ def write_greenfield_proposal(
             diagram_id=diagram_id,
             traceability_plan=traceability_plan,
             atlas_scaffold_logs=atlas_scaffold_logs,
+            starter_source=_prewrite_atlas_source(row, rendered_atlas_sources),
         )
         diagrams_created.append(diagram_id)
     touched_backlog_paths = greenfield_traceability.apply_backlog_traceability(
@@ -171,6 +179,11 @@ def write_greenfield_proposal(
             update_existing=True,
             refresh=False,
         )
+        _write_repaired_component_spec(
+            root=root,
+            created=created.as_dict(),
+            rendered_component_specs=rendered_component_specs,
+        )
         components_created.append(created.as_dict())
     _raise_for_component_spec_quality(root=root, proposal=proposal, components=components_created)
 
@@ -187,7 +200,6 @@ def write_greenfield_proposal(
         release_id=release_id,
         validation_gate=tribunal.to_dict(),
     )
-    dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
     next_steps = greenfield_experience.build_next_steps(
         proposal=proposal,
         backlog_result=backlog_result,
@@ -195,6 +207,22 @@ def write_greenfield_proposal(
         program_result=program_result,
         release_selector=release_selector,
     )
+    _raise_for_final_package_quality(
+        root=root,
+        proposal=proposal,
+        release_selector=release_selector,
+        tribunal=tribunal,
+        backlog_result=backlog_result,
+        program_result=program_result,
+        release_bootstrap=release_bootstrap,
+        release_targeting=release_targeting,
+        first_release_workstreams=first_release_workstreams,
+        component_rows=components_created,
+        diagram_rows=diagram_rows,
+        memory_record=memory_record,
+        next_steps=next_steps,
+    )
+    dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
 
     return {
         "mode": "applied",
@@ -229,6 +257,126 @@ def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _prewrite_atlas_source(row: Mapping[str, Any], rendered_atlas_sources: Mapping[str, str]) -> str:
+    path = _atlas_source_path_for_row(row)
+    if not path:
+        return ""
+    return str(rendered_atlas_sources.get(path, "")).strip()
+
+
+def _atlas_source_path_for_row(row: Mapping[str, Any]) -> str:
+    slug = str(row.get("slug", "")).strip()
+    if not slug:
+        return ""
+    return f"odylith/atlas/source/{slug}.mmd"
+
+
+def _write_repaired_component_spec(
+    *,
+    root: Path,
+    created: Mapping[str, Any],
+    rendered_component_specs: Mapping[str, str],
+) -> None:
+    label = str(created.get("label", "")).strip()
+    rendered = str(rendered_component_specs.get(label, "")).rstrip()
+    if not rendered:
+        return
+    spec_path = Path(str(created.get("spec_path", "")))
+    if not spec_path.is_absolute():
+        spec_path = root / spec_path
+    spec_path.parent.mkdir(parents=True, exist_ok=True)
+    spec_path.write_text(f"{rendered}\n", encoding="utf-8")
+
+
+def _raise_for_final_package_quality(
+    *,
+    root: Path,
+    proposal: Mapping[str, Any],
+    release_selector: str,
+    tribunal: Any,
+    backlog_result: Mapping[str, Any],
+    program_result: Mapping[str, Any],
+    release_bootstrap: Mapping[str, Any] | None,
+    release_targeting: Mapping[str, Any] | None,
+    first_release_workstreams: Sequence[str],
+    component_rows: Sequence[Mapping[str, Any]],
+    diagram_rows: Sequence[Mapping[str, Any]],
+    memory_record: Mapping[str, Any],
+    next_steps: Mapping[str, Any],
+) -> None:
+    accepted_project_preview = _read_json_mapping(root / "odylith/runtime/source/accepted-project.v1.json")
+    package = GreenfieldCompletionPackage(
+        proposal=proposal,
+        release_selector=release_selector,
+        rendered_component_specs=_actual_component_specs(root=root, components=component_rows),
+        rendered_atlas_sources=_actual_atlas_sources(root=root, rows=diagram_rows),
+        component_registry_preview=tuple(dict(row) for row in component_rows),
+        project_brief_preview=proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {},
+        tribunal_preview=tribunal.to_dict(),
+        accepted_project_preview=accepted_project_preview,
+        compass_memory_preview=memory_record.get("event") if isinstance(memory_record.get("event"), Mapping) else {},
+        next_steps_preview=next_steps,
+        backlog_result=backlog_result,
+        program_result=program_result,
+        release_target_result=release_bootstrap or {"created": False, "release": {}},
+        release_assignment_result=release_targeting or {"selector": release_selector, "release_id": "none", "events": []},
+        release_workstream_ids=tuple(str(item) for item in first_release_workstreams if str(item).strip()),
+    )
+    completion = build_greenfield_completion_report(
+        proposal,
+        release_selector=release_selector,
+        rendered_component_specs=package.rendered_component_specs,
+        tribunal_preview=package.tribunal_preview,
+    )
+    issues = dedupe_strings(
+        [
+            *completion.issues,
+            *greenfield_rendered_package_quality_issues(package),
+            *generated_public_copy_issues("accepted-project final memory", accepted_project_preview),
+            *generated_public_copy_issues("Compass final memory", package.compass_memory_preview),
+        ]
+    )
+    if issues:
+        detail = "\n".join(f"- {issue}" for issue in issues)
+        raise ValueError(f"greenfield post-confirm final write quality failed with {len(issues)} issue(s):\n{detail}")
+
+
+def _actual_component_specs(*, root: Path, components: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+    specs: dict[str, str] = {}
+    for component in components:
+        label = str(component.get("label", "")).strip()
+        spec_path = Path(str(component.get("spec_path", "")))
+        if not label:
+            continue
+        if not spec_path.is_absolute():
+            spec_path = root / spec_path
+        if spec_path.is_file():
+            specs[label] = spec_path.read_text(encoding="utf-8")
+    return specs
+
+
+def _actual_atlas_sources(*, root: Path, rows: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+    sources: dict[str, str] = {}
+    for row in rows:
+        path = _atlas_source_path_for_row(row)
+        if not path:
+            continue
+        source_path = root / path
+        if source_path.is_file():
+            sources[path] = source_path.read_text(encoding="utf-8")
+    return sources
+
+
+def _read_json_mapping(path: Path) -> Mapping[str, Any]:
+    if not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return payload if isinstance(payload, Mapping) else {}
+
+
 def _scaffold_proposal_diagram(
     *,
     root: Path,
@@ -236,6 +384,7 @@ def _scaffold_proposal_diagram(
     diagram_id: str,
     traceability_plan: Any,
     atlas_scaffold_logs: list[str],
+    starter_source: str = "",
 ) -> None:
     components: list[dict[str, str]] = []
     for component in row.get("components", []):
@@ -276,7 +425,7 @@ def _scaffold_proposal_diagram(
         related_code=[],
         watch_paths=watch_paths,
         review_date=dt.date.today().isoformat(),
-        starter_source=validated_mermaid_source(row),
+        starter_source=starter_source or validated_mermaid_source(row),
         refresh=False,
     )
     log_text = "\n".join(log_lines).strip()
@@ -293,6 +442,7 @@ def _scaffold_proposal_diagram(
             review_date=dt.date.today().isoformat(),
             log_text=log_text,
             atlas_scaffold_logs=atlas_scaffold_logs,
+            starter_source=starter_source,
         ):
             _update_scaffolded_diagram_link_state(
                 root=root,
@@ -320,6 +470,7 @@ def _upsert_existing_proposal_diagram(
     review_date: str,
     log_text: str,
     atlas_scaffold_logs: list[str],
+    starter_source: str = "",
 ) -> bool:
     if "already exists" not in log_text:
         return False
@@ -374,7 +525,7 @@ def _upsert_existing_proposal_diagram(
     catalog_path.write_text(f"{json.dumps(payload, indent=2)}\n", encoding="utf-8")
     source_path = root / source_mmd
     source_path.parent.mkdir(parents=True, exist_ok=True)
-    source_path.write_text(validated_mermaid_source(row).rstrip() + "\n", encoding="utf-8")
+    source_path.write_text((starter_source or validated_mermaid_source(row)).rstrip() + "\n", encoding="utf-8")
     atlas_scaffold_logs.append(f"updated existing diagram: {entry['slug']}")
     return True
 

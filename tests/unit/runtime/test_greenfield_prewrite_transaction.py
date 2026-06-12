@@ -375,7 +375,7 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_
     assert "while Activity Log and Profile Store ownership" not in component_text
     assert " outside boundary" not in component_text
     assert "ownership over Activity Log and Profile Store local state" not in component_text
-    assert "can consume next-day adjustment recommendation without owning or rewriting Recommendation Engine's local state" in component_text
+    assert "can consume next-day adjustment recommendation without owning or rewriting state owned by Recommendation Engine" in component_text
     assert "## Proposed Solution\nBurn Estimation Engine should support" not in idea_text
     assert "Start with the smallest implementation slice" not in idea_text
     assert "\n- for " not in rendered_text
@@ -1289,6 +1289,61 @@ def test_greenfield_apply_rerenders_prewrite_package_after_repairable_package_fa
     assert result["validation_gate"]["status"] == "passed"
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
+
+
+def test_greenfield_apply_commits_prewrite_atlas_source_not_regenerated_drift(tmp_path: Path, monkeypatch) -> None:
+    proposal = _proposal(tmp_path)
+    _disable_refreshes(monkeypatch)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "validated_mermaid_source",
+        lambda _row: 'flowchart LR\n  external1["Optional"]\n',
+    )
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    atlas_text = "\n".join(path.read_text(encoding="utf-8") for path in (tmp_path / "odylith/atlas/source").glob("*.mmd"))
+    assert result["post_confirm_quality_manifest"]["status"] == "passed"
+    assert '["Optional"]' not in atlas_text
+
+
+def test_greenfield_apply_rolls_back_when_final_component_spec_drifts_after_prewrite(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    proposal = _proposal(tmp_path)
+    _disable_refreshes(monkeypatch)
+    original = greenfield_apply_write._write_repaired_component_spec
+
+    def corrupt_final_spec(**kwargs):
+        original(**kwargs)
+        created = kwargs["created"]
+        spec_path = Path(str(created["spec_path"]))
+        if not spec_path.is_absolute():
+            spec_path = kwargs["root"] / spec_path
+        spec_path.write_text(
+            f"{spec_path.read_text(encoding='utf-8')}\n\n{created['label']} owns maintains state.\n",
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(greenfield_apply_write, "_write_repaired_component_spec", corrupt_final_spec)
+
+    with pytest.raises(ValueError, match="component spec quality|post-confirm final write quality"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
+
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
+    assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md")) == []
+    assert list((tmp_path / "odylith/atlas/source").glob("*.mmd")) == []
 
 
 def test_greenfield_apply_prewrite_failure_does_not_bootstrap_target_repo(tmp_path: Path, monkeypatch) -> None:

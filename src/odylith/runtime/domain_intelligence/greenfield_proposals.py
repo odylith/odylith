@@ -505,6 +505,8 @@ def apply_greenfield_proposal(
         release_selector=release_selector,
         proposal_ready=proposal_ready,
     )
+    if isinstance(prewrite_build.package.proposal, Mapping):
+        proposal = prewrite_build.package.proposal
     backlog_result = prewrite_build.backlog_result
     with GreenfieldApplyTransaction(root) as transaction:
         ensure_greenfield_create_baseline(root)
@@ -514,6 +516,7 @@ def apply_greenfield_proposal(
             release_selector=release_selector,
             tribunal=tribunal,
             backlog_result=backlog_result,
+            prewrite_package=prewrite_build.package,
         )
         transaction.commit()
         result["post_confirm_quality_manifest"] = finalize_greenfield_post_confirm_manifest(

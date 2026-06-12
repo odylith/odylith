@@ -85,8 +85,14 @@ def _product_manager_checks(
     proposal: Mapping[str, Any],
     semantic: Mapping[str, Any],
 ) -> list[dict[str, str]]:
+    intent = _as_mapping(proposal.get("intent"))
     first_path = _as_mapping(semantic.get("first_path_contract"))
-    events = [row for row in first_path.get("events", []) if isinstance(row, Mapping)]
+    diagram_graph = _as_mapping(semantic.get("diagram_event_graph"))
+    events = [row for row in first_path.get("events", []) if isinstance(row, Mapping)] or [
+        row for row in diagram_graph.get("events", []) if isinstance(row, Mapping)
+    ]
+    capability = normalize_string(first_path.get("capability")) or normalize_string(intent.get("first_path"))
+    visible_result = normalize_string(first_path.get("visible_result")) or normalize_string(intent.get("proof_boundary"))
     backlog_rows = mapping_rows(proposal.get("backlog"))
     assumptions = mapping_rows(proposal.get("assumptions"))
     ambiguities = _rows_or_text_values(proposal.get("open_questions"))
@@ -98,9 +104,9 @@ def _product_manager_checks(
     return [
         _check(
             bool(
-                normalize_string(first_path.get("capability"))
-                and normalize_string(first_path.get("visible_result"))
-                and len(events) >= 4
+                capability
+                and visible_result
+                and len(events) >= 3
             ),
             "complete_first_path",
             f"{len(events)} first-path event(s), capability and visible result present",

@@ -26,7 +26,6 @@ QUALITY_LENS_PROPOSAL_REPAIR_CHECKS = frozenset(
         "component_topology",
         "atlas_topology",
         "system_boundary",
-        "component_specs",
         "implementation_readiness",
         "proof_boundary",
         "domain_term_coverage",
@@ -34,7 +33,7 @@ QUALITY_LENS_PROPOSAL_REPAIR_CHECKS = frozenset(
         "visible_result",
     }
 )
-QUALITY_LENS_GATE_ONLY_CHECKS = frozenset({"validation_evidence", "prewrite_safety"})
+QUALITY_LENS_GATE_ONLY_CHECKS = frozenset({"component_specs", "validation_evidence", "prewrite_safety"})
 QUALITY_LENS_REPAIR_OWNER_BY_CHECK = {
     **{check: "proposal_repair" for check in QUALITY_LENS_PROPOSAL_REPAIR_CHECKS},
     **{check: "prewrite_gate" for check in QUALITY_LENS_GATE_ONLY_CHECKS},
@@ -61,10 +60,10 @@ def repair_proposal_for_quality_lens_gaps(
         changed |= _carry_assumptions_into_validation(proposal, release_selector=release_selector)
     if proposal_checks.intersection({"measurable_success", "implementation_readiness"}):
         changed |= _ensure_measurable_success(proposal, release_selector=release_selector)
-    if proposal_checks.intersection({"system_boundary", "component_topology", "component_specs", "atlas_topology"}):
+    if proposal_checks.intersection({"system_boundary", "component_topology", "atlas_topology"}):
         changed |= _ensure_system_boundaries(proposal)
         changed |= _ensure_component_topology(proposal)
-    if proposal_checks.intersection({"first_release_scope", "component_specs"}):
+    if "first_release_scope" in proposal_checks:
         changed |= _ensure_release_scope(proposal, release_selector=release_selector)
     if "atlas_topology" in proposal_checks:
         changed |= _ensure_atlas_topology(proposal)
