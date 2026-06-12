@@ -46,6 +46,9 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_fail
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import assert_greenfield_completion_ready
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
+    GreenfieldPostConfirmRepairContext,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     finalize_greenfield_post_confirm_manifest,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
@@ -54,6 +57,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     run_greenfield_post_confirm_engine,
 )
+from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import repair_proposal_for_quality_lens_gaps
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.common import display_text
@@ -436,9 +440,10 @@ def _build_repaired_prewrite_package(
         proposal=proposal,
         release_selector=release_selector,
         build_prewrite=build_prewrite,
-        repair_proposal=lambda current: _repair_confirmed_apply_payload(
+        repair_proposal=lambda current, context: _repair_confirmed_apply_payload(
             current,
             release_selector=release_selector,
+            repair_context=context,
         ),
         proposal_ready=proposal_ready,
         max_passes=_MAX_PACKAGE_REPAIR_PASSES,
@@ -450,11 +455,21 @@ def _repair_confirmed_apply_payload(
     proposal: Mapping[str, Any],
     *,
     release_selector: str,
+    repair_context: GreenfieldPostConfirmRepairContext | None = None,
 ) -> Mapping[str, Any]:
     repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
     repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
     repaired = ensure_apply_semantic_model(repaired, refresh=True)
+    if repair_context is not None:
+        if repair_proposal_for_quality_lens_gaps(
+            repaired,
+            quality_lenses=repair_context.quality_lenses,
+            release_selector=release_selector,
+        ):
+            repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
+            repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
+            repaired = ensure_apply_semantic_model(repaired, refresh=True)
     validate_host_reasoned_proposal(repaired)
     return repaired
 

@@ -7,6 +7,7 @@ from dataclasses import asdict
 from dataclasses import dataclass
 from dataclasses import replace
 import hashlib
+import inspect
 import json
 import time
 from typing import Any
@@ -67,6 +68,16 @@ class GreenfieldPostConfirmPass:
 
 
 @dataclass(frozen=True)
+class GreenfieldPostConfirmRepairContext:
+    pass_index: int
+    elapsed_seconds: float
+    budget_seconds: float
+    report: GreenfieldCompletionReport
+    issues: tuple[GreenfieldPostConfirmIssue, ...]
+    quality_lenses: Mapping[str, Any]
+
+
+@dataclass(frozen=True)
 class GreenfieldPostConfirmEngineResult:
     proposal: Mapping[str, Any]
     tribunal: Any
@@ -88,7 +99,7 @@ def run_greenfield_post_confirm_engine(
     proposal: Mapping[str, Any],
     release_selector: str,
     build_prewrite: Callable[[Mapping[str, Any], Any], Any],
-    repair_proposal: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    repair_proposal: Callable[..., Mapping[str, Any]],
     proposal_ready: bool = False,
     max_passes: int = POST_CONFIRM_MAX_PASSES,
     budget_seconds: float = POST_CONFIRM_BUDGET_SECONDS,
@@ -126,6 +137,7 @@ def run_greenfield_post_confirm_engine(
 
         report = package_repair.report
         typed_issues = classify_greenfield_post_confirm_issues(report)
+        quality_lenses = build_greenfield_quality_lens_report(prewrite_build.package)
         if package_repair.changed:
             repaired_issue_codes.update(
                 issue.code
@@ -163,7 +175,7 @@ def run_greenfield_post_confirm_engine(
                     repaired_issue_codes=repaired_issue_codes,
                     max_passes=bounded_passes,
                     budget_seconds=budget_seconds,
-                    quality_lenses=build_greenfield_quality_lens_report(prewrite_build.package),
+                    quality_lenses=quality_lenses,
                 ),
             )
 
@@ -172,7 +184,18 @@ def run_greenfield_post_confirm_engine(
             stop_reason = "no_progress"
             break
         seen_failures.add(failure_signature)
-        current = repair_proposal(current)
+        current = _repair_proposal_with_context(
+            repair_proposal,
+            current,
+            GreenfieldPostConfirmRepairContext(
+                pass_index=pass_index,
+                elapsed_seconds=round(max(0.0, clock() - started), 3),
+                budget_seconds=float(budget_seconds),
+                report=report,
+                issues=typed_issues,
+                quality_lenses=quality_lenses,
+            ),
+        )
         proposal_ready = False
 
     if last_report is None:
@@ -289,6 +312,33 @@ def _replace_prewrite_package(prewrite_build: Any, package: Any) -> Any:
         )
     except TypeError:
         return prewrite_build
+
+
+def _repair_proposal_with_context(
+    repair_proposal: Callable[..., Mapping[str, Any]],
+    proposal: Mapping[str, Any],
+    context: GreenfieldPostConfirmRepairContext,
+) -> Mapping[str, Any]:
+    if _accepts_repair_context(repair_proposal):
+        return repair_proposal(proposal, context)
+    return repair_proposal(proposal)
+
+
+def _accepts_repair_context(callback: Callable[..., Any]) -> bool:
+    try:
+        parameters = inspect.signature(callback).parameters.values()
+    except (TypeError, ValueError):
+        return True
+    positional_capacity = 0
+    for parameter in parameters:
+        if parameter.kind == inspect.Parameter.VAR_POSITIONAL:
+            return True
+        if parameter.kind in {
+            inspect.Parameter.POSITIONAL_ONLY,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        }:
+            positional_capacity += 1
+    return positional_capacity >= 2
 
 
 def _classify_issue(message: str) -> GreenfieldPostConfirmIssue:
@@ -442,6 +492,7 @@ __all__ = [
     "GreenfieldPostConfirmEngineResult",
     "GreenfieldPostConfirmEngineError",
     "GreenfieldPostConfirmIssue",
+    "GreenfieldPostConfirmRepairContext",
     "POST_CONFIRM_BUDGET_SECONDS",
     "POST_CONFIRM_ENGINE_VERSION",
     "POST_CONFIRM_MAX_PASSES",

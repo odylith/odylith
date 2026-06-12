@@ -17,6 +17,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
     GreenfieldCompletionReport,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_once
+from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import (
+    repair_proposal_for_quality_lens_gaps,
+)
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
@@ -146,6 +149,129 @@ def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: py
     assert "missing_semantic_model" in manifest["issue_codes"]
     assert manifest["hard_blocker"] is None
     assert len(manifest["pass_records"]) == 2
+
+
+def test_post_confirm_engine_passes_quality_lens_context_to_proposal_repair(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reports = [
+        GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={"next_steps_previews": 1},
+            tribunal_status="passed",
+            issues=("quality lens product_manager missing assumptions or ambiguity boundary",),
+        ),
+        GreenfieldCompletionReport(
+            status="passed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={"next_steps_previews": 1},
+            tribunal_status="passed",
+            issues=(),
+        ),
+    ]
+    repair_contexts: list[engine.GreenfieldPostConfirmRepairContext] = []
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+
+    def build_prewrite(current: dict[str, object], _tribunal: Any) -> SimpleNamespace:
+        return SimpleNamespace(
+            package=GreenfieldCompletionPackage(proposal=current, release_selector="0.0.1"),
+            backlog_result={},
+        )
+
+    def fake_package_repair(package: GreenfieldCompletionPackage) -> SimpleNamespace:
+        report = reports[min(len(repair_contexts), len(reports) - 1)]
+        return SimpleNamespace(
+            package=package,
+            initial_report=report,
+            report=report,
+            passes=0,
+            changed=False,
+        )
+
+    def repair_callback(
+        current: dict[str, object],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> dict[str, object]:
+        repair_contexts.append(context)
+        return {**current, "repaired": True}
+
+    monkeypatch.setattr(engine, "repair_greenfield_package_until_clean", fake_package_repair)
+
+    result = engine.run_greenfield_post_confirm_engine(
+        proposal={"intent": {"title": "Context Test"}},
+        release_selector="0.0.1",
+        build_prewrite=build_prewrite,
+        repair_proposal=repair_callback,
+        proposal_ready=True,
+        max_passes=3,
+    )
+
+    assert result.proposal["repaired"] is True
+    assert len(repair_contexts) == 1
+    context = repair_contexts[0]
+    assert context.pass_index == 0
+    assert context.report.status == "failed"
+    assert context.issues[0].code == "quality_lens_gap"
+    assert context.quality_lenses["status"] == "failed"
+    assert context.quality_lenses["lenses"]["product_manager"]["status"] == "failed"
+
+
+def test_quality_lens_repair_rehydrates_decision_scope_and_validation() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Permit Desk",
+            "state_object": "permit application record",
+            "first_path": "A reviewer checks a submitted permit application and records the decision.",
+        },
+        "backlog": [{"title": "Review submitted permit"}],
+        "components": [{"component_id": "review", "label": "Review Workflow"}],
+        "release_plan": {},
+        "validation_strategy": [],
+    }
+    quality_lenses = {
+        "lenses": {
+            "product_manager": {
+                "checks": [
+                    {"name": "decision_boundary", "status": "failed"},
+                    {"name": "first_release_scope", "status": "failed"},
+                ],
+            },
+            "architect": {
+                "checks": [
+                    {"name": "system_boundary", "status": "failed"},
+                    {"name": "component_topology", "status": "failed"},
+                ],
+            },
+            "domain_expert": {
+                "checks": [
+                    {"name": "proof_boundary", "status": "failed"},
+                    {"name": "high_risk_assumptions", "status": "failed"},
+                ],
+            },
+        }
+    }
+
+    changed = repair_proposal_for_quality_lens_gaps(
+        proposal,
+        quality_lenses=quality_lenses,
+        release_selector="0.0.1",
+    )
+
+    assert changed is True
+    assert len(proposal["assumptions"]) >= 2
+    assert len(proposal["open_questions"]) == 1
+    assert len(proposal["intent"]["internal_systems"]) == 2
+    assert proposal["intent"]["external_systems"] == []
+    assert proposal["release_plan"]["selector"] == "0.0.1"
+    assert proposal["release_plan"]["target_workstream_titles"] == ["Review submitted permit"]
+    assert proposal["components"][0]["release_scope"] == "first_release"
+    assert "proof" in proposal["intent"]["proof_boundary"].casefold()
+    assert any("assumption proof" in row.casefold() for row in proposal["validation_strategy"])
 
 
 def test_package_repair_collapses_adjacent_duplicate_words() -> None:
