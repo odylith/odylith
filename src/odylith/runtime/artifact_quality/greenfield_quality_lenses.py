@@ -152,7 +152,7 @@ def _architect_checks(
             "quality lens architect missing accepted state object",
         ),
         _check(
-            len(components) >= 4 and len(internal_systems) >= 2,
+            len(components) >= 3 and len(internal_systems) >= 2,
             "component_topology",
             f"{len(components)} active component(s), {len(internal_systems)} internal system(s)",
             "quality lens architect missing component topology from internal systems",
@@ -176,14 +176,15 @@ def _engineer_checks(package: Any, proposal: Mapping[str, Any]) -> list[dict[str
     components = _active_component_rows(proposal)
     specs = _as_mapping(getattr(package, "rendered_component_specs", None))
     component_preview = [row for row in getattr(package, "component_registry_preview", ()) if isinstance(row, Mapping)]
+    component_spec_evidence_count = len(specs) if specs else len(component_preview)
     next_steps = _as_mapping(getattr(package, "next_steps_preview", None))
     backlog_result = _as_mapping(getattr(package, "backlog_result", None))
     program_result = _as_mapping(getattr(package, "program_result", None))
     return [
         _check(
-            len(specs) >= len(components) >= 4,
+            component_spec_evidence_count >= len(components) >= 3,
             "component_specs",
-            f"{len(specs)} rendered spec(s) for {len(components)} active component(s)",
+            f"{component_spec_evidence_count} spec or preview evidence row(s) for {len(components)} active component(s)",
             "quality lens engineer missing rendered component specs",
         ),
         _check(

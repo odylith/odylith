@@ -109,7 +109,7 @@ def has_inline_role_casing_drift(value: Any) -> bool:
 
     pattern = "|".join(re.escape(term) for term in _INLINE_ROLE_TERMS)
     for match in re.finditer(
-        rf"\b(?:the|a|an|this|that)\s+(?P<head>[a-z][a-z0-9'-]*)\s+(?P<role>{pattern})\b",
+        rf"\b(?i:the|a|an|this|that)\s+(?P<head>[a-z][a-z0-9'-]*)\s+(?P<role>{pattern})\b",
         str(value or ""),
     ):
         if match.start("head") > 0 and str(value or "")[match.start("head") - 1] == "-":

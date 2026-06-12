@@ -467,6 +467,7 @@ def _repair_confirmed_apply_payload(
             quality_lenses=repair_context.quality_lenses,
             release_selector=release_selector,
         ):
+            repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
             repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
             repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
             repaired = ensure_apply_semantic_model(repaired, refresh=True)
