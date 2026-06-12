@@ -283,6 +283,7 @@ def test_greenfield_guidance_uses_product_intent_then_cli_owned_create_path() ->
         assert "normalizes" in compact_text, path
         assert "bounded, provider-free post-confirm repair loop" in compact_text, path
         assert "final manifest passes" in compact_text, path
+        assert "same visible" in compact_text, path
         assert (
             "parser/schema retries" in compact_text
             or "intermediate create-shape failures" in compact_text
