@@ -572,7 +572,7 @@ def _strip_primary_actor_subject(value: str) -> str:
         flags=re.IGNORECASE,
     ).strip(" .")
     match = re.match(
-        rf"^(?P<subject>(?:(?:a|an|the|one)\s+)(?:[A-Za-z0-9][A-Za-z0-9/-]*\s+){{1,4}})(?P<verb>{_ACTION_VERB_PATTERN})\b(?P<rest>.*)$",
+        rf"^(?P<subject>(?:(?:a|an|the|one)\s+)(?:[A-Za-z0-9][A-Za-z0-9/-]*\s+){{1,4}})(?P<verb>{_ACTION_VERB_PATTERN})\b(?!-)(?P<rest>.*)$",
         text,
         flags=re.IGNORECASE,
     )

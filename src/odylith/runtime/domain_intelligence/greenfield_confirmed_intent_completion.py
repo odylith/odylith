@@ -81,8 +81,22 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
         intent["success_metrics"] = [_sentence(_normalize_visible_result_language(_normalize_proof_boundary(row))) for row in metrics]
     if external_systems := confirmed_text_values(intent.get("external_systems")):
         intent["external_systems"] = [
-            normalized for row in external_systems if (normalized := _boundary_clause_item(_normalize_visible_result_language(row), limit=180))
+            normalized
+            for row in external_systems
+            if (normalized := _boundary_clause_item(_normalize_external_system_language(row), limit=180))
         ]
+
+
+def _normalize_external_system_language(value: str) -> str:
+    text = _normalize_visible_result_language(value)
+    text = re.sub(
+        r"^(?:optional|optionally|deferred|future|later|if\s+needed|if\s+available)(?:\s*:\s*|\s+)",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    return _clean(text)
 
 
 def _strip_prompt_prefixes(value: str) -> str:

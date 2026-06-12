@@ -51,6 +51,7 @@ _ROLE_WORDS = {
     "support",
     "sufferer",
     "team",
+    "trainee",
     "user",
     "volunteer",
 }
@@ -66,6 +67,7 @@ _INLINE_ACTION_DESCRIPTION_VERBS = {
     "creating",
     "drafting",
     "entering",
+    "following",
     "handling",
     "helping",
     "logging",

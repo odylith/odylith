@@ -39,6 +39,7 @@ _DESCRIPTION_MARKERS = (
     " receiving ",
     " requesting ",
     " responding ",
+    " following ",
     " following up ",
     " trying to ",
     " seeking to ",
@@ -93,6 +94,7 @@ _ROLE_WORDS = {
     "support",
     "sufferer",
     "trainer",
+    "trainee",
     "user",
 }
 
@@ -334,6 +336,7 @@ def _split_description_marker(value: str) -> tuple[str, str]:
                 "coordinating",
                 "creating",
                 "drafting",
+                "following",
                 "handling",
                 "managing",
                 "owning",
@@ -374,6 +377,7 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
             "creating",
             "drafting",
             "entering",
+            "following",
             "handling",
             "helping",
             "logging",
@@ -534,7 +538,7 @@ def _focus_from_actor_body(value: str, *, role: str) -> str:
     text = _strip_parenthetical_qualifiers(value)
     text = re.sub(
         r"^(?:accepting|approving|checking|configuring|coordinating|editing|evaluating|handling|"
-        r"logging|managing|monitoring|owning|receiving|reviewing|running|sharing|submitting|tracking|using)\s+",
+        r"following|logging|managing|monitoring|owning|receiving|reviewing|running|sharing|submitting|tracking|using)\s+",
         "",
         text,
         count=1,

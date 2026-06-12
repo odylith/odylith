@@ -93,6 +93,7 @@ def build_confirmed_greenfield_proposal(
     assumptions = confirmed_intent_list(confirmed_intent, "assumptions")
     ambiguities = confirmed_intent_list(confirmed_intent, "ambiguities")
     non_goals = confirmed_intent_list(confirmed_intent, "non_goals")
+    scope_constraints = [*non_goals, *confirmed_intent_list(confirmed_intent, "ambiguities")]
     problem_summary = confirmed_intent_summary(confirmed_intent, "problem", "")
     customer_summary = confirmed_intent_summary(confirmed_intent, "customer", "")
     opportunity_summary = confirmed_intent_summary(confirmed_intent, "opportunity", "")
@@ -113,7 +114,7 @@ def build_confirmed_greenfield_proposal(
         state_object=state_object,
         proof_boundary=proof_boundary,
         external_systems=external_systems,
-        non_goals=non_goals,
+        non_goals=scope_constraints,
     )
     release_components = [dict(row) for row in active_release_components(components)]
     workflow_title, boundary_title, proof_title = confirmed_workstream_titles(

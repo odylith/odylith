@@ -222,7 +222,7 @@ def release_scope_for_component(
     terms = _terms(body)
     if not terms:
         return "supporting"
-    deferred_text = " ".join([proof_boundary, *non_goals])
+    deferred_text = _scope_text(proof_boundary, *non_goals)
     path_terms = _terms(" ".join((first_path, material_first_path_action(first_path))))
     proof_terms = _terms(proof_boundary)
     if _scope_context_matches(deferred_text, terms, markers=_OUT_OF_SCOPE_MARKERS):
@@ -231,11 +231,13 @@ def release_scope_for_component(
         return "deferred"
     if _material_overlap(terms, path_terms) >= 2:
         return "first_path_required"
-    if terms & path_terms:
+    if len(terms) == 1 and terms & path_terms:
         return "first_path_required"
+    if _ambiguous_first_release_scope_matches(deferred_text, terms):
+        return "deferred"
     if terms & proof_terms:
         return "supporting"
-    if _scope_context_matches(" ".join(non_goals), terms, markers=_DEFERRED_MARKERS + _OUT_OF_SCOPE_MARKERS):
+    if _scope_context_matches(_scope_text(*non_goals), terms, markers=_DEFERRED_MARKERS + _OUT_OF_SCOPE_MARKERS):
         return "deferred"
     return "supporting"
 
@@ -435,6 +437,38 @@ def _scope_context_matches(text: str, terms: set[str], *, markers: Sequence[str]
             ):
                 return True
     return False
+
+
+def _scope_text(*values: Any) -> str:
+    parts = [_clean(value).strip(" .") for value in values if _clean(value).strip(" .")]
+    return ". ".join(parts)
+
+
+def _ambiguous_first_release_scope_matches(text: str, terms: set[str]) -> bool:
+    if not terms:
+        return False
+    component_terms = _scope_alias_terms(terms)
+    for sentence in re.split(r"(?<=[.!?])\s+|;\s+|\n+", _clean(text)):
+        lowered = sentence.casefold()
+        if "whether" not in lowered:
+            continue
+        if not re.search(r"\b(?:first\s+release|first\s+path|core|belongs?|include|included|scope|later)\b", lowered):
+            continue
+        sentence_terms = _scope_alias_terms(_terms(sentence))
+        if _material_overlap(component_terms, sentence_terms) >= 2:
+            return True
+    return False
+
+
+def _scope_alias_terms(values: set[str]) -> set[str]:
+    terms = set(values)
+    for value in values:
+        if len(value) > 5 and value.endswith("er"):
+            terms.add(value[:-2])
+            terms.add(value[:-1])
+        if len(value) > 5 and value.endswith("ing"):
+            terms.add(value[:-3])
+    return {term for term in terms if term}
 
 
 def _material_overlap(left: set[str], right: set[str]) -> int:

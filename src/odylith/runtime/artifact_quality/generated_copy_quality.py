@@ -93,6 +93,14 @@ def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
             findings.append(GeneratedCopyFinding("presentational_action_splice", f"{scope} leaked presentational verb/action splice prose"))
         if _has_mixed_adverbial_action_inflection(text):
             findings.append(GeneratedCopyFinding("mixed_action_inflection", f"{scope} leaked mixed finite/base action prose"))
+        if _has_mixed_compact_action_inflection(text):
+            findings.append(GeneratedCopyFinding("compact_action_inflection", f"{scope} leaked compact path mixed action prose"))
+        if _has_saved_destination_result_slop(text):
+            findings.append(GeneratedCopyFinding("saved_destination_result", f"{scope} leaked saved-destination result prose"))
+        if _has_possessive_result_list_slop(text):
+            findings.append(GeneratedCopyFinding("possessive_result_list", f"{scope} leaked possessive result-list prose"))
+        if _has_scope_prefix_label_slop(text):
+            findings.append(GeneratedCopyFinding("scope_prefix_label", f"{scope} leaked scope prefix as a system label"))
         if _has_template_slice_prefix(lowered):
             findings.append(GeneratedCopyFinding("template_slice_prefix", f"{scope} leaked repetitive implementation-slice template prose"))
         if _has_meta_loop_outcome(lowered):
@@ -306,6 +314,45 @@ def _has_mixed_adverbial_action_inflection(text: str) -> bool:
             continue
         return True
     return False
+
+
+def _has_mixed_compact_action_inflection(text: str) -> bool:
+    pattern = re.compile(
+        r"\b(?:can|must|prove|proves|proving|to)\s+"
+        r"(?:choose|connect|create|enter|open|pick|select|start|submit)\b"
+        r"[^.!?;]{0,90},\s+(?:and\s+)?"
+        r"(?:adds|chooses|connects|creates|drives|enters|keeps|marks|opens|picks|records|saves|selects|starts|submits)\b",
+        flags=re.IGNORECASE,
+    )
+    return bool(pattern.search(text))
+
+
+def _has_saved_destination_result_slop(text: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:session|entry|record|result|item)\s+to\s+(?:history|log|ledger|journal|timeline|archive)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _has_possessive_result_list_slop(text: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:history|record|entry|summary|report|view|timeline|log|ledger)\s+with\s+its\s+",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _has_scope_prefix_label_slop(text: str) -> bool:
+    return bool(
+        re.search(r'\["(?:Optional|Deferred|Future|Later)"\]', text)
+        or re.search(r"<br/>(?:Optional|Deferred|Future|Later)\b", text)
+        or re.fullmatch(r"(?:Optional|Deferred|Future|Later)", text.strip())
+    )
 
 
 def _looks_like_adjective_noun_action_false_positive(text: str, match: re.Match[str]) -> bool:

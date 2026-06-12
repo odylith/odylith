@@ -33,7 +33,7 @@ _SYSTEM_NAME_NOUNS = frozenset(
 )
 
 def confirmed_system_name(value: str) -> str:
-    cleaned = _clean(value)
+    cleaned = _strip_scope_prefix(_clean(value))
     raw = re.split(r"\s+[—-]\s+|\s*:\s*", cleaned, maxsplit=1)[0].strip()
     raw = _flatten_parenthetical_label(raw)
     raw, _description = _split_system_action_clause(raw)
@@ -41,7 +41,7 @@ def confirmed_system_name(value: str) -> str:
 
 
 def confirmed_system_description(value: str) -> str:
-    cleaned = _clean(value)
+    cleaned = _strip_scope_prefix(_clean(value))
     parts = re.split(r"\s+[—-]\s+|\s*:\s*", cleaned, maxsplit=2)
     if len(parts) > 2:
         middle = _clean(parts[1])
@@ -70,6 +70,17 @@ def confirmed_system_description(value: str) -> str:
             _descriptor_system_description(confirmed_system_name(cleaned), descriptor)
         )
     return _normalize_system_description(description or cleaned)
+
+
+def _strip_scope_prefix(value: str) -> str:
+    text = _clean(value)
+    return re.sub(
+        r"^(?:optional|optionally|deferred|future|later|if\s+needed|if\s+available)(?:\s*:\s*|\s+)",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    ).strip()
 
 
 def _descriptor_parenthetical_text(value: str) -> str:

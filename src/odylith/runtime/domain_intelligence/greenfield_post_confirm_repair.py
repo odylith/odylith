@@ -10,6 +10,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 
 _DEFAULT_PACKAGE_REPAIR_PASSES = 4
@@ -108,6 +109,30 @@ def _repair_tree(value: Any) -> Any:
 
 def _repair_public_copy(value: str) -> str:
     text = str(value)
+    if "\n" in text or "\r" in text:
+        return "".join(_repair_public_copy_line(line) for line in text.splitlines(keepends=True))
+    return _repair_public_copy_line(text)
+
+
+def _repair_public_copy_line(value: str) -> str:
+    newline = ""
+    text = value
+    if text.endswith("\r\n"):
+        text = text[:-2]
+        newline = "\r\n"
+    elif text.endswith("\n") or text.endswith("\r"):
+        newline = text[-1]
+        text = text[:-1]
+    leading = re.match(r"^[^\S\r\n]*", text).group(0)
+    body = text[len(leading) :]
+    if not body:
+        return f"{leading}{newline}"
+    text = f"{leading}{_repair_public_copy_scalar(body)}"
+    return f"{text}{newline}"
+
+
+def _repair_public_copy_scalar(value: str) -> str:
+    text = normalize_visible_result_language(str(value))
     text = re.sub(r"\b(?P<word>[A-Za-z][A-Za-z0-9'-]*)\s+(?P=word)\b", r"\g<word>", text, flags=re.IGNORECASE)
     text = _repair_responsibility_verb_pairs(text)
     text = re.sub(

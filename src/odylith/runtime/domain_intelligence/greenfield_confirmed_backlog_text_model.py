@@ -274,7 +274,8 @@ def _actor_title_head(value: str) -> str:
     words = text.split()
     for index, word in enumerate(words[1:], start=1):
         token = word.casefold().strip(".,;:")
-        if token.endswith("ing") and len(words[:index]) >= 2:
+        next_token = words[index + 1].casefold().strip(".,;:") if index + 1 < len(words) else ""
+        if token.endswith("ing") and (len(words[:index]) >= 2 or next_token in {"a", "an", "the"}):
             words = words[:index]
             break
     if len(words) > 1 and words[-1].casefold() in {"person", "people", "individual"}:

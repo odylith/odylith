@@ -63,6 +63,44 @@ Release 0.0.1 succeeds when a supervisor can inspect one permit review file, see
 """
 
 
+HIIT_CONFIRMED_INTENT_TEXT = """PulseHIIT - guided high-intensity interval training
+
+## Product story
+PulseHIIT helps a trainee start a guided high-intensity interval workout, follow hands-free timing and cues, and review the completed session afterward.
+
+## State object
+The core state is a workout session: selected workout, interval plan, current interval, elapsed and remaining time, audio and on-screen cue state, pause/resume state, completion state, and saved history entry.
+
+## First complete path
+A trainee chooses a workout, starts it, the timer drives each work and rest interval with audio and on-screen cues, keeps the screen awake, marks the session complete, and saves the session to history with date, workout, and total time.
+
+## Human actors
+- Trainee following a guided workout.
+- Workout author creating preset interval workouts.
+
+## External systems
+- Optional: device wake-lock so the screen stays on mid-workout.
+
+## Internal product systems
+- Workout library.
+- Interval timer engine.
+- Session history.
+- Workout builder.
+
+## Critical assumptions
+- Release 0.0.1 starts with preset interval workouts before complex custom programming.
+- The workout can run locally without live coaching or wearable integrations.
+- Audio cues and on-screen cues must both be visible in the proof boundary.
+
+## Ambiguities
+- Whether custom workout building belongs in the first release or a later release.
+- Whether streak tracking is core to the first proof or a fast-follow.
+
+## Proof boundary
+Release 0.0.1 succeeds when a trainee can choose a preset interval workout, start it, follow each interval without touching the screen, complete the workout, and see the completed session in history with its date, workout, and total time.
+"""
+
+
 def _confirmed_intent() -> dict[str, object]:
     return parse_confirmed_intent_text(
         CONFIRMED_INTENT_TEXT,

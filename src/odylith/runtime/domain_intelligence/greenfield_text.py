@@ -83,6 +83,8 @@ def word_occurrences(value: Any, word: Any) -> int:
 def normalize_visible_result_language(value: Any) -> str:
     text = clean_text(value)
     text = re.sub(r"\bintaked\b", "received", text, flags=re.IGNORECASE)
+    text = _normalize_saved_destination_language(text)
+    text = _normalize_possessive_result_lists(text)
     text = _replace_casefolded_phrase(text, "reasons against", "uses for comparison")
     text = _replace_casefolded_phrase(text, "reason against", "use for comparison")
     text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
@@ -100,6 +102,27 @@ def normalize_visible_result_language(value: Any) -> str:
     )
     text = normalize_action_target_language(text)
     return clean_text(text)
+
+
+def _normalize_saved_destination_language(value: str) -> str:
+    text = clean_text(value)
+    return re.sub(
+        r"\b(?P<object>(?:the\s+|a\s+|an\s+)?[A-Za-z][A-Za-z0-9'/-]*(?:\s+[A-Za-z][A-Za-z0-9'/-]*){0,4})\s+"
+        r"to\s+(?P<destination>history|log|ledger|journal|timeline|archive)\s+with\b",
+        lambda match: f"{match.group('object')} in {match.group('destination')} with",
+        text,
+        flags=re.IGNORECASE,
+    )
+
+
+def _normalize_possessive_result_lists(value: str) -> str:
+    text = clean_text(value)
+    return re.sub(
+        r"\b(?P<object>history|record|entry|summary|report|view|timeline|log|ledger)\s+with\s+its\s+",
+        lambda match: f"{match.group('object')} with ",
+        text,
+        flags=re.IGNORECASE,
+    )
 
 
 def normalize_action_target_language(value: Any) -> str:

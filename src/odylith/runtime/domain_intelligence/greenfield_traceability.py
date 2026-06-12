@@ -317,7 +317,7 @@ def _patch_sections(
     if product_view or first_slice:
         sections["Proposed Solution"] = _paragraph(
             [
-                f"Implementation slice: {first_slice}" if first_slice else "",
+                f"First implementation step: {first_slice}" if first_slice else "",
                 (
                     f"Keep success, blocked-input, replay, and handoff proof tied to {scope_ref} "
                     "before expanding adjacent source ownership."
