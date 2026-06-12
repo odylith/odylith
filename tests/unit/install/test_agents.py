@@ -81,6 +81,8 @@ def test_managed_block_defaults_consumers_to_odylith_guidance_and_skills() -> No
         "same visible Product Intent Confirmation",
         ".odylith/runtime/greenfield/confirmed-intent.json",
         "Odylith normalizes it",
+        "bounded, provider-free post-confirm repair loop",
+        "final manifest passes",
         "Odylith capabilities",
         "host model capability surface",
         "never prefix commentary with control-plane receipt labels",

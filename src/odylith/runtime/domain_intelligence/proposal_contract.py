@@ -103,7 +103,7 @@ def build_proposal_contract() -> dict[str, Any]:
             "complete_authoring_surface": True,
             "intent_confirmation_authorizes_apply_attempt": True,
             "contract_use": [
-                "Use greenfield create --confirm as the normal post-confirmation path.",
+                "Use greenfield create --confirm as the normal post-confirmation path; it owns the bounded, provider-free post-confirm repair loop before the final manifest/result.",
                 "Let Odylith normalize the confirmed Markdown into structured runtime data; use --confirm-intent --format json only when an explicit audit artifact is requested.",
                 "Do not inspect Odylith source files, Python modules, local examples, or generated runtime files to discover schema fields.",
             ],
@@ -116,7 +116,7 @@ def build_proposal_contract() -> dict[str, Any]:
             "allowed_host_steps": [
                 "Run greenfield create --confirm from the confirmed product intent and observed source posture.",
                 "Keep product story, actors, systems, workstreams, components, diagrams, risks, proof, and release gates project-specific.",
-                "Let Odylith build the governed proposal; the confirmed create command is the validation gate.",
+                "Let Odylith build and repair the governed proposal internally; the confirmed create command is the validation and final-manifest gate.",
                 "Surface only the human-readable created-record summary or the validation issues.",
             ],
             "canonical_files": [
@@ -131,7 +131,7 @@ def build_proposal_contract() -> dict[str, Any]:
                 "odylith greenfield propose --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
             ],
             "failure_policy": [
-                "If validation rejects the proposal, do not write records; summarize the blocking issues in product language.",
+                "If final validation rejects the proposal after the bounded, provider-free post-confirm repair loop, do not write records; summarize the blocking issues in product language.",
                 "If the operator explicitly asks for a JSON audit artifact, print it; otherwise keep structured proposal data internal.",
             ],
         },

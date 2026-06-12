@@ -55,8 +55,9 @@ placeholder products in response to a show-me request.
    `greenfield create --repo-root . --prompt "<their request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`.
    Odylith normalizes that Markdown into
    `.odylith/runtime/greenfield/confirmed-intent.json`, builds the governed
-   proposal from the accepted narrative, validates it, runs Tribunal, writes
-   records, and refreshes surfaces; do not
+   proposal from the accepted narrative, validates it, runs the bounded,
+   provider-free post-confirm repair loop, runs Tribunal, writes records only
+   after the final manifest passes, and refreshes surfaces; do not
    show JSON as a second approval step and do not search Odylith source,
    `.odylith`, bundle files, or local examples for schema.
    Do not ask the operator to inspect proposal JSON or confirm a second time unless they explicitly request a review artifact.
@@ -65,6 +66,8 @@ placeholder products in response to a show-me request.
    returns proposal stdout directly before confirmation, do not hide the
    confirmation behind collapsed tool output. After confirmation, do not narrate
    parser/schema retries or intermediate create-shape failures in operator chat;
+   wait for the final manifest/result and do not stop at intermediate
+   repairable quality issues.
    surface only created records or final validation/Tribunal blockers.
 6. Do not create governance records unless the operator explicitly asks.
    The default posture is advisory — show what's possible and let the operator

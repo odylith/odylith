@@ -80,6 +80,8 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert "- Confirm: if the interpretation is right" in output
     assert "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
     assert "- Reject: if this is not the intended product" in output
+    assert "bounded, provider-free post-confirm repair loop" in output
+    assert "final manifest passes" in output
     assert "No records were written. Confirm, edit, or reject this interpretation." not in output
     assert "greenfield create --repo-root ." in output
     assert "--confirm" in output

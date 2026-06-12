@@ -120,11 +120,13 @@ same visible Product Intent Confirmation to
 path. Odylith normalizes that Markdown into
 `.odylith/runtime/greenfield/confirmed-intent.json`, builds the governed
 proposal from the accepted narrative, validates it, runs the Tribunal write gate,
-writes records, and refreshes readable views. Do not inspect Odylith source files,
-`.odylith`, bundle files, Python modules, or local examples to discover schema
-fields. Do not hand-author, switch to, or repair proposal JSON after
-confirmation. Do not narrate parser/schema retries or intermediate create-shape
-failures in operator chat. The operator does not need to inspect proposal JSON
+runs the bounded, provider-free post-confirm repair loop, writes records only
+after the final manifest passes, and refreshes readable views. Do not inspect Odylith source files,
+`.odylith`, bundle files, Python modules, or local examples to discover schema fields.
+Do not hand-author, switch to, or repair proposal JSON
+after confirmation. Do not narrate parser/schema retries or intermediate
+create-shape failures in operator chat, and do not stop at intermediate
+repairable quality issues. The operator does not need to inspect proposal JSON
 unless they explicitly ask for an export.
 
 ```bash

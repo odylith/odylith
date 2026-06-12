@@ -71,3 +71,5 @@ def test_customer_bootstrap_guidance_carries_live_proof_claim_gate() -> None:
     assert "Proof boundary" in guidance
     assert "avoid wall of prose" in guidance
     assert ".odylith/runtime/greenfield/confirmed-intent.json" in guidance
+    assert "bounded, provider-free post-confirm repair loop" in guidance
+    assert "final manifest passes" in guidance

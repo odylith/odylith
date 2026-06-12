@@ -150,7 +150,7 @@ def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> 
             "Original user intent",
             prompt,
             "Next step",
-            "- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith normalizes the accepted narrative internally, validates it, and applies accepted project records. Do not ask the operator to inspect proposal JSON.",
+            "- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith normalizes the accepted narrative internally, validates it, runs the bounded, provider-free post-confirm repair loop, and applies accepted project records only after the final manifest passes. Do not ask the operator to inspect proposal JSON.",
             "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, ask for corrections and rerun this confirmation.",
             "- Reject: if this is not the intended product, stop here and write nothing.",
         ]

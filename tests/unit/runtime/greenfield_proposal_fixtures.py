@@ -640,7 +640,7 @@ def _host_project_brief(*, title: str, prompt: str, release: str) -> dict[str, o
                 "path": "Create confirmed records",
                 "command": f"odylith greenfield create --repo-root . --prompt {json.dumps(prompt)} --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release {release}",
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use after intent confirmation so Odylith builds, validates, gates, writes, and refreshes the proposal-owned records.",
+                "use_when": "Use after intent confirmation so Odylith builds, repairs, validates, gates, writes after the final manifest passes, and refreshes the proposal-owned records.",
             },
             {
                 "path": "Optional proposal review",
@@ -1179,4 +1179,3 @@ def _host_reasoned_crispr_without_parent() -> dict[str, object]:
             }
         ],
     }
-

@@ -235,6 +235,10 @@ _GREENFIELD_CONFIRMED_CREATE_GUARDS = (
     "proposal JSON",
     "parser/schema retries",
 )
+_GREENFIELD_REPAIR_LOOP_GUARDS = (
+    "bounded, provider-free post-confirm repair loop",
+    "final manifest passes",
+)
 _GREENFIELD_CONFIRMATION_FORMAT_GUARDS = (
     "sectioned",
     "Product story",
@@ -324,6 +328,9 @@ def _require_greenfield_guidance_uses_confirmed_create(*, repo_root: Path, label
         for token in _GREENFIELD_CONFIRMED_CREATE_GUARDS:
             if token not in compact_text:
                 raise RuntimeError(f"{label} guidance omits confirmed create guard: {relative_path}: {token}")
+        for token in _GREENFIELD_REPAIR_LOOP_GUARDS:
+            if token not in compact_text:
+                raise RuntimeError(f"{label} guidance omits confirmed create repair-loop guard: {relative_path}: {token}")
         for token in _GREENFIELD_CONFIRMATION_FORMAT_GUARDS:
             if token not in compact_text:
                 raise RuntimeError(f"{label} guidance omits confirmation format guard: {relative_path}: {token}")

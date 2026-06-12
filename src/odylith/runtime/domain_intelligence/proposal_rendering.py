@@ -64,7 +64,7 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             "- generated governance artifacts: none",
             "- proposal authorship: legacy reasoning-request mode; prefer confirmed create path",
             f"- provider calls by Odylith CLI: {proposal.get('provider_calls', 0)}",
-            "- write gate: `greenfield create --confirm` builds, validates, gates, writes, and refreshes records",
+            "- write gate: `greenfield create --confirm` builds, validates, runs the bounded, provider-free post-confirm repair loop, gates, writes after the final manifest passes, and refreshes records",
             "",
             "Host handoff",
         ]
@@ -74,7 +74,7 @@ def format_proposal_text(proposal: Mapping[str, Any], *, detail: str = "brief") 
             lines.append(f"- Stop: {rule}")
         lines.extend(
             [
-                "- Use `odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1` after writing the accepted Product Intent Confirmation; do not search Odylith source.",
+                "- Use `odylith greenfield create --repo-root . --prompt \"<confirmed request>\" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1` after writing the accepted Product Intent Confirmation; let the CLI complete its bounded, provider-free post-confirm repair loop and do not search Odylith source.",
                 "",
                 "Confirmed create after intent confirmation",
             ]

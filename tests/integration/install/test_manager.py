@@ -813,6 +813,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "search existing workstream, plan, bug, component, diagram, and recent session/Compass context first" in guidance_text
     assert "If the slice is genuinely new and it is repo-owned non-product work, create the missing workstream and bound plan before non-trivial implementation" in guidance_text
     assert "default to the nearest `AGENTS.md`, the repo-local launcher, and truthful `odylith ... --help`" in guidance_text
+    assert "bounded, provider-free post-confirm repair loop" in guidance_text
+    assert "final manifest passes" in guidance_text
     assert "When a routine governance task already maps to a first-class CLI family such as `odylith bug capture`, `odylith backlog create`, `odylith component register`, `odylith atlas scaffold`, or `odylith compass log`" in guidance_text
     assert "rerender only the owned surface" in guidance_text
     assert "Treat AI slop as a regression" in guidance_text
@@ -869,6 +871,8 @@ def test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_b
     assert "stop at diagnosis and maintainer-ready feedback" in root_agents
     assert "Treat `odylith upgrade`, `odylith reinstall`, `odylith doctor --repair`, `odylith sync`, and `odylith dashboard refresh` as writes" in root_agents
     assert "search existing truth first" in root_agents
+    assert "bounded, provider-free post-confirm repair loop" in root_agents
+    assert "final manifest passes" in root_agents
     assert "repo-local launcher, truthful `odylith ... --help`" in root_agents
     assert "rerender only the owned surface" in root_agents
     assert "odylith radar refresh" in root_agents

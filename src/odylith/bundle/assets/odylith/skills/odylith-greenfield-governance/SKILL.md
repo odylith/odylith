@@ -40,7 +40,9 @@ architect a new project before source code exists.
    `greenfield create --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`
    with the original prompt. Odylith first normalizes that Markdown into
    `.odylith/runtime/greenfield/confirmed-intent.json`, validates it, runs the
-   Tribunal write gate, writes records, and refreshes readable views. Do not search `src/odylith`.
+   bounded, provider-free post-confirm repair loop, runs the Tribunal write
+   gate, writes records only after the final manifest passes, and refreshes
+   readable views. Do not search `src/odylith`.
    Do not search `.odylith`, `odylith/skills`, installed bundle files,
    local examples, or Python modules to discover schema fields after confirmation. Do not
    hand-author, switch to, or repair proposal JSON after confirmation. Do not
@@ -48,9 +50,11 @@ architect a new project before source code exists.
    operator chat. `greenfield propose --intent-file
    .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format
    json` is only an optional review artifact when explicitly requested.
-6. The operator's Product Intent confirmation authorizes one governed create
-   attempt. Do not ask the operator to inspect proposal JSON or confirm a
-   second time by default. The normal confirmed path is
+6. The operator's Product Intent confirmation authorizes one confirmed create
+   command and one governed write transaction; the command owns bounded
+   internal repair passes before the final manifest/result. Do not stop at
+   intermediate repairable package-quality or create-shape findings. Do not ask the operator to inspect proposal JSON or confirm a second time by default.
+   The normal confirmed path is
    `./.odylith/bin/odylith greenfield create --repo-root . --prompt "<operator request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`.
    If a reviewer asks for JSON, render
    `greenfield propose --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json`

@@ -61,6 +61,8 @@ def test_product_intent_confirmation_requests_sectioned_host_reasoning_without_r
     assert "Product Intent Confirmation needed" in output
     assert "Host reasoning task" in output
     assert "Write in chat" in output
+    assert "bounded, provider-free post-confirm repair loop" in output
+    assert "final manifest passes" in output
     assert "Do not" in output
     assert "No files changed" in output
     assert "implementation records" in output

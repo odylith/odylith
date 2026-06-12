@@ -281,6 +281,8 @@ def test_greenfield_guidance_uses_product_intent_then_cli_owned_create_path() ->
             or "do not search odylith source" in compact_text.casefold()
         ), path
         assert "normalizes" in compact_text, path
+        assert "bounded, provider-free post-confirm repair loop" in compact_text, path
+        assert "final manifest passes" in compact_text, path
         assert (
             "parser/schema retries" in compact_text
             or "intermediate create-shape failures" in compact_text
@@ -342,6 +344,8 @@ def test_greenfield_guidance_keeps_post_confirmation_contract_internal() -> None
         assert ".odylith/runtime/greenfield/confirmed-intent.json" in normalized, path
         assert "--confirm" in normalized, path
         assert "normalizes" in normalized, path
+        assert "bounded, provider-free post-confirm repair loop" in normalized, path
+        assert "final manifest passes" in normalized, path
         assert "hand-author" in normalized.casefold() or "hand author" in normalized.casefold(), path
         assert (
             "parser/schema retries" in normalized

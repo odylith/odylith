@@ -3,8 +3,8 @@
 Odylith should not pretend a small built-in catalog can understand every
 possible project the operator may ask for. This module keeps the no-write
 Product Intent Confirmation separate from the confirmed create path, then
-builds, validates, gates, and writes the governed proposal without pushing
-internal normalization work back onto the host.
+builds, repairs, validates, gates, and writes the governed proposal without
+pushing internal normalization or repair work back onto the host.
 """
 
 from __future__ import annotations
