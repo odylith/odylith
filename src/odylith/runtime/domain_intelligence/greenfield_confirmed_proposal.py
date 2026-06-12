@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import bounda
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels as _join_system_labels
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase as _object_reference_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import problem_text as _problem_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label as _sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
@@ -63,10 +64,8 @@ def build_confirmed_greenfield_proposal(
     title_normalization = normalize_project_title(source_title or intent_title or str(title or "").strip(), fallback="Greenfield Project")
     product_title = title_normalization.canonical_title
     product_slug = slugify(product_title)
-    prompt_text = str(prompt or product_title).strip() or product_title
-    if title_normalization.changed:
-        prompt_text = prompt_text.replace(title_normalization.raw_title, product_title).strip() or product_title
-    label = domain_label(product_title, prompt_text)
+    command_prompt = product_title
+    label = domain_label(product_title, "")
     label_lower = _sentence_label(label)
     label_slug = slugify(label)
     product_story = confirmed_intent_summary(
@@ -180,7 +179,7 @@ def build_confirmed_greenfield_proposal(
         "host_agnostic": True,
         "write_policy": "confirmed_intent_before_confirmed_create",
         "intent": {
-            "prompt": prompt_text,
+            "prompt": "",
             "title": product_title,
             "project_slug": product_slug,
             "reasoning_mode": "odylith_confirmed_governed_proposal",
@@ -205,25 +204,11 @@ def build_confirmed_greenfield_proposal(
             "write_guardrail": "No product records are written until confirmed create receives --confirm.",
             "next_best_action": f"Create accepted {label_lower} project records for release {release}.",
         },
-        "assumptions": [
-            {
-                "id": "ASM-001",
-                "tier": "user_intent",
-                "statement": assumptions[0] if assumptions else (
-                    f"{label} starts with the user, first path, and proof boundary accepted in the product direction."
-                ),
-                "confirm_when": "The product owner confirms the first operating context and user group.",
-            },
-            {
-                "id": "ASM-002",
-                "tier": "odylith_assumption",
-                "statement": (
-                    f"External data, devices, services, or providers for {label_lower} stay simulated or "
-                    "sandboxed until source-backed contracts and credentials are intentionally introduced."
-                ),
-                "confirm_when": "The implementation owner names a live integration and its proof boundary.",
-            },
-        ],
+        "assumptions": _assumption_rows(
+            label=label,
+            label_lower=label_lower,
+            assumptions=assumptions,
+        ),
         "open_questions": [
             {
                 "id": "OQ-001",
@@ -283,7 +268,7 @@ def build_confirmed_greenfield_proposal(
         ],
         "project_brief": confirmed_project_brief(
             label=label,
-            prompt=prompt_text,
+            prompt=command_prompt,
             release=release,
             state_object=state_object,
             evidence_record=evidence_record,
@@ -293,6 +278,7 @@ def build_confirmed_greenfield_proposal(
             problem=problem_summary,
             human_actors=human_actors,
             internal_systems=internal_systems,
+            component_labels=[str(row.get("label") or "").strip() for row in release_components],
             external_systems=external_systems,
             assumptions=assumptions,
             ambiguities=ambiguities,
@@ -359,17 +345,61 @@ def build_confirmed_greenfield_proposal(
         ),
         "apply_commands": [
             "odylith greenfield create --repo-root . --prompt "
-            + shell_quote(prompt_text)
+            + shell_quote(command_prompt)
             + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release "
             + shell_quote(release),
             "# optional review-only audit: odylith greenfield propose --repo-root . --prompt "
-            + shell_quote(prompt_text)
+            + shell_quote(command_prompt)
             + " --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm-intent --format json",
         ],
     }
     if title_normalization.changed:
         proposal["intent"]["source_title"] = title_normalization.raw_title
     return proposal
+
+
+def _assumption_rows(*, label: str, label_lower: str, assumptions: list[str]) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    source_rows = assumptions or [
+        f"{label} starts with the user, first path, and proof boundary accepted in the product direction."
+    ]
+    for index, statement in enumerate(source_rows, start=1):
+        text = _compact_text(statement).strip(" .")
+        if not text:
+            continue
+        rows.append(
+            {
+                "id": f"ASM-{index:03d}",
+                "tier": "user_intent",
+                "statement": f"{text}.",
+                "confirm_when": "The product owner confirms the first operating context, user group, and release posture.",
+            }
+        )
+    external_statement = (
+        f"External data, devices, services, or providers for {label_lower} stay simulated or "
+        "sandboxed until source-backed contracts and credentials are intentionally introduced."
+    )
+    if not _assumption_statement_already_covered(external_statement, rows):
+        rows.append(
+            {
+                "id": f"ASM-{len(rows) + 1:03d}",
+                "tier": "odylith_assumption",
+                "statement": external_statement,
+                "confirm_when": "The implementation owner names a live integration and its proof boundary.",
+            }
+        )
+    return rows
+
+
+def _assumption_statement_already_covered(statement: str, rows: list[dict[str, str]]) -> bool:
+    terms = set(re.findall(r"[a-z0-9]{4,}", _compact_text(statement).casefold()))
+    if not terms:
+        return False
+    for row in rows:
+        row_terms = set(re.findall(r"[a-z0-9]{4,}", _compact_text(row.get("statement", "")).casefold()))
+        if len(terms & row_terms) / max(1, len(terms)) >= 0.45:
+            return True
+    return False
 
 
 def _security_compliance(
@@ -383,19 +413,20 @@ def _security_compliance(
 ) -> dict[str, str]:
     obligations = " ".join(safety_obligations)
     safety_tail = f" {obligations}" if obligations else ""
+    state_reference = _object_reference_phrase(_domain_object_label(state_object, fallback=_short_summary(state_object, limit=120)))
     return {
         "domain": (
-            f"{label} carries domain risk around {_short_summary(state_object, limit=180)}, evidence boundary, actors, "
+            f"{label} carries domain risk around {state_reference}, evidence boundary, actors, "
             f"and decisions based on stale or incomplete data. First path: {_short_summary(first_path, limit=220)}."
             f"{safety_tail}"
         ),
         "security": (
             f"Security posture for {label_lower} covers authentication, authorization, ownership checks, "
-            f"credential isolation, abuse prevention, and private data handling for {_short_summary(state_object, limit=180)}."
+            f"credential isolation, abuse prevention, and private data handling for {state_reference}."
         ),
         "policy": (
             f"Compliance posture for {label_lower} names any privacy, retention, accessibility, safety, or operational-review duties "
-            f"that apply to {_short_summary(state_object, limit=180)} before production claims are made."
+            f"that apply to {state_reference} before production claims are made."
             f"{safety_tail}"
         ),
     }
@@ -529,7 +560,7 @@ def _project_intelligence(
         ],
         "conflict_model": [
             f"Product-owner correction beats stale proposal assumptions for {label_lower}.",
-            f"Source-backed validation beats narrative claims when implementation behavior disagrees with the proposal.",
+            f"Release evidence decides what changes when implementation behavior disagrees with the accepted proposal.",
         ],
         "transfer_priors": [
             f"Keep {label_lower} release scope small enough to prove with concrete behavior and evidence.",
@@ -566,8 +597,8 @@ def _project_intelligence(
 
 def _parent_workstream_title(*, label: str, first_path: str) -> str:
     return (
-        _title_label(f"Make {label} useful for one complete outcome")
-        or f"Make {label} useful for one complete outcome"
+        _title_label(f"Prove one complete {label} path")
+        or f"Prove one complete {label} path"
     )
 
 

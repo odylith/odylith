@@ -6,6 +6,7 @@ import re
 from typing import Any, Sequence
 
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
+from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.common.prose_grammar import third_person_action_verb
@@ -33,6 +34,8 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_types import Firs
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 _ACTION_BASE_VERB_PATTERN = action_base_verb_pattern()
+_ACTION_VERB_PATTERN = action_verb_pattern()
+_SPLIT_ACTION_VERB_PATTERN = action_verb_pattern(exclude={"keep", "keeps"})
 
 _OPEN_PLUS_MATERIAL_RE = re.compile(
     r"^\s*(?P<subject>(?:a|an|the)?\s*[^,.;]{0,80}?)\b(?:open|opens|launch|launches)\b"
@@ -153,7 +156,7 @@ def _visible_outcome(steps: Sequence[str]) -> str:
             continue
         if _looks_like_visible_result(step):
             cleaned = _clean_visible_result_phrase(step) or step
-            if re.search(r"\b(?:compare|compares|display|displays|find|finds|produce|produces|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|view|views|receive|receives)\b", cleaned, flags=re.IGNORECASE) and not re.search(
+            if re.search(r"\b(?:compare|compares|display|displays|find|finds|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|update|updates|view|views|receive|receives)\b", cleaned, flags=re.IGNORECASE) and not re.search(
                 r"\b(?:accept|accepts|click|clicks|choose|chooses|dismiss|dismisses)\b",
                 cleaned,
                 flags=re.IGNORECASE,
@@ -240,7 +243,19 @@ def _clean_step(value: str) -> str:
     ).strip(" .")
     text = _normalize_role_can_step(text)
     text = _normalize_subjectless_action_step(text)
+    text = _strip_dangling_step_tail(text)
     return _sentence_case(text)
+
+
+def _strip_dangling_step_tail(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    words = text.split()
+    dangling = {"against", "alongside", "as", "at", "by", "for", "from", "in", "into", "of", "on", "to", "with", "without"}
+    while len(words) > 3 and words[-1].casefold().strip(".,;:") in dangling:
+        words.pop()
+    return " ".join(words).strip(" .")
 
 
 def _normalize_role_can_step(value: str) -> str:
@@ -402,15 +417,7 @@ def _starts_new_action_clause(value: str) -> bool:
     if re.match(
         r"^(?:(?:a|an|the|one|this|that|each|another|product|system|user|person|actor|app|application|workspace|engine|dashboard|view)|[A-Z][A-Za-z0-9_-]{2,})\s+"
         r"(?:[A-Za-z0-9'-]+\s+){0,5}?"
-        r"(?:"
-        r"accept|accepts|add|adds|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|book|books|calculate|calculates|capture|captures|"
-        r"check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|"
-        r"click|clicks|compute|computes|create|creates|decide|decides|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|enter|enters|export|exports|fetch|fetches|finalize|finalizes|forecast|forecasts|"
-        r"display|displays|import|imports|inspect|inspects|log|logs|make|makes|mark|marks|notify|notifies|open|opens|persist|persists|pick|picks|preserve|preserves|"
-        r"optimize|optimizes|produce|produces|prompt|prompts|provide|provides|publish|publishes|pull|pulls|rank|ranks|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|return|returns|route|routes|"
-        r"run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|show|shows|"
-        r"store|stores|submit|submits|surface|surfaces|sync|syncs|tap|taps|track|tracks|update|updates|validate|validates|view|views"
-        r")\b",
+        rf"(?:{_SPLIT_ACTION_VERB_PATTERN})\b",
         text,
         flags=re.IGNORECASE,
     ):

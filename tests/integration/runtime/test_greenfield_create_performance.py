@@ -7,6 +7,7 @@ import sys
 import time
 from pathlib import Path
 
+from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
 from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
@@ -97,6 +98,53 @@ def test_greenfield_create_cli_completes_whole_project_under_sixty_seconds(tmp_p
     _assert_whole_project_completed(payload, tmp_path, elapsed=elapsed)
 
 
+def test_yacht_greenfield_confirm_repairs_quality_failures_and_commits_under_sixty_seconds(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(YACHT_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a yacht servicing platform",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    elapsed = time.perf_counter() - started
+    payload = json.loads(capsys.readouterr().out)
+    generated_source = _generated_source_payload(tmp_path)
+
+    assert rc == 0
+    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+    assert payload["post_confirm_quality_manifest"]["status"] == "passed"
+    assert payload["post_confirm_quality_manifest"]["issue_count"] == 0
+    assert payload["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
+    assert payload["post_confirm_quality_manifest"]["whole_project_elapsed_seconds"] < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) >= 5
+    assert len(payload["diagrams"]) == 6
+    assert "Path path" not in generated_source
+    assert "hang off of" not in generated_source
+    assert "rewriting Customer and Contact Directory" not in generated_source
+    assert not any(
+        has_inline_role_casing_drift(line)
+        for line in generated_source.splitlines()
+        if "Customer and Contact Directory" in line
+    )
+
+
 SOLAR_CONFIRMED_INTENT_TEXT = """SunLedger
 
 ## Product story
@@ -145,6 +193,53 @@ The first proof is one home completing one daily loop: ingest telemetry and weat
 - Confirm: create the governed project records from this confirmed intent.
 - Edit: revise the product story, actors, systems, first path, assumptions, ambiguities, or proof boundary before create.
 - Reject: stop without creating project records.
+"""
+
+YACHT_CONFIRMED_INTENT_TEXT = """# Harbormaster — Yacht Servicing Platform
+
+## Product story
+A yacht servicing platform coordinates the messy reality of keeping vessels seaworthy: an owner or captain reports a problem or schedules routine maintenance, a service company assigns the right technician, and the work happens dockside, on the hard, or in a yard slot. The platform's job is to turn an informal "the watermaker is failing and we sail in three weeks" request into a tracked job with a quote, a scheduled visit, parts on order, a technician on the dock, and a signed-off record the owner can trust. It earns its keep by making the status of every boat and every open job legible to the people who are otherwise chasing each other by phone and text.
+
+## State object
+The center of gravity is the service job: a unit of work against one vessel, moving through requested, quoted, approved, scheduled, in-progress, and completed, carrying the vessel, the customer, assigned technician(s), parts, labor time, and a final service record. Vessels and customers are long-lived records the jobs hang off of.
+
+## First complete path
+A captain submits a service request for a known yacht; a service coordinator reviews it, produces a quote, and sends it; the customer approves; the coordinator schedules a technician for a date and berth; the technician performs the work, logs parts and hours, and marks it complete; the customer receives the finished service record. That single request-to-completed-record path is the proof the product works.
+
+## Human actors
+- Yacht owner — requests work, approves quotes, reads the service history of their vessel.
+- Captain or crew — reports problems, coordinates access and timing on behalf of the owner.
+- Service coordinator / advisor — triages requests, builds quotes, schedules jobs, owns the customer relationship.
+- Marine technician — performs the work, logs parts and labor, signs off completion.
+- Service manager — sees the board of all open jobs, technician load, and overdue work.
+
+## External systems
+- Payment processor for quote approval and invoicing.
+- Parts and chandlery suppliers for ordering and availability.
+- Email/SMS notifications to owners, captains, and technicians.
+- Marina/berth and weather data for scheduling dockside work.
+
+## Internal product systems
+- Vessel registry — the boats under service and their specs/history.
+- Customer and contact directory.
+- Job lifecycle and scheduling engine — state transitions, technician assignment, calendar.
+- Quoting, parts, and labor capture.
+- Service history and completion records per vessel.
+
+## Critical assumptions
+- Service is delivered by a company's own coordinators and technicians, not an open marketplace of independent contractors.
+- One organization or a single yard operates the platform initially; multi-yard tenancy can come later.
+- Scheduling is human-driven assignment, not fully automated optimization, for the first path.
+- Vessels are mostly known or registered before a job opens, rather than walk-up unknown boats.
+
+## Ambiguities
+- Single service company vs. multi-vendor marketplace changes the topology and trust model.
+- Whether owners self-serve in their own portal or everything routes through a coordinator.
+- Whether parts/inventory is tracked in-platform or just referenced from a supplier.
+- Depth of payments: full invoicing and ledger, or just quote approval to start.
+
+## Proof boundary
+The product is proven when one service request for one vessel travels end to end — request, quote, approval, schedule, technician work log, completion record — visible to both the coordinator and the customer. Inventory optimization, multi-yard tenancy, and automated scheduling are explicitly out of the first proof.
 """
 
 PATTERN_CONFIRMED_INTENT_TEXT = """Pattern Relief Notebook
@@ -376,6 +471,61 @@ A signal source connects and pushes a stream of samples; the pipeline ingests th
 The first path is proven when a sample stream flows end to end - ingest, transform, detect, emit - under a stated latency target with a resumable offset, demonstrated on at least one source-to-sink configuration. Multi-source scale, exactly-once delivery, and domain-specific transform libraries are beyond this first boundary.
 """
 
+PUBLIC_RESPONSE_CONFIRMED_INTENT_TEXT = """# Public Response Workspace
+
+## Product story
+
+Public Response Workspace helps an operations team track a fast-moving regional incident, combine delayed field reports with capacity signals, and decide which response actions need to happen next while the situation is still changing.
+
+## State object
+
+The central thing the system tracks is an active incident: a geographic area with reported signals, severity trends, available response capacity, and the interventions currently in effect.
+
+## First complete path
+
+A regional coordinator opens the dashboard, sees an area where signal growth and capacity pressure are accelerating past a threshold, drills into the trend, allocates additional response supply and flags a public advisory, and the incident record updates to reflect the new interventions and a revised projection — one full loop from signal to decision to recorded action.
+
+## Human actors
+
+- Regional coordinator - monitors incidents and authorizes interventions
+- Data analyst - interprets trends and validates incoming signal quality
+- Capacity coordinator - reports available operational capacity
+- Field reporter - submits severity data from the front line
+
+## External systems
+
+- Field report feeds
+- Capacity availability systems
+- Response supply inventory systems
+- Public alerting channels
+
+## Internal product systems
+
+- Incident tracking and state model
+- Signal and severity ingestion
+- Capacity and resource allocation
+- Trend and projection view
+- Intervention recording and advisory issuance
+
+## Critical assumptions
+
+- Reports and capacity data arrive as feeds the system can ingest.
+- Users are authorized response professionals, not the general public.
+- The first release targets one region or jurisdiction.
+- Projections are decision support, not certified forecasting.
+
+## Ambiguities
+
+- Geographic granularity for the first release.
+- Whether live feed ingestion or imported reports are required at launch.
+- Whether public advisories are issued directly or prepared for another channel.
+- Whether supply allocation is tracked only or integrated with inventory systems.
+
+## Proof boundary
+
+The product is proven when a coordinator can, against one active incident, see accelerating signal and capacity pressure, take an allocation-and-advisory action, and have that action recorded with an updated incident picture. Multi-region coordination, certified forecasting, and live external feed integrations are outside the first proof.
+"""
+
 GLP1_CONFIRMED_INTENT_TEXT = """# GLP-1 Companion - Medication Tracking App
 
 ## Product story
@@ -506,8 +656,18 @@ def test_solar_greenfield_create_refreshes_semantic_model_and_stays_under_thirty
             tmp_path / "odylith/runtime/source/accepted-project.v1.json",
         )
     )
+    generated_payload = _generated_source_payload(tmp_path)
     assert "visible outcome from" not in written_payload
     assert "control actions to battery" not in written_payload
+    for banned in (
+        "sunLedger",
+        "Do not expand beyond connecting inverter, meter, battery and weather sources, sunLedger",
+        "Do not expand beyond connecting inverter, meter, battery and weather sources, SunLedger forecasts today's production and demand, and SunLedger builds a battery and load control plan until",
+    ):
+        assert banned not in written_payload
+        assert banned not in generated_payload
+    for required in ("approve", "approved control actions", "grid imports", "reserve", "comfort"):
+        assert required in generated_payload
 
 
 def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thirty_seconds(tmp_path, capsys) -> None:
@@ -570,11 +730,14 @@ def test_pattern_greenfield_create_blocks_placeholder_and_clause_drift_under_thi
         "record-their-first",
         "Reminder and Streak Nudge to Sustain",
         "reminder-and-streak-nudge-to-sustain",
+        "Do not expand beyond recording first entry and logging again until",
     ):
         assert banned not in rendered_payload
         assert banned not in written_payload
     assert any(row.get("title") == "Let Person Managing Discomfort Record First Entry" for row in payload["backlog"])
     assert any(row.get("label") == "Reminder and Streak Nudge Service" for row in payload["components"])
+    assert "logging again" in written_payload
+    assert "reviewing a simple trend: status over time" in written_payload
     visible_actors = payload["validation_gate"]["visible_actors"]
     assert visible_actors[0]["visible_actor"] == "Person Managing Discomfort"
     assert visible_actors[1]["visible_actor"] == "Person Managing Discomfort workflow operator"
@@ -622,9 +785,9 @@ def test_multi_actor_greenfield_create_preserves_actor_ownership_and_copy_under_
     assert [(event["actor"], event["action"]) for event in first_path["events"]] == [
         ("Parent", "creates"),
         ("Parent", "adds"),
-        ("Parent", "advance"),
+        ("Parent", "picks"),
         ("Learner", "opens"),
-        ("Learner", "advance"),
+        ("Learner", "makes"),
         ("Learner", "sees"),
         ("Parent", "opens"),
     ]
@@ -647,9 +810,15 @@ def test_multi_actor_greenfield_create_preserves_actor_ownership_and_copy_under_
         "should support the user action: create an account",
         "Build the smallest behavior in Account",
         "The product checks the details, explains missing information before it produces a result, and shows a short reflection",
+        "product keeps a learner practice record",
+        "accepted change to the product keeps",
+        "The choice practice journal components come from product systems named in the accepted product direction: Account and Learner Profile Service, Scenario Library Service, Choice Consequence Engine, Reflection.",
+        "Do not expand beyond creating an account, adding a learner profile, picking the age band of eight to ten for the first release, and opening an illustrated scenario until",
     ):
         assert banned not in rendered_payload
         assert banned not in generated_payload
+    for required in ("make a choice at the decision point", "short reflection", "simple recap"):
+        assert required in generated_payload
 
 
 def test_narrative_greenfield_create_normalizes_action_outcome_under_thirty_seconds(tmp_path, capsys) -> None:
@@ -943,6 +1112,81 @@ def test_greenfield_create_completes_signal_processing_pipeline_without_sentence
         "This shapes the default transforms Impact:",
         "sentence fragment leaked after understand",
         "greenfield proposal confirmed completion failed",
+    ):
+        assert banned not in generated_payload
+        assert banned not in visible_surface_payload
+
+
+def test_greenfield_create_completes_compound_public_response_path_under_sixty_seconds(tmp_path, capsys) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith" / "runtime" / "greenfield" / "confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(PUBLIC_RESPONSE_CONFIRMED_INTENT_TEXT, encoding="utf-8")
+
+    started = time.perf_counter()
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a regional response workspace",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+            "--json",
+        ]
+    )
+    elapsed = time.perf_counter() - started
+    payload = json.loads(capsys.readouterr().out)
+    generated_payload = _generated_source_payload(tmp_path)
+    visible_surface_payload = _generated_visible_surface_payload(tmp_path)
+    accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
+    proposal = accepted["proposal"]
+    first_path = proposal["semantic_model"]["first_path_contract"]
+    sequence = next(row for row in proposal["diagrams"] if row["title"] == "First Path Sequence")
+    sequence_source = sequence["mermaid_source"].casefold()
+
+    assert rc == 0
+    assert elapsed < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
+    assert payload["validation_gate"]["status"] == "passed"
+    assert generated_semantic_slop_issues(payload) == []
+    assert payload["dashboard_refresh"]["status"] == "passed"
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
+    assert len(payload["backlog"]) == 4
+    assert len(payload["components"]) == 5
+    assert len(payload["diagrams"]) == 6
+    assert len(first_path["events"]) == 4
+    assert first_path["visible_result"] == "the incident record updates to reflect the new interventions and a revised projection"
+    assert [(row["action"], row["visible_result"]) for row in first_path["events"]] == [
+        ("sees", False),
+        ("drills", False),
+        ("allocates", False),
+        ("updates", True),
+    ]
+    assert "A regional coordinator drills into the trend" in json.dumps(first_path["events"])
+    for term in ("allocates", "flags", "revised projection"):
+        assert term in sequence_source
+    assert "decision support" in generated_payload.casefold()
+    for required_file in (
+        "odylith/radar/radar.html",
+        "odylith/registry/registry.html",
+        "odylith/atlas/atlas.html",
+        "odylith/compass/compass.html",
+        "odylith/index.html",
+    ):
+        assert (tmp_path / required_file).is_file()
+    for banned in (
+        "confirmed Atlas flowchart `First Path Sequence` collapses the first path into too few events",
+        "greenfield post-confirm completion failed",
+        "has mid-sentence capitalization drift near `Their`",
+        "flaging",
+        "one full loop",
+        "until the first outcome works for a representative user waits",
+        "The public response workspace components come from product systems named in the accepted product direction: Incident.",
+        "Do not expand beyond seeing an area where signal growth and capacity pressure are accelerating past a threshold and drilling into the trend until",
     ):
         assert banned not in generated_payload
         assert banned not in visible_surface_payload

@@ -6,8 +6,8 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import capability_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
@@ -29,11 +29,13 @@ _ROLE_WORDS = {
     "beneficiary",
     "chief",
     "client",
+    "contact",
     "coordinator",
     "customer",
     "director",
     "engineer",
     "expert",
+    "guardian",
     "inspector",
     "lead",
     "manager",
@@ -47,9 +49,40 @@ _ROLE_WORDS = {
     "submitter",
     "supervisor",
     "support",
+    "sufferer",
     "team",
     "user",
     "volunteer",
+}
+
+_INLINE_ACTION_DESCRIPTION_VERBS = {
+    "acknowledging",
+    "asking",
+    "assigning",
+    "checking",
+    "classifying",
+    "configuring",
+    "coordinating",
+    "creating",
+    "drafting",
+    "entering",
+    "handling",
+    "helping",
+    "logging",
+    "managing",
+    "monitoring",
+    "owning",
+    "preparing",
+    "recording",
+    "receiving",
+    "requesting",
+    "responding",
+    "reviewing",
+    "running",
+    "sharing",
+    "tracking",
+    "using",
+    "watching",
 }
 
 
@@ -106,7 +139,39 @@ def actor_row_description(value: str) -> str:
     )
     if comma and 1 <= _word_count(comma.group("head")) <= 5 and _word_count(comma.group("body")) >= 2:
         return comma.group("body").strip(" .")
+    inline = _inline_action_description(text)
+    if inline:
+        return inline
     return ""
+
+
+def _inline_action_description(value: str) -> str:
+    """Return the activity tail from rows that combine actor and action."""
+
+    words = _clean(value).split()
+    if len(words) < 3:
+        return ""
+    for index, word in enumerate(words[1:], start=1):
+        token = word.casefold().strip(".,;:")
+        if token not in _INLINE_ACTION_DESCRIPTION_VERBS:
+            continue
+        head = " ".join(words[:index]).strip(" .")
+        tail = " ".join(words[index:]).strip(" .")
+        if not tail or not _actor_head_contains_role(head):
+            continue
+        return tail
+    return ""
+
+
+def _actor_head_contains_role(value: str) -> bool:
+    words = [word.casefold().strip(".,;:()") for word in _clean(value).replace("/", " ").split()]
+    if not words:
+        return False
+    if words[-1] in _ROLE_WORDS:
+        return True
+    if len(words) >= 2 and " ".join(words[-2:]) in _ROLE_WORDS:
+        return True
+    return 1 <= len(words) <= 4 and not all(word in {"a", "an", "the", "one"} for word in words)
 
 
 def _preserve_deferred_scope(row: str, source: str) -> str:
@@ -189,9 +254,26 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
         return ""
     clause = re.sub(r"^(?:a|an|the)\s+", "", clause, flags=re.IGNORECASE)
     clause = _strip_actor_subject_from_clause(clause, label=label)
+    clause = _trim_following_actor_transition(clause)
     if not clause:
         return ""
-    return f"uses the product to {base_action_clause(clause)} and needs the outcome to remain clear enough to act on"
+    action = capability_action_clause(clause)
+    return f"uses the product to {action} and needs the outcome to remain clear enough to act on"
+
+
+def _trim_following_actor_transition(value: str) -> str:
+    text = _clean(value).strip(" .,;:")
+    if not text:
+        return ""
+    split = re.split(
+        r",\s+(?:and\s+)?(?:a|an|the)\s+[a-z][a-z0-9'/-]*(?:\s+[a-z][a-z0-9'/-]*){0,5}\s+"
+        r"(?:adds?|approves?|assigns?|checks?|chooses?|closes?|confirms?|creates?|enters?|intakes?|opens?|picks?|"
+        r"records?|reviews?|routes?|saves?|selects?|signs?|submits?|updates?|uses?)\b",
+        text,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    return split.strip(" .,;:") or text
 
 
 def _clause_subject_matches_actor(value: str, *, label: str) -> bool:

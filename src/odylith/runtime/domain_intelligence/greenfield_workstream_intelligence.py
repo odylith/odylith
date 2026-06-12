@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import bounda
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_brief_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -164,6 +165,7 @@ def build_workstream_domain_intelligence(
     non_goal_text = boundary_clause_text(list(non_goals), item_limit=150) or "unconfirmed broader platform behavior"
     focus = short_summary(product_view or first_slice or opportunity, limit=360)
     risk = short_summary(problem, limit=300) or f"{label} can fail if {row_title} is too vague to implement."
+    risk_sentence = sentence_label(risk).strip(" .") or risk
     build_scope = short_summary(first_slice or first_path, limit=320)
     metric_summary = join_brief_items(metrics, limit=3, item_limit=140)
     dependency_summary = join_brief_items(dependencies, limit=2, item_limit=150)
@@ -177,7 +179,7 @@ def build_workstream_domain_intelligence(
         "actors": actors,
         "intent": [
             focus or f"{row_title} advances {label} by building one concrete product slice.",
-            f"The product problem is {risk}",
+            f"The product problem is {risk_sentence}",
         ],
         "scope": [
             f"This slice starts with {build_scope}",
@@ -227,7 +229,7 @@ def build_workstream_domain_intelligence(
             f"Every readiness assertion for {row_title} maps to {state_object}, {evidence_record}, validation output, and non-goals.",
         ],
         "risks": [
-            risk,
+            risk_sentence,
             f"Trust fails if {row_title} hides missing state, access limits, recovery details, or deferred scope.",
         ],
         "validation_obligations": [
@@ -266,7 +268,7 @@ def build_workstream_domain_intelligence(
         ],
         "conflict_model": [
             f"Confirmed product intent beats generic builder fallback for {row_title}.",
-            f"Source-backed validation beats narrative claims when {row_title} behavior disagrees.",
+            f"Release evidence decides what changes when {row_title} behavior disagrees with the accepted outcome.",
         ],
         "transfer_priors": [
             "Keep this slice small enough for concrete behavior proof.",

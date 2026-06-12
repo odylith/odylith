@@ -6,6 +6,7 @@ import re
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
+from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
@@ -14,7 +15,6 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_types import Firs
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
-
 
 TRIVIAL_START_RE = re.compile(
     r"^(?:a|an|the)?\s*[^,.;]{0,40}?\b(?:open|opens|launch|launches|start|starts)\s+"
@@ -31,32 +31,18 @@ TRIVIAL_AUTH_RE = re.compile(
     re.IGNORECASE,
 )
 
-MATERIAL_ACTION_RE = re.compile(
-    r"\b(?:"
-    r"accept|accepts|add|adds|advance|advances|adjust|adjusts|answer|answers|approve|approves|assign|assigns|attach|attaches|calculate|calculates|capture|captures|"
-    r"book|books|check|checks|choose|chooses|compare|compares|complete|completes|confirm|confirms|connect|connects|correct|corrects|decide|decides|"
-    r"click|clicks|compute|computes|create|creates|define|defines|delete|deletes|describe|describes|dismiss|dismisses|edit|edits|emit|emits|end|ends|enter|enters|export|exports|fetch|fetches|finalize|finalizes|find|finds|forecast|forecasts|"
-    r"display|displays|highlight|highlights|import|imports|inspect|inspects|let|lets|log|logs|make|makes|mark|marks|monitor|monitors|notify|notifies|open|opens|persist|persists|pick|picks|play|plays|"
-    r"optimize|optimizes|preserve|preserves|produce|produces|prompt|prompts|provide|provides|publish|publishes|pull|pulls|push|pushes|rank|ranks|rate|rates|read|reads|receive|receives|record|records|render|renders|request|requests|review|reviews|"
-    r"report|reports|return|returns|route|routes|run|runs|save|saves|schedule|schedules|screen|screens|see|sees|select|selects|send|sends|share|shares|"
-    r"show|shows|stop|stops|store|stores|submit|submits|surface|surfaces|sync|syncs|tap|taps|track|tracks|update|updates|"
-    r"transform|transforms|validate|validates|view|views|watch|watches"
-    r")\b",
-    re.IGNORECASE,
-)
+MATERIAL_ACTION_RE = re.compile(rf"\b(?:{action_verb_pattern()})\b", re.IGNORECASE)
 
 _ACTOR_SIGNATURE_STOPWORDS = frozenset(
     {"a", "an", "the", "one", "this", "that", "each", "another", "can"}
 )
 _PRESERVED_SHORT_ACTOR_TERMS = frozenset({"ai", "ml", "ui", "ux"})
 
-
 def visible_action_clause(value: str) -> str:
     text = strip_action_subject(clean_visible_result_phrase(value) or clean_first_path_text(value))
     if re.match(r"^(?:gets?|reads?|receives?|sees?|views?)\b", text, flags=re.IGNORECASE):
         return action_chain_fragment(text)
     return ""
-
 
 def is_system_generated_action(value: str) -> bool:
     """Return whether a first-path clause describes internal processing, not a user capability."""
@@ -75,22 +61,20 @@ def is_system_generated_action(value: str) -> bool:
         return True
     return bool(re.match(rf"^[A-Z][A-Za-z0-9_-]{{2,}}\s+(?:{system_verb})\b", text))
 
-
 def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
     return bool(
         re.search(
-            r"\b(?:compare|compares|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
+            r"\b(?:compare|compares|confirm|confirms|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|update|updates|view|views|review|reviews|receive|receives)\b",
             text,
             re.IGNORECASE,
         )
         or re.search(
-            r"\b(?:available|card|dashboard|event|indicator|readout|recommendation|result|saved|summary|timeline|trend|view|viewable)\b",
+            r"\b(?:available|card|dashboard|event|indicator|projection|readout|recommendation|result|saved|summary|timeline|trend|view|viewable)\b",
             text,
             re.IGNORECASE,
         )
     )
-
 
 def clean_visible_result_phrase(value: str) -> str:
     """Remove parser metadata from a visible-result phrase without losing the product outcome."""
@@ -144,7 +128,6 @@ def clean_visible_result_phrase(value: str) -> str:
     text = re.sub(r"\s+", " ", text).strip(" .")
     return text
 
-
 def is_trivial_start(value: str) -> bool:
     text = clean_first_path_text(value).strip(" .")
     if re.search(r"\b(?:opens?|launches?|starts?)\b", text, flags=re.IGNORECASE) and re.search(
@@ -155,7 +138,6 @@ def is_trivial_start(value: str) -> bool:
         return False
     return bool(TRIVIAL_START_RE.match(text) or TRIVIAL_NAMED_PRODUCT_START_RE.match(text) or TRIVIAL_AUTH_RE.match(text))
 
-
 def action_chain_fragment(value: str) -> str:
     text = clean_visible_result_phrase(value) or clean_first_path_text(value).strip(" .")
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
@@ -164,7 +146,11 @@ def action_chain_fragment(value: str) -> str:
     outcome = visible_result_object(text)
     if outcome and not re.search(r"\b(?:receives?|gets?)\b", text, flags=re.IGNORECASE):
         stripped = strip_action_subject(text)
-        if re.match(r"^(?:checks?|decides?|inspects?|reads?|reviews?|sees?|uses?|views?)\b", stripped, flags=re.IGNORECASE):
+        if re.match(
+            r"^(?:checks?|decides?|inspects?|publishes?|reads?|reports?|reviews?|sees?|uses?|views?)\b",
+            stripped,
+            flags=re.IGNORECASE,
+        ):
             return base_action_clause(stripped).strip(" .")
         return f"review {lowercase_leading_article(outcome)}".strip(" .")
     click = re.search(r"\bclicks?\s+(?P<object>.+?)(?:\s+and\s+.+)?$", text, flags=re.IGNORECASE)
@@ -177,11 +163,19 @@ def action_chain_fragment(value: str) -> str:
     text = _drop_explanatory_action_tail(text)
     text = base_action_clause(text)
     text = base_following_action_verbs(text)
+    text = base_adverbial_note_action(text)
     text = _strip_action_possessives(text)
     text = re.sub(r",\s+and\s+", " and ", text)
     text = re.sub(r"\s+", " ", text).strip(" ,.")
-    return text[:1].casefold() + text[1:] if text else ""
+    return _lower_initial_for_fragment(text)
 
+def base_adverbial_note_action(value: str) -> str:
+    return re.sub(
+        r"\b(?P<modifier>[a-z]+ly)\s+notes\b",
+        lambda match: f"{match.group('modifier')} note",
+        clean_first_path_text(value),
+        flags=re.IGNORECASE,
+    )
 
 def _drop_explanatory_action_tail(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
@@ -197,11 +191,9 @@ def _drop_explanatory_action_tail(value: str) -> str:
         return head
     return text
 
-
 def _strip_action_possessives(value: str) -> str:
     text = clean_first_path_text(value)
     return re.sub(r"\b(?:my|your|their|his|her|our|its)\s+(?=first\b)", "", text, flags=re.IGNORECASE)
-
 
 def _drop_launcher_prefix(value: str) -> str:
     """Remove app-opening setup when a real action follows in the same clause."""
@@ -224,7 +216,6 @@ def _drop_launcher_prefix(value: str) -> str:
         return text
     return tail
 
-
 def visible_result_object(value: str) -> str:
     text = clean_visible_result_phrase(value) or clean_first_path_text(value)
     nominal = nominal_visible_result_object(text)
@@ -237,7 +228,7 @@ def visible_result_object(value: str) -> str:
     patterns = (
         r":\s*(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
-        r"\b(?:compares?|decides?|displays?|emits?|finds?|highlights?|presents?|produces?|reports?|renders?|returns?|saves?|sees?|shows?|views?|receives?|gets?|reads?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"\b(?:compares?|confirms?|decides?|displays?|emits?|finds?|highlights?|presents?|produces?|reports?|renders?|returns?|saves?|sees?|shows?|views?|receives?|gets?|reads?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
@@ -269,7 +260,6 @@ def visible_result_object(value: str) -> str:
         )
     return ""
 
-
 def _drop_result_recipient(value: str) -> str:
     """Remove a short recipient phrase before the actual visible result object."""
 
@@ -297,7 +287,6 @@ def _drop_result_recipient(value: str) -> str:
     ).strip(" .")
     return text
 
-
 def nominal_visible_result_object(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     if not text:
@@ -320,7 +309,6 @@ def nominal_visible_result_object(value: str) -> str:
     ):
         return f"the usage-linked metric change view{protocol_suffix}"
     return text
-
 
 _RESULT_ACTION_NOMINALS = {
     "capture": "captured",
@@ -347,7 +335,6 @@ _RESULT_ACTION_NOMINALS = {
     "stores": "stored",
 }
 
-
 def _nominalize_leading_result_action(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     first, separator, rest = text.partition(" ")
@@ -356,13 +343,11 @@ def _nominalize_leading_result_action(value: str) -> str:
         return ""
     return f"{nominal} {_drop_leading_article(rest.strip())}".strip()
 
-
 def _drop_leading_article(value: str) -> str:
     first, separator, rest = clean_first_path_text(value).strip(" .").partition(" ")
     if separator and first.casefold() in {"a", "an", "the"}:
         return rest.strip()
     return clean_first_path_text(value).strip(" .")
-
 
 def outcome_capability_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
@@ -372,7 +357,6 @@ def outcome_capability_fragment(value: str) -> str:
     if fragment and MATERIAL_ACTION_RE.match(fragment):
         return fragment
     return f"see {lowercase_leading_article(text)}".strip(" .")
-
 
 def strip_action_subject(value: str) -> str:
     text = clean_first_path_text(value)
@@ -402,7 +386,6 @@ def strip_action_subject(value: str) -> str:
         ):
             text = text[match.start() :]
     return text
-
 
 def actor_signature(value: str) -> str:
     subject = leading_subject_prefix(value)
@@ -441,7 +424,6 @@ def actor_signature(value: str) -> str:
         )
     )
 
-
 def primary_actor_signature(model: FirstPathModel) -> str:
     """Return the actor for the first material user action, if the path names one."""
 
@@ -458,7 +440,6 @@ def primary_actor_signature(model: FirstPathModel) -> str:
             return actor
     return ""
 
-
 def leading_subject_prefix(value: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", clean_first_path_text(value), flags=re.IGNORECASE).strip()
     match = MATERIAL_ACTION_RE.search(text)
@@ -472,11 +453,9 @@ def leading_subject_prefix(value: str) -> str:
         return ""
     return subject
 
-
 def lowercase_leading_article(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     return re.sub(r"^(?:A|An|The|Today|Tomorrow|This|That)\b", lambda match: match.group(0).casefold(), text)
-
 
 _GERUND_ACTION_VERBS = {
     "accept": "accepting",
@@ -513,6 +492,8 @@ _GERUND_ACTION_VERBS = {
     "displays": "displaying",
     "dismiss": "dismissing",
     "dismisses": "dismissing",
+    "draft": "drafting",
+    "drafts": "drafting",
     "edit": "editing",
     "edits": "editing",
     "enter": "entering",
@@ -523,6 +504,8 @@ _GERUND_ACTION_VERBS = {
     "fetches": "fetching",
     "finalize": "finalizing",
     "finalizes": "finalizing",
+    "flag": "flagging",
+    "flags": "flagging",
     "highlight": "highlighting",
     "highlights": "highlighting",
     "import": "importing",
@@ -569,6 +552,10 @@ _GERUND_ACTION_VERBS = {
     "sees": "seeing",
     "select": "selecting",
     "selects": "selecting",
+    "send": "sending",
+    "sends": "sending",
+    "set": "setting",
+    "sets": "setting",
     "show": "showing",
     "shows": "showing",
     "store": "storing",
@@ -585,46 +572,67 @@ _GERUND_ACTION_VERBS = {
     "views": "viewing",
 }
 
-
 def gerund_action_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+and,\s+if\b.+$", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
     text = action_chain_fragment(text) or text
-    return _gerund_following_action_verbs(text).strip(" ,.") or (text[:1].casefold() + text[1:] if text else "")
+    return _gerund_following_action_verbs(text).strip(" ,.") or _lower_initial_for_fragment(text)
 
+def _lower_initial_for_fragment(value: str) -> str:
+    text = clean_first_path_text(value).strip(" ,.")
+    if not text:
+        return ""
+    match = re.match(r"(?P<prefix>[^A-Za-z0-9]*)(?P<token>[A-Za-z0-9][A-Za-z0-9_/-]*)", text)
+    if not match:
+        return text[:1].casefold() + text[1:]
+    token = match.group("token")
+    letters = [char for char in token if char.isalpha()]
+    if len(letters) >= 2 and (all(char.isupper() for char in letters) or any(char.isupper() for char in letters[1:])):
+        return text
+    index = len(match.group("prefix"))
+    return f"{text[:index]}{text[index:index + 1].casefold()}{text[index + 1:]}"
 
 def _gerund_following_action_verbs(value: str) -> str:
     text = clean_first_path_text(value)
     return _gerund_segment_actions(text)
 
-
 def _gerund_segment_actions(value: str) -> str:
     words = value.split()
     converted: list[str] = []
     convert_next_action = True
+    converted_action_seen = False
+    connector_pending = False
     for index, word in enumerate(words):
         token = word.strip(".,:;").casefold()
         tail = " ".join(words[index + 1 :])
         gerund = _gerund_for_action_token(token)
         if gerund and convert_next_action:
-            if _looks_like_ambiguous_artifact_noun(token, tail):
+            if _looks_like_ambiguous_artifact_noun(
+                token,
+                tail,
+                after_coordinated_object=connector_pending and converted_action_seen,
+            ):
                 converted.append(word)
                 convert_next_action = False
+                connector_pending = False
                 continue
             converted.append(_replace_word_token(word, gerund))
             convert_next_action = False
+            converted_action_seen = True
+            connector_pending = False
             continue
         converted.append(word)
         if token in {"and", "or"}:
             convert_next_action = True
+            connector_pending = True
         elif token.endswith("ly") and convert_next_action:
             convert_next_action = True
         else:
             convert_next_action = False
+            connector_pending = False
     return " ".join(converted).strip(" ,.")
-
 
 def _gerund_for_action_token(token: str) -> str:
     mapped = _GERUND_ACTION_VERBS.get(token)
@@ -634,7 +642,6 @@ def _gerund_for_action_token(token: str) -> str:
         return _regular_gerund(token)
     return ""
 
-
 def _regular_gerund(token: str) -> str:
     if token.endswith("ie"):
         return f"{token[:-2]}ying"
@@ -642,18 +649,35 @@ def _regular_gerund(token: str) -> str:
         return f"{token[:-1]}ing"
     return f"{token}ing"
 
-
-def _looks_like_ambiguous_artifact_noun(token: str, tail: str) -> bool:
+def _looks_like_ambiguous_artifact_noun(
+    token: str,
+    tail: str,
+    *,
+    after_coordinated_object: bool = False,
+) -> bool:
     if token in {"record", "records"} and re.match(
         r"^(?:owner|reviewer|recipient|actor|user|operator|publisher)\b",
         tail,
         flags=re.IGNORECASE,
     ):
         return True
+    if token in {"surface", "surfaces"} and after_coordinated_object and _looks_like_nominal_object_tail(tail):
+        return True
     if token in {"block", "blocks"} and (not tail or tail.lstrip().startswith("(")):
         return True
     return False
 
+def _looks_like_nominal_object_tail(value: str) -> bool:
+    first = str(value or "").strip().split(" ", 1)[0].strip(".,:;").casefold()
+    if not first:
+        return False
+    if first in {"a", "an", "the", "this", "that", "their", "its", "our", "your"}:
+        return False
+    if first.endswith("ly"):
+        return False
+    if _gerund_for_action_token(first):
+        return False
+    return True
 
 def _replace_word_token(value: str, replacement: str) -> str:
     suffix = ""
@@ -661,7 +685,6 @@ def _replace_word_token(value: str, replacement: str) -> str:
         suffix = value[-1] + suffix
         value = value[:-1]
     return f"{replacement}{suffix}"
-
 
 def clip_first_path_phrase(value: str, *, limit: int) -> str:
     text = clean_first_path_text(value).strip(" .")
@@ -708,11 +731,16 @@ def clip_first_path_phrase(value: str, *, limit: int) -> str:
         },
     )
 
-
 def clean_first_path_text(value: Any) -> str:
     text = clean_markdown_text(value)
     text = re.sub(r"\s+[–—-]\s*,\s+(?=(?:and|then|finally|later)\b)", ", ", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+[–—-]\s+(?=(?:and|then|finally|later)\b)", ", ", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"\s+[–—-]\s+one\s+(?:full|complete)\s+(?:loop|path|journey|flow)\b[^.!?]*(?=[.!?]|$)",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
     text = re.sub(r"\s+[–—-]\s*(?=[,.;:])", "", text)
     text = re.sub(r"\s+[–—-]\s*$", "", text)
     text = re.sub(
@@ -736,11 +764,11 @@ def clean_first_path_text(value: Any) -> str:
     )
     return clean_markdown_text(text)
 
-
 __all__ = [
     "MATERIAL_ACTION_RE",
     "action_chain_fragment",
     "actor_signature",
+    "base_adverbial_note_action",
     "clean_first_path_text",
     "clean_visible_result_phrase",
     "clip_first_path_phrase",

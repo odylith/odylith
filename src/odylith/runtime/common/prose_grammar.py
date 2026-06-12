@@ -15,6 +15,7 @@ _INFINITIVE_TO_FINITE = {
     "add": "adds",
     "advance": "advances",
     "allow": "allows",
+    "allocate": "allocates",
     "answer": "answers",
     "apply": "applies",
     "assemble": "assembles",
@@ -26,6 +27,7 @@ _INFINITIVE_TO_FINITE = {
     "build": "builds",
     "calculate": "calculates",
     "capture": "captures",
+    "catch": "catches",
     "check": "checks",
     "choose": "chooses",
     "classify": "classifies",
@@ -51,6 +53,8 @@ _INFINITIVE_TO_FINITE = {
     "dismiss": "dismisses",
     "display": "displays",
     "dispatch": "dispatches",
+    "drill": "drills",
+    "draft": "drafts",
     "edit": "edits",
     "emit": "emits",
     "enforce": "enforces",
@@ -112,8 +116,10 @@ _INFINITIVE_TO_FINITE = {
     "rank": "ranks",
     "rate": "rates",
     "read": "reads",
+    "receive": "receives",
     "recommend": "recommends",
     "record": "records",
+    "recompute": "recomputes",
     "refresh": "refreshes",
     "reject": "rejects",
     "request": "requests",
@@ -173,6 +179,18 @@ _FINITE_ACTION_SUFFIXES = (
     "izes",
     "ves",
 )
+_FINITE_ACTION_SUFFIX_FALSE_POSITIVES = frozenset(
+    {
+        "alternatives",
+        "archives",
+        "incentives",
+        "initiatives",
+        "narratives",
+        "objectives",
+        "perspectives",
+        "representatives",
+    }
+)
 
 
 def looks_like_finite_action(value: str) -> bool:
@@ -184,6 +202,8 @@ def looks_like_finite_action(value: str) -> bool:
         return False
     if token in _FINITE_ACTION_VERBS:
         return True
+    if token in _FINITE_ACTION_SUFFIX_FALSE_POSITIVES:
+        return False
     return token.endswith(_FINITE_ACTION_SUFFIXES)
 
 
@@ -223,11 +243,11 @@ def finite_action_clause(value: str, *, default_verb: str = "owns", default_sing
     if verb in _INFINITIVE_TO_FINITE and separator:
         return f"{_INFINITIVE_TO_FINITE[verb]} {tail.strip()}"
     if looks_like_finite_action(text):
-        return text[:1].lower() + text[1:]
+        return _lower_initial_for_sentence(text)
     if separator or default_single_token:
         default = str(default_verb or "owns").strip().lower() or "owns"
-        return f"{default} {text[:1].lower()}{text[1:]}"
-    return text[:1].lower() + text[1:]
+        return f"{default} {_lower_initial_for_sentence(text)}"
+    return _lower_initial_for_sentence(text)
 
 
 def third_person_action_verb(value: str) -> str:
@@ -252,6 +272,24 @@ def action_base_verb_pattern() -> str:
     """Return a regex alternation for base action verbs recognized by this module."""
 
     return "|".join(re.escape(verb) for verb in sorted(_INFINITIVE_TO_FINITE, key=len, reverse=True))
+
+
+def action_verb_pattern(
+    *,
+    include_base: bool = True,
+    include_finite: bool = True,
+    exclude: set[str] | frozenset[str] | None = None,
+) -> str:
+    """Return a regex alternation for recognized base and finite action verbs."""
+
+    verbs: set[str] = set()
+    if include_base:
+        verbs.update(_INFINITIVE_TO_FINITE)
+    if include_finite:
+        verbs.update(_INFINITIVE_TO_FINITE.values())
+    if exclude:
+        verbs.difference_update(str(verb).casefold() for verb in exclude)
+    return "|".join(re.escape(verb) for verb in sorted(verbs, key=len, reverse=True))
 
 
 def base_following_action_verbs(value: str) -> str:
@@ -286,7 +324,7 @@ def base_action_clause(value: str) -> str:
     first_content = next((part for part in parts if not re.fullmatch(r",\s*", part)), "")
     if first_content and not looks_like_action_clause(first_content):
         text = str(value or "").strip(" .")
-        return text[:1].lower() + text[1:]
+        return _lower_initial_for_sentence(text)
     converted: list[str] = []
     for part in parts:
         if re.fullmatch(r",\s*", part):
@@ -310,11 +348,11 @@ def _base_action_part(value: str) -> str:
     first, separator, rest = body.partition(" ")
     verb = first.casefold().strip(".,:;")
     if not separator and verb not in _FINITE_ACTION_VERBS:
-        return f"{leading}{prefix}{body[:1].lower()}{body[1:]}"
+        return f"{leading}{prefix}{_lower_initial_for_sentence(body)}"
     if verb in _FINITE_TO_BASE:
         base = _FINITE_TO_BASE[verb]
     elif verb not in _FINITE_ACTION_VERBS and not verb.endswith(_FINITE_ACTION_SUFFIXES):
-        return f"{leading}{prefix}{body[:1].lower()}{body[1:]}"
+        return f"{leading}{prefix}{_lower_initial_for_sentence(body)}"
     elif verb.endswith("ies"):
         base = f"{verb[:-3]}y"
     elif verb.endswith(("ches", "shes", "sses", "xes", "zes", "oes")):
@@ -325,3 +363,26 @@ def _base_action_part(value: str) -> str:
         base = verb
     suffix = f" {rest.strip()}" if separator else ""
     return f"{leading}{prefix}{base}{suffix}"
+
+
+def _lower_initial_for_sentence(value: str) -> str:
+    text = str(value or "")
+    if not text:
+        return ""
+    match = re.match(r"(?P<prefix>[^A-Za-z0-9]*)(?P<token>[A-Za-z0-9][A-Za-z0-9_/-]*)", text)
+    if not match:
+        return text[:1].lower() + text[1:]
+    token = match.group("token")
+    if _preserve_initial_token_case(token):
+        return text
+    index = len(match.group("prefix"))
+    return f"{text[:index]}{text[index:index + 1].lower()}{text[index + 1:]}"
+
+
+def _preserve_initial_token_case(token: str) -> bool:
+    letters = [char for char in str(token or "") if char.isalpha()]
+    if len(letters) < 2:
+        return False
+    if all(char.isupper() for char in letters):
+        return True
+    return any(char.isupper() for char in letters[1:])

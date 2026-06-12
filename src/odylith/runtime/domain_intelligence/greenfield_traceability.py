@@ -318,7 +318,12 @@ def _patch_sections(
         sections["Proposed Solution"] = _paragraph(
             [
                 f"Implementation slice: {first_slice}" if first_slice else "",
-                f"Keep validation gates tied to {scope_ref} before expanding adjacent source ownership." if focus else "",
+                (
+                    f"Keep success, blocked-input, replay, and handoff proof tied to {scope_ref} "
+                    "before expanding adjacent source ownership."
+                )
+                if focus
+                else "",
             ]
         )
     sections["Scope"] = _bullets(
@@ -331,7 +336,10 @@ def _patch_sections(
         _section_items(row.get("non_goals", []))
         or [
             f"Do not claim source-backed implementation ownership for {scope_ref} before code exists.",
-            f"Do not promote {scope_ref} claims before validation gates pass.",
+            (
+                f"Do not treat the {scope_ref} as release-ready until success, blocked-input, replay, "
+                "and handoff evidence are written and reviewed."
+            ),
         ]
     )
     sections["Risks"] = _bullets(_risk_lines(row.get("risks", [])) or risks[:3])
@@ -378,7 +386,9 @@ def _patch_sections(
     row_questions = _question_lines(row.get("open_questions", []))
     if not row_questions and _is_parent_workstream(row):
         row_questions = _scoped_question_lines(open_questions[:3], focus=focus)
-    sections["Open Questions"] = _bullets(row_questions)
+    sections["Open Questions"] = (
+        _bullets(row_questions) if row_questions else "- No unresolved questions are recorded for this slice."
+    )
     sections.update(build_artifact_enrichment(row=row, proposal=proposal).radar_sections)
 
 
@@ -433,7 +443,7 @@ def _why_now_text(*, row: Mapping[str, Any], focus: str, first_slice: str) -> st
     focus_text = _clean(focus) or "this workstream"
     if first_slice:
         return (
-            f"Do this before implementation expands so {focus_text} has a tested first slice, clear ownership, "
+            f"Do this before implementation expands so this workstream has a tested first slice for {focus_text}, clear ownership, "
             "and a release boundary the team can review."
         )
     opportunity = _clean(row.get("opportunity"))

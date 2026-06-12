@@ -16,66 +16,36 @@ from typing import Any
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     accepted_inputs_text as _accepted_inputs_text,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     component_shell_artifact as _component_shell_artifact,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
+    component_kind_echo_safe_phrase as _component_kind_echo_safe_phrase,
     contract_focus as _contract_focus,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     contract_list_text as _contract_list_text,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     label_compound_rank as _label_compound_rank,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
+    noun_slot_artifact_phrase as _noun_slot_artifact_phrase,
     outside_boundary as _outside_boundary,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     produced_outputs_text as _produced_outputs_text,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import proof_rows as _proof_rows
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
+    proof_rows as _proof_rows,
     state_transition_text as _state_transition_text,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     status_only_artifact_fragment as _status_only_artifact_fragment,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS as _ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_terms import GENERIC_TERMS as _GENERIC_TERMS
-from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    GENERIC_TERMS as _GENERIC_TERMS,
     action_forms_pattern as _action_forms_pattern,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     action_object_artifact_phrases as _action_object_artifact_phrases,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     clean_artifact_phrase as _clean_artifact_phrase,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     clean_artifact_phrases as _clean_artifact_phrases,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
-from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    content_terms as _content_terms,
     descriptor_anchor_phrases as _descriptor_anchor_phrases,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_terms import local_terms as _local_terms
-from odylith.runtime.domain_intelligence.greenfield_component_terms import looks_action_term as _looks_action_term
-from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    local_terms as _local_terms,
+    looks_action_term as _looks_action_term,
     object_clause_focus as _object_clause_focus,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     phrase_identity_terms as _phrase_identity_terms,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase as _phrase
-from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action as _strip_action
-from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase as _trim_phrase
-from odylith.runtime.domain_intelligence.greenfield_component_terms import (
+    phrase as _phrase,
+    strip_action as _strip_action,
+    trim_phrase as _trim_phrase,
     verb_forms_pattern as _verb_forms_pattern,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import (
@@ -198,7 +168,7 @@ def derive_component_semantic_contract(
         role="output",
         contract_terms=(*label_terms, *description_terms),
     )
-    critical = _result_like_phrase(output_focus) or critical
+    critical = _component_kind_echo_safe_phrase(label=label, phrase=_result_like_phrase(output_focus) or critical)
     states = _state_transition_text(
         action_terms=action_terms,
         object_phrases=object_phrases,
@@ -227,11 +197,13 @@ def derive_component_semantic_contract(
         context_compound_phrases,
         label_terms=label_terms,
     )
+    description_owned_phrases = _description_owned_phrases(description)
     owned_summary_phrases = summary_phrases[:7]
     title_identity_phrases = _title_identity_phrases(label_phrases, owned_summary_phrases)
     owned_seed = (
         (
             *title_identity_phrases,
+            *description_owned_phrases[:5],
             *owned_summary_phrases,
             *role_phrases[:3],
             *owned_context_phrases[:2],
@@ -248,6 +220,7 @@ def derive_component_semantic_contract(
         if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "score"))
         else "built from the wrong inputs"
     )
+    critical_noun = _noun_slot_artifact_phrase(critical)
     fields = {
         "owned_state": _contract_list_text(*owned_seed),
         "accepted_inputs": _accepted_inputs_text(input_focus),
@@ -258,7 +231,7 @@ def derive_component_semantic_contract(
         "upstream_truth": previous_label or "accepted first-path input",
         "downstream_consumers": next_label or "release review",
         "unique_failure": (
-            f"{label} can mislead users if {critical} {_present_verb(critical, singular='is', plural='are')} missing, stale, {failure_cause}, "
+            f"{label} can mislead users if {critical_noun} {_present_verb(critical_noun, singular='is', plural='are')} missing, stale, {failure_cause}, "
             "or shown without enough explanation to recover"
         ),
     }
@@ -303,7 +276,7 @@ def _component_role_phrases(*, label: str, description: str) -> tuple[str, ...]:
     text = _clean(" ".join([label, description])).casefold()
     phrases: list[str] = []
     if re.search(r"\b(?:audit|evidence|ledger|log|proof|replay|reviewable|trace)\b", text):
-        phrases.extend(["audit trail", "replay packet", "decision ledger"])
+        phrases.extend(["audit trail", "replay evidence", "decision ledger"])
     if re.search(r"\b(?:failure|blocked|invalid|missing|recovery)\b", text):
         phrases.append("failure reason ledger")
     if re.search(r"\b(?:guardrail|limit|rollout|release)\b", text):
@@ -651,6 +624,35 @@ def _owned_context_detail_phrases(
     return tuple(unique_text(rows))
 
 
+def _description_owned_phrases(value: str) -> tuple[str, ...]:
+    rows: list[str] = []
+    text = _clean(value)
+    if not text:
+        return ()
+    for part in re.split(r"\s*,\s*|\s+\band\b\s+", text, flags=re.IGNORECASE):
+        phrase = clean_artifact_text(
+            re.sub(r"^(?:owns?|records?|keeps?|tracks?|stores?|captures?)\s+", "", part, flags=re.IGNORECASE)
+        ).strip(" .")
+        phrase = re.sub(r"^(?:and|or)\s+", "", phrase, flags=re.IGNORECASE).strip(" .")
+        if not phrase:
+            continue
+        terms = list(_content_terms(phrase))
+        has_carrier = _owned_phrase_has_carrier(phrase, terms)
+        if (len(terms) < 2 and not has_carrier) or len(terms) > 5:
+            continue
+        if not has_carrier:
+            continue
+        rows.append(phrase.casefold())
+    return tuple(unique_text(rows))
+
+
+def _owned_phrase_has_carrier(phrase: str, terms: Sequence[str]) -> bool:
+    return bool(
+        set(terms) & _ARTIFACT_CARRIER_TERMS
+        or re.search(r"\b(?:acknowledgement|acknowledgment|blockers?|events?|flags?|histories|history|notes?|states?)\b", phrase, flags=re.IGNORECASE)
+    )
+
+
 def _bridge_phrase_rank(phrase: str) -> tuple[int, str]:
     terms = set(_content_terms(phrase))
     for index, term in enumerate(("rubric", "rule", "policy", "threshold", "rationale", "criteria", "version")):
@@ -660,8 +662,6 @@ def _bridge_phrase_rank(phrase: str) -> tuple[int, str]:
 
 
 def _lifecycle_phrases(label: str, description: str) -> list[str]:
-    """Add a compact lifecycle noun when local text names event/history flow."""
-
     description_terms = set(_content_terms(description))
     if not description_terms & {"event", "history", "resolution", "transition"}:
         return []
@@ -672,8 +672,6 @@ def _lifecycle_phrases(label: str, description: str) -> list[str]:
 
 
 def _dedupe_phrase_subsets(values: Sequence[str]) -> list[str]:
-    """Deduplicate phrases without erasing richer component-local details."""
-
     result: list[str] = []
     for phrase in values:
         terms = _phrase_identity_terms(phrase)
@@ -708,8 +706,6 @@ def _prioritize_object_phrases(
     label_terms: Sequence[str],
     description_terms: Sequence[str],
 ) -> list[str]:
-    """Prefer phrases that add intent-derived detail to the component boundary."""
-
     label_set = semantic_context.expanded_context_anchors(set(label_terms[:7]))
     description_set = semantic_context.expanded_context_anchors(set(description_terms[:10]))
 
@@ -769,6 +765,9 @@ def _drop_subsumed_singletons(values: Sequence[str]) -> list[str]:
     result: list[str] = []
     identities = [(phrase, _phrase_identity_terms(phrase)) for phrase in values]
     for phrase, terms in identities:
+        if phrase.casefold() in {"source evidence"}:
+            result.append(phrase)
+            continue
         if len(terms) == 1 and any(terms < other_terms for other_phrase, other_terms in identities if other_phrase != phrase):
             continue
         if terms & {"incomplete", "missing", "recent", "unavailable"} and any(

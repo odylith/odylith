@@ -239,7 +239,7 @@ def _generic_contract(
         "local_proof": [
             f"Successful path evidence for {label}: {focus}, visible result, and persisted explanation.",
             f"Blocked input evidence for {label}: invalid input covering {focus}, no misleading result, and recovery explanation.",
-            f"Recovery evidence for {label}: recovery context, next-step history, and proof trail for {focus}.",
+            f"Replay evidence for {label}: recovery context, next-step history, and proof trail for {focus}.",
         ],
         "upstream_truth": upstream,
         "downstream_consumers": downstream,
@@ -571,7 +571,7 @@ def _first_contract_item(value: str) -> str:
         return ""
     segment = re.split(r",|;", text, maxsplit=1)[0]
     segment = re.sub(r"^(?:and|or)\s+", "", segment, flags=re.IGNORECASE).strip(" .")
-    return segment
+    return _strip_leading_ownership_verb(segment)
 
 
 def _boundary_primary(label: str, owned: str) -> str:
@@ -585,14 +585,18 @@ def _boundary_primary(label: str, owned: str) -> str:
             continue
         if item.casefold() in {"source evidence", "blocker state", "next-step context"}:
             continue
-        return item
+        return _strip_leading_ownership_verb(item)
     for item in items:
         if re.match(r"^(?:user|actor|customer|client)\s+\w+", item, flags=re.IGNORECASE):
             continue
         if item.casefold() in {"source evidence", "blocker state", "next-step context"}:
             continue
-        return item
+        return _strip_leading_ownership_verb(item)
     return f"{subject} state"
+
+
+def _strip_leading_ownership_verb(value: str) -> str:
+    return re.sub(r"^(?:owns?|maintains?)\s+", "", _clause(value), flags=re.IGNORECASE).strip(" .")
 
 
 __all__ = [

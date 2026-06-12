@@ -273,6 +273,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         label = completion_text.component_label(component, 0)
         state_object = completion_text.state_object(proposal)
         state_ref = completion_text.state_reference(proposal)
+        state_change_ref = completion_text.object_reference_phrase(state_ref)
         focus = completion_text.component_focus_phrase(label=label, contract=contract, fallback=state_object)
         action = completion_text.action_phrase(proposal)
         outcome = completion_text.outcome_phrase(proposal)
@@ -294,7 +295,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             metrics = [
                 f"{label} proves one complete user path and lets the user {outcome_action}.",
                 f"{label} explains blocked, missing, or invalid input before the product shows a result.",
-                f"{label} preserves state responsibility, actor, source, status, result, and recovery context for each accepted change to {state_ref}.",
+                f"{label} preserves state responsibility, actor, source, status, result, and recovery context for each accepted change to {state_change_ref or state_ref}.",
             ]
             if completion_text.row_is_release_proof(row):
                 if non_goal_rows:
@@ -341,7 +342,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             changed = True
         if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block"), min_items=1) or drifted:
             row["validation"] = [
-                f"Validate one successful {label} path, one missing-input path, and one corrected path against the visible product outcome.",
+                f"Validate one successful {_path_phrase(label)}, one missing-input path, and one corrected path against the visible product outcome.",
             ]
             changed = True
     return changed
@@ -418,7 +419,13 @@ def _repair_preflight_issues(
         or "clearer separation" in issue_text
     ):
         changed |= differentiate_component_contracts(proposal, max_passes=_MAX_COMPLETION_PASSES)
-    if "generated prose" in issue_text or "malformed" in issue_text or "sentence" in issue_text:
+    if (
+        "generated prose" in issue_text
+        or "malformed" in issue_text
+        or "sentence" in issue_text
+        or "semantic slop" in issue_text
+        or "modal/base-form" in issue_text
+    ):
         changed |= _repair_generated_sentence_lists(proposal, release_selector=release_selector)
     return changed
 
@@ -508,7 +515,7 @@ def _repair_backlog_success_language(proposal: dict[str, Any], *, release_select
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "replay", "evidence")):
             changed |= _set_list(row, "success_metrics", metrics, limit=1000)
         validation = [
-            _sentence(f"Validate a successful {title} path, a blocked path, replay, role access, privacy handling, and evidence visibility.", limit=360),
+            _sentence(f"Validate a successful {_path_phrase(title)}, a blocked path, replay, role access, privacy handling, and evidence visibility.", limit=360),
             _sentence(f"Reject release readiness when {title} cannot explain its result, changed state, access posture, or recovery path.", limit=420),
         ]
         if _sequence_needs_repair(row.get("validation"), required_tokens=("success", "block", "replay")):
@@ -597,11 +604,18 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
                 row,
                 "validation",
                 [
-                    f"Validate a successful {title} path, a blocked path, replay, role access, privacy handling, and evidence visibility.",
+                    f"Validate a successful {_path_phrase(title)}, a blocked path, replay, role access, privacy handling, and evidence visibility.",
                     f"Reject release readiness when {title} cannot explain its result, changed state, access posture, or recovery path.",
                 ],
             )
         changed |= _repair_domain_intelligence_metrics(row, title=title, action=action, outcome=outcome, state_object=state_object)
+        changed |= _repair_domain_intelligence_sentence_lists(
+            row,
+            title=title,
+            action=action,
+            outcome=outcome,
+            state_object=state_object,
+        )
         if _sequence_has_text_repair(row.get("rationale_lines")):
             changed |= _set_list(
                 row,
@@ -651,11 +665,52 @@ def _repair_domain_intelligence_metrics(
     )
 
 
+def _repair_domain_intelligence_sentence_lists(
+    row: dict[str, Any],
+    *,
+    title: str,
+    action: str,
+    outcome: str,
+    state_object: str,
+) -> bool:
+    intelligence = row.get("domain_intelligence")
+    if not isinstance(intelligence, dict):
+        return False
+    outcome_action = completion_text.outcome_action_phrase(outcome)
+    changed = False
+    if _sequence_has_text_repair(intelligence.get("scope")):
+        changed |= _set_list(
+            intelligence,
+            "scope",
+            [
+                f"{title} starts with a representative user who can {action}.",
+                f"{title} stays inside the first release until the product can {outcome_action} and explain blocked input.",
+            ],
+        )
+    if _sequence_has_text_repair(intelligence.get("state")):
+        changed |= _set_list(
+            intelligence,
+            "state",
+            [
+                f"State focus: {title} records the facts needed to support {action}.",
+                f"{state_object} remains trustworthy when the visible result, blocker, and recovery path can be replayed.",
+            ],
+        )
+    return changed
+
+
 def _ensure_text(row: dict[str, Any], key: str, default: str, *, repair_bad_text: bool = False) -> bool:
     if _clean(row.get(key)) and not (repair_bad_text and _text_needs_repair(row.get(key))):
         return False
     row[key] = default
     return True
+
+
+def _path_phrase(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "path"
+    return text if text.split()[-1].casefold().strip(".,;:") == "path" else f"{text} path"
 
 
 def _repair_bad_scalar(row: dict[str, Any], key: str, *, fallback: str = "") -> bool:

@@ -72,3 +72,23 @@ def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns(
     assert "technician open" not in rendered
     assert "service visit" in rendered
     assert not generated_semantic_slop_issues(contract)
+
+
+def test_component_contract_preserves_relative_clause_objects_as_artifacts() -> None:
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Revision Tracker",
+            "source_system_description": "links applicant revisions to the documents and checks they are meant to address",
+        },
+        proposal={},
+        sibling={"label": "Decision Package Review"},
+        previous_label="Zoning Check Ledger",
+        next_label="Decision Package Review",
+        state_label="Permit Review File",
+    ).fields
+    rendered = json.dumps(contract, sort_keys=True).casefold()
+
+    assert "applicant revisions to the documents and related checks" in rendered
+    assert "checks are meant to address" not in rendered
+    assert "checks are meant" not in rendered
+    assert not generated_semantic_slop_issues(contract)

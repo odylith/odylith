@@ -97,6 +97,35 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
     assert "Implement browse-to-checkout with payment sandbox failure recovery." in text
 
 
+def test_component_spec_template_avoids_duplicate_attached_clause() -> None:
+    text = component_spec_rendering.build_component_spec(
+        component_id="status-history",
+        label="Status History Store",
+        path="src/status_history",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-210",),
+        component_contract={
+            "owned_state": [
+                "record status",
+                "review timeline",
+                "access history",
+                "retention detail",
+                "document attachment attached",
+            ],
+            "accepted_inputs": ["status update"],
+            "produced_outputs": ["review history attached"],
+            "states_or_transitions": ["created", "reviewed", "attached"],
+            "outside_boundary": ["downstream interpretation"],
+            "local_proof": ["Replay proof shows the accepted record history."],
+        },
+    )
+
+    assert "attached attached" not in text
+    assert "document attachment in the record instead of leaving those facts implicit" in text
+
+
 def test_component_spec_template_keeps_greenfield_contracts_concise() -> None:
     text = component_spec_rendering.build_component_spec(
         component_id="field-intake",

@@ -5,7 +5,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text
@@ -14,7 +16,11 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_s
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_clauses
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
@@ -32,6 +38,7 @@ def confirmed_project_brief(
     problem: str = "",
     human_actors: list[str] | None = None,
     internal_systems: list[str] | None = None,
+    component_labels: list[str] | None = None,
     external_systems: list[str] | None = None,
     assumptions: list[str] | None = None,
     ambiguities: list[str] | None = None,
@@ -43,16 +50,18 @@ def confirmed_project_brief(
     evidence_label = domain_object_label(evidence_record, fallback=evidence_record)
     state_ref = sentence_label(state_label)
     evidence_ref = sentence_label(evidence_label)
-    actor_summary = boundary_clause_text(human_actors) or f"the first {label_lower} operator and reviewer"
-    internal_summary = join_system_labels(internal_systems) or (
+    actor_summary = _actor_boundary_text(human_actors) or f"the first {label_lower} operator and reviewer"
+    internal_summary = join_system_labels(internal_systems, limit=8) or (
         f"{state_ref} ownership and {evidence_ref} review"
     )
+    component_summary = join_system_labels(component_labels, limit=8) or internal_summary
     external_summary = boundary_clause_text(external_systems) or "explicitly deferred external systems"
     story = product_story or (
         f"{label} turns the confirmed request into one usable product path with named users, "
         "owned state, and reviewable proof."
     )
     story_brief = _brief_clause(story, limit=420)
+    story_gate = _story_readiness_summary(story, fallback=story_brief, limit=260)
     first = _first_path_brief(
         first_path
         or f"The first release proves one {label_lower} path from intake through state update and evidence review.",
@@ -63,6 +72,12 @@ def confirmed_project_brief(
         f"{evidence_ref} can be reviewed together."
     )
     proof = _brief_clause(proof_claim_summary(proof_source, limit=300), limit=300)
+    first_gate = _first_path_readiness_summary(
+        first_path or first,
+        fallback=first,
+        proof_boundary=proof_source,
+        limit=260,
+    )
     non_goal_summary = (
         boundary_clause_text(non_goals) or "wider automation, live irreversible integrations, and production scaling"
     )
@@ -178,11 +193,11 @@ def confirmed_project_brief(
             ),
         ],
         "coding_readiness_gates": [
-            f"The accepted product story is present before implementation planning: {story_brief}",
-            f"The first path is accepted in domain language: {first}",
+            f"The accepted product story names the user problem: {_sentence_text(story_gate)}",
+            f"The first implementation lane is ready when it covers: {_sentence_text(first_gate)}",
             (
                 f"The {label_lower} components come from product systems named in the accepted product "
-                f"direction: {internal_summary}."
+                f"direction: {component_summary}."
             ),
             f"Release {release} has validation gates for success, failure, replay, access, and review evidence.",
             f"External dependencies for {label_lower} are simulated, sandboxed, source-backed, or explicitly deferred.",
@@ -235,6 +250,36 @@ def _sentence_text(value: str) -> str:
     return f"{text}."
 
 
+def _actor_boundary_text(items: list[str] | None, *, limit: int = 4) -> str:
+    values = [_actor_boundary_item(item) for item in (items or []) if str(item or "").strip()]
+    values = [value for value in values if value]
+    return "; ".join(values[:limit])
+
+
+def _actor_boundary_item(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if not text:
+        return ""
+    label, sep, body = _split_actor_boundary_item(text)
+    if sep and label:
+        if is_deferred_actor(text):
+            return f"{label}: supplies context and support; deferred from the first path"
+        if body:
+            return f"{label}: {body}"
+        return label
+    return boundary_clause_text([text])
+
+
+def _split_actor_boundary_item(value: str) -> tuple[str, str, str]:
+    for separator in (":", " — ", " – ", " - "):
+        head, sep, body = value.partition(separator)
+        label = compact_text(head).strip(" .:-")
+        detail = compact_text(body).strip(" .")
+        if sep and label and _word_count(label) <= 10:
+            return label, sep, detail
+    return "", "", ""
+
+
 def _command_prompt(*, label: str, first: str, fallback: str) -> str:
     prompt = compact_text(f"{label}: {first}").strip(" .:")
     if prompt and len(prompt) <= 240:
@@ -256,8 +301,70 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
 def _first_path_brief(value: str, *, limit: int = 180) -> str:
     steps = first_path_steps(value)
     if steps:
-        return _brief_clause(". ".join(steps), limit=limit)
-    return _brief_clause(value, limit=limit)
+        return _brief_clause(base_adverbial_note_action(". ".join(steps)), limit=limit)
+    return _brief_clause(base_adverbial_note_action(value), limit=limit)
+
+
+def _story_readiness_summary(value: str, *, fallback: str, limit: int = 220) -> str:
+    candidates = [
+        _remove_colon_action_list(sentence)
+        for sentence in _summary_sentences(value)
+        if _remove_colon_action_list(sentence)
+    ]
+    candidates.append(_remove_colon_action_list(fallback))
+    for candidate in candidates:
+        summary = _brief_clause(candidate, limit=limit)
+        if len(summary.split()) >= 6:
+            return summary
+    return _brief_clause(fallback, limit=limit)
+
+
+def _first_path_readiness_summary(
+    value: str,
+    *,
+    fallback: str,
+    proof_boundary: str,
+    limit: int = 220,
+) -> str:
+    clauses = first_path_clauses(
+        value,
+        proof_boundary=proof_boundary,
+        action_fallback=fallback,
+        capability_fallback=fallback,
+        outcome_fallback="",
+        action_limit=limit,
+        capability_limit=limit,
+        outcome_limit=limit,
+    )
+    capability = _dedupe_repeated_capability(clauses.capability_chain)
+    text = capability or clauses.action_chain or fallback
+    return _brief_clause(base_adverbial_note_action(text), limit=limit)
+
+
+def _summary_sentences(value: str) -> list[str]:
+    text = compact_text(value).strip()
+    if not text:
+        return []
+    return [part.strip(" .") for part in re.split(r"(?<=[.!?])\s+", text) if part.strip(" .")]
+
+
+def _remove_colon_action_list(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    head, separator, tail = text.partition(":")
+    if separator and looks_like_action_clause(tail):
+        return head.strip(" .")
+    return text
+
+
+def _dedupe_repeated_capability(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    parts = text.split(" and ")
+    for index in range(1, len(parts)):
+        left = " and ".join(parts[:index]).strip()
+        right = " and ".join(parts[index:]).strip()
+        if left and left.casefold() == right.casefold():
+            return left
+    return text
 
 
 def _remove_orphan_without_it_tail(value: str) -> str:
@@ -299,7 +406,11 @@ def _state_reference_text(state_object: str, *, state_label: str) -> str:
         sentences = [part.strip() for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
         if len(sentences) <= 1:
             detail = state_detail_summary(text, state_label=state_label, limit=220)
-            if detail and not detail.casefold().endswith((" and", " for", " of", " through", " with")):
+            if (
+                detail
+                and not detail.casefold().endswith((" and", " for", " of", " through", " with"))
+                and not state_detail_restates_label_with_finite_action(detail, state_label=state_label)
+            ):
                 return sentence_label(detail)
     return sentence_label(state_label)
 

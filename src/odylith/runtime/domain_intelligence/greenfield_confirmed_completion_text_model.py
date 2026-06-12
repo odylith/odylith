@@ -12,9 +12,11 @@ from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import text_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -105,12 +107,22 @@ def _base_user_action_phrase(value: str) -> str:
     if not text:
         return ""
     text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
+    actor_action = _actor_led_base_action_phrase(text)
+    if actor_action:
+        return actor_action
+    return base_action_clause(text)
+
+
+def _actor_led_base_action_phrase(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
     words = text.split()
     for index in range(1, min(len(words), 6)):
         candidate = " ".join(words[index:]).strip(" .")
         if looks_like_finite_action(candidate):
             return base_action_clause(candidate)
-    return base_action_clause(text)
+    return ""
 
 
 def outcome_phrase(proposal: Mapping[str, Any]) -> str:
@@ -129,6 +141,9 @@ def outcome_action_phrase(outcome: str) -> str:
         return f"see {text}"
     if _looks_like_predicate_result(text):
         return f"see that {text}"
+    actor_action = _actor_led_base_action_phrase(re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE))
+    if actor_action:
+        return actor_action
     words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
     if words & _VISIBLE_SEE_RESULT_HINTS:
         return f"see {text}"
@@ -414,6 +429,8 @@ def _state_reference_detail(raw_state: str, *, state_label: str) -> str:
     detail = state_detail_summary(text, state_label=state_label, limit=220)
     if not detail or detail.casefold().endswith((" and", " for", " of", " through", " with")):
         return ""
+    if state_detail_restates_label_with_finite_action(detail, state_label=state_label):
+        return ""
     return detail
 
 
@@ -461,6 +478,7 @@ __all__ = [
     "lower_first",
     "outcome_action_phrase",
     "outcome_phrase",
+    "object_reference_phrase",
     "primary_component_for_backlog",
     "project_title",
     "proof_capability_phrase",

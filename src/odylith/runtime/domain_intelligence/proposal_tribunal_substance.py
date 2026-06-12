@@ -324,7 +324,11 @@ def _check_atlas_source_preserves_first_path_tail(
     first_path = " ".join(text_values(intent.get("first_path")))
     if not first_path:
         return
-    semantic_steps = [step for step in semantic_first_path_steps(first_path) if len(_term_set(step)) >= 2]
+    semantic_steps = [
+        step
+        for step in semantic_first_path_steps(first_path)
+        if len(_term_set(step)) >= 2 and not _looks_like_first_path_meta_summary(step)
+    ]
     if semantic_steps:
         tail = semantic_steps[-1]
     else:
@@ -337,6 +341,22 @@ def _check_atlas_source_preserves_first_path_tail(
     required_tail_hits = min(2, len(tail_terms))
     if len(tail_terms & source_terms) < required_tail_hits:
         issues.append(f"confirmed Atlas {kind} `{title}` omits the tail of the accepted first path")
+
+
+def _looks_like_first_path_meta_summary(value: str) -> bool:
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    if not text:
+        return False
+    return bool(
+        re.search(
+            r"\b(?:path|journey|workflow|flow|loop)\s+is\s+(?:the\s+)?(?:proof|evidence|reason|signal)\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+        or re.search(r"\bproof\s+the\s+product\s+works\b", text, flags=re.IGNORECASE)
+        or re.match(r"^(?:this|that)\s+[^.]{0,120}\b(?:path|journey|workflow|flow|loop)\b", text, flags=re.IGNORECASE)
+        and re.search(r"\b(?:proof|proves?|works?|working|complete|end\s+to\s+end)\b", text, flags=re.IGNORECASE)
+    )
 
 
 def _check_sequence_starts_at_first_boundary(

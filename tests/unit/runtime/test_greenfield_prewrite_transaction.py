@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
     build_greenfield_package_report,
     GreenfieldCompletionPackage,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_until_clean
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -383,10 +384,10 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_
     assert "Proposes the next adjustment" in str(recommendation_component.get("responsibility", ""))
     assert "Maintains proposes" not in str(recommendation_component.get("responsibility", ""))
     assert "one concrete" not in str(recommendation_component.get("responsibility", "")).casefold()
-    assert "It should explain how the burn estimation result is calculated" in component_text
-    assert "Burn Estimation Engine shows burn estimation result on a successful path" in component_text
-    assert "Recommendation Engine shows next-day adjustment recommendation on a successful path" in component_text
-    assert "Activity Log and Profile Store shows profile store state on a successful path" in activity_component_text
+    assert "It should explain how the energy-out number is calculated" in component_text
+    assert "Successful path evidence for Burn Estimation Engine: energy-out number" in component_text
+    assert "Successful path evidence for Recommendation Engine: next-day adjustment recommendation" in component_text
+    assert "Successful path evidence for Activity Log and Profile Store" in activity_component_text
     assert "No explicit dependency recorded yet" not in idea_text
     assert "Run focused validation for the touched paths once implementation begins" not in idea_text
     assert "Queue now, then bind a technical plan when the implementation wave starts" not in idea_text
@@ -662,6 +663,62 @@ def test_greenfield_package_gate_rejects_mechanical_operator_next_steps(tmp_path
     assert "operator next-steps preview leaked Registry contract tuple prose" in "\n".join(report.issues)
 
 
+def test_greenfield_package_repair_rechecks_until_copy_defects_are_clean(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    next_steps = _next_steps_preview()
+    next_steps["coding_readiness_gates"] = [
+        "The first path is accepted: mark the location, optionally notes context and save.",
+        "Release boundary is acknowledged.",
+        "Verification commands are known.",
+    ]
+    package = _package_for_quality_report(proposal, next_steps_preview=next_steps)
+
+    initial = build_greenfield_package_report(package)
+    result = repair_greenfield_package_until_clean(package)
+    rendered = json.dumps(result.package.next_steps_preview, sort_keys=True)
+
+    assert not initial.passed
+    assert any("mixed finite/base action prose" in issue for issue in initial.issues)
+    assert result.changed
+    assert result.passes >= 1
+    assert result.report.passed
+    assert "optionally notes" not in rendered
+    assert "optionally note context and save" in rendered
+
+
+def test_greenfield_package_repair_cleans_malformed_responsibility_copy(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    backlog_result = _prewrite_backlog_result(proposal)
+    program_result = {"created": True, "dry_run": True}
+    rendered_specs = greenfield_apply_components.render_prewrite_component_specs(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=backlog_result,
+        program_result=program_result,
+    )
+    first_label = next(iter(rendered_specs))
+    rendered_specs[first_label] = f"{rendered_specs[first_label]}\n\n{first_label} owns maintains state."
+    package = _package_for_quality_report(
+        proposal,
+        rendered_component_specs=rendered_specs,
+        backlog_result=backlog_result,
+        program_result=program_result,
+    )
+
+    initial = build_greenfield_package_report(package)
+    result = repair_greenfield_package_until_clean(package)
+    rendered = json.dumps(result.package.rendered_component_specs, sort_keys=True)
+
+    assert not initial.passed
+    assert any("malformed ownership verb pair" in issue for issue in initial.issues)
+    assert result.changed
+    assert result.initial_report == initial
+    assert result.report.passed, "\n".join(result.report.issues)
+    assert "owns maintains" not in rendered
+    assert "owns state" in rendered
+
+
 def test_greenfield_package_gate_rejects_structural_contract_tuple_variants(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     next_steps = _next_steps_preview()
@@ -920,14 +977,17 @@ def test_greenfield_package_gate_rejects_invalid_lifecycle_inflection(tmp_path: 
         program_result={"created": True, "dry_run": True},
     )
     first_key = next(iter(rendered_specs))
-    rendered_specs[first_key] += "\n\nThe important lifecycle is requested, seted, and validated.\n"
+    rendered_specs[first_key] += "\n\nThe important lifecycle is requested, seted, flaging, and validated.\n"
 
     report = build_greenfield_package_report(
         _package_for_quality_report(proposal, backlog_result=backlog_result, rendered_component_specs=rendered_specs)
     )
 
     assert not report.passed
-    assert "invalid verb inflection" in "\n".join(report.issues)
+    issues = "\n".join(report.issues)
+    assert "invalid verb inflection" in issues
+    assert "`seted`" in issues
+    assert "`flaging`" in issues
 
 
 def test_greenfield_package_gate_rejects_vague_missing_input_copy(tmp_path: Path) -> None:

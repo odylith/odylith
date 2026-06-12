@@ -6,6 +6,8 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import generic_actor_label_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS
@@ -182,7 +184,11 @@ def proof_rows(
     sibling_label: str,
     sibling_focus: str,
 ) -> list[str]:
-    proof_focus = _proof_focus(critical=critical, output_focus=output_focus, object_list=object_list)
+    proof_focus = component_kind_echo_safe_phrase(
+        label=label,
+        phrase=_proof_focus(critical=critical, output_focus=output_focus, object_list=object_list),
+    )
+    handoff_focus = noun_slot_artifact_phrase(proof_focus)
     rows = [
         f"Successful path evidence for {label}: {proof_focus}, required inputs, visible result, and reviewer explanation.",
         f"Blocked input evidence for {label}: missing or malformed input, stops before a trusted result, and recovery explanation.",
@@ -190,10 +196,28 @@ def proof_rows(
     ]
     if sibling_label:
         rows.append(
-            f"Handoff evidence for {sibling_label}: {sibling_label} can consume {proof_focus} without owning or rewriting {label}'s local state."
-            + (f" {sibling_focus} remains outside {label}'s boundary." if sibling_focus else "")
+            f"Handoff evidence for {sibling_label}: {sibling_label} can consume {handoff_focus} without owning or rewriting state owned by {label}."
+            + (f" {sibling_focus} remains outside the boundary owned by {label}." if sibling_focus else "")
         )
     return rows
+
+
+def noun_slot_artifact_phrase(value: str) -> str:
+    """Return a grammatical artifact phrase for contexts that require a noun."""
+
+    text = clean_artifact_text(value).strip(" .")
+    if not text:
+        return "local proof evidence"
+    if looks_like_action_clause(text):
+        action = base_action_clause(text).strip(" .")
+        return f"evidence for {action}" if action else "local proof evidence"
+    artifact = clean_artifact_phrase(text).strip(" .") or text
+    artifact_terms = {word.casefold().strip(".,;:") for word in artifact.split()}
+    if artifact_terms & ARTIFACT_CARRIER_TERMS:
+        return artifact
+    if not artifact.casefold().startswith(("evidence ", "evidence for ", "proof ", "proof for ")):
+        return f"evidence for {artifact}"
+    return artifact
 
 
 def component_shell_artifact(value: str) -> bool:
@@ -454,6 +478,8 @@ def _past_tense(value: str) -> str:
         "build": "built",
         "choose": "chosen",
         "find": "found",
+        "flag": "flagged",
+        "intake": "received",
         "keep": "kept",
         "leave": "left",
         "log": "logged",
@@ -472,6 +498,44 @@ def _past_tense(value: str) -> str:
     if verb.endswith("y") and len(verb) > 1 and verb[-2] not in {"a", "e", "i", "o", "u"}:
         return f"{verb[:-1]}ied"
     return f"{verb}ed"
+
+
+_COMPONENT_KIND_TERMS = frozenset(
+    {
+        "adapter",
+        "client",
+        "component",
+        "engine",
+        "module",
+        "queue",
+        "service",
+        "store",
+        "surface",
+        "system",
+        "view",
+    }
+)
+
+
+def component_kind_echo_safe_phrase(*, label: str, phrase: str) -> str:
+    """Avoid proof phrases that echo the component kind right after the label."""
+
+    text = _clean(phrase).strip(" .")
+    if not text:
+        return ""
+    label_words = [word.casefold() for word in visible_words(label) if word.strip()]
+    phrase_words = text.split()
+    if not label_words or len(phrase_words) < 2:
+        return text
+    label_kind = label_words[-1]
+    phrase_kind = phrase_words[0].casefold().strip(".,;:")
+    if label_kind not in _COMPONENT_KIND_TERMS or phrase_kind != label_kind:
+        return text
+    stem = " ".join(label_words[:-1]).strip()
+    tail = " ".join(phrase_words[1:]).strip()
+    if stem:
+        return f"{stem} {tail}".strip(" .")
+    return tail or text
 
 
 def _proof_focus(*, critical: str, output_focus: str, object_list: str) -> str:
@@ -559,10 +623,12 @@ def _clean(value: Any) -> str:
 
 __all__ = [
     "accepted_inputs_text",
+    "component_kind_echo_safe_phrase",
     "component_shell_artifact",
     "contract_focus",
     "contract_list_text",
     "label_compound_rank",
+    "noun_slot_artifact_phrase",
     "outside_boundary",
     "produced_outputs_text",
     "proof_rows",

@@ -83,10 +83,10 @@ def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -
         name = _flatten_parenthetical_label(name)
         description = _clean_system_description(description)
         if _system_description_is_enough(description):
-            return f"{_title_case(name)} — {description.rstrip('.')}"
+            return f"{_title_case_system_name(name)} — {description.rstrip('.')}"
     relative_name, relative_description = _relative_system_label_parts(raw)
     if relative_name and _system_description_is_enough(relative_description):
-        return f"{_title_case(relative_name)} — {_clean_system_description(relative_description)}"
+        return f"{_title_case_system_name(relative_name)} — {_clean_system_description(relative_description)}"
     name = _system_label(raw, title=title)
     if not name:
         return ""
@@ -161,7 +161,7 @@ def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
         f"records the result, validation status, release decision, failure reason, and reviewable proof: {proof}",
         "shows the visible result, known limits, and recovery conditions before broader rollout",
     ]
-    return [f"{_title_case(name)} — {description.rstrip('.')}" for name, description in zip(names, descriptions)]
+    return [f"{_title_case_system_name(name)} — {description.rstrip('.')}" for name, description in zip(names, descriptions)]
 
 
 def _clean_system_description(value: str) -> str:
@@ -213,7 +213,57 @@ def _system_label(row: str, *, title: str) -> str:
     raw = _repair_system_label_tail(raw)
     if _word_count(raw) > 14:
         raw = _compact_system_label(raw)
-    return _title_case(raw or f"{_focus_label(title)} system")
+    return _title_case_system_name(raw or f"{_focus_label(title)} system")
+
+
+def _title_case_system_name(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(
+        r"^Reviewer\s+(?=(?:Dashboard|Export|Surface|View|Portal|Report|Package)\b)",
+        "Review ",
+        text,
+        flags=re.IGNORECASE,
+    )
+    words: list[str] = []
+    for index, raw in enumerate(text.split()):
+        word = raw.strip()
+        lower = word.casefold()
+        if index > 0 and lower in {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
+            words.append(lower)
+        elif _preserve_system_slash_token(word):
+            words.append("/".join(_title_case_system_token(part) for part in word.split("/") if part))
+        elif _preserve_system_hyphen_token(word):
+            head, *tail = word.split("-")
+            words.append("-".join([_title_case_system_token(head), *tail]))
+        else:
+            words.append(_title_case(word))
+    return _clean(" ".join(words))
+
+
+def _preserve_system_slash_token(value: str) -> bool:
+    if "/" not in value or re.search(r"://|^/", value):
+        return False
+    lower = value.casefold().strip(".,;:()")
+    return lower == "rule/threshold" or all(part.isupper() and len(part) <= 5 for part in value.split("/") if part)
+
+
+def _preserve_system_hyphen_token(value: str) -> bool:
+    if "-" not in value or value.startswith("-") or value.endswith("-"):
+        return False
+    lower = value.casefold().strip(".,;:()")
+    return lower in {
+        "conflict-of-interest",
+        "reason-code",
+        "revision-round",
+        "role-based",
+        "source-backed",
+        "user-facing",
+    }
+
+
+def _title_case_system_token(value: str) -> str:
+    token = _clean(value)
+    return f"{token[:1].upper()}{token[1:]}" if token else ""
 
 
 def _strip_relative_system_label_clause(value: str) -> str:

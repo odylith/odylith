@@ -17,6 +17,55 @@ class GeneratedCopyFinding:
     message: str
 
 
+_INLINE_ROLE_TERMS = (
+    "Admin",
+    "Administrator",
+    "Actor",
+    "Applicant",
+    "Coordinator",
+    "Customer",
+    "Lead",
+    "Manager",
+    "Operator",
+    "Owner",
+    "Participant",
+    "Reviewer",
+    "User",
+)
+_INLINE_ROLE_HEAD_STOPWORDS = frozenset(
+    {
+        "and",
+        "as",
+        "at",
+        "by",
+        "each",
+        "for",
+        "from",
+        "in",
+        "include",
+        "includes",
+        "involve",
+        "involves",
+        "is",
+        "list",
+        "lists",
+        "of",
+        "one",
+        "or",
+        "show",
+        "shows",
+        "so",
+        "that",
+        "the",
+        "this",
+        "to",
+        "treat",
+        "treating",
+        "with",
+    }
+)
+
+
 def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
     """Return public-copy failures classified by generated-prose shape."""
 
@@ -42,13 +91,43 @@ def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
             findings.append(GeneratedCopyFinding("awkward_visible_result_action", f"{scope} leaked awkward visible-result action prose"))
         if _has_presentational_action_splice(text.casefold()):
             findings.append(GeneratedCopyFinding("presentational_action_splice", f"{scope} leaked presentational verb/action splice prose"))
+        if _has_mixed_adverbial_action_inflection(text):
+            findings.append(GeneratedCopyFinding("mixed_action_inflection", f"{scope} leaked mixed finite/base action prose"))
         if _has_template_slice_prefix(lowered):
             findings.append(GeneratedCopyFinding("template_slice_prefix", f"{scope} leaked repetitive implementation-slice template prose"))
         if _has_meta_loop_outcome(lowered):
             findings.append(GeneratedCopyFinding("meta_loop_outcome", f"{scope} leaked meta loop summary as product outcome"))
         if _has_malformed_component_responsibility(lowered):
             findings.append(GeneratedCopyFinding("malformed_component_responsibility", f"{scope} leaked malformed component responsibility prose"))
+        if _has_malformed_relative_clause_split(lowered):
+            findings.append(GeneratedCopyFinding("malformed_relative_clause_split", f"{scope} leaked malformed relative-clause split prose"))
     return unique_text(finding.message for finding in findings)
+
+
+def has_inline_role_casing_drift(value: Any) -> bool:
+    """Return true for sentence text like ``the station Lead``."""
+
+    pattern = "|".join(re.escape(term) for term in _INLINE_ROLE_TERMS)
+    for match in re.finditer(
+        rf"\b(?:the|a|an|this|that)\s+(?P<head>[a-z][a-z0-9'-]*)\s+(?P<role>{pattern})\b",
+        str(value or ""),
+    ):
+        if match.start("head") > 0 and str(value or "")[match.start("head") - 1] == "-":
+            continue
+        if match.group("head").casefold() in _INLINE_ROLE_HEAD_STOPWORDS:
+            continue
+        if _continues_title_after_role(value, match.end()):
+            continue
+        return True
+    return False
+
+
+def _continues_title_after_role(value: Any, offset: int) -> bool:
+    tail = str(value or "")[offset:].lstrip()
+    if re.match(r"^[/&]\s+[A-Z]", tail):
+        return True
+    match = re.match(r"([A-Za-z][A-Za-z0-9'-]*)\b", tail)
+    return bool(match and match.group(1)[:1].isupper())
 
 
 def _has_mechanical_actor_path_clause(tokens: tuple[str, ...]) -> bool:
@@ -96,15 +175,158 @@ def _has_awkward_visible_result_action(tokens: tuple[str, ...]) -> bool:
     return False
 
 
+_PRESENTATIONAL_VERBS = {"display", "displays", "present", "presents", "show", "showing", "shown", "shows"}
+_PRESENTATIONAL_SPLICE_ACTIONS = {
+    "add",
+    "choose",
+    "complete",
+    "create",
+    "enter",
+    "log",
+    "make",
+    "open",
+    "pick",
+    "reach",
+    "record",
+    "review",
+    "select",
+    "submit",
+    "use",
+}
+_ARTIFACT_MODIFIER_FOLLOWERS = {
+    "account",
+    "accounts",
+    "action",
+    "actions",
+    "answer",
+    "answers",
+    "area",
+    "areas",
+    "case",
+    "cases",
+    "change",
+    "changes",
+    "check",
+    "checks",
+    "context",
+    "contexts",
+    "decision",
+    "decisions",
+    "detail",
+    "details",
+    "entry",
+    "entries",
+    "event",
+    "events",
+    "evidence",
+    "fact",
+    "facts",
+    "field",
+    "fields",
+    "flow",
+    "flows",
+    "history",
+    "input",
+    "inputs",
+    "item",
+    "items",
+    "ledger",
+    "ledgers",
+    "limit",
+    "limits",
+    "list",
+    "lists",
+    "note",
+    "notes",
+    "option",
+    "options",
+    "output",
+    "outputs",
+    "packet",
+    "packets",
+    "path",
+    "paths",
+    "plan",
+    "plans",
+    "proof",
+    "proofs",
+    "question",
+    "questions",
+    "readiness",
+    "record",
+    "records",
+    "result",
+    "results",
+    "route",
+    "routes",
+    "state",
+    "states",
+    "status",
+    "statuses",
+    "step",
+    "steps",
+    "summary",
+    "summaries",
+    "view",
+    "views",
+}
+
+
 def _has_presentational_action_splice(text: str) -> bool:
-    return bool(
-        re.search(
-            r"\b(?:display|displays|present|presents|show|showing|shown|shows)\s+"
-            r"(?:add|choose|complete|create|enter|log|make|open|pick|reach|record|review|select|submit|use)\b",
-            text,
-            flags=re.IGNORECASE,
-        )
+    tokens = tuple(token.casefold() for token in _word_tokens(text))
+    for index, token in enumerate(tokens[:-1]):
+        if token not in _PRESENTATIONAL_VERBS:
+            continue
+        action = tokens[index + 1]
+        if action not in _PRESENTATIONAL_SPLICE_ACTIONS:
+            continue
+        follower = tokens[index + 2] if index + 2 < len(tokens) else ""
+        if _looks_like_artifact_modifier(action, follower):
+            continue
+        return True
+    return False
+
+
+def _looks_like_artifact_modifier(action: str, follower: str) -> bool:
+    if action == "open" and follower.endswith("s"):
+        return True
+    return follower in _ARTIFACT_MODIFIER_FOLLOWERS
+
+
+def _has_mixed_adverbial_action_inflection(text: str) -> bool:
+    pattern = re.compile(
+        r"\b(?P<modifier>[a-z]+ly)\s+"
+        r"(?P<finite>adds|captures|chooses|creates|enters|logs|marks|notes|opens|records|reviews|saves|selects|submits|updates)\b"
+        r"(?P<tail>[^.!?;]{0,160}\b(?:and|or)\s+"
+        r"(?:add|capture|choose|create|enter|log|mark|note|open|record|review|save|select|submit|update)\b)",
+        flags=re.IGNORECASE,
     )
+    for match in pattern.finditer(text):
+        if _looks_like_adjective_noun_action_false_positive(text, match):
+            continue
+        return True
+    return False
+
+
+def _looks_like_adjective_noun_action_false_positive(text: str, match: re.Match[str]) -> bool:
+    """Avoid treating noun phrases like "daily notes" as finite action clauses."""
+
+    modifier = match.group("modifier").casefold()
+    finite = match.group("finite").casefold()
+    if modifier not in {
+        "daily",
+        "hourly",
+        "monthly",
+        "nightly",
+        "quarterly",
+        "weekly",
+        "yearly",
+    }:
+        return False
+    if finite not in {"logs", "marks", "notes", "records", "reviews"}:
+        return False
+    tail_after_finite = text[match.end("finite") : match.end()]
+    return bool(re.match(r"\s+(?:about|against|as|at|by|for|from|in|into|of|on|to|with|without)\b", tail_after_finite))
 
 
 def _has_template_slice_prefix(tokens: tuple[str, ...]) -> bool:
@@ -127,6 +349,13 @@ def _has_malformed_component_responsibility(tokens: tuple[str, ...]) -> bool:
     malformed_verbs = {"continue", "keep", "maintain", "sustain"}
     for index, token in enumerate(tokens[:-1]):
         if token == "maintains" and tokens[index + 1] in malformed_verbs:
+            return True
+    return False
+
+
+def _has_malformed_relative_clause_split(tokens: tuple[str, ...]) -> bool:
+    for index, token in enumerate(tokens[:-3]):
+        if token.endswith("s") and tokens[index + 1 : index + 4] == ("are", "meant", "to"):
             return True
     return False
 
@@ -232,4 +461,4 @@ _ABSTRACT_OUTPUT_CONCEPTS = (
 )
 
 
-__all__ = ["GeneratedCopyFinding", "generated_public_copy_issues"]
+__all__ = ["GeneratedCopyFinding", "generated_public_copy_issues", "has_inline_role_casing_drift"]

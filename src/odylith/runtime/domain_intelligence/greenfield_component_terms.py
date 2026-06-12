@@ -6,27 +6,24 @@ import re
 from collections.abc import Mapping, Sequence
 from functools import lru_cache
 from typing import Any
-
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import ROLEISH_TERMS
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
-from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
-from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
+from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text, clean_text, normalize_visible_result_language, unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 ACTION_VERBS = (
-    "accept", "adjust", "apply", "approve", "assemble", "assign", "block", "build", "calculate", "capture",
+    "accept", "adjust", "allocate", "apply", "approve", "assemble", "assign", "block", "build", "calculate", "capture",
     "choose", "combine", "compare", "complete", "compute", "connect", "convert", "correlate", "create", "delete", "derive",
-    "describe", "display", "edit", "estimate", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
-    "forecast", "highlight", "import", "inspect", "issue", "keep", "link", "leave", "log", "make", "maintain",
+    "describe", "display", "draft", "edit", "estimate", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
+    "drill", "forecast", "flag", "highlight", "import", "inspect", "issue", "keep", "link", "leave", "log", "make", "maintain",
     "manage", "normalize", "notify", "open", "optimize", "order", "move", "pair", "persist", "predict", "present",
     "prepare", "propose", "provide", "produce", "publish", "pull", "rank", "read", "receive", "recommend", "record", "render", "request",
-    "resolve", "respond", "review", "route", "save", "schedule", "score", "see", "select", "send", "set", "show", "store",
-    "submit", "suggest", "summarize", "sync", "track", "validate", "verify", "view",
+    "recompute", "resolve", "respond", "review", "route", "save", "schedule", "score", "see", "select", "send", "set", "show", "store",
+    "submit", "suggest", "summarize", "sync", "track", "update", "validate", "verify", "view",
 )
 
 GENERIC_TERMS = {
@@ -377,6 +374,7 @@ def _normalize_fragmented_artifact_phrase(value: str) -> str:
     text = clean_text(value).casefold().strip(" .,;:")
     if not text:
         return ""
+    text = normalize_relative_clause_artifacts(text)
     text = re.sub(r"\bdata\s+such(?:\s+as)?\b", "data", text, flags=re.I)
     text = re.sub(r"\bsuch(?:\s+as)?\b", "", text, flags=re.I)
     text = re.sub(r"\bdescriptions?\s+mechanisms?\b", "descriptions", text, flags=re.I)
@@ -691,6 +689,8 @@ def verb_forms_pattern(verb: str) -> str:
 @lru_cache(maxsize=128)
 def verb_forms(verb: str) -> frozenset[str]:
     forms = {verb, f"{verb}s", f"{verb}es", f"{verb}ed", f"{verb}ing"}
+    if verb.endswith("g") and len(verb) > 2 and verb[-2] in {"a", "e", "i", "o", "u"}:
+        forms.update({f"{verb}ged", f"{verb}ging"})
     if verb.endswith("y") and len(verb) > 1 and verb[-2] not in {"a", "e", "i", "o", "u"}:
         stem = verb[:-1]
         forms.update({f"{stem}ies", f"{stem}ied"})
@@ -772,6 +772,8 @@ def past_tense(value: str) -> str:
         return "left"
     if verb == "log":
         return "logged"
+    if verb == "flag":
+        return "flagged"
     if verb == "make":
         return "made"
     if verb == "submit":

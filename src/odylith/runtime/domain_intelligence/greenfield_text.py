@@ -26,7 +26,7 @@ def clean_artifact_text(value: Any, *, split_parentheses: bool = False) -> str:
     text = clean_text(value).replace("`", "")
     if split_parentheses:
         text = text.replace("(", " ").replace(")", " ")
-    text = _PUNCTUATION_SPACING_RE.sub(r"\1", text)
+    text = _PUNCTUATION_SPACING_RE.sub(_punctuation_spacing_replacement, text)
     return clean_text(text)
 
 
@@ -40,8 +40,18 @@ def clean_artifact_sentence(value: Any, *, split_parentheses: bool = False) -> s
 
 def clean_markdown_text(value: Any) -> str:
     text = display_text.strip_inline_markdown_emphasis_tokens(clean_text(value)).replace("`", "")
-    text = _PUNCTUATION_SPACING_RE.sub(r"\1", text)
+    text = _PUNCTUATION_SPACING_RE.sub(_punctuation_spacing_replacement, text)
     return clean_text(text)
+
+
+def _punctuation_spacing_replacement(match: re.Match[str]) -> str:
+    punctuation = match.group(1)
+    if punctuation == ".":
+        prefix = match.string[: match.start()].rstrip()
+        previous = prefix.rsplit(" ", 1)[-1] if prefix else ""
+        if previous.startswith("--"):
+            return match.group(0)
+    return punctuation
 
 
 def clean_markdown_sentence(value: Any) -> str:
@@ -72,6 +82,7 @@ def word_occurrences(value: Any, word: Any) -> int:
 
 def normalize_visible_result_language(value: Any) -> str:
     text = clean_text(value)
+    text = re.sub(r"\bintaked\b", "received", text, flags=re.IGNORECASE)
     text = _replace_casefolded_phrase(text, "reasons against", "uses for comparison")
     text = _replace_casefolded_phrase(text, "reason against", "use for comparison")
     text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)

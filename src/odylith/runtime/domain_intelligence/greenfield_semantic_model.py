@@ -7,7 +7,13 @@ from dataclasses import dataclass
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.prose_grammar import action_verb_pattern
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
@@ -58,6 +64,8 @@ _SEMANTIC_MODEL_TERM_STOPWORDS = {
     "when",
     "with",
 }
+_ACTION_VERB_PATTERN = action_verb_pattern()
+_NOUN_LIKE_ACTION_TOKENS = frozenset({"record", "report", "surface", "view"})
 
 
 @dataclass(frozen=True)
@@ -208,7 +216,7 @@ def build_greenfield_semantic_model(
             events=path_contract.events,
             component_sequence=tuple(ref.component_id for ref in component_refs if _is_first_release_scope(ref.release_scope)),
             proof_checkpoint=_proof_checkpoint(
-                path_contract.visible_result or proof_boundary,
+                _proof_checkpoint_source(path_contract) or proof_boundary,
                 state_label=state_label,
             ),
         ),
@@ -261,13 +269,14 @@ def _first_path_contract(
         )
     )
     contract_actor = events[0].actor if events and events[0].actor else actor
+    state_reference = object_reference_phrase(domain_object_label(state_object, fallback=state_object)) or _clean(state_object)
     return FirstPathContract(
         actor=contract_actor,
         action=_action_label(material),
         entity=state_object,
         mutation=material,
         required_fields=required_fields,
-        persistence=f"{state_object} must remain replayable after the accepted first path changes it.",
+        persistence=f"{state_reference} must remain replayable after the accepted first path changes it.",
         visible_result=visible_result or "the first-path result",
         recovery_path=_clean(model.recovery_action) or "Blocked or corrected path state stays visible.",
         deferred_scope=tuple(_clean(row) for row in non_goals if _clean(row)),
@@ -287,10 +296,16 @@ def _first_path_events(
 ) -> list[FirstPathEvent]:
     events: list[FirstPathEvent] = []
     current_actor = actor
+    visible_result_text = _clean(visible_result)
+    step_count = len(steps)
     for index, step in enumerate(steps, start=1):
         text = _clean(step)
-        is_visible = _is_visible_result(text)
-        event_text = _clean(visible_result) if is_visible and _clean(visible_result) else text
+        is_visible = _is_visible_result(
+            text,
+            visible_result=visible_result_text,
+            is_last=index == step_count,
+        )
+        event_text = text
         event_actor = _event_actor(text, human_actors=human_actors, fallback=current_actor or actor)
         current_actor = event_actor or current_actor
         action = _action_label(text)
@@ -382,7 +397,7 @@ def _proof_obligations(
     obligations = [
         ProofObligation(
             key="first_path_contract",
-            claim=f"{first_path_contract.actor} can complete {first_path_contract.capability}.",
+            claim=_first_path_contract_claim(first_path_contract),
             required_evidence=(
                 f"Fixture covers required fields {', '.join(first_path_contract.required_fields[:6]) or first_path_contract.entity}, "
                 f"mutation `{first_path_contract.mutation}`, persistence, visible result, and recovery behavior."
@@ -408,6 +423,23 @@ def _proof_obligations(
     return tuple(obligations)
 
 
+def _first_path_contract_claim(first_path_contract: FirstPathContract) -> str:
+    capability = clean_text(first_path_contract.capability).strip(" .") or "complete the first path"
+    action = _actor_led_base_action_phrase(capability) or base_action_clause(capability)
+    if action and looks_like_action_clause(action):
+        return f"{first_path_contract.actor} can {action}."
+    return f"{first_path_contract.actor} can complete {capability}."
+
+
+def _actor_led_base_action_phrase(value: str) -> str:
+    words = clean_text(value).strip(" .").split()
+    for index in range(1, min(len(words), 6)):
+        candidate = " ".join(words[index:]).strip(" .")
+        if looks_like_finite_action(candidate):
+            return base_action_clause(candidate)
+    return ""
+
+
 def _proof_checkpoint(value: str, *, state_label: str) -> str:
     text = _clean(value)
     text = re.sub(r"^release\s+[A-Za-z0-9_.-]+\s+succeeds\s+(?:only\s+)?when\s+", "", text, flags=re.IGNORECASE)
@@ -424,9 +456,48 @@ def _proof_checkpoint(value: str, *, state_label: str) -> str:
     ]
     for clause in clauses:
         if word_count(clause) >= 4:
-            clipped = _clip_clause(clause, 88)
+            clipped = _clip_clause(_nominal_proof_checkpoint_clause(clause), 88)
             return f"visible outcome proof: {clipped}" if clipped else "visible outcome proof"
     return f"visible outcome proof: {state_label} validation, replay evidence, blockers, and release decision"
+
+
+def _proof_checkpoint_source(contract: FirstPathContract) -> str:
+    for event in reversed(contract.events):
+        if event.visible_result and _clean(event.text):
+            return event.text
+    return contract.visible_result
+
+
+def _nominal_proof_checkpoint_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    action = re.match(
+        r"^(?:(?:a|an|the)\s+)?(?:[A-Za-z][A-Za-z0-9/&'-]*\s+){0,5}"
+        r"(?P<verb>captures?|confirms?|exports?|publishes?|records?|saves?|submits?)\s+"
+        r"(?P<object>(?:a|an|the|one)\s+.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not action:
+        return text
+    verb = action.group("verb").casefold()
+    past = {
+        "capture": "captured",
+        "captures": "captured",
+        "confirm": "confirmed",
+        "confirms": "confirmed",
+        "export": "exported",
+        "exports": "exported",
+        "publish": "published",
+        "publishes": "published",
+        "record": "recorded",
+        "records": "recorded",
+        "save": "saved",
+        "saves": "saved",
+        "submit": "submitted",
+        "submits": "submitted",
+    }.get(verb)
+    obj = re.sub(r"^(?:a|an|the|one)\s+", "", _clean(action.group("object")), flags=re.IGNORECASE)
+    return f"{past} {obj}".strip() if past and obj else text
 
 
 def _clip_clause(value: str, limit: int) -> str:
@@ -473,19 +544,47 @@ def _event_target(step: str, *, state_object: str) -> str:
     return state_object
 
 
-def _is_visible_result(value: str) -> bool:
+def _is_visible_result(value: str, *, visible_result: str = "", is_last: bool = True) -> bool:
+    text = _clean(value)
+    accepted_result = _clean(visible_result)
+    if accepted_result:
+        if _accepted_result_matches_step(text, accepted_result):
+            return True
+        if not is_last:
+            return False
+    if not is_last:
+        return False
     return bool(
         re.search(
-            r"\b(?:available|choose|chooses|compare|compares|display|displays|find|finds|highlight|highlights|inspect|inspects|present|presents|produce|produces|ready|report|reports|render|renders|return|returns|save|saves|see|sees|select|selects|show|shows|view|views|review|reviews|receive|receives|publish|publishes|restored|viewable)\b",
-            value,
+            r"\b(?:available|choose|chooses|compare|compares|display|displays|find|finds|highlight|highlights|inspect|inspects|present|presents|produce|produces|ready|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|select|selects|show|shows|update|updates|view|views|review|reviews|receive|receives|publish|publishes|restored|viewable)\b",
+            text,
             re.IGNORECASE,
         )
         or re.search(
-            r"\b(?:card|dashboard|indicator|readout|result|saved|summary|timeline|trend|view)\b",
-            value,
+            r"\b(?:card|dashboard|indicator|projection|readout|result|saved|summary|timeline|trend|view)\b",
+            text,
             re.IGNORECASE,
         )
     )
+
+
+def _accepted_result_matches_step(step: str, accepted_result: str) -> bool:
+    step_key = _event_text_key(step)
+    result_key = _event_text_key(accepted_result)
+    if not step_key or not result_key:
+        return False
+    if step_key == result_key or result_key in step_key or step_key in result_key:
+        return True
+    step_terms = set(ordered_terms(step_key, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS))
+    result_terms = set(ordered_terms(result_key, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS))
+    if len(result_terms) < 2:
+        return False
+    overlap = step_terms & result_terms
+    return len(overlap) >= 2 and len(overlap) / max(1, len(result_terms)) >= 0.6
+
+
+def _event_text_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", _clean(value).casefold()).strip()
 
 
 def _is_recovery_path(value: str) -> bool:
@@ -493,12 +592,13 @@ def _is_recovery_path(value: str) -> bool:
 
 
 def _action_label(value: str) -> str:
-    match = re.search(
-        r"\b(adds?|adjusts?|approves?|captures?|checks?|chooses?|compares?|completes?|creates?|defines?|displays?|edits?|ends?|enters?|exports?|finds?|imports?|launches?|logs?|opens?|produces?|publishes?|ranks?|records?|reports?|renders?|returns?|reviews?|saves?|sees?|shows?|stores?|submits?|tracks?|updates?|views?|watches?)\b",
-        _clean(value),
-        re.IGNORECASE,
-    )
-    return match.group(1).casefold() if match else "advance"
+    text = _clean(value)
+    for match in re.finditer(rf"\b({_ACTION_VERB_PATTERN})\b", text, re.IGNORECASE):
+        token = match.group(1).casefold()
+        if token in _NOUN_LIKE_ACTION_TOKENS and re.match(rf"\s+(?:{_ACTION_VERB_PATTERN})\b", text[match.end() :], re.IGNORECASE):
+            continue
+        return token
+    return "advance"
 
 
 def _actor_label(values: Sequence[str], *, fallback: str) -> str:

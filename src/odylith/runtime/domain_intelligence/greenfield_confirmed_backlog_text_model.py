@@ -142,6 +142,7 @@ _INCOMPLETE_TERMINAL_MODIFIERS = frozenset(
         "complete",
         "concrete",
         "daily",
+        "final",
         "first",
         "reviewable",
         "safe",
@@ -150,6 +151,10 @@ _INCOMPLETE_TERMINAL_MODIFIERS = frozenset(
         "trusted",
         "visible",
     }
+)
+_OPEN_CONNECTOR_INTERRUPTER_RE = re.compile(
+    r"\b(?:and|or),\s+(?:after|although|as|before|because|if|once|until|when|where|while)\b[^,.;]*$",
+    re.IGNORECASE,
 )
 
 
@@ -161,7 +166,12 @@ def _trim_incomplete_terminal_phrase(value: str) -> str:
         if tail not in _INCOMPLETE_TERMINAL_WORDS and tail not in _INCOMPLETE_TERMINAL_MODIFIERS:
             break
         words.pop()
-    return " ".join(words).strip(" .,;:")
+    text = " ".join(words).strip(" .,;:")
+    while True:
+        trimmed = _OPEN_CONNECTOR_INTERRUPTER_RE.sub("", text).strip(" .,;:")
+        if trimmed == text:
+            return text
+        text = trimmed
 
 
 def join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
@@ -190,7 +200,7 @@ def is_deferred_actor(value: str) -> bool:
 
 
 def actor_label(value: str) -> str:
-    return sentence_fragment(_actor_title_head(value))
+    return role_label_fragment(_actor_title_head(value))
 
 
 def actor_from_action(value: str) -> str:
@@ -242,7 +252,7 @@ def lead_actor_label(values: list[str]) -> str:
         text = re.split(r"\b(?:who|that|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
         if not text:
             continue
-        return sentence_fragment(text)
+        return role_label_fragment(text)
     return "someone"
 
 
@@ -254,7 +264,7 @@ def supporting_actor_label(values: list[str]) -> str:
         text = re.split(r"\b(?:who|that|for|and)\b", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
         if not text:
             continue
-        return sentence_fragment(text)
+        return role_label_fragment(text)
     return ""
 
 
@@ -441,9 +451,28 @@ def problem_actor_subject(actors: str, *, fallback: str) -> str:
     if not text:
         text = "first user"
     lowered = text.casefold()
-    if re.match(r"^(?:a|an|the|one|this|that|each|people|users|customers|operators|reviewers)\b", lowered):
+    article = re.match(r"^(?P<article>a|an|the|one|this|that|each)\s+(?P<body>.+)$", text, flags=re.IGNORECASE)
+    if article:
+        return f"{article.group('article').capitalize()} {_lower_actor_label_start(article.group('body'))}".strip()
+    if re.match(r"^(?:people|users|customers|operators|reviewers)\b", lowered):
         return text[:1].upper() + text[1:]
     return f"The {_lower_actor_label_start(text)}"
+
+
+def inline_actor_subject(value: str, *, fallback: str = "the user") -> str:
+    """Return an actor label in the form used inside a sentence."""
+
+    text = _compact_text(value).strip(" .")
+    if not text:
+        text = _compact_text(fallback).strip(" .")
+    if not text:
+        return "the user"
+    article = re.match(r"^(?P<article>a|an|the|one|this|that|each)\s+(?P<body>.+)$", text, flags=re.IGNORECASE)
+    if article:
+        return f"{article.group('article').casefold()} {_lower_actor_label_start(article.group('body'))}".strip()
+    if re.match(r"^(?:people|users|customers|operators|reviewers)\b", text, flags=re.IGNORECASE):
+        return text[:1].casefold() + text[1:]
+    return f"the {_lower_actor_label_start(text)}"
 
 
 def _lower_actor_label_start(value: str) -> str:
@@ -453,14 +482,74 @@ def _lower_actor_label_start(value: str) -> str:
     words = text.split(maxsplit=1)
     first = words[0]
     rest = f" {words[1]}" if len(words) > 1 else ""
-    if first.isupper() and len(first) > 1:
-        return f"{first}{rest}"
+    if _all_plain_title_label_words(text):
+        return text.casefold()
+    if _protected_actor_label_token(first):
+        if _protected_role_label_after_first_token(text):
+            return text
+        return _lower_role_words(f"{first}{rest}")
     lowered = f"{first[:1].casefold()}{first[1:]}{rest}"
-    return re.sub(
-        r"\b(?:Actor|Applicant|Customer|Manager|Operator|Owner|Participant|Reviewer|User)\b",
-        lambda match: match.group(0).casefold(),
-        lowered,
+    return _lower_role_words(lowered)
+
+
+def _all_plain_title_label_words(value: str) -> bool:
+    words = [word.strip(".,;:()[]{}") for word in str(value or "").split() if word.strip(".,;:()[]{}")]
+    if not words:
+        return False
+    if any(_protected_actor_label_token(word) for word in words):
+        return False
+    return any(word[:1].isupper() for word in words) and all(
+        word[:1].isupper() or word.casefold() in {"and", "of", "on", "for", "in", "to", "with"}
+        for word in words
     )
+
+
+def _protected_actor_label_token(value: str) -> bool:
+    token = str(value or "").strip(".,;:()[]{}")
+    if not token:
+        return False
+    return any(char.isdigit() for char in token) or (token.isupper() and len(token) > 1)
+
+
+def _protected_role_label_after_first_token(value: str) -> bool:
+    words = [word.strip(".,;:()[]{}") for word in str(value or "").split() if word.strip(".,;:()[]{}")]
+    if len(words) < 2 or not _protected_actor_label_token(words[0]):
+        return False
+    role_words = {
+        "actor",
+        "admin",
+        "administrator",
+        "applicant",
+        "coordinator",
+        "customer",
+        "lead",
+        "manager",
+        "operator",
+        "owner",
+        "participant",
+        "reviewer",
+        "user",
+    }
+    return all(word.casefold() in role_words for word in words[1:])
+
+
+def _lower_role_words(value: str) -> str:
+    return re.sub(
+        r"\b(?:Actor|Admin|Administrator|Applicant|Coordinator|Customer|Lead|Manager|Operator|Owner|Participant|Reviewer|User)\b",
+        lambda match: match.group(0).casefold(),
+        value,
+    )
+
+
+def role_label_fragment(value: str) -> str:
+    """Return a title label with mixed internal role words normalized."""
+
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return ""
+    if _all_plain_title_label_words(text):
+        return text
+    return _lower_role_words(text)
 
 
 def capability_action_clause(value: str) -> str:
@@ -496,6 +585,7 @@ def normalize_action_clause(value: str) -> str:
         "dismisses": "dismiss",
         "records": "record",
         "captures": "capture",
+        "confirms": "confirm",
         "reviews": "review",
     }.items():
         text = re.sub(rf"\b(and|then)\s+{re.escape(inflected)}\b", rf"\1 {base}", text, flags=re.IGNORECASE)
@@ -612,7 +702,7 @@ def rationale_deferred_focus(*, value: str, label: str, fallback: str, deferred_
     """Return the explicit deferred scope without repeating the first-slice path."""
 
     for row in deferred_scope:
-        selected = boundary_clause_item(str(row), limit=120) or _deferred_focus_sentence(row)
+        selected = _deferred_focus_sentence(row) or boundary_clause_item(str(row), limit=120)
         if selected and not _too_similar(selected, fallback):
             return selected[:1].upper() + selected[1:]
     text = _compact_text(value).strip(" .")
@@ -634,7 +724,21 @@ def _deferred_rationale_sentence(value: str) -> str:
         return "Adjacent scope waits for a separate owner, acceptance gate, and proof path"
     if text.casefold().endswith("scope remains deferred") or text.casefold().startswith("scope question remains open"):
         return f"{text}; separate owner, acceptance gate, and proof path required"
-    return f"{text} waits for a separate owner, acceptance gate, and proof path"
+    if re.match(r"^(?:avoid|do\s+not|don't|never)\b", text, flags=re.IGNORECASE):
+        return f"{text}; separate owner, acceptance gate, and proof path required"
+    deferred_focus = _deferred_focus_sentence(text)
+    if deferred_focus:
+        text = deferred_focus[:1].upper() + deferred_focus[1:]
+    verb = "wait" if _deferred_focus_is_plural(text) else "waits"
+    return f"{text} {verb} for a separate owner, acceptance gate, and proof path"
+
+
+def _deferred_focus_is_plural(value: str) -> bool:
+    text = _compact_text(value).strip(" .")
+    lowered = text.casefold()
+    if re.search(r"\b(?:and|or)\b", lowered) or "," in text:
+        return True
+    return bool(re.search(r"\b(?:integrations|roles|workflows|features|systems|services|exports|imports)\b", lowered))
 
 
 def _deferred_focus_sentence(value: str) -> str:
@@ -644,8 +748,20 @@ def _deferred_focus_sentence(value: str) -> str:
     lowered = cleaned.casefold()
     if not re.search(r"\b(?:out\s+of\s+scope|outside|deferred|future|later|not\s+included|must\s+not\s+claim|does\s+not\s+claim)\b", lowered):
         return ""
+    scope_question = re.match(
+        r"^(?:is|are|should|will|would|can|could|does|do)\s+(?P<subject>.+?)\s+"
+        r"(?:in\s+scope|included|part\s+of\s+(?:the\s+)?scope)\b",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    if scope_question:
+        subject = _short_summary(scope_question.group("subject"), limit=90).strip(" .")
+        if subject:
+            return f"{subject[:1].upper()}{subject[1:]} scope remains deferred"
     cleaned = re.sub(
-        r"\s+(?:are|is|stay|stays|remain|remains)\s+(?:out\s+of\s+scope|outside\s+(?:the\s+)?(?:first\s+)?(?:proof|release|scope))\b.*$",
+        r"\s+(?:are|is|stay|stays|remain|remains)\s+"
+        r"(?:(?:explicitly|intentionally|currently)\s+)?"
+        r"(?:out\s+of\s+scope|outside\s+(?:the\s+)?(?:first\s+)?(?:proof|release|scope))\b.*$",
         "",
         cleaned,
         flags=re.IGNORECASE,
@@ -662,7 +778,8 @@ def _bounded_complete_proof_focus(value: str, *, max_words: int) -> str:
         for segment in comma_segments:
             selected.append(segment)
             candidate = _trim_incomplete_terminal_phrase(", ".join(selected))
-            if candidate and candidate == ", ".join(selected).strip(" .,;:") and word_count(candidate) >= 7:
+            joined = ", ".join(selected).strip(" .,;:")
+            if candidate and candidate == joined and word_count(candidate) >= 7:
                 return candidate
     words = text.split()
     if len(words) <= max_words:
@@ -740,6 +857,7 @@ __all__ = [
     "generic_title_outcome",
     "has_problem_tension",
     "imperative_action_phrase",
+    "inline_actor_subject",
     "join_actor_labels",
     "lead_actor_label",
     "looks_mechanical_summary",
@@ -750,6 +868,7 @@ __all__ = [
     "proof_focus_phrase",
     "proof_title_object",
     "rationale_lines",
+    "role_label_fragment",
     "semantic_words",
     "sentence_fragment",
     "shares_product_terms",

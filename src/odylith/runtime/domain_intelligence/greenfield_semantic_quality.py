@@ -6,6 +6,8 @@ import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
+from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
@@ -49,6 +51,12 @@ _PROVISIONAL_TITLE_RE = re.compile(
         \s*)$
     """,
     re.IGNORECASE | re.VERBOSE,
+)
+_ACTOR_LED_FINITE_ACTION_IN_USER_CAN_RE = re.compile(
+    rf"\busers?\s+can\s+(?!(?:{action_base_verb_pattern()})\b)"
+    r"[a-z][a-z-]*(?:\s+\([^)]+\))?\s+"
+    r"(?:adds?|asks?|chooses?|describes?|enters?|logs?|opens?|places?|records?|reviews?|saves?|selects?|submits?)\b",
+    flags=re.IGNORECASE,
 )
 
 _NGRAM_STOPWORDS = {
@@ -263,6 +271,18 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
         lowered = text.casefold()
         if contains_provisional_title_marker(text):
             issues.append(f"provisional title qualifier leaked at {location}")
+        if re.fullmatch(r"TBD\.?", text.strip(), flags=re.IGNORECASE):
+            issues.append(f"placeholder TBD copy leaked at {location}")
+        if re.search(r"\bvalidation\s+gates\s+pass\b", lowered):
+            issues.append(f"generic validation-gate copy leaked at {location}")
+        if has_inline_role_casing_drift(text):
+            issues.append(f"inline actor casing drift leaked at {location}")
+        if re.search(
+            r"\bcan\s+(?:[a-z][a-z0-9'-]*\s+){0,4}"
+            r"(?:adds|asks|chooses|clicks|creates|describes|enters|logs|opens|places|records|reviews|runs|saves|selects|signs|submits|views)\b",
+            lowered,
+        ):
+            issues.append(f"modal/base-form grammar drift leaked at {location}")
         if re.search(r"\bowns\s+maintains\b", lowered):
             issues.append(f"malformed ownership verb pair leaked at {location}")
         if re.search(r"\bprevents\s+[^.]{1,120}\bcan\s+\w+", lowered):
@@ -285,11 +305,7 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"mechanical activity-without-result scaffold leaked at {location}")
         if re.search(r"\baccepted\s+path\s+lets\s+users\b", lowered):
             issues.append(f"mechanical success-metric scaffold leaked at {location}")
-        if re.search(
-            r"\busers?\s+can\s+[a-z][a-z-]*(?:\s+\([^)]+\))?\s+"
-            r"(?:adds?|asks?|chooses?|describes?|enters?|logs?|opens?|places?|records?|reviews?|saves?|selects?|submits?)\b",
-            lowered,
-        ):
+        if _ACTOR_LED_FINITE_ACTION_IN_USER_CAN_RE.search(text):
             issues.append(f"actor-led finite action leaked inside user-can clause at {location}")
         if re.search(r"\bsource\s+evidence,\s+visible\s+blockers,\s+and\s+the\s+systems?\s+that\s+own\b", lowered):
             issues.append(f"governance-scaffold problem language leaked at {location}")
@@ -354,6 +370,8 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"meta loop summary leaked as product outcome at {location}")
         if re.search(r"\bmaintains\s+(?:continue|keep|maintain|sustain)\b", lowered):
             issues.append(f"malformed component responsibility leaked at {location}")
+        if re.search(r"\b[a-z][a-z0-9'-]*s\s+are\s+meant\s+to\b", lowered):
+            issues.append(f"malformed relative-clause split leaked at {location}")
         if (
             re.search(r"\bas a later\s*[.]?$", lowered)
             or re.search(r"\bvalid\s+transition\s+display,\s*stale\b", lowered)

@@ -201,8 +201,12 @@ def _opening_narrative(
         body = f"The spec should stay focused on {output_focus}, because downstream work needs to know not only what happened but why it happened."
     elif role == "calculation":
         lead = f"{label} carries the product logic that interprets accepted inputs before anyone treats the result as true."
-        if _phrases_too_similar(input_focus, output_focus):
-            calculation_focus = _calculation_focus(focus=focus, output_focus=output_focus, label=label)
+        calculation_focus = _calculation_focus(focus=focus, output_focus=output_focus, label=label)
+        has_calculation_result = bool(
+            _preferred_calculation_result(_calculation_parts(output_focus))
+            or _preferred_calculation_result(_calculation_parts(focus))
+        )
+        if has_calculation_result or _phrases_too_similar(input_focus, output_focus):
             calculation_subject = _calculation_subject(calculation_focus)
             body = (
                 f"It should explain how {calculation_subject} "
@@ -391,9 +395,9 @@ def _has_no_source_dependency(value: str) -> bool:
 
 def _proof_narrative(*, label: str, role: str, failure: str, proofs: Sequence[str]) -> str:
     risk = (
-        f"The product failure to guard against is {failure}"
+        f"The product failure to guard against: {failure}"
         if failure
-        else f"The product failure to guard against is treating {label} as ready without local behavior proof"
+        else f"The product failure to guard against: treating the {label} as ready without local behavior proof"
     )
     selected = [_clean_proof_sentence(proof, label=label, index=index) for index, proof in enumerate(proofs[:5], start=1)]
     selected = [row for row in selected if row]
@@ -459,6 +463,12 @@ def _clean_proof_sentence(proof: str, *, label: str, index: int) -> str:
     text = re.sub(
         rf"^Replay one {re.escape(label)} result and confirm the actor, input facts, status, and explanation still agree$",
         rf"A replay of {label} still connects the actor, input facts, status, and explanation",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        rf"^Replay evidence for {re.escape(label)}:\s*actor,\s*input facts,\s*status,\s*explanation\b.*$",
+        rf"Replay evidence for {label}: A replay of {label} still connects the actor, input facts, status, and explanation",
         text,
         flags=re.I,
     )
@@ -713,6 +723,10 @@ def _material_state_sentence(*, role: str, material_state: str) -> str:
     if role == "read_model":
         return f"It should also keep {material_state} visible enough for someone to understand the view"
     if role == "state_store":
+        if re.search(r"\battached\b$", material_state, flags=re.IGNORECASE):
+            record_state = re.sub(r"\battached\b$", "", material_state, flags=re.IGNORECASE).strip(" ,")
+            record_state = record_state or material_state
+            return f"It should also keep {record_state} in the record instead of leaving those facts implicit"
         return f"It should also keep {material_state} attached to the record instead of leaving those facts implicit"
     if role == "evidence":
         return f"It should also keep {material_state} connected to the evidence trail"

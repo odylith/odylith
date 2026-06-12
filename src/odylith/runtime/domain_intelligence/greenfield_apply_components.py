@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_apply_diagrams import allocated_diagram_ids
+from odylith.runtime.domain_intelligence.greenfield_component_contract import ensure_component_contract
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
@@ -153,12 +154,21 @@ def component_authoring_prewrite_inputs(
     component_rows = first_release_component_rows(proposal)
     component_dependency_lookup = component_dependency_lookup_for(component_rows)
     inputs: list[dict[str, Any]] = []
-    for row in component_rows:
+    for index, row in enumerate(component_rows):
         key = greenfield_traceability.component_key(row)
         handoff = component_handoffs.get(key, {})
         label = str(row.get("label", "") or row.get("component_id", "")).strip()
         if not label:
             continue
+        previous_label = str(component_rows[index - 1].get("label", "")).strip() if index else ""
+        next_label = str(component_rows[index + 1].get("label", "")).strip() if index + 1 < len(component_rows) else ""
+        contract = ensure_component_contract(
+            row,
+            proposal=proposal,
+            previous_label=previous_label,
+            next_label=next_label,
+            workstream_title=str(handoff.get("workstream_title", "") or handoff.get("title", "")).strip(),
+        )
         responsibility = component_authoring_responsibility(row)
         inputs.append(
             {
@@ -188,7 +198,7 @@ def component_authoring_prewrite_inputs(
                 "validation": row_text_tuple(row, "validation", "test_strategy"),
                 "risks": component_risk_lines(row, proposal),
                 "implementation_handoff": handoff,
-                "component_contract": row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else None,
+                "component_contract": contract,
             }
         )
     return tuple(inputs)

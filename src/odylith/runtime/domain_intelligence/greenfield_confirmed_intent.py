@@ -307,6 +307,8 @@ def _looks_like_plain_heading(text: str) -> bool:
         "first complete path odylith should prove before broader scope",
         "first complete path the product should prove before broader scope",
         "human actors",
+        "primary actors",
+        "main actors",
         "participants",
         "stakeholders",
         "people who participate",
@@ -315,6 +317,9 @@ def _looks_like_plain_heading(text: str) -> bool:
         "external systems not owned by this product",
         "internal systems",
         "internal product systems",
+        "primary systems",
+        "primary product systems",
+        "product systems",
         "assumptions",
         "critical assumptions",
         "ambiguities that would change the first path",
@@ -354,12 +359,16 @@ def _classify_heading(value: str) -> str:
         return "success_metrics"
     if "human actor" in normalized or normalized in {
         "actors",
+        "primary actors",
+        "main actors",
         "participants",
         "stakeholders",
         "people who participate",
         "who participates",
     }:
         return "human_actors"
+    if normalized in {"primary systems", "primary product systems", "product systems"}:
+        return "internal_systems"
     if normalized == "systems":
         return "systems"
     if "component responsibilit" in normalized or "owned capabilit" in normalized:

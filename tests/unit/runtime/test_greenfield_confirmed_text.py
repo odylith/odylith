@@ -148,6 +148,7 @@ def test_inline_markdown_cleanup_shared_by_confirmed_text_callers() -> None:
         "Save result",
     ]
     assert system_component_name("**AI** `Review` Service") == "AI Review Service"
+    assert system_component_name("Weight and side effect tracking service") == "Weight and Side Effect Tracking Service"
     assert literal_label_terms("**Claims** `Review` Store", noise_terms=set()) == ["claim", "review"]
     semantic = semantic_model_mapping(
         build_greenfield_semantic_model(
@@ -227,6 +228,23 @@ def test_first_path_temporal_actions_do_not_gerund_object_lists() -> None:
     assert "logging a spray application against it with product, rate and date" in capability
     assert "recording the picked weight at harvest" in capability
     assert "rating and date" not in capability
+
+
+def test_first_path_gerund_capability_includes_terminal_visible_result() -> None:
+    first_path = (
+        "A new user records their first entry — rates today's status. "
+        "A new user taps the factors that applied. "
+        "A new user logs one action they tried. "
+        "The next day they log again. "
+        "After a handful of entries. "
+        "The app shows a simple trend: status over time, and which logged actions line up with better days."
+    )
+
+    capability = first_path_capability_phrase(first_path, gerund=True, max_fragments=8, limit=340)
+
+    assert "recording first entry" in capability
+    assert "logging again" in capability
+    assert "reviewing a simple trend: status over time" in capability
 
 
 def test_boundary_clause_questions_become_declarative_scope_text() -> None:

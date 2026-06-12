@@ -371,6 +371,8 @@ def _dedupe_actor_rows(rows: Sequence[tuple[str, str, str]]) -> list[tuple[str, 
 def _should_replace_actor_body(*, title: str, existing_body: str, candidate_body: str) -> bool:
     if not candidate_body:
         return False
+    if _looks_generated_actor_context(candidate_body) and not _looks_generated_actor_context(existing_body):
+        return False
     if _is_default_actor_body(title=title, body=existing_body) and not _is_default_actor_body(
         title=title, body=candidate_body
     ):
@@ -392,6 +394,7 @@ def _looks_generated_actor_context(value: str) -> bool:
             "can fail when the first material path action",
             "cannot support release review unless",
             "review output with validation results",
+            "reviews product outcomes, decides what needs attention",
             "as the state and handoff boundary",
         )
     )

@@ -9,10 +9,14 @@ from typing import Any
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import rationale_deferred_focus
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_boundary_language
@@ -62,6 +66,7 @@ def brief_first_path(value: str) -> str:
     text = re.sub(r"\s+(?:flow|journey|path)\s*:\s*.*$", "", text, flags=re.IGNORECASE)
     text = re.split(r"\s+\d+\.\s+", text, maxsplit=1)[0]
     text = text.split(". ", 1)[0]
+    text = base_adverbial_note_action(text)
     return trim(text.strip(" .:"), 300)
 
 
@@ -131,12 +136,24 @@ def proof_evidence_label(*, components: list[dict[str, Any]], fallback: str) -> 
     for component in components:
         label = str(component.get("label", "")).strip()
         if re.search(r"\b(audit|trail|history|evidence|source-backed|version|provenance)\b", label, re.IGNORECASE):
-            return f"{label} proof record"
+            return _proof_record_label(label)
     for component in components:
         label = str(component.get("label", "")).strip()
         if re.search(r"\b(record|log|attachment|source)\b", label, re.IGNORECASE):
-            return f"{label} proof record"
+            return _proof_record_label(label)
     return fallback
+
+
+def _proof_record_label(value: str) -> str:
+    text = title_label(value) or compact_text(value)
+    lowered = text.casefold()
+    if lowered.endswith(" proof record"):
+        return text
+    if lowered.endswith(" record") and " proof " in f" {lowered} ":
+        return text
+    if lowered.endswith(" proof"):
+        return f"{text} Record"
+    return f"{text} Proof Record"
 
 
 def proof_checkpoint_label(value: str) -> str:
@@ -146,7 +163,7 @@ def proof_checkpoint_label(value: str) -> str:
     clauses = [
         clause.strip(" .")
         for clause in re.split(
-            r";\s+|(?<=[.!?])\s+|\s+\band\b\s+|,\s+(?=(?:receive|receives|see|sees|show|shows|view|views|leave|leaves|record|records|review|reviews|return|returns)\b)",
+            r";\s+|(?<=[.!?])\s+|\s+\band\b\s+|,\s+(?=(?:assign|assigns|receive|receives|see|sees|show|shows|view|views|leave|leaves|record|records|review|reviews|return|returns)\b)",
             text,
             flags=re.IGNORECASE,
         )
@@ -156,6 +173,30 @@ def proof_checkpoint_label(value: str) -> str:
         if word_count(clause) >= 4:
             return trim(clause, 82)
     return ""
+
+
+def release_proof_label(value: str) -> str:
+    brief = brief_proof_boundary(value)
+    if not brief:
+        return ""
+    return proof_checkpoint_label(brief) or trim(brief, 80)
+
+
+def deferred_scope_label(value: str, *, label: str = "", fallback: str = "beyond accepted first path") -> str:
+    text = compact_text(value)
+    if not text:
+        return fallback
+    if _looks_like_deferred_component_label(text):
+        return trim(text, 72) or fallback
+    explicit = _explicit_deferred_scope(text)
+    if explicit:
+        return trim(explicit, 72) or fallback
+    if re.match(r"^(?:avoid|do\s+not|don't|never)\s+expand\s+beyond\b", text, flags=re.IGNORECASE):
+        return fallback
+    focus = rationale_deferred_focus(value="", label=label or "product", fallback=fallback, deferred_scope=[text])
+    if focus and focus.casefold() != text.casefold():
+        return trim(focus, 72) or fallback
+    return fallback
 
 
 def workstream_titles(
@@ -226,7 +267,7 @@ def escape_label(value: str) -> str:
 def trim(value: str, limit: int) -> str:
     text = compact_text(value)
     if len(text) <= limit:
-        return text
+        return _balance_label(_strip_dangling_tail(text))
     clipped = clip_text_at_word_boundary(text, limit=limit)
     return _balance_label(_strip_dangling_tail(clipped))
 
@@ -455,6 +496,78 @@ def _proof_checkpoint_from_visible_result(value: str) -> str:
     return sentence(text).rstrip(".")
 
 
+def _explicit_deferred_scope(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if not text:
+        return ""
+    patterns = (
+        r"\bwhether\s+(?P<scope>[^.;]+?)\s+(?:is|are)\s+in\s+scope\b",
+        r"\bwithout\s+claiming\s+(?P<scope>[^.;]+)",
+        r"\bwithout\s+including\s+(?P<scope>[^.;]+)",
+        r"\bwhile\s+(?P<scope>[^.;]+?)\s+(?:is|are|stay|stays|remain|remains)\s+deferred\b",
+        r"\bwhile\s+(?P<scope>[^.;]+?)\s+(?:is|are|stay|stays|remain|remains)\s+out\s+of\s+scope\b",
+        r"\b(?:must\s+not|does\s+not|do\s+not|don't|never)\s+claim\s+(?P<scope>[^.;]+)",
+        r"\b(?:no|not\s+including|exclude|excluding)\s+(?P<scope>[^.;]+)",
+        r"\binto\s+(?P<scope>[^.;]+)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match is None:
+            continue
+        scope = _scope_list_label(match.group("scope"))
+        if scope:
+            return scope
+    out_of_scope = re.match(
+        r"^(?P<scope>[^.;]+?)\s+(?:is|are|stays?|remains?)\s+(?:out\s+of\s+scope|outside\s+(?:the\s+)?(?:first\s+)?(?:release|proof|scope))\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if out_of_scope is not None:
+        return _scope_list_label(out_of_scope.group("scope"))
+    deferred = re.match(
+        r"^(?P<scope>[^.;]+?)\s+(?:is|are|stays?|remains?)\s+deferred\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if deferred is not None:
+        return _scope_list_label(deferred.group("scope"))
+    return ""
+
+
+def _looks_like_deferred_component_label(value: str) -> bool:
+    text = compact_text(value)
+    if not text or word_count(text) > 10:
+        return False
+    if re.search(
+        r"\b(?:avoid|deferred|do\s+not|don't|future|later|must\s+not|never|no|not\s+included|out\s+of\s+scope|outside|whether)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return False
+    return not re.search(r"[.;:?!]", text)
+
+
+def _scope_list_label(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if not text:
+        return ""
+    text = re.split(
+        r"\s+(?:before|until|unless|while|when|because|so\s+that)\b",
+        text,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0].strip(" .")
+    text = re.sub(r"^(?:any|all|the|a|an|one)\s+", "", text, flags=re.IGNORECASE).strip(" .")
+    if word_count(text) > 10:
+        comma_items = [item.strip(" .") for item in re.split(r"\s*,\s*", text) if item.strip(" .")]
+        if len(comma_items) > 1:
+            selected = comma_items[:2]
+            if len(comma_items) > 2:
+                selected.append(comma_items[-1])
+            text = ", ".join(selected)
+    return _strip_dangling_tail(text)
+
+
 def _without_ellipsis(value: str) -> str:
     return str(value or "").replace("…", "").replace("...", "").rstrip(" ,;:")
 
@@ -484,15 +597,34 @@ def _balance_label(value: str) -> str:
 def _strip_dangling_tail(value: str) -> str:
     text = compact_text(value).rstrip(" ,;:.")
     while True:
+        text = _strip_clipped_terminal_action(text)
         cleaned = re.sub(
-            r"\b(?:a|accepted|actionable|an|and|as|at|because|by|can|capturing|clear|comparing|complete|concrete|daily|first|for|from|if|in|into|its|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|their|this|through|tied|to|trusted|until|visible|warning|when|while|with|without)$",
+            r"\b(?:a|accepted|actionable|an|and|as|at|because|blocking|by|can|capturing|clear|comparing|complete|concrete|daily|final|first|for|from|if|in|into|its|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|their|this|through|tied|to|trusted|until|visible|warning|when|while|with|without)$",
             "",
             text,
             flags=re.IGNORECASE,
         ).rstrip(" ,;:.")
+        cleaned = _strip_clipped_terminal_action(cleaned)
         if cleaned == text:
             return cleaned
         text = cleaned
+
+
+def _strip_clipped_terminal_action(value: str) -> str:
+    text = compact_text(value).rstrip(" ,;:.")
+    if "," not in text:
+        return text
+    head, tail = text.rsplit(",", 1)
+    token = tail.strip(" ,;:.").casefold()
+    if not token or " " in token:
+        return text
+    if token in {"assign", "check", "compare", "create", "deduplicate", "export", "import", "record", "resolve", "review", "screen", "submit"}:
+        return head.rstrip(" ,;:.")
+    if token.endswith("ing") and len(token) > 5:
+        return head.rstrip(" ,;:.")
+    if looks_like_action_clause(f"{token} placeholder") and not looks_like_finite_action(f"{token} placeholder"):
+        return head.rstrip(" ,;:.")
+    return text
 
 
 __all__ = [
@@ -505,10 +637,12 @@ __all__ = [
     "component_description",
     "component_label",
     "component_phrase",
+    "deferred_scope_label",
     "escape_label",
     "flow_label",
     "proof_checkpoint_label",
     "proof_evidence_label",
+    "release_proof_label",
     "semantic_proof_checkpoint",
     "semantic_visible_result_label",
     "sentence",

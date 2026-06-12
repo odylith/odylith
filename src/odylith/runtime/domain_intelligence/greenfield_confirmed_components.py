@@ -144,6 +144,7 @@ def _confirmed_system_components(
     for index, system in enumerate(internal_systems, start=1):
         name = system_component_name(confirmed_system_name(system))
         description = confirmed_system_description(system).replace("/", " and ")
+        name = _enriched_component_name(name=name, description=description)
         component_slug = slugify(name) or f"{label_slug}-component-{index}"
         if not component_slug.startswith(label_slug) and len(component_slug.split("-")) <= 2:
             component_id = _component_id(label_slug, component_slug)
@@ -243,7 +244,30 @@ def system_component_name(value: str) -> str:
         if rest.casefold().startswith(replacement.casefold()):
             return _sentence_case(rest)
         return f"{replacement} {rest}"
-    return name
+    return _title_phrase(name)
+
+
+def _enriched_component_name(*, name: str, description: str) -> str:
+    """Fold concise ownership detail into short generic component heads."""
+
+    clean_name = re.sub(r"\s+", " ", str(name or "")).strip(" .")
+    if word_count(clean_name) > 3:
+        return clean_name
+    if not re.search(r"\b(?:log|record|store|tracker|tracking)\b", clean_name, flags=re.IGNORECASE):
+        return clean_name
+    match = re.match(
+        r"^\s*keeps?\s+(?P<body>[A-Za-z0-9][A-Za-z0-9 /&(),'-]{4,90}?)(?:\s+while\b|\s+for\b|[.;:]|$)",
+        str(description or ""),
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return clean_name
+    body = _normalize_repeated_and_chain(_plain_text(match.group("body")).strip(" .,;"))
+    if not body or word_count(body) < 2 or word_count(body) > 6:
+        return clean_name
+    if not re.search(r"\b(?:tracking|schedule|scheduling|status|history|evidence|adherence|measurement|metric)\b", body, flags=re.IGNORECASE):
+        return clean_name
+    return f"{clean_name} with {_title_phrase(body)}"
 
 
 def _trim_explanatory_system_name(value: str) -> str:
@@ -260,7 +284,14 @@ def _trim_explanatory_system_name(value: str) -> str:
 
 def _normalize_repeated_and_chain(value: str) -> str:
     text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
-    parts = [part.strip(" .") for part in re.split(r"\s+and\s+", text, flags=re.IGNORECASE) if part.strip(" .")]
+    if "," in text and re.search(r"\s+and\s+", text, flags=re.IGNORECASE):
+        parts = [
+            part.strip(" .")
+            for part in re.split(r"\s*,\s*(?:and\s+)?|\s+and\s+", text, flags=re.IGNORECASE)
+            if part.strip(" .")
+        ]
+    else:
+        parts = [part.strip(" .") for part in re.split(r"\s+and\s+", text, flags=re.IGNORECASE) if part.strip(" .")]
     if len(parts) < 3:
         return text
     if any(word_count(part) > 5 for part in parts[1:]):

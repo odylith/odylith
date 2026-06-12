@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
@@ -178,9 +179,10 @@ def build_prewrite_completion_package(
                 allow_existing=True,
                 dry_run=True,
             )
+        package_proposal = _proposal_with_component_brief_gate(proposal)
         accepted_project_preview = preview_accepted_project_memory(
             root=prewrite_root,
-            proposal=proposal,
+            proposal=package_proposal,
             backlog_result=backlog_result,
             component_items=component_registry_preview,
             release_selector=release_selector,
@@ -190,7 +192,7 @@ def build_prewrite_completion_package(
         )
         compass_memory_preview = preview_compass_acceptance_event(
             root=prewrite_root,
-            proposal=proposal,
+            proposal=package_proposal,
             backlog_result=backlog_result,
             component_items=component_registry_preview,
             release_selector=release_selector,
@@ -198,17 +200,17 @@ def build_prewrite_completion_package(
             release_assignment_result=preview_release_assignment,
         )
         next_steps_preview = greenfield_experience.build_next_steps(
-            proposal=proposal,
+            proposal=package_proposal,
             backlog_result=backlog_result,
             first_release_workstreams=first_release_workstreams,
             program_result=preview_program_result,
             release_selector=release_selector,
         )
-        project_brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
+        project_brief = package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
         return GreenfieldPrewriteBuild(
             backlog_result=backlog_result,
             package=GreenfieldCompletionPackage(
-                proposal=proposal,
+                proposal=package_proposal,
                 release_selector=release_selector,
                 rendered_component_specs=rendered_component_specs,
                 rendered_atlas_sources=rendered_atlas_sources,
@@ -225,6 +227,40 @@ def build_prewrite_completion_package(
                 release_workstream_ids=tuple(first_release_workstreams),
             ),
         )
+
+
+def _proposal_with_component_brief_gate(proposal: Mapping[str, Any]) -> dict[str, Any]:
+    result = dict(proposal)
+    labels = [
+        str(row.get("label", "")).strip()
+        for row in mapping_rows(result.get("components"))
+        if str(row.get("label", "")).strip()
+    ]
+    if not labels:
+        return result
+    brief = dict(result.get("project_brief")) if isinstance(result.get("project_brief"), Mapping) else {}
+    gates = [str(item).strip() for item in brief.get("coding_readiness_gates", []) if str(item).strip()] if isinstance(brief.get("coding_readiness_gates"), list) else []
+    summary = ", ".join(labels)
+    title = ""
+    intent = result.get("intent")
+    if isinstance(intent, Mapping):
+        title = str(intent.get("title", "")).strip()
+    title_ref = sentence_label(title)
+    prefix = f"The {title_ref} components" if title_ref else "The project components"
+    gate = f"{prefix} come from product systems named in the accepted product direction: {summary}."
+    replaced = False
+    updated: list[str] = []
+    for item in gates:
+        if "components come from product systems named in the accepted product direction" in item.casefold():
+            updated.append(gate)
+            replaced = True
+        else:
+            updated.append(item)
+    if not replaced:
+        updated.append(gate)
+    brief["coding_readiness_gates"] = updated
+    result["project_brief"] = brief
+    return result
 
 
 def remap_prewrite_backlog_result(

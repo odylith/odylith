@@ -15,6 +15,12 @@ _QUALIFIER_RE = re.compile(
 _DESCRIPTION_MARKERS = (
     " responsible for ",
     " accountable for ",
+    " acknowledging ",
+    " asking ",
+    " assigning ",
+    " classifying ",
+    " creating ",
+    " drafting ",
     " filling ",
     " submitting ",
     " evaluating ",
@@ -28,7 +34,11 @@ _DESCRIPTION_MARKERS = (
     " owning ",
     " operating ",
     " coordinating ",
+    " preparing ",
+    " recording ",
     " receiving ",
+    " requesting ",
+    " responding ",
     " following up ",
     " trying to ",
     " seeking to ",
@@ -54,11 +64,13 @@ _ROLE_WORDS = {
     "client",
     "coach",
     "consultant",
+    "contact",
     "coordinator",
     "customer",
     "editor",
     "engineer",
     "evaluator",
+    "guardian",
     "inspector",
     "individual",
     "lead",
@@ -79,6 +91,7 @@ _ROLE_WORDS = {
     "specialist",
     "submitter",
     "support",
+    "sufferer",
     "trainer",
     "user",
 }
@@ -222,7 +235,7 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         lower_head=lower_head,
         role=role,
         body=body,
-        marker_body_used=marker_body_used,
+        marker_body_used=marker_body_used or explicit_body,
     )
     if activity_label:
         return activity_label
@@ -231,17 +244,23 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
         return composite_label
     needs_focus = _head_needs_focus(lower_head, role=role) or (
         marker_body_used and lower_head == role and role in _GENERIC_ROLE_ONLY
+    ) or (
+        marker_body_used and lower_head == role and role in {"coordinator"}
     )
+    if lower_head == role and role in {"admin", "administrator", "author"} and body:
+        focus = _focus_from_actor_body(body, role=role)
+        if focus:
+            return _title_label(f"{focus} {role}")
     if needs_focus:
-        if marker_body_used and role in {"operator", "owner", "support", "user"}:
+        if (marker_body_used or explicit_body) and role in {"operator", "owner", "support", "user"}:
             if _body_names_control_focus(body):
-                focus = _focus_from_text(body or text, role=role) or _focus_from_text(project_focus, role=role)
+                focus = _focus_from_actor_body(body or text, role=role) or _focus_from_text(project_focus, role=role)
             else:
-                focus = _focus_from_text(project_focus, role=role) or _focus_from_text(body or text, role=role)
+                focus = _focus_from_text(project_focus, role=role) or _focus_from_actor_body(body or text, role=role)
         elif marker_body_used:
-            focus = _focus_from_text(body or text, role=role) or _focus_from_text(project_focus, role=role)
+            focus = _focus_from_actor_body(body or text, role=role) or _focus_from_text(project_focus, role=role)
         else:
-            focus = _focus_from_text(project_focus, role=role) or _focus_from_text(body or text, role=role)
+            focus = _focus_from_text(project_focus, role=role) or _focus_from_actor_body(body or text, role=role)
         if focus and role:
             return _title_label(f"{focus} {role}")
         if focus:
@@ -288,26 +307,45 @@ def _split_actor_row(value: str) -> tuple[str, str]:
     )
     if comma and 1 <= len(comma.group("head").split()) <= 5:
         return comma.group("head").strip(" ."), comma.group("body").strip(" .")
+    action_head, action_tail = _split_actor_action_tail(value)
+    if action_head:
+        return action_head, action_tail
     return value, ""
 
 
 def _split_description_marker(value: str) -> tuple[str, str]:
     lowered = value.casefold()
-    for marker in _DESCRIPTION_MARKERS:
-        head, sep, tail = lowered.partition(marker)
-        if sep and head.strip() and tail.strip():
+    matches = sorted(
+        (index, marker)
+        for marker in _DESCRIPTION_MARKERS
+        if (index := lowered.find(marker)) > 0
+    )
+    for index, marker in matches:
+        head = lowered[:index]
+        tail = lowered[index + len(marker) :]
+        if head.strip() and tail.strip():
             if _generic_person_head(head) and marker.strip() in {
+                "acknowledging",
+                "asking",
+                "assigning",
                 "checking",
+                "classifying",
                 "configuring",
                 "coordinating",
+                "creating",
+                "drafting",
                 "handling",
                 "managing",
                 "owning",
+                "preparing",
+                "recording",
+                "requesting",
+                "responding",
                 "reviewing",
                 "using",
             }:
                 return "", ""
-            return value[: len(head)].strip(" ."), value[len(head) + len(marker) :].strip(" .")
+            return value[:index].strip(" ."), value[index + len(marker) :].strip(" .")
     return "", ""
 
 
@@ -326,9 +364,15 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
         if token == "being":
             continue
         if token not in {
+            "acknowledging",
+            "asking",
+            "assigning",
             "checking",
+            "classifying",
             "configuring",
             "coordinating",
+            "creating",
+            "drafting",
             "entering",
             "handling",
             "helping",
@@ -336,7 +380,11 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
             "managing",
             "monitoring",
             "owning",
+            "preparing",
+            "recording",
+            "requesting",
             "reviewing",
+            "responding",
             "running",
             "sharing",
             "tracking",
@@ -351,7 +399,7 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
         if not role and _generic_person_head(head):
             role = "user"
         if role and 1 <= len(head.split()) <= 4 and tail:
-            return head, tail
+            return _title_label(head), tail
     return "", ""
 
 
@@ -482,6 +530,20 @@ def _body_names_control_focus(value: str) -> bool:
     return bool(words & {"content", "policy", "privacy", "risk", "safety"})
 
 
+def _focus_from_actor_body(value: str, *, role: str) -> str:
+    text = _strip_parenthetical_qualifiers(value)
+    text = re.sub(
+        r"^(?:accepting|approving|checking|configuring|coordinating|editing|evaluating|handling|"
+        r"logging|managing|monitoring|owning|receiving|reviewing|running|sharing|submitting|tracking|using)\s+",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(r"^(?:a|an|the|one)\s+", "", text, flags=re.IGNORECASE).strip(" .")
+    return _focus_from_text(text or value, role=role)
+
+
 def _focus_from_text(value: str, *, role: str) -> str:
     text = re.sub(r"[/]", " ", _strip_parenthetical_qualifiers(value))
     tokens = [token.strip(";:()").rstrip(".") for token in text.split()]
@@ -532,6 +594,8 @@ def _title_label(value: str) -> str:
             words.append(stripped.upper())
             continue
         words.append(stripped[:1].upper() + stripped[1:])
+    while words and words[-1].casefold().strip(".,;:()") in _TITLE_CONNECTORS:
+        words.pop()
     return " ".join(words).strip()
 
 

@@ -932,6 +932,44 @@ Release proof requires one repair case to move from resident report to triage, a
     assert any(row.startswith("Triage Queue — assigns urgency") for row in intent["internal_systems"])
 
 
+def test_confirmed_intent_parser_accepts_primary_actor_and_system_headings() -> None:
+    intent = parse_confirmed_intent_text(
+        """Protocol Deviation Review — Product Intent Confirmation
+
+Product story
+A lab coordinator needs one reliable place to record protocol deviations, link evidence, and show quality reviewers what changed and what remains unresolved.
+
+State object that changes through the first journey
+A Deviation Review Record contains protocol identity, deviation description, evidence attachments, severity classification, reviewer notes, corrective action status, and audit trail.
+
+First complete path Odylith should prove before broader scope
+The coordinator creates one deviation record, selects the protocol, describes the deviation, attaches evidence, classifies severity, submits for quality review, receives one requested correction, updates the record, and the reviewer sees a complete audit trail with unresolved blockers called out.
+
+Primary actors
+- Lab coordinator: records deviation details and corrections.
+- Quality reviewer: reviews evidence, severity, and audit trail completeness.
+
+Primary systems
+- Deviation intake: owns protocol selection, deviation detail, and evidence status.
+- Severity review: owns classification, rationale, and blocked-state explanation.
+- Correction tracker: owns reviewer requests, coordinator responses, and unresolved blockers.
+- Audit trail: preserves event history, evidence links, and reviewer-ready replay.
+
+Proof boundary
+Release 0.0.1 is trusted when one deviation record can move from intake through severity review, correction, and audit-trail review with replayable evidence and blocked-state explanations.
+""",
+        prompt="Build a lab protocol deviation tracker for internal quality review.",
+    )
+
+    assert intent["human_actors"] == [
+        "Lab coordinator: records deviation details and corrections",
+        "Quality reviewer: reviews evidence, severity, and audit trail completeness",
+    ]
+    assert len(intent["internal_systems"]) == 4
+    assert intent["internal_systems"][0].startswith("Deviation Intake — owns protocol selection")
+    assert not any(row.startswith("Reviewer:") for row in intent["human_actors"])
+
+
 def test_confirmed_intent_parser_uses_opening_narrative_as_product_story() -> None:
     intent = parse_confirmed_intent_text(
         """# Community Permit Review Workspace
@@ -1182,12 +1220,14 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     assert "Decision Ledger" in encoded
     titles = [str(row["title"]) for row in accepted["proposal"]["backlog"]]
     assert titles == [
-        "Make Decision Review Workspace Useful for One Complete Outcome",
+        "Prove One Complete Decision Review Workspace Path",
         "Let Coordinator Use the Final Status with Source Evidence",
         "Keep Decision Record Clear After Quality Review Changes It",
         "Show Why Decision Record Can Be Trusted",
     ]
     assert not any(title.startswith(("Build ", "Implement ", "Ship ")) for title in titles)
+    assert "Useful for One Complete Outcome" not in encoded
+    assert "Ship one complete outcome" not in encoded
     rows_by_title = {str(row["title"]): row for row in accepted["proposal"]["backlog"]}
     first_path_row = rows_by_title["Let Coordinator Use the Final Status with Source Evidence"]
     state_row = rows_by_title["Keep Decision Record Clear After Quality Review Changes It"]
@@ -1195,7 +1235,7 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
 
     assert "final status with source evidence" in first_path_row["problem"]
     assert "import one observation" in first_path_row["product_view"]
-    assert "shows the final status with source evidence" in first_path_row["product_view"]
+    assert "use the final status with source evidence" in first_path_row["product_view"]
     assert "quality evidence" in encoded
     assert "Decision Record" in state_row["product_view"]
     assert "actor, source, status" in " ".join(state_row["success_metrics"])

@@ -6,22 +6,19 @@ from collections.abc import Mapping
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 
-ACTION_VERB_PATTERN = (
-    r"adds?|advances?|adjusts?|approves?|assigns?|attaches?|calculates?|captures?|checks?|chooses?|closes?|collects?|"
-    r"compares?|completes?|computes?|confirms?|corrects?|creates?|decides?|declines?|deletes?|derives?|edits?|"
-    r"defines?|ends?|enters?|evaluates?|exports?|fetches?|finds?|gets?|groups?|hands?|highlights?|imports?|launches?|lets?|links?|logs?|"
-    r"displays?|moves?|notifies?|opens?|orders?|persists?|preserves?|produces?|publishes?|ranks?|reads?|receives?|records?|rejects?|reports?|"
-    r"renders?|requests?|resolves?|returns?|reviews?|routes?|runs?|saves?|schedules?|screens?|sees?|selects?|sends?|"
-    r"shows?|stores?|submits?|supplies?|tracks?|validates?|verifies?|views?|votes?|watches?"
+ACTION_VERB_PATTERN = action_verb_pattern()
+_SPLIT_ACTION_VERB_PATTERN = action_verb_pattern(
+    exclude={"keep", "keeps", "schedule", "schedules", "surface", "surfaces"}
 )
-_SPLIT_ACTION_VERB_PATTERN = ACTION_VERB_PATTERN.replace("schedules?", "schedules").replace("views?", "views")
 
 
 def sequence_event_steps(
@@ -139,52 +136,7 @@ def _starts_with_unanchored_result_pronoun(value: str) -> bool:
 
 def _starts_with_action_word(value: str) -> bool:
     first = _leading_word(value)
-    return first in {
-        "add",
-        "adjust",
-        "approve",
-        "assign",
-        "attach",
-        "calculate",
-        "capture",
-        "check",
-        "choose",
-        "compare",
-        "complete",
-        "confirm",
-        "create",
-        "define",
-        "delete",
-        "edit",
-        "end",
-        "enter",
-        "export",
-        "fetch",
-        "find",
-        "highlight",
-        "import",
-        "launch",
-        "log",
-        "persist",
-        "publish",
-        "rank",
-        "read",
-        "receive",
-        "record",
-        "report",
-        "review",
-        "route",
-        "save",
-        "see",
-        "select",
-        "show",
-        "store",
-        "submit",
-        "update",
-        "validate",
-        "view",
-        "watch",
-    }
+    return bool(re.fullmatch(ACTION_VERB_PATTERN, first, flags=re.IGNORECASE))
 
 
 def _leading_word(value: str) -> str:
@@ -276,8 +228,24 @@ def _expand_compound_steps(values: list[str]) -> list[str]:
                 )
                 if segment.strip(" .")
             )
-        expanded.extend(_sentence(part).rstrip(".") for part in split_parts if part)
+        expanded.extend(_sentence(part).rstrip(".") for part in _carry_subject_across_parts(split_parts) if part)
     return expanded
+
+
+def _carry_subject_across_parts(values: list[str]) -> list[str]:
+    rows: list[str] = []
+    current_subject = ""
+    for value in values:
+        text = _compact_text(value).strip(" .")
+        if not text:
+            continue
+        subject = leading_subject_prefix(text)
+        if subject:
+            current_subject = subject
+        elif current_subject and _starts_with_action_word(text):
+            text = f"{current_subject} {text[:1].lower()}{text[1:]}"
+        rows.append(text)
+    return rows
 
 
 def _dedupe_steps(values: list[str]) -> list[str]:

@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any, Sequence
 
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import MATERIAL_ACTION_RE
@@ -26,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import primary_actor_signature as _primary_actor_signature
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 
 
@@ -125,6 +127,7 @@ def _first_path_capability_text(
     if model.material_action and not is_system_generated_action(model.material_action):
         selected.append(model.material_action)
     selected_fragments = {action_chain_fragment(row).casefold() for row in selected if action_chain_fragment(row)}
+    model_visible_object = visible_result_object(model.visible_outcome) or clean_first_path_text(model.visible_outcome)
     included_visible_result = False
     visible_seen = False
     for step in steps:
@@ -140,7 +143,7 @@ def _first_path_capability_text(
             continue
         if primary_actor and _actor_signature(step) and _actor_signature(step) != primary_actor and visible_seen:
             continue
-        if visible_object and clean_first_path_text(visible_object).casefold() == clean_first_path_text(model.visible_outcome).casefold():
+        if visible_object and _visible_outcome_covered(visible_object, model_visible_object):
             included_visible_result = True
         if len(selected) >= max(1, max_fragments):
             break
@@ -155,10 +158,13 @@ def _first_path_capability_text(
         visible_seen = visible_seen or visible_step
     fragmenter = _gerund_action_fragment if gerund else action_chain_fragment
     fragments = _unique([fragmenter(step) for step in selected])
-    if not gerund and model.visible_outcome and not included_visible_result:
+    if model.visible_outcome and not included_visible_result:
         outcome = visible_result_object(model.visible_outcome) or clean_first_path_text(model.visible_outcome)
         if outcome:
-            fragments.append(_outcome_capability_fragment(outcome))
+            outcome_fragment = _outcome_capability_fragment(outcome)
+            if gerund:
+                outcome_fragment = _gerund_action_fragment(outcome_fragment)
+            fragments.append(outcome_fragment)
     text = _join_fragments_within_limit(fragments[: max(1, max_fragments)], limit=limit) or clean_first_path_text(fallback)
     return _clip_phrase(text, limit=limit) or clean_first_path_text(fallback)
 
@@ -173,6 +179,7 @@ def _first_path_action_text(
     visible = clean_first_path_text(model.visible_outcome).casefold()
     primary_actor = _primary_actor_signature(model)
     fragments: list[str] = []
+    fallback_fragments: list[str] = []
     dash_detail_keys = _dash_detail_fragment_keys(model)
     visible_seen = False
     for step in model.steps:
@@ -183,6 +190,8 @@ def _first_path_action_text(
         if is_system_generated_action(step):
             visible_seen = visible_seen or visible_step
             continue
+        if visible_seen and fragments:
+            continue
         if primary_actor and _actor_signature(step) and _actor_signature(step) != primary_actor and visible_seen:
             continue
         if fragments and (visible_object == visible or (looks_like_visible_result(step) and visible_object)):
@@ -192,13 +201,38 @@ def _first_path_action_text(
         if fragment.casefold() in dash_detail_keys:
             continue
         if fragment:
+            if not _is_material_action_step(fragment):
+                if not fragments:
+                    fallback_fragments.append(fragment)
+                visible_seen = visible_seen or visible_step
+                continue
+            if _is_named_product_launcher_fragment(fragment):
+                if not fragments:
+                    fallback_fragments.append(fragment)
+                visible_seen = visible_seen or visible_step
+                continue
             fragments.append(fragment)
         if len(fragments) >= max(1, max_fragments):
             break
         visible_seen = visible_seen or visible_step
     if not fragments and model.material_action:
         fragments.append(action_chain_fragment(model.material_action))
+    if not fragments:
+        fragments.extend(fallback_fragments[: max(1, max_fragments)])
     return _clip_phrase(_join_series(_unique(fragments)), limit=limit) or clean_first_path_text(fallback)
+
+
+def _is_material_action_step(fragment: str) -> bool:
+    return bool(looks_like_action_clause(fragment))
+
+
+def _is_named_product_launcher_fragment(fragment: str) -> bool:
+    return bool(
+        re.match(
+            r"^(?i:open|launch|start)\s+[A-Z][A-Za-z0-9_-]{2,40}\b\s*$",
+            clean_first_path_text(fragment),
+        )
+    )
 
 
 def _first_path_outcome_text(
@@ -256,6 +290,26 @@ def _dash_detail_fragment_keys(model: FirstPathModel) -> set[str]:
 
 def _starts_with_unanchored_result_pronoun(value: str) -> bool:
     return bool(re.match(r"^(?:it|them|they|this|that)\b", clean_first_path_text(value), flags=re.IGNORECASE))
+
+
+def _visible_outcome_covered(visible_object: str, visible_outcome: str) -> bool:
+    object_text = clean_first_path_text(visible_object).casefold()
+    outcome_text = clean_first_path_text(visible_outcome).casefold()
+    if not object_text or not outcome_text:
+        return False
+    if object_text == outcome_text:
+        return True
+    object_terms = _semantic_terms(object_text)
+    outcome_terms = _semantic_terms(outcome_text)
+    return bool(outcome_terms and outcome_terms <= object_terms)
+
+
+def _semantic_terms(value: str) -> set[str]:
+    return {
+        word.casefold()
+        for word in visible_words(value)
+        if len(word) >= 4 and word.casefold() not in {"that", "this", "with", "when", "what"}
+    }
 
 
 def _visible_proof_result_clause(value: str) -> str:

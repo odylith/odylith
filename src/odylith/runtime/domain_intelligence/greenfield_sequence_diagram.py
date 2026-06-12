@@ -8,20 +8,14 @@ from typing import Any
 
 from odylith.runtime.common import display_text
 from odylith.runtime.common import mermaid_text
+from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import ACTION_VERB_PATTERN as _ACTION_VERB_PATTERN
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
-
-_BASE_ACTION_VERB_PATTERN = (
-    r"add|advance|adjust|approve|assign|attach|calculate|capture|check|choose|close|collect|compare|complete|compute|"
-    r"confirm|correct|create|decide|decline|define|delete|derive|edit|end|enter|evaluate|export|fetch|find|get|group|hand|"
-    r"highlight|import|inspect|keep|launch|link|log|notify|open|order|persist|preserve|produce|publish|rank|read|receive|"
-    r"record|reject|render|report|request|resolve|return|review|route|run|save|schedule|screen|see|select|send|show|store|"
-    r"submit|supply|track|validate|verify|view|vote|watch"
-)
+_BASE_ACTION_VERB_PATTERN = action_base_verb_pattern()
 
 _SEQUENCE_TERM_STOPWORDS = {
     "accepted",
@@ -48,7 +42,6 @@ _SEQUENCE_TERM_STOPWORDS = {
     "through",
     "with",
 }
-
 
 def sequence_mermaid(
     *,
@@ -91,7 +84,6 @@ def sequence_mermaid(
     final_component = _step_component(visible_steps[-1], components=selected, fallback_index=min(len(selected) - 1, len(visible_steps) - 1))
     lines.append(f"  {final_component}-->>{first_actor}: show outcome, evidence, and next action")
     return "\n".join(lines) + "\n"
-
 
 def first_path_flowchart_mermaid(
     *,
@@ -155,12 +147,10 @@ def first_path_flowchart_mermaid(
     )
     return "\n".join(lines) + "\n"
 
-
 def _flowchart_visible_steps(steps: list[str], *, limit: int = 10) -> list[str]:
     if len(steps) <= limit:
         return list(steps)
     return [*steps[: max(0, limit - 1)], steps[-1]]
-
 
 def _semantic_visible_result(semantic_model: Mapping[str, Any] | None) -> str:
     if not isinstance(semantic_model, Mapping):
@@ -170,17 +160,18 @@ def _semantic_visible_result(semantic_model: Mapping[str, Any] | None) -> str:
         return ""
     return _compact_text(str(contract.get("visible_result") or "")).strip(" .")
 
-
 def _terminal_step_label(step: str, visible_result: str) -> str:
     outcome = _compact_text(visible_result).strip(" .")
+    action_label = _step_action_label(step)
+    if _starts_with_path_action(action_label):
+        return action_label
     if not outcome:
-        return _step_action_label(step)
+        return action_label
     step_terms = _sequence_terms(step)
     outcome_terms = _sequence_terms(outcome)
     if step_terms and not step_terms <= outcome_terms:
-        return _step_action_label(step)
+        return action_label
     return f"Show outcome: {outcome}"
-
 
 def best_component_node_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
     """Return the component node id whose local language best matches the text."""
@@ -202,7 +193,6 @@ def best_component_node_for_text(value: str, *, components: list[dict[str, Any]]
     scored.sort(reverse=True)
     return scored[0][3] if scored else ""
 
-
 def _step_actor(step: str, *, actors: list[str], fallback_index: int) -> str:
     if _starts_with_path_action(step):
         return "A1"
@@ -213,7 +203,6 @@ def _step_actor(step: str, *, actors: list[str], fallback_index: int) -> str:
         return "A1"
     target = _best_index_for_text(step, rows=actors, default=fallback_index)
     return f"A{target + 1}"
-
 
 def _step_axis_actor_index(step: str, *, rows: list[str]) -> int | None:
     text = _compact_text(step).casefold()
@@ -246,7 +235,6 @@ def _step_axis_actor_index(step: str, *, rows: list[str]) -> int | None:
                 return index
     return None
 
-
 def _step_component(step: str, *, components: list[dict[str, Any]], fallback_index: int) -> str:
     label_rows = [str(component.get("label", "")) for component in components]
     rows = [
@@ -258,7 +246,6 @@ def _step_component(step: str, *, components: list[dict[str, Any]], fallback_ind
         return f"C{axis_index + 1}"
     target = _best_index_for_text(step, rows=rows, default=fallback_index)
     return f"C{target + 1}"
-
 
 def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: int = 0) -> int | None:
     text = _compact_text(step).casefold()
@@ -274,6 +261,11 @@ def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: in
         for index, row in enumerate(rows):
             row_terms = _sequence_terms(row)
             if row_terms & {"config", "configuration", "intake", "parameter", "parameters", "setting", "settings", "setup", "validation"}:
+                return index
+    if re.search(r"\b(?:follow-up|followup|question|questions|response|responses|preparer|preparers)\b", text):
+        for index, row in enumerate(rows):
+            row_terms = _sequence_terms(row)
+            if row_terms & {"question", "questions", "response", "responses", "tracker"}:
                 return index
     if re.search(r"\b(?:available|compare|compares|find|finds|history|report|reports|result|results|save|saves|saved|viewable)\b", text):
         for index, row in enumerate(rows):
@@ -417,12 +409,10 @@ def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: in
         return -scored[0][2]
     return None
 
-
 def _term_related(left: str, right: str) -> bool:
     if left == right:
         return True
     return len(left) >= 5 and len(right) >= 5 and (left.startswith(right) or right.startswith(left))
-
 
 def _best_index_for_text(value: str, *, rows: list[str], default: int) -> int:
     terms = _sequence_terms(value)
@@ -436,7 +426,6 @@ def _best_index_for_text(value: str, *, rows: list[str], default: int) -> int:
     scored.sort(reverse=True)
     return -scored[0][1]
 
-
 def _starts_with_path_action(step: str) -> bool:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _compact_text(step), flags=re.IGNORECASE)
     text = re.sub(r"^(?:the\s+)?(?:product|app|application|system)\s+", "", text, flags=re.IGNORECASE)
@@ -447,7 +436,6 @@ def _starts_with_path_action(step: str) -> bool:
             flags=re.IGNORECASE,
         )
     )
-
 
 def _starts_with_primary_actor_clause(step: str) -> bool:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _compact_text(step), flags=re.IGNORECASE)
@@ -463,7 +451,6 @@ def _starts_with_primary_actor_clause(step: str) -> bool:
         )
     )
 
-
 def _step_message(value: str, *, keep_actor_subject: bool = True) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _strip_dangling_tail(_trim(value, 150)), flags=re.IGNORECASE)
     text = re.sub(r"^(?:the\s+)?(?:product|app|application|system)\s+", "", text, flags=re.IGNORECASE)
@@ -473,13 +460,12 @@ def _step_message(value: str, *, keep_actor_subject: bool = True) -> str:
         text = text[:1].upper() + text[1:]
     return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=34, max_lines=4, limit=160)) or "advance accepted path"
 
-
 def _step_action_label(value: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _strip_dangling_tail(_trim(value, 220)), flags=re.IGNORECASE)
+    text = re.sub(r"^(?:the\s+)?(?:product|app|application|system)\s+", "", text, flags=re.IGNORECASE)
     if _retains_readable_step_subject(text):
         text = _compress_step_action_label(text)
         return text[:1].upper() + text[1:] if text else "Advance accepted path"
-    text = re.sub(r"^(?:the\s+)?(?:product|app|application|system)\s+", "", text, flags=re.IGNORECASE)
     role_can = re.match(
         r"^(?:a|an|the|one)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+can\s+(?P<verb>[A-Za-z]+)\b(?P<rest>.*)$",
         text,
@@ -497,16 +483,14 @@ def _step_action_label(value: str) -> str:
     text = _compress_step_action_label(text)
     return text[:1].upper() + text[1:] if text else "Advance accepted path"
 
-
 def _retains_readable_step_subject(value: str) -> bool:
     return bool(
         re.match(
-            r"^(?:they|we|he|she|it|the\s+(?:product|app|application|system))\s+",
+            r"^(?:they|we|he|she|it)\s+",
             _compact_text(value),
             flags=re.IGNORECASE,
         )
     )
-
 
 def _compress_step_action_label(value: str) -> str:
     text = _compact_text(value).strip(" .")
@@ -531,7 +515,6 @@ def _compress_step_action_label(value: str) -> str:
     text = re.sub(r"\s+", " ", text).strip(" .")
     return _strip_dangling_tail(text)
 
-
 def _third_person_verb(value: str) -> str:
     verb = str(value or "").strip()
     if not verb:
@@ -545,7 +528,6 @@ def _third_person_verb(value: str) -> str:
     if lowered.endswith("y") and len(verb) > 1 and lowered[-2] not in {"a", "e", "i", "o", "u"}:
         return f"{verb[:-1]}ies"
     return f"{verb}s"
-
 
 def _role_can_rest_to_third_person(value: str) -> str:
     rest = str(value or "")
@@ -567,7 +549,6 @@ def _role_can_rest_to_third_person(value: str) -> str:
         flags=re.IGNORECASE,
     )
 
-
 def _handoff_message(next_step: str) -> str:
     focus = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _strip_dangling_tail(_trim(next_step, 90)), flags=re.IGNORECASE)
     focus = re.sub(r"^(?:a|an|the)\s+", "", focus, flags=re.IGNORECASE).strip(" .")
@@ -581,7 +562,6 @@ def _handoff_message(next_step: str) -> str:
     else:
         label = f"handoff: {focus[:1].lower()}{focus[1:]}"
     return _without_ellipsis(mermaid_text.wrap_mermaid_label(label, width=34, max_lines=4, limit=160))
-
 
 def _strip_primary_actor_subject(value: str) -> str:
     text = re.sub(
@@ -609,7 +589,6 @@ def _strip_primary_actor_subject(value: str) -> str:
     ):
         text = f"{match.group('verb')}{match.group('rest')}".strip(" .")
     return text
-
 
 def _imperative_handoff_focus(value: str) -> str:
     text = _compact_text(value).strip(" .")
@@ -647,6 +626,7 @@ def _imperative_handoff_focus(value: str) -> str:
         "displays": "display",
         "opens": "open",
         "orders": "order",
+        "persists": "persist",
         "produces": "produce",
         "publishes": "publish",
         "ranks": "rank",
@@ -704,7 +684,6 @@ def _imperative_handoff_focus(value: str) -> str:
         text = re.sub(rf"((?:[,;]|\band\b|\bor\b)\s+){re.escape(source)}\b", rf"\1{target}", text, flags=re.IGNORECASE)
     return text
 
-
 def _sequence_terms(value: object) -> set[str]:
     return set(
         ordered_terms(
@@ -714,11 +693,9 @@ def _sequence_terms(value: object) -> set[str]:
         )
     )
 
-
 def _participant_label(value: str) -> str:
     text = _actor_role_label(value)
     return _without_ellipsis(mermaid_text.wrap_mermaid_label(text, width=24, max_lines=5, limit=120) or "Participant")
-
 
 def _actor_role_label(value: object) -> str:
     text = display_text.strip_inline_markdown_emphasis_tokens(str(value or ""))
@@ -734,14 +711,11 @@ def _actor_role_label(value: object) -> str:
     text = re.sub(r"\s+", " ", text).strip(" ,.;:-")
     return _trim(text or "Product user", 58)
 
-
 def _flow_label(value: str, *, width: int, max_lines: int, limit: int) -> str:
     return _without_ellipsis(mermaid_text.wrap_mermaid_label(_trim(value, limit), width=width, max_lines=max_lines, limit=limit))
 
-
 def _without_ellipsis(value: str) -> str:
     return str(value or "").replace("…", "").replace("...", "").rstrip(" ,;:")
-
 
 def _trim(value: str, limit: int) -> str:
     text = _compact_text(value)
@@ -749,7 +723,6 @@ def _trim(value: str, limit: int) -> str:
         return text
     clipped = clip_text_at_word_boundary(text, limit=limit)
     return _balance_label(_strip_dangling_tail(clipped))
-
 
 def _balance_label(value: str) -> str:
     text = _compact_text(value).strip(" ,;:.")
@@ -759,27 +732,39 @@ def _balance_label(value: str) -> str:
         text = text.rsplit("[", 1)[0].rstrip(" ,;:.")
     return text
 
-
 def _strip_dangling_tail(value: str) -> str:
     text = _compact_text(value).rstrip(" ,;:.")
     while True:
+        text = _strip_clipped_terminal_action(text)
         cleaned = re.sub(
             r"\b(?:a|accepted|actionable|an|and|as|at|because|by|can|capturing|clear|comparing|complete|concrete|daily|first|for|from|if|in|into|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|through|tied|to|trusted|until|visible|warning|when|while|with|without|alongside)$",
             "",
             text,
             flags=re.IGNORECASE,
         ).rstrip(" ,;:.")
+        cleaned = _strip_clipped_terminal_action(cleaned)
         if cleaned == text:
             return cleaned
         text = cleaned
 
+def _strip_clipped_terminal_action(value: str) -> str:
+    text = _compact_text(value).rstrip(" ,;:.")
+    if "," not in text:
+        return text
+    head, tail = text.rsplit(",", 1)
+    token = tail.strip(" ,;:.").casefold()
+    if not token or " " in token:
+        return text
+    if token.endswith("ing") and len(token) > 5:
+        return head.rstrip(" ,;:.")
+    if re.fullmatch(_BASE_ACTION_VERB_PATTERN, token, flags=re.IGNORECASE):
+        return head.rstrip(" ,;:.")
+    return text
 
 def _compact_text(value: str) -> str:
     return " ".join(str(value or "").split()).strip()
 
-
 def _node_id(prefix: str, index: int) -> str:
     return f"{prefix}{index}"
-
 
 __all__ = ["best_component_node_for_text", "first_path_flowchart_mermaid", "sequence_mermaid"]

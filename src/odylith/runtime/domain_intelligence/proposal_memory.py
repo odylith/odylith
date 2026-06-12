@@ -17,6 +17,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import display_text
 from odylith.runtime.common import log_compass_timeline_event
 from odylith.runtime.common.value_coercion import dedupe_strings
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 
 ACCEPTED_PROJECT_SOURCE_PATH = "odylith/runtime/source/accepted-project.v1.json"
 
@@ -128,7 +129,19 @@ def build_greenfield_acceptance_event_preview(
         "evidence_tier": "user_intent",
         "work_category": "governance",
     }
-    return dict(display_text.strip_inline_markdown_emphasis_tree(payload))
+    return dict(_normalize_accepted_memory_copy(display_text.strip_inline_markdown_emphasis_tree(payload)))
+
+
+def _normalize_accepted_memory_copy(value: Any) -> Any:
+    if isinstance(value, str):
+        return base_adverbial_note_action(value)
+    if isinstance(value, Mapping):
+        return {key: _normalize_accepted_memory_copy(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_normalize_accepted_memory_copy(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_normalize_accepted_memory_copy(item) for item in value)
+    return value
 
 
 def build_accepted_project_source_payload(
@@ -162,7 +175,7 @@ def build_accepted_project_source_payload(
         },
         "validation_gate": dict(validation_gate or {}),
     }
-    return dict(display_text.strip_inline_markdown_emphasis_tree(payload))
+    return dict(_normalize_accepted_memory_copy(display_text.strip_inline_markdown_emphasis_tree(payload)))
 
 
 def _accepted_memory_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:

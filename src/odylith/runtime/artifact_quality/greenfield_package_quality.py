@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+import re
 from typing import Any
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
+from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
+from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfield_project_judgment_issues
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.value_coercion import normalize_string
@@ -38,6 +41,7 @@ _DANGLING_TAIL_WORDS = frozenset(
         "at",
         "because",
         "between",
+        "final",
         "for",
         "from",
         "into",
@@ -54,6 +58,20 @@ _DANGLING_TAIL_WORDS = frozenset(
         "while",
         "with",
         "without",
+    }
+)
+_ALLOWED_TERMINAL_PREPOSITION_BIGRAMS = frozenset(
+    {
+        ("accounted", "for"),
+        ("asked", "for"),
+        ("cared", "for"),
+        ("checked", "for"),
+        ("planned", "for"),
+        ("paid", "for"),
+        ("prepared", "for"),
+        ("ready", "for"),
+        ("searched", "for"),
+        ("waited", "for"),
     }
 )
 _MID_SENTENCE_CAPITALIZED_PRONOUNS = frozenset({"Her", "His", "Its", "Our", "Their", "Your"})
@@ -79,7 +97,7 @@ _TERMINAL_MODIFIER_WORDS = frozenset(
 )
 _TERMINAL_MODIFIER_PRECEDERS = frozenset({"a", "an", "one", "the", "this", "that"})
 _TERMINAL_ARTICLE_WORDS = frozenset({"a", "an", "that", "the", "their", "this"})
-_INVALID_INFLECTIONS = frozenset({"seted"})
+_INVALID_INFLECTIONS = frozenset({"flaging", "intaked", "seted"})
 _VAGUE_MISSING_SUBJECTS = frozenset({"anything", "something", "stuff", "things"})
 _CAPITALIZED_CLAUSE_STARTERS = frozenset({"How", "What", "When", "Where", "Whether", "Who", "Why"})
 _MERMAID_EDGE_OPERATORS = ("-->>", "-.->", "==>", "-->", "->>", "---")
@@ -87,7 +105,22 @@ _REPETITION_MIN_WORDS = 9
 _REPETITION_MIN_CHARS = 68
 _COMPONENT_LABEL_MAX_WORDS = 8
 _EXPLANATORY_COMPONENT_CONNECTORS = frozenset(
-    {"because", "that", "when", "where", "which", "while", "who", "with", "without"}
+    {"because", "that", "when", "where", "which", "while", "who", "without"}
+)
+_CONNECTOR_CONTINUATION_OPENERS = frozenset(
+    {
+        "after",
+        "although",
+        "as",
+        "before",
+        "because",
+        "if",
+        "once",
+        "until",
+        "when",
+        "where",
+        "while",
+    }
 )
 
 
@@ -102,6 +135,7 @@ def greenfield_rendered_package_quality_issues(package: Any) -> list[str]:
             issues.extend(_mermaid_connectivity_issues(artifact))
     issues.extend(_package_component_identity_issues(package))
     issues.extend(_package_repetition_issues(package, artifacts))
+    issues.extend(greenfield_project_judgment_issues(package))
     return unique_text(issues)
 
 
@@ -143,6 +177,13 @@ def _artifact_language_issues(artifact: RenderedArtifact) -> list[str]:
 def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
     issues: list[str] = []
     issues.extend(generated_public_copy_issues(artifact.identity, artifact.text))
+    issues.extend(_registry_component_contract_floor_issues(artifact))
+    if re.search(r"(?m)^\s*(?:[-*]\s*)?TBD\.?\s*$", artifact.text, flags=re.IGNORECASE):
+        issues.append(f"{artifact.identity} contains placeholder TBD copy")
+    if re.search(r"\bvalidation\s+gates\s+pass\b", artifact.text, flags=re.IGNORECASE):
+        issues.append(f"{artifact.identity} uses generic validation-gate copy")
+    if has_inline_role_casing_drift(artifact.text):
+        issues.append(f"{artifact.identity} has inline actor casing drift")
     if _has_doubled_sentence_punctuation(artifact.text):
         issues.append(f"{artifact.identity} has doubled sentence punctuation")
     if _has_vague_missing_input_copy(artifact.text):
@@ -160,6 +201,10 @@ def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
         tokens = _word_tokens(chunk)
         if _has_clipped_terminal_modifier(tokens):
             issues.append(f"{artifact.identity} has clipped modifier phrase ending in `{tokens[-2]} {tokens[-1]}`")
+        if artifact.kind == "mermaid" and tokens and tokens[-1].casefold().strip(".,;:'") == "blocking":
+            issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
+        if artifact.kind == "mermaid" and _has_clipped_terminal_action_label(chunk, tokens):
+            issues.append(f"{artifact.identity} has clipped action phrase ending in `{tokens[-1]}`")
     for line in str(artifact.text or "").splitlines():
         bullet = _markdown_bullet_body(line)
         if not bullet:
@@ -167,6 +212,24 @@ def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
         tokens = _word_tokens(bullet)
         if tokens and tokens[0].casefold() in _LOWERCASE_FRAGMENT_STARTS and tokens[0][:1].islower():
             issues.append(f"{artifact.identity} has sentence-fragment drift near `{_clip(bullet, 100)}`")
+    return issues
+
+
+def _registry_component_contract_floor_issues(artifact: RenderedArtifact) -> list[str]:
+    if artifact.surface != "Registry component spec":
+        return []
+    text = artifact.text.casefold()
+    required = {
+        "source boundary": ("source boundary",),
+        "trace links": ("trace links",),
+        "successful path evidence": ("successful path evidence", "success proof covers"),
+        "blocked input evidence": ("blocked input evidence", "blocked path evidence", "missing or invalid input"),
+        "replay evidence": ("replay evidence", "replay proof"),
+    }
+    issues: list[str] = []
+    for label, options in required.items():
+        if not any(option in text for option in options):
+            issues.append(f"{artifact.identity} is missing {label}")
     return issues
 
 
@@ -205,9 +268,15 @@ def _chunk_language_issues(artifact: RenderedArtifact, chunk: str) -> list[str]:
         issues.append(f"{artifact.identity} has invalid verb inflection near `{tokens[-1]}`")
     if tail in _TERMINAL_ARTICLE_WORDS:
         issues.append(f"{artifact.identity} has a clipped article phrase ending in `{tokens[-1]}`")
-    if tail in _DANGLING_TAIL_WORDS:
+    if tail in _DANGLING_TAIL_WORDS and not _allowed_terminal_preposition_phrase(lowered):
         issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
     return issues
+
+
+def _allowed_terminal_preposition_phrase(lowered: Sequence[str]) -> bool:
+    if len(lowered) < 2:
+        return False
+    return (lowered[-2].strip("'"), lowered[-1].strip("'")) in _ALLOWED_TERMINAL_PREPOSITION_BIGRAMS
 
 
 def _coordinated_modal_drift_issues(
@@ -228,10 +297,49 @@ def _coordinated_modal_drift_issues(
             candidate_index = index + 1
             if candidate_index < window_end and lowered[candidate_index].endswith("ly"):
                 candidate_index += 1
-            if candidate_index < window_end and _looks_like_finite_verb(lowered[candidate_index]):
+            if candidate_index < window_end and _looks_like_coordinated_finite_action(tokens, lowered, candidate_index):
                 phrase = " ".join(tokens[index : candidate_index + 1])
                 issues.append(f"{artifact.identity} has coordinated modal grammar drift near `{phrase}`")
     return issues
+
+
+def _looks_like_coordinated_finite_action(
+    tokens: Sequence[str],
+    lowered: Sequence[str],
+    candidate_index: int,
+) -> bool:
+    if not _looks_like_finite_verb(lowered[candidate_index]):
+        return False
+    token = str(tokens[candidate_index]).strip(".,;:")
+    next_token = str(tokens[candidate_index + 1]).strip(".,;:") if candidate_index + 1 < len(tokens) else ""
+    if token[:1].isupper() and next_token[:1].isupper():
+        return False
+    if _looks_like_conjunction_noun_compound(lowered, candidate_index):
+        return False
+    return True
+
+
+def _looks_like_conjunction_noun_compound(lowered: Sequence[str], candidate_index: int) -> bool:
+    token = lowered[candidate_index].strip(".,;:")
+    next_token = lowered[candidate_index + 1].strip(".,;:") if candidate_index + 1 < len(lowered) else ""
+    if token in {"records", "reports", "reviews"} and next_token in {
+        "archive",
+        "dashboard",
+        "evidence",
+        "export",
+        "history",
+        "ledger",
+        "log",
+        "record",
+        "service",
+        "store",
+        "summary",
+        "surface",
+        "trail",
+        "view",
+    }:
+        return True
+    return False
 
 
 def _adjacent_repeated_word_issues(
@@ -319,6 +427,21 @@ def _has_clipped_terminal_modifier(tokens: Sequence[str]) -> bool:
     tail = tokens[-1].casefold().strip(".,;:'")
     previous = tokens[-2].casefold().strip(".,;:'")
     return tail in _TERMINAL_MODIFIER_WORDS and previous in _TERMINAL_MODIFIER_PRECEDERS
+
+
+def _has_clipped_terminal_action_label(chunk: str, tokens: Sequence[str]) -> bool:
+    if len(tokens) < 6 or "," not in str(chunk or ""):
+        return False
+    tail_segment = str(chunk or "").rsplit(",", 1)[-1].strip(" .;:")
+    tail_tokens = _word_tokens(tail_segment)
+    if len(tail_tokens) != 1:
+        return False
+    tail = tail_tokens[0].casefold().strip(".,;:'")
+    if not tail or tail in {"and", "or"}:
+        return False
+    if tail.endswith("ing") and len(tail) > 5:
+        return True
+    return looks_like_action_clause(f"{tail} placeholder") and not looks_like_finite_action(f"{tail} placeholder")
 
 
 def _package_repetition_issues(package: Any, artifacts: list[RenderedArtifact]) -> list[str]:
@@ -415,7 +538,9 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
         first_path.get("raw_path"),
         first_path.get("capability"),
         first_path.get("visible_result"),
+        *_first_path_event_values(first_path.get("events")),
         ontology.get("proof_boundary"),
+        *text_values(proposal.get("assumptions")),
         *_open_question_repetition_values(proposal.get("open_questions")),
         *[
             f"{component.get('component_id', '')} {component.get('label', '')}"
@@ -430,6 +555,20 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
             if key:
                 keys.add(key)
     return keys
+
+
+def _first_path_event_values(value: Any) -> list[str]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return []
+    rows: list[str] = []
+    for item in value:
+        if not isinstance(item, Mapping):
+            continue
+        for key in ("text", "mutation", "target_entity"):
+            text = normalize_string(item.get(key))
+            if text:
+                rows.append(text)
+    return rows
 
 
 def _open_question_repetition_values(value: Any) -> list[str]:
@@ -499,11 +638,11 @@ def _narrative_chunks(value: str) -> list[str]:
             continue
         if in_code_fence or _skip_narrative_line(line):
             continue
-        for char in line:
+        for index, char in enumerate(line):
             if char in ".!?\n\r":
                 _append_chunk(chunks, current)
                 current = []
-            elif char in ",;":
+            elif char in ",;" and not _punctuation_continues_connector_clause(line, index, current):
                 _append_chunk(chunks, current)
                 _append_short_chunk(chunks, current)
                 current = []
@@ -512,6 +651,22 @@ def _narrative_chunks(value: str) -> list[str]:
         _append_chunk(chunks, current)
         current = []
     return chunks
+
+
+def _punctuation_continues_connector_clause(line: str, index: int, current: Sequence[str]) -> bool:
+    """Keep grammatical connector interrupters in one quality-check chunk."""
+
+    if not current or index < 0 or index >= len(line) or line[index] != ",":
+        return False
+    tokens = _word_tokens("".join(current))
+    if not tokens or tokens[-1].casefold().strip(".,;:'") not in {"and", "or"}:
+        return False
+    return _next_word(line[index + 1 :]) in _CONNECTOR_CONTINUATION_OPENERS
+
+
+def _next_word(value: str) -> str:
+    match = re.search(r"[A-Za-z][A-Za-z'-]*", str(value or ""))
+    return match.group(0).casefold() if match else ""
 
 
 def _repetition_chunks(value: str) -> list[str]:

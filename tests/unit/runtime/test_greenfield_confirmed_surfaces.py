@@ -5,11 +5,41 @@ from pathlib import Path
 
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_component_contract import boundary_from_contract
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import component_kind_echo_safe_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import proof_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import expand_internal_system_rows
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+
+
+def test_component_proof_phrases_do_not_echo_short_component_kind_labels() -> None:
+    assert component_kind_echo_safe_phrase(label="Review Queue", phrase="queue state result") == "review state result"
+    assert component_kind_echo_safe_phrase(label="Queue", phrase="queue state result") == "state result"
+    rows = proof_rows(
+        label="Review Queue",
+        object_list="queue state",
+        critical="queue state",
+        input_focus="request input",
+        output_focus="queue state result",
+        sibling_label="Response History Service",
+        sibling_focus="response history state",
+    )
+
+    assert "Successful path evidence for Review Queue: review state result" in rows[0]
+    assert "Review Queue: queue" not in " ".join(rows)
+
+
+def test_component_boundary_strips_leading_ownership_verbs_from_owned_state() -> None:
+    boundary = boundary_from_contract(
+        "Evidence Gap Tracker",
+        {"owned_state": "owns evidence gap tracker state, local blockers, and recovery context"},
+    )
+
+    assert boundary == "Evidence Gap Tracker owns evidence gap tracker state, validation evidence, and local handoff decisions."
+    assert "owns owns" not in boundary.casefold()
 
 
 def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:

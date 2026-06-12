@@ -11,6 +11,7 @@ from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
     outcome_action_phrase as _outcome_action_phrase,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.utils import display_text, sentence, strings
 
@@ -672,7 +673,12 @@ def _clean_boundary_exclusion(value: str) -> str:
     text = _product_sentence(value).rstrip(".")
     text = re.sub(r"^(?:non[- ]?goals?|out\s+of\s+scope)\s*:\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\b(?:in\s+the\s+first\s+release|for\s+release\s+[0-9.]+)\b", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"\s+(?:are|is)\s+out\s+of\s+scope\b.*$", "", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"\s+(?:are|is)\s+(?:(?:explicitly|intentionally|currently)\s+)?out\s+of\s+scope\b.*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
     text = re.sub(r"\s+(?:is|are)\s+(?:a\s+)?later\s+enhancements?\b.*$", "", text, flags=re.IGNORECASE)
     text = _clean(text).strip(" .")
     if not text or any(re.search(pattern, text, re.IGNORECASE) for pattern in _GENERIC_CARD_PATTERNS):
@@ -745,6 +751,7 @@ def _path_sentence(value: Any) -> str:
     text = text.replace("`", "")
     text = re.sub(r"\*\*", "", text)
     text = re.sub(r"\b(?:radar|registry|atlas|compass|casebook)\b.+$", "", text, flags=re.IGNORECASE)
+    text = base_adverbial_note_action(text)
     return _clean(text).strip(" .")
 
 

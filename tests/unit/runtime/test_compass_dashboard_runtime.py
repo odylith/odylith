@@ -806,7 +806,7 @@ def test_build_scoped_standup_fact_packet_avoids_conditional_direction_fragment(
 def test_scoped_standup_fact_packet_trims_dangling_generated_fragments() -> None:
     row = {
         "idea_id": "B-001",
-        "title": "Make Practice Tool Useful for One Complete Outcome",
+        "title": "Prove One Complete Practice Tool Path",
         "status": "queued",
         "why": {
             "problem": (
@@ -820,7 +820,7 @@ def test_scoped_standup_fact_packet_trims_dangling_generated_fragments() -> None
                 "decision point, see a consequence and a short reflection. Keep validation gates tied to this workstream."
             ),
             "opportunity": (
-                "Ship one complete outcome: a representative user can create an account, add a profile, pick the "
+                "Prove the first release path: a representative user can create an account, add a profile, pick the "
                 "first release band, and see a short reflection to decide what to do next."
             ),
         },

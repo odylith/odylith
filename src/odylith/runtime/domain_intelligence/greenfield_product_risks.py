@@ -195,6 +195,14 @@ def _risk_context(
     path = _sentence(first_path)
     state = _sentence(state_object)
     proof = _sentence(proof_boundary)
+    primary_actor = _inline_actor_label(actor_labels[0]) if actor_labels else "the primary user"
+    downstream_actor = (
+        _inline_actor_label(actor_labels[1])
+        if len(actor_labels) > 1
+        else _inline_actor_label(actor_labels[-1])
+        if actor_labels
+        else "the next participant"
+    )
     return _RiskContext(
         title=compact_text(title) or title_label(title) or "Greenfield Project",
         story=story,
@@ -202,8 +210,8 @@ def _risk_context(
         first_path=path,
         state_object=state,
         proof_boundary=proof,
-        primary_actor=actor_labels[0] if actor_labels else "the primary user",
-        downstream_actor=(actor_labels[1] if len(actor_labels) > 1 else actor_labels[-1] if actor_labels else "the next participant"),
+        primary_actor=primary_actor,
+        downstream_actor=downstream_actor,
         input_focus=_input_focus(path, fallback=state),
         outcome=_outcome_focus(story=story, first_path=path, proof_boundary=proof, state_object=state),
         external_focus=_external_focus(external_systems),
@@ -460,6 +468,37 @@ def _actor_label(value: str) -> str:
     return text[:1].upper() + text[1:] if text else ""
 
 
+def _inline_actor_label(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if not text:
+        return "the user"
+    article = re.match(r"^(a|an|the|one|this|that|each)\s+(.+)$", text, flags=re.IGNORECASE)
+    if article:
+        return f"{article.group(1).casefold()} {_lower_role_label(article.group(2))}".strip()
+    return f"the {_lower_role_label(text)}"
+
+
+def _lower_role_label(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if not text:
+        return ""
+    return " ".join(_lower_role_token(token) for token in text.split())
+
+
+def _lower_role_token(value: str) -> str:
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    stripped = token.strip(".,;:()")
+    parts = [part for part in re.split(r"[/&+-]", stripped) if part and re.search(r"[A-Za-z]", part)]
+    if parts and all(part.isupper() and len(part) <= 6 for part in parts):
+        return token
+    letters = [char for char in stripped if char.isalpha()]
+    if len(letters) >= 2 and any(char.isupper() for char in letters[1:]):
+        return token
+    return f"{token[:1].casefold()}{token[1:]}"
+
+
 def _input_clause_object(value: str) -> str:
     text = compact_text(value).strip(" .")
     subject_verb = re.match(
@@ -502,7 +541,7 @@ def _external_focus(values: Sequence[str]) -> str:
             text = re.split(r"\bexternal\s+systems?\s*:\s*", text, maxsplit=1, flags=re.IGNORECASE)[1]
         head = re.split(r"\s+[—-]\s+|:\s+", text, maxsplit=1)[0].strip(" .:-")
         for label in re.split(r",\s+|\s+and\s+", head):
-            label = label.strip(" .:-")
+            label = _lower_role_label(label.strip(" .:-"))
             if label:
                 labels.append(label)
     if not labels:
@@ -561,7 +600,17 @@ def _ensure_sentence(value: str) -> str:
 
 def _lower_first(value: str) -> str:
     text = compact_text(value)
-    return f"{text[:1].lower()}{text[1:]}" if text else ""
+    if not text:
+        return ""
+    match = re.match(r"(?P<prefix>[^A-Za-z0-9]*)(?P<token>[A-Za-z0-9][A-Za-z0-9_/-]*)", text)
+    if not match:
+        return f"{text[:1].lower()}{text[1:]}"
+    token = match.group("token")
+    letters = [char for char in token if char.isalpha()]
+    if len(letters) >= 2 and any(char.isupper() for char in letters[1:]):
+        return text
+    index = len(match.group("prefix"))
+    return f"{text[:index]}{text[index:index + 1].lower()}{text[index + 1:]}"
 
 
 def _lower_label(value: str) -> str:

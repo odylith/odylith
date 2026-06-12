@@ -18,6 +18,7 @@ import os
 import re
 import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -43,10 +44,15 @@ from odylith.runtime.domain_intelligence.proposal_normalization import normalize
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
-    assert_greenfield_completion_ready,
-    build_greenfield_package_report,
-    raise_for_failed_greenfield_completion,
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import assert_greenfield_completion_ready
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
+    finalize_greenfield_post_confirm_manifest,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
+    POST_CONFIRM_MAX_PASSES,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
+    run_greenfield_post_confirm_engine,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
@@ -155,7 +161,7 @@ _TITLE_ACRONYMS = {
     "ux": "UX",
 }
 
-_MAX_PACKAGE_REPAIR_PASSES = 3
+_MAX_PACKAGE_REPAIR_PASSES = POST_CONFIRM_MAX_PASSES
 
 
 def _title_token(token: str) -> str:
@@ -196,6 +202,21 @@ def _source_evidence(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _confirmed_intent_source_evidence(repo_root: Path) -> dict[str, Any]:
+    """Return post-confirm repo evidence without scanning source files."""
+
+    root = Path(repo_root).expanduser().resolve()
+    return {
+        "repo_name": root.name,
+        "description": "",
+        "languages": [],
+        "frameworks": [],
+        "monorepo": False,
+        "source_posture": "confirmed_intent_only",
+        "source_summary": dict(vars(SourceSummary())),
+    }
+
+
 def build_greenfield_proposal(
     *,
     repo_root: Path,
@@ -218,10 +239,11 @@ def build_greenfield_proposal(
             "confirmed greenfield proposal requires accepted Product Intent Confirmation data; "
             "prompt-only confirmed proposal construction is disabled."
         )
-    intent_title = _intent_title(prompt)
-    evidence = _source_evidence(root)
+    intent_title = str(confirmed_intent.get("title") or "").strip() or "Greenfield Project"
+    intent_prompt = str(confirmed_intent.get("prompt") or intent_title).strip() or intent_title
+    evidence = _confirmed_intent_source_evidence(root)
     proposal = build_confirmed_greenfield_proposal(
-        prompt=_prompt_text(prompt),
+        prompt=intent_prompt,
         title=intent_title,
         observed_source=evidence,
         release_selector=release_selector,
@@ -260,8 +282,7 @@ def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) ->
     path = Path(intent_file).expanduser()
     if not path.is_absolute():
         path = repo_root / path
-    prompt = str(getattr(args, "prompt", "") or "")
-    intent = load_confirmed_intent_file(path, prompt=prompt, fallback_title=_intent_title(prompt))
+    intent = load_confirmed_intent_file(path)
     if path.suffix.lower() != ".json":
         write_structured_confirmed_intent_file(path, intent)
     return intent
@@ -397,30 +418,32 @@ def _build_repaired_prewrite_package(
     proposal: Mapping[str, Any],
     release_selector: str,
     proposal_ready: bool = False,
-) -> tuple[Mapping[str, Any], Any, greenfield_apply_prewrite.GreenfieldPrewriteBuild]:
-    last_report = None
-    for _pass in range(_MAX_PACKAGE_REPAIR_PASSES):
-        tribunal = run_greenfield_tribunal(proposal, release_selector=release_selector)
-        raise_for_failed_greenfield_tribunal(tribunal)
-        if not (proposal_ready and _pass == 0):
-            assert_greenfield_completion_ready(proposal, release_selector=release_selector)
-        prewrite_build = greenfield_apply_prewrite.build_prewrite_completion_package(
+) -> tuple[Mapping[str, Any], Any, greenfield_apply_prewrite.GreenfieldPrewriteBuild, dict[str, Any]]:
+    def build_prewrite(
+        current_proposal: Mapping[str, Any],
+        tribunal: Any,
+    ) -> greenfield_apply_prewrite.GreenfieldPrewriteBuild:
+        return greenfield_apply_prewrite.build_prewrite_completion_package(
             root=root,
-            proposal=proposal,
+            proposal=current_proposal,
             release_selector=release_selector,
-            backlog_args=_backlog_apply_args(proposal, release_selector=release_selector),
+            backlog_args=_backlog_apply_args(current_proposal, release_selector=release_selector),
             validation_gate=tribunal.to_dict(),
             release_assignment_note=greenfield_apply_write.release_assignment_note(selector=release_selector),
         )
-        report = build_greenfield_package_report(prewrite_build.package)
-        if report.passed:
-            return proposal, tribunal, prewrite_build
-        last_report = report
-        proposal = _repair_confirmed_apply_payload(proposal, release_selector=release_selector)
-        proposal_ready = False
-    if last_report is not None:
-        raise_for_failed_greenfield_completion(last_report)
-    raise RuntimeError("greenfield prewrite package could not be built")
+
+    result = run_greenfield_post_confirm_engine(
+        proposal=proposal,
+        release_selector=release_selector,
+        build_prewrite=build_prewrite,
+        repair_proposal=lambda current: _repair_confirmed_apply_payload(
+            current,
+            release_selector=release_selector,
+        ),
+        proposal_ready=proposal_ready,
+        max_passes=_MAX_PACKAGE_REPAIR_PASSES,
+    )
+    return result.proposal, result.tribunal, result.prewrite_build, result.manifest
 
 
 def _repair_confirmed_apply_payload(
@@ -446,6 +469,7 @@ def apply_greenfield_proposal(
 ) -> dict[str, Any]:
     """Apply a confirmed proposal using owned governance authoring paths."""
 
+    post_confirm_started = time.perf_counter()
     if not confirm:
         raise ValueError("--confirm is required before greenfield apply writes accepted product records")
     if not proposal_ready:
@@ -459,7 +483,7 @@ def apply_greenfield_proposal(
     if not backlog_rows:
         raise ValueError("proposal has no backlog records")
     release_selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
-    proposal, tribunal, prewrite_build = _build_repaired_prewrite_package(
+    proposal, tribunal, prewrite_build, post_confirm_manifest = _build_repaired_prewrite_package(
         root=root,
         proposal=proposal,
         release_selector=release_selector,
@@ -476,6 +500,11 @@ def apply_greenfield_proposal(
             backlog_result=backlog_result,
         )
         transaction.commit()
+        result["post_confirm_quality_manifest"] = finalize_greenfield_post_confirm_manifest(
+            post_confirm_manifest,
+            whole_project_elapsed_seconds=time.perf_counter() - post_confirm_started,
+            write_transaction_status="committed",
+        )
         return result
 
 

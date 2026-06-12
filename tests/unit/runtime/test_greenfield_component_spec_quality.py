@@ -196,6 +196,14 @@ def test_component_contract_artifact_cleaning_stays_in_text_owner() -> None:
     assert "def clean_artifact_text" in text_source
     assert clean_artifact_text("`Risk review` , ready") == "Risk review, ready"
     assert clean_artifact_text("`Risk review` (blocked) , ready", split_parentheses=True) == "Risk review blocked, ready"
+    assert (
+        clean_artifact_text(
+            "odylith greenfield create --repo-root . --prompt x "
+            "--intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm"
+        )
+        == "odylith greenfield create --repo-root . --prompt x "
+        "--intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm"
+    )
 
     for caller in callers:
         source = caller.read_text(encoding="utf-8")
@@ -299,6 +307,26 @@ def test_component_contract_profiles_stay_in_dedicated_owner() -> None:
         contract_profiles._object_phrase("The Primary source-backed_review record")
         == "source-backed review record"
     )
+    document_contract = contract_profiles.document_context_contract(
+        label="Packet Intake Service",
+        state_label="permit application packet",
+        context="records applicant identity, required documents, uploaded files, and missing document blockers",
+        previous_label="Intake Workspace",
+        next_label="Completeness Check Service",
+    )
+    status_contract = contract_profiles.status_view_contract(
+        label="Status View Service",
+        state_label="permit application packet",
+        context="shows submitted, blocked, stale, and completed status transitions",
+        previous_label="Packet Intake Service",
+        next_label="Release review",
+    )
+
+    for contract in (document_contract, status_contract):
+        proof_text = " ".join(contract["local_proof"])
+        assert "Successful path evidence for" in proof_text
+        assert "Blocked input evidence for" in proof_text
+        assert "Replay evidence for" in proof_text
 
 
 def test_component_contract_targets_stay_in_dedicated_owner() -> None:

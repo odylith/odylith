@@ -40,3 +40,12 @@ def test_actor_label_keeps_comma_gerund_descriptions_out_of_visible_actor_names(
         "Optionally, a caregiver helping that person stay on schedule (later, not in the first path)",
         project_focus="Medication Companion",
     )
+
+
+def test_actor_label_splits_inline_activity_from_role_head() -> None:
+    row = "Discomfort sufferer logging and reviewing their own episodes"
+
+    assert accepted_actor_label(row, project_focus="Personal tracker") == "Discomfort Sufferer"
+    assert project_specific_actor_row(row, project_focus="Personal tracker") == (
+        "Discomfort Sufferer: logging and reviewing their own episodes"
+    )

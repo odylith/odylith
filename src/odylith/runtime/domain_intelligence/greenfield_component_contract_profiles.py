@@ -33,6 +33,7 @@ def document_context_contract(
     downstream = next_label or _downstream_from_context(context, fallback="lifecycle tracking")
     outside = _document_outside_boundary(context)
     local_proof = _document_local_proof(
+        label=label,
         object_base=object_base,
         context_label=context_label,
         docs=docs,
@@ -82,7 +83,12 @@ def status_view_contract(
     role_scope = _role_scope_phrase(context)
     stale_indicator = f"stale or blocked {object_base} indicators"
     upstream = previous_label or _upstream_from_context(context, fallback=f"{object_base} lifecycle tracking")
-    local_proof = _status_local_proof(object_base=object_base, role_scope=role_scope, stale_indicator=stale_indicator)
+    local_proof = _status_local_proof(
+        label=label,
+        object_base=object_base,
+        role_scope=role_scope,
+        stale_indicator=stale_indicator,
+    )
     return {
         "owned_state": (
             f"{timeline}, current next-action owner, {role_scope}, transition history, blocked or stale indicators, "
@@ -247,6 +253,7 @@ def _document_outside_boundary(context: str) -> str:
 
 def _document_local_proof(
     *,
+    label: str,
     object_base: str,
     context_label: str,
     docs: str,
@@ -255,11 +262,20 @@ def _document_local_proof(
     recipient: str,
 ) -> list[str]:
     return [
-        f"User can attach required {context_label} to the correct {object_base}.",
-        f"{missing.capitalize()} blocks submission.",
-        f"Uploaded context remains associated with the correct {object_base}.",
-        f"Unauthorized users cannot view or mutate {context_label}.",
-        f"{recipient.capitalize()} can see the {context_label} needed to complete local review or request more information.",
+        (
+            f"Successful path evidence for {label}: user can attach required {context_label} to the correct {object_base}, "
+            f"and uploaded context remains associated with the correct {object_base}."
+        ),
+        f"Blocked input evidence for {label}: {missing} blocks submission before the product shows a trusted result.",
+        (
+            f"Replay evidence for {label}: source actor, uploaded context, status, access decision, and proof trail stay attached "
+            f"to the correct {object_base}."
+        ),
+        f"Access evidence for {label}: unauthorized users cannot view or mutate {context_label}.",
+        (
+            f"Handoff evidence for {recipient}: {recipient} can see the {context_label} needed to complete local review "
+            "or request more information."
+        ),
     ]
 
 
@@ -312,13 +328,13 @@ def _role_scope_phrase(context: str) -> str:
     return "role-specific actor visibility"
 
 
-def _status_local_proof(*, object_base: str, role_scope: str, stale_indicator: str) -> list[str]:
+def _status_local_proof(*, label: str, object_base: str, role_scope: str, stale_indicator: str) -> list[str]:
     return [
-        f"Valid {object_base} transitions are displayed correctly.",
-        "Invalid transitions are rejected or hidden.",
-        f"{role_scope.capitalize()} is enforced.",
-        f"{stale_indicator.capitalize()} are visible.",
-        "Status history is traceable to source events.",
+        f"Successful path evidence for {label}: valid {object_base} transitions are displayed with the current owner and status.",
+        f"Blocked input evidence for {label}: invalid transitions are rejected or hidden before they look complete.",
+        f"Replay evidence for {label}: status history, source event, actor, timestamp, and proof trail are traceable.",
+        f"Access evidence for {label}: {role_scope} is enforced.",
+        f"Freshness evidence for {label}: {stale_indicator} are visible.",
     ]
 
 

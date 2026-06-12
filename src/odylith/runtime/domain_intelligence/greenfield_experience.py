@@ -478,8 +478,8 @@ def _project_first_prompt(*, project_id: str, project_title: str, start_id: str,
 def _implementation_prompt(*, start_id: str, title: str, first_slice: str) -> str:
     if not start_id:
         return (
-            "After the project-first gates pass, select the first targeted child workstream, write a technical "
-            "plan, implement the smallest source-backed slice, then run its listed validation gates."
+            "After the project-first scope is accepted, select the first targeted child workstream, write a technical "
+            "plan, implement the smallest source-backed slice, then run its listed proof checks."
         )
     title_text = title or "the first targeted workstream"
     first_slice_text = str(first_slice or "").strip()
@@ -487,6 +487,6 @@ def _implementation_prompt(*, start_id: str, title: str, first_slice: str) -> st
         first_slice_text = f"{first_slice_text}."
     scope_sentence = f"{first_slice_text} " if first_slice_text else ""
     return (
-        f"After project-first gates pass, start {start_id}: {scope_sentence}Treat `{title_text}` as the first "
-        "coding scope and do not advance waves until its validation gates pass."
+        f"After project-first scope is accepted, start {start_id}: {scope_sentence}Treat `{title_text}` as the first "
+        "coding scope and do not advance waves until success, blocked-input, replay, and handoff evidence is written and reviewed."
     )

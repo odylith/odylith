@@ -191,7 +191,8 @@ def test_greenfield_prompt_returns_governed_confirmed_proposal(tmp_path) -> None
     assert "Municipal Permit Review Workspace Workflow Service" not in encoded
     assert proposal["project_brief"]["blueprint_sections"]
     assert proposal["project_intelligence"]["intent"]
-    assert proposal["observed_source"]["source_posture"] == "empty_or_no_app_source"
+    assert proposal["observed_source"]["source_posture"] == "confirmed_intent_only"
+    assert proposal["intent"]["prompt"] == ""
     assert "greenfield create" in proposal["apply_commands"][0]
     assert "--intent-file .odylith/runtime/greenfield/confirmed-intent.md" in proposal["apply_commands"][0]
     assert "--confirm" in proposal["apply_commands"][0]

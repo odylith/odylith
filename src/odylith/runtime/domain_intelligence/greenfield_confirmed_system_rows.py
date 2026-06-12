@@ -283,9 +283,16 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
     for match in split_pattern.finditer(text):
         head = text[: match.start()].strip(" .")
         tail = text[match.start() :].strip(" .")
+        if _split_would_clip_system_name(head):
+            continue
         if _system_name_head_is_plausible(head) and _word_count(tail) >= 2:
             return _clean_system_name_head(head), tail
     return _clean_system_name_head(text), ""
+
+
+def _split_would_clip_system_name(head: str) -> bool:
+    words = _clean(head).casefold().strip(".,;:").split()
+    return bool(words and words[-1] in {"and", "or"})
 
 
 def _split_relative_system_action_clause(value: str) -> tuple[str, str]:
@@ -352,9 +359,7 @@ def _purpose_object(value: str) -> str:
 
 
 def _clean_system_name_head(value: str) -> str:
-    text = _clean(value)
-    text = re.sub(r"\s*/\s*", " and ", text)
-    return _clean(text)
+    return _clean(value)
 
 
 def _system_name_head_is_plausible(value: str) -> bool:
@@ -654,7 +659,78 @@ def _concise_system_description(name: str, *, context_text: str) -> str:
 
 
 def _format_system_row(name: str, body: str, *, context_text: str = "") -> str:
-    return f"{_title_case_phrase(name)} — {_contextualized_system_body(name=name, body=body, context_text=context_text)}"
+    return f"{_title_case_system_name(name)} — {_contextualized_system_body(name=name, body=body, context_text=context_text)}"
+
+
+def _title_case_system_name(value: str) -> str:
+    value = re.sub(
+        r"^Reviewer\s+(?=(?:Dashboard|Export|Surface|View|Portal|Report|Package)\b)",
+        "Review ",
+        _clean(value),
+        flags=re.IGNORECASE,
+    )
+    words: list[str] = []
+    for index, raw in enumerate(value.split()):
+        word = raw.strip()
+        lower = word.casefold()
+        if index > 0 and lower in {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}:
+            words.append(lower)
+            continue
+        if _preserve_system_slash_token(word):
+            label_word = "/".join(_title_case_system_token(part) for part in word.split("/") if part)
+        elif _preserve_system_hyphen_token(word):
+            head, *tail = word.split("-")
+            label_word = "-".join([_title_case_system_token(head), *tail])
+        else:
+            label_word = _title_case_phrase(word)
+        if _append_slash_conjunction_system_word(words, raw_word=word, label_word=label_word):
+            continue
+        words.append(label_word)
+    return _clean(" ".join(words))
+
+
+def _append_slash_conjunction_system_word(words: list[str], *, raw_word: str, label_word: str) -> bool:
+    if not words or words[-1].casefold() != "and":
+        return False
+    if "/" not in raw_word or " and " not in label_word or re.search(r"://|^/", raw_word):
+        return False
+    parts = [part.strip() for part in label_word.split(" and ") if part.strip()]
+    if len(parts) < 2:
+        return False
+    words.pop()
+    if words:
+        words[-1] = words[-1].rstrip(",") + ","
+    for part in parts[:-1]:
+        words.append(part.rstrip(",") + ",")
+    words.append("and")
+    words.append(parts[-1])
+    return True
+
+
+def _preserve_system_slash_token(value: str) -> bool:
+    if "/" not in value or re.search(r"://|^/", value):
+        return False
+    lower = value.casefold().strip(".,;:()")
+    return lower == "rule/threshold" or all(part.isupper() and len(part) <= 5 for part in value.split("/") if part)
+
+
+def _preserve_system_hyphen_token(value: str) -> bool:
+    if "-" not in value or value.startswith("-") or value.endswith("-"):
+        return False
+    lower = value.casefold().strip(".,;:()")
+    return lower in {
+        "conflict-of-interest",
+        "reason-code",
+        "revision-round",
+        "role-based",
+        "source-backed",
+        "user-facing",
+    }
+
+
+def _title_case_system_token(value: str) -> str:
+    token = _clean(value)
+    return f"{token[:1].upper()}{token[1:]}" if token else ""
 
 
 def _contextualized_system_body(*, name: str, body: str, context_text: str) -> str:

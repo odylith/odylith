@@ -1,35 +1,61 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 import json
 from pathlib import Path
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
+from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
+from odylith.runtime.artifact_quality.greenfield_package_quality import RenderedArtifact
+from odylith.runtime.artifact_quality.greenfield_package_quality import _chunk_language_issues
+from odylith.runtime.artifact_quality.greenfield_package_quality import _narrative_chunks
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
     derive_component_semantic_contract,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import state_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_product_view
+from odylith.runtime.domain_intelligence import greenfield_confirmed_diagram_text as diagram_text
+from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_evidence_record_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
+from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_name
+from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
+from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_boundary_language
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import build_workstream_domain_intelligence
+from odylith.runtime.domain_intelligence.proposal_tribunal_substance import (
+    _check_atlas_source_preserves_first_path_tail,
+)
+from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 
 
@@ -117,7 +143,105 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     assert model.material_action == "Record follow-up notes"
 
 
-def test_state_reference_preserves_sentence_form_for_long_state_descriptions() -> None:
+def test_role_gerund_actor_rows_stay_clean_and_grammatical() -> None:
+    intent = complete_confirmed_intent(
+        parse_confirmed_intent_text(
+            """
+## Classroom Accommodation Plan Tracker
+
+### Product story
+A school support team turns an accommodation decision into a classroom-ready plan that teachers can follow while student details stay limited to the people who need them.
+
+### State object
+The unit of truth is an accommodation plan record with student-safe identifiers, approved supports, responsible staff, guardian communication status, implementation evidence, missed-support flags, version history, and audit trail.
+
+### First complete path
+A support coordinator creates a plan from approved accommodations, assigns teacher responsibilities, marks what information is teacher-visible, and sends the plan for acknowledgment. A teacher opens the plan, acknowledges assigned supports, records implementation evidence, flags a missed support when needed, and the coordinator reviews the evidence and updates plan status.
+
+### Human actors
+- Support coordinator creating the plan, assigning responsibilities, and reviewing evidence.
+- Classroom teacher acknowledging supports and recording implementation evidence.
+- Guardian or family contact receiving appropriate communication status without internal staff notes.
+
+### Proof boundary
+Release 0.0.1 succeeds when one coordinator can create a versioned plan, assign teacher responsibilities, restrict sensitive fields by role, a teacher can acknowledge and record evidence, missed support is visible, and the audit trail proves who changed plan status and why.
+""",
+            prompt="Draft a classroom accommodation plan tracker.",
+        )
+    )
+
+    actors = "\n".join(intent["human_actors"])
+    assert "Classroom Teacher Acknowledging" not in actors
+    assert "Support Coordinator Creating" not in actors
+    assert "Classroom Teacher: acknowledging supports" in actors
+    assert generated_public_copy_issues("actors", actors) == ()
+
+
+def test_workstream_titles_avoid_clipped_actor_and_material_action_slop() -> None:
+    solar = confirmed_workstream_titles(
+        label="Residential Solar Quote Workspace",
+        components=[{"label": "Home and Usage Intake Surface"}, {"label": "Solar Fit Estimator Service"}],
+        internal_systems=[],
+        first_path=(
+            "A homeowner enters the address, monthly usage, roof details, and installation goal. "
+            "The product validates required inputs and shows the homeowner an approved quote summary with assumptions."
+        ),
+        state_object="Solar quote request",
+        proof_boundary="Release 0.0.1 succeeds when the homeowner sees an approved quote summary with assumptions.",
+        human_actors=["Homeowner: requesting a plain-language solar quote and reviewing assumptions."],
+    )[0]
+    public = confirmed_workstream_titles(
+        label="Public Response Queue",
+        components=[{"label": "Resident Intake Surface"}, {"label": "Triage and Ownership Service"}],
+        internal_systems=[],
+        first_path="A resident submits a question, receives a tracking status, and waits for an answer.",
+        state_object="Resident response case",
+        proof_boundary="Release 0.0.1 succeeds when the resident receives an approved answer.",
+        human_actors=["Resident: asking a public question and checking response status."],
+    )[0]
+    research = confirmed_workstream_titles(
+        label="Research Reproducibility Review Workspace",
+        components=[{"label": "Package Intake Surface"}, {"label": "Rerun Evidence Tracker"}],
+        internal_systems=[],
+        first_path=(
+            "A submitting researcher creates a review record, attaches dataset references, scripts, environment notes, "
+            "and expected outputs, then submits for review. A reproducibility reviewer checks the package."
+        ),
+        state_object="Reproducibility review record for one study package",
+        proof_boundary="Release 0.0.1 succeeds when one researcher submits for review and a reviewer records evidence.",
+        human_actors=["Submitting Researcher: preparing the analysis package and responding to missing-artifact blockers."],
+    )[0]
+
+    assert solar == "Let Homeowner See an Approved Quote Summary with Assumptions"
+    assert public == "Let Resident Reach a Tracking Status"
+    assert research == "Let Submitting Researcher Submit for Review"
+    joined = "\n".join([solar, public, research])
+    assert "Requesting a Plain" not in joined
+    assert "Asking a Public" not in joined
+    assert "Review Recorded Attaches" not in joined
+
+
+def test_semantic_model_first_path_claim_uses_base_action_clause() -> None:
+    semantic = asdict(
+        build_greenfield_semantic_model(
+            title="Classroom Accommodation Plan Tracker",
+            state_object="Accommodation plan record",
+            first_path=(
+                "A support coordinator creates a plan from approved accommodations, assigns teacher responsibilities, "
+                "marks what information is teacher-visible, and sends the plan for acknowledgment."
+            ),
+            proof_boundary="Release 0.0.1 succeeds when one coordinator can create a versioned plan.",
+            components=[{"label": "Plan Intake"}],
+            human_actors=["Support Coordinator: creating the plan and assigning responsibilities."],
+        )
+    )
+
+    claim = semantic["proof_obligations"][0]["claim"]
+    assert claim.startswith("Support Coordinator can create a plan")
+    assert "can complete a support coordinator creates" not in claim.casefold()
+
+
+def test_state_reference_preserves_participial_descriptions_without_embedding_finite_restatements() -> None:
     proposal = {
         "intent": {
             "state_object": (
@@ -143,6 +267,92 @@ def test_state_reference_preserves_sentence_form_for_long_state_descriptions() -
     }
     assert state_reference(structured) == "child's growing sense of agency"
     assert "worked through" not in state_reference(structured)
+
+    finite_restatement = {
+        "intent": {
+            "state_object": (
+                "A service readiness record tracks request identity, findings, review status, correction owner, "
+                "and completion evidence."
+            )
+        }
+    }
+    assert state_reference(finite_restatement) == "service readiness record"
+    assert "record tracks" not in state_reference(finite_restatement)
+    assert object_reference_phrase(state_reference(finite_restatement)) == "the service readiness record"
+
+
+def test_confirmed_diagram_labels_summarize_release_proof_and_deferred_scope_before_trimming() -> None:
+    proof = (
+        "A reviewer can complete one review, catch one mismatch, see correction ownership, "
+        "and leave with readiness evidence without claiming automated follow-up."
+    )
+
+    assert diagram_text.release_proof_label(proof) == "A reviewer can complete one review, catch one mismatch"
+    assert not diagram_text.release_proof_label(proof).endswith(", catch")
+    blocking_proof = (
+        "An inspector can complete one inspection, catch one blocking issue, assign one correction, "
+        "and leave with readiness evidence."
+    )
+    assert "catch one blocking issue" in diagram_text.trim(diagram_text.release_proof_label(blocking_proof), 82)
+    assert not diagram_text.release_proof_label(blocking_proof).endswith(", assign")
+    assert (
+        diagram_text.deferred_scope_label(
+            "Do not expand beyond opening the checklist, recording findings, validating one mismatch, "
+            "and producing one readiness proof."
+        )
+        == "beyond accepted first path"
+    )
+    assert diagram_text.deferred_scope_label("Do not claim automated follow-up or external integration.") == (
+        "automated follow-up or external integration"
+    )
+    assert diagram_text.deferred_scope_label(
+        "Calendar automation, maintenance dispatch, and multi-venue rollout are deferred until the first loop works."
+    ) == "Calendar automation, maintenance dispatch, and multi-venue rollout"
+    assert diagram_text.deferred_scope_label("Evidence Review History Service") == "Evidence Review History Service"
+
+
+def test_proof_record_labels_do_not_duplicate_existing_proof_record_names() -> None:
+    assert (
+        confirmed_evidence_record_label(
+            label="Inspection Workspace",
+            proof_boundary="The release is proven when evidence is reviewed.",
+            internal_systems=["Release Proof Record"],
+        )
+        == "Release Proof Record"
+    )
+    assert (
+        confirmed_evidence_record_label(
+            label="Inspection Workspace",
+            proof_boundary="The release is proven when evidence is reviewed.",
+            internal_systems=["Readiness Evidence Review"],
+        )
+        == "Readiness Evidence Review Proof Record"
+    )
+
+
+def test_semantic_model_persistence_uses_state_label_instead_of_raw_state_sentence() -> None:
+    model = build_greenfield_semantic_model(
+        title="Venue Safety Inspection",
+        state_object=(
+            "A venue inspection record tracks location identity, checklist findings, issue severity, "
+            "corrective owner, correction status, review evidence, and opening readiness."
+        ),
+        first_path=(
+            "An inspector opens a checklist, records findings, flags one blocking issue, "
+            "and sees whether the venue is ready to open."
+        ),
+        proof_boundary="An inspector can complete one inspection and leave with readiness evidence.",
+        components=[],
+        human_actors=["Inspector"],
+        external_systems=[],
+        internal_systems=["Inspection checklist capture"],
+        non_goals=[],
+    )
+
+    assert model.first_path_contract.persistence == (
+        "the venue inspection record must remain replayable after the accepted first path changes it."
+    )
+    assert ". must remain replayable" not in model.first_path_contract.persistence
 
 
 def test_cleaned_text_dedupe_stays_in_text_owner() -> None:
@@ -177,6 +387,367 @@ def test_cleaned_text_dedupe_stays_in_text_owner() -> None:
         assert "seen: set[str]" not in source
         assert "key = text.casefold()" not in source
         assert "seen.add(key)" not in source
+
+
+def test_compound_first_path_splits_allocation_and_result_events_without_domain_rules() -> None:
+    first_path = (
+        "A regional coordinator opens the dashboard, sees an area where signal growth and capacity pressure "
+        "are accelerating past a threshold, drills into the trend, allocates additional response supply and "
+        "flags a public advisory, and the incident record updates to reflect the new interventions and a "
+        "revised projection — one full loop from signal to decision to recorded action."
+    )
+
+    model = first_path_model(first_path)
+    sequence = sequence_event_steps(first_path)
+
+    assert model.steps == (
+        "A regional coordinator sees an area where signal growth and capacity pressure are accelerating past a threshold",
+        "A regional coordinator drills into the trend",
+        "A regional coordinator allocates additional response supply and flags a public advisory",
+        "The incident record updates to reflect the new interventions and a revised projection",
+    )
+    assert model.visible_outcome == "The incident record updates to reflect the new interventions and a revised projection"
+    assert sequence == [
+        "A regional coordinator sees an area where signal growth and capacity pressure are accelerating past a threshold",
+        "A regional coordinator drills into the trend",
+        "A regional coordinator allocates additional response supply",
+        "A regional coordinator flags a public advisory",
+        "The incident record updates to reflect the new interventions and a revised projection",
+    ]
+    assert "one full loop" not in " ".join(sequence).casefold()
+    assert gerund_action_fragment("A regional coordinator allocates supply and flags an advisory") == (
+        "allocating supply and flagging an advisory"
+    )
+
+
+def test_coordinated_object_phrase_does_not_split_surface_findings_as_action() -> None:
+    first_path = (
+        "A restaurant manager opens the audit checklist. They scan a station, record ingredient and surface findings, "
+        "flag an allergen mismatch, assign a correction owner, mark the correction complete, and see the kitchen "
+        "readiness status update for service."
+    )
+
+    sequence = sequence_event_steps(first_path)
+    clauses = first_path_clauses(first_path)
+
+    assert sequence == [
+        "A restaurant manager opens the audit checklist",
+        "They scan a station",
+        "A restaurant manager records ingredient and surface findings",
+        "A restaurant manager flags an allergen mismatch",
+        "A restaurant manager assigns a correction owner",
+        "A restaurant manager marks the correction complete",
+        "A restaurant manager sees the kitchen readiness status update for service",
+    ]
+    assert "record ingredient and surface findings" in clauses.capability_chain
+    assert "surfacing findings" not in clauses.capability_chain
+    assert gerund_action_fragment("A restaurant manager records ingredient and surface findings") == (
+        "recording ingredient and surface findings"
+    )
+    assert generated_semantic_slop_issues({"first_path": clauses.capability_chain}) == []
+
+
+def test_first_path_action_skips_context_and_named_launcher_when_material_actions_follow() -> None:
+    first_path = (
+        "A participant notices an issue, opens IncidentLog, taps to start a new entry, "
+        "marks the location and severity, optionally notes the trigger context, and saves. "
+        "The entry appears immediately in the history list, and once a few entries exist the product "
+        "shows a simple pattern summary."
+    )
+
+    clauses = first_path_clauses(first_path)
+    workflow_title, _boundary_title, _proof_title = confirmed_workstream_titles(
+        label="IncidentLog",
+        components=[
+            {"label": "Entry Capture Service"},
+            {"label": "History Service"},
+            {"label": "Pattern Summary Service"},
+            {"label": "Release Proof Service"},
+        ],
+        internal_systems=[
+            "Entry capture",
+            "History",
+            "Pattern summary",
+            "Release proof",
+        ],
+        first_path=first_path,
+        state_object="An incident entry with location, severity, context, and review history.",
+        proof_boundary="The proof is one participant capturing an entry and seeing a summary.",
+        human_actors=["Affected User"],
+    )
+
+    assert first_path_action_phrase(first_path, max_fragments=1) == "tap to start a new entry"
+    assert clauses.action_chain == (
+        "tap to start a new entry and mark the location and severity, optionally note the trigger context and save"
+    )
+    assert "notices an issue" not in clauses.action_chain
+    assert "opens IncidentLog" not in clauses.action_chain
+    assert "optionally notes" not in clauses.action_chain
+    assert "optionally notes" not in diagram_text.brief_first_path(first_path)
+    assert "optionally note the trigger context" in diagram_text.brief_first_path(first_path)
+    assert workflow_title == "Let Affected User See a Simple Pattern Summary"
+    assert "Notice" not in workflow_title
+    assert "Open IncidentLog" not in workflow_title
+
+
+def test_backlog_rationale_does_not_clip_connector_interrupter_or_scope_predicate() -> None:
+    proof_boundary = (
+        "The product is proven when a user can capture an event in seconds and, after several entries, "
+        "see a history and a basic pattern summary that reflects their real activity. "
+        "External integrations, exports, and multi-user roles are explicitly out of scope for this first proof."
+    )
+
+    proof_focus = backlog_text.rationale_proof_focus(
+        proof_boundary,
+        fallback="tap to start a new entry and review a simple pattern summary",
+    )
+    release_basis = backlog_text.rationale_release_basis(
+        title="Prove One Complete IncidentLog Path",
+        label="IncidentLog",
+        first_slice="tap to start a new entry, mark the location and severity, and review a simple pattern summary",
+        proof_boundary=proof_boundary,
+    )
+    rationale = backlog_text.rationale_lines(
+        label="IncidentLog",
+        title="Prove One Complete IncidentLog Path",
+        opportunity="Prove One Complete IncidentLog Path gives release planning one complete path",
+        first_slice="tap to start a new entry, mark the location and severity, and review a simple pattern summary",
+        proof_boundary=proof_boundary,
+        deferred_scope=[
+            "External integrations, exports, and multi-user roles are explicitly out of scope for this first proof."
+        ],
+    )
+
+    assert "after several entries" in proof_focus
+    assert "see a history and a basic pattern summary" in proof_focus
+    assert "after several entries in the same release story" not in release_basis
+    assert "see a history and a basic pattern summary" in release_basis
+    assert "- deferred for now: External integrations, exports, and multi-user roles wait for" in rationale[3]
+    assert "out of scope for this first proof wait" not in rationale[3]
+
+
+def test_package_quality_does_not_split_valid_connector_interrupter_as_dangling_and() -> None:
+    text = (
+        "The product is proven when a user can capture an event in seconds and, after several entries, "
+        "see a history and a basic pattern summary."
+    )
+    artifact = RenderedArtifact("Project brief preview", "project_brief", text)
+    issues = [
+        issue
+        for chunk in _narrative_chunks(text)
+        for issue in _chunk_language_issues(artifact, chunk)
+    ]
+
+    assert issues == []
+    assert "a user can capture an event in seconds and" not in _narrative_chunks(text)
+
+
+def test_inline_role_casing_drift_allows_hyphenated_title_labels() -> None:
+    assert not has_inline_role_casing_drift("Self-experimenter or Quantified-self User")
+    assert not has_inline_role_casing_drift("Actors include Coordinator, Requester, and Equipment Reviewer.")
+    assert not has_inline_role_casing_drift("The map shows Coordinator, outside inputs, and Item Record Service.")
+    assert has_inline_role_casing_drift("the station Lead cannot act on the result")
+
+
+def test_accepted_project_memory_normalizes_adverbial_action_copy() -> None:
+    payload = build_accepted_project_source_payload(
+        proposal={
+            "intent": {
+                "title": "IncidentLog",
+                "first_path": "A user marks a location, optionally notes context, and saves.",
+                "summary": "Release stays bounded to: A user marks a location, optionally notes context, and saves.",
+            },
+            "semantic_model": {
+                "first_path_contract": {
+                    "events": [
+                        {"text": "Mark a location, optionally notes context and save"},
+                    ],
+                },
+            },
+        },
+        backlog_items=[],
+        component_items=[],
+        diagram_ids=[],
+        release_selector="0.0.1",
+        release_id="release-incidentlog-0-0-1",
+        validation_gate={"status": "passed"},
+    )
+    rendered = json.dumps(payload, sort_keys=True)
+
+    assert "optionally notes" not in rendered
+    assert "optionally note context" in rendered
+
+
+def test_confirmed_project_brief_next_steps_normalize_adverbial_action_copy() -> None:
+    brief = confirmed_project_brief(
+        label="EventLog",
+        prompt="Build a simple event logger",
+        release="0.0.1",
+        state_object="event record",
+        evidence_record="event proof record",
+        first_path=(
+            "A user opens EventLog, marks the location and severity, optionally notes the trigger context, "
+            "and saves. The event appears in history."
+        ),
+        product_story="EventLog helps a user capture one incident quickly and review it later.",
+        proof_boundary="The product is proven when an event can be saved and reviewed.",
+        internal_systems=["event capture", "event history"],
+    )
+    rendered = json.dumps(brief["coding_readiness_gates"], sort_keys=True)
+
+    assert "optionally notes" not in rendered
+    assert "optionally note the trigger context" in rendered
+
+
+def test_confirmed_project_brief_readiness_gates_do_not_embed_raw_action_lists() -> None:
+    brief = confirmed_project_brief(
+        label="Pattern Relief Notebook",
+        prompt="Build a personal pattern notebook",
+        release="0.0.1",
+        state_object="person comfort timeline",
+        evidence_record="trend evidence record",
+        product_story=(
+            "A person tracking recurring discomfort wants to understand which self-care actions appear to help "
+            "over time. The product turns scattered daily notes into a small personal feedback loop: record how "
+            "the day felt, record what action was tried, and review the pattern before deciding what to try next."
+        ),
+        first_path=(
+            "A new user records their first entry — rates today's status, taps the factors that applied, and logs "
+            "one action they tried. The next day they log again. After a handful of entries, the app shows a simple "
+            "trend: status over time, and which logged actions line up with better days."
+        ),
+        proof_boundary=(
+            "A user can log entries over several days and the app renders an honest trend plus an "
+            "action-to-outcome signal from their own data."
+        ),
+        internal_systems=["entry logging", "trend and correlation view"],
+    )
+    rendered = json.dumps(brief["coding_readiness_gates"], sort_keys=True)
+
+    assert generated_public_copy_issues("pattern readiness gates", brief["coding_readiness_gates"]) == ()
+    assert "record how the day felt, record what action was tried" not in rendered
+    assert "After a handful of entries." not in rendered
+    assert "first implementation lane" in rendered
+    assert "record first entry, log again" in rendered
+
+
+def test_system_label_join_does_not_clip_labels_containing_and() -> None:
+    assert confirmed_system_name("Audit Trail and Records Export: preserves review history.") == "Audit Trail and Records Export"
+    assert join_system_labels(
+        [
+            "Permit Intake and Completeness Check: records submitted materials and intake blockers.",
+            "Audit Trail and Records Export: preserves review history and final decision evidence.",
+        ],
+        limit=4,
+    ) == "Permit Intake and Completeness Check, Audit Trail and Records Export"
+
+
+def test_workstream_intelligence_embeds_actor_problem_as_sentence_text() -> None:
+    packet = build_workstream_domain_intelligence(
+        label="Municipal Permit Review Workspace",
+        row_title="Prove One Complete Municipal Permit Review Workspace Path",
+        problem="Applicant needs a dependable way to understand the permit application and decide what to do.",
+        opportunity="Help reviewers move one permit application through a decision.",
+        product_view="A reviewer publishes the permit decision record with evidence.",
+        first_slice="Submit a permit packet and publish the decision record.",
+        metrics=["A reviewer can publish one decision record with evidence."],
+        dependencies=["Accepted participants and required source context."],
+        interfaces=["Permit intake, review checklist, and decision record."],
+        validation=["Run the complete user path and one correction path."],
+        state_object="Permit Application",
+        evidence_record="Audit Trail and Records Export Proof Record",
+        first_path="An applicant submits a packet and a reviewer publishes a decision.",
+        proof_boundary="Release succeeds when one permit decision can be replayed.",
+        human_actors=["Applicant: submits documents.", "Permit reviewer: records decision rationale."],
+        internal_systems=["Permit Intake and Completeness Check", "Audit Trail and Records Export"],
+        external_systems=["Document upload service"],
+        non_goals=["Do not claim every permit type."],
+    )
+
+    rendered = json.dumps(packet, sort_keys=True)
+
+    assert "The product problem is applicant needs" in rendered
+    assert "The product problem is Applicant needs" not in rendered
+    assert generated_semantic_slop_issues(packet) == []
+
+
+def test_generated_copy_quality_rejects_mixed_adverbial_action_inflection() -> None:
+    issues = generated_public_copy_issues(
+        "operator next-steps preview",
+        {"gate": "The first path is accepted: Mark location, optionally notes context and save."},
+    )
+
+    assert any("mixed finite/base action prose" in issue for issue in issues)
+
+
+def test_generated_copy_quality_rejects_malformed_relative_clause_split() -> None:
+    issues = generated_public_copy_issues(
+        "Registry component spec `Revision Tracker`",
+        "Owned state: applicant revisions to the documents, checks are meant to address, and blocker state.",
+    )
+
+    assert any("malformed relative-clause split" in issue for issue in issues)
+    assert generated_semantic_slop_issues({"owned_state": "checks are meant to address"}) == [
+        "malformed relative-clause split leaked at artifact.owned_state"
+    ]
+
+
+def test_package_quality_allows_plural_noun_after_to() -> None:
+    text = "Routes comparison evidence to alternatives by fare, travel time, walking time, reliability, and preference."
+    issues = _chunk_language_issues(
+        RenderedArtifact("Registry component spec", "Option Ranking Engine", text),
+        text,
+    )
+
+    assert looks_like_finite_action("alternatives placeholder") is False
+    assert not any("to alternatives" in issue for issue in issues)
+
+
+def test_package_quality_allows_noun_compounds_inside_modal_windows() -> None:
+    text = "A reviewer can inspect Permit Intake and Completeness Check, Audit Trail and Records Export, and release proof."
+    issues = _chunk_language_issues(
+        RenderedArtifact("Registry component spec", "Audit Trail and Records Export", text),
+        text,
+    )
+    bad = "A reviewer can submit a packet and records a decision."
+    bad_issues = _chunk_language_issues(
+        RenderedArtifact("Registry component spec", "Decision Record", bad),
+        bad,
+    )
+
+    assert not any("and Records" in issue for issue in issues)
+    assert any("and records" in issue for issue in bad_issues)
+
+
+def test_package_quality_allows_terminal_paid_for_phrasal_verb() -> None:
+    artifact = RenderedArtifact("Project brief preview", "project_brief", "paid for")
+
+    issues = _chunk_language_issues(artifact, "paid for")
+
+    assert not any("ending in `for`" in issue for issue in issues)
+
+
+def test_actor_labels_keep_display_casing_but_inline_subjects_are_readable() -> None:
+    assert backlog_text.lead_actor_label(["Restaurant Manager: completes the first audit path"]) == "Restaurant Manager"
+    assert backlog_text.supporting_actor_label(["Restaurant Manager", "Station Lead: marks fixes complete"]) == "Station Lead"
+    assert backlog_text.problem_actor_subject("Station Lead", fallback="user") == "The station lead"
+    assert backlog_text.inline_actor_subject("The Restaurant Manager") == "the restaurant manager"
+    assert backlog_text.inline_actor_subject("GLP-1 Companion risk reviewer") == "the GLP-1 Companion risk reviewer"
+
+    assert generated_semantic_slop_issues({"bad": "the station Lead cannot act on the result"}) == [
+        "inline actor casing drift leaked at artifact.bad"
+    ]
+    assert generated_semantic_slop_issues({"ok": "the GLP-1 Companion risk reviewer can inspect evidence"}) == []
+    assert not has_inline_role_casing_drift(
+        "The product failure to guard against: Customer and Contact Directory Service can mislead users."
+    )
+    assert not has_inline_role_casing_drift(
+        "Do this before implementation expands so Customer and Contact Directory Service has a tested first slice."
+    )
+    assert not has_inline_role_casing_drift("Let Shop Owner / Manager Check in a Customer's Firearm")
+    assert not has_inline_role_casing_drift(
+        "Release scope connects Customer and Firearm Record, Service Ticket Workflow and Status Tracking, and Shop Dashboard and Reporting without absorbing deferred scope."
+    )
 
 
 def test_visible_result_language_normalization_stays_in_text_owner() -> None:
@@ -227,6 +798,99 @@ def test_outcome_action_phrase_does_not_wrap_action_outcomes_as_visible_objects(
     assert outcome_action_phrase("a simple recap showing what the child explored") == (
         "see a simple recap showing what the child explored"
     )
+    assert outcome_action_phrase("a lead creates a readiness review") == "create a readiness review"
+
+
+def test_user_can_gate_allows_base_action_with_action_shaped_object() -> None:
+    assert generated_semantic_slop_issues(
+        "Result proof confirms the user can use Record with a clear explanation."
+    ) == []
+    assert generated_semantic_slop_issues("The user can coordinator creates packet state.")
+
+
+def test_project_brief_component_summary_uses_final_component_labels() -> None:
+    brief = confirmed_project_brief(
+        label="Review Packet Builder",
+        prompt="review packet builder",
+        release="0.0.1",
+        state_object="A Review Packet tracks source items and packet status.",
+        evidence_record="Publication Record",
+        product_story="A review coordinator assembles a reviewer packet with missing evidence visibility.",
+        first_path=(
+            "A coordinator creates a review packet, adds source items, assigns a reviewer, "
+            "and publishes the packet."
+        ),
+        proof_boundary="The release is proven when the packet can be reviewed with publication evidence.",
+        human_actors=["Review coordinator", "Reviewer"],
+        internal_systems=[
+            "Packet workspace",
+            "Eligibility checklist",
+            "Reviewer assignment board",
+            "Publication record",
+        ],
+        component_labels=[
+            "Packet Workspace",
+            "Eligibility Checklist",
+            "Review Assignment Board",
+            "Publication Record",
+        ],
+    )
+
+    component_gate = next(
+        gate for gate in brief["coding_readiness_gates"] if "components come from product systems" in gate
+    )
+
+    assert "Review Assignment Board" in component_gate
+    assert "Reviewer Assignment Board" not in component_gate
+
+
+def test_confirmed_completion_repairs_actor_led_outcome_after_modal_wrappers(tmp_path: Path) -> None:
+    markdown = """
+# Operations Readiness Board
+
+## Product story
+An operations lead uses the Operations Readiness Board to collect launch tasks, verify required evidence, identify blockers, assign owners, and approve a launch decision with an audit trail. Without it, teams cannot tell whether readiness is complete, blocked, or waiting on a specific owner.
+
+## State object
+A Readiness Review tracks launch scope, required checks, evidence attachments, blocker state, owner assignment, approval status, and decision history.
+
+## First complete path
+A lead creates a readiness review, adds required checks, marks one check blocked with a clear reason, assigns owners for open checks, accepts evidence for a ready check, and records the launch decision with proof of what was reviewed.
+
+## Human actors
+- Operations lead
+- Evidence owner
+- Approver
+
+## Internal product systems
+- Readiness board
+- Evidence checklist
+- Blocker register
+- Decision log
+
+## Assumptions
+- The first release supports manual evidence upload.
+- Approval can be represented as an internal decision record.
+
+## Ambiguities
+- Which external system owns final launch notification?
+
+## Proof boundary
+Odylith should prove review creation, evidence tracking, blocked-check handling, owner assignment, decision capture, and audit traceability for one launch readiness journey.
+"""
+    intent = parse_confirmed_intent_text(markdown, prompt="operations readiness board")
+    (tmp_path / "AGENTS.md").write_text("# Repo Root\n\nRegression repo.\n", encoding="utf-8")
+    completed = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="operations readiness board",
+        confirmed_intent=intent,
+        release_selector="0.0.1",
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert "can reach a lead creates" not in rendered
+    assert "can create a readiness review" in rendered
+    assert generated_semantic_slop_issues(completed, root="proposal") == []
 
 
 def test_signal_pipeline_first_path_phrases_do_not_leak_modal_or_understand_fragments() -> None:
@@ -541,6 +1205,22 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
     assert base_action_clause("comments, checks, and final status") == "comments, checks, and final status"
 
 
+def test_first_path_gerund_chain_handles_set_draft_and_send_actions() -> None:
+    first_path = (
+        "The coordinator imports one feedback item, classifies the topic, sets response priority, "
+        "drafts a response, sends it for review, receives one requested change, updates the draft, "
+        "and the approver sees a publication-ready package with rationale, change history, and blocked-state explanation."
+    )
+    capability = first_path_capability_phrase(first_path, fallback="review response", gerund=True, max_fragments=8, limit=340)
+
+    assert gerund_action_fragment("sets response priority") == "setting response priority"
+    assert "setting response priority" in capability
+    assert "drafting a response" in capability
+    assert "sending it for review" in capability
+    assert "seting" not in capability
+    assert "drafts a response" not in capability
+
+
 def test_first_path_model_drops_meta_loop_summary_from_visible_outcome() -> None:
     model = first_path_model(
         "A new user records their first entry — rates today's status, taps the factors that applied, "
@@ -619,9 +1299,9 @@ The first release succeeds when a parent can create an account and learner profi
     assert [(event["actor"], event["action"]) for event in first_path["events"]] == [
         ("Parent", "creates"),
         ("Parent", "adds"),
-        ("Parent", "advance"),
+        ("Parent", "picks"),
         ("Learner", "opens"),
-        ("Learner", "advance"),
+        ("Learner", "makes"),
         ("Learner", "sees"),
         ("Parent", "opens"),
     ]
@@ -648,6 +1328,125 @@ The first release succeeds when a parent can create an account and learner profi
     assert generated_semantic_slop_issues(proposal) == []
 
 
+def test_confirmed_jet_engine_external_system_preposition_does_not_stop_post_confirm() -> None:
+    markdown = """
+# Jet Engine Servicing Tracker
+
+## Product story
+A maintenance organization servicing jet engines needs to know, at any moment, where every engine is in its service lifecycle, which engine is on which workstand, what work orders are open against it, which tasks are signed off, and whether it is cleared to return to the aircraft.
+
+## State object
+The central object is a servicing record for one engine: its identity, current servicing stage, open work orders, assigned tasks, parts consumed, sign-offs collected, and airworthiness disposition.
+
+## First complete path
+A service planner intakes an engine, opens a work order with its required tasks, a technician picks up a task and records the work and parts used, an inspector signs it off, and the supervisor reviews all closed tasks and releases the engine as serviceable.
+
+## Human actors
+- Service planner who intakes engines and opens work orders
+- Maintenance technician who performs and records tasks
+- Quality inspector who signs off completed work
+- Maintenance supervisor who reviews and releases the engine
+
+## External systems
+- Parts and inventory system for consumed components and stock levels
+- OEM or regulatory task-card and service-bulletin source for required work scope
+- Aircraft or fleet records system the engine returns to
+
+## Internal product systems
+- Engine and servicing-record store that owns the servicing record source of truth
+- Work-order and task workflow engine that manages task states and handoff evidence
+- Sign-off and airworthiness-disposition tracking that controls inspection and release state
+- Status and turnaround reporting views that expose current state and review outcomes
+
+## Proof boundary
+Done means the first complete path works end to end on real records: an engine can be intaked, taken through open task, recorded work, inspector sign-off, and supervisor release, with role-gating enforced and a complete queryable history surviving on the engine record.
+"""
+    intent = parse_confirmed_intent_text(markdown)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt="Draft a greenfield proposal for a jet engine servicing tracker.",
+        title="Jet Engine Servicing Tracker",
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    proposal = normalize_host_reasoned_proposal(proposal)
+    completed = complete_confirmed_proposal(proposal, release_selector="0.0.1")
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert "Aircraft or fleet records system the engine returns to." not in rendered
+    assert "Aircraft or fleet records system the engine returns to," not in rendered
+    assert "Aircraft or fleet records system the engine returns to;" not in rendered
+    assert "uses the product to planner intakes" not in rendered
+    assert "intaked" not in rendered
+    assert "Aircraft or fleet records system" in rendered
+    assert public_prose_quality_issues(completed) == []
+
+
+def test_confirmed_state_object_normalizes_terminal_hang_off_phrase() -> None:
+    intent = parse_confirmed_intent_text(
+        """
+# Service Job Workspace
+
+## Product story
+A team coordinates one service request from intake through completion so every handoff has a clear owner and reviewable result.
+
+## State object
+The center of gravity is the service job: a unit of work against one asset, moving through requested, approved, scheduled, in-progress, and completed. Assets and customers are long-lived records the jobs hang off of.
+
+## First complete path
+A coordinator opens a service job, assigns a technician, the technician records work, and the customer receives the completed service record.
+
+## Human actors
+- Coordinator who schedules and tracks service work.
+- Technician who records completed work.
+- Customer who receives the completed service record.
+
+## Internal product systems
+- Service job lifecycle.
+- Customer and asset records.
+- Completion record view.
+
+## Proof boundary
+The first release succeeds when one service job reaches a completed record with actor, status, assignment, completion evidence, and a customer-visible result.
+""",
+        prompt="Draft a greenfield proposal for a service job workspace.",
+    )
+
+    assert "hang off of" not in intent["state_object"]
+    assert intent["state_object"].startswith("the service job:")
+    assert intent["state_object"].endswith("linked to the jobs.")
+    assert public_prose_quality_issues(intent) == []
+
+
+def test_atlas_tail_checker_ignores_terminal_first_path_meta_summary() -> None:
+    first_path = (
+        "A captain submits a service request for a known yacht; a service coordinator reviews it; "
+        "the customer receives the finished service record. That single request-to-completed-record path is the proof the product works."
+    )
+    proposal = {"intent": {"first_path": first_path}}
+    source = """
+flowchart LR
+  actor["User action"]
+  S1["Submit a service request"]
+  S2["Receive the finished service record"]
+  proof["Outcome<br/>the finished service record"]
+  actor --> S1
+  S1 --> S2
+  S2 --> proof
+"""
+    issues: list[str] = []
+
+    _check_atlas_source_preserves_first_path_tail(
+        proposal=proposal,
+        title="First Path Sequence",
+        source=source,
+        kind="flowchart",
+        issues=issues,
+    )
+
+    assert issues == []
+
+
 def test_generated_public_copy_rejects_action_shaped_result_and_template_prefix() -> None:
     assert generated_public_copy_issues(
         "Radar workstream",
@@ -660,6 +1459,18 @@ def test_generated_public_copy_rejects_action_shaped_result_and_template_prefix(
     assert generated_public_copy_issues(
         "Radar workstream",
         "The product shows a short reflection with a clear explanation.",
+    ) == ()
+    assert generated_public_copy_issues(
+        "Project brief",
+        "The product turns scattered daily notes into a small feedback loop: record how the day felt, record what action was tried, and review the pattern.",
+    ) == ()
+    assert generated_public_copy_issues(
+        "Registry component spec",
+        "Review Packet Builder shows review packet state, review evidence, and packet status.",
+    ) == ()
+    assert generated_public_copy_issues(
+        "Registry component spec",
+        "Triage Board shows open questions, selected route evidence, and review status.",
     ) == ()
 
 
@@ -914,7 +1725,7 @@ The release is good enough when a resident can submit a complete repair request,
     rendered = json.dumps(proposal, sort_keys=True).casefold()
 
     assert intent["product_story"].startswith("Residents need a simple way")
-    assert intent["state_object"].startswith("The product keeps a repair request")
+    assert intent["state_object"].startswith("a repair request")
     assert intent["first_path"].startswith("A resident opens the web app")
     assert intent["proof_boundary"].startswith("The release is good enough")
     assert "The release is good enough" not in intent["first_path"]
@@ -931,6 +1742,7 @@ The release is good enough when a resident can submit a complete repair request,
     assert "user actions, explains" not in rendered
     assert "tied to:" not in rendered
     assert "needed for a resident opens" not in rendered
+    assert "product keeps a repair request" not in rendered
     assert "produce and review a confirmation with next steps" in rendered
     assert generated_semantic_slop_issues(proposal) == []
 

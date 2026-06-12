@@ -1,5 +1,3 @@
-"""Deterministic completion for accepted greenfield Product Intent."""
-
 from __future__ import annotations
 
 import copy
@@ -11,17 +9,14 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows as _completed_actor_rows
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
-    first_release_actor_rows as _first_release_actor_rows,
-)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_release_actor_rows as _first_release_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
-from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
-    outcome_action_phrase as _outcome_action_phrase,
-)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase as _outcome_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import completed_system_rows as _completed_system_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import state_label as _state_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import system_labels as _system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import GENERIC_TITLE_WORDS as _GENERIC_TITLE_WORDS
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item as _boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label as _focus_label
@@ -35,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_c
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
@@ -44,16 +40,9 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
-CORE_FIELD_MIN_WORDS = {
-    "product_story": 28,
-    "state_object": 12,
-    "first_path": 18,
-    "proof_boundary": 18,
-}
+CORE_FIELD_MIN_WORDS = {"product_story": 28, "state_object": 12, "first_path": 18, "proof_boundary": 18}
 
 def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
-    """Fill reviewable fields that can be inferred from accepted intent text."""
-
     result = copy.deepcopy(dict(intent))
     title_normalization = normalize_project_title(_title(result), fallback="Greenfield Project")
     if title_normalization.changed:
@@ -76,8 +65,6 @@ def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
-    """Keep accepted operator wording but remove known non-spec prefixes."""
-
     for key in ("product_story", "first_path", "problem", "product_view"):
         text = _clean(intent.get(key))
         if text:
@@ -92,6 +79,10 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
     metrics = confirmed_text_values(intent.get("success_metrics"))
     if metrics:
         intent["success_metrics"] = [_sentence(_normalize_visible_result_language(_normalize_proof_boundary(row))) for row in metrics]
+    if external_systems := confirmed_text_values(intent.get("external_systems")):
+        intent["external_systems"] = [
+            normalized for row in external_systems if (normalized := _boundary_clause_item(_normalize_visible_result_language(row), limit=180))
+        ]
 
 
 def _strip_prompt_prefixes(value: str) -> str:
@@ -122,6 +113,14 @@ def _normalize_proof_boundary(value: str) -> str:
 def _normalize_state_object(value: str) -> str:
     text = _strip_prompt_prefixes(value)
     text = re.sub(
+        r"^(?:the\s+)?(?:product|system|app|application|workspace|service|platform|tool)\s+"
+        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?)\s+",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    ).strip()
+    text = re.sub(
         r"^(?:the\s+)?(?:unit|source)\s+of\s+truth\s+is\s+",
         "",
         text,
@@ -140,8 +139,28 @@ def _normalize_state_object(value: str) -> str:
         text,
         flags=re.IGNORECASE,
     )
+    text = re.sub(r"^(?:the\s+)?center\s+of\s+gravity\s+is\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^(?:the\s+)?state\s+object\s+is\s+", "", text, flags=re.IGNORECASE)
+    text = _repair_terminal_hang_off_phrase(text)
     return text.strip()
+
+
+def _repair_terminal_hang_off_phrase(value: str) -> str:
+    text = _clean(value).strip()
+    if not text:
+        return ""
+    return re.sub(
+        r"\b(?P<subject>[A-Z][A-Za-z0-9 &'/-]{1,90}?)\s+(?P<copula>is|are)\s+"
+        r"(?P<description>[^.!?]{1,120}?)\s+(?P<object>(?:the|a|an|those|these)\s+[^.!?]{1,80}?)\s+"
+        r"hangs?\s+off\s+of(?P<end>[.!?]?)$",
+        lambda match: (
+            f"{match.group('subject')} {match.group('copula')} "
+            f"{match.group('description').rstrip(' ,')} linked to {match.group('object').rstrip(' ,')}"
+            f"{match.group('end') or '.'}"
+        ),
+        text,
+        flags=re.IGNORECASE,
+    )
 
 
 def _normalize_visible_result_language(value: str) -> str:
@@ -283,8 +302,9 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     proof_capability = first_path_capability_phrase(
         first_path,
         fallback=path_capability,
-        limit=180,
+        limit=340,
         gerund=True,
+        max_fragments=8,
     )
     needs_verb = _needs_verb(customer_text)
     decision_phrase = _decision_problem_phrase(outcome_text)
@@ -337,7 +357,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     if not current_non_goals or _sequence_has_generic_non_goals(current_non_goals):
         extracted_non_goals = _non_goal_rows(intent, title=title)
         intent["non_goals"] = extracted_non_goals or [
-            f"Do not expand beyond {proof_capability} until the first outcome works for a representative user.",
+            f"Do not expand beyond {_scope_boundary_phrase(first_path, fallback=proof_capability)} until the first outcome works for a representative user.",
             f"Do not claim adjacent automation, live dependency behavior, or broader operational scale until those outcomes are described and proven separately.",
         ]
     if not story:
@@ -347,13 +367,35 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
 
 
 def _story_problem_sentence(value: str) -> str:
-    """Use accepted story language when it already states the user need."""
-
     text = _clean(value).strip(" .")
     if not text or not re.search(r"\bneeds?\b", text, flags=re.IGNORECASE):
         return ""
     first = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)[0].strip(" .")
     return first if _word_count(first) >= 10 else ""
+
+
+def _scope_boundary_phrase(first_path: str, *, fallback: str) -> str:
+    model = first_path_model(first_path)
+    steps = [_clean(step).strip(" .") for step in model.steps if _clean(step).strip(" .")]
+    selected = list(steps[-4:] if len(steps) >= 5 else steps)
+    visible = _clean(model.visible_outcome).strip(" .")
+    if visible and all(visible.casefold() != step.casefold() for step in selected):
+        selected.insert(0, visible)
+    tail = [_inline_scope_step(step) for step in selected]
+    path = ", ".join(tail).strip(" .")
+    if _word_count(path) >= 8:
+        return _short(path, limit=360)
+    return fallback
+
+
+def _inline_scope_step(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    first = text.split(maxsplit=1)[0]
+    if first.isupper() or re.search(r"[a-z][A-Z]", first):
+        return text
+    return f"{text[:1].casefold()}{text[1:]}"
 
 
 def _decision_problem_phrase(outcome_text: str) -> str:
@@ -773,6 +815,5 @@ def _base_action_verb(value: str) -> str:
     if len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
         return token[:-1]
     return token
-
 
 __all__ = ["complete_confirmed_intent"]

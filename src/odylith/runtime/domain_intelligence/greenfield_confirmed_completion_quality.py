@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
+from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -42,9 +43,17 @@ def text_needs_repair(value: Any) -> bool:
         return True
     if generated_public_copy_issues("confirmed completion text", text):
         return True
+    if has_inline_role_casing_drift(text):
+        return True
     if sentence_needs_repair(text):
         return True
     lowered = text.casefold()
+    if re.search(
+        r"\bcan\s+(?:[a-z][a-z0-9'-]*\s+){0,4}"
+        r"(?:adds|asks|chooses|clicks|creates|describes|enters|logs|opens|places|records|reviews|runs|saves|selects|signs|submits|views)\b",
+        lowered,
+    ):
+        return True
     if re.search(
         r"\b(?:accepts?|produces?|blocks?|proves?|coverage\s+for)\s+"
         r"(?:recomputes|computes?|calculates?|generates?|derives?|exports?|deletes?|records?|tracks?|validates?)\s+"

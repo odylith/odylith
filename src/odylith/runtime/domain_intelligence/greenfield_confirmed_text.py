@@ -6,6 +6,7 @@ import re
 from collections.abc import Iterable, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms, ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -93,6 +94,7 @@ CONFIRMED_DANGLING_WORDS = {
     "at",
     "because",
     "by",
+    "final",
     "for",
     "from",
     "if",
@@ -110,7 +112,29 @@ CONFIRMED_DANGLING_WORDS = {
     "without",
 }
 
-_TITLE_CONNECTOR_WORDS = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
+_TITLE_CONNECTOR_WORDS = {
+    "a",
+    "an",
+    "and",
+    "as",
+    "at",
+    "by",
+    "for",
+    "from",
+    "her",
+    "his",
+    "in",
+    "its",
+    "of",
+    "on",
+    "or",
+    "our",
+    "the",
+    "their",
+    "to",
+    "with",
+    "your",
+}
 _TITLE_ACRONYMS = {"ai", "api", "crm", "gis", "iot", "llm", "ml", "pwa", "ui", "ux"}
 _TITLE_HYPHEN_MODIFIERS = {
     "back",
@@ -365,6 +389,7 @@ def state_detail_summary(value: str, *, state_label: str, limit: int = 280) -> s
     summary = short_summary(value, limit=limit)
     if not summary:
         return ""
+    summary = _strip_state_object_predicate(summary)
     label_pattern = re.escape(state_label).replace(r"\ ", r"\s+")
     summary = re.sub(
         rf"^(?:the\s+)?(?:primary\s+)?state\s+object\s+is\s+(?:the\s+)?{label_pattern}\.?\s*",
@@ -375,6 +400,21 @@ def state_detail_summary(value: str, *, state_label: str, limit: int = 280) -> s
     if summary.casefold() == state_label.casefold():
         return ""
     return summary
+
+
+def state_detail_restates_label_with_finite_action(detail: str, *, state_label: str) -> bool:
+    label = clean_confirmed_text(state_label).strip(" .")
+    if not label:
+        return False
+    label_pattern = re.escape(label).replace(r"\ ", r"\s+")
+    match = re.match(
+        rf"^(?:the|an|a|one)\s+{label_pattern}\s+(?P<tail>[A-Za-z][^.;]*)$",
+        clean_confirmed_text(detail).strip(" ."),
+        flags=re.IGNORECASE,
+    )
+    if match is None:
+        return False
+    return looks_like_finite_action(match.group("tail"))
 
 
 def join_system_labels(items: list[str] | None, *, limit: int = 4) -> str:
@@ -396,6 +436,7 @@ def _system_label(value: str) -> str:
     if not text:
         return ""
     head = re.split(r"\s+[—-]\s+|:\s+", text, maxsplit=1)[0].strip(" .:-")
+    head = _terminal_relative_item_label(head)
     head = re.split(r"\s+that\s+", head, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .:-")
     split = re.search(
         r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|converts?|converting|"
@@ -406,8 +447,51 @@ def _system_label(value: str) -> str:
         flags=re.IGNORECASE,
     )
     if split:
-        head = head[: split.start()].strip(" .:-")
+        candidate = head[: split.start()].strip(" .:-")
+        tail = head[split.start() :].strip(" .:-")
+        if not _system_label_split_clips_noun_phrase(candidate, tail):
+            head = candidate
     return domain_object_label(head, fallback=head)
+
+
+def _system_label_split_clips_noun_phrase(candidate: str, tail: str) -> bool:
+    if candidate.casefold().strip(".,;:").split()[-1:] in (["and"], ["or"]):
+        return True
+    tail_words = [word.casefold().strip(".,;:") for word in tail.split()[:5]]
+    if not tail_words:
+        return False
+    if len(tail_words) > 1 and tail_words[1] in _SYSTEM_LABEL_NOUNS:
+        return True
+    if tail_words[0] in {
+        "capture",
+        "captures",
+        "capturing",
+        "check",
+        "checks",
+        "checking",
+        "log",
+        "logs",
+        "logging",
+        "record",
+        "records",
+        "recording",
+        "review",
+        "reviews",
+        "reviewing",
+        "track",
+        "tracks",
+        "tracking",
+        "view",
+        "views",
+        "viewing",
+    }:
+        return True
+    if word_count(candidate) >= 2:
+        return False
+    return bool(
+        set(tail_words)
+        & _SYSTEM_LABEL_NOUNS
+    )
 
 
 def title_label(value: str) -> str:
@@ -459,7 +543,11 @@ def _title_label_word(value: str) -> str:
     if "/" in word and not re.search(r"://|^/", word):
         parts = [part for part in word.split("/") if part]
         if len(parts) > 1 and all(re.search(r"[A-Za-z]", part) for part in parts):
-            label = " and ".join(_title_label_word(part) for part in parts)
+            formatted_parts = [_title_label_word(part) for part in parts]
+            if all(part.isupper() and len(part) <= 5 for part in formatted_parts):
+                label = "/".join(formatted_parts)
+            else:
+                label = " and ".join(formatted_parts)
             return prefix + label + suffix
     lower = word.casefold()
     if _looks_like_preserved_acronym_token(word):
@@ -484,7 +572,18 @@ def sentence_label(value: str) -> str:
     text = compact_text(value).strip()
     if not text:
         return ""
-    return restore_source_acronym_number_tokens(text.casefold(), text)
+    return _restore_source_mixed_case_tokens(restore_source_acronym_number_tokens(text.casefold(), text), text)
+
+
+def object_reference_phrase(value: str) -> str:
+    """Return a label as an embedded object phrase."""
+
+    text = sentence_label(value).strip(" .")
+    if not text:
+        return ""
+    if re.match(r"^(?:a|an|her|his|its|one|our|that|the|their|this|your)\b", text, flags=re.IGNORECASE):
+        return text
+    return f"the {text}"
 
 
 def restore_source_acronym_number_tokens(label: str, source: str) -> str:
@@ -510,6 +609,26 @@ def _restore_source_acronym_number_tokens(label: str, source: str) -> str:
     return text
 
 
+def _restore_source_mixed_case_tokens(label: str, source: str) -> str:
+    text = label
+    for match in re.finditer(r"\b[A-Z][A-Za-z0-9_/-]*[A-Z][A-Za-z0-9_/-]*\b", source):
+        token = match.group(0)
+        text = re.sub(rf"\b{re.escape(token)}\b", token, text, flags=re.IGNORECASE)
+    return text
+
+
+def _strip_state_object_predicate(value: str) -> str:
+    text = clean_confirmed_text(value).strip(" .")
+    return re.sub(
+        r"^(?:the\s+)?(?:product|system|app|application|workspace|service|platform|tool)\s+"
+        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?)\s+",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+
+
 def _should_split_human_hyphen_label(value: str) -> bool:
     if "-" not in value or "/" in value:
         return False
@@ -527,7 +646,12 @@ def _should_split_human_hyphen_label(value: str) -> bool:
 
 
 def join_items(items: list[str] | None, *, limit: int = 4) -> str:
-    values = [str(item).strip().rstrip(".") for item in (items or []) if str(item).strip()]
+    values = [
+        _embedded_item_text(str(item), limit=180)
+        for item in (items or [])
+        if str(item).strip()
+    ]
+    values = [value for value in values if value]
     if not values:
         return ""
     selected = values[:limit]
@@ -575,7 +699,68 @@ def boundary_clause_item(value: str, *, limit: int = 180) -> str:
         if scope:
             return scope
         return f"scope question remains open: {_lower_first(question)}"
-    return text
+    return _embedded_item_text(text, limit=limit)
+
+
+_SYSTEM_LABEL_NOUNS = {
+    "adapter",
+    "api",
+    "application",
+    "catalog",
+    "dashboard",
+    "database",
+    "engine",
+    "flow",
+    "gateway",
+    "ledger",
+    "library",
+    "model",
+    "portal",
+    "queue",
+    "record",
+    "records",
+    "registry",
+    "repository",
+    "service",
+    "source",
+    "store",
+    "surface",
+    "system",
+    "tool",
+    "tracker",
+    "view",
+    "workspace",
+}
+
+
+def _embedded_item_text(value: str, *, limit: int) -> str:
+    text = short_summary(value, limit=limit).strip(" .")
+    if not text:
+        return ""
+    return _terminal_relative_item_label(text)
+
+
+def _terminal_relative_item_label(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if not text:
+        return ""
+    if text.split()[-1].casefold().strip(".,;:") not in CONFIRMED_DANGLING_WORDS:
+        return text
+    noun_pattern = "|".join(sorted(re.escape(noun) for noun in _SYSTEM_LABEL_NOUNS))
+    match = re.match(
+        rf"^(?P<label>.+\b(?:{noun_pattern})\b)\s+"
+        r"(?:that\s+)?"
+        r"(?:(?:a|an|the|this|that|their|its|our|your)\s+)?"
+        r"[a-z][a-z0-9'/-]*(?:\s+[a-z][a-z0-9'/-]*){0,5}\s+"
+        r"(?:belongs?|connects?|hands?\s+off|links?|maps?|reports?|returns?|sends?|submits?|syncs?|writes?)\s+"
+        r"(?:at|by|for|from|in|into|on|to|with)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return text
+    label = match.group("label").strip(" .")
+    return label if word_count(label) >= 2 else text
 
 
 def _scope_question_boundary(value: str) -> str:

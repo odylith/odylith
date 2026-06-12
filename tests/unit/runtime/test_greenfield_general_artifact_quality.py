@@ -502,7 +502,7 @@ def test_greenfield_atlas_uses_first_path_events_and_evidence_owner(tmp_path: Pa
     assert "sequenceDiagram" not in sequence
     assert "C4-" not in sequence
     assert "Source-backed Audit Trail Adapter" in boundary
-    assert "Source-backed Audit Trail Adapter proof record" in proof
+    assert "Source-backed Audit Trail Adapter Proof Record" in proof
     assert "Release 0.0.1 succeeds when a representative" not in proof
 
 
@@ -631,7 +631,7 @@ def test_greenfield_health_tracking_defers_later_scope_and_keeps_atlas_implement
     assert sequence.startswith("flowchart LR")
     assert "Log a pain entry with" in sequence
     assert "S1 --> C1" in sequence
-    assert "Persists the entry" in sequence
+    assert "Persist the entry" in sequence
     assert "Show it on a timeline" in sequence
     assert "S3 --> C2" in sequence
     assert "Trend view" in sequence
@@ -933,6 +933,109 @@ def test_rendered_package_quality_flags_explanatory_component_labels() -> None:
     ]
 
 
+def test_rendered_package_quality_flags_placeholder_gate_copy_and_inline_actor_casing() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        backlog_result={
+            "idea_files": {
+                "idea.md": "\n".join(
+                    [
+                        "## Non-Goals",
+                        "- Do not promote Station Audit Tracker claims before validation gates pass.",
+                        "",
+                        "## Open Questions",
+                        "TBD.",
+                        "",
+                        "The station Lead cannot act on the result with confidence.",
+                    ]
+                )
+            }
+        }
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "Radar workstream `idea.md` contains placeholder TBD copy" in issues
+    assert "Radar workstream `idea.md` uses generic validation-gate copy" in issues
+    assert "Radar workstream `idea.md` has inline actor casing drift" in issues
+
+
+def test_rendered_package_quality_requires_registry_proof_floor() -> None:
+    missing = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={
+            "intake/CURRENT_SPEC.md": (
+                "# Intake Service\n\n"
+                "> Planned from user intent. Source boundary: src/app/intake. Trace links for Intake Service: workstreams B-001.\n\n"
+                "Successful path evidence for Intake Service: accepted input, visible result, and explanation.\n"
+                "Blocked input evidence for Intake Service: invalid input, no misleading result, and recovery explanation.\n"
+            )
+        },
+    )
+
+    issues = greenfield_rendered_package_quality_issues(missing)
+
+    assert "Registry component spec `intake/CURRENT_SPEC.md` is missing replay evidence" in issues
+
+    complete = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={
+            "intake/CURRENT_SPEC.md": (
+                "# Intake Service\n\n"
+                "> Planned from user intent. Source boundary: src/app/intake. Trace links for Intake Service: workstreams B-001.\n\n"
+                "Successful path evidence for Intake Service: accepted input, visible result, and explanation.\n"
+                "Blocked input evidence for Intake Service: invalid input, no misleading result, and recovery explanation.\n"
+                "Replay evidence for Intake Service: actor, input facts, status, explanation, and proof trail.\n"
+            )
+        },
+    )
+
+    assert not greenfield_rendered_package_quality_issues(complete)
+
+
+def test_rendered_package_quality_flags_clipped_mermaid_action_labels() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_atlas_sources={
+            "proof.mmd": "\n".join(
+                [
+                    "flowchart TB",
+                    '  proof1["Release proof<br/>a reviewer can complete one review, catch"]',
+                    '  deferred1["Deferred scope<br/>Do not expand beyond opening the checklist, recording"]',
+                    '  proof2["Proof checkpoint<br/>documents, comments, checks, and final"]',
+                    '  proof3["Proof check<br/>a reviewer can complete one check, catch one blocking"]',
+                    "  proof1 --> deferred1",
+                    "  deferred1 --> proof2",
+                    "  proof2 --> proof3",
+                ]
+            )
+        },
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "Atlas Mermaid `proof.mmd` has clipped action phrase ending in `catch`" in issues
+    assert "Atlas Mermaid `proof.mmd` has clipped action phrase ending in `recording`" in issues
+    assert "Atlas Mermaid `proof.mmd` has a clipped or dangling phrase ending in `final`" in issues
+    assert "Atlas Mermaid `proof.mmd` has a clipped or dangling phrase ending in `blocking`" in issues
+
+    noun_list_package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_atlas_sources={
+            "proof.mmd": "\n".join(
+                [
+                    "flowchart TB",
+                    '  outcome["Visible result<br/>documents, comments, checks"] --> decision',
+                    '  decision["Release decision<br/>accept, revise, or block"]',
+                ]
+            )
+        },
+    )
+    noun_list_issues = greenfield_rendered_package_quality_issues(noun_list_package)
+
+    assert not any("ending in `checks`" in issue for issue in noun_list_issues)
+
+
 def test_greenfield_completion_package_report_fails_incomplete_prewrite_radar_bundle(tmp_path: Path) -> None:
     proposal = _protocol_effect_tracking_proposal(tmp_path)
     backlog_result = _prewrite_backlog_result(proposal)
@@ -1089,31 +1192,44 @@ def test_greenfield_post_confirm_completion_fails_near_duplicate_generated_sente
     assert "semantic repetition" in "\n".join(report.issues)
 
 
-def test_greenfield_apply_post_confirm_failure_is_internal_not_operator_repair(tmp_path: Path, monkeypatch) -> None:
+def test_greenfield_apply_repairs_post_confirm_copy_failure_before_commit(tmp_path: Path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _trip_comparison_proposal(tmp_path)
-    monkeypatch.setattr(
-        greenfield_apply_components,
-        "render_prewrite_component_specs",
-        lambda **_kwargs: {"Broken Component": "Broken Component owns maintains state."},
+    original = greenfield_apply_components.render_prewrite_component_specs
+
+    def corrupt_rendered_copy(**kwargs):
+        rendered = dict(original(**kwargs))
+        first_label = next(iter(rendered))
+        rendered[first_label] = f"{rendered[first_label]}\n\n{first_label} owns maintains state."
+        return rendered
+
+    monkeypatch.setattr(greenfield_apply_components, "render_prewrite_component_specs", corrupt_rendered_copy)
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
     )
 
-    with pytest.raises(ValueError) as excinfo:
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
-
-    message = str(excinfo.value)
-    assert "greenfield post-confirm completion failed" in message
-    assert "No governed records were written." in message
-    assert "needs operator/proposal input" not in message
+    manifest = result["post_confirm_quality_manifest"]
+    assert manifest["status"] == "passed"
+    assert manifest["validation_status"] == "passed"
+    assert manifest["write_transaction"]["status"] == "committed"
+    assert manifest["write_transaction"]["prewrite_clean_before_commit"] is True
+    assert "generated_copy_quality" in manifest["repaired_issue_codes"]
+    assert "degraded" not in json.dumps(manifest, sort_keys=True).casefold()
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
 
 
 def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:
     rows = [row for row in proposal.get("backlog", []) if isinstance(row, dict)]
+    assumptions = "\n".join(
+        f"- {row.get('statement', '')}"
+        for row in proposal.get("assumptions", [])
+        if isinstance(row, dict) and str(row.get("tier", "")) == "user_intent"
+    )
     created = [
         {
             "idea_id": f"B-{index:03d}",
@@ -1125,7 +1241,12 @@ def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:
     return {
         "created": created,
         "idea_files": {
-            f"/tmp/test-{index}.md": f"# {row['title']}\n\n{proposal['intent']['first_path']}\n\n{proposal['intent']['proof_boundary']}\n"
+            f"/tmp/test-{index}.md": (
+                f"# {row['title']}\n\n"
+                f"{proposal['intent']['first_path']}\n\n"
+                f"{proposal['intent']['proof_boundary']}\n\n"
+                f"{assumptions}\n"
+            )
             for index, row in enumerate(created, start=1)
         },
         "backlog_index_text": "\n".join(str(row["title"]) for row in created),

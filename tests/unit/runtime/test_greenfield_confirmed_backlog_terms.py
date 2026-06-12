@@ -104,9 +104,9 @@ def test_confirmed_backlog_rationale_keeps_proof_focus_complete() -> None:
 def test_confirmed_backlog_rationale_uses_distinct_bullet_jobs() -> None:
     lines = rationale_lines(
         label="Choice Practice Journal",
-        title="Make Choice Practice Journal Useful for One Complete Outcome",
+        title="Prove One Complete Choice Practice Journal Path",
         opportunity=(
-            "Ship one complete outcome: a representative user can create an account, add a learner profile, "
+            "Prove the first release path: a representative user can create an account, add a learner profile, "
             "pick the age band, open a scenario, make a choice, and see a short reflection."
         ),
         first_slice=(
@@ -129,7 +129,7 @@ def test_confirmed_backlog_rationale_uses_distinct_bullet_jobs() -> None:
 def test_confirmed_backlog_rationale_does_not_splice_scope_question_into_wait_clause() -> None:
     lines = rationale_lines(
         label="Cellar",
-        title="Make Cellar Useful for One Complete Outcome",
+        title="Prove One Complete Cellar Path",
         opportunity="Prove the first vineyard management outcome before optional scope expands.",
         first_slice="Define a block and review the season timeline.",
         proof_boundary="The release works when the block timeline can be reviewed.",
@@ -152,7 +152,7 @@ def test_confirmed_backlog_first_slice_preserves_object_lists_and_can_clause_gra
     )
     rows = confirmed_backlog_rows(
         label="Cellar",
-        parent_title="Make Cellar Useful for One Complete Outcome",
+        parent_title="Prove One Complete Cellar Path",
         workflow_title="Let Grower Owner Define a Block",
         boundary_title="Keep Block Clear and Reviewable",
         proof_title="Show Why Block Can Be Trusted",
@@ -182,8 +182,12 @@ def test_confirmed_backlog_first_slice_preserves_object_lists_and_can_clause_gra
             "proof_review": "proof-review",
         },
     )
+    parent_row = rows[0]
     workflow_first_slice = rows[1]["recommended_first_slice"]
 
+    assert parent_row["title"] == "Prove One Complete Cellar Path"
+    assert parent_row["opportunity"].startswith("Prove the first release path:")
+    assert "Ship one complete outcome" not in parent_row["opportunity"]
     assert (
         normalize_action_clause(
             "define a block, log a spray application with product, rate and date, and record the picked weight"
