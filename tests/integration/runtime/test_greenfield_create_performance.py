@@ -130,6 +130,13 @@ def test_yacht_greenfield_confirm_repairs_quality_failures_and_commits_under_six
     assert generated_semantic_slop_issues(payload) == []
     assert payload["post_confirm_quality_manifest"]["status"] == "passed"
     assert payload["post_confirm_quality_manifest"]["issue_count"] == 0
+    assert payload["post_confirm_quality_manifest"]["quality_lenses"]["status"] == "passed"
+    assert set(payload["post_confirm_quality_manifest"]["quality_lenses"]["lenses"]) == {
+        "product_manager",
+        "architect",
+        "engineer",
+        "domain_expert",
+    }
     assert payload["post_confirm_quality_manifest"]["write_transaction"]["status"] == "committed"
     assert payload["post_confirm_quality_manifest"]["whole_project_elapsed_seconds"] < POST_CONFIRM_WHOLE_PROJECT_BUDGET_SECONDS
     assert len(payload["backlog"]) == 4

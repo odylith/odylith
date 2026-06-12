@@ -103,6 +103,24 @@ def test_post_confirm_issue_classifier_marks_malformed_copy_as_package_repair() 
     assert issue.severity == "medium"
 
 
+def test_post_confirm_issue_classifier_marks_quality_lens_gaps() -> None:
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"next_steps_previews": 1},
+        tribunal_status="passed",
+        issues=("quality lens engineer missing rendered component specs",),
+    )
+
+    issue = engine.classify_greenfield_post_confirm_issues(report)[0]
+
+    assert issue.code == "quality_lens_gap"
+    assert issue.repairability == "proposal_repair"
+    assert issue.owner == "quality_lens_contract"
+    assert issue.severity == "high"
+
+
 def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: pytest.MonkeyPatch) -> None:
     package = GreenfieldCompletionPackage(proposal={}, release_selector="0.0.1")
 
@@ -166,6 +184,14 @@ def test_greenfield_apply_result_carries_post_confirm_quality_manifest(
     assert manifest["passes"] >= 1
     assert manifest["issue_count"] == 0
     assert manifest["issues"] == []
+    assert manifest["quality_lenses"]["status"] == "passed"
+    assert set(manifest["quality_lenses"]["lenses"]) == {
+        "product_manager",
+        "architect",
+        "engineer",
+        "domain_expert",
+    }
+    assert all(row["status"] == "passed" for row in manifest["quality_lenses"]["lenses"].values())
     assert manifest["write_transaction"]["status"] == "committed"
     assert manifest["write_transaction"]["rollback_guard"] == "enabled"
     assert manifest["write_transaction"]["prewrite_clean_before_commit"] is True

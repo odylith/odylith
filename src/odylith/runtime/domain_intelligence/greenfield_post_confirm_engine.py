@@ -20,6 +20,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     raise_for_failed_greenfield_completion,
 )
+from odylith.runtime.artifact_quality.greenfield_quality_lenses import (
+    build_greenfield_quality_lens_report,
+)
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import (
     repair_greenfield_package_until_clean,
 )
@@ -160,6 +163,7 @@ def run_greenfield_post_confirm_engine(
                     repaired_issue_codes=repaired_issue_codes,
                     max_passes=bounded_passes,
                     budget_seconds=budget_seconds,
+                    quality_lenses=build_greenfield_quality_lens_report(prewrite_build.package),
                 ),
             )
 
@@ -190,6 +194,11 @@ def run_greenfield_post_confirm_engine(
         repaired_issue_codes=repaired_issue_codes,
         max_passes=bounded_passes,
         budget_seconds=budget_seconds,
+        quality_lenses=(
+            build_greenfield_quality_lens_report(last_prewrite_build.package)
+            if last_prewrite_build is not None
+            else None
+        ),
     )
     try:
         raise_for_failed_greenfield_completion(last_report)
@@ -219,6 +228,7 @@ def build_greenfield_post_confirm_manifest(
     budget_seconds: float,
     whole_project_elapsed_seconds: float | None = None,
     write_transaction_status: str = "not_started",
+    quality_lenses: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the operator-visible quality manifest for the post-confirm path."""
 
@@ -241,6 +251,7 @@ def build_greenfield_post_confirm_manifest(
         "repaired_issue_codes": sorted(repaired_issue_codes),
         "hard_blocker": hard_blocker,
         "pass_records": [record.to_dict() for record in pass_records],
+        "quality_lenses": dict(quality_lenses or {}),
         "write_transaction": {
             "status": write_transaction_status,
             "rollback_guard": "enabled",
@@ -308,6 +319,8 @@ def _issue_code(message: str) -> str:
         return "validation_gate_failure"
     if "release" in lowered and ("assignment" in lowered or "target" in lowered):
         return "release_package_drift"
+    if "quality lens" in lowered:
+        return "quality_lens_gap"
     if "must render one" in lowered or "drifted from" in lowered or "missing rendered" in lowered:
         return "artifact_shape_drift"
     if "mermaid" in lowered or "atlas" in lowered:
@@ -368,7 +381,7 @@ def _issue_path(message: str) -> str:
 def _issue_severity(code: str) -> str:
     if code in {"provider_call_leak", "missing_semantic_model", "validation_gate_failure"}:
         return "critical"
-    if code in {"semantic_drift", "semantic_alignment", "artifact_shape_drift"}:
+    if code in {"semantic_drift", "semantic_alignment", "artifact_shape_drift", "quality_lens_gap"}:
         return "high"
     return "medium"
 
@@ -385,13 +398,21 @@ def _issue_repairability(code: str, message: str) -> str:
         return "safe_package_repair"
     if code in {"generated_copy_quality", "semantic_alignment", "semantic_drift", "component_contract_quality"}:
         return "proposal_repair"
-    if code in {"missing_semantic_model", "artifact_shape_drift", "atlas_render_quality", "release_package_drift"}:
+    if code in {
+        "missing_semantic_model",
+        "artifact_shape_drift",
+        "atlas_render_quality",
+        "release_package_drift",
+        "quality_lens_gap",
+    }:
         return "proposal_repair"
     return "proposal_repair"
 
 
 def _issue_owner(code: str, message: str) -> str:
     lowered = message.casefold()
+    if code == "quality_lens_gap":
+        return "quality_lens_contract"
     if "radar" in lowered:
         return "radar_renderer"
     if "registry" in lowered or "component" in lowered:

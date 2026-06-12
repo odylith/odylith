@@ -18,6 +18,7 @@ from odylith.runtime.artifact_quality.generated_copy_quality import generated_pu
 from odylith.runtime.artifact_quality.greenfield_package_quality import (
     greenfield_rendered_package_quality_issues,
 )
+from odylith.runtime.artifact_quality.greenfield_quality_lenses import greenfield_quality_lens_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     component_contract_issues,
     rendered_component_spec_quality_issues,
@@ -371,6 +372,7 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
             if clean_text(target_release.get("release_id")) and clean_text(assignment_release.get("release_id")):
                 if clean_text(target_release.get("release_id")) != clean_text(assignment_release.get("release_id")):
                     issues.append("prewrite release target preview drifted from release assignment preview")
+    issues.extend(greenfield_quality_lens_issues(package))
     issues.extend(greenfield_rendered_package_quality_issues(package))
     return issues
 
