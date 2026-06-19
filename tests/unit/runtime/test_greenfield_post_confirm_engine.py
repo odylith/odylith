@@ -219,6 +219,27 @@ def test_post_confirm_engine_passes_quality_lens_context_to_proposal_repair(
     assert context.issues[0].code == "quality_lens_gap"
     assert context.quality_lenses["status"] == "failed"
     assert context.quality_lenses["lenses"]["product_manager"]["status"] == "failed"
+    assert context.semantic_compiler["version"] == "odylith.greenfield.semantic_compiler.v1"
+
+
+def test_post_confirm_classifier_preserves_semantic_compiler_counterexamples() -> None:
+    issue = engine.classify_greenfield_post_confirm_issues(
+        GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=(
+                "GreenfieldSemanticCompiler intent.product_view: uses proof-boundary language as a product-result projection",
+            ),
+        )
+    )[0]
+
+    assert issue.code == "semantic_compiler"
+    assert issue.severity == "high"
+    assert issue.repairability == "proposal_repair"
+    assert issue.owner == "semantic_model_compiler"
 
 
 def test_quality_lens_repair_rehydrates_decision_scope_and_validation() -> None:
@@ -311,6 +332,8 @@ def test_greenfield_apply_result_carries_post_confirm_quality_manifest(
     assert manifest["issue_count"] == 0
     assert manifest["issues"] == []
     assert manifest["quality_lenses"]["status"] == "passed"
+    assert manifest["semantic_compiler"]["status"] == "passed"
+    assert manifest["semantic_compiler"]["quality_scores"]["proof_result_separation"] == 1.0
     assert set(manifest["quality_lenses"]["lenses"]) == {
         "product_manager",
         "architect",

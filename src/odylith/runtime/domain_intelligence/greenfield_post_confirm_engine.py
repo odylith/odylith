@@ -27,6 +27,9 @@ from odylith.runtime.artifact_quality.greenfield_quality_lenses import (
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import (
     repair_greenfield_package_until_clean,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
+    compile_greenfield_semantics,
+)
 from odylith.runtime.domain_intelligence.proposal_tribunal import (
     raise_for_failed_greenfield_tribunal,
 )
@@ -75,6 +78,7 @@ class GreenfieldPostConfirmRepairContext:
     report: GreenfieldCompletionReport
     issues: tuple[GreenfieldPostConfirmIssue, ...]
     quality_lenses: Mapping[str, Any]
+    semantic_compiler: Mapping[str, Any]
 
 
 @dataclass(frozen=True)
@@ -138,6 +142,7 @@ def run_greenfield_post_confirm_engine(
         report = package_repair.report
         typed_issues = classify_greenfield_post_confirm_issues(report)
         quality_lenses = build_greenfield_quality_lens_report(prewrite_build.package)
+        semantic_compiler = compile_greenfield_semantics(prewrite_build.package.proposal).to_dict()
         if package_repair.changed:
             repaired_issue_codes.update(
                 issue.code
@@ -176,6 +181,7 @@ def run_greenfield_post_confirm_engine(
                     max_passes=bounded_passes,
                     budget_seconds=budget_seconds,
                     quality_lenses=quality_lenses,
+                    semantic_compiler=semantic_compiler,
                 ),
             )
 
@@ -194,6 +200,7 @@ def run_greenfield_post_confirm_engine(
                 report=report,
                 issues=typed_issues,
                 quality_lenses=quality_lenses,
+                semantic_compiler=semantic_compiler,
             ),
         )
         proposal_ready = False
@@ -219,6 +226,11 @@ def run_greenfield_post_confirm_engine(
         budget_seconds=budget_seconds,
         quality_lenses=(
             build_greenfield_quality_lens_report(last_prewrite_build.package)
+            if last_prewrite_build is not None
+            else None
+        ),
+        semantic_compiler=(
+            compile_greenfield_semantics(last_prewrite_build.package.proposal).to_dict()
             if last_prewrite_build is not None
             else None
         ),
@@ -252,6 +264,7 @@ def build_greenfield_post_confirm_manifest(
     whole_project_elapsed_seconds: float | None = None,
     write_transaction_status: str = "not_started",
     quality_lenses: Mapping[str, Any] | None = None,
+    semantic_compiler: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the operator-visible quality manifest for the post-confirm path."""
 
@@ -275,6 +288,7 @@ def build_greenfield_post_confirm_manifest(
         "hard_blocker": hard_blocker,
         "pass_records": [record.to_dict() for record in pass_records],
         "quality_lenses": dict(quality_lenses or {}),
+        "semantic_compiler": dict(semantic_compiler or {}),
         "write_transaction": {
             "status": write_transaction_status,
             "rollback_guard": "enabled",
@@ -361,6 +375,8 @@ def _issue_code(message: str) -> str:
         return "provider_call_leak"
     if "requires greenfieldsemanticmodel" in lowered or "semantic model" in lowered and "requires" in lowered:
         return "missing_semantic_model"
+    if "greenfieldsemanticcompiler" in lowered:
+        return "semantic_compiler"
     if "semantic" in lowered and "drift" in lowered:
         return "semantic_drift"
     if "semantic" in lowered and ("alignment" in lowered or "coverage" in lowered or "missing" in lowered):
@@ -431,7 +447,7 @@ def _issue_path(message: str) -> str:
 def _issue_severity(code: str) -> str:
     if code in {"provider_call_leak", "missing_semantic_model", "validation_gate_failure"}:
         return "critical"
-    if code in {"semantic_drift", "semantic_alignment", "artifact_shape_drift", "quality_lens_gap"}:
+    if code in {"semantic_compiler", "semantic_drift", "semantic_alignment", "artifact_shape_drift", "quality_lens_gap"}:
         return "high"
     return "medium"
 
@@ -446,7 +462,7 @@ def _issue_repairability(code: str, message: str) -> str:
         return "safe_package_repair"
     if "malformed verb pair" in lowered and code == "generated_copy_quality":
         return "safe_package_repair"
-    if code in {"generated_copy_quality", "semantic_alignment", "semantic_drift", "component_contract_quality"}:
+    if code in {"generated_copy_quality", "semantic_compiler", "semantic_alignment", "semantic_drift", "component_contract_quality"}:
         return "proposal_repair"
     if code in {
         "missing_semantic_model",
@@ -471,7 +487,7 @@ def _issue_owner(code: str, message: str) -> str:
         return "atlas_renderer"
     if "next steps" in lowered:
         return "operator_experience_renderer"
-    if code in {"semantic_drift", "semantic_alignment", "missing_semantic_model"}:
+    if code in {"semantic_compiler", "semantic_drift", "semantic_alignment", "missing_semantic_model"}:
         return "semantic_model_compiler"
     if code == "generated_copy_quality":
         return "generated_copy_quality_kernel"

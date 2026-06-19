@@ -9,8 +9,10 @@ from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_confirmed_completion_text_model as completion_text
 from odylith.runtime.domain_intelligence import greenfield_confirmed_diagrams
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as clean_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -104,20 +106,11 @@ def _ensure_first_path_contract(proposal: dict[str, Any]) -> bool:
     title = completion_text.project_title(proposal)
     changed = False
     if not clean_text(intent.get("state_object")):
-        intent["state_object"] = f"{title} state record"
+        intent["state_object"] = _inferred_state_object(proposal, title=title)
         changed = True
     state = completion_text.state_reference(proposal)
-    action = completion_text.action_phrase(proposal)
-    outcome = completion_text.outcome_phrase(proposal)
-    outcome_action = completion_text.outcome_action_phrase(outcome)
     if not clean_text(intent.get("first_path")):
-        intent["first_path"] = sentence_text(
-            (
-                f"A representative user can {action}, the product records {state}, "
-                f"and the user can {outcome_action} with recovery context."
-            ),
-            limit=520,
-        )
+        intent["first_path"] = _inferred_first_path(proposal, title=title, state=state)
         changed = True
     return changed
 
@@ -310,13 +303,16 @@ def _ensure_component_topology(proposal: dict[str, Any]) -> bool:
         labels.append(label)
         seen_labels.add(label.casefold())
     existing_ids = {clean_text(row.get("component_id")) for row in dict_rows(components)}
+    existing_aliases = _component_identity_aliases(components)
     for index, label in enumerate(labels[:3], start=1):
         component_id = slugify(label) or f"component-{index}"
-        if component_id in existing_ids:
+        candidate_aliases = {component_id, slugify(label), clean_text(label).casefold()}
+        if component_id in existing_ids or candidate_aliases & existing_aliases:
             continue
+        unique_id = _unique_component_id(component_id, existing_ids)
         components.append(
             {
-                "component_id": _unique_component_id(component_id, existing_ids),
+                "component_id": unique_id,
                 "label": label,
                 "kind": _component_kind(index),
                 "intended_path": f"src/{slugify(label) or f'component-{index}'}",
@@ -356,7 +352,9 @@ def _ensure_component_topology(proposal: dict[str, Any]) -> bool:
                 "evidence_tier": "user_intent",
             }
         )
-        existing_ids.add(component_id)
+        existing_ids.add(unique_id)
+        existing_aliases.update(candidate_aliases)
+        existing_aliases.add(unique_id)
         changed = True
     for index, row in enumerate(dict_rows(components)):
         if clean_text(row.get("release_scope")):
@@ -377,6 +375,18 @@ def _unique_component_id(component_id: str, existing_ids: set[str]) -> str:
         candidate = f"{component_id}-{suffix}"
         suffix += 1
     return candidate
+
+
+def _component_identity_aliases(components: list[Any]) -> set[str]:
+    aliases: set[str] = set()
+    for row in dict_rows(components):
+        for value in (row.get("component_id"), row.get("label"), row.get("name")):
+            text = clean_text(value)
+            if not text:
+                continue
+            aliases.add(text.casefold())
+            aliases.add(slugify(text))
+    return aliases
 
 
 def _ensure_release_scope(
@@ -426,6 +436,7 @@ def _ensure_atlas_topology(proposal: dict[str, Any]) -> bool:
         label=title,
         components=components,
         diagram_slugs=slugs,
+        workstream_titles=_workstream_title_overrides(proposal),
         product_story=clean_text(_intent(proposal).get("product_story")),
         first_path=completion_text.first_path(proposal),
         proof_boundary=completion_text.proof_boundary(proposal),
@@ -441,6 +452,7 @@ def _ensure_atlas_topology(proposal: dict[str, Any]) -> bool:
     if isinstance(current, list) and _diagram_rows_render_ready(dict_rows(current)):
         return False
     proposal["diagrams"] = diagrams
+    _align_backlog_diagram_refs(proposal, diagrams=diagrams)
     return True
 
 
@@ -536,6 +548,111 @@ def _ensure_proof_language(
     return True
 
 
+def _inferred_state_object(proposal: Mapping[str, Any], *, title: str) -> str:
+    for value in _state_object_sources(proposal):
+        candidate = _state_object_candidate(value, title=title)
+        if _usable_state_object(candidate):
+            return candidate
+    focus_terms = ordered_terms(title, minimum=3, stopwords=_STATE_OBJECT_STOPWORDS)
+    focus = " ".join(focus_terms[:3])
+    if focus:
+        return f"{focus.title()} operating state"
+    label = clean_text(title) or "Accepted Product"
+    return f"{label} operating state"
+
+
+def _inferred_first_path(proposal: Mapping[str, Any], *, title: str, state: str) -> str:
+    actor = _primary_actor_label(proposal)
+    focus = _first_path_focus(title)
+    state_reference = clean_text(state).strip(" .") or _inferred_state_object(proposal, title=title)
+    return sentence_text(
+        (
+            f"{actor} starts {focus}, {title} records {state_reference}, "
+            "the product keeps blockers and corrections visible, and a reviewer sees the accepted result with recovery context."
+        ),
+        limit=620,
+    )
+
+
+def _primary_actor_label(proposal: Mapping[str, Any]) -> str:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    for value in text_values(intent.get("human_actors")):
+        label = clean_text(value).split(":", 1)[0].split("—", 1)[0].strip(" .")
+        if label and len(label.split()) <= 5:
+            return label[:1].upper() + label[1:]
+    return "A representative user"
+
+
+def _first_path_focus(title: str) -> str:
+    label = clean_text(title).strip(" .")
+    if not label:
+        return "the first product path"
+    return f"the first {label} path"
+
+
+def _state_object_sources(proposal: Mapping[str, Any]) -> list[Any]:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
+    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
+    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    intelligence = proposal.get("project_intelligence") if isinstance(proposal.get("project_intelligence"), Mapping) else {}
+    values: list[Any] = [
+        intent.get("state_object"),
+        ontology.get("state_object"),
+        first_path.get("entity"),
+        brief.get("state_object"),
+        brief.get("project_outcome"),
+        brief.get("purpose"),
+        intent.get("product_story"),
+        intent.get("first_path"),
+    ]
+    for key in ("ontology", "state", "source_of_truth_map", "invariants"):
+        values.extend(text_values(intelligence.get(key)))
+    for row in dict_rows(proposal.get("components")):
+        values.extend([row.get("owned_state"), row.get("responsibility"), row.get("boundary"), row.get("label")])
+    for row in dict_rows(proposal.get("backlog"))[:3]:
+        values.extend([row.get("product_view"), row.get("recommended_first_slice"), row.get("problem")])
+    return values
+
+
+def _state_object_candidate(value: Any, *, title: str) -> str:
+    text = clean_text(value)
+    if not text:
+        return ""
+    if ":" in text and "state object" in text.casefold():
+        text = text.split(":", 1)[1]
+    label = domain_object_label(text, fallback="")
+    if _usable_state_object(label):
+        return label
+    if _short_state_phrase(text):
+        return _short_state_phrase(text)
+    terms = ordered_terms(
+        text,
+        minimum=4,
+        stopwords=_STATE_OBJECT_STOPWORDS,
+        preserve_terms=ordered_terms(title, minimum=3),
+    )
+    if len(terms) >= 2:
+        return f"{' '.join(terms[:4]).title()} state"
+    return ""
+
+
+def _short_state_phrase(value: str) -> str:
+    words = clean_text(value).strip(" .").split()
+    if 2 <= len(words) <= 6 and not any(word.casefold() in _STATE_OBJECT_BAD_WORDS for word in words):
+        return " ".join(words)
+    return ""
+
+
+def _usable_state_object(value: Any) -> bool:
+    text = clean_text(value).strip(" .")
+    if not text or len(text.split()) < 2:
+        return False
+    lowered = text.casefold()
+    return not any(phrase in lowered for phrase in _STATE_OBJECT_BAD_PHRASES)
+
+
 def _intent(proposal: dict[str, Any]) -> dict[str, Any]:
     intent = proposal.get("intent")
     if isinstance(intent, dict):
@@ -559,6 +676,87 @@ def _workstream_titles(proposal: Mapping[str, Any]) -> list[str]:
         for row in dict_rows(proposal.get("backlog"))
         if (title := clean_text(row.get("title")))
     ]
+
+
+def _workstream_title_overrides(proposal: Mapping[str, Any]) -> dict[str, str]:
+    titles = _workstream_titles(proposal)
+    if not titles:
+        return {}
+    return {
+        "program": titles[0],
+        "workflow": titles[1] if len(titles) > 1 else titles[0],
+        "boundary": titles[2] if len(titles) > 2 else titles[-1],
+        "proof": _proof_workstream_title(titles),
+    }
+
+
+def _proof_workstream_title(titles: list[str]) -> str:
+    for title in reversed(titles):
+        lowered = title.casefold()
+        if "proof" in lowered or "release" in lowered or "validation" in lowered:
+            return title
+    return titles[-1]
+
+
+def _align_backlog_diagram_refs(proposal: Mapping[str, Any], *, diagrams: list[dict[str, Any]]) -> None:
+    rows = dict_rows(proposal.get("backlog"))
+    slugs_by_title: dict[str, list[str]] = {}
+    all_slugs: list[str] = []
+    for diagram in diagrams:
+        slug = clean_text(diagram.get("slug"))
+        if not slug:
+            continue
+        all_slugs.append(slug)
+        for title in text_values(diagram.get("related_workstream_titles")):
+            slugs_by_title.setdefault(clean_text(title).casefold(), []).append(slug)
+    for index, row in enumerate(rows[1:], start=1):
+        title = clean_text(row.get("title")).casefold()
+        existing = {slugify(value) for value in text_values(row.get("related_diagram_slugs") or row.get("related_diagrams"))}
+        planned = {slugify(slug) for slug in all_slugs}
+        if existing & planned:
+            continue
+        matches = slugs_by_title.get(title) or all_slugs[: min(3, len(all_slugs))]
+        if matches:
+            row["related_diagram_slugs"] = list(unique_text(matches[:4]))
+
+
+_STATE_OBJECT_BAD_PHRASES = frozenset(
+    {
+        "accepted state",
+        "evidence packet",
+        "greenfield project",
+        "host authored",
+        "state record",
+        "workflow lead",
+    }
+)
+_STATE_OBJECT_BAD_WORDS = frozenset({"record", "packet", "scaffold", "workflow"})
+_STATE_OBJECT_STOPWORDS = frozenset(
+    {
+        "accepted",
+        "artifact",
+        "boundary",
+        "complete",
+        "evidence",
+        "first",
+        "greenfield",
+        "implementation",
+        "path",
+        "product",
+        "proof",
+        "record",
+        "release",
+        "result",
+        "review",
+        "scaffold",
+        "source",
+        "state",
+        "system",
+        "user",
+        "visible",
+        "workflow",
+    }
+)
 
 
 __all__ = [

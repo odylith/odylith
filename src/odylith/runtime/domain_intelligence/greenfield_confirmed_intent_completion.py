@@ -34,6 +34,9 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
+    repair_confirmed_intent_semantic_projections,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language as _normalize_visible_result_terms
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -59,6 +62,7 @@ def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     result["internal_systems"] = _completed_system_rows(result, title=title)
     _complete_core_fields(result, title=title)
     _normalize_confirmed_core_language(result)
+    repair_confirmed_intent_semantic_projections(result)
     _complete_product_posture(result, title=title)
     _normalize_confirmed_core_language(result)
     return result
@@ -548,8 +552,25 @@ def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
     text = first_path_outcome_phrase(first_path, proof_boundary=proof, fallback="a visible, useful result", limit=190).rstrip(".")
     if re.match(r"^why\b", text, flags=re.I):
         text = f"the explanation for {text}"
-    if not re.search(r"\b(?:answer|appointment|booking|card|confirmation|consequence|decision|explanation|metrics?|outcome|plan|readout|recommendation|reflection|report|result|schedule|status|summary|view)\b", text, re.I):
-        text = f"the visible result produced by {text}"
+    if not re.search(
+        r"\b(?:answer|appointment|booking|card|confirmation|consequence|decision|entry|explanation|history|"
+        r"metrics?|outcome|plan|readout|recommendation|reflection|report|result|schedule|session|status|summary|"
+        r"timeline|trend|view|workout)\b",
+        text,
+        re.I,
+    ):
+        text = _nominal_visible_outcome_phrase(text)
+    return text
+
+
+def _nominal_visible_outcome_phrase(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    if re.match(r"^(?:a|an|the|both|each|one)\b", text, flags=re.I):
+        return text
+    if re.match(r"^(?:accepted|approved|completed|confirmed|persisted|recorded|saved)\b", text, flags=re.I):
+        return f"the {text[:1].lower() + text[1:]}"
     return text
 
 

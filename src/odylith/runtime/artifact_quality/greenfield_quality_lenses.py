@@ -94,8 +94,9 @@ def _product_manager_checks(
     capability = normalize_string(first_path.get("capability")) or normalize_string(intent.get("first_path"))
     visible_result = normalize_string(first_path.get("visible_result")) or normalize_string(intent.get("proof_boundary"))
     backlog_rows = mapping_rows(proposal.get("backlog"))
-    assumptions = mapping_rows(proposal.get("assumptions"))
+    assumptions = _rows_or_text_values(proposal.get("assumptions"))
     ambiguities = _rows_or_text_values(proposal.get("open_questions"))
+    required_events = 3 if _strict_confirmed_create_payload(proposal) else 2
     release_ids = tuple(
         str(item).strip()
         for item in getattr(package, "release_workstream_ids", ())
@@ -106,7 +107,7 @@ def _product_manager_checks(
             bool(
                 capability
                 and visible_result
-                and len(events) >= 3
+                and len(events) >= required_events
             ),
             "complete_first_path",
             f"{len(events)} first-path event(s), capability and visible result present",
@@ -143,6 +144,8 @@ def _architect_checks(
     components = _active_component_rows(proposal)
     diagrams = mapping_rows(proposal.get("diagrams"))
     atlas_sources = _as_mapping(getattr(package, "rendered_atlas_sources", None))
+    strict_create = _strict_confirmed_create_payload(proposal)
+    required_diagrams = 4 if strict_create else 2
     internal_systems = _rows_or_text_values(domain.get("internal_systems")) or _rows_or_text_values(
         intent.get("internal_systems")
     )
@@ -150,9 +153,10 @@ def _architect_checks(
         intent.get("external_systems")
     )
     external_boundary_known = "external_systems" in domain or "external_systems" in intent
+    state_object = normalize_string(intent.get("state_object")) or normalize_string(domain.get("state_object"))
     return [
         _check(
-            bool(normalize_string(intent.get("state_object"))),
+            bool(state_object),
             "state_object",
             "accepted state object present",
             "quality lens architect missing accepted state object",
@@ -164,7 +168,7 @@ def _architect_checks(
             "quality lens architect missing component topology from internal systems",
         ),
         _check(
-            len(diagrams) >= 4 and len(atlas_sources) == len(diagrams),
+            len(diagrams) >= required_diagrams and len(atlas_sources) == len(diagrams),
             "atlas_topology",
             f"{len(atlas_sources)} rendered Atlas source(s) for {len(diagrams)} diagram contract(s)",
             "quality lens architect missing rendered Atlas topology coverage",
@@ -299,6 +303,14 @@ def _active_component_rows(proposal: Mapping[str, Any]) -> list[Mapping[str, Any
         for row in mapping_rows(proposal.get("components"))
         if normalize_string(row.get("component_id"))
     ]
+
+
+def _strict_confirmed_create_payload(proposal: Mapping[str, Any]) -> bool:
+    intent = _as_mapping(proposal.get("intent"))
+    return (
+        normalize_string(intent.get("reasoning_mode")) == "odylith_confirmed_governed_proposal"
+        and normalize_string(proposal.get("write_policy")) == "confirmed_intent_before_confirmed_create"
+    )
 
 
 def _rows_or_text_values(value: Any) -> list[str]:

@@ -59,6 +59,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
 )
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import repair_proposal_for_quality_lens_gaps
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
+    repair_greenfield_semantic_projections,
+)
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.common import display_text
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
@@ -256,7 +259,7 @@ def build_greenfield_proposal(
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-    proposal = ensure_apply_semantic_model(proposal, refresh=True)
+    proposal = _complete_semantic_apply_payload(proposal, release_selector=release_selector)
     validate_host_reasoned_proposal(proposal)
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     raise_for_failed_greenfield_tribunal(run_greenfield_tribunal(proposal, release_selector=selector))
@@ -460,7 +463,7 @@ def _repair_confirmed_apply_payload(
     repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
     repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
-    repaired = ensure_apply_semantic_model(repaired, refresh=True)
+    repaired = _complete_semantic_apply_payload(repaired, release_selector=release_selector)
     if repair_context is not None:
         if repair_proposal_for_quality_lens_gaps(
             repaired,
@@ -470,9 +473,18 @@ def _repair_confirmed_apply_payload(
             repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
             repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
             repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
-            repaired = ensure_apply_semantic_model(repaired, refresh=True)
+            repaired = _complete_semantic_apply_payload(repaired, release_selector=release_selector)
     validate_host_reasoned_proposal(repaired)
     return repaired
+
+
+def _complete_semantic_apply_payload(proposal: dict[str, Any], *, release_selector: str) -> dict[str, Any]:
+    proposal = ensure_apply_semantic_model(proposal, refresh=True)
+    if repair_greenfield_semantic_projections(proposal):
+        proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
+        proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
+        proposal = ensure_apply_semantic_model(proposal, refresh=True)
+    return proposal
 
 
 def apply_greenfield_proposal(
@@ -492,7 +504,7 @@ def apply_greenfield_proposal(
         proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
         proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
         proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-        proposal = ensure_apply_semantic_model(proposal, refresh=True)
+        proposal = _complete_semantic_apply_payload(proposal, release_selector=release_selector)
         validate_host_reasoned_proposal(proposal)
     root = Path(repo_root).expanduser().resolve()
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]

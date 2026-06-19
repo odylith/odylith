@@ -59,6 +59,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift 
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
     semantic_overlap_ratio as _semantic_overlap_ratio,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
+    semantic_compiler_issues as _semantic_compiler_issues,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -248,6 +251,7 @@ def _post_confirm_contract_issues(proposal: Mapping[str, Any], *, rendered_specs
     issues.extend(_semantic_component_alignment_issues(proposal, semantic))
     issues.extend(_semantic_workstream_alignment_issues(proposal, semantic))
     issues.extend(_semantic_diagram_alignment_issues(proposal, semantic))
+    issues.extend(_semantic_compiler_issues(proposal))
     issues.extend(_contrastive_domain_drift_issues(proposal, semantic))
     issues.extend(_semantic_repetition_issues(proposal))
     if rendered_specs:

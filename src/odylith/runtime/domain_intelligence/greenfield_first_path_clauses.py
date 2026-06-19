@@ -20,14 +20,12 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import lowercase_leading_article as _lowercase_leading_article
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
-    nominal_visible_result_object as _nominal_visible_result_object,
-)
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import outcome_capability_fragment as _outcome_capability_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import primary_actor_signature as _primary_actor_signature
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_text
 
 
 
@@ -242,37 +240,13 @@ def _first_path_outcome_text(
     fallback: str,
     limit: int,
 ) -> str:
-    visible = clean_first_path_text(model.visible_outcome)
-    proof = clean_first_path_text(proof_boundary)
-    visible_selected = bool(visible) and not (_is_low_information_visible_outcome(visible) and proof)
-    text = proof if _is_low_information_visible_outcome(visible) and proof else visible or proof or clean_first_path_text(model.raw_path)
-    object_text = visible_result_object(text)
-    if object_text:
-        text = object_text
-    elif not visible_selected:
-        text = action_chain_fragment(text) or text
-    if _starts_with_unanchored_result_pronoun(text) and proof:
-        proof_result = visible_result_object(proof) or action_chain_fragment(proof) or proof
-        proof_result = _visible_proof_result_clause(proof_result)
-        if proof_result and not _starts_with_unanchored_result_pronoun(proof_result):
-            text = proof_result
-    text = _nominal_visible_result_object(text)
-    text = re.sub(r"^(?:her|his|its|our|their|your)\s+", "", text, flags=re.IGNORECASE)
-    text = _lowercase_leading_article(text)
-    text = re.sub(r"^(?:Her|His|Its|It|Our|Them|Their|They|This|That|Your)\b", lambda match: match.group(0).casefold(), text)
-    return _clip_phrase(text, limit=limit) or clean_first_path_text(fallback)
-
-
-def _is_low_information_visible_outcome(value: str) -> bool:
-    text = clean_first_path_text(value).casefold().strip(" .")
-    return text in {
-        "next action",
-        "next step",
-        "the next action",
-        "the next step",
-        "what happened next",
-        "what happens next",
-    }
+    return select_visible_result_text(
+        model.raw_path,
+        proof_boundary=proof_boundary,
+        model=model,
+        fallback=fallback,
+        limit=limit,
+    )
 
 
 def _dash_detail_fragment_keys(model: FirstPathModel) -> set[str]:
@@ -286,10 +260,6 @@ def _dash_detail_fragment_keys(model: FirstPathModel) -> set[str]:
         if fragment:
             keys.add(fragment.casefold())
     return keys
-
-
-def _starts_with_unanchored_result_pronoun(value: str) -> bool:
-    return bool(re.match(r"^(?:it|them|they|this|that)\b", clean_first_path_text(value), flags=re.IGNORECASE))
 
 
 def _visible_outcome_covered(visible_object: str, visible_outcome: str) -> bool:
@@ -310,44 +280,6 @@ def _semantic_terms(value: str) -> set[str]:
         for word in visible_words(value)
         if len(word) >= 4 and word.casefold() not in {"that", "this", "with", "when", "what"}
     }
-
-
-def _visible_proof_result_clause(value: str) -> str:
-    text = clean_first_path_text(value).strip(" .")
-    if not text:
-        return ""
-    for marker in (", and ", "; and ", ". And "):
-        if marker not in text:
-            continue
-        head, tail = text.split(marker, 1)
-        if _looks_like_state_or_recovery_clause(tail):
-            return head.strip(" ,.;")
-    return text
-
-
-def _looks_like_state_or_recovery_clause(value: str) -> bool:
-    words = {word.strip(".,;:").casefold() for word in clean_first_path_text(value).split()}
-    return bool(
-        words
-        & {
-            "blocked",
-            "corrected",
-            "correction",
-            "degraded",
-            "fallback",
-            "missing",
-            "recover",
-            "recovery",
-            "remain",
-            "remains",
-            "replay",
-            "replayed",
-            "replayable",
-            "understandable",
-        }
-    )
-
-
 
 
 def _join_series(values: Sequence[str]) -> str:
