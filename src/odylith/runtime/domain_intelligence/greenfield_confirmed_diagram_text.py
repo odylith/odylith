@@ -175,6 +175,15 @@ def proof_checkpoint_label(value: str) -> str:
     return ""
 
 
+def diagram_sentence_label(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if not text:
+        return ""
+    if re.match(r"^(?:a|an|the|this|that)\b", text, flags=re.IGNORECASE):
+        return f"{text[:1].upper()}{text[1:]}"
+    return text
+
+
 def release_proof_label(value: str) -> str:
     brief = brief_proof_boundary(value)
     if not brief:
@@ -493,7 +502,14 @@ def _proof_checkpoint_from_visible_result(value: str) -> str:
         flags=re.IGNORECASE,
     ):
         return f"The result on {text[:1].lower()}{text[1:]}"
-    return sentence(text).rstrip(".")
+    return _lower_fragment_start(sentence(text).rstrip("."))
+
+
+def _lower_fragment_start(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if re.match(r"^(?:A|An|The|Their|This|That)\b", text):
+        return f"{text[:1].casefold()}{text[1:]}"
+    return text
 
 
 def _explicit_deferred_scope(value: str) -> str:
@@ -599,7 +615,7 @@ def _strip_dangling_tail(value: str) -> str:
     while True:
         text = _strip_clipped_terminal_action(text)
         cleaned = re.sub(
-            r"\b(?:a|accepted|actionable|an|and|as|at|because|blocking|by|can|capturing|clear|comparing|complete|concrete|daily|final|first|for|from|if|in|into|its|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|their|this|through|tied|to|trusted|until|visible|warning|when|while|with|without)$",
+            r"\b(?:a|accepted|actionable|an|and|as|at|because|blocking|by|can|capturing|clear|comparing|complete|concrete|daily|final|first|for|from|if|in|into|its|key|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|their|this|through|tied|to|trusted|until|visible|warning|when|while|with|without)$",
             "",
             text,
             flags=re.IGNORECASE,
@@ -638,6 +654,7 @@ __all__ = [
     "component_label",
     "component_phrase",
     "deferred_scope_label",
+    "diagram_sentence_label",
     "escape_label",
     "flow_label",
     "proof_checkpoint_label",

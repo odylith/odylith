@@ -289,6 +289,12 @@ def test_confirmed_diagram_labels_summarize_release_proof_and_deferred_scope_bef
 
     assert diagram_text.release_proof_label(proof) == "A reviewer can complete one review, catch one mismatch"
     assert not diagram_text.release_proof_label(proof).endswith(", catch")
+    assert diagram_text.semantic_proof_checkpoint(
+        {"first_path_contract": {"visible_result": "their estimated total burn compared with the target"}}
+    ) == "their estimated total burn compared with the target"
+    assert diagram_text.diagram_sentence_label("their estimated total burn compared with the target") == (
+        "their estimated total burn compared with the target"
+    )
     blocking_proof = (
         "An inspector can complete one inspection, catch one blocking issue, assign one correction, "
         "and leave with readiness evidence."
@@ -730,6 +736,19 @@ def test_package_quality_allows_terminal_paid_for_phrasal_verb() -> None:
 def test_actor_labels_keep_display_casing_but_inline_subjects_are_readable() -> None:
     assert backlog_text.lead_actor_label(["Restaurant Manager: completes the first audit path"]) == "Restaurant Manager"
     assert backlog_text.supporting_actor_label(["Restaurant Manager", "Station Lead: marks fixes complete"]) == "Station Lead"
+    assert (
+        backlog_text.supporting_actor_label(
+            [
+                "Football Fan: checking one match",
+                "Match Editor or Trusted Feed Operator Confirming Events: confirms event updates",
+            ]
+        )
+        == "Match Editor or Trusted Feed Operator"
+    )
+    assert (
+        backlog_text.inline_actor_subject("Match Editor or Trusted Feed Operator")
+        == "the match editor or trusted feed operator"
+    )
     assert backlog_text.problem_actor_subject("Station Lead", fallback="user") == "The station lead"
     assert backlog_text.inline_actor_subject("The Restaurant Manager") == "the restaurant manager"
     assert backlog_text.inline_actor_subject("GLP-1 Companion risk reviewer") == "the GLP-1 Companion risk reviewer"
@@ -748,6 +767,51 @@ def test_actor_labels_keep_display_casing_but_inline_subjects_are_readable() -> 
     assert not has_inline_role_casing_drift(
         "Release scope connects Customer and Firearm Record, Service Ticket Workflow and Status Tracking, and Shop Dashboard and Reporting without absorbing deferred scope."
     )
+
+
+def test_confirmed_intent_completion_expands_thin_actor_rows_before_validation() -> None:
+    intent = parse_confirmed_intent_text(
+        """
+# Public Question Response Tracker
+
+## Product story
+A resident needs a clear way to submit one public question, see who owns the response, track status, and receive an answer with reason notes and source references.
+
+## State object
+The response record tracks question identity, submitter contact, category, assigned owner, status, source references, draft answer, review notes, published response, and follow-up state.
+
+## First complete path
+A resident submits one question, the coordinator assigns an owner, the owner drafts an answer with references, a reviewer approves it, and the resident sees the published response and status history.
+
+## Human actors
+- Resident submitting one public question.
+- Response coordinator assigning ownership.
+- Reviewer approving the answer.
+
+## External systems
+- Public web form for submitted questions.
+- Reference source for policy or service information.
+
+## Internal product systems
+- Question intake and triage.
+- Ownership and status tracking.
+- Response drafting and review.
+- Published response history.
+
+## Critical assumptions
+- Release 0.0.1 follows one question at a time.
+- The answer must include reason notes or source references before publication.
+
+## Ambiguities
+- Which categories require legal or policy review.
+
+## Proof boundary
+Release 0.0.1 succeeds when one question moves from submitted to assigned to reviewed to published, with owner, status, reason notes, references, privacy handling, and response history visible.
+"""
+    )
+
+    assert all(len(row.split()) >= 5 for row in intent["human_actors"])
+    assert any(row.startswith("Response Coordinator:") for row in intent["human_actors"])
 
 
 def test_visible_result_language_normalization_stays_in_text_owner() -> None:

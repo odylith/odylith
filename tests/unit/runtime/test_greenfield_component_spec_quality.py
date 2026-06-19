@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 from odylith.runtime.common.value_coercion import dedupe_strings
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence import (
     greenfield_component_contract as component_contract,
     greenfield_component_contract_differentiation as contract_differentiation,
@@ -33,6 +36,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import natur
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase_identity_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
@@ -117,6 +121,9 @@ def test_greenfield_platform_helpers_do_not_hardcode_fixture_domains() -> None:
         "resident",
         "seller",
         "solar",
+        "fifa",
+        "football",
+        "scoreline",
         "student",
         "sunburn",
         "sunledger",
@@ -730,6 +737,69 @@ def test_greenfield_component_output_text_collapse_repeated_result_phrase() -> N
 
     assert "result result" not in text.casefold()
     assert "decision ledger" in text
+
+
+def test_greenfield_component_phrase_cleaner_keeps_status_modifiers_attached_to_carrier() -> None:
+    assert clean_artifact_phrase("lifecycle fixture live final") == "fixture lifecycle state"
+    assert clean_artifact_phrase("live final state") == "final status"
+    assert clean_artifact_phrase("match move state") == "match lifecycle state"
+    assert clean_artifact_phrase("decide next match intake") == "match intake"
+    assert clean_artifact_phrase("correction history match data") == "match data correction history"
+    assert clean_artifact_phrase("history match event") == "match event history"
+    assert clean_artifact_phrase("history match notification channel") == "match notification channel history"
+    assert clean_artifact_phrase("match record command") == "match record"
+    assert clean_artifact_phrase("live match status proposal") == "live match status"
+    assert clean_artifact_phrase("timeline live") == "live timeline"
+    assert clean_artifact_phrase("result final") == "final result"
+    assert clean_artifact_phrase("settling finished result remain") == "finished result"
+    assert clean_artifact_phrase("review readiness") == "review readiness"
+    assert clean_artifact_phrase("visible blockers") == "visible blockers"
+    assert singularize_last_word("input matches") == "input match"
+    assert singularize_last_word("review boxes") == "review box"
+    assert generated_public_copy_issues("sample", "The catalog owns the entities records attach to.") == (
+        "sample leaked malformed relation phrase",
+    )
+
+
+def test_greenfield_narrative_component_spec_avoids_relation_tail_and_status_clip() -> None:
+    contract = {
+        "owned_state": "Lifecycle fixture live final, live final result, reference entity record.",
+        "accepted_inputs": "Lifecycle fixture live final input, prior state, validation context.",
+        "produced_outputs": "Lifecycle fixture live final result, state update, blocked-state detail.",
+        "states_or_transitions": "open, scheduled, live, final, blocked, ready-for-next-step",
+        "outside_boundary": "adjacent component state, upstream source truth, release approval.",
+        "local_proof": [
+            "Successful path evidence for Reference Service: live final result, required inputs, visible result, and reviewer explanation.",
+            "Blocked input evidence for Reference Service: missing or malformed input, stops before a trusted result, and recovery explanation.",
+            "Replay evidence for Reference Service: actor, input facts, status, explanation, and proof trail.",
+        ],
+        "upstream_truth": "Accepted first-path input.",
+        "downstream_consumers": "Release review.",
+        "unique_failure": "Reference Service can mislead users if live final result is missing or stale.",
+    }
+
+    spec = build_component_spec(
+        component_id="reference-service",
+        label="Reference Service",
+        path="src/example/reference_service",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-002",),
+        diagrams=("D-002",),
+        responsibility="the entities records attach to",
+        component_contract=contract,
+    )
+    issues = greenfield_rendered_package_quality_issues(
+        SimpleNamespace(
+            proposal={},
+            rendered_component_specs={"Reference Service": spec},
+        )
+    )
+
+    assert "Accepted intent centers this component on the stated relationship" in spec
+    assert "the entities records attach to." not in spec
+    assert not [issue for issue in issues if "clipped or dangling phrase ending" in issue]
 
 
 def test_greenfield_component_spec_renderer_rejects_mechanical_contract_dump() -> None:

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.prose_grammar import finite_action_clause
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import reference_relation_description
 from odylith.runtime.governance import artifact_tribunal
 from odylith.runtime.governance import component_spec_rendering
 from odylith.runtime.governance import owned_surface_refresh
@@ -153,10 +154,13 @@ def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
     ).strip(" .")
     text = component_spec_rendering.sentence_fragment(responsibility)
     first_clause = re.split(r"\s*;\s*", text, maxsplit=1)[0] if text else ""
+    relation = reference_relation_description(first_clause)
+    if relation:
+        return relation
     if label_focus and _starts_with_finite_action(first_clause):
         action_object = _finite_action_object(first_clause)
         if action_object:
-            return action_object
+            return reference_relation_description(action_object) or action_object
         return label_focus
     first_clause = re.split(r"\b(?:accepts?|produces?|prevents?|blocks?)\b", first_clause, maxsplit=1, flags=re.IGNORECASE)[0]
     first_clause = re.sub(
@@ -165,6 +169,9 @@ def _registry_focus_phrase(*, label: str, responsibility: str) -> str:
         first_clause,
         flags=re.IGNORECASE,
     ).strip(" .,:;")
+    relation = reference_relation_description(first_clause)
+    if relation:
+        return relation
     if first_clause and 2 <= len(first_clause.split()) <= 16 and not re.search(r"\b(?:actor identity|validation context|upstream handoff|blocker signal|downstream handoff)\b", first_clause, re.IGNORECASE):
         return first_clause
     return label_focus or label_text or "this boundary"

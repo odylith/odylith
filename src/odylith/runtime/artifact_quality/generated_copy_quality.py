@@ -109,6 +109,8 @@ def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
             findings.append(GeneratedCopyFinding("malformed_component_responsibility", f"{scope} leaked malformed component responsibility prose"))
         if _has_malformed_relative_clause_split(lowered):
             findings.append(GeneratedCopyFinding("malformed_relative_clause_split", f"{scope} leaked malformed relative-clause split prose"))
+        if _has_malformed_relation_phrase(text):
+            findings.append(GeneratedCopyFinding("malformed_relation_phrase", f"{scope} leaked malformed relation phrase"))
     return unique_text(finding.message for finding in findings)
 
 
@@ -140,6 +142,18 @@ def _continues_title_after_role(value: Any, offset: int) -> bool:
 
 def _has_mechanical_actor_path_clause(tokens: tuple[str, ...]) -> bool:
     return _has_ordered_terms(tokens, ("can", "act", "accepted", "path", "requires"), max_gap=3)
+
+
+def _has_malformed_relation_phrase(value: str) -> bool:
+    return bool(
+        re.search(
+            r"\b(?:entities|entity)\s+"
+            r"[a-z0-9][a-z0-9 '-]{1,80}?\s+"
+            r"(?:attach(?:es|ed)?|belong(?:s|ed)?|connect(?:s|ed)?|link(?:s|ed)?|map(?:s|ped)?|relate(?:s|d)?)\s+"
+            r"(?:against|around|for|from|into|to|toward|towards|with)\b",
+            clean_text(value).casefold(),
+        )
+    )
 
 
 def _has_expected_local_output_clause(tokens: tuple[str, ...]) -> bool:

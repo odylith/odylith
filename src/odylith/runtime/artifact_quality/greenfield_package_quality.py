@@ -41,7 +41,6 @@ _DANGLING_TAIL_WORDS = frozenset(
         "at",
         "because",
         "between",
-        "final",
         "for",
         "from",
         "into",
@@ -201,6 +200,10 @@ def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
         tokens = _word_tokens(chunk)
         if _has_clipped_terminal_modifier(tokens):
             issues.append(f"{artifact.identity} has clipped modifier phrase ending in `{tokens[-2]} {tokens[-1]}`")
+        if _has_clipped_terminal_final_phrase(chunk, tokens):
+            issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
+        if artifact.kind == "mermaid" and _has_clipped_terminal_key_label(chunk, tokens):
+            issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
         if artifact.kind == "mermaid" and tokens and tokens[-1].casefold().strip(".,;:'") == "blocking":
             issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
         if artifact.kind == "mermaid" and _has_clipped_terminal_action_label(chunk, tokens):
@@ -270,6 +273,8 @@ def _chunk_language_issues(artifact: RenderedArtifact, chunk: str) -> list[str]:
         issues.append(f"{artifact.identity} has a clipped article phrase ending in `{tokens[-1]}`")
     if tail in _DANGLING_TAIL_WORDS and not _allowed_terminal_preposition_phrase(lowered):
         issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
+    if _has_clipped_terminal_final_phrase(text, tokens):
+        issues.append(f"{artifact.identity} has a clipped or dangling phrase ending in `{tokens[-1]}`")
     return issues
 
 
@@ -277,6 +282,29 @@ def _allowed_terminal_preposition_phrase(lowered: Sequence[str]) -> bool:
     if len(lowered) < 2:
         return False
     return (lowered[-2].strip("'"), lowered[-1].strip("'")) in _ALLOWED_TERMINAL_PREPOSITION_BIGRAMS
+
+
+def _has_clipped_terminal_final_phrase(chunk: str, tokens: Sequence[str]) -> bool:
+    if not tokens:
+        return False
+    lowered = [token.casefold().strip(".,;:'") for token in tokens]
+    if lowered[-1] != "final":
+        return False
+    return not _allowed_terminal_final_state_phrase(str(chunk or ""), lowered)
+
+
+def _allowed_terminal_final_state_phrase(chunk: str, lowered: Sequence[str]) -> bool:
+    if len(lowered) < 3:
+        return False
+    previous = lowered[-2]
+    if previous == "to" and any(
+        token in {"draft", "from", "live", "move", "moved", "moves", "moving", "scheduled", "state", "status", "transition", "transitions"}
+        for token in lowered[:-2]
+    ):
+        return True
+    if "," in str(chunk or "") and any(token in {"draft", "live", "scheduled", "state", "status"} for token in lowered[:-1]):
+        return previous not in {"and", "or"}
+    return False
 
 
 def _coordinated_modal_drift_issues(
@@ -442,6 +470,13 @@ def _has_clipped_terminal_action_label(chunk: str, tokens: Sequence[str]) -> boo
     if tail.endswith("ing") and len(tail) > 5:
         return True
     return looks_like_action_clause(f"{tail} placeholder") and not looks_like_finite_action(f"{tail} placeholder")
+
+
+def _has_clipped_terminal_key_label(chunk: str, tokens: Sequence[str]) -> bool:
+    if not tokens or tokens[-1].casefold().strip(".,;:'") != "key":
+        return False
+    text = str(chunk or "").casefold()
+    return "," in text or re.search(r"\bwith\s+[^,]+,\s*key$", text)
 
 
 def _package_repetition_issues(package: Any, artifacts: list[RenderedArtifact]) -> list[str]:
@@ -639,7 +674,7 @@ def _narrative_chunks(value: str) -> list[str]:
         if in_code_fence or _skip_narrative_line(line):
             continue
         for index, char in enumerate(line):
-            if char in ".!?\n\r":
+            if _is_sentence_boundary_char(line, index):
                 _append_chunk(chunks, current)
                 current = []
             elif char in ",;" and not _punctuation_continues_connector_clause(line, index, current):
@@ -680,8 +715,8 @@ def _repetition_chunks(value: str) -> list[str]:
             continue
         if in_code_fence or _skip_narrative_line(line):
             continue
-        for char in line:
-            if char in ".!?\n\r":
+        for index, char in enumerate(line):
+            if _is_sentence_boundary_char(line, index):
                 _append_chunk(chunks, current)
                 current = []
             else:
@@ -738,6 +773,17 @@ def _append_chunk(chunks: list[str], chars: list[str]) -> None:
     text = normalize_string("".join(chars)).strip(" -#*_`|")
     if len(_word_tokens(text)) >= 2:
         chunks.append(text)
+
+
+def _is_sentence_boundary_char(line: str, index: int) -> bool:
+    char = line[index] if 0 <= index < len(line) else ""
+    if char in "?!\n\r":
+        return True
+    if char != ".":
+        return False
+    previous_char = line[index - 1] if index > 0 else ""
+    next_char = line[index + 1] if index + 1 < len(line) else ""
+    return not (previous_char.isdigit() and next_char.isdigit())
 
 
 def _append_short_chunk(chunks: list[str], chars: list[str]) -> None:

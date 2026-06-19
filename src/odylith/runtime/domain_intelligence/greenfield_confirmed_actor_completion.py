@@ -102,7 +102,7 @@ def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     for index, label in enumerate(labels):
         original = rows[index] if index < len(rows) else label
         description = actor_row_description(original)
-        if description and _actor_label(original, title=title).casefold() == label.casefold():
+        if description and _word_count(description) >= 4 and _actor_label(original, title=title).casefold() == label.casefold():
             completed.append(_preserve_deferred_scope(f"{label}: {description}", original))
             continue
         completed.append(

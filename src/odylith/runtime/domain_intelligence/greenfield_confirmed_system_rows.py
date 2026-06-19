@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms as _semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import reference_relation_description
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
@@ -250,6 +251,9 @@ def contains_generic_system_scaffold(system_rows: list[str]) -> bool:
 
 def _normalize_system_description(value: str) -> str:
     text = normalize_visible_result_language(_clean(value))
+    relation = reference_relation_description(text)
+    if relation:
+        return relation
     text = re.sub(r"^(?:hold|holds|holding)\s+", "maintains ", text, flags=re.IGNORECASE)
     text = re.sub(r"^combines?\s+reference\s+ranges?\s+with\b", "evaluates reference ranges against", text, flags=re.IGNORECASE)
     return _clean(text)
@@ -756,6 +760,9 @@ def _contextualized_system_body(*, name: str, body: str, context_text: str) -> s
 
 def _repair_system_description(*, name: str, description: str) -> str:
     text = normalize_visible_result_language(_clean(description)).strip(" .;:")
+    relation = reference_relation_description(text)
+    if relation:
+        return relation
     text = re.sub(r"^(?:and|or)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\bRelated path\s*:\s*[^.;]+[.;]?", "", text, flags=re.IGNORECASE).strip(" .;:")
     text = re.sub(r"^for\s+", "covers ", text, flags=re.IGNORECASE)

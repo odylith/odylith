@@ -11,19 +11,21 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import ROLEISH_T
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text, clean_text, normalize_visible_result_language, unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 ACTION_VERBS = (
     "accept", "adjust", "allocate", "apply", "approve", "assemble", "assign", "block", "build", "calculate", "capture",
-    "choose", "combine", "compare", "complete", "compute", "connect", "convert", "correlate", "create", "delete", "derive",
+    "check", "choose", "combine", "compare", "complete", "compute", "connect", "convert", "correlate", "create", "decide", "delete", "derive",
     "describe", "display", "draft", "edit", "estimate", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
-    "drill", "forecast", "flag", "highlight", "import", "inspect", "issue", "keep", "link", "leave", "log", "make", "maintain",
+    "drill", "forecast", "flag", "highlight", "import", "include", "inspect", "issue", "keep", "land", "link", "leave", "log", "make", "maintain",
     "manage", "normalize", "notify", "open", "optimize", "order", "move", "pair", "persist", "predict", "present",
     "prepare", "propose", "provide", "produce", "publish", "pull", "rank", "read", "receive", "recommend", "record", "render", "request",
-    "recompute", "resolve", "respond", "review", "route", "save", "schedule", "score", "see", "select", "send", "set", "show", "store",
-    "submit", "suggest", "summarize", "sync", "track", "update", "validate", "verify", "view",
+    "recompute", "resolve", "respond", "review", "route", "save", "schedule", "score", "see", "select", "send", "set", "settle", "show", "store",
+    "submit", "suggest", "summarize", "sync", "track", "update", "validate", "verify", "view", "watch",
 )
 
 GENERIC_TERMS = {
@@ -83,26 +85,21 @@ GENERIC_TERMS = {
 }
 
 ARTIFACT_CARRIER_TERMS = {
-    "alternative",
-    "alternatives",
-    "answer",
-    "answers",
-    "assignment",
-    "assignments",
-    "blocker",
-    "blockers",
-    "confirmation",
-    "confirmations",
-    "contact",
-    "contacts",
-    "criteria",
-    "context",
+    "alternative", "alternatives",
+    "answer", "answers",
+    "assignment", "assignments",
+    "blocker", "blockers",
+    "confirmation", "confirmations",
+    "contact", "contacts",
+    "criteria", "channel", "channels", "context", "data",
     "decision",
     "description",
     "descriptions",
     "detail",
     "details",
     "evidence",
+    "event",
+    "events",
     "field",
     "fields",
     "flag",
@@ -114,6 +111,7 @@ ARTIFACT_CARRIER_TERMS = {
     "history",
     "input",
     "inputs",
+    "intake",
     "journal",
     "journals",
     "ledger",
@@ -140,6 +138,7 @@ ARTIFACT_CARRIER_TERMS = {
     "preferences",
     "profile",
     "profiles",
+    "readiness",
     "recommendation",
     "recommendations",
     "rationale",
@@ -194,7 +193,13 @@ def clean_artifact_phrase(value: str) -> str:
     text = re.sub(r"\busing\s+(?:mocked|stubbed|simulated)\b.*$", "", text, flags=re.I)
     text = re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", text, flags=re.I)
     text = re.sub(r"^(?:release\s+)?good\s+enough\s+", "", text, flags=re.I)
-    text = re.sub(r"\b(?:accepted|confirmed|needed|received|requested|trusted|visible)\b", "", text, flags=re.I)
+    text = re.sub(r"\b(?:accepted|confirmed|needed|received|requested|trusted)\b", "", text, flags=re.I)
+    text = re.sub(
+        r"\bvisible\b(?!\s+(?:blockers?|evidence|outcomes?|results?|state|status|summaries|summary|timelines?|views?)\b)",
+        "",
+        text,
+        flags=re.I,
+    )
     text = re.sub(r"\bkeep(?:s|ing)?\s+", "", text, flags=re.I)
     text = re.sub(r"\bexplicit(?:ly)?\b", "", text, flags=re.I)
     text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.I)
@@ -234,6 +239,7 @@ def clean_artifact_phrase(value: str) -> str:
     text = re.sub(r"\s+", " ", text).strip(" .,;:")
     text = _normalize_fragmented_artifact_phrase(text)
     text = _normalize_misplaced_artifact_modifiers(text)
+    text = normalize_artifact_tail(text, carrier_terms=ARTIFACT_CARRIER_TERMS)
     text = _strip_relation_tail(text)
     text = re.sub(
         r"\b(?:accepted|confirmed|needed|received|requested|trusted|visible)\b$",
@@ -728,17 +734,6 @@ def canonical_action(value: str, action_nouns: Mapping[str, str]) -> str:
         if token in verb_forms(action):
             return action
     return token
-
-
-def singularize_last_word(value: str) -> str:
-    words = trim_phrase(value).split()
-    if not words:
-        return ""
-    if len(words[-1]) > 3 and words[-1].endswith("ies"):
-        words[-1] = f"{words[-1][:-3]}y"
-    elif len(words[-1]) > 3 and words[-1].endswith("s") and not words[-1].endswith("ss"):
-        words[-1] = words[-1][:-1]
-    return " ".join(words)
 
 
 def documentish_noun(value: str) -> str:

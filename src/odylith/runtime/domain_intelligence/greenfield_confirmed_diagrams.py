@@ -322,7 +322,7 @@ def _state_evidence_mermaid(
         f'  domain_state --> owner2["{diagram_text.escape_label(evidence_owner)}"]',
         f'  owner2 --> evidence_record["Evidence record<br/>{diagram_text.escape_label(diagram_text.trim(evidence_record, 62))}"]',
         f'  evidence_record --> owner3["{diagram_text.escape_label(review_owner)}"]',
-        f'  owner3 --> review["Proof check<br/>{diagram_text.escape_label(diagram_text.trim(proof_label, 82))}"]',
+        f'  owner3 --> review["Proof check<br/>{diagram_text.escape_label(diagram_text.trim(proof_label, 72))}"]',
         '  review --> correction["Blocked or corrected<br/>path stays visible"]',
         "  classDef personActionStyle fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
         "  classDef owner fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
@@ -412,6 +412,7 @@ def _proof_review_mermaid(
 ) -> str:
     proof_text = diagram_text.brief_proof_boundary(proof_boundary) or "promised user-visible result"
     proof_label = diagram_text.semantic_proof_checkpoint(semantic_model) or diagram_text.proof_checkpoint_label(proof_text) or "first-path evidence, state replay, blocked-path proof"
+    proof_label = diagram_text.diagram_sentence_label(proof_label) or proof_label
     outcome_label = diagram_text.semantic_visible_result_label(semantic_model) or proof_label or "promised outcome"
     evidence_label = diagram_text.proof_evidence_label(components=components, fallback=evidence_record)
     lines = [

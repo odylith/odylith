@@ -30,7 +30,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_c
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
@@ -375,7 +374,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     if not current_non_goals or _sequence_has_generic_non_goals(current_non_goals):
         extracted_non_goals = _non_goal_rows(intent, title=title)
         intent["non_goals"] = extracted_non_goals or [
-            f"Do not expand beyond {_scope_boundary_phrase(first_path, fallback=proof_capability)} until the first outcome works for a representative user.",
+            "Do not expand into adjacent workflows, personalized automation, or broader operational scale until the first outcome works for a representative user.",
             f"Do not claim adjacent automation, live dependency behavior, or broader operational scale until those outcomes are described and proven separately.",
         ]
     if not story:
@@ -390,30 +389,6 @@ def _story_problem_sentence(value: str) -> str:
         return ""
     first = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)[0].strip(" .")
     return first if _word_count(first) >= 10 else ""
-
-
-def _scope_boundary_phrase(first_path: str, *, fallback: str) -> str:
-    model = first_path_model(first_path)
-    steps = [_clean(step).strip(" .") for step in model.steps if _clean(step).strip(" .")]
-    selected = list(steps[-4:] if len(steps) >= 5 else steps)
-    visible = _clean(model.visible_outcome).strip(" .")
-    if visible and all(visible.casefold() != step.casefold() for step in selected):
-        selected.insert(0, visible)
-    tail = [_inline_scope_step(step) for step in selected]
-    path = ", ".join(tail).strip(" .")
-    if _word_count(path) >= 8:
-        return _short(path, limit=360)
-    return fallback
-
-
-def _inline_scope_step(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return ""
-    first = text.split(maxsplit=1)[0]
-    if first.isupper() or re.search(r"[a-z][A-Z]", first):
-        return text
-    return f"{text[:1].casefold()}{text[1:]}"
 
 
 def _decision_problem_phrase(outcome_text: str) -> str:

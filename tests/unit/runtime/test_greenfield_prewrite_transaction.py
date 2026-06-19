@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
@@ -1103,6 +1105,30 @@ def test_greenfield_package_gate_rejects_repeated_noncanonical_rendered_sentence
 
     assert not report.passed
     assert "repeats a noncanonical sentence" in "\n".join(report.issues)
+
+
+def test_greenfield_package_repetition_allows_semver_proof_boundary_source_text(tmp_path: Path) -> None:
+    repeated = (
+        "Version 0.0.1 is proven when a record moves across its full lifecycle, appears as a scheduled item, "
+        "shows a live status with an event timeline, and settles into a finished result that remains browsable."
+    )
+    package = SimpleNamespace(
+        proposal={"intent": {"title": "Lifecycle Review", "proof_boundary": repeated}},
+        backlog_result={
+            "idea_files": {
+                str(tmp_path / f"idea-{index}.md"): f"# Idea {index}\n\n{repeated}\n"
+                for index in range(1, 4)
+            }
+        },
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_preview={},
+        next_steps_preview={},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats a noncanonical sentence" not in "\n".join(issues)
 
 
 def test_greenfield_package_gate_rejects_staged_paths_in_accepted_project_preview(tmp_path: Path) -> None:

@@ -61,6 +61,24 @@ _DEFERRED_ACTOR_MARKERS = (
     "read-only",
     "separate release",
 )
+_SHORT_ACTOR_ROLE_WORDS = frozenset(
+    {
+        "actor",
+        "admin",
+        "administrator",
+        "applicant",
+        "coordinator",
+        "customer",
+        "editor",
+        "lead",
+        "manager",
+        "operator",
+        "owner",
+        "participant",
+        "reviewer",
+        "user",
+    }
+)
 
 
 def proof_claim_summary(value: str, *, limit: int = 260) -> str:
@@ -283,8 +301,19 @@ def _actor_title_head(value: str) -> str:
         if previous in {"individual", "person", "people", "user", "customer", "owner"}:
             words = words[:-1]
     if len(words) > 4:
-        words = words[:4]
+        words = words[:_actor_title_word_limit(words)]
     return " ".join(words).strip(" .")
+
+
+def _actor_title_word_limit(words: Sequence[str]) -> int:
+    if len(words) <= 4:
+        return len(words)
+    lowered = [word.casefold().strip(".,;:") for word in words]
+    if any(word in {"and", "or"} for word in lowered[:4]) and any(
+        word in _SHORT_ACTOR_ROLE_WORDS for word in lowered[4:6]
+    ):
+        return min(len(words), 6)
+    return 4
 
 
 def _label_head(value: str) -> str:
@@ -500,7 +529,7 @@ def _all_plain_title_label_words(value: str) -> bool:
     if any(_protected_actor_label_token(word) for word in words):
         return False
     return any(word[:1].isupper() for word in words) and all(
-        word[:1].isupper() or word.casefold() in {"and", "of", "on", "for", "in", "to", "with"}
+        word[:1].isupper() or word.casefold() in {"and", "of", "on", "or", "for", "in", "to", "with"}
         for word in words
     )
 

@@ -1004,9 +1004,11 @@ def test_rendered_package_quality_flags_clipped_mermaid_action_labels() -> None:
                     '  deferred1["Deferred scope<br/>Do not expand beyond opening the checklist, recording"]',
                     '  proof2["Proof checkpoint<br/>documents, comments, checks, and final"]',
                     '  proof3["Proof check<br/>a reviewer can complete one check, catch one blocking"]',
+                    '  proof4["Release proof<br/>one record moves forward, with score, key"]',
                     "  proof1 --> deferred1",
                     "  deferred1 --> proof2",
                     "  proof2 --> proof3",
+                    "  proof3 --> proof4",
                 ]
             )
         },
@@ -1018,6 +1020,7 @@ def test_rendered_package_quality_flags_clipped_mermaid_action_labels() -> None:
     assert "Atlas Mermaid `proof.mmd` has clipped action phrase ending in `recording`" in issues
     assert "Atlas Mermaid `proof.mmd` has a clipped or dangling phrase ending in `final`" in issues
     assert "Atlas Mermaid `proof.mmd` has a clipped or dangling phrase ending in `blocking`" in issues
+    assert "Atlas Mermaid `proof.mmd` has a clipped or dangling phrase ending in `key`" in issues
 
     noun_list_package = GreenfieldCompletionPackage(
         proposal={},
@@ -1034,6 +1037,36 @@ def test_rendered_package_quality_flags_clipped_mermaid_action_labels() -> None:
     noun_list_issues = greenfield_rendered_package_quality_issues(noun_list_package)
 
     assert not any("ending in `checks`" in issue for issue in noun_list_issues)
+
+
+def test_rendered_package_quality_allows_terminal_final_for_state_transitions_only() -> None:
+    valid = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_atlas_sources={
+            "proof.mmd": "\n".join(
+                [
+                    "flowchart LR",
+                    '  proof["Proof checkpoint<br/>one record moves from scheduled to live to final"] --> decision',
+                    '  decision["Release decision<br/>accept, revise, or block"] --> proof',
+                ]
+            )
+        },
+    )
+    clipped = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_atlas_sources={
+            "proof.mmd": "\n".join(
+                [
+                    "flowchart LR",
+                    '  proof["Proof checkpoint<br/>documents, comments, checks, final"] --> decision',
+                    '  decision["Release decision<br/>accept, revise, or block"] --> proof',
+                ]
+            )
+        },
+    )
+
+    assert not any("ending in `final`" in issue for issue in greenfield_rendered_package_quality_issues(valid))
+    assert any("ending in `final`" in issue for issue in greenfield_rendered_package_quality_issues(clipped))
 
 
 def test_greenfield_completion_package_report_fails_incomplete_prewrite_radar_bundle(tmp_path: Path) -> None:
@@ -1204,6 +1237,15 @@ def test_greenfield_apply_repairs_post_confirm_copy_failure_before_commit(tmp_pa
         return rendered
 
     monkeypatch.setattr(greenfield_apply_components, "render_prewrite_component_specs", corrupt_rendered_copy)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_refresh_greenfield_dashboard",
+        lambda **_kwargs: {
+            "status": "passed",
+            "surfaces": ["radar", "registry", "atlas", "compass", "tooling_shell"],
+            "view": "odylith/index.html?tab=project",
+        },
+    )
 
     result = greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,

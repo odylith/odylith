@@ -10,6 +10,9 @@ from typing import Any
 from odylith.runtime.common import display_text
 from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import RELATION_TAIL_WORDS
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import relation_object_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text, text_values, unique_text
 
 
@@ -264,6 +267,9 @@ def _accepted_intent_sentence(value: str) -> str:
         return ""
     text = re.sub(r"\s+[—-]\s+", ": ", text, count=1)
     text = re.sub(r"\s+", " ", text).strip(" .")
+    relation_sentence = _accepted_relation_sentence(text)
+    if relation_sentence:
+        return relation_sentence
     keep_match = re.match(r"^keeps?\s+(?P<body>.+)$", text, flags=re.I)
     if keep_match:
         body = _clean_fragment(keep_match.group("body"))
@@ -280,6 +286,16 @@ def _accepted_intent_is_low_signal(value: str) -> bool:
         or re.search(r"\bblocked states?\b", text)
         or re.search(r"\bnext-step context\b", text)
     )
+
+
+def _accepted_relation_sentence(value: str) -> str:
+    words = clean_text(value).casefold().strip(" .").split()
+    if len(words) < 3 or words[-1].strip(".,;:") not in RELATION_TAIL_WORDS:
+        return ""
+    body = relation_object_phrase(value)
+    if body and len(body.split()) >= 1 and not re.search(r"\b(?:thing|things|stuff)\b", body, flags=re.I):
+        return _sentence(f"Accepted intent centers this component on the stated relationship for {_lower_first(body)}")
+    return "Accepted intent centers this component on the stated relationship between product entities."
 
 
 def _state_narrative(
@@ -546,6 +562,7 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
         flags=re.I,
     )
     text = re.sub(r"\s+", " ", text).strip(" .;:,")
+    text = normalize_artifact_tail(text, carrier_terms=_CONTRACT_CARRIER_TERMS)
     if not text:
         return ""
     lowered = text.casefold()
@@ -575,6 +592,13 @@ def _clean_entity_item(value: str) -> str:
     if text.casefold() == "accepted input context":
         return "accepted first-path input"
     return text[:1].upper() + text[1:] if re.match(r"^[a-z]", text) and re.search(r"\b[A-Z][a-z]", value) else text
+
+
+_CONTRACT_CARRIER_TERMS = {
+    "answer", "case", "channel", "data", "decision", "detail", "entry", "event", "evidence", "field", "history",
+    "input", "intake", "ledger", "log", "note", "outcome", "output", "readiness", "record", "request", "result",
+    "review", "score", "state", "status", "summary", "timeline", "view",
+}
 
 
 def _fallback_phrase(values: Sequence[str], fallback: str) -> str:
