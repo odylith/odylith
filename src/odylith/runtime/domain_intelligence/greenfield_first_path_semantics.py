@@ -86,8 +86,7 @@ def _first_path_steps(value: str) -> list[str]:
     text = _clean(value)
     if not text:
         return []
-    for pattern in _FIRST_PATH_PREFIXES:
-        text = re.sub(pattern, "", text, flags=re.IGNORECASE).strip()
+    text = _strip_first_path_frame(text)
     text = re.sub(r"\bthat\s+single\s+loop\s*[–—-]\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(
         r"(?:^|(?<=[.!?])\s+)(?:this|that)\s+(?:single\s+)?(?:path|loop|journey|flow)\s+[–—-]\s*.*$",
@@ -130,6 +129,31 @@ def _first_path_steps(value: str) -> list[str]:
     if len(normalized) > 1 and _is_trivial_start(normalized[0]):
         normalized = normalized[1:]
     return _unique(normalized)
+
+
+def _strip_first_path_frame(value: str) -> str:
+    text = _clean(value).strip()
+    for pattern in _FIRST_PATH_PREFIXES:
+        text = re.sub(pattern, "", text, flags=re.IGNORECASE).strip()
+    if ":" not in text:
+        return text
+    head, tail = text.split(":", 1)
+    if _first_path_frame_head(head) and len(label_terms(tail)) >= 3:
+        return tail.strip(" .:")
+    return text
+
+
+def _first_path_frame_head(value: str) -> bool:
+    words = {
+        word.strip(".,:;()[]{}").casefold()
+        for word in _clean(value).replace("-", " ").split()
+        if word.strip(".,:;()[]{}")
+    }
+    if "path" not in words:
+        return False
+    if not words & {"first", "release", "complete", "accepted"}:
+        return False
+    return bool(words & {"prove", "proves", "proven", "show", "shows", "demonstrate", "demonstrates", "validate", "validates"})
 
 
 def _material_action(steps: Sequence[str]) -> str:

@@ -378,7 +378,8 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
         metric_outcome_action = _outcome_action_phrase(outcome_text)
         intent["success_metrics"] = [
-            f"The first release proves the first path: {proof_capability}; users can {metric_outcome_action} without manual interpretation outside the product.",
+            f"The first release proves the first path: {proof_capability}.",
+            f"Users can {metric_outcome_action} without manual interpretation outside the product.",
             f"The product handles missing or incorrect input by explaining what must be fixed before {outcome_text} is treated as real.",
             _proof_boundary_metric(proof, outcome=outcome_text),
         ]

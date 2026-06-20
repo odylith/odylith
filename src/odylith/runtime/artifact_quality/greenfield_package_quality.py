@@ -30,6 +30,7 @@ class RenderedArtifact:
 
 
 _BASE_FORM_CONTEXTS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "to", "will", "would"})
+_TO_NOUN_PRECEDER_VERBS = frozenset({"adds", "attaches", "connects", "links", "maps", "points", "relates", "replies", "responds", "routes", "sends"})
 _PREPOSITION_BASE_CONTEXTS = frozenset()
 _DANGLING_TAIL_WORDS = frozenset(
     {
@@ -77,7 +78,7 @@ _MID_SENTENCE_CAPITALIZED_PRONOUNS = frozenset({"Her", "His", "Its", "Our", "The
 _POSSESSIVE_PRONOUNS = frozenset({"her", "his", "its", "our", "their", "your"})
 _OBJECT_MARKERS = frozenset({"a", "an", "one", "the", "their", "this"})
 _TITLE_CONNECTOR_WORDS = frozenset({"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"})
-_LOWERCASE_FRAGMENT_STARTS = frozenset({"and", "for", "from", "or", "to", "with", "without"})
+_LOWERCASE_FRAGMENT_STARTS = frozenset({"and", "for", "from", "or", "to", "users", "with", "without"})
 _TERMINAL_MODIFIER_WORDS = frozenset(
     {
         "actionable",
@@ -96,7 +97,7 @@ _TERMINAL_MODIFIER_WORDS = frozenset(
 )
 _TERMINAL_MODIFIER_PRECEDERS = frozenset({"a", "an", "one", "the", "this", "that"})
 _TERMINAL_ARTICLE_WORDS = frozenset({"a", "an", "that", "the", "their", "this"})
-_INVALID_INFLECTIONS = frozenset({"flaging", "intaked", "seted"})
+_INVALID_INFLECTIONS = frozenset({"flaging", "intaked", "runing", "seted", "stoping"})
 _VAGUE_MISSING_SUBJECTS = frozenset({"anything", "something", "stuff", "things"})
 _CAPITALIZED_CLAUSE_STARTERS = frozenset({"How", "What", "When", "Where", "Whether", "Who", "Why"})
 _MERMAID_EDGE_OPERATORS = ("-->>", "-.->", "==>", "-->", "->>", "---")
@@ -193,6 +194,8 @@ def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
         issues.append(f"{artifact.identity} uses an open scope question as a boundary clause")
     if _has_clipped_boundary_phrase(artifact.text):
         issues.append(f"{artifact.identity} has clipped boundary phrase")
+    if _has_repeated_visible_result_tail(artifact.text):
+        issues.append(f"{artifact.identity} repeats the same visible result inside one sentence")
     for token in _word_tokens(artifact.text):
         if token.casefold().strip("'") in _INVALID_INFLECTIONS:
             issues.append(f"{artifact.identity} has invalid verb inflection near `{token}`")
@@ -247,7 +250,7 @@ def _chunk_language_issues(artifact: RenderedArtifact, chunk: str) -> list[str]:
     lowered = [token.casefold() for token in tokens]
     for index, token in enumerate(lowered[:-1]):
         next_token = lowered[index + 1]
-        if token in _BASE_FORM_CONTEXTS and _looks_like_finite_verb(next_token):
+        if token in _BASE_FORM_CONTEXTS and _looks_like_finite_verb(next_token) and not _looks_like_to_plural_noun_context(lowered, index):
             issues.append(f"{artifact.identity} has modal/base-form grammar drift near `{tokens[index]} {tokens[index + 1]}`")
         if token in _PREPOSITION_BASE_CONTEXTS and _looks_like_finite_verb(next_token):
             issues.append(f"{artifact.identity} has preposition/action grammar drift near `{tokens[index]} {tokens[index + 1]}`")
@@ -282,6 +285,14 @@ def _allowed_terminal_preposition_phrase(lowered: Sequence[str]) -> bool:
     if len(lowered) < 2:
         return False
     return (lowered[-2].strip("'"), lowered[-1].strip("'")) in _ALLOWED_TERMINAL_PREPOSITION_BIGRAMS
+
+
+def _looks_like_to_plural_noun_context(lowered: Sequence[str], index: int) -> bool:
+    if lowered[index].strip("'") != "to" or index <= 0 or index + 1 >= len(lowered):
+        return False
+    previous = lowered[index - 1].strip(".,;:'")
+    target = lowered[index + 1].strip(".,;:'")
+    return previous in _TO_NOUN_PRECEDER_VERBS and target.endswith("s")
 
 
 def _has_clipped_terminal_final_phrase(chunk: str, tokens: Sequence[str]) -> bool:
@@ -503,6 +514,60 @@ def _package_repetition_issues(package: Any, artifacts: list[RenderedArtifact]) 
             f"{len(identities)} artifacts: `{_clip(sample, 140)}`"
         )
     return issues
+
+
+def _has_repeated_visible_result_tail(value: str) -> bool:
+    for chunk in _repetition_chunks(value):
+        if _chunk_repeats_visible_result_tail(chunk):
+            return True
+    return False
+
+
+def _chunk_repeats_visible_result_tail(value: str) -> bool:
+    text = normalize_string(value)
+    if len(text.split()) < 12:
+        return False
+    for pattern in (
+        r",?\s+then\s+let\s+[^.;,]{1,120}?\s+(?:reach|see|use|view|read|receive)\s+(?P<tail>[^.;,]{18,180})",
+        r"\band\s+lets?\s+[^.;,]{1,120}?\s+(?:reach|see|use|view|read|receive)\s+(?P<tail>[^.;,]{18,180})",
+        r"\b(?:connects?|maps?|ties?)\s+[^.;]{1,220}?\s+to\s+(?P<tail>(?:a|an|the)\s+[^.;,]{18,180}?)(?:\s+without|\s+with|\s+before|[.;,]|$)",
+    ):
+        for match in re.finditer(pattern, text, flags=re.IGNORECASE):
+            tail_terms = _visible_result_tail_terms(match.group("tail"))
+            head_terms = _visible_result_tail_terms(text[: match.start()])
+            if len(tail_terms) >= 4 and tail_terms <= head_terms:
+                return True
+    return False
+
+
+def _visible_result_tail_terms(value: str) -> set[str]:
+    ignored = {
+        "and",
+        "can",
+        "get",
+        "gets",
+        "getting",
+        "reach",
+        "reaches",
+        "reaching",
+        "read",
+        "reads",
+        "receive",
+        "receives",
+        "see",
+        "sees",
+        "the",
+        "then",
+        "use",
+        "uses",
+        "user",
+        "users",
+        "view",
+        "views",
+        "with",
+        "without",
+    }
+    return {token.casefold().strip(".,;:'") for token in _word_tokens(value) if token.casefold().strip(".,;:'") not in ignored}
 
 
 def _allowed_structured_repetition_key(key: str) -> bool:

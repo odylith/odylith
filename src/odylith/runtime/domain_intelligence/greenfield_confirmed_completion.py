@@ -273,7 +273,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         label = completion_text.component_label(component, 0)
         state_object = completion_text.state_object(proposal)
         state_ref = completion_text.state_reference(proposal)
-        state_change_ref = completion_text.object_reference_phrase(state_ref)
+        state_change_ref = completion_text.object_reference_phrase(state_object) or completion_text.object_reference_phrase(state_ref)
         focus = completion_text.component_focus_phrase(label=label, contract=contract, fallback=state_object)
         action = completion_text.action_phrase(proposal)
         outcome = completion_text.outcome_phrase(proposal)

@@ -94,6 +94,7 @@ def normalize_visible_result_language(value: Any) -> str:
     text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.IGNORECASE)
     text = re.sub(r"\balongside\b", "with", text, flags=re.IGNORECASE)
     text = re.sub(r"\bmetrics?\s+(?:trended|moved)\s+with\b", "metrics changed with", text, flags=re.IGNORECASE)
+    text = _normalize_progress_status_terminal_result(text)
     text = re.sub(
         r"\bthe\s+tracked\s+metrics\s+(?:trended|moved)\s+with\b",
         "the tracked metrics changed with",
@@ -102,6 +103,28 @@ def normalize_visible_result_language(value: Any) -> str:
     )
     text = normalize_action_target_language(text)
     return clean_text(text)
+
+
+def _normalize_progress_status_terminal_result(value: str) -> str:
+    text = clean_text(value)
+    match = re.match(
+        r"^(?:display|displays|present|presents|render|renders|show|shows|surface|surfaces)\s+"
+        r"(?:the\s+)?(?:progress|status|current\s+state|result\s+status)"
+        r"\s*,?\s+and\s+(?P<tail>(?:ends?|finishes?|produces?|reaches?|returns?|shows?)\b.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return text
+    return clean_text(
+        re.sub(
+            r"^(?:ends?|finishes?|produces?|reaches?|returns?|shows?)\s+",
+            "",
+            match.group("tail").strip(" ."),
+            count=1,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _normalize_saved_destination_language(value: str) -> str:

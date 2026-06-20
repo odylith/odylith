@@ -7,6 +7,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import co
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import proof_checkpoint_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import semantic_proof_checkpoint
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 
@@ -174,6 +175,29 @@ def test_sequence_event_steps_stay_in_dedicated_owner() -> None:
         "Save result",
         "Show proof",
     ]
+
+
+def test_release_proof_frame_does_not_collapse_first_path_events() -> None:
+    first_path = (
+        "The first release proves one complete path: a home cook picks a recipe, "
+        "confirms ingredients are staged, starts the cooking run, follows prompts "
+        "when the robot needs input, and sees the run finish in a safe-to-serve "
+        "state with emergency stop available throughout."
+    )
+
+    model = first_path_model(first_path)
+    steps = sequence_event_steps(first_path, dedupe=True)
+
+    assert model.steps == (
+        "A home cook picks a recipe",
+        "A home cook confirms ingredients are staged",
+        "A home cook starts the cooking run",
+        "A home cook follows prompts when the robot needs input",
+        "A home cook sees the run finish in a safe-to-serve state with emergency stop available throughout",
+    )
+    assert model.visible_outcome == "See the run finish in a safe-to-serve state with emergency stop available throughout"
+    assert len(steps) == 5
+    assert steps[-1].startswith("A home cook sees the run finish")
 
 
 def test_sequence_diagram_term_routing_uses_shared_index() -> None:

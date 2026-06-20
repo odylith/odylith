@@ -330,14 +330,20 @@ def confirmed_backlog_rows(
         recipient=recipient_phrase,
     )
     first_slice_action = first_path_full_capability or first_path_action
-    outcome_terms = backlog_text.semantic_words(outcome_summary)
-    action_terms = backlog_text.semantic_words(first_slice_action)
-    outcome_already_covered = bool(outcome_terms and outcome_terms <= action_terms)
+    outcome_already_covered = backlog_text.result_terms_covered(outcome_summary, first_slice_action)
     if outcome_summary and not outcome_already_covered and not backlog_text.shares_product_terms(first_slice_action, outcome_summary):
         first_slice = f"Prove one first-release path: {first_path_proof_capability}, then let {recipient_phrase} {outcome_action}."
     else:
         first_slice = f"Prove one first-release path: {first_path_proof_capability}."
     first_slice = backlog_actions.dedupe_repeated_visible_result_tail(first_slice)
+    if backlog_text.result_terms_covered(outcome_summary, first_path_proof_capability):
+        result_metric = (
+            f"Success proof keeps {state_label} and {evidence_label} reviewable without adjacent scope being pulled into the release."
+        )
+    else:
+        result_metric = (
+            f"Success proof connects {first_path_proof_capability} to {outcome_summary} without adjacent scope being pulled into the release."
+        )
     workflow_action = backlog_actions.actor_interaction_action(
         first_path=first_path_for_clauses,
         actor=workflow_actor_label,
@@ -370,7 +376,7 @@ def confirmed_backlog_rows(
         first_slice=first_slice,
         metrics=[
             *(success_metrics or [])[:1],
-            f"Success proof connects {first_path_proof_capability} to {outcome_summary} without adjacent scope being pulled into the release.",
+            result_metric,
             f"{state_responsibility} remains understandable when input is accepted, blocked, corrected, or reviewed.",
             f"{proof_component} keeps the success evidence replayable so a reviewer can see what happened and why.",
         ],
@@ -416,7 +422,11 @@ def confirmed_backlog_rows(
             f"{workflow_outcome_action}{workflow_missing_input_tail}."
         ),
         metrics=[
-            f"The first interaction proves {first_path_proof_capability} and lets {recipient_phrase} {outcome_action}.",
+            (
+                f"The first interaction proves {first_path_proof_capability} with success, blocked-input, replay, and handoff evidence."
+                if backlog_text.result_terms_covered(outcome_action, first_path_proof_capability)
+                else f"The first interaction proves {first_path_proof_capability} and lets {recipient_phrase} {outcome_action}."
+            ),
             "Missing or invalid information produces clear correction guidance instead of a misleading result.",
             f"{follow_up_subject} can use the saved context without asking the user to repeat the same details.",
         ],
@@ -558,7 +568,7 @@ def _mentions_actor_label(value: str, labels: list[str]) -> bool:
 def _parent_opportunity_sentence(*, capability: str, outcome_action: str, state_label: str, recipient: str) -> str:
     if outcome_action and not _terms_covered(outcome_action, capability):
         return f"Prove the first release path: {capability}, then let {recipient} {outcome_action}."
-    return f"Prove the first release path: {capability} with reviewable {state_label}."
+    return f"Prove the first release path: {capability}. Keep {state_label} reviewable through success, blocked, and replay evidence."
 
 
 def _parent_product_view_sentence(*, label: str, capability: str, outcome_action: str, state_label: str, recipient: str) -> str:
@@ -574,10 +584,7 @@ def _parent_product_view_sentence(*, label: str, capability: str, outcome_action
 
 
 def _terms_covered(needle: str, haystack: str) -> bool:
-    needle_terms = backlog_text.semantic_words(needle)
-    if not needle_terms:
-        return False
-    return needle_terms <= backlog_text.semantic_words(haystack)
+    return backlog_text.result_terms_covered(needle, haystack)
 
 
 def _backlog_row(

@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -170,7 +171,8 @@ def build_greenfield_semantic_model(
     """Build the canonical semantic model that renderers must preserve."""
 
     first_actor = _actor_label(human_actors, fallback=f"{_clean(title) or 'Product'} user")
-    state_label = _clean(state_object) or f"{_clean(title) or 'Product'} state"
+    raw_state = _clean(state_object)
+    state_label = domain_object_label(raw_state, fallback="") or raw_state or f"{_clean(title) or 'Product'} state"
     path_contract = _first_path_contract(
         actor=first_actor,
         state_object=state_label,
@@ -259,6 +261,7 @@ def _first_path_contract(
         proof_boundary=proof_boundary,
         fallback=_clean(model.visible_outcome) or "the first-path result",
     )
+    initial_visible_result = visible_result
     events = tuple(
         _first_path_events(
             model.steps,
@@ -268,6 +271,17 @@ def _first_path_contract(
             visible_result=visible_result,
         )
     )
+    visible_result = _reconciled_visible_result(visible_result, model_visible=model.visible_outcome, events=events)
+    if visible_result != initial_visible_result:
+        events = tuple(
+            _first_path_events(
+                model.steps,
+                actor=actor,
+                state_object=state_object,
+                human_actors=human_actors,
+                visible_result=visible_result,
+            )
+        )
     contract_actor = events[0].actor if events and events[0].actor else actor
     state_reference = object_reference_phrase(domain_object_label(state_object, fallback=state_object)) or _clean(state_object)
     return FirstPathContract(
@@ -284,6 +298,32 @@ def _first_path_contract(
         raw_path=_clean(first_path),
         events=events,
     )
+
+
+def _reconciled_visible_result(
+    visible_result: str,
+    *,
+    model_visible: str,
+    events: Sequence[FirstPathEvent],
+) -> str:
+    current = _clean(visible_result)
+    terminal = next((event for event in reversed(events) if event.visible_result), None)
+    if terminal is None:
+        return current
+    terminal_result = visible_result_object(terminal.text) or _clean(model_visible)
+    terminal_result = _clean(terminal_result).strip(" .")
+    if not terminal_result or len(ordered_terms(terminal_result, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)) < 2:
+        return current
+    if not current:
+        return terminal_result
+    if _accepted_result_matches_step(terminal.text, current):
+        return current
+    matched_event = next((event for event in events if _accepted_result_matches_step(event.text, current)), None)
+    if matched_event and terminal.index > matched_event.index:
+        return terminal_result
+    if terminal.index == len(events) and len(ordered_terms(current, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)) <= 4:
+        return terminal_result
+    return current
 
 
 def _first_path_events(

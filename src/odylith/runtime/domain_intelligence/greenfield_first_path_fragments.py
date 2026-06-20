@@ -13,8 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects import saved_destination_result_object
-from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
-from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text, clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 TRIVIAL_START_RE = re.compile(
@@ -31,20 +30,15 @@ TRIVIAL_AUTH_RE = re.compile(
     r"^(?:a|an|the)?\s*[^,.;]{0,60}?\b(?:authenticates?|logs?\s+in|signs?\s+in)\b\s*$",
     re.IGNORECASE,
 )
+MATERIAL_ACTION_RE = re.compile(rf"(?<![A-Za-z0-9_-])(?:{action_verb_pattern()})(?![A-Za-z0-9_-])", re.IGNORECASE)
 
-MATERIAL_ACTION_RE = re.compile(rf"\b(?:{action_verb_pattern()})\b", re.IGNORECASE)
-
-_ACTOR_SIGNATURE_STOPWORDS = frozenset(
-    {"a", "an", "the", "one", "this", "that", "each", "another", "can"}
-)
+_ACTOR_SIGNATURE_STOPWORDS = frozenset({"a", "an", "the", "one", "this", "that", "each", "another", "can"})
 _PRESERVED_SHORT_ACTOR_TERMS = frozenset({"ai", "ml", "ui", "ux"})
-
 def visible_action_clause(value: str) -> str:
     text = strip_action_subject(clean_visible_result_phrase(value) or clean_first_path_text(value))
     if re.match(r"^(?:gets?|reads?|receives?|sees?|views?)\b", text, flags=re.IGNORECASE):
         return action_chain_fragment(text)
     return ""
-
 def is_system_generated_action(value: str) -> bool:
     """Return whether a first-path clause describes internal processing, not a user capability."""
 
@@ -85,6 +79,12 @@ def clean_visible_result_phrase(value: str) -> str:
         return ""
     text = re.sub(r"^on\s+save,\s*", "", text, flags=re.IGNORECASE)
     text = normalize_visible_result_language(text)
+    text = re.sub(
+        r"^.*?\b(?:display|displays|present|presents|render|renders|show|shows|surface|surfaces)\s+(?:the\s+)?(?:progress|status|current\s+state|result\s+status)\s*,?\s+and\s+(?:ends?|finishes?|produces?|reaches?|returns?|shows?)\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
     text = re.sub(
         r"\s+[–—-]\s+is\s+the\s+smallest\s+version\s+of\s+the\s+whole\s+product\b.*$",
         "",
@@ -358,6 +358,8 @@ def outcome_capability_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     if not text:
         return ""
+    if re.match(r"^(?:a|an|the)\s+", text, flags=re.IGNORECASE):
+        return f"see {lowercase_leading_article(text)}".strip(" .")
     fragment = action_chain_fragment(text)
     if fragment and MATERIAL_ACTION_RE.match(fragment):
         return fragment
@@ -380,16 +382,17 @@ def strip_action_subject(value: str) -> str:
                 flags=re.IGNORECASE,
             )
             or re.search(r"\b(?:app|application|dashboard|engine|product|service|system|view|workspace)\b", prefix, flags=re.IGNORECASE)
-            or (
-                re.match(r"^(?:a|an|the|one)\s+", prefix, flags=re.IGNORECASE)
-                and not re.search(
-                    r"\b(?:app|application|dashboard|engine|product|service|system|view|workspace)\b",
-                    prefix,
-                    flags=re.IGNORECASE,
+                or (
+                    re.match(r"^(?:a|an|the|one)\s+", prefix, flags=re.IGNORECASE)
+                    and not re.search(
+                        r"\b(?:app|application|dashboard|engine|product|service|system|view|workspace)\b",
+                        prefix,
+                        flags=re.IGNORECASE,
+                    )
+                    and not re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", prefix, flags=re.IGNORECASE)
                 )
-            )
-        ):
-            text = text[match.start() :]
+            ):
+                text = text[match.start() :]
     return text
 
 def actor_signature(value: str) -> str:
@@ -551,6 +554,7 @@ _GERUND_ACTION_VERBS = {
     "returns": "returning",
     "review": "reviewing",
     "reviews": "reviewing",
+    "run": "running", "runs": "running",
     "save": "saving",
     "saves": "saving",
     "see": "seeing",
@@ -565,6 +569,7 @@ _GERUND_ACTION_VERBS = {
     "shows": "showing",
     "store": "storing",
     "stores": "storing",
+    "stop": "stopping", "stops": "stopping",
     "submit": "submitting",
     "submits": "submitting",
     "surface": "surfacing",
@@ -584,7 +589,6 @@ def gerund_action_fragment(value: str) -> str:
     text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
     text = action_chain_fragment(text) or text
     return _gerund_following_action_verbs(text).strip(" ,.") or _lower_initial_for_fragment(text)
-
 def _lower_initial_for_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" ,.")
     if not text:
@@ -630,6 +634,9 @@ def _gerund_segment_actions(value: str) -> str:
             continue
         converted.append(word)
         if token in {"and", "or"}:
+            convert_next_action = True
+            connector_pending = True
+        elif word.rstrip().endswith(",") and converted_action_seen:
             convert_next_action = True
             connector_pending = True
         elif token.endswith("ly") and convert_next_action:

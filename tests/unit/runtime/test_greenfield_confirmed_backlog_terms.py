@@ -82,6 +82,10 @@ def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generi
         normalize_artifact_tail("public match summary correction final", carrier_terms={"summary", "status"})
         == "public match summary correction final status"
     )
+    assert (
+        normalize_artifact_tail("field intake with attribution command", carrier_terms={"command", "intake"})
+        == "field intake with attribution command"
+    )
 
     lines = rationale_lines(
         label="Cooking Robot Controller",

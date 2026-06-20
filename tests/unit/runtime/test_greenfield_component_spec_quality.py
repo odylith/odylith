@@ -798,9 +798,154 @@ def test_greenfield_narrative_component_spec_avoids_relation_tail_and_status_cli
         )
     )
 
-    assert "Accepted intent centers this component on the stated relationship" in spec
+    assert "Accepted intent centers Reference Service on the stated relationship" in spec
     assert "the entities records attach to." not in spec
     assert not [issue for issue in issues if "clipped or dangling phrase ending" in issue]
+
+
+def test_decision_component_specs_do_not_repeat_generic_opening_sentence() -> None:
+    specs: dict[str, str] = {}
+    for label in ("Recipe Decision Service", "Safety Decision Service", "Recovery Decision Service"):
+        specs[label] = build_narrative_component_spec(
+            component_id=label.casefold().replace(" ", "-"),
+            label=label,
+            path=f"src/example/{label.casefold().replace(' ', '_')}",
+            kind="service",
+            status="planned",
+            sources=("user_intent",),
+            workstreams=("B-002",),
+            diagrams=("D-002",),
+            responsibility="turns prepared evidence into a decision with rationale and blocked-state detail",
+            component_contract={
+                "owned_state": f"{label} state, rationale, blocked-state detail, and review evidence",
+                "accepted_inputs": "prepared evidence, prior state, authorized actor, and validation context",
+                "produced_outputs": "decision result, rationale, and blocked-state detail",
+                "states_or_transitions": "open, evaluated, blocked, revised, and ready-for-next-step",
+                "outside_boundary": "upstream source truth and final release approval",
+                "local_proof": [
+                    f"Successful path evidence for {label}: decision result, visible result, and persisted explanation.",
+                    f"Blocked input evidence for {label}: invalid input, no misleading result, and recovery explanation.",
+                    f"Replay evidence for {label}: actor, input facts, decision result, rationale, and proof trail.",
+                ],
+                "upstream_truth": "Prepared evidence",
+                "downstream_consumers": "Release review",
+                "unique_failure": f"{label} can mislead users if rationale is missing or stale.",
+            },
+        )
+
+    issues = greenfield_rendered_package_quality_issues(
+        SimpleNamespace(
+            proposal={},
+            rendered_component_specs=specs,
+        )
+    )
+    rendered = "\n".join(specs.values())
+
+    assert "The spec should stay focused on" not in rendered
+    assert "repeats a noncanonical sentence" not in "\n".join(issues)
+
+
+def test_component_specs_use_label_role_before_generic_decision_terms() -> None:
+    specs = {
+        label: build_narrative_component_spec(
+            component_id=label.casefold().replace(" ", "-"),
+            label=label,
+            path=f"src/example/{label.casefold().replace(' ', '_')}",
+            kind="service",
+            status="planned",
+            sources=("user_intent",),
+            workstreams=("B-002",),
+            diagrams=("D-002",),
+            responsibility="keeps local state, rationale, blocked-state detail, and handoff proof reviewable",
+            component_contract={
+                "owned_state": f"{label} state, required inputs, blocked-case evidence, and handoff proof",
+                "accepted_inputs": "accepted input facts, prior state, authorized actor, and validation context",
+                "produced_outputs": "result, rationale, blocked-state detail, and next-step handoff",
+                "states_or_transitions": (
+                    "staged, selected state, prompted, requested state, received state, accepted state, "
+                    "applied, checked, completed state, created, and decided"
+                ),
+                "outside_boundary": "upstream source truth and final release approval",
+                "local_proof": [
+                    f"Successful path evidence for {label}: local state, required inputs, visible result, and reviewer explanation.",
+                    f"Blocked input evidence for {label}: invalid input, no misleading result, and recovery explanation.",
+                    f"Replay evidence for {label}: actor, input facts, status, and proof trail.",
+                ],
+                "upstream_truth": "Accepted input context",
+                "downstream_consumers": "Release review",
+                "unique_failure": f"{label} can mislead users if local state is missing or stale.",
+            },
+        )
+        for label in (
+            "Ingredient Readiness Service",
+            "Cooking Run Orchestration Service",
+            "Safety Stop and Recovery Service",
+        )
+    }
+    rendered = "\n".join(specs.values())
+
+    assert "Ingredient Readiness Service checks whether the next product step has the conditions it needs" in rendered
+    assert "Cooking Run Orchestration Service coordinates the ordered work that moves the first path forward" in rendered
+    assert "Safety Stop and Recovery Service protects the first path when an unsafe, invalid, or blocked condition appears" in rendered
+    assert "turns prepared evidence into a product outcome" not in rendered
+    assert "the important lifecycle is staged, selected state, prompted" not in rendered
+    assert "the lifecycle should make accepted, blocked, corrected, completed, and handed-off states explicit" in rendered
+
+
+def test_component_contract_focus_does_not_clip_confirmed_first_path_tail() -> None:
+    contract = component_contract.ensure_component_contract(
+        {
+            "label": "Session Telemetry State Service",
+            "kind": "service",
+            "source_system_description": (
+                "owns session telemetry state that records the live cook state, required inputs, "
+                "blocked-case evidence links, and handoff boundaries for the confirmed first path"
+            ),
+        },
+        proposal={"title": "Example Product", "state_object": "Cook Session"},
+        previous_label="Safety Supervisor Service",
+        next_label="",
+    )
+    rendered = " ".join(str(value) for value in contract.values())
+
+    assert "handoff boundaries f" not in rendered
+    assert "handoff boundaries" in rendered
+
+
+def test_component_specs_suppress_generated_contract_boilerplate_as_accepted_intent() -> None:
+    spec = build_narrative_component_spec(
+        component_id="session-state",
+        label="Session State Service",
+        path="src/example/session_state",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-002",),
+        diagrams=("D-002",),
+        responsibility=(
+            "owns session state, required inputs, blocked-case evidence links, "
+            "and handoff boundaries for the confirmed first path"
+        ),
+        component_contract={
+            "owned_state": "session state, blocker, recovery note, and review evidence",
+            "accepted_inputs": "accepted input facts, prior state, authorized actor, and validation context",
+            "produced_outputs": "state update, blocked-state explanation, and next-step context",
+            "states_or_transitions": "accepted, blocked, corrected, completed, and handed-off",
+            "outside_boundary": "upstream source truth and final release approval",
+            "local_proof": [
+                "Successful path evidence for Session State Service: state update, visible result, and persisted explanation.",
+                "Blocked input evidence for Session State Service: invalid input, no misleading result, and recovery explanation.",
+                "Replay evidence for Session State Service: actor, input facts, status, and proof trail.",
+            ],
+            "upstream_truth": "Accepted input context",
+            "downstream_consumers": "Release review",
+            "unique_failure": "Session State Service can mislead users if state is missing or stale.",
+        },
+    )
+
+    assert "Accepted intent centers Session State Service on" not in spec
+    assert "blocked-case evidence links" not in spec
+    assert "handoff boundaries for the confirmed first path" not in spec
 
 
 def test_greenfield_component_spec_renderer_rejects_mechanical_contract_dump() -> None:

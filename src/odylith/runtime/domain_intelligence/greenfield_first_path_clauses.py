@@ -129,7 +129,8 @@ def _first_path_capability_text(
     included_visible_result = False
     visible_seen = False
     for step in steps:
-        fragment_key = action_chain_fragment(step).casefold()
+        fragment = action_chain_fragment(step)
+        fragment_key = fragment.casefold()
         if fragment_key and fragment_key in dash_detail_keys:
             continue
         if fragment_key and fragment_key in selected_fragments:
@@ -141,16 +142,16 @@ def _first_path_capability_text(
             continue
         if primary_actor and _actor_signature(step) and _actor_signature(step) != primary_actor and visible_seen:
             continue
-        if visible_object and _visible_outcome_covered(visible_object, model_visible_object):
-            included_visible_result = True
         if len(selected) >= max(1, max_fragments):
             break
-        if MATERIAL_ACTION_RE.search(step) or re.search(
+        if (fragment and _is_material_action_step(fragment)) or re.search(
             r"\b(?:display|displays|produce|produces|render|renders|return|returns|see|sees|show|shows|view|views|review|reviews|receive|receives)\b",
             step,
             re.IGNORECASE,
         ):
             selected.append(step)
+            if visible_object and _visible_outcome_covered(visible_object, model_visible_object):
+                included_visible_result = True
             if fragment_key:
                 selected_fragments.add(fragment_key)
         visible_seen = visible_seen or visible_step

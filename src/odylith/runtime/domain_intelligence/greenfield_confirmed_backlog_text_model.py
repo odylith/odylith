@@ -51,6 +51,34 @@ _PRODUCT_SHARE_STOPWORDS = _BACKLOG_TERM_STOPWORDS | frozenset(
         "user",
     }
 )
+_RESULT_ACTION_WORDS = frozenset(
+    {
+        "act",
+        "acts",
+        "acting",
+        "get",
+        "gets",
+        "getting",
+        "reach",
+        "reaches",
+        "reaching",
+        "read",
+        "reads",
+        "reading",
+        "receive",
+        "receives",
+        "receiving",
+        "see",
+        "sees",
+        "seeing",
+        "use",
+        "uses",
+        "using",
+        "view",
+        "views",
+        "viewing",
+    }
+)
 _DEFERRED_ACTOR_MARKERS = (
     "deferred",
     "fast-follow",
@@ -263,6 +291,19 @@ def state_changer_label(labels: Sequence[str], *, state_label: str) -> str:
 
 def semantic_words(value: str) -> set[str]:
     return set(ordered_terms(value, minimum=3, stopwords=_BACKLOG_TERM_STOPWORDS))
+
+
+def result_content_words(value: str) -> set[str]:
+    """Return result terms without generic transition or perception verbs."""
+
+    return semantic_words(value) - _RESULT_ACTION_WORDS
+
+
+def result_terms_covered(needle: str, haystack: str) -> bool:
+    needle_terms = result_content_words(needle)
+    if not needle_terms:
+        return False
+    return needle_terms <= result_content_words(haystack)
 
 
 def lead_actor_label(values: list[str]) -> str:
@@ -900,6 +941,8 @@ __all__ = [
     "proof_focus_phrase",
     "proof_title_object",
     "rationale_lines",
+    "result_content_words",
+    "result_terms_covered",
     "role_label_fragment",
     "semantic_words",
     "sentence_fragment",

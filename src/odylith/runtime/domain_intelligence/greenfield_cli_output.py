@@ -13,7 +13,7 @@ def print_apply_result(result: Mapping[str, Any], *, verb: str) -> None:
     print(f"- backlog: {len(result['backlog'])}")
     print(f"- components: {len(result['components'])}")
     print(f"- diagrams: {len(result['diagrams'])}")
-    print("- validation already run: proposal schema, product-quality gate, backlog checks, architecture scaffold, dashboard refresh")
+    print("- validation already run: proposal schema, product-quality gate, backlog checks, architecture scaffold, dashboard refresh attempt")
     program = result.get("program", {})
     if isinstance(program, Mapping) and bool(program.get("created")):
         print(f"- program: {program.get('umbrella_id')} ({len(program.get('waves', []))} waves)")
@@ -29,7 +29,13 @@ def print_apply_result(result: Mapping[str, Any], *, verb: str) -> None:
     dashboard = result.get("dashboard_refresh", {})
     if isinstance(dashboard, Mapping):
         surfaces = ", ".join(str(item) for item in dashboard.get("surfaces", []))
-        print(f"- dashboard: refreshed {surfaces}")
+        if dashboard.get("status") == "warning":
+            print(f"- dashboard: refresh warning for {surfaces}")
+            warning = str(dashboard.get("warning", "")).strip()
+            if warning:
+                print(f"- dashboard warning: {warning}")
+        else:
+            print(f"- dashboard: refreshed {surfaces}")
         print(f"- view: {dashboard.get('view')}")
         print("- reflected in: progress lane, workstreams, candidate component specs, and draft architecture topology")
 

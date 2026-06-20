@@ -19,8 +19,8 @@ from odylith.runtime.surfaces import compass_standup_brief_narrator
 _ACTION_LEAD_RE = re.compile(
     r"^(?:add|align|audit|backfill|bind|build|capture|carry|clean(?:\s+up)?|close|codify|collapse|"
     r"complete|convert|cut|define|deliver|document|enable|enforce|finish|harden|implement|introduce|"
-    r"keep|land|make|migrate|move|pull|publish|re-?add|reconcile|refresh|remove|replace|reuse|seed|"
-    r"ship|stabilize|stop|tighten|unify|update|validate|verify|wire)\b",
+    r"give|keep|land|let|make|migrate|move|prove|pull|publish|re-?add|reconcile|refresh|remove|replace|"
+    r"reuse|seed|ship|show|stabilize|stop|tighten|turn|unify|update|validate|verify|wire)\b",
     re.IGNORECASE,
 )
 
@@ -90,7 +90,16 @@ def _direction_fact_text(
     match_candidate = action.lstrip("`'\"“”‘’")
     if not _ACTION_LEAD_RE.match(match_candidate):
         action = f"land {action}"
+    if _direction_text_too_long(action):
+        return _sentence(f"{label} is {status_phrase}")
     return _sentence(f"{action}; {label} is {status_phrase}")
+
+
+def _direction_text_too_long(value: str) -> bool:
+    text = " ".join(str(value or "").split()).strip()
+    if len(text) > 150:
+        return True
+    return text.count(",") >= 3
 
 
 def _progress_fact_text(*, done_tasks: int, total_tasks: int, progress_story: str) -> str:

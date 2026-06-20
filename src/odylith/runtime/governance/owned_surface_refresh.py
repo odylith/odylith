@@ -12,7 +12,10 @@ from __future__ import annotations
 import contextlib
 from dataclasses import dataclass
 import io
+import os
 from pathlib import Path
+import sys
+import tempfile
 
 from odylith.runtime.common.command_surface import display_command
 from odylith.runtime.surfaces import dashboard_shell_links
@@ -91,23 +94,75 @@ def raise_for_failed_refreshes(
     detail: str = "",
 ) -> None:
     policies = _policies_for_surfaces(surfaces)
-    captured_output = io.StringIO()
-    with contextlib.redirect_stdout(captured_output):
-        refresh_rc = refresh_owned_surfaces(
-            repo_root=repo_root,
-            surfaces=tuple(policy.surface for policy in policies),
-        )
+    refresh_rc, refresh_output = _run_owned_surface_refresh_captured(repo_root=repo_root, policies=policies)
     if refresh_rc == 0:
         return
-    refresh_detail = " ".join(captured_output.getvalue().split())
+    refresh_detail = _compact_refresh_detail(refresh_output)
     suffix = f" {detail.strip()}" if str(detail).strip() else ""
     output_suffix = f" Refresh output: {refresh_detail}" if refresh_detail else ""
     surface_names = ", ".join(policy.surface for policy in policies)
     retry_commands = "; ".join(display_command(*policy.retry_command) for policy in policies)
     raise RuntimeError(
-        f"{operation_label.strip()} succeeded, but the {surface_names} surface refresh failed; "
+        f"{operation_label.strip()} succeeded, but the {surface_names} surface refresh did not fully complete; "
         f"retry with `{retry_commands}`.{suffix}{output_suffix}"
     )
+
+
+def _compact_refresh_detail(value: str, *, limit: int = 900) -> str:
+    detail = " ".join(str(value or "").split())
+    if not detail:
+        return ""
+    selected: list[str] = []
+    for marker in ("atlas auto-update failed", "dashboard refresh completed"):
+        index = detail.rfind(marker)
+        if index >= 0:
+            selected.append(detail[index:])
+    if selected:
+        detail = " ".join(selected)
+    if len(detail) <= limit:
+        return detail
+    return f"{detail[: max(0, limit - 20)].rstrip()} ... [truncated]"
+
+
+def _run_owned_surface_refresh_captured(
+    *,
+    repo_root: Path,
+    policies: tuple[OwnedSurfaceRefreshPolicy, ...],
+) -> tuple[int, str]:
+    """Run refresh with Python and subprocess stdout/stderr hidden from operator chat."""
+
+    stdout_fd = 1
+    stderr_fd = 2
+    try:
+        with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as captured:
+            sys.stdout.flush()
+            sys.stderr.flush()
+            saved_stdout = os.dup(stdout_fd)
+            saved_stderr = os.dup(stderr_fd)
+            try:
+                os.dup2(captured.fileno(), stdout_fd)
+                os.dup2(captured.fileno(), stderr_fd)
+                with contextlib.redirect_stdout(captured), contextlib.redirect_stderr(captured):
+                    refresh_rc = refresh_owned_surfaces(
+                        repo_root=repo_root,
+                        surfaces=tuple(policy.surface for policy in policies),
+                    )
+                    captured.flush()
+            finally:
+                os.dup2(saved_stdout, stdout_fd)
+                os.dup2(saved_stderr, stderr_fd)
+                os.close(saved_stdout)
+                os.close(saved_stderr)
+            captured.seek(0)
+            return refresh_rc, captured.read()
+    except OSError:
+        captured_output = io.StringIO()
+        with contextlib.redirect_stdout(captured_output), contextlib.redirect_stderr(captured_output):
+            refresh_rc = refresh_owned_surfaces(
+                repo_root=repo_root,
+                surfaces=tuple(policy.surface for policy in policies),
+            )
+        return refresh_rc, captured_output.getvalue()
 
 
 def dashboard_handoff(

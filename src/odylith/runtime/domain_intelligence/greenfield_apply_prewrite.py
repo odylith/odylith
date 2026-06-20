@@ -233,7 +233,7 @@ def _proposal_with_component_brief_gate(proposal: Mapping[str, Any]) -> dict[str
     result = dict(proposal)
     labels = [
         str(row.get("label", "")).strip()
-        for row in mapping_rows(result.get("components"))
+        for row in greenfield_apply_components.first_release_component_rows(result)
         if str(row.get("label", "")).strip()
     ]
     if not labels:

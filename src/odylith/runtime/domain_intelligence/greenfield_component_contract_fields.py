@@ -196,7 +196,7 @@ def proof_rows(
     ]
     if sibling_label:
         rows.append(
-            f"Handoff evidence for {sibling_label}: {sibling_label} can consume {handoff_focus} without owning or rewriting state owned by {label}."
+            f"Handoff evidence for {label}: {label} passes {handoff_focus} to {sibling_label} without letting either boundary rewrite the other's state."
             + (f" {sibling_focus} remains outside the boundary owned by {label}." if sibling_focus else "")
         )
     return rows

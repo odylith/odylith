@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_text import collect_delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.governance import backlog_authoring
 
 _REF_FIELDS = (
@@ -114,7 +115,7 @@ def build_traceability_plan(
     """Map confirmed proposal topology onto newly created governance IDs."""
 
     workstreams = _created_workstreams(proposal=proposal, created_backlog=created_backlog)
-    components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
+    components = active_release_components([row for row in proposal.get("components", []) if isinstance(row, Mapping)])
     diagrams = [row for row in proposal.get("diagrams", []) if isinstance(row, Mapping)]
     component_workstreams = {
         component_key(row): _component_workstream_ids(row=row, workstreams=workstreams)

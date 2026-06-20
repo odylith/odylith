@@ -92,7 +92,7 @@ _GENERATED_CONTRACT_MARKERS = (
 def differentiate_component_contracts(proposal: dict[str, Any], *, max_passes: int = 5) -> bool:
     """Repair interchangeable generated component contracts before quality gates run."""
 
-    components = dict_rows(proposal.get("components"))
+    components = _release_contract_rows(dict_rows(proposal.get("components")))
     if len(components) < 2:
         return False
     changed = False
@@ -243,7 +243,7 @@ def _axis_distinctive_terms(axis: ComponentAxis) -> set[str]:
 
 
 def _render_component_specs(proposal: Mapping[str, Any]) -> dict[str, str]:
-    rows = dict_rows(proposal.get("components"))
+    rows = _release_contract_rows(dict_rows(proposal.get("components")))
     specs: dict[str, str] = {}
     for index, row in enumerate(rows):
         label = _component_label(row, index)
@@ -533,6 +533,15 @@ def _adjacent_label(rows: Sequence[Mapping[str, Any]], index: int) -> str:
     if index < 0 or index >= len(rows):
         return ""
     return _component_label(rows[index], index)
+
+
+def _release_contract_rows(rows: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
+    selected = [row for row in rows if _component_is_release_selected(row)]
+    return selected or list(rows)
+
+
+def _component_is_release_selected(row: Mapping[str, Any]) -> bool:
+    return str(row.get("release_scope", "")).strip().casefold() not in {"deferred", "external", "out_of_scope"}
 
 
 def _contract_fingerprint(rows: Sequence[Mapping[str, Any]]) -> tuple[str, ...]:

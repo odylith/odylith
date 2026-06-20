@@ -1,0 +1,57 @@
+from __future__ import annotations
+
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
+
+
+def test_semantic_model_prefers_terminal_visible_outcome_over_mid_path_confirmation() -> None:
+    first_path = (
+        "The first release proves one complete path: a home cook picks a recipe, confirms ingredients are staged, "
+        "starts the cooking run, follows prompts when the robot needs input, and sees the run finish in a "
+        "safe-to-serve state with emergency stop available throughout."
+    )
+    proof_boundary = (
+        "The first release is proven when one recipe can move from selection to safe-to-serve completion with "
+        "staged-ingredient checks, live sensor validation, prompted user actions, emergency stop, replayable run "
+        "evidence, and clear failure handling."
+    )
+    model = build_greenfield_semantic_model(
+        title="Cooking Robot Controller",
+        state_object=(
+            "The product manages a cooking run, including the selected recipe, staged ingredients, "
+            "sensor readings, heat and timing state, operator prompts, safety stops, and final serve readiness."
+        ),
+        first_path=first_path,
+        proof_boundary=proof_boundary,
+        components=[],
+        human_actors=["Home Cook: selects dishes and responds to prompts"],
+    )
+    contract = model.first_path_contract
+
+    assert model.domain_ontology.state_object == "Cooking Run"
+    assert first_path_outcome_phrase(first_path, proof_boundary=proof_boundary) == (
+        "a safe-to-serve state with emergency stop available throughout"
+    )
+    assert contract.visible_result == "a safe-to-serve state with emergency stop available throughout"
+    assert [(event.action, event.visible_result) for event in contract.events] == [
+        ("picks", False),
+        ("confirms", False),
+        ("starts", False),
+        ("follows", False),
+        ("sees", True),
+    ]
+
+
+def test_outcome_selector_keeps_confirmed_user_result_before_downstream_handoff() -> None:
+    first_path = (
+        "The first complete path starts when a resident opens the web app, describes a repair, provides contact and "
+        "availability details, reviews an estimate window, selects an appointment slot, and submits the request. "
+        "The system confirms the booking, records the selected provider slot, shows the resident what happens next, "
+        "and makes the booking available for provider review."
+    )
+    proof_boundary = (
+        "A resident can create a repair request, choose a slot, receive a confirmed booking, and see the next step. "
+        "A provider-facing queue receives the booking with the required repair context."
+    )
+
+    assert first_path_outcome_phrase(first_path, proof_boundary=proof_boundary) == "a confirmed booking"

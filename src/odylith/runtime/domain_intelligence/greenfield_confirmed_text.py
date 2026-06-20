@@ -283,13 +283,19 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s*:",
         r"^(?:the\s+)?product\s+(?:captures?|keeps?|records?|stores?|tracks?)\s+"
         r"(?:(?:the|an|a)\s+)?(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
-        r"(?:with|containing|that|for)\b",
+        r"(?:with|containing|including|that|for)\b",
+        r"^(?:the\s+)?(?:product|system|app|application|workspace|service|platform|tool)\s+"
+        r"(?:manages?|maintains?|coordinates?|orchestrates?)\s+"
+        r"(?:(?:the|an|a)\s+)?(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s*"
+        r"(?:,\s*)?(?:with|containing|including|that|for)\b",
         r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:with|containing|that|for)\b",
         r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:holding|carrying|containing)\b",
         r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:tracks|records|stores|captures|moves|starts|changes)\b",
+        r"^(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
+        r"(?:tracks|records|stores|captures|keeps|holds|manages|maintains|coordinates|orchestrates)\b",
     )
     for pattern in patterns:
         match = re.search(pattern, dash_head, flags=re.IGNORECASE)
@@ -297,7 +303,7 @@ def domain_object_label(value: str, *, fallback: str) -> str:
             candidate = match.group("label").strip(" :.-")
             return _domain_label(candidate) or fallback
     if dash_head and not re.search(
-        r"\b(is|are|starts?|moves?|changes?|tracks?|records?|captures?|produces?|holding|carrying|containing)\b",
+        r"\b(is|are|starts?|moves?|changes?|tracks?|records?|captures?|produces?|manages?|maintains?|coordinates?|orchestrates?|holding|carrying|containing)\b",
         dash_head,
         re.IGNORECASE,
     ):
@@ -408,7 +414,7 @@ def state_detail_restates_label_with_finite_action(detail: str, *, state_label: 
         return False
     label_pattern = re.escape(label).replace(r"\ ", r"\s+")
     match = re.match(
-        rf"^(?:the|an|a|one)\s+{label_pattern}\s+(?P<tail>[A-Za-z][^.;]*)$",
+        rf"^(?:(?:the|an|a|one)\s+)?{label_pattern}\s+(?P<tail>[A-Za-z][^.;]*)$",
         clean_confirmed_text(detail).strip(" ."),
         flags=re.IGNORECASE,
     )
@@ -451,7 +457,12 @@ def _system_label(value: str) -> str:
         tail = head[split.start() :].strip(" .:-")
         if not _system_label_split_clips_noun_phrase(candidate, tail):
             head = candidate
-    return domain_object_label(head, fallback=head)
+    label = domain_object_label(head, fallback=head)
+    if [word.casefold() for word in label.split()[-1:]] in (["and"], ["or"]):
+        titled = title_label(head)
+        if word_count(titled) > word_count(label):
+            return titled
+    return label
 
 
 def _system_label_split_clips_noun_phrase(candidate: str, tail: str) -> bool:
@@ -710,6 +721,7 @@ _SYSTEM_LABEL_NOUNS = {
     "dashboard",
     "database",
     "engine",
+    "export",
     "flow",
     "gateway",
     "ledger",

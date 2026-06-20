@@ -245,15 +245,24 @@ _GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "toolin
 
 
 def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
-    owned_surface_refresh.raise_for_failed_refreshes(
-        repo_root=Path(repo_root).resolve(),
-        surfaces=_GREENFIELD_VISIBLE_SURFACES,
-        operation_label="Greenfield apply dashboard visibility",
-    )
+    view = owned_surface_refresh.dashboard_handoff(surface="project")
+    try:
+        owned_surface_refresh.raise_for_failed_refreshes(
+            repo_root=Path(repo_root).resolve(),
+            surfaces=_GREENFIELD_VISIBLE_SURFACES,
+            operation_label="Greenfield apply dashboard visibility",
+        )
+    except RuntimeError as exc:
+        return {
+            "status": "warning",
+            "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
+            "view": view,
+            "warning": str(exc),
+        }
     return {
         "status": "passed",
         "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
-        "view": owned_surface_refresh.dashboard_handoff(surface="project"),
+        "view": view,
     }
 
 

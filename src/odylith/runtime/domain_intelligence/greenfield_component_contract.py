@@ -157,7 +157,7 @@ def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str
         )
     if _is_status_view(label, owned):
         return _sentence(
-            f"Presents {_component_subject(label)}, review status, blocker context, and handoff evidence without rewriting source records"
+            f"Keeps {_component_subject(label)}, blocker context, and handoff evidence visible without rewriting source records"
         )
     subject = _component_subject(label)
     if primary and failure:
@@ -418,12 +418,21 @@ def _action_object_phrase(description: str) -> str:
         action,
         flags=re.IGNORECASE,
     ).strip(" .")
+    text = re.sub(r"\s+for\s+(?:the\s+)?confirmed\s+first\s+path\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
     text = re.sub(r"^(?:which|what)\s+", "", text, flags=re.IGNORECASE).strip(" .")
     words = text.split()
     if len(words) > 18:
         text = " ".join(words[:18]).rstrip(" ,;:")
+    text = _strip_dangling_relation_tail(text)
     text = _clean_focus_object(text)
     return "" if _generic_action_object(text) else text
+
+
+def _strip_dangling_relation_tail(value: str) -> str:
+    words = _clean(value).split()
+    while words and words[-1].casefold().strip(".,;:") in {"against", "by", "for", "from", "into", "to", "using", "with", "without"}:
+        words.pop()
+    return " ".join(words).strip(" .,;:")
 
 
 def _clean_focus_object(value: str) -> str:

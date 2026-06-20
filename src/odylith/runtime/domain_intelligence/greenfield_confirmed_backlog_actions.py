@@ -72,12 +72,7 @@ def actor_appears_in_path(first_path: str, actor: str) -> bool:
 
 
 def append_outcome_action(*, action: str, outcome: str, outcome_action: str, recipient: str) -> str:
-    action_terms = backlog_text.semantic_words(action)
-    outcome_terms = backlog_text.semantic_words(outcome)
-    outcome_action_terms = backlog_text.semantic_words(outcome_action)
-    if (outcome_terms and outcome_terms <= action_terms) or (
-        outcome_action_terms and outcome_action_terms <= action_terms
-    ):
+    if backlog_text.result_terms_covered(outcome, action) or backlog_text.result_terms_covered(outcome_action, action):
         return ""
     return f", and {recipient_phrase(recipient)} can {outcome_action}" if outcome_action else ""
 
@@ -85,20 +80,13 @@ def append_outcome_action(*, action: str, outcome: str, outcome_action: str, rec
 def missing_input_tail(*, action: str, outcome: str, outcome_already_appended: bool = False) -> str:
     if outcome_already_appended:
         return " while the product gives clear correction guidance when required information is missing"
-    action_terms = backlog_text.semantic_words(action)
-    outcome_terms = backlog_text.semantic_words(outcome)
-    if outcome_terms and outcome_terms <= action_terms:
+    if backlog_text.result_terms_covered(outcome, action):
         return " with clear correction guidance when required information is missing"
     return ", and see what to fix when required information is missing"
 
 
 def workflow_result_sentence(*, action: str, outcome: str, outcome_action: str, recipient: str) -> str:
-    action_terms = backlog_text.semantic_words(action)
-    outcome_terms = backlog_text.semantic_words(outcome)
-    outcome_action_terms = backlog_text.semantic_words(outcome_action)
-    if outcome_terms and outcome_terms <= action_terms:
-        return "and keeps the saved result reviewable"
-    if outcome_action_terms and outcome_action_terms <= action_terms:
+    if backlog_text.result_terms_covered(outcome, action) or backlog_text.result_terms_covered(outcome_action, action):
         return "and keeps the saved result reviewable"
     return f"and lets {recipient_phrase(recipient)} {outcome_action}"
 
@@ -154,8 +142,7 @@ def dedupe_repeated_visible_result_tail(value: str) -> str:
         return f"{text}."
     head = match.group("head").strip(" ,.")
     tail = match.group("tail").strip(" ,.")
-    tail_terms = backlog_text.semantic_words(tail)
-    if tail_terms and tail_terms <= backlog_text.semantic_words(head):
+    if backlog_text.result_terms_covered(tail, head):
         return f"{head}."
     return f"{text}."
 

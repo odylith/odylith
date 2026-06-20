@@ -42,7 +42,7 @@ def build_narrative_component_spec(
     upstream = _entity_text(component_contract.get("upstream_truth"))
     downstream = _entity_text(component_contract.get("downstream_consumers"))
     failure = _sentence(_clean_fragment(component_contract.get("unique_failure")))
-    accepted_intent = _accepted_intent_sentence(responsibility)
+    accepted_intent = _accepted_intent_sentence(responsibility, label=label)
 
     focus = _fallback_phrase(owns, label)
     input_focus = _fallback_phrase(accepts, "the inputs required for this boundary")
@@ -157,6 +157,12 @@ def _narrative_role(
         return "evidence"
     if re.search(r"\b(config|configuration|admin|administrator|policy|setting)\b", label_text):
         return "configuration"
+    if re.search(r"\b(safety|stop|recovery|guard|guardrail|interlock|limit|override)\b", label_text):
+        return "guardrail"
+    if re.search(r"\b(readiness|validation|verification|check|quality|eligibility)\b", label_text):
+        return "validation"
+    if re.search(r"\b(orchestrat\w*|workflow|sequence|sequencer|control|controller|runner|scheduler|coordination)\b", label_text):
+        return "workflow"
     if re.search(r"\b(view|timeline|dashboard|summary|report|export|surface|display|history|trend)\b", label_text):
         return "read_model"
     if re.search(r"\b(decision|outcome|reason|approve|approval|decline|explain|rationale|recommendation)\b", label_text):
@@ -175,6 +181,9 @@ def _narrative_role(
         ("state_store", r"\b(store|repository|record|records|profile|history|log|persist|saved|stored)\b"),
         ("handoff", r"\b(queue|route|routing|handoff|follow-up|notification|assignment|case)\b"),
         ("evidence", r"\b(audit|evidence|provenance|source|replay|retention|version|history|attachment)\b"),
+        ("guardrail", r"\b(safety|stop|guard|guardrail|interlock|limit|override)\b"),
+        ("validation", r"\b(readiness|validation|verification|check|quality|eligibility)\b"),
+        ("workflow", r"\b(orchestrat\w*|workflow|sequence|sequencer|control|controller|runner|scheduler|coordination)\b"),
         ("recovery", r"\b(edit|correction|recover|revision|blocked|blocker|stale|missing|invalid)\b"),
         ("integration", r"\b(adapter|provider|external|import|feed|integration|sync)\b"),
         ("entry", r"\b(intake|capture|entry|submit|submitted|upload|log|record|draft|required field|input)\b"),
@@ -201,7 +210,10 @@ def _opening_narrative(
         body = f"It keeps {focus} together so the next product step can move forward without another boundary guessing what the user meant or what is still missing."
     elif role == "decision":
         lead = f"{label} turns prepared evidence into a product outcome with an explanation."
-        body = f"The spec should stay focused on {output_focus}, because downstream work needs to know not only what happened but why it happened."
+        body = (
+            f"{label} should keep {output_focus} reviewable, because downstream work needs the decision result, "
+            "its rationale, and any blocked-state detail before it can trust the next step."
+        )
     elif role == "calculation":
         lead = f"{label} carries the product logic that interprets accepted inputs before anyone treats the result as true."
         calculation_focus = _calculation_focus(focus=focus, output_focus=output_focus, label=label)
@@ -224,6 +236,15 @@ def _opening_narrative(
     elif role == "configuration":
         lead = f"{label} exists so product rules can change intentionally instead of being hidden in implementation code."
         body = f"It protects {focus} and makes those settings available to the runtime path without turning configuration into a release-review shortcut."
+    elif role == "guardrail":
+        lead = f"{label} protects the first path when an unsafe, invalid, or blocked condition appears."
+        body = f"It should make {focus} explicit enough that the product can stop, recover, or explain the next safe step without hiding the reason."
+    elif role == "validation":
+        lead = f"{label} checks whether the next product step has the conditions it needs to proceed."
+        body = f"It should connect {input_focus} to {output_focus} so readiness is reviewable instead of assumed."
+    elif role == "workflow":
+        lead = f"{label} coordinates the ordered work that moves the first path forward."
+        body = f"It should carry {focus} from one step to the next with blockers, handoffs, and visible progress explainable."
     elif role == "state_store":
         lead = f"{label} keeps the product record together after a participant provides or changes information."
         body = f"It should preserve {focus}, keep the explanation for that state close by, and make the result available without becoming responsible for downstream interpretation."
@@ -249,7 +270,7 @@ def _opening_narrative(
     return _sentences(lead, body, intent.strip())
 
 
-def _accepted_intent_sentence(value: str) -> str:
+def _accepted_intent_sentence(value: str, *, label: str) -> str:
     text = clean_text(display_text.strip_inline_markdown_emphasis_tokens(value)).strip(" .")
     if not text or len(text.split()) < 4:
         return ""
@@ -267,30 +288,30 @@ def _accepted_intent_sentence(value: str) -> str:
         return ""
     text = re.sub(r"\s+[—-]\s+", ": ", text, count=1)
     text = re.sub(r"\s+", " ", text).strip(" .")
-    relation_sentence = _accepted_relation_sentence(text)
+    relation_sentence = _accepted_relation_sentence(text, label=label)
     if relation_sentence:
         return relation_sentence
     keep_match = re.match(r"^keeps?\s+(?P<body>.+)$", text, flags=re.I)
     if keep_match:
         body = _clean_fragment(keep_match.group("body"))
-        return _sentence(f"Accepted intent assigns this component to {_lower_first(body)}") if body else ""
+        return _sentence(f"Accepted intent assigns {label} to {_lower_first(body)}") if body else ""
     keeping_match = re.match(r"(?P<head>.+?)\s+while\s+keeping\s+(?P<tail>.+)$", text, flags=re.I)
     if keeping_match:
         head = _clean_fragment(keeping_match.group("head"))
         tail = _clean_fragment(keeping_match.group("tail"))
         if head and tail:
             head_sentence = (
-                f"Accepted intent says this component {_lower_first(head)}"
+                f"Accepted intent says {label} {_lower_first(head)}"
                 if looks_like_finite_action(head)
-                else f"Accepted intent centers this component on {_lower_first(head)}"
+                else f"Accepted intent centers {label} on {_lower_first(head)}"
             )
             return _sentences(
                 head_sentence,
                 f"It keeps {_lower_first(tail)}",
             )
     if looks_like_finite_action(text):
-        return _sentence(f"Accepted intent says this component {_lower_first(text)}")
-    return _sentence(f"Accepted intent centers this component on {_lower_first(text)}")
+        return _sentence(f"Accepted intent says {label} {_lower_first(text)}")
+    return _sentence(f"Accepted intent centers {label} on {_lower_first(text)}")
 
 
 def _accepted_intent_is_low_signal(value: str) -> bool:
@@ -298,18 +319,21 @@ def _accepted_intent_is_low_signal(value: str) -> bool:
     return bool(
         re.search(r"\buser actions?\b", text)
         or re.search(r"\bblocked states?\b", text)
+        or re.search(r"\bblocked-case evidence links?\b", text)
+        or re.search(r"\bhandoff boundaries for (?:the )?confirmed first path\b", text)
+        or re.search(r"\brequired inputs\b.*\bhandoff boundaries\b", text)
         or re.search(r"\bnext-step context\b", text)
     )
 
 
-def _accepted_relation_sentence(value: str) -> str:
+def _accepted_relation_sentence(value: str, *, label: str) -> str:
     words = clean_text(value).casefold().strip(" .").split()
     if len(words) < 3 or words[-1].strip(".,;:") not in RELATION_TAIL_WORDS:
         return ""
     body = relation_object_phrase(value)
     if body and len(body.split()) >= 1 and not re.search(r"\b(?:thing|things|stuff)\b", body, flags=re.I):
-        return _sentence(f"Accepted intent centers this component on the stated relationship for {_lower_first(body)}")
-    return "Accepted intent centers this component on the stated relationship between product entities."
+        return _sentence(f"Accepted intent centers {label} on the stated relationship for {_lower_first(body)}")
+    return _sentence(f"Accepted intent centers {label} on the stated relationship between product entities")
 
 
 def _state_narrative(
@@ -329,14 +353,15 @@ def _state_narrative(
     accepted = _human_join(accepted_rows)
     produced = _human_join(produced_rows)
     blocker_state = _human_join(_supplemental_state_items([*accepts, *produces], existing=(*owned_rows, *accepted_rows, *produced_rows), limit=3))
-    state_path = _human_join(_transition_items(transitions, limit=12))
+    transition_rows = _transition_items(transitions, limit=12)
+    state_path = _human_join(transition_rows)
     blocker = f"Specific missing or blocked inputs include {blocker_state}" if role in {"entry", "recovery"} and blocker_state else ""
     if role in {"entry", "recovery"}:
         first = f"It owns {owned}." if owned else f"{label} needs the first implementation plan to name its local state."
         second = f"The component can take in {accepted}, but it should only move forward after required values, corrections, or blockers are explicit." if accepted else ""
     elif role in {"decision", "calculation"}:
         if accepted and produced and not _phrases_too_similar(accepted, produced):
-            first = f"The useful state is the explanation that connects incoming {accepted} to {produced}."
+            first = f"For {label}, the useful state is the explanation that connects incoming {accepted} to {produced}."
         else:
             first = f"{label} must keep its input facts, calculation context, and visible result together."
         review_subject = produced or owned or f"{label} result"
@@ -344,6 +369,15 @@ def _state_narrative(
     elif role == "configuration":
         first = f"The owned state is {owned}, and changes to it should read like intentional product policy."
         second = f"The runtime can consume those settings, but configuration itself should not mutate downstream results."
+    elif role == "guardrail":
+        first = f"The guardrail state is {owned}." if owned else f"{label} needs the first implementation plan to name its stop and recovery state."
+        second = f"It evaluates {accepted} and returns {produced} only after the stop, recovery, or safe-next-step reason is explicit." if accepted and produced else ""
+    elif role == "validation":
+        first = f"The readiness state is {owned}." if owned else f"{label} needs the first implementation plan to name the readiness state it owns."
+        second = f"It checks {accepted} and returns {produced} only when the next step can trust the result." if accepted and produced else ""
+    elif role == "workflow":
+        first = f"The workflow state is {owned}." if owned else f"{label} needs the first implementation plan to name its local workflow state."
+        second = f"It accepts {accepted} and produces {produced} as the first path moves forward." if accepted and produced else ""
     elif role == "state_store":
         first = f"The owned state is {owned}, and it should stay close to the inputs and corrections that created it."
         second = f"It accepts {accepted} and returns {produced} only after required information is complete enough to trust."
@@ -365,8 +399,20 @@ def _state_narrative(
         first = f"The useful local state is {owned}."
         second = f"It accepts {accepted} and returns {produced} when the next product step can rely on it."
     material = _material_state_sentence(role=role, material_state=material_state)
-    transition = f"For {label}, the important lifecycle is {state_path}." if state_path else ""
+    transition = _transition_sentence(label=label, rows=transition_rows, text=state_path)
     return _sentences(first, second, blocker, material, transition)
+
+
+def _transition_sentence(*, label: str, rows: Sequence[str], text: str) -> str:
+    if not text:
+        return ""
+    short_rows = [row for row in rows if len(clean_text(row).split()) <= 2]
+    if len(rows) > 7 or len(short_rows) >= max(4, len(rows) // 2):
+        return (
+            f"For {label}, the lifecycle should make accepted, blocked, corrected, completed, "
+            "and handed-off states explicit before implementation expands."
+        )
+    return f"For {label}, the important lifecycle is {text}."
 
 
 def _boundary_narrative(
@@ -406,7 +452,7 @@ def _boundary_narrative(
     else:
         relation = f"{label} must keep its state, validation result, blocker state, and evidence together."
     if not kept:
-        boundary = "Unrelated input truth, release approval, and adjacent component state stay outside this component."
+        boundary = f"For {label}, unrelated input truth, release approval, and adjacent component state stay outside this boundary."
     elif role == "configuration":
         boundary = f"For {label}, keep {outside_text} outside this boundary so administrative policy does not become hidden runtime authority."
     elif role == "state_store":
@@ -532,6 +578,8 @@ def _proof_items(value: Any) -> tuple[str, ...]:
 def _clean_fragment(value: Any, *, proof: bool = False) -> str:
     text = clean_text(display_text.strip_inline_markdown_emphasis_tokens(str(value or "")))
     text = re.sub(r"^[-*]\s*", "", text).strip(" .;:")
+    if proof and re.match(r"^contract\s+proof\s+covers\b", text, flags=re.I):
+        return text
     text = re.sub(r"\bRelated path\s*:\s*[^.;]+[.;]?", "", text, flags=re.I)
     text = re.sub(r"\b(?:Done|DoD)\s+mean(?:s)?\b", "", text, flags=re.I)
     text = re.sub(r"\bMean\s+[a-z][^.;,]*", "", text, flags=re.I)
@@ -609,7 +657,7 @@ def _clean_entity_item(value: str) -> str:
 
 
 _CONTRACT_CARRIER_TERMS = {
-    "answer", "case", "channel", "data", "decision", "detail", "entry", "event", "evidence", "field", "history",
+    "answer", "case", "channel", "command", "data", "decision", "detail", "entry", "event", "evidence", "field", "history",
     "input", "intake", "ledger", "log", "note", "outcome", "output", "readiness", "record", "request", "result",
     "review", "score", "state", "status", "summary", "timeline", "view",
 }

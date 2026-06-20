@@ -47,6 +47,8 @@ def text_needs_repair(value: Any) -> bool:
         return True
     if sentence_needs_repair(text):
         return True
+    if _repeats_visible_result_tail(text):
+        return True
     lowered = text.casefold()
     if re.search(
         r"\bcan\s+(?:[a-z][a-z0-9'-]*\s+){0,4}"
@@ -92,6 +94,49 @@ def text_needs_repair(value: Any) -> bool:
             " is done when ",
         )
     )
+
+
+def _repeats_visible_result_tail(value: str) -> bool:
+    text = " ".join(str(value or "").split())
+    for pattern in (
+        r",?\s+then\s+let\s+[^.;,]{1,120}?\s+(?:reach|see|use|view|read|receive)\s+(?P<tail>[^.;,]{18,180})",
+        r"\band\s+lets?\s+[^.;,]{1,120}?\s+(?:reach|see|use|view|read|receive)\s+(?P<tail>[^.;,]{18,180})",
+    ):
+        for match in re.finditer(pattern, text, flags=re.IGNORECASE):
+            tail_terms = _result_tail_terms(match.group("tail"))
+            head_terms = _result_tail_terms(text[: match.start()])
+            if len(tail_terms) >= 4 and tail_terms <= head_terms:
+                return True
+    return False
+
+
+def _result_tail_terms(value: str) -> set[str]:
+    ignored = {
+        "and",
+        "can",
+        "reach",
+        "reaches",
+        "read",
+        "reads",
+        "receive",
+        "receives",
+        "see",
+        "sees",
+        "the",
+        "then",
+        "use",
+        "uses",
+        "user",
+        "users",
+        "view",
+        "views",
+        "with",
+    }
+    return {
+        token.casefold().strip(".,;:'")
+        for token in re.findall(r"[A-Za-z][A-Za-z0-9'-]*", str(value or ""))
+        if token.casefold().strip(".,;:'") not in ignored
+    }
 
 
 def sentence_needs_repair(value: Any) -> bool:

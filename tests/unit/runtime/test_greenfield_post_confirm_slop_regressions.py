@@ -8,11 +8,15 @@ import re
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
 from odylith.runtime.artifact_quality.greenfield_package_quality import RenderedArtifact
+from odylith.runtime.artifact_quality.greenfield_package_quality import _artifact_surface_language_issues
 from odylith.runtime.artifact_quality.greenfield_package_quality import _chunk_language_issues
 from odylith.runtime.artifact_quality.greenfield_package_quality import _narrative_chunks
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import _proposal_with_component_brief_gate
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_component_contract import responsibility_from_contract
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
     derive_component_semantic_contract,
 )
@@ -34,7 +38,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import bu
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_name
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import _contains_stale_generic_label
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
@@ -282,6 +288,17 @@ def test_state_reference_preserves_participial_descriptions_without_embedding_fi
     assert state_reference(finite_restatement) == "service readiness record"
     assert "record tracks" not in state_reference(finite_restatement)
     assert object_reference_phrase(state_reference(finite_restatement)) == "the service readiness record"
+
+    articleless_finite_restatement = {
+        "intent": {
+            "state_object": (
+                "Permit application records the current status, actor, source input, decision, blocked reason, "
+                "evidence links, timestamp, and version history for the accepted first path."
+            )
+        }
+    }
+    assert state_reference(articleless_finite_restatement) == "permit application"
+    assert "records the current status" not in state_reference(articleless_finite_restatement)
 
 
 def test_confirmed_diagram_labels_summarize_release_proof_and_deferred_scope_before_trimming() -> None:
@@ -587,6 +604,37 @@ def test_accepted_project_memory_normalizes_adverbial_action_copy() -> None:
     assert "optionally note context" in rendered
 
 
+def test_status_view_responsibility_avoids_presentational_action_splice() -> None:
+    responsibility = responsibility_from_contract(
+        "Review Assignment and Status Tracking Service",
+        {
+            "owned_state": "review assignment and status tracking, review status, blocker context, and handoff evidence",
+            "accepted_inputs": "submitted permit application",
+            "produced_outputs": "review status readout",
+            "unique_failure": "review status is missing or stale",
+        },
+    )
+
+    payload = build_accepted_project_source_payload(
+        proposal={
+            "intent": {"title": "Permit Portal", "first_path": "Submit application."},
+            "components": [{"label": "Review Assignment and Status Tracking Service", "responsibility": responsibility}],
+            "semantic_model": {"first_path_contract": {"events": [{"text": "Submit application"}]}},
+        },
+        backlog_items=[],
+        component_items=[{"component_id": "review-status", "label": "Review Assignment and Status Tracking Service", "responsibility": responsibility}],
+        diagram_ids=[],
+        release_selector="0.0.1",
+        release_id="release-permit-0-0-1",
+        validation_gate={"status": "passed"},
+    )
+
+    rendered = json.dumps(payload, sort_keys=True)
+    assert "Presents review assignment" not in rendered
+    assert "Keeps review assignment and status tracking" in rendered
+    assert generated_public_copy_issues("accepted-project memory preview", payload) == ()
+
+
 def test_confirmed_project_brief_next_steps_normalize_adverbial_action_copy() -> None:
     brief = confirmed_project_brief(
         label="EventLog",
@@ -606,6 +654,55 @@ def test_confirmed_project_brief_next_steps_normalize_adverbial_action_copy() ->
 
     assert "optionally notes" not in rendered
     assert "optionally note the trigger context" in rendered
+
+
+def test_confirmed_backlog_success_metrics_use_compact_state_reference() -> None:
+    intent = parse_confirmed_intent_text(
+        """
+# Municipal Permit Review Portal
+
+## Product story
+A resident submits a building permit application online so the city can check completeness and return an approval or correction request.
+
+## State object
+Permit application records the current status, actor, source input, decision, blocked reason, evidence links, timestamp, and version history for the accepted first path.
+
+## First complete path
+The resident starts an application, enters project and property details, uploads required documents, pays the fee, and submits the package. The portal validates completeness and returns an approved permit or a correction request.
+
+## Human actors
+- Resident applicant
+- Permit reviewer
+
+## External systems
+- Payment processor
+
+## Internal product systems
+- Application intake workflow
+- Completeness validation
+- Decision response publishing
+
+## Proof boundary
+Release 0.0.1 is complete when one resident can submit one application, receive validation feedback, and see a decision or correction request.
+"""
+    )
+    proposal = build_confirmed_greenfield_proposal(
+        prompt="Draft a municipal permit review portal.",
+        title="Municipal Permit Review Portal",
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    proposal = normalize_host_reasoned_proposal(proposal)
+    for row in proposal.get("backlog", [])[1:]:
+        if isinstance(row, dict):
+            row["success_metrics"] = []
+
+    completed = complete_confirmed_proposal(proposal, release_selector="0.0.1")
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert "to the permit application records the current status" not in rendered
+    assert "to the permit application" in rendered
 
 
 def test_confirmed_project_brief_localizes_generic_first_path_actor_from_accepted_roles() -> None:
@@ -734,6 +831,125 @@ def test_stale_generic_label_detector_does_not_match_evidence_ownership_words() 
     assert not _contains_stale_generic_label(
         "Missing Evidence ownership stays outside the boundary owned by Application Intake.",
         "Evidence owner",
+    )
+
+
+def test_sentence_shaped_internal_systems_keep_concise_component_labels() -> None:
+    intent = parse_confirmed_intent_text(
+        """
+# Cooking Robot Controller
+
+Product story:
+A control system turns a recipe into safe, repeatable physical cooking for a home cook. The product coordinates recipe steps, heat, timing, sensors, and emergency stop behavior so the first release can prove a complete supervised cook session without free-form recipe interpretation.
+
+State object:
+A cook session with active recipe, current step, live sensor readings, actuator state, and safety status.
+
+First complete path:
+The home cook picks a recipe, the controller validates that ingredients are staged and sensors are live, runs the step sequence with closed-loop heat and timing control, shows progress, and reaches a finished safe-to-serve state with emergency stop available throughout.
+
+Human actors:
+- Home cook who selects dishes and responds to prompts
+- Kitchen technician who calibrates and clears faults
+
+External systems:
+- Robot hardware with arm, ingredient dispenser, and heat element interfaces
+- Sensors for temperature, load, and presence
+- Emergency stop hardware interlock
+
+Internal product systems:
+- Recipe sequencer that turns a structured cooking program into ordered actions
+- Real-time control loop for heat, timing, and motion
+- Safety supervisor that enforces limits, interlocks, and abort logic
+- Session telemetry state that records the live cook
+
+Critical assumptions:
+- One robot cell per controller instance for the first release
+- Recipes are pre-authored structured programs
+
+Ambiguities:
+- Whether first release drives real hardware or a simulator
+
+Proof boundary:
+Release 0.0.1 succeeds when a home cook can load a structured recipe, run its cooking steps with closed-loop heat and timing, reach a safe finished state, and trigger emergency stop at any point in a hardware simulator.
+""",
+        prompt="Draft a greenfield proposal for a cooking robot controller",
+    )
+
+    proposal = build_greenfield_proposal(
+        repo_root=Path("/tmp/nonexistent"),
+        prompt="Draft a greenfield proposal for a cooking robot controller",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    labels = [str(row["label"]) for row in proposal["components"]]
+    release_labels = [str(row["label"]) for row in active_release_components(proposal["components"])]
+    rendered = json.dumps(proposal, sort_keys=True)
+    backlog_copy = json.dumps(proposal["backlog"], sort_keys=True)
+    readiness_copy = json.dumps(proposal["project_brief"]["coding_readiness_gates"], sort_keys=True)
+    prewrite_proposal = _proposal_with_component_brief_gate(proposal)
+    prewrite_readiness_copy = json.dumps(prewrite_proposal["project_brief"]["coding_readiness_gates"], sort_keys=True)
+    release_contract_copy = json.dumps(active_release_components(proposal["components"]), sort_keys=True)
+    package = GreenfieldCompletionPackage(proposal=proposal)
+
+    assert any(row.rstrip(".") == "Home Cook: selects dishes and responds to prompts" for row in intent["human_actors"])
+    assert not re.search(r"Home Cook: uses the product to .+controller validates", rendered)
+    assert "runing" not in rendered.casefold()
+    assert "Recipe Sequencer Service" in labels
+    assert "Safety Supervisor Service" in labels
+    assert "Session Telemetry State Service" not in release_labels
+    assert "Session Telemetry State Service" not in release_contract_copy
+    assert "Session Telemetry State Service" not in prewrite_readiness_copy
+    assert "can consume" not in release_contract_copy
+    assert "That Turns" not in rendered
+    assert "That Enforces" not in rendered
+    assert "progress, and reaches" not in backlog_copy.casefold()
+    assert "then let the home cook reach a finished safe-to-serve state" not in backlog_copy.casefold()
+    assert " to a finished safe-to-serve state with emergency stop available throughout without" not in backlog_copy.casefold()
+    assert "throughout with reviewable" not in backlog_copy.casefold()
+    assert not re.search(r"(?<!-)\bserve state\b", readiness_copy.casefold())
+    assert "finished safe-to-serve state" in readiness_copy.casefold()
+    assert proposal["semantic_model"]["first_path_contract"]["visible_result"] == (
+        "a finished safe-to-serve state with emergency stop available throughout"
+    )
+    assert greenfield_quality_issues(proposal) == []
+    assert not any(
+        "explanatory component label" in issue for issue in greenfield_rendered_package_quality_issues(package)
+    )
+    assert _artifact_surface_language_issues(
+        RenderedArtifact("Radar workstream", "bad.md", "- The first release proves runing the accepted path.")
+    )
+    assert _artifact_surface_language_issues(
+        RenderedArtifact(
+            "Radar workstream",
+            "bad.md",
+            "- users can reach the finished result without manual interpretation outside the product.",
+        )
+    )
+    assert _artifact_surface_language_issues(
+        RenderedArtifact(
+            "Radar workstream",
+            "bad.md",
+            (
+                "Prove the first release path: pick a recipe, validate the setup, and see a finished "
+                "safe-to-serve state with emergency stop available throughout, then let the home cook reach "
+                "a finished safe-to-serve state with emergency stop available throughout."
+            ),
+        )
+    )
+    assert _artifact_surface_language_issues(
+        RenderedArtifact(
+            "Radar workstream",
+            "bad.md",
+            (
+                "The first interaction proves pick a recipe and see a finished safe-to-serve state "
+                "with emergency stop available throughout and lets the home cook reach a finished "
+                "safe-to-serve state with emergency stop available throughout."
+            ),
+        )
+    )
+    assert not _artifact_surface_language_issues(
+        RenderedArtifact("Project brief preview", "actors", "Home Cook: selects dishes and responds to prompts.")
     )
 
 
@@ -946,6 +1162,45 @@ Release 0.0.1 succeeds when one question moves from submitted to assigned to rev
     assert any(row.startswith("Response Coordinator:") for row in intent["human_actors"])
 
 
+def test_confirmed_actor_completion_does_not_turn_state_definition_into_action() -> None:
+    intent = complete_confirmed_intent(
+        parse_confirmed_intent_text(
+            """
+# Municipal Permit Review Portal
+
+## Product story
+A resident submits a building permit application online so the city can check completeness and return an approval or correction request.
+
+## State object
+Permit application records the current status, actor, source input, decision, blocked reason, evidence links, timestamp, and version history for the accepted first path.
+
+## First complete path
+The resident starts an application, enters project and property details, uploads required documents, pays the fee, and submits the package.
+
+## Human actors
+- Resident or contractor applicant
+- Permit intake clerk
+- Department reviewer
+
+## External systems
+- Payment processor
+
+## Internal product systems
+- Application intake workflow
+- Completeness validation
+- Decision response publishing
+
+## Proof boundary
+Release 0.0.1 is complete when one resident can submit one application, receive validation feedback, and see a decision or correction request.
+"""
+        )
+    )
+    rendered = " ".join(intent["human_actors"])
+
+    assert "uses the product to record the current status" not in rendered
+    assert "Permit Intake Clerk: supplies context" in rendered
+
+
 def test_visible_result_language_normalization_stays_in_text_owner() -> None:
     text_source = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
     callers = [
@@ -977,6 +1232,9 @@ def test_visible_result_language_normalization_stays_in_text_owner() -> None:
         normalize_visible_result_language("issues control actions to downstream systems")
         == "issues control actions for downstream systems"
     )
+    assert normalize_visible_result_language(
+        "shows progress, and reaches a finished safe-to-serve state with emergency stop available throughout"
+    ) == "a finished safe-to-serve state with emergency stop available throughout"
 
     for caller in callers:
         source = caller.read_text(encoding="utf-8")
@@ -1398,6 +1656,14 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
         base_action_clause("requests a slot, receives confirmation, and records next steps")
         == "request a slot, receive confirmation, and record next steps"
     )
+    assert (
+        base_action_clause("enters project details, uploads required documents, pays the fee")
+        == "enter project details, upload required documents, pay the fee"
+    )
+    assert (
+        action_chain_fragment("The resident enters project details, uploads required documents, pays the fee")
+        == "enter project details, upload required documents, pay the fee"
+    )
     assert base_action_clause("comments, checks, and final status") == "comments, checks, and final status"
 
 
@@ -1413,6 +1679,9 @@ def test_first_path_gerund_chain_handles_set_draft_and_send_actions() -> None:
     assert "setting response priority" in capability
     assert "drafting a response" in capability
     assert "sending it for review" in capability
+    assert gerund_action_fragment("enters details, uploads documents, pays the fee") == (
+        "entering details, uploading documents, paying the fee"
+    )
     assert "seting" not in capability
     assert "drafts a response" not in capability
 

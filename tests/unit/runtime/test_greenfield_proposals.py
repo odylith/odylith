@@ -1329,9 +1329,8 @@ def test_greenfield_apply_rolls_back_partial_writes_when_late_step_fails(tmp_pat
     assert not (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").exists()
 
 
-def test_greenfield_apply_rolls_back_generated_surfaces_when_refresh_fails(tmp_path, monkeypatch) -> None:
+def test_greenfield_apply_commits_records_with_dashboard_warning_when_refresh_fails(tmp_path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
-    original_index = (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8")
 
     def fail_refreshes(**_kwargs: object) -> None:
         _write(tmp_path / "odylith/radar/radar.html", "partial dashboard\n")
@@ -1342,19 +1341,20 @@ def test_greenfield_apply_rolls_back_generated_surfaces_when_refresh_fails(tmp_p
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
 
-    with pytest.raises(RuntimeError, match="synthetic dashboard refresh failure"):
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=_host_reasoned_ecommerce_proposal(),
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=_host_reasoned_ecommerce_proposal(),
+        confirm=True,
+        release_selector="0.0.1",
+    )
 
-    assert (tmp_path / "odylith/radar/source/INDEX.md").read_text(encoding="utf-8") == original_index
-    assert not (tmp_path / "odylith/radar/radar.html").exists()
-    assert not (tmp_path / "odylith/runtime/delivery_intelligence.v4.json").exists()
-    assert not (tmp_path / "odylith/registry/source/component_registry.v1.json").exists()
-    assert not (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").exists()
+    assert result["mode"] == "applied"
+    assert result["dashboard_refresh"]["status"] == "warning"
+    assert "synthetic dashboard refresh failure" in result["dashboard_refresh"]["warning"]
+    assert (tmp_path / "odylith/radar/radar.html").is_file()
+    assert (tmp_path / "odylith/runtime/delivery_intelligence.v4.json").is_file()
+    assert (tmp_path / "odylith/registry/source/component_registry.v1.json").is_file()
+    assert (tmp_path / "odylith/atlas/source/commerce-launch-system-context.mmd").is_file()
 
 
 def test_greenfield_transaction_restores_symlinked_snapshot_root_without_traversal(tmp_path) -> None:

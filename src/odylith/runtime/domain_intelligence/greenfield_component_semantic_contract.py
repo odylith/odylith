@@ -176,15 +176,16 @@ def derive_component_semantic_contract(
         anchor_terms=(*_content_terms(label), *_content_terms(description)),
     )
     sibling_label = _label(sibling) if isinstance(sibling, Mapping) else ""
-    sibling_focus = _sibling_focus(sibling)
+    handoff_label = next_label or "release review"
+    handoff_focus = _sibling_focus(sibling) if next_label and sibling_label == next_label else ""
     proof = _proof_rows(
         label=label,
         object_list=object_list,
         critical=critical,
         input_focus=input_focus,
         output_focus=output_focus,
-        sibling_label=sibling_label,
-        sibling_focus=sibling_focus,
+        sibling_label=handoff_label,
+        sibling_focus=handoff_focus,
     )
     evidence_phrases = ("source evidence",) if _needs_source_evidence(
         label=label,
@@ -226,7 +227,7 @@ def derive_component_semantic_contract(
         "accepted_inputs": _accepted_inputs_text(input_focus),
         "produced_outputs": _produced_outputs_text(output_focus),
         "states_or_transitions": states,
-        "outside_boundary": _outside_boundary(sibling_focus=sibling_focus),
+        "outside_boundary": _outside_boundary(sibling_focus=handoff_focus),
         "local_proof": proof,
         "upstream_truth": previous_label or "accepted first-path input",
         "downstream_consumers": next_label or "release review",

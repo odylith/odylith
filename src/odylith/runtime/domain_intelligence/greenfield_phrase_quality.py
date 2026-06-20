@@ -185,11 +185,18 @@ def _drop_relation_debris_after_carrier(words: Sequence[str], carriers: set[str]
 
 def _drop_generated_contract_tail(words: Sequence[str], carriers: set[str]) -> list[str]:
     result = list(words)
-    while len(result) >= 3 and _lower(result[-1]) in {"command", "proposal"} and any(
-        _lower(word) in carriers for word in result[:-1]
-    ):
+    while len(result) >= 3 and _generated_contract_tail_should_drop(result, carriers):
         result.pop()
     return result
+
+
+def _generated_contract_tail_should_drop(words: Sequence[str], carriers: set[str]) -> bool:
+    tail = _lower(words[-1])
+    if tail not in {"command", "proposal"}:
+        return False
+    if tail in carriers:
+        return False
+    return any(_lower(word) in carriers for word in words[:-1])
 
 
 def _normalize_trailing_status_modifier(words: Sequence[str], carriers: set[str]) -> list[str]:

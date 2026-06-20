@@ -10,15 +10,16 @@ from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
 _SCOPE_BOUNDARY_RE = re.compile(r"\bDo\s+not\s+expand\s+beyond\s+(?P<body>.+?)\s+until\b", re.IGNORECASE)
 _STATE_OBJECT_PREDICATE_RE = re.compile(
-    r"\b(?:accepted\s+change|state\s+change|versioned\s+state\s+object|state\s+object)\s+"
+    r"\b(?:accepted\s+change|state\s+change|versioned\s+state\s+object|state\s+object)\s*"
     r"(?:to|is|:)\s+(?:the\s+)?(?:product|system|app|application|workspace|service|platform|tool)\s+"
-    r"(?:captures?|keeps?|records?|stores?|tracks?|holds?)\b",
+    r"(?:captures?|keeps?|records?|stores?|tracks?|holds?|manages?|maintains?|coordinates?|orchestrates?)\b",
     re.IGNORECASE,
 )
 _COMPONENT_SUMMARY_RE = re.compile(
@@ -110,7 +111,7 @@ def _state_object_predicate_issues(proposal: Mapping[str, Any], text: str) -> li
         return issues
     raw_predicate = re.match(
         r"^(?:the\s+)?(?:product|system|app|application|workspace|service|platform|tool)\s+"
-        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?)\s+",
+        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?|manages?|maintains?|coordinates?|orchestrates?)\s+",
         raw_state,
         flags=re.IGNORECASE,
     )
@@ -152,7 +153,8 @@ def _component_summary_clip_issues(proposal: Mapping[str, Any], text: str) -> li
 
 def _component_labels(proposal: Mapping[str, Any]) -> list[str]:
     labels: list[str] = []
-    for row in mapping_rows(proposal.get("components")):
+    rows = [row for row in mapping_rows(proposal.get("components"))]
+    for row in active_release_components(rows):
         label = normalize_string(row.get("label"))
         if label:
             labels.append(label)

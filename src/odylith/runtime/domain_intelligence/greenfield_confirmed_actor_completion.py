@@ -141,6 +141,13 @@ def actor_row_description(value: str) -> str:
     )
     if comma and 1 <= _word_count(comma.group("head")) <= 5 and _word_count(comma.group("body")) >= 2:
         return comma.group("body").strip(" .")
+    relative = re.match(
+        r"^(?P<head>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+(?:who|that)\s+(?P<body>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if relative and 1 <= _word_count(relative.group("head")) <= 6 and _word_count(relative.group("body")) >= 3:
+        return relative.group("body").strip(" .")
     inline = _inline_action_description(text)
     if inline:
         return inline
@@ -233,7 +240,7 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     terms = _actor_path_terms(label)
     if not terms:
         return ""
-    sources = [(first_path, 12), (state, 0)]
+    sources = [(first_path, 12)]
     if not any(_clean(value) for value, _bonus in sources):
         return ""
     scored: list[tuple[int, int, int, str]] = []
@@ -352,7 +359,8 @@ def _path_clauses(value: str) -> list[str]:
         for clause in re.split(
             r";\s+|,\s+(?=(?:and\s+)?(?:a|an|the|[A-Za-z][a-z]+)\s+"
             r"(?:opens?|reviews?|reads?|compares?|saves?|records?|creates?|submits?|receives?|checks?|"
-            r"assigns?|captures?|resolves?|moves?|builds?|exports?|imports?|sees?|supplies?|provides?))",
+            r"assigns?|captures?|resolves?|moves?|builds?|exports?|imports?|sees?|supplies?|provides?|"
+            r"validates?|runs?|shows?|reaches?|finishes?|returns?))",
             sentence,
         ):
             cleaned = _clean(re.sub(r"^(?:and|then)\s+", "", clause, flags=re.IGNORECASE)).strip(" .")

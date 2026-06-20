@@ -172,7 +172,7 @@ def test_component_spec_template_keeps_greenfield_contracts_concise() -> None:
     assert "Release 0.0.1 contribution:" not in text
     assert "Product context:" not in text
     assert "Project outcome:" not in text
-    assert "Accepted intent says this component records field intake with attribution, review state, and recovery outcome." in text
+    assert "Accepted intent says Field Intake Service records field intake with attribution, review state, and recovery outcome." in text
     assert "field intake with attribution command" in text
     assert "Contract proof covers accepted intake, rejected input, and reviewer-visible recovery state." in text
     assert "Intake must stay attributable" in text

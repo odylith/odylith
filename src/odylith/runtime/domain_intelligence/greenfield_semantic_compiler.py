@@ -113,7 +113,8 @@ def select_visible_result_candidate(
                 text=visible,
                 source_kind="first_path_event",
                 source_path="first_path.visible_result",
-                confidence=_candidate_confidence(visible, source_kind="first_path_event"),
+                confidence=_candidate_confidence(visible, source_kind="first_path_event")
+                + _terminal_visible_outcome_bonus(visible),
                 provenance=(path_model.visible_outcome,),
                 limit=limit,
             )
@@ -365,6 +366,15 @@ def _candidate_confidence(value: str, *, source_kind: str) -> float:
     if word_count(value) >= 4:
         score += 0.05
     return score
+
+
+def _terminal_visible_outcome_bonus(value: str) -> float:
+    text = clean_text(value).casefold()
+    if not text or text in {"next action", "next step", "what happens next", "what happened next"}:
+        return 0.0
+    if re.search(r"\bavailable\s+for\s+[^.]{0,60}\breview\b", text):
+        return 0.0
+    return 0.12
 
 
 def _confirmed_result_object(*, source: str, result: str) -> str:

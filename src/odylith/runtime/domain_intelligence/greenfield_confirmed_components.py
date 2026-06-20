@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any
+from typing import Any, Mapping
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.prose_grammar import base_action_clause
@@ -185,8 +185,7 @@ def _confirmed_system_components(
         "state_object": state_object,
     }
     for index, row in enumerate(rows):
-        previous_label = str(rows[index - 1].get("label", "")) if index else ""
-        next_label = str(rows[index + 1].get("label", "")) if index + 1 < len(rows) else ""
+        previous_label, next_label = _release_neighbor_labels(rows, index)
         contract = ensure_component_contract(
             row,
             proposal=proposal_context,
@@ -224,6 +223,26 @@ def _confirmed_system_components(
             row["validation"] = validation_from_contract(contract)
         row["risks"] = risks_from_contract(label_text, contract)
     return rows
+
+
+def _release_neighbor_labels(rows: list[dict[str, Any]], index: int) -> tuple[str, str]:
+    if index < 0 or index >= len(rows):
+        return "", ""
+    if not _component_is_release_selected(rows[index]):
+        previous_label = str(rows[index - 1].get("label", "")) if index else ""
+        next_label = str(rows[index + 1].get("label", "")) if index + 1 < len(rows) else ""
+        return previous_label, next_label
+    selected = [row_index for row_index, row in enumerate(rows) if _component_is_release_selected(row)]
+    selected_position = selected.index(index)
+    previous_index = selected[selected_position - 1] if selected_position else -1
+    next_index = selected[selected_position + 1] if selected_position + 1 < len(selected) else -1
+    previous_label = str(rows[previous_index].get("label", "")) if previous_index >= 0 else ""
+    next_label = str(rows[next_index].get("label", "")) if next_index >= 0 else ""
+    return previous_label, next_label
+
+
+def _component_is_release_selected(row: Mapping[str, Any]) -> bool:
+    return str(row.get("release_scope", "")).strip().casefold() not in {"deferred", "external", "out_of_scope"}
 
 
 def system_component_name(value: str) -> str:
@@ -273,10 +292,12 @@ def _enriched_component_name(*, name: str, description: str) -> str:
 def _trim_explanatory_system_name(value: str) -> str:
     text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
     words = text.split()
-    if len(words) <= 6:
+    if len(words) <= 4:
         return text
     for index, word in enumerate(words):
         token = word.casefold().strip(".,;:")
+        if token in {"that", "which", "who"} and index >= 2 and len(words) - index >= 2:
+            return " ".join(words[:index]).strip(" .")
         if token in _EXPLANATORY_NAME_CONNECTORS and index >= 3 and len(words) - index >= 2:
             return " ".join(words[:index]).strip(" .")
     return text

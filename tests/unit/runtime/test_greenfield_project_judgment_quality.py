@@ -56,6 +56,30 @@ def test_project_judgment_rejects_casing_state_component_and_tail_drift() -> Non
     assert "greenfield scope boundary truncates the accepted first-path tail" in issues
 
 
+def test_project_judgment_rejects_managed_state_predicate_leak() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal=_proposal(
+            state_object=(
+                "The product manages a cooking run, including selected recipe, staged ingredients, "
+                "sensor readings, safety stops, and final serve readiness."
+            )
+        ),
+        project_brief_preview={
+            "coding_readiness_gates": [
+                (
+                    "Confirm this as the versioned state object: The product manages a cooking run, "
+                    "including selected recipe, staged ingredients, sensor readings, safety stops, and final serve readiness."
+                ),
+            ]
+        },
+    )
+
+    issues = greenfield_project_judgment_issues(package)
+
+    assert "greenfield artifacts leak a product/system predicate instead of a state-object noun phrase" in issues
+    assert "greenfield artifacts should use state-object label `Cooking Run` instead of the raw tracking predicate" in issues
+
+
 def test_project_judgment_accepts_full_case_label_and_tail_coverage() -> None:
     package = GreenfieldCompletionPackage(
         proposal=_proposal(),

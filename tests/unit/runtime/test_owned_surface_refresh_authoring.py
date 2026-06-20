@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from odylith.runtime.common import log_compass_timeline_event
@@ -139,6 +140,69 @@ def test_owned_surface_refresh_hides_successful_refresh_internals(
     )
 
     assert capsys.readouterr().out == ""
+
+
+def test_owned_surface_refresh_captures_fd_level_failure_output(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    def fake_refresh_owned_surfaces(**_kwargs) -> int:
+        os.write(1, b"fd stdout renderer progress\n")
+        os.write(2, b"fd stderr browser failure\n")
+        return 2
+
+    monkeypatch.setattr(owned_surface_refresh, "refresh_owned_surfaces", fake_refresh_owned_surfaces)
+
+    try:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=tmp_path,
+            surface="atlas",
+            operation_label="Atlas update",
+        )
+    except RuntimeError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("expected refresh failure")
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+    assert "fd stdout renderer progress" in message
+    assert "fd stderr browser failure" in message
+
+
+def test_owned_surface_refresh_compacts_verbose_renderer_failure_output(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    def fake_refresh_owned_surfaces(**_kwargs) -> int:
+        print("browser stack " + ("noise " * 300))
+        print("atlas auto-update failed")
+        print("- outcome: failed")
+        print("- error: Mermaid render failed after worker fallback")
+        print("dashboard refresh completed")
+        print("- outcome: failed")
+        print("- atlas: failed")
+        return 2
+
+    monkeypatch.setattr(owned_surface_refresh, "refresh_owned_surfaces", fake_refresh_owned_surfaces)
+
+    try:
+        owned_surface_refresh.raise_for_failed_refresh(
+            repo_root=tmp_path,
+            surface="atlas",
+            operation_label="Atlas update",
+        )
+    except RuntimeError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("expected refresh failure")
+
+    assert "Mermaid render failed after worker fallback" in message
+    assert "dashboard refresh completed" in message
+    assert "browser stack" not in message
+    assert len(message) < 1400
 
 
 def test_owned_surface_refresh_batches_multiple_surfaces_once(tmp_path: Path, monkeypatch) -> None:

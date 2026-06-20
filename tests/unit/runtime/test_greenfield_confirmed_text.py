@@ -106,6 +106,26 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
         )
         == "Live Processing Pipeline"
     )
+    assert (
+        domain_object_label(
+            (
+                "The product manages a cooking run, including selected recipe, staged ingredients, "
+                "sensor readings, heat and timing state, operator prompts, safety stops, and final serve readiness."
+            ),
+            fallback="Cooking state",
+        )
+        == "Cooking Run"
+    )
+    assert (
+        domain_object_label(
+            (
+                "Permit application records the current status, actor, source input, decision, blocked reason, "
+                "evidence links, timestamp, and version history for the accepted first path."
+            ),
+            fallback="Permit state",
+        )
+        == "Permit Application"
+    )
 
 
 def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:
