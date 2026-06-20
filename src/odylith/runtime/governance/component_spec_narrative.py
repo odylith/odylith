@@ -274,6 +274,20 @@ def _accepted_intent_sentence(value: str) -> str:
     if keep_match:
         body = _clean_fragment(keep_match.group("body"))
         return _sentence(f"Accepted intent assigns this component to {_lower_first(body)}") if body else ""
+    keeping_match = re.match(r"(?P<head>.+?)\s+while\s+keeping\s+(?P<tail>.+)$", text, flags=re.I)
+    if keeping_match:
+        head = _clean_fragment(keeping_match.group("head"))
+        tail = _clean_fragment(keeping_match.group("tail"))
+        if head and tail:
+            head_sentence = (
+                f"Accepted intent says this component {_lower_first(head)}"
+                if looks_like_finite_action(head)
+                else f"Accepted intent centers this component on {_lower_first(head)}"
+            )
+            return _sentences(
+                head_sentence,
+                f"It keeps {_lower_first(tail)}",
+            )
     if looks_like_finite_action(text):
         return _sentence(f"Accepted intent says this component {_lower_first(text)}")
     return _sentence(f"Accepted intent centers this component on {_lower_first(text)}")
@@ -550,7 +564,7 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
     text = re.sub(r"\b(?:producing|recording|capturing|tracking|reviewing|showing|returning)\s+", "", text, flags=re.I)
     text = re.sub(r"\busing\s+(?:mocked|stubbed|simulated)\b.*$", "", text, flags=re.I)
     text = re.sub(r"^guides?\s+the\s+first\s+path,?\s*", "", text, flags=re.I)
-    text = re.sub(r"\bkeep(?:s|ing)?\s+", "", text, flags=re.I)
+    text = re.sub(r"^keep(?:s|ing)?\s+", "", text, flags=re.I)
     text = re.sub(r"\bexplicit(?:ly)?\b", "", text, flags=re.I)
     text = re.sub(r"^(?:them|it|their|they|this|that)\s+(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"^(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)

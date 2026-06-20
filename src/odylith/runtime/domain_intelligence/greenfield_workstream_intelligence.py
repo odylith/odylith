@@ -12,6 +12,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_i
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms_tree
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -172,7 +174,7 @@ def build_workstream_domain_intelligence(
     interface_summary = join_brief_items(interfaces, limit=2, item_limit=150)
     validation_summary = join_brief_items(validation, limit=3, item_limit=150)
     actor_summary = _join_actor_labels(actors) or join_items(actors)
-    return {
+    packet = {
         "schema_version": "odylith.greenfield.workstream_intelligence.v1",
         "family": slugify(label).replace("-", "_") or "confirmed_product",
         "summary": focus or f"{row_title} turns the accepted {label} slice into behavior the team can implement and verify.",
@@ -275,6 +277,8 @@ def build_workstream_domain_intelligence(
             "Use confirmed actors, state, systems, outcomes, and failure terms in this slice.",
         ],
     }
+    normalized = collapse_adjacent_duplicate_terms_tree(packet)
+    return normalized if isinstance(normalized, dict) else packet
 
 
 def _join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
@@ -300,12 +304,12 @@ def _render_layer(value: Any) -> list[str]:
     if isinstance(value, Mapping):
         rows: list[str] = []
         for key, nested in value.items():
-            rendered = "; ".join(text_values(nested))
+            rendered = collapse_adjacent_duplicate_terms("; ".join(text_values(nested)))
             if rendered:
                 rows.append(f"- {clean_text(key)}: {rendered}")
         return rows
     values = text_values(value)
-    return [f"- {item}" for item in values if item]
+    return [f"- {collapse_adjacent_duplicate_terms(item)}" for item in values if item]
 
 
 def _layer_has_depth(value: Any) -> bool:

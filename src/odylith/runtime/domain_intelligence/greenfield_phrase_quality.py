@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 
@@ -90,6 +90,7 @@ def normalize_artifact_tail(
     words = _normalize_lifecycle_status_state(words, carriers)
     words = _normalize_transition_status_state(words, carriers)
     words = _normalize_status_carrier(words, carriers)
+    words = _complete_terminal_status_modifier(words, carriers, default_carrier=default_carrier)
     if words and _lower(words[-1]) in TERMINAL_STATUS_MODIFIERS and not any(_lower(word) in carriers for word in words):
         words.append(default_carrier)
         carriers.add(default_carrier)
@@ -99,6 +100,7 @@ def normalize_artifact_tail(
         words = _normalize_lifecycle_status_state(words, carriers)
         words = _normalize_transition_status_state(words, carriers)
         words = _normalize_status_carrier(words, carriers)
+        words = _complete_terminal_status_modifier(words, carriers, default_carrier=default_carrier)
     return " ".join(words).strip(" .,;:")
 
 
@@ -147,6 +149,27 @@ def singularize_last_word(value: str) -> str:
     elif len(last) > 3 and lowered.endswith("s") and not lowered.endswith("ss"):
         words[-1] = last[:-1]
     return " ".join(words)
+
+
+def collapse_adjacent_duplicate_terms(value: str) -> str:
+    """Collapse duplicate neighboring lexical terms in generated public text."""
+
+    lines = str(value or "").splitlines()
+    return "\n".join(_collapse_adjacent_duplicate_terms_line(line) for line in lines)
+
+
+def collapse_adjacent_duplicate_terms_tree(value: object) -> object:
+    """Return a public-copy tree with duplicate neighboring terms collapsed."""
+
+    if isinstance(value, str):
+        return collapse_adjacent_duplicate_terms(value)
+    if isinstance(value, Mapping):
+        return {key: collapse_adjacent_duplicate_terms_tree(nested) for key, nested in value.items()}
+    if isinstance(value, list):
+        return [collapse_adjacent_duplicate_terms_tree(nested) for nested in value]
+    if isinstance(value, tuple):
+        return tuple(collapse_adjacent_duplicate_terms_tree(nested) for nested in value)
+    return value
 
 
 def _drop_relation_debris_after_carrier(words: Sequence[str], carriers: set[str]) -> list[str]:
@@ -231,6 +254,18 @@ def _normalize_status_carrier(words: Sequence[str], carriers: set[str]) -> list[
     return [*core[:4], words[-1]] if core else list(words)
 
 
+def _complete_terminal_status_modifier(words: Sequence[str], carriers: set[str], *, default_carrier: str) -> list[str]:
+    lowered = [_lower(word) for word in words]
+    if len(words) < 3 or lowered[-1] not in TERMINAL_STATUS_MODIFIERS:
+        return list(words)
+    if lowered[-2] in carriers:
+        return list(words)
+    if not any(word in carriers for word in lowered[:-1]):
+        return list(words)
+    carrier = "status" if lowered[-1] == "final" else default_carrier
+    return [*words, carrier]
+
+
 def _strip_trailing_relation_action(words: Sequence[str]) -> list[str]:
     result = list(words)
     while result and result[-1] in TRAILING_RELATION_ACTIONS:
@@ -258,8 +293,30 @@ def _lower(value: str) -> str:
     return clean_text(value).casefold().strip(".,;:")
 
 
+def _collapse_adjacent_duplicate_terms_line(value: str) -> str:
+    words = str(value or "").split()
+    if len(words) < 2:
+        return str(value or "")
+    result: list[str] = []
+    previous = ""
+    for word in words:
+        key = _term_key(word)
+        if key and key == previous and len(key) >= 4:
+            continue
+        result.append(word)
+        previous = key
+    return " ".join(result)
+
+
+def _term_key(value: str) -> str:
+    token = str(value or "").strip("`'\"“”‘’.,;:!?()[]{}<>")
+    return token.casefold() if token else ""
+
+
 __all__ = [
     "RELATION_TAIL_WORDS",
+    "collapse_adjacent_duplicate_terms",
+    "collapse_adjacent_duplicate_terms_tree",
     "normalize_artifact_tail",
     "reference_relation_description",
     "relation_object_phrase",

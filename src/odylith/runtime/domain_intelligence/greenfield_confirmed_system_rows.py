@@ -233,8 +233,9 @@ def has_meaningful_system_description(row: str, *, minimum_words: int = 5) -> bo
     return bool(
         _word_count(description) >= 3
         and re.search(
-            r"\b(?:captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
-            r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
+            r"\b(?:blocks?|blocking|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+            r"explains?|explaining|prevents?|preventing|protects?|protecting|produces?|producing|proposes?|proposing|"
+            r"recommends?|recommending|suggests?|suggesting|"
             r"returns?|returning|routes?|routing|records?|recording|stores?|storing|preserves?|preserving|"
             r"configures?|configuring|supports?|supporting|owned\s+by)\b",
             description,
@@ -287,8 +288,8 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
         return relative
     split_pattern = re.compile(
         r"\s+(?=(?:owned\s+by|"
-        r"captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
-        r"exposes?|exposing|"
+        r"blocks?|blocking|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+        r"exposes?|exposing|explains?|explaining|prevents?|preventing|protects?|protecting|"
         r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
         r"returns?|returning|routes?|routing|records?|recording|stores?|storing|"
         r"shows?|showing|renders?|rendering|generates?|generating|calculates?|calculating|"

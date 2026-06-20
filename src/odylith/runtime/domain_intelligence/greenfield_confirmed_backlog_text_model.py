@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import bounda
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import _has_mechanical_need_to_turn
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -702,13 +703,14 @@ def rationale_lines(
     proof_focus = rationale_proof_focus(proof_boundary, fallback=expected_outcome)
     release_basis = rationale_release_basis(title=title, label=label, first_slice=first_slice, proof_boundary=proof_boundary)
     deferred_rationale = _deferred_rationale_sentence(deferred_focus)
-    return [
+    lines = [
         f"- why now: {why_now}.",
         f"- expected outcome: {expected_outcome}.",
         f"- tradeoff: Keep this slice centered on {scope_focus} so implementation does not absorb unrelated release claims.",
         f"- deferred for now: {deferred_rationale}.",
         f"- ranking basis: {release_basis}.",
     ]
+    return [collapse_adjacent_duplicate_terms(line) for line in lines]
 
 
 def rationale_scope_focus(value: str, *, fallback: str) -> str:

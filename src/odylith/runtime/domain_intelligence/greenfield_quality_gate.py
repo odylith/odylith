@@ -311,10 +311,14 @@ def _control_plane_leak_issues(public_leaves: list[tuple[str, str]], *, prompt_t
 def _stale_generic_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
     issues: list[str] = []
     for term in _STALE_GENERIC_TERMS:
-        paths = [path for path, text in public_leaves if term in text]
+        paths = [path for path, text in public_leaves if _contains_stale_generic_label(text, term)]
         if paths:
             issues.append(f"greenfield public product content reuses stale generic label `{term}` at {_path_preview(paths)}")
     return issues
+
+
+def _contains_stale_generic_label(text: str, term: str) -> bool:
+    return bool(re.search(rf"(?<![A-Za-z0-9-]){re.escape(term)}(?![A-Za-z0-9-])", text))
 
 
 def _generic_actor_label_issues(public_leaves: list[tuple[str, str]]) -> list[str]:

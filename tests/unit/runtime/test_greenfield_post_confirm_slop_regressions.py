@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict
 import json
 from pathlib import Path
+import re
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
@@ -31,6 +32,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_name
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import _contains_stale_generic_label
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
@@ -603,6 +606,135 @@ def test_confirmed_project_brief_next_steps_normalize_adverbial_action_copy() ->
 
     assert "optionally notes" not in rendered
     assert "optionally note the trigger context" in rendered
+
+
+def test_confirmed_project_brief_localizes_generic_first_path_actor_from_accepted_roles() -> None:
+    intent = parse_confirmed_intent_text(
+        """
+# Cooking Robot Controller
+
+## Product story
+A control system turns a recipe into safe repeatable physical cooking. A home cook selects a dish and the controller sequences motions, dosing, heat, and safety stops.
+
+## State object
+A cook session: active recipe, current step, sensor readings, actuator state, and safety status.
+
+## First complete path
+Operator picks a recipe, the controller validates the robot is ready, runs the step sequence, surfaces progress, and reaches a finished safe state.
+
+## Human actors
+- Home cook / operator who selects dishes and responds to prompts
+- Kitchen technician who calibrates, maintains, and clears faults
+- Recipe author who defines the step-by-step cooking program
+
+## External systems
+- Robot hardware: arm actuators, ingredient dispensers, and heat element
+- Sensors: temperature probes, scales, and presence sensing
+- Emergency-stop hardware interlock
+
+## Internal product systems
+- Recipe / step sequencer that interprets cooking programs
+- Real-time control loop for heat, timing, and motion
+- Safety supervisor that can override the sequencer
+- Session and telemetry state tracking the live cook
+
+## Critical assumptions
+- A single robot cell per controller instance for the first version
+- Recipes are pre-authored structured programs
+
+## Ambiguities
+- Software simulation/controller only, or driving real hardware from day one?
+- Target host: embedded device, edge box, or general server?
+
+## Proof boundary
+First version proves load a recipe, run its steps with closed-loop control, hit a safe finished state, and honor an emergency stop.
+""",
+        prompt="Draft a greenfield proposal for a cooking robot controller",
+    )
+    proposal = build_confirmed_greenfield_proposal(
+        prompt="Draft a greenfield proposal for a cooking robot controller",
+        title="Cooking Robot Controller",
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    first_path = proposal["project_brief"]["blueprint_sections"][1]["must_capture"]
+    rendered = json.dumps(proposal, sort_keys=True)
+    issues = greenfield_quality_issues(proposal)
+
+    assert first_path.startswith("Home Cook picks a recipe")
+    assert "Operator picks a recipe" not in rendered
+    assert "Home Cook / Operator" not in rendered
+    assert "part of the result, explanation, and evidence it is responsible for" not in rendered
+    assert not any("generic actor label `Operator`" in issue for issue in issues)
+    assert not any("clipped or unfinished" in issue for issue in issues)
+
+
+def test_confirmed_intent_accepts_concise_system_actions_and_release_success_proof() -> None:
+    intent = parse_confirmed_intent_text(
+        """
+# Residential Solar Quote Planner
+
+Product story:
+A homeowner wants to compare a practical solar installation option without reading a spreadsheet of assumptions. A solar coordinator needs a consistent quote record that explains roof fit, usage assumptions, incentive assumptions, estimated savings, and follow-up risk.
+
+State object:
+The central state is a solar quote with homeowner profile, address assumptions, roof area estimate, usage baseline, system size, incentive assumptions, estimated cost, savings range, risk notes, and follow-up status.
+
+First complete path:
+A homeowner enters address and usage details, reviews the estimated system size, sees savings and cost assumptions, flags a roof or incentive uncertainty, and sends the quote to a solar coordinator for review.
+
+Human actors:
+- Homeowner: provides address and usage assumptions and reviews the quote.
+- Solar coordinator: reviews assumptions, explains risk, and decides whether the quote is ready for follow-up.
+
+External systems:
+- Utility tariff reference, simulated for the first release.
+- Roof imagery service, deferred until manual roof assumptions are stable.
+
+Internal product systems:
+- Quote Intake captures homeowner inputs.
+- System Sizing Model estimates panel count and production.
+- Incentive Assumption Ledger records assumptions and uncertainty.
+- Coordinator Review Board decides follow-up readiness.
+
+Critical assumptions:
+- Release 0.0.1 handles one address and one quote at a time.
+- Estimates are advisory and must show assumptions clearly.
+
+Ambiguities:
+- Financing products are deferred.
+- Live utility integrations are deferred.
+
+Proof boundary:
+Release 0.0.1 succeeds when one homeowner can produce a reviewable solar quote and one coordinator can decide whether it is ready for follow-up.
+""",
+        prompt="Create a residential solar quote planner.",
+    )
+    proposal = build_greenfield_proposal(
+        repo_root=Path("/tmp/nonexistent"),
+        prompt="Create a residential solar quote planner.",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert len(intent["internal_systems"]) == 4
+    assert "Coordinator Review Board" in " ".join(intent["internal_systems"])
+    assert len(proposal["backlog"]) >= 3
+    assert len(proposal["components"]) >= 3
+    assert len(proposal["diagrams"]) >= 2
+    assert greenfield_quality_issues(proposal) == []
+    assert not re.search(r"\bstate owner\b", rendered, flags=re.IGNORECASE)
+    assert not re.search(r"\bevidence owner\b", rendered, flags=re.IGNORECASE)
+
+
+def test_stale_generic_label_detector_does_not_match_evidence_ownership_words() -> None:
+    assert _contains_stale_generic_label("Evidence owner: approves release proof.", "Evidence owner")
+    assert not _contains_stale_generic_label(
+        "Missing Evidence ownership stays outside the boundary owned by Application Intake.",
+        "Evidence owner",
+    )
 
 
 def test_confirmed_project_brief_readiness_gates_do_not_embed_raw_action_lists() -> None:
@@ -1836,7 +1968,8 @@ The first release succeeds when one requester can submit a complete request and 
     actor_labels = [row.split(":", 1)[0] for row in intent["human_actors"]]
 
     assert "Requester" in actor_labels
-    assert "Reviewer" in actor_labels
+    assert "Request Reviewer" in actor_labels
+    assert "Reviewer" not in actor_labels
     assert "Where a Requester" not in rendered
     assert "Chasing the Team" not in rendered
     assert "Notes a Reviewer" not in rendered

@@ -1047,6 +1047,7 @@ def test_rendered_package_quality_allows_terminal_final_for_state_transitions_on
                 [
                     "flowchart LR",
                     '  proof["Proof checkpoint<br/>one record moves from scheduled to live to final"] --> decision',
+                    '  match["Match result<br/>score volunteer marks match final"] --> decision',
                     '  decision["Release decision<br/>accept, revise, or block"] --> proof',
                 ]
             )

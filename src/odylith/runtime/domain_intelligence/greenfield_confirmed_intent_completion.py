@@ -7,6 +7,8 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows as _completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_release_actor_rows as _first_release_actor_rows
@@ -58,12 +60,14 @@ def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
         title = _title(result)
     _normalize_confirmed_core_language(result)
     result["human_actors"] = _completed_actor_rows(result, title=title)
+    _normalize_confirmed_actor_context(result, title=title)
     result["internal_systems"] = _completed_system_rows(result, title=title)
     _complete_core_fields(result, title=title)
     _normalize_confirmed_core_language(result)
     repair_confirmed_intent_semantic_projections(result)
     _complete_product_posture(result, title=title)
     _normalize_confirmed_core_language(result)
+    _normalize_confirmed_actor_context(result, title=title)
     return result
 
 
@@ -88,6 +92,26 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
             for row in external_systems
             if (normalized := _boundary_clause_item(_normalize_external_system_language(row), limit=180))
         ]
+
+
+def _normalize_confirmed_actor_context(intent: dict[str, Any], *, title: str) -> None:
+    actor_rows = confirmed_text_values(intent.get("human_actors"))
+    if actor_rows:
+        intent["human_actors"] = [
+            normalized
+            for row in actor_rows
+            if (normalized := project_specific_actor_row(row, project_focus=title))
+        ]
+    first_path = _clean(intent.get("first_path"))
+    if first_path:
+        intent["first_path"] = _sentence(
+            localize_leading_actor_reference(
+                first_path,
+                actor_rows=confirmed_text_values(intent.get("human_actors")),
+                project_focus=title,
+                fallback=f"{_focus_label(title)} user",
+            )
+        )
 
 
 def _normalize_external_system_language(value: str) -> str:

@@ -38,6 +38,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import phras
 from odylith.runtime.domain_intelligence.greenfield_component_terms import term_phrase
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singularize_last_word
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
+from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import contract_focus
@@ -894,6 +895,39 @@ Accepted input context.
     assert any("accepted-input placeholder" in issue for issue in issues)
     assert any("repeated keeping summary" in issue for issue in issues)
     assert any("treats action user adds peptide as a calculated object" in issue for issue in issues)
+
+
+def test_narrative_component_spec_splits_keeping_summary_without_repetition() -> None:
+    spec = build_narrative_component_spec(
+        component_id="review-evidence-panel",
+        label="Review Evidence Panel",
+        path="src/match/review_evidence_panel",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-001",),
+        responsibility="keeps corrections and finalization while keeping required inputs, blockers, and proof evidence clear",
+        component_contract={
+            "owned_state": "public match summary correction final status, correction history, and replay evidence",
+            "accepted_inputs": "score event correction, source actor, prior state, and validation context",
+            "produced_outputs": "public match summary correction final status, correction history, and review outcome",
+            "states_or_transitions": "scheduled, corrected, reviewed, final status, and ready-for-next-step",
+            "outside_boundary": "score entry ownership and release approval",
+            "local_proof": [
+                "Successful path evidence for Review Evidence Panel: correction history, visible result, and persisted explanation.",
+                "Blocked input evidence for Review Evidence Panel: invalid correction input, no misleading result, and recovery explanation.",
+                "Replay evidence for Review Evidence Panel: actor, input facts, status, explanation, and proof trail.",
+            ],
+            "upstream_truth": "Score Event Ledger",
+            "downstream_consumers": "release review",
+            "unique_failure": "Review Evidence Panel can mislead users if correction history is missing, stale, or shown without enough explanation to recover.",
+        },
+    )
+    issues = rendered_component_spec_quality_issues({"Review Evidence Panel": spec}, project_title="Community Match Tracker")
+
+    assert "while keeping" not in spec
+    assert "It keeps inputs, blockers, and proof evidence clear." in spec
+    assert not any("repeated keeping summary" in issue for issue in issues)
 
 
 def test_greenfield_component_ids_remove_product_component_word_overlap() -> None:

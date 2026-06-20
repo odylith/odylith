@@ -150,7 +150,7 @@ def _qualitative_intent_gaps(intent: Mapping[str, Any]) -> list[str]:
     if path and not (has_progression_or_outcome(path) and _has_semantic_overlap(path, context, minimum=2)):
         gaps.append("first_path")
     if proof and not (
-        has_progression_or_outcome(proof)
+        (has_progression_or_outcome(proof) or _has_release_success_proof_shape(proof))
         and _has_semantic_overlap(proof, f"{story} {state} {path} {systems}", minimum=1)
     ):
         gaps.append("proof_boundary")
@@ -193,6 +193,24 @@ def has_progression_or_outcome(text: str) -> bool:
     return word_count(cleaned) >= 24 and bool(
         re.search(
             r"\b(?:result|outcome|proof|evidence|state|status|decision|completed|blocked|accepted|rejected|safe|unsafe)\b",
+            cleaned,
+            re.IGNORECASE,
+        )
+    )
+
+
+def _has_release_success_proof_shape(text: str) -> bool:
+    cleaned = clean_confirmed_text(text)
+    if word_count(cleaned) < 14:
+        return False
+    return bool(
+        re.search(
+            r"\b(?:release|first\s+release|version)\b.+\b(?:succeeds?|works?|passes?|ready|complete|proven)\b.+\bwhen\b",
+            cleaned,
+            re.IGNORECASE,
+        )
+        or re.search(
+            r"\bwhen\b.+\b(?:ready|reviewable|visible|published|complete|completed|follow[-\s]?up|accepted|approved)\b",
             cleaned,
             re.IGNORECASE,
         )

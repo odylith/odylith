@@ -29,7 +29,12 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
     shares_product_terms,
 )
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
+from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import (
+    build_workstream_domain_intelligence,
+)
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -69,6 +74,47 @@ def test_confirmed_backlog_terms_use_shared_domain_index() -> None:
     ) == "operator approval"
     assert looks_mechanical_summary("required actor identity and required validation context")
     assert word_occurrences("Required proof, source evidence, and required signoff.", "required") == 2
+
+
+def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generically() -> None:
+    assert collapse_adjacent_duplicate_terms("Keep release scope scope small.") == "Keep release scope small."
+    assert (
+        normalize_artifact_tail("public match summary correction final", carrier_terms={"summary", "status"})
+        == "public match summary correction final status"
+    )
+
+    lines = rationale_lines(
+        label="Cooking Robot Controller",
+        title="Prove One Complete Cooking Robot Controller Path",
+        opportunity="Keep release scope scope narrow before optional expansion.",
+        first_slice="scope scope remains centered on one complete path",
+        proof_boundary="Release works when one path can be reviewed.",
+    )
+    packet = build_workstream_domain_intelligence(
+        label="Cooking Robot Controller",
+        row_title="Prove One Complete Cooking Robot Controller Path",
+        problem="A home cook needs one safe cooking path before broader automation.",
+        opportunity="Keep release scope scope narrow before optional expansion.",
+        product_view="The first path remains inside accepted scope scope until proof passes.",
+        first_slice="scope scope remains centered on one complete path",
+        metrics=["One path succeeds, blocks, and recovers."],
+        dependencies=["Accepted actor and hardware simulator context."],
+        interfaces=["Recipe sequence, safety supervisor, and session telemetry."],
+        validation=["Run success, blocked-input, and emergency-stop paths."],
+        state_object="Cook Session",
+        evidence_record="Cook Session Proof Record",
+        first_path="A home cook picks a recipe and reviews the finished result.",
+        proof_boundary="Release works when one path can be reviewed.",
+        human_actors=["Home Cook: selects the recipe."],
+        internal_systems=["Recipe Sequencer", "Safety Supervisor"],
+        external_systems=["Robot simulator"],
+        non_goals=["Broader automation remains deferred."],
+    )
+    rendered = "\n".join(lines) + "\n" + str(packet)
+
+    assert "scope scope" not in rendered.casefold()
+    source = BACKLOG_TEXT_MODEL_PATH.read_text(encoding="utf-8")
+    assert 'replace("scope scope"' not in source
 
 
 def test_confirmed_backlog_rationale_keeps_proof_focus_complete() -> None:

@@ -6,6 +6,8 @@ import re
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import actor_display_label
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_command_text import shell_quote
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
@@ -50,7 +52,7 @@ def confirmed_project_brief(
     evidence_label = domain_object_label(evidence_record, fallback=evidence_record)
     state_ref = sentence_label(state_label)
     evidence_ref = sentence_label(evidence_label)
-    actor_summary = _actor_boundary_text(human_actors) or f"the first {label_lower} operator and reviewer"
+    actor_summary = _actor_boundary_text(human_actors, project_focus=label) or f"the first {label_lower} operator and reviewer"
     internal_summary = join_system_labels(internal_systems, limit=8) or (
         f"{state_ref} ownership and {evidence_ref} review"
     )
@@ -65,6 +67,8 @@ def confirmed_project_brief(
     first = _first_path_brief(
         first_path
         or f"The first release proves one {label_lower} path from intake through state update and evidence review.",
+        human_actors=human_actors,
+        label=label,
         limit=300,
     )
     proof_source = proof_boundary or (
@@ -250,18 +254,19 @@ def _sentence_text(value: str) -> str:
     return f"{text}."
 
 
-def _actor_boundary_text(items: list[str] | None, *, limit: int = 4) -> str:
-    values = [_actor_boundary_item(item) for item in (items or []) if str(item or "").strip()]
+def _actor_boundary_text(items: list[str] | None, *, project_focus: str = "", limit: int = 4) -> str:
+    values = [_actor_boundary_item(item, project_focus=project_focus) for item in (items or []) if str(item or "").strip()]
     values = [value for value in values if value]
     return "; ".join(values[:limit])
 
 
-def _actor_boundary_item(value: str) -> str:
+def _actor_boundary_item(value: str, *, project_focus: str = "") -> str:
     text = compact_text(value).strip(" .")
     if not text:
         return ""
     label, sep, body = _split_actor_boundary_item(text)
     if sep and label:
+        label = actor_display_label(text, project_focus=project_focus) or label
         if is_deferred_actor(text):
             return f"{label}: supplies context and support; deferred from the first path"
         if body:
@@ -298,11 +303,21 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
     return _remove_orphan_without_it_tail(strip_dangling_tail(clipped).rstrip(" ,;:"))
 
 
-def _first_path_brief(value: str, *, limit: int = 180) -> str:
+def _first_path_brief(value: str, *, human_actors: list[str] | None = None, label: str = "", limit: int = 180) -> str:
     steps = first_path_steps(value)
     if steps:
-        return _brief_clause(base_adverbial_note_action(". ".join(steps)), limit=limit)
-    return _brief_clause(base_adverbial_note_action(value), limit=limit)
+        text = base_adverbial_note_action(". ".join(steps))
+    else:
+        text = base_adverbial_note_action(value)
+    return _brief_clause(
+        localize_leading_actor_reference(
+            text,
+            actor_rows=[value for value in human_actors or [] if not is_deferred_actor(str(value))],
+            project_focus=label,
+            fallback=f"{sentence_label(label)} user" if label else "first user",
+        ),
+        limit=limit,
+    )
 
 
 def _story_readiness_summary(value: str, *, fallback: str, limit: int = 220) -> str:

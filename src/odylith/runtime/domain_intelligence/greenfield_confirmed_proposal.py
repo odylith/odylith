@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_backlog_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_evidence_record_label
@@ -87,6 +88,12 @@ def build_confirmed_greenfield_proposal(
     human_actors = _project_specific_actor_rows(
         label=label,
         rows=confirmed_intent_list(confirmed_intent, "human_actors"),
+    )
+    first_path = localize_leading_actor_reference(
+        first_path,
+        actor_rows=human_actors,
+        project_focus=label,
+        fallback=f"{label_lower} user",
     )
     external_systems = confirmed_intent_list(confirmed_intent, "external_systems")
     internal_systems = confirmed_intent_list(confirmed_intent, "internal_systems")
@@ -474,7 +481,7 @@ def _project_intelligence(
             story_summary or f"{label} gives a named operator one accountable path instead of an unbounded product outcome.",
             problem_summary,
             f"Release {release} proves the accepted first path before wider automation, integrations, or scaling claims are allowed: {first_path_summary}",
-            "The product outcome is useful only when each accepted role can see the part of the result, explanation, and evidence it is responsible for.",
+            "The product outcome is useful only when each accepted role can see its relevant result, explanation, and evidence.",
         ],
         "scope": [
             f"In scope: {first_path_summary}",
@@ -574,7 +581,7 @@ def _project_intelligence(
             f"Explain why {label_lower} should exist, who uses it, what useful result it produces, and what stays outside the first release: {story_summary or product_view_summary}"
         ),
         "coding_posture": (
-            f"Coding starts only after the {label_lower} first path, state owner, evidence owner, source paths, "
+            f"Coding starts only after the {label_lower} first path, {state_lower}, {evidence_lower}, source paths, "
             "failure handling, and validation commands agree."
         ),
         "control_surface_summary": [

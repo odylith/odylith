@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_confirmed_diagram_text as diagram_text
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
@@ -47,7 +48,13 @@ def confirmed_diagrams(
     component_phrase = diagram_text.component_phrase(release_components)
     actor_phrase = diagram_text.actor_phrase(actors, label=label)
     story_brief = diagram_text.brief_story(product_story, fallback=f"{label} gives {actor_phrase} one reviewable first path")
-    first_path_brief = diagram_text.brief_first_path(first_path)
+    display_first_path = localize_leading_actor_reference(
+        first_path,
+        actor_rows=actors,
+        project_focus=label,
+        fallback=f"{sentence_label(label)} user",
+    )
+    first_path_brief = diagram_text.brief_first_path(display_first_path)
     proof_brief = diagram_text.brief_proof_boundary(proof_boundary)
     state_label = diagram_text.brief_object_label(state_object, fallback=f"{label} state")
     evidence_label = diagram_text.brief_object_label(evidence_record, fallback=f"{label} evidence record")
@@ -105,7 +112,7 @@ def confirmed_diagrams(
                 label=label,
                 actors=actors,
                 components=release_components,
-                first_path=first_path,
+                first_path=display_first_path,
                 semantic_model=semantic_model,
             ),
         },
@@ -173,7 +180,7 @@ def confirmed_diagrams(
                 f"Trace release ownership for {label} from product-owned components to the product result supported by {state_label} and {evidence_label}"
             ),
             "read_guide": (
-                f"Read from each state or evidence owner toward the proof boundary. A box matters when it owns {label_ref} data, "
+                f"Read from each state-owning or evidence-producing component toward the proof boundary. A box matters when it owns {label_ref} data, "
                 "access, derivation, export, display, or review needed to trust the first release."
             ),
             "owner": "repo",
@@ -311,7 +318,7 @@ def _state_evidence_mermaid(
     proof_boundary: str,
 ) -> str:
     first_owner = diagram_text.component_label(components, 0, fallback="First path owner")
-    evidence_owner = _component_label_for_text(evidence_record, components=components) or diagram_text.component_label(components, min(2, max(0, len(components) - 1)), fallback="Evidence owner")
+    evidence_owner = _component_label_for_text(evidence_record, components=components) or diagram_text.component_label(components, min(2, max(0, len(components) - 1)), fallback="Proof Review Component")
     review_owner = diagram_text.component_label(components, len(components) - 1, fallback="Review owner")
     actor_label = diagram_text.short_label(actors[0] if actors else diagram_text.actor_phrase(actors, label=label))
     proof_label = diagram_text.release_proof_label(proof_boundary) or "source-backed release check"

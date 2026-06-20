@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import re
 
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import generic_actor_label_prefix
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
@@ -273,6 +275,30 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
     return _title_label(head)
 
 
+def actor_display_label(value: str, *, project_focus: str = "") -> str:
+    """Return the concrete actor label that should appear in public prose."""
+
+    label = accepted_actor_label(value, project_focus=project_focus)
+    return _drop_generic_actor_alternative(label) or label
+
+
+def localize_leading_actor_reference(
+    value: str,
+    *,
+    actor_rows: Sequence[str] = (),
+    project_focus: str = "",
+    fallback: str = "first user",
+) -> str:
+    """Replace a generic leading actor reference with an accepted actor label."""
+
+    text = _clean(value).strip()
+    prefix = generic_actor_label_prefix(text)
+    if not prefix:
+        return text
+    replacement = _first_actor_display_label(actor_rows, project_focus=project_focus) or fallback
+    return f"{replacement}{text[len(prefix):]}"
+
+
 def project_specific_actor_row(row: str, *, project_focus: str) -> str:
     """Rewrite one actor row so the visible label is not a stable-role placeholder."""
 
@@ -280,7 +306,7 @@ def project_specific_actor_row(row: str, *, project_focus: str) -> str:
     if not text:
         return ""
     _head, body = _split_actor_row(text)
-    label = accepted_actor_label(text, project_focus=project_focus)
+    label = actor_display_label(text, project_focus=project_focus)
     if not label:
         return text
     return f"{label}: {body}" if body else label
@@ -512,6 +538,35 @@ def _project_specific_composite_head(head: str, *, lower_head: str, project_focu
     return ""
 
 
+def _drop_generic_actor_alternative(value: str) -> str:
+    label = _clean(value).strip(" .")
+    if not label:
+        return ""
+    for separator in (" / ", "/", " or "):
+        if separator not in label:
+            continue
+        parts = [part.strip(" .") for part in label.split(separator) if part.strip(" .")]
+        if len(parts) != 2:
+            continue
+        concrete = [part for part in parts if not _actor_alternative_is_generic(part)]
+        if len(concrete) == 1:
+            return concrete[0]
+    return label
+
+
+def _actor_alternative_is_generic(value: str) -> bool:
+    text = _key(value)
+    return bool(text in _GENERIC_ROLE_ONLY or text in _GENERIC_HEADS)
+
+
+def _first_actor_display_label(values: Sequence[str], *, project_focus: str) -> str:
+    for value in values:
+        label = actor_display_label(str(value), project_focus=project_focus)
+        if label:
+            return label
+    return ""
+
+
 def _role_suffix(value: str) -> str:
     words = [word.strip(".,;:()").casefold() for word in _clean(value).replace("/", " ").split()]
     if not words:
@@ -619,4 +674,9 @@ def _clean(value: object) -> str:
     return clean_markdown_text(value)
 
 
-__all__ = ["accepted_actor_label", "project_specific_actor_row"]
+__all__ = [
+    "accepted_actor_label",
+    "actor_display_label",
+    "localize_leading_actor_reference",
+    "project_specific_actor_row",
+]
