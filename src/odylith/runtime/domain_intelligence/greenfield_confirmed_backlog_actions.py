@@ -36,6 +36,11 @@ def prefer_outcome_title(value: str) -> bool:
 
 def workflow_title_action(*, first_path: str, actor: str, fallback: str) -> str:
     fragments = _actor_owned_action_fragments(first_path=first_path, actor=actor, include_visible=False, max_fragments=4)
+    terminal = _preferred_terminal_fragment(fragments)
+    if terminal:
+        action = backlog_text.capability_action_clause(backlog_text.sentence_fragment(terminal))
+        if action:
+            return action
     if len(fragments) > 1:
         joined = f"{fragments[0]}, {fragments[1]}" if ("," in fragments[0] or "(" in fragments[0]) else join_action_fragments(fragments[:2])
         action = backlog_text.capability_action_clause(joined)
@@ -160,6 +165,20 @@ def _preferred_title_fragment(values: list[str]) -> str:
     return first
 
 
+def _preferred_terminal_fragment(values: list[str]) -> str:
+    fragments = [backlog_text.sentence_fragment(value) for value in values if backlog_text.sentence_fragment(value)]
+    if len(fragments) < 2:
+        return ""
+    for fragment in reversed(fragments):
+        if re.match(
+            r"^(?:accept|approve|complete|finalize|finish|publish|release|send|submit)\b",
+            fragment,
+            flags=re.IGNORECASE,
+        ):
+            return fragment
+    return ""
+
+
 def _skip_title_setup_fragment(value: str) -> bool:
     text = str(value or "").strip()
     if re.match(r"^(?:open|launch|start|visit|view)\b", text, flags=re.IGNORECASE):
@@ -182,9 +201,9 @@ def _actor_owned_action_fragments(*, first_path: str, actor: str, include_visibl
     for step in first_path_steps(first_path):
         signature_terms = _actor_match_terms(actor_signature(step))
         if actor_terms:
-            if not signature_terms:
-                continue
-            if not signature_terms & actor_terms:
+            step_terms = _actor_match_terms(step)
+            matched_actor = bool((signature_terms or step_terms) & actor_terms)
+            if not matched_actor:
                 if selected and visible_seen:
                     break
                 continue
@@ -194,6 +213,7 @@ def _actor_owned_action_fragments(*, first_path: str, actor: str, include_visibl
                 break
             continue
         fragment = backlog_text.sentence_fragment(action_chain_fragment(step))
+        fragment = backlog_text.base_leading_action(backlog_text.strip_actor_prefix(fragment, actor))
         key = fragment.casefold()
         if fragment and key not in selected_keys:
             selected.append(fragment)

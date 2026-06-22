@@ -288,6 +288,10 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         r"(?:manages?|maintains?|coordinates?|orchestrates?)\s+"
         r"(?:(?:the|an|a)\s+)?(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s*"
         r"(?:,\s*)?(?:with|containing|including|that|for)\b",
+        r"^(?:the\s+)?[A-Za-z][A-Za-z0-9_'’/-]*(?:\s+[A-Za-z][A-Za-z0-9_'’/-]*){0,5}\s+"
+        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?|manages?|maintains?|coordinates?|orchestrates?)\s+"
+        r"(?:a|an|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s*"
+        r"(?=$|[,.;:]|\s+(?:with|containing|including|that|for)\b)",
         r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:with|containing|that|for)\b",
         r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
@@ -630,14 +634,24 @@ def _restore_source_mixed_case_tokens(label: str, source: str) -> str:
 
 def _strip_state_object_predicate(value: str) -> str:
     text = clean_confirmed_text(value).strip(" .")
-    return re.sub(
+    text = re.sub(
         r"^(?:the\s+)?(?:product|system|app|application|workspace|service|platform|tool)\s+"
-        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?)\s+",
+        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?|manages?|maintains?|coordinates?|orchestrates?)\s+",
         "",
         text,
         count=1,
         flags=re.IGNORECASE,
     ).strip(" .")
+    text = re.sub(
+        r"^(?:the\s+)?[a-z][a-z0-9_'’/-]*(?:\s+[a-z][a-z0-9_'’/-]*){0,5}\s+"
+        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?|manages?|maintains?|coordinates?|orchestrates?)\s+"
+        r"(?=(?:a|an|one)\s+)",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    return text
 
 
 def _should_split_human_hyphen_label(value: str) -> bool:

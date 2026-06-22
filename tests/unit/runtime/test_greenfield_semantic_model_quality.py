@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 
@@ -55,3 +57,61 @@ def test_outcome_selector_keeps_confirmed_user_result_before_downstream_handoff(
     )
 
     assert first_path_outcome_phrase(first_path, proof_boundary=proof_boundary) == "a confirmed booking"
+
+
+def test_operator_first_path_keeps_modifier_tail_with_visible_outcome() -> None:
+    first_path = (
+        "Operator picks a recipe, the controller validates the robot is ready, runs the step sequence with "
+        "closed-loop heat and timing control, surfaces progress, and reaches a finished, safe-to-serve state, "
+        "with an emergency stop available throughout."
+    )
+    model = build_greenfield_semantic_model(
+        title="Cooking Robot Controller",
+        state_object="A cook session with active recipe, current step, live sensor readings, and safety status.",
+        first_path=first_path,
+        proof_boundary=(
+            "Release 0.0.1 succeeds when one user can run the first path to a safe finished state with emergency stop."
+        ),
+        components=[],
+        human_actors=["Home Cook: selects dishes and responds to prompts"],
+    )
+    contract = model.first_path_contract
+    rendered = f"{contract.capability} {contract.visible_result}"
+
+    assert first_path_outcome_phrase(first_path) == (
+        "a finished, safe-to-serve state with an emergency stop available throughout"
+    )
+    assert contract.visible_result == "a finished, safe-to-serve state with an emergency stop available throughout"
+    assert contract.capability == (
+        "picking a recipe, validating the robot is ready, and running the step sequence with closed-loop heat and timing control"
+    )
+    assert "Operator picks" not in rendered
+    assert "With an emergency stop" not in rendered
+    assert generated_public_copy_issues("semantic preview", rendered) == ()
+
+
+def test_confirmed_intent_normalizes_product_manages_state_object_predicate() -> None:
+    completed = complete_confirmed_intent(
+        {
+            "title": "Cooking Robot Controller",
+            "product_story": (
+                "A cook needs a safe robot-controlled cooking run with visible progress, prompt handling, "
+                "and evidence when the run stops or finishes."
+            ),
+            "state_object": (
+                "The product manages a cooking run, including selected recipe, staged ingredients, "
+                "sensor readings, heat and timing state, operator prompts, safety stops, and final serve readiness."
+            ),
+            "first_path": (
+                "Operator picks a recipe, the controller validates readiness, runs the first sequence, "
+                "surfaces progress, and reaches a finished safe-to-serve state."
+            ),
+            "proof_boundary": (
+                "Release 0.0.1 succeeds when one operator can choose a recipe, validate readiness, "
+                "run the first sequence, see progress, and preserve safety-stop evidence."
+            ),
+        }
+    )
+
+    assert completed["state_object"].startswith("a cooking run, including selected recipe")
+    assert "product manages" not in completed["state_object"].casefold()

@@ -34,13 +34,16 @@ _INLINE_ROLE_TERMS = (
 )
 _INLINE_ROLE_HEAD_STOPWORDS = frozenset(
     {
+        "a",
         "and",
+        "an",
         "as",
         "at",
         "by",
         "each",
         "for",
         "from",
+        "if",
         "in",
         "include",
         "includes",
@@ -62,11 +65,15 @@ _INLINE_ROLE_HEAD_STOPWORDS = frozenset(
         "treat",
         "treating",
         "with",
+        "when",
+        "where",
+        "whether",
+        "while",
     }
 )
 
 
-def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
+def generated_public_copy_findings(scope: str, value: Any) -> tuple[GeneratedCopyFinding, ...]:
     """Return public-copy failures classified by generated-prose shape."""
 
     findings: list[GeneratedCopyFinding] = []
@@ -111,7 +118,29 @@ def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
             findings.append(GeneratedCopyFinding("malformed_relative_clause_split", f"{scope} leaked malformed relative-clause split prose"))
         if _has_malformed_relation_phrase(text):
             findings.append(GeneratedCopyFinding("malformed_relation_phrase", f"{scope} leaked malformed relation phrase"))
-    return unique_text(finding.message for finding in findings)
+        if _has_mixed_lower_title_role_fragment(text):
+            findings.append(GeneratedCopyFinding("mixed_role_case", f"{scope} leaked mixed actor-role casing"))
+        if _has_prepositional_visible_result_splice(text):
+            findings.append(GeneratedCopyFinding("prepositional_visible_result", f"{scope} leaked prepositional visible-result splice"))
+    return _unique_findings(findings)
+
+
+def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
+    """Return public-copy failure messages for generated prose."""
+
+    return unique_text(finding.message for finding in generated_public_copy_findings(scope, value))
+
+
+def _unique_findings(findings: Sequence[GeneratedCopyFinding]) -> tuple[GeneratedCopyFinding, ...]:
+    seen: set[str] = set()
+    result: list[GeneratedCopyFinding] = []
+    for finding in findings:
+        key = finding.message.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(finding)
+    return tuple(result)
 
 
 def has_inline_role_casing_drift(value: Any) -> bool:
@@ -130,6 +159,30 @@ def has_inline_role_casing_drift(value: Any) -> bool:
             continue
         return True
     return False
+
+
+def _has_mixed_lower_title_role_fragment(value: str) -> bool:
+    text = str(value or "")
+    pattern = (
+        r"\b(?P<head>[a-z][a-z0-9'-]+)\s+(?P<title>[A-Z][a-z][A-Za-z0-9'-]*)\s+"
+        r"(?:can|cannot|needs?|picks?|chooses?|selects?|starts?|opens?|enters?|uploads?|runs?|sees?|views?|receives?|reviews?)\b"
+    )
+    for match in re.finditer(pattern, text):
+        if match.group("head").casefold() in _INLINE_ROLE_HEAD_STOPWORDS:
+            continue
+        previous = text[: match.start()].rstrip().rsplit(" ", 1)[-1].casefold()
+        if previous in {"a", "an", "the", "this", "that"}:
+            continue
+        return True
+    return False
+
+
+def _has_prepositional_visible_result_splice(value: str) -> bool:
+    text = str(value or "")
+    return bool(
+        re.search(r"\b(?:reach|reaches|reaching|see|sees|seeing)\s+With\b", text)
+        or re.search(r"\b(?:reach|reaches|reaching)\s+with\s+(?:a|an|the)\b", text, flags=re.IGNORECASE)
+    )
 
 
 def _continues_title_after_role(value: Any, offset: int) -> bool:
@@ -522,4 +575,9 @@ _ABSTRACT_OUTPUT_CONCEPTS = (
 )
 
 
-__all__ = ["GeneratedCopyFinding", "generated_public_copy_issues", "has_inline_role_casing_drift"]
+__all__ = [
+    "GeneratedCopyFinding",
+    "generated_public_copy_findings",
+    "generated_public_copy_issues",
+    "has_inline_role_casing_drift",
+]

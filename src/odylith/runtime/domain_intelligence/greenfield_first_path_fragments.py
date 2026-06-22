@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects import saved_destination_result_object
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text, clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 TRIVIAL_START_RE = re.compile(
@@ -60,7 +61,7 @@ def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
     return bool(
         re.search(
-            r"\b(?:compare|compares|confirm|confirms|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|update|updates|view|views|review|reviews|receive|receives)\b",
+            r"\b(?:compare|compares|confirm|confirms|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|update|updates|view|views|receive|receives)\b",
             text,
             re.IGNORECASE,
         )
@@ -377,7 +378,7 @@ def strip_action_subject(value: str) -> str:
             return text
         if len(label_terms(prefix)) <= 6 and (
             re.search(
-                r"\b(?:actor|applicant|coordinator|customer|owner|participant|person|requester|reviewer|supervisor|user)\b",
+                r"\b(?:actor|applicant|coordinator|customer|operator|owner|participant|person|requester|reviewer|supervisor|user)\b",
                 prefix,
                 flags=re.IGNORECASE,
             )
@@ -404,7 +405,7 @@ def actor_signature(value: str) -> str:
             candidate = text[: match.start()].strip(" ,")
             if len(label_terms(candidate)) <= 6 and (
                 re.search(
-                    r"\b(?:actor|applicant|coordinator|customer|owner|participant|person|requester|reviewer|supervisor|user)\b",
+                    r"\b(?:actor|applicant|coordinator|customer|operator|owner|participant|person|requester|reviewer|supervisor|user)\b",
                     candidate,
                     flags=re.IGNORECASE,
                 )
@@ -462,8 +463,13 @@ def leading_subject_prefix(value: str) -> str:
     return subject
 
 def lowercase_leading_article(value: str) -> str:
-    text = clean_first_path_text(value).strip(" .")
-    return re.sub(r"^(?:A|An|The|Today|Tomorrow|This|That)\b", lambda match: match.group(0).casefold(), text)
+    text = re.sub(
+        r"^(?:A|An|The|Today|Tomorrow|This|That|With|Without)\b",
+        lambda match: match.group(0).casefold(),
+        clean_first_path_text(value).strip(" ."),
+    )
+    match = MATERIAL_ACTION_RE.search(text)
+    return lower_plain_title_subject_fragment(text, action_offset=match.start() if match else 0)
 
 _GERUND_ACTION_VERBS = {
     "accept": "accepting",
@@ -593,6 +599,10 @@ def _lower_initial_for_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" ,.")
     if not text:
         return ""
+    match = MATERIAL_ACTION_RE.search(text)
+    plain_subject = lower_plain_title_subject_fragment(text, action_offset=match.start() if match else 0)
+    if plain_subject != text:
+        return plain_subject
     match = re.match(r"(?P<prefix>[^A-Za-z0-9]*)(?P<token>[A-Za-z0-9][A-Za-z0-9_/-]*)", text)
     if not match:
         return text[:1].casefold() + text[1:]
@@ -777,23 +787,9 @@ def clean_first_path_text(value: Any) -> str:
     return clean_markdown_text(text)
 
 __all__ = [
-    "MATERIAL_ACTION_RE",
-    "action_chain_fragment",
-    "actor_signature",
-    "base_adverbial_note_action",
-    "clean_first_path_text",
-    "clean_visible_result_phrase",
-    "clip_first_path_phrase",
-    "gerund_action_fragment",
-    "is_system_generated_action",
-    "is_trivial_start",
-    "leading_subject_prefix",
-    "looks_like_visible_result",
-    "lowercase_leading_article",
-    "nominal_visible_result_object",
-    "outcome_capability_fragment",
-    "primary_actor_signature",
-    "strip_action_subject",
-    "visible_action_clause",
-    "visible_result_object",
+    "MATERIAL_ACTION_RE", "action_chain_fragment", "actor_signature", "base_adverbial_note_action",
+    "clean_first_path_text", "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment",
+    "is_system_generated_action", "is_trivial_start", "leading_subject_prefix", "looks_like_visible_result",
+    "lowercase_leading_article", "nominal_visible_result_object", "outcome_capability_fragment",
+    "primary_actor_signature", "strip_action_subject", "visible_action_clause", "visible_result_object",
 ]

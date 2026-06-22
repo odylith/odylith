@@ -243,6 +243,10 @@ def _looks_like_actor_label(value: str) -> bool:
     lowered = clean_text(value).casefold()
     if not lowered or lowered in {"evidence for this slice", "proof for this slice"}:
         return False
+    if re.search(r"\b(?:runtime|product|system|workflow)\s+behavior\s+to\s+\w+\b", lowered):
+        return False
+    if re.search(r"\bto\s+(?:exercise|validate|verify|build|implement)\b", lowered):
+        return False
     if re.search(
         r"\b(?:owns|must show|source of truth|proof evidence|validate|assemble|actors include|actors involved|review ownership follows)\b",
         lowered,

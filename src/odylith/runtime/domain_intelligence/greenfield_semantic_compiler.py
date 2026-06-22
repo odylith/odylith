@@ -391,12 +391,24 @@ def _candidate_is_product_result(value: str) -> bool:
     text = clean_text(value)
     if word_count(text) < 2:
         return False
+    if _starts_with_result_modifier(text):
+        return False
     if _contains_proof_control_claim(text):
         return False
     lowered = text.casefold()
     if lowered in {"next action", "next step", "what happens next", "what happened next"}:
         return False
     return True
+
+
+def _starts_with_result_modifier(value: str) -> bool:
+    return bool(
+        re.match(
+            r"^(?:alongside|as|at|by|during|for|from|including|inside|into|on|through|to|toward|towards|using|via|while|with|without)\b",
+            clean_text(value),
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _refined_pronoun_result_candidate(

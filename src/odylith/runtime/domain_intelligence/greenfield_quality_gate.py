@@ -340,7 +340,24 @@ def _starts_with_generic_actor_label(text: str, label: str) -> bool:
     """Reject placeholder actor rows without rejecting domain-specific owners."""
 
     cleaned = clean_text(text)
-    return bool(re.match(rf"^{re.escape(label)}(?:\s|:|[-–—]|$)", cleaned))
+    match = re.match(rf"^{re.escape(label)}(?P<separator>\s|:|[-–—]|$)", cleaned)
+    if not match:
+        return False
+    separator = match.group("separator")
+    if separator != " ":
+        return True
+    tail = cleaned[match.end() :].strip()
+    if not tail:
+        return True
+    return bool(
+        re.match(
+            r"^(?:can|cannot|needs?|must|should|will|would|is|are|"
+            r"adds?|approves?|checks?|chooses?|creates?|enters?|inspects?|logs?|opens?|records?|reviews?|sees?|submits?|updates?|views?|"
+            r"adding|approving|checking|choosing|creating|entering|inspecting|logging|opening|recording|reviewing|seeing|submitting|updating|viewing)\b",
+            tail,
+            flags=re.IGNORECASE,
+        )
+    )
 
 
 def _directive_leak_issues(public_leaves: list[tuple[str, str]]) -> list[str]:

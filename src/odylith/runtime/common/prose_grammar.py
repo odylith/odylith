@@ -20,6 +20,7 @@ _INFINITIVE_TO_FINITE = {
     "apply": "applies",
     "assemble": "assembles",
     "ask": "asks",
+    "attach": "attaches",
     "assign": "assigns",
     "bind": "binds",
     "block": "blocks",
@@ -315,7 +316,7 @@ def base_following_action_verbs(value: str) -> str:
         return f"{connector} {modifier}{base}"
 
     return re.sub(
-        rf"\b(?P<connector>and|or)\s+(?P<modifier>(?:[a-z]+ly\s+)?)"
+        rf"(?P<connector>\b(?:and|or)|,)\s+(?P<modifier>(?:[a-z]+ly\s+)?)"
         rf"(?P<verb>{finite_pattern})\b",
         replace,
         text,

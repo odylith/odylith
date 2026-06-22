@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
@@ -116,6 +117,30 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
         )
         == "Cooking Run"
     )
+    assert state_detail_summary(
+        (
+            "The product manages a cooking run, including selected recipe, staged ingredients, "
+            "sensor readings, heat and timing state, operator prompts, safety stops, and final serve readiness."
+        ),
+        state_label="Cooking Run",
+    ).startswith("a cooking run, including selected recipe")
+    assert (
+        domain_object_label(
+            (
+                "The tutor stores a learner practice record, including prompt, selected answer, feedback, "
+                "retry state, mastery flags, and review history."
+            ),
+            fallback="Practice State",
+        )
+        == "Learner Practice Record"
+    )
+    assert state_detail_summary(
+        (
+            "The tutor stores a learner practice record, including prompt, selected answer, feedback, "
+            "retry state, mastery flags, and review history."
+        ),
+        state_label="Learner Practice Record",
+    ).startswith("a learner practice record, including prompt")
     assert (
         domain_object_label(
             (

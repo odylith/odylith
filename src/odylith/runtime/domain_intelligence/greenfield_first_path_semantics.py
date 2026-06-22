@@ -128,7 +128,37 @@ def _first_path_steps(value: str) -> list[str]:
                 normalized.append(cleaned)
     if len(normalized) > 1 and _is_trivial_start(normalized[0]):
         normalized = normalized[1:]
-    return _unique(normalized)
+    return _unique(_merge_leading_modifier_steps(normalized))
+
+
+def _merge_leading_modifier_steps(steps: Sequence[str]) -> list[str]:
+    """Attach comma-split modifier tails back to the result they qualify."""
+
+    merged: list[str] = []
+    for step in steps:
+        cleaned = _clean(step).strip(" .")
+        if not cleaned:
+            continue
+        if merged and _is_leading_modifier_step(cleaned):
+            merged[-1] = f"{merged[-1]} {_lower_initial(cleaned)}".strip()
+            continue
+        merged.append(cleaned)
+    return merged
+
+
+def _is_leading_modifier_step(value: str) -> bool:
+    return bool(
+        re.match(
+            r"^(?:alongside|as|at|by|during|for|from|including|inside|into|on|through|to|toward|towards|using|via|while|with|without)\b",
+            _clean(value),
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _lower_initial(value: str) -> str:
+    text = _clean(value)
+    return text[:1].casefold() + text[1:] if text else ""
 
 
 def _strip_first_path_frame(value: str) -> str:

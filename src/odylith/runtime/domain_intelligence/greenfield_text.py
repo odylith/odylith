@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.common import display_text
 
 _LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;)+")
@@ -237,6 +238,45 @@ def strip_dangling_word_tail(
     while words and words[-1].casefold().strip(".,;:") in dangling:
         words.pop()
     return " ".join(words).rstrip(rstrip_chars)
+
+
+_PLAIN_TITLE_CONNECTORS = frozenset({"and", "for", "in", "of", "on", "or", "to", "with"})
+
+
+def lower_plain_title_subject_fragment(value: Any, *, action_offset: int) -> str:
+    """Lowercase a plain title-cased subject when it is embedded before an action."""
+
+    text = clean_markdown_text(value).strip(" .")
+    if action_offset <= 0 or action_offset > len(text):
+        return text
+    subject = text[:action_offset].strip(" ,")
+    if len(subject.split()) < 2 or not plain_title_phrase(subject):
+        return text
+    return f"{subject.casefold()}{text[action_offset:]}"
+
+
+def plain_title_phrase(value: Any) -> bool:
+    words = [word.strip(".,;:()[]{}") for word in clean_markdown_text(value).split() if word.strip(".,;:()[]{}")]
+    if len(words) < 2:
+        return False
+    if any(any(char.isdigit() for char in word) or (word.isupper() and len(word) > 1) for word in words):
+        return False
+    return all(word[:1].isupper() or word.casefold() in _PLAIN_TITLE_CONNECTORS for word in words)
+
+
+def imperative_action_with_copula_words(words: Sequence[str], index: int) -> bool:
+    """Return true when an imperative action owns a later readiness copula."""
+
+    if index < 2:
+        return False
+    verb = words[index].strip(".,;:").casefold()
+    if verb not in {"is", "are", "was", "were"}:
+        return False
+    head = words[0].strip(".,;:").casefold()
+    if not re.fullmatch(action_base_verb_pattern(), head, flags=re.IGNORECASE):
+        return False
+    second = words[1].strip(".,;:").casefold()
+    return second in {"a", "an", "the", "this", "that", "one", "their", "its", "our", "your"}
 
 
 def visible_words(value: Any) -> tuple[str, ...]:

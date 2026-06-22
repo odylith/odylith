@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_text import imperative_action_with_copula_words
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _LABEL_FOCUS_STOPWORDS = {
@@ -121,6 +122,8 @@ def _actor_led_base_action_phrase(value: str) -> str:
     for index in range(1, min(len(words), 6)):
         candidate = " ".join(words[index:]).strip(" .")
         if looks_like_finite_action(candidate):
+            if imperative_action_with_copula_words(words, index):
+                return ""
             return base_action_clause(candidate)
     return ""
 

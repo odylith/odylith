@@ -339,6 +339,24 @@ def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> No
     assert "stable judgment roles render as domain-specific actors" in decision.dimensions["validation_roles"]
 
 
+def test_greenfield_tribunal_ignores_runtime_behavior_scaffold_as_actor() -> None:
+    projection = tribunal_actor_projection(
+        {
+            "title": "Municipal Permit Review Portal",
+            "project_intelligence": {
+                "actors": ["Resident", "Permit reviewer"],
+                "operators": ["Runtime behavior to exercise: permit submission and correction handling"],
+            },
+            "semantic_model": {"first_path_contract": {"actor": "Resident"}},
+        }
+    )
+    actor_labels = {row["visible_actor"] for row in projection}
+
+    assert "Runtime behavior to exercise" not in actor_labels
+    assert not any("Runtime behavior" in label for label in actor_labels)
+    assert any("operator" in label.casefold() for label in actor_labels)
+
+
 def test_greenfield_tribunal_projection_keeps_explicit_actor_roles_distinct() -> None:
     projection = tribunal_actor_projection(
         {

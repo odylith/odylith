@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_findings
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
@@ -279,6 +280,11 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"generic validation-gate copy leaked at {location}")
         if has_inline_role_casing_drift(text):
             issues.append(f"inline actor casing drift leaked at {location}")
+        issues.extend(
+            finding.message
+            for finding in generated_public_copy_findings(location, text)
+            if finding.category in {"mixed_role_case", "prepositional_visible_result"}
+        )
         if re.search(
             r"\bcan\s+(?:[a-z][a-z0-9'-]*\s+){0,4}"
             r"(?:adds|asks|chooses|clicks|creates|describes|enters|logs|opens|places|records|reviews|runs|saves|selects|signs|submits|views)\b",

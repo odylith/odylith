@@ -155,7 +155,16 @@ def _normalize_state_object(value: str) -> str:
     text = _strip_prompt_prefixes(value)
     text = re.sub(
         r"^(?:the\s+)?(?:product|system|app|application|workspace|service|platform|tool)\s+"
-        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?)\s+",
+        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?|manages?|maintains?|coordinates?|orchestrates?)\s+",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    ).strip()
+    text = re.sub(
+        r"^(?:the\s+)?[a-z][a-z0-9_'’/-]*(?:\s+[a-z][a-z0-9_'’/-]*){0,5}\s+"
+        r"(?:captures?|keeps?|records?|stores?|tracks?|holds?|manages?|maintains?|coordinates?|orchestrates?)\s+"
+        r"(?=(?:a|an|one)\s+)",
         "",
         text,
         count=1,
@@ -169,7 +178,8 @@ def _normalize_state_object(value: str) -> str:
     )
     text = re.sub(
         r"^(?:the\s+)?(?:central|core|main|primary)\s+(?:thing|object|record|item|state)\s+"
-        r"(?:the\s+product\s+|the\s+system\s+)?(?:tracks|records|stores|captures|keeps)\s+is\s+",
+        r"(?:the\s+product\s+|the\s+system\s+)?"
+        r"(?:tracks|records|stores|captures|keeps|manages|maintains|coordinates|orchestrates)\s+is\s+",
         "",
         text,
         flags=re.IGNORECASE,

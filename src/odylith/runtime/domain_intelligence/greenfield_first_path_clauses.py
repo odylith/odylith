@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from typing import Any, Sequence
 
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
@@ -164,6 +166,8 @@ def _first_path_capability_text(
             if gerund:
                 outcome_fragment = _gerund_action_fragment(outcome_fragment)
             fragments.append(outcome_fragment)
+    if not gerund:
+        fragments = _actor_led_capability_fragments(fragments)
     text = _join_fragments_within_limit(fragments[: max(1, max_fragments)], limit=limit) or clean_first_path_text(fallback)
     return _clip_phrase(text, limit=limit) or clean_first_path_text(fallback)
 
@@ -223,6 +227,27 @@ def _first_path_action_text(
 
 def _is_material_action_step(fragment: str) -> bool:
     return bool(looks_like_action_clause(fragment))
+
+
+def _actor_led_capability_fragments(fragments: list[str]) -> list[str]:
+    if len(fragments) < 2:
+        return fragments
+    actor, action = _actor_led_action_parts(fragments[0])
+    if not actor or not action:
+        return fragments
+    return [f"{actor} can {action}", *fragments[1:]]
+
+
+def _actor_led_action_parts(value: str) -> tuple[str, str]:
+    words = clean_first_path_text(value).strip(" .").split()
+    for index in range(1, min(len(words), 6)):
+        candidate = " ".join(words[index:]).strip(" .")
+        if not looks_like_finite_action(candidate):
+            continue
+        action = base_action_clause(candidate).strip(" .")
+        if action and action.casefold() != candidate.casefold():
+            return " ".join(words[:index]).strip(" ."), action
+    return "", ""
 
 
 def _is_named_product_launcher_fragment(fragment: str) -> bool:

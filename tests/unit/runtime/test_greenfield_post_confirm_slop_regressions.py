@@ -49,6 +49,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
@@ -220,10 +221,63 @@ def test_workstream_titles_avoid_clipped_actor_and_material_action_slop() -> Non
         proof_boundary="Release 0.0.1 succeeds when one researcher submits for review and a reviewer records evidence.",
         human_actors=["Submitting Researcher: preparing the analysis package and responding to missing-artifact blockers."],
     )[0]
+    operator = confirmed_workstream_titles(
+        label="Cooking Robot Controller",
+        components=[{"label": "Run Controller Service"}, {"label": "Safety Monitor Service"}],
+        internal_systems=[],
+        first_path=(
+            "Home cook picks a recipe, the controller validates the robot is ready, "
+            "runs the step sequence with closed-loop heat and timing control, and reaches a safe-to-serve state."
+        ),
+        state_object="Cooking Run",
+        proof_boundary="Release 0.0.1 succeeds when one operator reaches a safe-to-serve state.",
+        human_actors=["Home Cook: chooses a recipe and watches safety status."],
+    )[0]
+    jet = confirmed_workstream_titles(
+        label="Jet Engine Servicing Tracker",
+        components=[
+            {"label": "Engine and Servicing Record Store"},
+            {"label": "Work-order and Task Workflow Engine"},
+        ],
+        internal_systems=[],
+        first_path=(
+            "A service planner intakes an engine, opens a work order with its required tasks, "
+            "a technician records the work, and a supervisor releases the engine as serviceable."
+        ),
+        state_object="Servicing Record",
+        proof_boundary="Release 0.0.1 succeeds when one engine moves through intake, work order, and release.",
+        human_actors=[
+            "Service Planner: intakes engines and opens work orders",
+            "Maintenance Technician: performs and records tasks",
+        ],
+    )[0]
 
     assert solar == "Let Homeowner See an Approved Quote Summary with Assumptions"
     assert public == "Let Resident Reach a Tracking Status"
     assert research == "Let Submitting Researcher Submit for Review"
+    assert not looks_like_visible_result("A submitting researcher submits for review")
+    assert operator == "Let Home Cook Pick a Recipe"
+    assert jet == "Let Service Planner Intake an Engine"
+    assert backlog_text.capability_action_clause("validate the robot is ready and run the step sequence") == (
+        "validate the robot is ready and run the step sequence"
+    )
+    assert action_phrase(
+        {
+            "intent": {
+                "first_path": (
+                    "Home cook picks a recipe, the controller validates the robot is ready, "
+                    "runs the step sequence, and reaches a safe-to-serve state."
+                )
+            }
+        }
+    ) == "validate the robot is ready"
+    assert first_path_capability_phrase(
+        (
+            "Home cook picks a recipe, the controller validates the robot is ready, "
+            "runs the step sequence, and reaches a safe-to-serve state."
+        ),
+        max_fragments=4,
+    ).startswith("home cook can pick a recipe")
     joined = "\n".join([solar, public, research])
     assert "Requesting a Plain" not in joined
     assert "Asking a Public" not in joined
@@ -1104,6 +1158,9 @@ def test_actor_labels_keep_display_casing_but_inline_subjects_are_readable() -> 
     assert generated_semantic_slop_issues({"bad": "the station Lead cannot act on the result"}) == [
         "inline actor casing drift leaked at artifact.bad"
     ]
+    assert generated_semantic_slop_issues({"bad": "home Cook picks a recipe and sees the result"}) == [
+        "artifact.bad leaked mixed actor-role casing"
+    ]
     assert generated_semantic_slop_issues({"ok": "the GLP-1 Companion risk reviewer can inspect evidence"}) == []
     assert not has_inline_role_casing_drift(
         "The product failure to guard against: Customer and Contact Directory Service can mislead users."
@@ -1115,6 +1172,20 @@ def test_actor_labels_keep_display_casing_but_inline_subjects_are_readable() -> 
     assert not has_inline_role_casing_drift(
         "Release scope connects Customer and Firearm Record, Service Ticket Workflow and Status Tracking, and Shop Dashboard and Reporting without absorbing deferred scope."
     )
+
+
+def test_package_quality_rejects_prepositional_visible_result_splices() -> None:
+    assert generated_public_copy_issues(
+        "artifact.bad",
+        "Prove the first path: home Cook picks a recipe and see With an emergency stop available throughout.",
+    ) == (
+        "artifact.bad leaked mixed actor-role casing",
+        "artifact.bad leaked prepositional visible-result splice",
+    )
+    assert generated_public_copy_issues(
+        "artifact.bad",
+        "The product lets the user reach with an emergency stop available throughout.",
+    ) == ("artifact.bad leaked prepositional visible-result splice",)
 
 
 def test_confirmed_intent_completion_expands_thin_actor_rows_before_validation() -> None:
@@ -1659,6 +1730,10 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
     assert (
         base_action_clause("enters project details, uploads required documents, pays the fee")
         == "enter project details, upload required documents, pay the fee"
+    )
+    assert (
+        base_action_clause("selects the permit type, attaches required documents")
+        == "select the permit type, attach required documents"
     )
     assert (
         action_chain_fragment("The resident enters project details, uploads required documents, pays the fee")

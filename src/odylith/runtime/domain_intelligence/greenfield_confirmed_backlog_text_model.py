@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collap
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import _has_mechanical_need_to_turn
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_text import imperative_action_with_copula_words
 
 _BACKLOG_TERM_STOPWORDS = frozenset(
     {
@@ -412,6 +413,8 @@ def actor_action_parts(value: str) -> tuple[str, str]:
         if not looks_like_finite_action(candidate):
             continue
         verb = words[index].strip(".,;:")
+        if imperative_action_with_copula_words(words, index):
+            return "", ""
         base = base_title_verb(verb)
         if base != verb.casefold():
             actor = " ".join(words[:index]).strip(" .")
@@ -424,8 +427,11 @@ def actor_action_parts(value: str) -> tuple[str, str]:
 def strip_actor_prefix(value: str, actor: str) -> str:
     text = sentence_fragment(value)
     prefix = sentence_fragment(actor)
-    if prefix and text.casefold().startswith(prefix.casefold()):
-        text = text[len(prefix) :].strip(" .")
+    for candidate in (prefix, f"a {prefix}", f"an {prefix}", f"the {prefix}"):
+        cleaned = candidate.strip()
+        if cleaned and text.casefold().startswith(cleaned.casefold()):
+            text = text[len(cleaned) :].strip(" .")
+            break
     return text
 
 

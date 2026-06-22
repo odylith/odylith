@@ -201,6 +201,18 @@ def test_quality_gate_allows_domain_specific_actor_names_but_rejects_placeholder
     assert not any("Plant operator" in issue for issue in issues)
     assert any("generic actor label `Operator`" in issue for issue in issues)
 
+    noun_phrase = _host_reasoned_ecommerce_proposal()
+    noun_phrase["assumptions"] = [
+        {"id": "ASM-001", "statement": "Reviewer notes are visible only to authorized staff."}
+    ]
+    assert not any("generic actor label `Reviewer`" in issue for issue in greenfield_quality_issues(noun_phrase))
+
+    placeholder = _host_reasoned_ecommerce_proposal()
+    placeholder["assumptions"] = [
+        {"id": "ASM-001", "statement": "Reviewer records status without a project-specific role."}
+    ]
+    assert any("generic actor label `Reviewer`" in issue for issue in greenfield_quality_issues(placeholder))
+
 
 def test_quality_gate_meaningful_terms_use_shared_domain_index() -> None:
     source_root = (
