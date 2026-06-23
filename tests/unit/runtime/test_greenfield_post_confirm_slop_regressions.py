@@ -52,6 +52,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
+from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_semantic_view
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
@@ -73,6 +74,7 @@ ROOT = Path(__file__).resolve().parents[3]
 FIRST_PATH_SEMANTICS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py"
 FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py"
 FIRST_PATH_FRAGMENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py"
+FIRST_PATH_VIEW_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_view.py"
 FIRST_PATH_TYPES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py"
 DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
 GREENFIELD_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_text.py"
@@ -91,12 +93,14 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     parser_source = FIRST_PATH_SEMANTICS_PATH.read_text(encoding="utf-8")
     clause_source = FIRST_PATH_CLAUSES_PATH.read_text(encoding="utf-8")
     fragment_source = FIRST_PATH_FRAGMENTS_PATH.read_text(encoding="utf-8")
+    view_source = FIRST_PATH_VIEW_PATH.read_text(encoding="utf-8")
     type_source = FIRST_PATH_TYPES_PATH.read_text(encoding="utf-8")
     index_source = DOMAIN_TERM_INDEX_PATH.read_text(encoding="utf-8")
 
     assert len(parser_source.splitlines()) < 800
     assert len(clause_source.splitlines()) < 800
     assert len(fragment_source.splitlines()) < 800
+    assert len(view_source.splitlines()) < 800
     for moved in (
         "def first_path_clauses",
         "def first_path_action_phrase",
@@ -122,11 +126,25 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
 
     assert "len(re.findall" not in parser_source
     assert "def first_path_clauses" in clause_source
-    assert "greenfield_first_path_fragments import action_chain_fragment" in clause_source
+    assert "greenfield_first_path_view import first_path_semantic_view" in clause_source
+    assert "greenfield_first_path_fragments import action_chain_fragment" not in clause_source
+    for duplicated_step_classifier in (
+        "def _dash_detail_fragment_keys",
+        "def _semantic_terms",
+        "def _is_named_product_launcher_fragment",
+    ):
+        assert duplicated_step_classifier not in clause_source
+        assert duplicated_step_classifier in view_source
+    assert "def _visible_outcome_covered" not in clause_source
+    assert "def covers_visible_object" in view_source
     assert "greenfield_domain_term_index import label_terms" not in clause_source
     assert "greenfield_domain_term_index import ordered_terms" not in clause_source
     assert "normalize_domain_token" not in clause_source
     assert "len(re.findall" not in clause_source
+    assert "class FirstPathStepView" in view_source
+    assert "class FirstPathSemanticView" in view_source
+    assert "def first_path_semantic_view" in view_source
+    assert "def first_path_step_view" in view_source
     assert "greenfield_domain_term_index import label_terms" in fragment_source
     assert "greenfield_domain_term_index import ordered_terms" in fragment_source
     assert "len(re.findall" not in fragment_source
@@ -151,6 +169,26 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
         "The product displays decision evidence",
     )
     assert model.material_action == "Record follow-up notes"
+
+
+def test_first_path_semantic_view_precomputes_step_facts_for_renderers() -> None:
+    model = first_path_model(
+        "A resident describes a repair, selects an appointment slot, the system confirms the booking, "
+        "and shows the resident the next step."
+    )
+
+    view = first_path_semantic_view(model)
+
+    assert view.primary_actor_signature == "resident"
+    assert view.visible_outcome_object == "The next step"
+    assert [(step.fragment, step.actor_signature, step.is_visible_result) for step in view.steps] == [
+        ("describe a repair", "resident", False),
+        ("select an appointment slot", "resident", False),
+        ("review the booking", "", True),
+        ("review the next step", "", True),
+    ]
+    assert view.steps[-1].is_system_generated is True
+    assert view.covers_visible_object(view.steps[-1].visible_object)
 
 
 def test_role_gerund_actor_rows_stay_clean_and_grammatical() -> None:
