@@ -574,12 +574,12 @@ def _parent_opportunity_sentence(*, capability: str, outcome_action: str, state_
 def _parent_product_view_sentence(*, label: str, capability: str, outcome_action: str, state_label: str, recipient: str) -> str:
     if outcome_action and not _terms_covered(outcome_action, capability):
         return (
-            f"{label} should feel complete when the accepted first path proves {capability}, "
-            f"lets {recipient} {outcome_action}, and keeps the first-release boundary clear."
+            f"{label} should feel complete when the accepted first path proves {capability} "
+            f"while letting {recipient} {outcome_action} and keeping the first-release boundary clear."
         )
     return (
-        f"{label} should feel complete when the accepted first path proves {capability}, "
-        f"keeps {state_label} clear, and makes the first-release boundary explicit."
+        f"{label} should feel complete when the accepted first path proves {capability} "
+        f"while keeping {state_label} clear and making the first-release boundary explicit."
     )
 
 

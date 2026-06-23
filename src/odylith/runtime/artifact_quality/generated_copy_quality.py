@@ -168,6 +168,8 @@ def _has_mixed_lower_title_role_fragment(value: str) -> bool:
         r"(?:can|cannot|needs?|picks?|chooses?|selects?|starts?|opens?|enters?|uploads?|runs?|sees?|views?|receives?|reviews?)\b"
     )
     for match in re.finditer(pattern, text):
+        if match.start("head") > 0 and text[match.start("head") - 1] == "-":
+            continue
         if match.group("head").casefold() in _INLINE_ROLE_HEAD_STOPWORDS:
             continue
         previous = text[: match.start()].rstrip().rsplit(" ", 1)[-1].casefold()
@@ -236,10 +238,33 @@ def _has_terminal_result_chain(tokens: tuple[str, ...]) -> bool:
     for index, token in enumerate(tokens):
         if token not in result_words:
             continue
+        if _result_word_is_captured_object(tokens, index):
+            continue
         window = tokens[index + 1 : min(len(tokens), index + 5)]
         if "and" in window and any(item in terminal_words for item in window):
             return True
     return False
+
+
+def _result_word_is_captured_object(tokens: tuple[str, ...], index: int) -> bool:
+    capture_verbs = {
+        "add",
+        "adds",
+        "capture",
+        "captures",
+        "enter",
+        "enters",
+        "record",
+        "records",
+        "save",
+        "saves",
+        "submit",
+        "submits",
+        "write",
+        "writes",
+    }
+    left = tokens[max(0, index - 5) : index]
+    return any(token in capture_verbs for token in left)
 
 
 def _has_awkward_visible_result_action(tokens: tuple[str, ...]) -> bool:

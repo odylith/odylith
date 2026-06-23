@@ -9,6 +9,9 @@ from typing import Any
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import ROLEISH_TERMS
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_component_term_constants import ACTION_VERBS
+from odylith.runtime.domain_intelligence.greenfield_component_term_constants import ARTIFACT_CARRIER_TERMS
+from odylith.runtime.domain_intelligence.greenfield_component_term_constants import GENERIC_TERMS
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
@@ -17,161 +20,27 @@ from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts im
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text, clean_text, normalize_visible_result_language, unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
-ACTION_VERBS = (
-    "accept", "adjust", "allocate", "apply", "approve", "assemble", "assign", "block", "build", "calculate", "capture",
-    "check", "choose", "combine", "compare", "complete", "compute", "connect", "convert", "correlate", "create", "decide", "delete", "derive",
-    "describe", "display", "draft", "edit", "estimate", "explain", "export", "find", "grant", "group", "guide", "handoff", "handle",
-    "drill", "forecast", "flag", "highlight", "import", "include", "inspect", "issue", "keep", "land", "link", "leave", "log", "make", "maintain",
-    "manage", "normalize", "notify", "open", "optimize", "order", "move", "pair", "persist", "predict", "present",
-    "prepare", "propose", "provide", "produce", "publish", "pull", "rank", "read", "receive", "recommend", "record", "render", "request",
-    "recompute", "resolve", "respond", "review", "route", "save", "schedule", "score", "see", "select", "send", "set", "settle", "show", "store",
-    "submit", "suggest", "summarize", "sync", "track", "update", "validate", "verify", "view", "watch",
-)
-
-GENERIC_TERMS = {
-    "accepted",
-    "actor",
-    "application",
-    "boundary",
-    "both",
-    "candidate",
-    "component",
-    "contract",
-    "domain",
-    "evidence",
-    "explicit",
-    "explicitly",
-    "first",
-    "greenfield",
-    "hand",
-    "handoff",
-    "help",
-    "input",
-    "later",
-    "least",
-    "local",
-    "only",
-    "off",
-    "output",
-    "path",
-    "planned",
-    "product",
-    "project",
-    "proof",
-    "record",
-    "release",
-    "reviewer",
-    "service",
-    "single",
-    "source",
-    "state", "such",
-    "system",
-    "validation",
-    "made",
-    "mistake",
-    "person",
-    "proven",
-    "succeed",
-    "success",
-    "their",
-    "they",
-    "today",
-    "with",
-    "what",
-    "whether",
-    "working",
-    "from", "into", "as",
-    "then", "through", "your",
-}
-
-ARTIFACT_CARRIER_TERMS = {
-    "alternative", "alternatives",
-    "answer", "answers",
-    "assignment", "assignments",
-    "blocker", "blockers",
-    "confirmation", "confirmations",
-    "contact", "contacts",
-    "criteria", "channel", "channels", "context", "data",
-    "decision",
-    "description",
-    "descriptions",
-    "detail",
-    "details",
-    "evidence",
-    "event",
-    "events",
-    "field",
-    "fields",
-    "flag",
-    "flags",
-    "form",
-    "forms",
-    "guardrail",
-    "guardrails",
-    "history",
-    "input",
-    "inputs",
-    "intake",
-    "journal",
-    "journals",
-    "ledger",
-    "list",
-    "lists",
-    "log",
-    "logs",
-    "marker",
-    "markers",
-    "metric",
-    "metrics",
-    "measurement",
-    "note",
-    "notes",
-    "outcome",
-    "outcomes",
-    "output",
-    "outputs",
-    "option",
-    "options",
-    "package",
-    "packet",
-    "preference",
-    "preferences",
-    "profile",
-    "profiles",
-    "readiness",
-    "recommendation",
-    "recommendations",
-    "rationale",
-    "record",
-    "records",
-    "request",
-    "result",
-    "review",
-    "reviews",
-    "rule",
-    "rubric",
-    "rubrics",
-    "score",
-    "signal",
-    "state",
-    "status",
-    "store",
-    "stores",
-    "suggestion",
-    "suggestions",
-    "summary",
-    "timeline",
-    "unit",
-    "units",
-    "version",
-    "versioning",
-    "view",
-    "visit",
-    "visits",
-}
-
 NOUN_MODIFIER_ACTION_TERMS = {"review"}
-RELATION_TAIL_TERMS = {"against", "by", "for", "from", "into", "plus", "to", "using", "with"}
+RELATION_TAIL_TERMS = {
+    "after",
+    "against",
+    "because",
+    "before",
+    "by",
+    "for",
+    "from",
+    "into",
+    "plus",
+    "through",
+    "to",
+    "unless",
+    "until",
+    "using",
+    "when",
+    "while",
+    "with",
+    "without",
+}
 
 
 def clean_artifact_phrases(values: Sequence[str]) -> list[str]:
@@ -239,6 +108,8 @@ def clean_artifact_phrase(value: str) -> str:
     text = re.sub(r"\s+", " ", text).strip(" .,;:")
     text = _normalize_fragmented_artifact_phrase(text)
     text = _normalize_misplaced_artifact_modifiers(text)
+    text = _drop_misplaced_action_modifier_before_carrier(text)
+    text = _trim_relation_window(text)
     text = normalize_artifact_tail(text, carrier_terms=ARTIFACT_CARRIER_TERMS)
     text = _strip_relation_tail(text)
     text = re.sub(
@@ -447,6 +318,54 @@ def _normalize_misplaced_artifact_modifiers(value: str) -> str:
             missing_object = f"{missing_object} detail"
         text = f"missing {missing_object}".strip()
     return re.sub(r"\s+", " ", text).strip(" .,;:")
+
+
+def _drop_misplaced_action_modifier_before_carrier(value: str) -> str:
+    """Remove action-window debris when a verb landed before an artifact carrier."""
+
+    words = clean_text(value).casefold().strip(" .,;:").split()
+    if len(words) < 3:
+        return " ".join(words)
+    carriers = {index for index, word in enumerate(words) if word in ARTIFACT_CARRIER_TERMS}
+    if not carriers:
+        return " ".join(words)
+    action_modifiers = {"move", "moves", "moved", "moving", "reach", "reaches", "reached", "reaching"}
+    kept: list[str] = []
+    for index, word in enumerate(words):
+        later_carriers = {words[carrier_index] for carrier_index in carriers if carrier_index > index}
+        if word in {"move", "moves", "moved", "moving"} and later_carriers == {"state"}:
+            kept.append(word)
+            continue
+        if word in action_modifiers and later_carriers:
+            continue
+        kept.append(word)
+    return " ".join(kept).strip(" .,;:")
+
+
+def _trim_relation_window(value: str) -> str:
+    words = clean_text(value).casefold().strip(" .,;:").split()
+    if len(words) < 3:
+        return " ".join(words)
+    relation_terms = {"after", "before", "because", "through", "unless", "until", "using", "when", "while", "without"}
+    for index, word in enumerate(words):
+        if word not in relation_terms:
+            continue
+        left = words[:index]
+        right = words[index + 1 :]
+        if not _relation_window_has_action_debris(left, right):
+            continue
+        if left:
+            return " ".join(left).strip(" .,;:")
+        return " ".join(right).strip(" .,;:")
+    return " ".join(words).strip(" .,;:")
+
+
+def _relation_window_has_action_debris(left: Sequence[str], right: Sequence[str]) -> bool:
+    if not right:
+        return any(looks_action_form(word) for word in left)
+    if not left:
+        return any(looks_action_form(word) for word in right)
+    return any(looks_action_form(word) for word in (*left[-2:], *right[:2]))
 
 
 def descriptor_anchor_phrases(label: str, description: str) -> list[str]:
@@ -771,6 +690,8 @@ def past_tense(value: str) -> str:
         return "flagged"
     if verb == "make":
         return "made"
+    if verb == "run":
+        return "run"
     if verb == "submit":
         return "submitted"
     if verb.endswith("e"):

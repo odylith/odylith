@@ -8,6 +8,7 @@ runtime and use only generic ownership primitives.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.value_coercion import dedupe_strings
@@ -69,6 +70,7 @@ _GENERIC_TERMS = {
     "validation",
     "view",
     "workflow",
+    "with",
 }
 
 
@@ -102,13 +104,15 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
         return None
     primary = term_phrase(label_terms[:4]) or term_phrase(terms[:4]) or "component"
     detail = term_phrase([term for term in terms if term not in label_terms][:5]) or "accepted product context"
+    overlap_phrases = _overlap_context_phrases(context_text, label_terms=label_terms)
+    owned_detail = ", ".join(dedupe_strings([detail, *overlap_phrases[:8]])[:8])
     input_focus = term_phrase(terms[4:8]) or detail
     output_focus = term_phrase(terms[8:12]) or detail
     states = dedupe_strings([*terms[:5], "requested", "validated", "blocked", "handed-off"])
     return ComponentAxis(
         key=component_axis_key_for_label(label_text) or f"derived_{slugify(primary)}",
         triggers=tuple(terms),
-        owned_state=f"{primary} state, {detail}, local blockers, and recovery context",
+        owned_state=f"{primary} state, {owned_detail or detail}, local blockers, and recovery context",
         accepted_inputs=f"{primary} command, {input_focus} context, authorized actor, prior state, and validation notes",
         produced_outputs=f"{primary} result, {output_focus} update, blocked-state explanation, and next-step context",
         states_or_transitions=", ".join(states[:9]),
@@ -127,6 +131,28 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
             "or assigned to the wrong ownership boundary."
         ),
     )
+
+
+def _overlap_context_phrases(context_text: str, *, label_terms: list[str]) -> list[str]:
+    label_term_set = set(label_terms)
+    if not label_term_set:
+        return []
+    rows: list[str] = []
+    for segment in re.split(r"[,.;:]|\s+and\s+", str(context_text or "").casefold()):
+        words = [word.strip("-") for word in re.findall(r"[a-z][a-z0-9-]*", segment)]
+        for index in range(len(words) - 1):
+            pair = [words[index], words[index + 1]]
+            if not any(word in label_term_set for word in pair):
+                continue
+            if any(word in _GENERIC_TERMS for word in pair):
+                continue
+            phrase = " ".join(pair)
+            if phrase not in rows:
+                rows.append(phrase)
+            if len(rows) >= 8:
+                return rows
+    return rows
+
 
 __all__ = [
     "COMPONENT_AXES",

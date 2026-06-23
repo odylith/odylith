@@ -542,6 +542,11 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("value relevant condition") == "relevant condition"
     assert clean_artifact_phrase("body composition data such") == "body composition data"
     assert clean_artifact_phrase("combines reference ranges") == "reference ranges"
+    assert clean_artifact_phrase("home cook pick recipe") == ""
+    assert clean_artifact_phrase("runs step sequence until") == "step sequence"
+    assert clean_artifact_phrase("sequence until cooking reach") == ""
+    assert clean_artifact_phrase("recipe move readiness") == "recipe readiness"
+    assert clean_artifact_phrase("cooking reach finished state") == "finished state"
     assert visible_words("blocked-state update") == ("blocked", "state", "update")
     assert component_contract._state_terms_from_context(
         "submitted draft was blocked-state, ready, recovered, and ready again"
@@ -568,6 +573,15 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
         fallback="",
         role="input",
     ) == "required local operator approval packet command, required fields, prior state, and explanation context"
+    suggested_adjustment = contract_focus(
+        object_list="suggested adjustment",
+        action_terms=("suggest",),
+        fallback="adjustment",
+        role="output",
+        contract_terms=("adjustment",),
+    )
+    assert "suggestion" not in suggested_adjustment.casefold()
+    assert "recommendation" in suggested_adjustment.casefold()
     assert normalize_contract({"owned_state": "Risk reviewer guardrails"})["owned_state"] == (
         "Local risk reviewer guardrails."
     )
@@ -619,6 +633,14 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
         anchor_terms=("status",),
     )
     assert transition == "reviewed, open, requested, received, validated, blocked, revised, ready-for-next-step"
+    action_transition = state_transition_text(
+        action_terms=("run", "pick", "reach"),
+        object_phrases=("step sequence", "recipe readiness"),
+    )
+    assert "runed" not in action_transition
+    assert "run" in action_transition
+    assert "picked" in action_transition
+    assert "reached" in action_transition
 
 
 def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sections() -> None:
@@ -667,6 +689,33 @@ def test_greenfield_component_spec_renderer_uses_narrative_distinct_contract_sec
     assert "reaches the visible result" not in spec
     assert "example explains" not in spec
     assert "stops before a trusted result" in spec
+
+
+def test_greenfield_component_spec_renderer_normalizes_boundary_component_label_casing() -> None:
+    spec = build_narrative_component_spec(
+        component_id="decision-service",
+        label="Decision Service",
+        path="src/example/decision_service.py",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-001",),
+        component_contract={
+            "owned_state": "decision record, blocked reason, and audit marker",
+            "accepted_inputs": "retention rules, consent state, and protected record reference",
+            "produced_outputs": "blocked deletion decision and lifecycle status",
+            "states_or_transitions": "received, checked, blocked, accepted, and reviewed",
+            "upstream_truth": "Protected Record Reference Store ownership",
+            "downstream_consumers": "Audit and Review lifecycle View",
+            "outside_boundary": "adjacent component state, original input facts, and upstream source truth",
+            "local_proof": ["Replay one blocked decision with the rule and lifecycle marker visible."],
+            "unique_failure": "blocked deletion decision loses its retention rule explanation",
+        },
+    )
+
+    assert "Audit and Review Lifecycle View can consume" in spec
+    assert "Audit and Review lifecycle View can consume" not in spec
+    assert generated_public_copy_issues("Registry component spec `Decision Service`", spec) == ()
 
 
 def test_greenfield_component_spec_renderer_cleans_guardrail_verb_phrases() -> None:

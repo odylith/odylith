@@ -268,7 +268,7 @@ def _contract_text_items(value: str) -> list[str]:
     rows: list[str] = []
     for raw in re.split(r",\s+", _clean(value), flags=re.IGNORECASE):
         raw = re.sub(r"^(?:and|or)\s+", "", raw, flags=re.IGNORECASE)
-        phrase = _dedupe_adjacent_words(_ranked_contract_phrase(raw) or clean_artifact_phrase(raw))
+        phrase = _preserved_relation_phrase(raw) or _dedupe_adjacent_words(_ranked_contract_phrase(raw) or clean_artifact_phrase(raw))
         if component_shell_artifact(phrase):
             continue
         if status_only_artifact_fragment(phrase):
@@ -276,6 +276,15 @@ def _contract_text_items(value: str) -> list[str]:
         if phrase and phrase not in rows:
             rows.append(phrase)
     return _drop_marked_detail_subsets(rows)
+
+
+def _preserved_relation_phrase(value: str) -> str:
+    text = clean_artifact_text(value).casefold().strip(" .")
+    if not re.search(r"\b(?:related|linked|mapped)\b", text):
+        return ""
+    if len(content_terms(text)) < 4:
+        return ""
+    return text
 
 
 def _drop_marked_detail_subsets(values: Sequence[str]) -> list[str]:
@@ -406,7 +415,7 @@ def _recommendation_artifact(value: str, *, action_terms: Sequence[str] = ()) ->
 def _guidance_noun(action_terms: Sequence[str]) -> str:
     actions = set(action_terms)
     if "suggest" in actions:
-        return "suggestion"
+        return "recommendation"
     if "propose" in actions:
         return "proposal"
     return "recommendation"
@@ -414,7 +423,7 @@ def _guidance_noun(action_terms: Sequence[str]) -> str:
 
 def _guidance_rationale_noun(value: str, *, action_terms: Sequence[str]) -> str:
     terms = set(content_terms(value))
-    if "suggestion" in terms or "suggest" in set(action_terms):
+    if "suggestion" in terms:
         return "suggestion rationale"
     if "proposal" in terms or "propose" in set(action_terms):
         return "proposal rationale"
@@ -485,6 +494,7 @@ def _past_tense(value: str) -> str:
         "log": "logged",
         "make": "made",
         "read": "read",
+        "run": "run",
         "see": "seen",
         "send": "sent",
         "set": "set",

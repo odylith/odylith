@@ -17,6 +17,9 @@ ROOT = Path(__file__).resolve().parents[3]
 CONFIRMED_INTENT_COMPLETION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
 )
+CONFIRMED_TITLE_COMPLETION_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_title_completion.py"
+)
 CONFIRMED_ACTOR_COMPLETION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py"
 )
@@ -103,10 +106,14 @@ def test_confirmed_intent_system_completion_stays_in_dedicated_owner() -> None:
 
 def test_confirmed_intent_completion_title_tokens_use_shared_label_terms() -> None:
     parent_source = CONFIRMED_INTENT_COMPLETION_PATH.read_text(encoding="utf-8")
+    title_source = CONFIRMED_TITLE_COMPLETION_PATH.read_text(encoding="utf-8")
 
-    assert "greenfield_domain_term_index import label_terms" in parent_source
+    assert "greenfield_confirmed_title_completion import derived_title as _derived_title" in parent_source
+    assert "greenfield_domain_term_index import label_terms" in title_source
     assert 're.findall(r"[A-Za-z0-9]+", text)' not in parent_source
     assert 're.findall(r"[A-Za-z0-9]+", label)' not in parent_source
+    assert 're.findall(r"[A-Za-z0-9]+", text)' not in title_source
+    assert 're.findall(r"[A-Za-z0-9]+", label)' not in title_source
     assert label_terms("AI/ML Review Workspace") == ["AI", "ML", "Review", "Workspace"]
 
     intent = {

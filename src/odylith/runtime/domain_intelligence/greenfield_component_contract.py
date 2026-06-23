@@ -229,6 +229,7 @@ def _generic_contract(
     downstream = next_label or "the next product boundary and release proof review"
     interface_kind = "visible state" if kind.casefold() in {"client", "surface", "ui", "web"} else "command or event"
     input_focus = _accepted_input_focus(focus, kind=kind)
+    focus = _merge_context_overlap_focus(focus, label=label, context=context)
     evidence_reference = "source evidence reference" if re.search(r"\b(?:source|evidence|provenance|attachment|audit)\b", context, re.IGNORECASE) else "evidence reference"
     return {
         "owned_state": f"{focus}, local blockers, recovery state, {evidence_reference}, and next-step history for {state_label}",
@@ -403,6 +404,56 @@ def _focus_phrase(*, label: str, description: str, context: str) -> str:
     if not terms:
         return _component_subject(label)
     return natural_phrase(terms[:5])
+
+
+_CONTEXT_PAIR_STOPWORDS = {
+    "a",
+    "an",
+    "and",
+    "as",
+    "by",
+    "for",
+    "from",
+    "in",
+    "of",
+    "on",
+    "or",
+    "recorded",
+    "records",
+    "service",
+    "state",
+    "the",
+    "to",
+    "track",
+    "tracks",
+    "user",
+    "with",
+}
+
+
+def _merge_context_overlap_focus(focus: str, *, label: str, context: str) -> str:
+    label_terms = {
+        term
+        for term in (*ordered_domain_terms(label), *visible_words(" ".join(_label_semantic_terms(label))))
+        if term and term not in _CONTEXT_PAIR_STOPWORDS
+    }
+    if not label_terms:
+        return focus
+    rows = [focus]
+    overlap_context = re.sub(r"\bwithout\b[^.;]*", "", _clean(context), flags=re.IGNORECASE)
+    overlap_context = re.sub(r"\bnot\s+[^.;]*", "", overlap_context, flags=re.IGNORECASE)
+    for segment in re.split(r"[,.;:]|\s+and\s+", overlap_context.casefold()):
+        words = [word.strip("-") for word in re.findall(r"[a-z][a-z0-9-]*", segment)]
+        for index in range(len(words) - 1):
+            pair = [words[index], words[index + 1]]
+            if not any(word in label_terms for word in pair):
+                continue
+            if any(word in _CONTEXT_PAIR_STOPWORDS for word in pair):
+                continue
+            rows.append(" ".join(pair))
+            if len(rows) >= 9:
+                return ", ".join(unique_text(row for row in rows if row)[:8])
+    return ", ".join(unique_text(row for row in rows if row)[:8])
 
 
 def _action_object_phrase(description: str) -> str:

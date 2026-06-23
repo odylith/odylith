@@ -168,7 +168,6 @@ _TRUTH_ONLY_SELECTIVE_EXACT_PATHS: frozenset[str] = frozenset(
     }
 )
 
-
 def _active_odylith_import_roots() -> tuple[str, ...]:
     roots: list[str] = []
     for candidate in (Path(__file__).resolve().parents[3],):
@@ -176,7 +175,6 @@ def _active_odylith_import_roots() -> tuple[str, ...]:
         if token not in roots:
             roots.append(token)
     return tuple(roots)
-
 
 @dataclass(frozen=True)
 class ExecutionStep:
@@ -192,14 +190,12 @@ class ExecutionStep:
     change_watch_paths: tuple[str, ...] = ()
     followup_steps_on_change: tuple["ExecutionStep", ...] = ()
 
-
 @dataclass(frozen=True)
 class ExecutionPlan:
     headline: str
     steps: tuple[ExecutionStep, ...]
     dirty_overlap: tuple[str, ...]
     notes: tuple[str, ...] = ()
-
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = configure_sync_parser(argparse.ArgumentParser(prog="odylith sync"))
@@ -208,10 +204,8 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         args.registry_policy_mode = str(args.policy_mode).strip()
     return args
 
-
 def _normalize_changed_paths(*, repo_root: Path, changed_paths: Sequence[str]) -> list[str]:
     return governance.normalize_changed_paths(repo_root=repo_root, values=changed_paths)
-
 
 def _effective_changed_paths(
     *,
@@ -223,7 +217,6 @@ def _effective_changed_paths(
     if normalized or force:
         return normalized
     return governance.collect_git_changed_paths(repo_root=repo_root)
-
 
 def _requires_sync(*, repo_root: Path, changed_paths: Sequence[str], force: bool) -> bool:
     if force:
@@ -239,7 +232,6 @@ def _requires_sync(*, repo_root: Path, changed_paths: Sequence[str], force: bool
         if any(token == prefix or token.startswith(prefix) for prefix in _SYNC_PATH_PREFIXES):
             return True
     return False
-
 
 def _execution_step(
     label: str,
@@ -269,7 +261,6 @@ def _execution_step(
         followup_steps_on_change=tuple(followup_steps_on_change),
     )
 
-
 def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[str, ...]:
     normalized = tuple(dict.fromkeys(str(token).strip() for token in paths if str(token).strip()))
     if not normalized or not (repo_root / ".git").exists():
@@ -293,7 +284,6 @@ def _dirty_overlap_for_paths(*, repo_root: Path, paths: Sequence[str]) -> tuple[
         return ()
     return tuple(line.rstrip() for line in str(completed.stdout or "").splitlines() if line.strip())
 
-
 def _should_bundle_mirror_source_truth_path(path_token: str) -> bool:
     token = str(path_token).strip()
     if not token:
@@ -301,7 +291,6 @@ def _should_bundle_mirror_source_truth_path(path_token: str) -> bool:
     if any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_EXCLUDE_PREFIXES):
         return False
     return any(token.startswith(prefix) for prefix in _SOURCE_TRUTH_BUNDLE_MIRROR_PREFIXES)
-
 
 def _sync_changed_source_truth_bundle_mirrors(
     *,
@@ -348,10 +337,8 @@ def _sync_changed_source_truth_bundle_mirrors(
     print(f"- removed: {len(removed_paths)}")
     return 0
 
-
 def _is_truth_only_selective_changed_path(token: str) -> bool:
     return bool(_owned_surface_for_selective_changed_path(token))
-
 
 def _owned_surface_for_selective_changed_path(token: str) -> str:
     normalized = str(token or "").strip()
@@ -375,7 +362,6 @@ def _owned_surface_for_selective_changed_path(token: str) -> str:
         return "compass"
     return ""
 
-
 def _owned_surfaces_for_selective_slice(changed_paths: Sequence[str]) -> tuple[str, ...]:
     selected: list[str] = []
     seen: set[str] = set()
@@ -386,10 +372,8 @@ def _owned_surfaces_for_selective_slice(changed_paths: Sequence[str]) -> tuple[s
             selected.append(surface)
     return tuple(selected)
 
-
 def _touches_radar_selective_truth(changed_paths: Sequence[str]) -> bool:
     return "radar" in _owned_surfaces_for_selective_slice(changed_paths)
-
 
 def _dashboard_impact_for_truth_only_selective_slice(changed_paths: Sequence[str]) -> governance.DashboardImpact:
     surfaces = set(_owned_surfaces_for_selective_slice(changed_paths))
@@ -405,7 +389,6 @@ def _dashboard_impact_for_truth_only_selective_slice(changed_paths: Sequence[str
         casebook="casebook" in surfaces,
         reasons=reasons,
     )
-
 
 def _should_use_truth_only_selective_sync(
     *,

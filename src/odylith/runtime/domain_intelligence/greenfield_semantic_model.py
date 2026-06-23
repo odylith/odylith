@@ -9,9 +9,12 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
+from odylith.runtime.domain_intelligence.greenfield_component_terms import object_clause_focus
+from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
@@ -440,7 +443,7 @@ def _proof_obligations(
             claim=_first_path_contract_claim(first_path_contract),
             required_evidence=(
                 f"Fixture covers required fields {', '.join(first_path_contract.required_fields[:6]) or first_path_contract.entity}, "
-                f"mutation `{first_path_contract.mutation}`, persistence, visible result, and recovery behavior."
+                f"mutation evidence for {first_path_contract.action or 'the first action'}, persistence, visible result, and recovery behavior."
             ),
         ),
         ProofObligation(
@@ -465,7 +468,7 @@ def _proof_obligations(
 
 def _first_path_contract_claim(first_path_contract: FirstPathContract) -> str:
     capability = clean_text(first_path_contract.capability).strip(" .") or "complete the first path"
-    action = _actor_led_base_action_phrase(capability) or base_action_clause(capability)
+    action = _actor_led_base_action_phrase(capability) or base_gerund_clause(capability) or base_action_clause(capability)
     if action and looks_like_action_clause(action):
         return f"{first_path_contract.actor} can {action}."
     return f"{first_path_contract.actor} can complete {capability}."
@@ -578,10 +581,24 @@ def _required_fields(steps: Sequence[str], *, state_object: str) -> list[str]:
 
 
 def _event_target(step: str, *, state_object: str) -> str:
+    object_text = _target_object_text(strip_action(object_clause_focus(step)))
+    terms = ordered_terms(object_text, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)
+    if terms:
+        return " ".join(terms[:4])
     terms = ordered_terms(step, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)
     if terms:
         return " ".join(terms[:4])
     return state_object
+
+
+def _target_object_text(value: str) -> str:
+    words = _clean(value).strip(" .,;:").split()
+    relation_terms = {"after", "before", "because", "through", "unless", "until", "using", "when", "while", "with", "without"}
+    for index, word in enumerate(words):
+        if word.casefold().strip(".,;:") not in relation_terms:
+            continue
+        return " ".join(words[:index] or words[index + 1 :]).strip(" .,;:")
+    return " ".join(words).strip(" .,;:")
 
 
 def _is_visible_result(value: str, *, visible_result: str = "", is_last: bool = True) -> bool:
@@ -645,8 +662,21 @@ def _actor_label(values: Sequence[str], *, fallback: str) -> str:
     for value in values:
         text = _clean(value).split("—", 1)[0].split(":", 1)[0].strip(" .")
         if text:
-            return text
-    return fallback
+            return _sentence_safe_actor_label(text)
+    return _sentence_safe_actor_label(fallback)
+
+
+def _sentence_safe_actor_label(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text or not re.search(r"\b(?:and|or)\b", text, flags=re.IGNORECASE):
+        return text
+    words = [word.strip(".,;:()[]{}") for word in text.split() if word.strip(".,;:()[]{}")]
+    if any(any(char.isdigit() for char in word) or (word.isupper() and len(word) > 1) for word in words):
+        return text
+    if not all(word[:1].isupper() or word.casefold() in {"and", "or"} for word in words):
+        return text
+    lowered = text.casefold()
+    return f"{lowered[:1].upper()}{lowered[1:]}"
 
 
 def _clean(value: Any) -> str:

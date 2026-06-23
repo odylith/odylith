@@ -351,7 +351,7 @@ def _input_focus(first_path: str, *, fallback: str) -> str:
         clause
         for clause in clauses
         if re.search(
-            r"\b(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\b",
+            r"\b(?:adds?|answers?|attaches?|captures?|chooses?|completes?|connects?|creates?|enters?|fills?|imports?|logs?|pays?|records?|responds?|selects?|starts?|submits?|uploads?)\b",
             clause,
             re.IGNORECASE,
         )
@@ -501,18 +501,29 @@ def _lower_role_token(value: str) -> str:
 
 def _input_clause_object(value: str) -> str:
     text = compact_text(value).strip(" .")
+    input_action = (
+        r"adds?|answers?|attaches?|captures?|chooses?|completes?|connects?|creates?|enters?|fills?|imports?|"
+        r"logs?|pays?|records?|responds?|selects?|starts?|submits?|uploads?"
+    )
     subject_verb = re.match(
         r"^(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"
-        r"(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\s+"
-        r"(?P<object>(?:a|an|the|one|their|his|her|its|our|my)\s+.+)$",
+        rf"(?:{input_action})\s+"
+        r"(?P<object>.+)$",
         text,
         flags=re.IGNORECASE,
     )
     if subject_verb:
         return _lower_first(short_summary(_clean_input_object(subject_verb.group("object")), limit=110))
+    bare_subject_verb = re.match(
+        rf"^(?:[A-Za-z][A-Za-z0-9/&'()-]*\s+){{1,6}}(?:{input_action})\s+(?P<object>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if bare_subject_verb:
+        return _lower_first(short_summary(_clean_input_object(bare_subject_verb.group("object")), limit=110))
     verb_first = re.match(
-        r"^(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\s+"
-        r"(?P<object>(?:a|an|the|one|their|his|her|its|our|my)\s+.+)$",
+        rf"^(?:{input_action})\s+"
+        r"(?P<object>.+)$",
         text,
         flags=re.IGNORECASE,
     )

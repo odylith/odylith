@@ -17,12 +17,15 @@ from odylith.runtime.domain_intelligence.greenfield_text import word_count
 def contrastive_domain_drift_issues(proposal: Mapping[str, Any], semantic: Mapping[str, Any]) -> list[str]:
     """Flag repeated high-signal terms not grounded in this intent or model."""
 
-    signature_terms = _term_signature(_intent_signature_text(proposal), minimum=4)
+    intent_signature_text = _intent_signature_text(proposal)
+    component_signature_text = _component_signature_text(proposal)
+    signature_terms = _term_signature(intent_signature_text, minimum=4)
     ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     signature_terms.update(_term_signature(" ".join(text_values(ontology)), minimum=4))
     signature_terms.update(_term_signature(" ".join(text_values(first_path)), minimum=4))
-    signature_terms.update(_term_signature(_component_signature_text(proposal), minimum=4))
+    signature_terms.update(_term_signature(component_signature_text, minimum=4))
+    signature_terms.update(_grounded_equivalent_terms(f"{intent_signature_text} {component_signature_text}", signature_terms))
     generated_text = _generated_artifact_text(proposal)
     generated_counts: dict[str, int] = {}
     for term, count in term_frequencies(
@@ -197,6 +200,19 @@ def _term_signature(value: str, *, minimum: int) -> set[str]:
             stopwords=(*_CONTRASTIVE_GENERIC_TERMS, *_CONTRASTIVE_STOPWORDS),
         )
     )
+
+
+def _grounded_equivalent_terms(source_text: str, signature_terms: set[str]) -> set[str]:
+    text = _signature_text(source_text)
+    terms: set[str] = set()
+    if signature_terms & {"recommend", "recommended", "suggest", "suggested"} or re.search(
+        r"\b(?:recommend|recommended|suggest|suggested)\b",
+        text,
+    ):
+        terms.add("recommendation")
+    if signature_terms & {"propose", "proposed"} or re.search(r"\b(?:propose|proposed)\b", text):
+        terms.add("proposal")
+    return terms
 
 
 def _signature_text(value: str) -> str:

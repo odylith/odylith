@@ -5,14 +5,20 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from odylith.runtime.common.prose_grammar import action_base_verb_pattern
-from odylith.runtime.common.prose_grammar import action_verb_pattern
-from odylith.runtime.common.prose_grammar import base_action_clause
-from odylith.runtime.common.prose_grammar import base_following_action_verbs
+from odylith.runtime.common.prose_grammar import (
+    action_base_verb_pattern,
+    action_verb_pattern,
+    base_action_clause,
+    base_following_action_verbs,
+)
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
-from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects import saved_destination_result_object
+from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects import (
+    drop_result_recipient,
+    is_routing_pronoun_result,
+    saved_destination_result_object,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text, clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
@@ -230,13 +236,17 @@ def visible_result_object(value: str) -> str:
     patterns = (
         r":\s*(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
-        r"\b(?P<verb>compares?|confirms?|decides?|displays?|emits?|finds?|highlights?|presents?|produces?|reports?|renders?|returns?|saves?|sees?|shows?|views?|receives?|gets?|reads?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"\b(?P<verb>sends?|publishes?|returns?|delivers?)\s+or\s+"
+        r"(?:sends?|publishes?|returns?|delivers?)\s+(?P<object>.+)$",
+        r"\b(?P<verb>compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|views?|receives?|gets?|reads?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
         if match:
             result = match.group("object")
             verb = match.groupdict().get("verb", "")
+            if is_routing_pronoun_result(verb, result):
+                continue
             destination_result = saved_destination_result_object(verb, result)
             if destination_result:
                 result = destination_result
@@ -244,7 +254,7 @@ def visible_result_object(value: str) -> str:
             result = re.split(r"\s+[–—-]\s+(?:all|under|while|with|within)\b", result, maxsplit=1, flags=re.IGNORECASE)[0]
             result = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", result, flags=re.IGNORECASE)
             result = re.sub(r"^(?:it|them)\s+(?=(?:on|in|with|as)\b)", "the result ", result, flags=re.IGNORECASE)
-            result = _drop_result_recipient(result)
+            result = drop_result_recipient(result)
             result = re.sub(
                 r",?\s+and\s+(?:reads?|receives?|sees?|views?)\b.+$",
                 "",
@@ -265,33 +275,6 @@ def visible_result_object(value: str) -> str:
             limit=150,
         )
     return ""
-
-def _drop_result_recipient(value: str) -> str:
-    """Remove a short recipient phrase before the actual visible result object."""
-
-    text = clean_first_path_text(value).strip(" .")
-    if not text:
-        return ""
-    if re.match(
-        r"^(?:a|an|the)\s+(?:[A-Za-z][A-Za-z0-9'-]*\s+){0,3}"
-        r"(?:event|outcome|readout|record|report|result|summary|view)\b",
-        text,
-        flags=re.IGNORECASE,
-    ):
-        return text
-    words = text.split()
-    for index, word in enumerate(words[:5]):
-        if index > 0 and re.match(r"^[A-Za-z][A-Za-z0-9'-]*'s$", word):
-            return " ".join(words[index:]).strip(" .")
-    text = re.sub(
-        r"^(?:the\s+)?[A-Za-z][A-Za-z0-9'-]*(?:\s+[A-Za-z][A-Za-z0-9'-]*){0,3}\s+"
-        r"(?=(?:a|an|the|their|its|what|whether|when|where|why|[A-Za-z][A-Za-z0-9'-]*'s)\b)",
-        "",
-        text,
-        count=1,
-        flags=re.IGNORECASE,
-    ).strip(" .")
-    return text
 
 def nominal_visible_result_object(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
@@ -580,6 +563,8 @@ _GERUND_ACTION_VERBS = {
     "submits": "submitting",
     "surface": "surfacing",
     "surfaces": "surfacing",
+    "tap": "tapping",
+    "taps": "tapping",
     "update": "updating",
     "updates": "updating",
     "validate": "validating",
@@ -684,6 +669,8 @@ def _looks_like_ambiguous_artifact_noun(
     ):
         return True
     if token in {"surface", "surfaces"} and after_coordinated_object and _looks_like_nominal_object_tail(tail):
+        return True
+    if token in {"rate"} and after_coordinated_object and _looks_like_nominal_object_tail(tail):
         return True
     if token in {"block", "blocks"} and (not tail or tail.lstrip().startswith("(")):
         return True

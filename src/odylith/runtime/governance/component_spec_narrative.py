@@ -92,6 +92,8 @@ def build_narrative_component_spec(
             role=role,
             upstream=upstream,
             downstream=downstream,
+            input_focus=input_focus,
+            output_focus=output_focus,
             outside=outside,
         ),
         "",
@@ -407,11 +409,21 @@ def _transition_sentence(*, label: str, rows: Sequence[str], text: str) -> str:
     if not text:
         return ""
     short_rows = [row for row in rows if len(clean_text(row).split()) <= 2]
+    concrete_rows = [
+        row
+        for row in rows
+        if len(clean_text(row).split()) > 2 or "-" in clean_text(row)
+    ]
+    material_status_count = sum(1 for row in rows if _transition_material_score(row) >= 3)
+    if concrete_rows or material_status_count >= 4:
+        return f"For {label}, the important lifecycle is {text}."
     if len(rows) > 7 or len(short_rows) >= max(4, len(rows) // 2):
         return (
             f"For {label}, the lifecycle should make accepted, blocked, corrected, completed, "
             "and handed-off states explicit before implementation expands."
         )
+    if len(text) <= 260:
+        return f"For {label}, the important lifecycle is {text}."
     return f"For {label}, the important lifecycle is {text}."
 
 
@@ -421,10 +433,12 @@ def _boundary_narrative(
     role: str,
     upstream: str,
     downstream: str,
+    input_focus: str,
+    output_focus: str,
     outside: Sequence[str],
 ) -> str:
-    upstream_text = re.sub(r"^The\s+next\b", "the next", upstream).strip()
-    downstream_text = re.sub(r"^The\s+next\b", "the next", downstream).strip()
+    upstream_text = _boundary_entity_text(re.sub(r"^The\s+next\b", "the next", upstream).strip())
+    downstream_text = _boundary_entity_text(re.sub(r"^The\s+next\b", "the next", downstream).strip())
     kept = [
         item
         for item in outside
@@ -461,7 +475,113 @@ def _boundary_narrative(
         boundary = f"For {label}, keep {outside_text} outside this boundary so display logic does not rewrite original input facts."
     else:
         boundary = f"For {label}, keep {outside_text} outside this boundary unless a later release explicitly assigns it here."
-    return _sentences(relation, boundary)
+    upstream_separation = _upstream_handoff_separation_sentence(label=label, upstream=upstream_text, input_focus=input_focus)
+    downstream_separation = _downstream_handoff_separation_sentence(label=label, downstream=downstream_text, output_focus=output_focus)
+    return _sentences(relation, upstream_separation, downstream_separation, boundary)
+
+
+def _upstream_handoff_separation_sentence(*, label: str, upstream: str, input_focus: str) -> str:
+    owner = re.sub(
+        r"\s+ownership(?:\s+of\s+local\s+state)?\.?$",
+        "",
+        _boundary_entity_text(upstream).strip(" ."),
+        flags=re.I,
+    )
+    subject = _primary_boundary_subject(input_focus)
+    if not owner or not subject or _has_no_source_dependency(upstream):
+        return ""
+    return f"{label} can consume {subject} without owning or rewriting state owned by {owner}."
+
+
+def _downstream_handoff_separation_sentence(*, label: str, downstream: str, output_focus: str) -> str:
+    consumer = _boundary_entity_text(downstream).strip(" .")
+    subject = _primary_boundary_subject(output_focus)
+    if not consumer or not subject:
+        return ""
+    if consumer.casefold() in {"release review", "the next product boundary and release proof review"}:
+        return ""
+    return f"{consumer} can consume {subject} without owning or rewriting state owned by {label}."
+
+
+def _primary_boundary_subject(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ""
+    text = re.split(r",|\s+\band\b\s+", text, maxsplit=1, flags=re.I)[0].strip(" .")
+    if text.casefold() in {"prior state", "explanation context", "validation context", "the inputs required for this boundary"}:
+        return ""
+    return text
+
+
+_BOUNDARY_ENTITY_SUFFIXES = frozenset(
+    {
+        "adapter",
+        "catalog",
+        "check",
+        "console",
+        "controller",
+        "dashboard",
+        "engine",
+        "ledger",
+        "log",
+        "model",
+        "portal",
+        "registry",
+        "repository",
+        "service",
+        "store",
+        "tracker",
+        "view",
+        "workflow",
+    }
+)
+_BOUNDARY_ENTITY_CONNECTORS = frozenset({"a", "an", "and", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"})
+
+
+def _boundary_entity_text(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ""
+    match = re.match(r"(?P<label>.+?)\s+(?P<tail>ownership(?:\s+of\s+local\s+state)?)$", text, flags=re.I)
+    label = clean_text(match.group("label")) if match else text
+    tail = f" {match.group('tail')}" if match else ""
+    if not _looks_like_boundary_component_label(label):
+        return text
+    return f"{_component_label_text(label)}{tail}"
+
+
+def _looks_like_boundary_component_label(value: str) -> bool:
+    words = clean_text(value).split()
+    if len(words) < 2:
+        return False
+    title_word_count = sum(1 for word in words if word[:1].isupper())
+    last = words[-1].casefold().strip(".,;:")
+    if last in _BOUNDARY_ENTITY_SUFFIXES and title_word_count >= 2:
+        return True
+    return title_word_count >= 2
+
+
+def _component_label_text(value: str) -> str:
+    words = clean_text(value).split()
+    rendered: list[str] = []
+    for index, word in enumerate(words):
+        token = word.strip(".,;:")
+        lowered = token.casefold()
+        if 0 < index < len(words) - 1 and lowered in _BOUNDARY_ENTITY_CONNECTORS:
+            rendered.append(lowered)
+            continue
+        rendered.append(_component_label_token(token))
+    return " ".join(rendered)
+
+
+def _component_label_token(value: str) -> str:
+    if not value:
+        return ""
+    if value.isupper() or any(char.isdigit() for char in value):
+        return value
+    if "-" in value:
+        return "-".join(_component_label_token(part) for part in value.split("-"))
+    return value[:1].upper() + value[1:]
 
 
 def _has_no_source_dependency(value: str) -> bool:

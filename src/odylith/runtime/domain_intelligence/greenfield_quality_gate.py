@@ -124,6 +124,7 @@ _EXCLUDED_PUBLIC_KEYS = {
     "priority",
     "provider_calls",
     "artifact_derivation",
+    "atlas_scaffold_logs",
     "project_intelligence_binding",
     "qualification",
     "reasoning_contract",
@@ -138,6 +139,10 @@ _EXCLUDED_PUBLIC_KEYS = {
     "source_svg",
     "source_title",
     "status",
+    "next_steps",
+    "post_confirm_quality_manifest",
+    "validation_gate",
+    "validation_plan",
     "watch_paths",
     "write_policy",
 }

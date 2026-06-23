@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_act
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase as _clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import looks_action_term as _looks_action_term
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
@@ -46,6 +47,8 @@ def context_object_phrases(
     carry = 0
     carry_base: tuple[str, ...] = ()
     for clause in clauses(value):
+        if _is_deferred_or_outside_clause(clause):
+            continue
         truth_unit = _truth_unit_artifact(clause)
         if truth_unit:
             rows.append(truth_unit)
@@ -64,6 +67,7 @@ def context_object_phrases(
             flags=re.IGNORECASE,
         )
         terms = _drop_actor_action_lead(_content_terms(stripped_clause or clause))
+        terms = _preserve_missing_detail_carrier(terms, clause)
         if re.search(r"\balign(?:s|ed|ing)?\b", clause, flags=re.IGNORECASE) and re.search(
             r"\btimeline\b", clause, flags=re.IGNORECASE
         ):
@@ -167,6 +171,8 @@ def context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: 
         return []
     rows: list[str] = []
     for clause in re.split(r"(?<=[.!?])\s+|[,;]", _clean(value)):
+        if _is_deferred_or_outside_clause(clause):
+            continue
         truth_unit = _truth_unit_artifact(clause)
         if truth_unit:
             rows.append(truth_unit)
@@ -195,6 +201,103 @@ def context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: 
             if len(rows) >= limit:
                 return unique_text(rows)
     return unique_text(rows)
+
+
+def owned_context_detail_phrases(
+    context_phrases: Sequence[str],
+    context_compound_phrases: Sequence[str],
+    *,
+    label_terms: Sequence[str],
+) -> tuple[str, ...]:
+    rows: list[str] = []
+    label_term_set = set(label_terms)
+    for phrase in (*context_phrases, *context_compound_phrases):
+        terms = list(_content_terms(phrase))
+        terms = _preserve_explicit_detail_carrier(terms, phrase)
+        if len(terms) < 2:
+            continue
+        if set(terms) & {"ignore", "ignored"}:
+            continue
+        decision_detail = bool(
+            label_term_set & {"decision", "journal", "ledger"}
+            and "decision" in terms
+            and terms[0] not in {"first", "local", "next", "product", "release", "review", "source", "validation"}
+        )
+        overlap_detail = bool(label_term_set & set(terms) and terms[0] not in {"first", "local", "next", "product", "release"})
+        if (
+            terms[0] not in {"accepted", "current", "incomplete", "missing", "recent", "required", "selected", "unavailable"}
+            and not decision_detail
+            and not overlap_detail
+        ):
+            continue
+        if set(terms) & {"context", "summary"}:
+            continue
+        if not set(terms) & _ARTIFACT_CARRIER_TERMS and not overlap_detail:
+            continue
+        if terms[-1] in {"link", "links"} and len(terms) > 2:
+            terms = terms[:-1]
+        rows.append(" ".join(terms[:4]))
+        if len(rows) >= 8:
+            break
+    return tuple(sorted(unique_text(rows), key=lambda value: _owned_context_detail_rank(value, label_term_set)))
+
+
+def description_owned_phrases(value: str) -> tuple[str, ...]:
+    rows: list[str] = []
+    text = _clean(value)
+    if not text:
+        return ()
+    for part in re.split(r"\s*,\s*|\s+\band\b\s+", text, flags=re.IGNORECASE):
+        phrase = clean_artifact_text(
+            re.sub(r"^(?:owns?|records?|keeps?|tracks?|stores?|captures?)\s+", "", part, flags=re.IGNORECASE)
+        ).strip(" .")
+        phrase = re.sub(r"^(?:and|or)\s+", "", phrase, flags=re.IGNORECASE).strip(" .")
+        phrase = _clean_artifact_phrase(phrase) or phrase
+        if not phrase:
+            continue
+        terms = list(_content_terms(phrase))
+        has_carrier = _owned_phrase_has_carrier(phrase, terms)
+        if (len(terms) < 2 and not has_carrier) or len(terms) > 5:
+            continue
+        if not has_carrier:
+            continue
+        rows.append(phrase.casefold())
+    return tuple(unique_text(rows))
+
+
+def _is_deferred_or_outside_clause(value: str) -> bool:
+    text = _clean(value).casefold()
+    return bool(
+        re.search(r"\b(?:outside|beyond|not\s+in|not\s+part\s+of)\s+(?:the\s+)?(?:first|initial|release|proof|scope|boundary)\b", text)
+        or re.search(r"\b(?:deferred|out\s+of\s+scope|future\s+release|later\s+release)\b", text)
+    )
+
+
+def _preserve_explicit_detail_carrier(terms: Sequence[str], phrase: str) -> list[str]:
+    result = list(terms)
+    if set(result) & {"detail", "fact", "field", "information"}:
+        return result
+    if re.search(r"\b(?:details?|facts?|fields?|information)\b", _clean(phrase), flags=re.IGNORECASE):
+        result.append("detail")
+    return result
+
+
+def _owned_context_detail_rank(value: str, label_terms: set[str]) -> tuple[int, int, str]:
+    terms = set(_content_terms(value))
+    if terms & {"blocked", "blocker", "incomplete", "missing", "unavailable"}:
+        return (0, -len(terms & _ARTIFACT_CARRIER_TERMS), value)
+    if label_terms & {"decision", "journal", "ledger"} and "decision" in terms and terms - label_terms:
+        return (1, -len(terms & _ARTIFACT_CARRIER_TERMS), value)
+    if terms & _ARTIFACT_CARRIER_TERMS:
+        return (2, -len(terms & _ARTIFACT_CARRIER_TERMS), value)
+    return (3, 0, value)
+
+
+def _owned_phrase_has_carrier(phrase: str, terms: Sequence[str]) -> bool:
+    return bool(
+        set(terms) & _ARTIFACT_CARRIER_TERMS
+        or re.search(r"\b(?:acknowledgement|acknowledgment|blockers?|events?|flags?|histories|history|notes?|states?)\b", phrase, flags=re.IGNORECASE)
+    )
 
 
 def _truth_unit_artifact(value: str) -> str:
@@ -293,6 +396,19 @@ def _drop_actor_action_lead(terms: Sequence[str]) -> list[str]:
     return result
 
 
+def _preserve_missing_detail_carrier(terms: Sequence[str], clause: str) -> list[str]:
+    result = list(terms)
+    if "missing" not in result:
+        return result
+    if not re.search(r"\b(?:details?|facts?|fields?|information)\b", _clean(clause), flags=re.IGNORECASE):
+        return result
+    if set(result) & {"detail", "details", "fact", "facts", "field", "fields", "information"}:
+        return result
+    missing_index = result.index("missing")
+    insert_at = min(len(result), missing_index + 3)
+    return [*result[:insert_at], "detail", *result[insert_at:]]
+
+
 _CONTEXT_METADATA_LEADS = frozenset(
     {
         "choice",
@@ -321,6 +437,8 @@ __all__ = [
     "context_anchor_compounds",
     "context_object_phrases",
     "context_required_phrases",
+    "description_owned_phrases",
     "expanded_context_anchors",
     "needs_context_backfill",
+    "owned_context_detail_phrases",
 ]

@@ -3,6 +3,7 @@ from __future__ import annotations
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 
 
@@ -59,6 +60,16 @@ def test_outcome_selector_keeps_confirmed_user_result_before_downstream_handoff(
     assert first_path_outcome_phrase(first_path, proof_boundary=proof_boundary) == "a confirmed booking"
 
 
+def test_outcome_selector_extracts_object_from_coordinated_send_publish_action() -> None:
+    first_path = (
+        "A communications coordinator records a public question, tags the topic, assigns an owner, drafts a response, "
+        "routes it for approval, records approval or requested edits, sends or publishes the approved response, "
+        "and reviews the audit trail."
+    )
+
+    assert first_path_outcome_phrase(first_path) == "the approved response"
+
+
 def test_operator_first_path_keeps_modifier_tail_with_visible_outcome() -> None:
     first_path = (
         "Operator picks a recipe, the controller validates the robot is ready, runs the step sequence with "
@@ -85,9 +96,32 @@ def test_operator_first_path_keeps_modifier_tail_with_visible_outcome() -> None:
     assert contract.capability == (
         "picking a recipe, validating the robot is ready, and running the step sequence with closed-loop heat and timing control"
     )
+    assert [event.target_entity for event in contract.events[:3]] == ["recipe", "robot ready", "step sequence"]
+    assert "mutation `" not in model.proof_obligations[0].required_evidence
+    assert generated_semantic_slop_issues({"proof": model.proof_obligations[0].required_evidence}) == []
     assert "Operator picks" not in rendered
     assert "With an emergency stop" not in rendered
     assert generated_public_copy_issues("semantic preview", rendered) == ()
+
+
+def test_semantic_proof_claim_normalizes_coordinated_title_role_actor() -> None:
+    model = build_greenfield_semantic_model(
+        title="Protocol Effect Tracker",
+        state_object="A tracked protocol with active interventions and timestamped measurements.",
+        first_path=(
+            "A user creates a protocol, logs an active intervention with a start date and dose, "
+            "records a baseline measurement, and adds a follow-up measurement."
+        ),
+        proof_boundary="Proven when a user can create a protocol and view the measurements on one timeline.",
+        components=[],
+        human_actors=["Self-experimenter or Quantified-self User: tracking their own protocol"],
+    )
+
+    claim = model.proof_obligations[0].claim
+
+    assert claim.startswith("Self-experimenter or quantified-self user can create a protocol")
+    assert "can complete creating" not in claim
+    assert generated_public_copy_issues("claim", claim) == ()
 
 
 def test_confirmed_intent_normalizes_product_manages_state_object_predicate() -> None:

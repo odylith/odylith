@@ -164,6 +164,7 @@ def _first_path_capability_text(
         if outcome:
             outcome_fragment = _outcome_capability_fragment(outcome)
             if gerund:
+                outcome_fragment = re.sub(r"^(?i:see)\s+", "review ", outcome_fragment).strip(" .")
                 outcome_fragment = _gerund_action_fragment(outcome_fragment)
             fragments.append(outcome_fragment)
     if not gerund:

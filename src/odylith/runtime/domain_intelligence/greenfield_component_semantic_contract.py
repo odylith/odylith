@@ -51,6 +51,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import (
     literal_label_terms as _literal_label_terms,
 )
+from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -81,14 +82,15 @@ def derive_component_semantic_contract(
     local_text = " ".join(text for text in (label, description, proposal_context) if text)
     clauses = semantic_context.clauses(description or label)
     action_terms = _actions(" ".join(text for text in (label, description) if text)) or _actions(local_text)
+    relation_phrases = _relation_phrases(description)
     description_phrases = _clean_artifact_phrases(
         [
-            *_relation_phrases(description),
             *_object_phrases(clauses, fallback=label),
             *_action_object_artifact_phrases(description),
             *_descriptor_anchor_phrases(label, description),
         ]
     )
+    description_phrases = unique_text([*relation_phrases, *description_phrases])
     label_terms = _content_terms(label)
     description_terms = _content_terms(description)
     context_phrases = semantic_context.context_object_phrases(
@@ -117,6 +119,7 @@ def derive_component_semantic_contract(
     )
     context_backfill = [*context_phrases[:5], *context_compound_phrases[:3]] if needs_context_backfill else []
     object_phrases = _clean_artifact_phrases([*local_phrases, *context_backfill])
+    object_phrases = unique_text([*relation_phrases, *object_phrases])
     object_phrases = _dedupe_phrase_subsets(object_phrases)
     object_phrases = _prioritize_object_phrases(
         object_phrases,
@@ -193,12 +196,12 @@ def derive_component_semantic_contract(
         proposal_context=proposal_context,
         action_terms=action_terms,
     ) else ()
-    owned_context_phrases = _owned_context_detail_phrases(
+    owned_context_phrases = semantic_context.owned_context_detail_phrases(
         context_phrases,
         context_compound_phrases,
         label_terms=label_terms,
     )
-    description_owned_phrases = _description_owned_phrases(description)
+    description_owned_phrases = semantic_context.description_owned_phrases(description)
     owned_summary_phrases = summary_phrases[:7]
     title_identity_phrases = _title_identity_phrases(label_phrases, owned_summary_phrases)
     owned_seed = (
@@ -229,7 +232,7 @@ def derive_component_semantic_contract(
         "states_or_transitions": states,
         "outside_boundary": _outside_boundary(sibling_focus=handoff_focus),
         "local_proof": proof,
-        "upstream_truth": previous_label or "accepted first-path input",
+        "upstream_truth": _upstream_truth(previous_label),
         "downstream_consumers": next_label or "release review",
         "unique_failure": (
             f"{label} can mislead users if {critical_noun} {_present_verb(critical_noun, singular='is', plural='are')} missing, stale, {failure_cause}, "
@@ -403,6 +406,7 @@ def _proposal_context(proposal: Mapping[str, Any]) -> str:
 def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
     rows: list[str] = []
     for clause in clauses:
+        clause = normalize_relative_clause_artifacts(clause) or clause
         align_match = re.search(
             r"\b(?P<action>aligns?|aligned|aligning)\s+(?P<body>[A-Za-z0-9][A-Za-z0-9 /&(),'-]{2,90}?)"
             r"(?:\s+against\s+(?P<target>[A-Za-z0-9][A-Za-z0-9 /&(),'-]{2,60}?))?(?:\s+[—-]\s+|[.;,]|$)",
@@ -481,7 +485,7 @@ def _relation_phrases(value: str) -> list[str]:
             continue
         action_match = re.search(rf"\b(?:{action_pattern})\s+(?P<body>.+\bto\s+.+)$", segment, flags=re.I)
         body = action_match.group("body") if action_match else segment
-        body = _trim_phrase(body)
+        body = _trim_phrase(normalize_relative_clause_artifacts(body) or body)
         if not re.search(r"\bto\s+(?:a|an|the)?\s*[A-Za-z0-9]", body, flags=re.I):
             continue
         words = body.split()
@@ -506,6 +510,15 @@ def _sibling_focus(row: Mapping[str, Any] | None) -> str:
     if not label:
         return ""
     return f"{label} ownership of local state"
+
+
+def _upstream_truth(value: str) -> str:
+    label = _clean(value).strip(" .")
+    if not label:
+        return "accepted first-path input"
+    if label.casefold().endswith("ownership"):
+        return label
+    return f"{label} ownership"
 
 
 def _bridge_phrases(label: str, description: str) -> list[str]:
@@ -587,71 +600,6 @@ def _title_identity_phrases(label_phrases: Sequence[str], summary_phrases: Seque
         if len(rows) >= 2:
             break
     return tuple(rows)
-
-
-def _owned_context_detail_phrases(
-    context_phrases: Sequence[str],
-    context_compound_phrases: Sequence[str],
-    *,
-    label_terms: Sequence[str],
-) -> tuple[str, ...]:
-    rows: list[str] = []
-    label_term_set = set(label_terms)
-    for phrase in (*context_phrases, *context_compound_phrases):
-        terms = list(_content_terms(phrase))
-        if len(terms) < 2:
-            continue
-        decision_detail = bool(
-            label_term_set & {"decision", "journal", "ledger"}
-            and "decision" in terms
-            and terms[0] not in {"first", "local", "next", "product", "release", "review", "source", "validation"}
-        )
-        if (
-            terms[0] not in {"accepted", "current", "incomplete", "missing", "recent", "required", "selected", "unavailable"}
-            and not decision_detail
-        ):
-            continue
-        if set(terms) & {"context", "summary"}:
-            continue
-        if not set(terms) & _ARTIFACT_CARRIER_TERMS:
-            continue
-        if terms[-1] in {"link", "links"} and len(terms) > 2:
-            terms = terms[:-1]
-        if terms == ["missing", "contact"]:
-            terms.append("detail")
-        rows.append(" ".join(terms[:4]))
-        if len(rows) >= 3:
-            break
-    return tuple(unique_text(rows))
-
-
-def _description_owned_phrases(value: str) -> tuple[str, ...]:
-    rows: list[str] = []
-    text = _clean(value)
-    if not text:
-        return ()
-    for part in re.split(r"\s*,\s*|\s+\band\b\s+", text, flags=re.IGNORECASE):
-        phrase = clean_artifact_text(
-            re.sub(r"^(?:owns?|records?|keeps?|tracks?|stores?|captures?)\s+", "", part, flags=re.IGNORECASE)
-        ).strip(" .")
-        phrase = re.sub(r"^(?:and|or)\s+", "", phrase, flags=re.IGNORECASE).strip(" .")
-        if not phrase:
-            continue
-        terms = list(_content_terms(phrase))
-        has_carrier = _owned_phrase_has_carrier(phrase, terms)
-        if (len(terms) < 2 and not has_carrier) or len(terms) > 5:
-            continue
-        if not has_carrier:
-            continue
-        rows.append(phrase.casefold())
-    return tuple(unique_text(rows))
-
-
-def _owned_phrase_has_carrier(phrase: str, terms: Sequence[str]) -> bool:
-    return bool(
-        set(terms) & _ARTIFACT_CARRIER_TERMS
-        or re.search(r"\b(?:acknowledgement|acknowledgment|blockers?|events?|flags?|histories|history|notes?|states?)\b", phrase, flags=re.IGNORECASE)
-    )
 
 
 def _bridge_phrase_rank(phrase: str) -> tuple[int, str]:
@@ -759,7 +707,28 @@ def _summary_object_phrases(values: Sequence[str], *, required_phrases: Sequence
             break
         if phrase not in result:
             result.append(phrase)
+    result = _prefer_richer_relation_phrases(result, values)
     return _drop_subsumed_singletons(result[:limit])
+
+
+def _prefer_richer_relation_phrases(result: Sequence[str], values: Sequence[str]) -> list[str]:
+    rows = list(result)
+    for phrase in values:
+        if not re.search(r"\b(?:related|linked|mapped)\b", phrase, flags=re.I):
+            continue
+        phrase_terms = _phrase_identity_terms(phrase)
+        if not phrase_terms:
+            continue
+        subsets = [
+            existing
+            for existing in rows
+            if existing != phrase and _phrase_identity_terms(existing) < phrase_terms
+        ]
+        if not subsets:
+            continue
+        rows = [existing for existing in rows if existing not in subsets and existing != phrase]
+        rows.insert(0, phrase)
+    return unique_text(rows)
 
 
 def _drop_subsumed_singletons(values: Sequence[str]) -> list[str]:

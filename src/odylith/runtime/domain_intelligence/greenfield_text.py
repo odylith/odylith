@@ -7,6 +7,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
+from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common import display_text
 
 _LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;)+")
@@ -248,11 +249,25 @@ def lower_plain_title_subject_fragment(value: Any, *, action_offset: int) -> str
 
     text = clean_markdown_text(value).strip(" .")
     if action_offset <= 0 or action_offset > len(text):
-        return text
+        return _lower_plain_title_phrase(text)
+    action_tail = text[action_offset:].lstrip()
+    if not re.match(
+        rf"^(?:{action_verb_pattern(include_base=False)})(?![A-Za-z0-9_-])",
+        action_tail,
+        flags=re.IGNORECASE,
+    ):
+        return _lower_plain_title_phrase(text)
     subject = text[:action_offset].strip(" ,")
     if len(subject.split()) < 2 or not plain_title_phrase(subject):
         return text
     return f"{subject.casefold()}{text[action_offset:]}"
+
+
+def _lower_plain_title_phrase(value: str) -> str:
+    text = clean_markdown_text(value).strip(" .")
+    if not plain_title_phrase(text):
+        return text
+    return text.casefold()
 
 
 def plain_title_phrase(value: Any) -> bool:

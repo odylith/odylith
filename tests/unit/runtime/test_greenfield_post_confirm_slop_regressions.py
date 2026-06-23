@@ -813,11 +813,15 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     rendered = json.dumps(proposal, sort_keys=True)
     issues = greenfield_quality_issues(proposal)
 
-    assert first_path.startswith("Home Cook picks a recipe")
+    assert first_path.startswith("Home cook picks a recipe")
     assert "Operator picks a recipe" not in rendered
     assert "Home Cook / Operator" not in rendered
+    assert "home cook pick recipe" not in rendered.casefold()
+    assert "runs step sequence until" not in rendered.casefold()
+    assert "sequence until cooking reach" not in rendered.casefold()
     assert "part of the result, explanation, and evidence it is responsible for" not in rendered
     assert not any("generic actor label `Operator`" in issue for issue in issues)
+    assert not any("mixed actor-role casing" in issue for issue in issues)
     assert not any("clipped or unfinished" in issue for issue in issues)
 
 

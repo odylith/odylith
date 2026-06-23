@@ -71,7 +71,7 @@ _GENERIC_COMPONENT_ROLE_PREFIXES: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"^evidence\s+owner\b", re.IGNORECASE), "Evidence Ownership"),
     (re.compile(r"^build\s+owner\b", re.IGNORECASE), "Build Ownership"),
 )
-_EXPLANATORY_NAME_CONNECTORS = frozenset({"because", "that", "when", "where", "which", "while", "who", "with"})
+_EXPLANATORY_NAME_CONNECTORS = frozenset({"because", "that", "when", "where", "which", "while", "who"})
 
 
 def domain_label(title: str, prompt: str) -> str:
@@ -197,12 +197,9 @@ def _confirmed_system_components(
             row["responsibility"] = responsibility_from_contract(str(row.get("label", "")), contract)
         if _generated_or_weak(row.get("boundary")):
             row["boundary"] = boundary_from_contract(str(row.get("label", "")), contract)
-        if _generated_sequence(row.get("interfaces")):
-            row["interfaces"] = interfaces_from_contract(contract)
-        if _generated_sequence(row.get("dependencies")):
-            row["dependencies"] = dependencies_from_contract(contract)
-        if _generated_sequence(row.get("validation")):
-            row["validation"] = validation_from_contract(contract)
+        row["interfaces"] = interfaces_from_contract(contract)
+        row["dependencies"] = dependencies_from_contract(contract)
+        row["validation"] = validation_from_contract(contract)
         row["risks"] = risks_from_contract(str(row.get("label", "")), contract)
     proposal_context["components"] = rows
     differentiate_component_contracts(proposal_context)
@@ -215,12 +212,9 @@ def _confirmed_system_components(
             row["responsibility"] = responsibility_from_contract(label_text, contract)
         if _generated_or_weak(row.get("boundary")):
             row["boundary"] = boundary_from_contract(label_text, contract)
-        if _generated_sequence(row.get("interfaces")):
-            row["interfaces"] = interfaces_from_contract(contract)
-        if _generated_sequence(row.get("dependencies")):
-            row["dependencies"] = dependencies_from_contract(contract)
-        if _generated_sequence(row.get("validation")):
-            row["validation"] = validation_from_contract(contract)
+        row["interfaces"] = interfaces_from_contract(contract)
+        row["dependencies"] = dependencies_from_contract(contract)
+        row["validation"] = validation_from_contract(contract)
         row["risks"] = risks_from_contract(label_text, contract)
     return rows
 

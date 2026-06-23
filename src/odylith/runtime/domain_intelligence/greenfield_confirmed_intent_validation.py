@@ -205,12 +205,14 @@ def _has_release_success_proof_shape(text: str) -> bool:
         return False
     return bool(
         re.search(
-            r"\b(?:release|first\s+release|version)\b.+\b(?:succeeds?|works?|passes?|ready|complete|proven)\b.+\bwhen\b",
+            r"\b(?:release|first\s+release|version)\b.+\b(?:succeeds?|works?|passes?|ready|complete|proven|"
+            r"trustworthy|trusted|successful|acceptable)\b.+\bwhen\b",
             cleaned,
             re.IGNORECASE,
         )
         or re.search(
-            r"\bwhen\b.+\b(?:ready|reviewable|visible|published|complete|completed|follow[-\s]?up|accepted|approved)\b",
+            r"\bwhen\b.+\b(?:ready|reviewable|visible|published|complete|completed|follow[-\s]?up|accepted|"
+            r"approved|created?|produced?|received?|inspect(?:ed|s)?|review(?:ed|s)?)\b",
             cleaned,
             re.IGNORECASE,
         )
