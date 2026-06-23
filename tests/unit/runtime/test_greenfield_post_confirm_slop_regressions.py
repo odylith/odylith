@@ -454,6 +454,9 @@ def test_modal_drift_detector_allows_plural_objects_but_rejects_finite_actions()
         "One resident can submit one application. The product explains missing input, and leaves the result reviewable."
     ) == []
     assert modal_base_form_drift_phrases("A coordinator accepts jobs that can be scheduled, and follows up.") == []
+    assert modal_base_form_drift_phrases(
+        "The plan should reduce grid draw, lets the owner approve it, monitors the result, and reports the outcome."
+    ) == []
     assert modal_base_form_drift_phrases("Evaluators can runs, inspect failures.") == ["can runs"]
     assert modal_base_form_drift_phrases("Requesters can records proof.") == ["can records"]
     assert modal_base_form_drift_phrases("The user can coordinator creates packet state.") == [

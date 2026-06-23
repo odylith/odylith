@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 import re
 
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import generic_actor_label_prefix
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
@@ -99,6 +101,8 @@ _ROLE_WORDS = {
     "trainee",
     "user",
 }
+_COLLECTIVE_ACTOR_WORDS = {"crew", "family", "group", "staff", "team"}
+_BODY_FOCUS_ROLE_ONLY = {"admin", "administrator", "author", "coordinator", "reviewer"}
 
 _GENERIC_HEADS = {
     "admin",
@@ -202,11 +206,12 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
     explicit_body = bool(body)
     original_head = _strip_modal_actor_tail(_strip_qualifiers(head).strip(" ."))
     original_role = _role_suffix(original_head)
+    original_lower_head = _key(original_head)
     if explicit_body and _is_concrete_actor_head(
         original_head,
-        lower_head=_key(original_head),
+        lower_head=original_lower_head,
         role=original_role,
-    ):
+    ) and not _role_only_body_focus(original_lower_head, original_role):
         return original_head
     marker_head, marker_tail = _split_description_marker(head)
     marker_body_used = False
@@ -232,7 +237,7 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
     role = _role_suffix(head)
     if not explicit_body and not marker_body_used and _preserve_standalone_label(head, lower_head=lower_head, role=role):
         return head
-    if explicit_body and _is_concrete_actor_head(head, lower_head=lower_head, role=role):
+    if explicit_body and _is_concrete_actor_head(head, lower_head=lower_head, role=role) and not _role_only_body_focus(lower_head, role):
         return head
     activity_label = _generic_person_activity_label(
         head,
@@ -246,12 +251,13 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
     composite_label = _project_specific_composite_head(head, lower_head=lower_head, project_focus=project_focus)
     if composite_label:
         return composite_label
+    body_focus_role = bool(body) and _role_body_prefers_body_focus(role, body)
     needs_focus = _head_needs_focus(lower_head, role=role) or (
         marker_body_used and lower_head == role and role in _GENERIC_ROLE_ONLY
     ) or (
         marker_body_used and lower_head == role and role in {"coordinator"}
-    )
-    if lower_head == role and role in {"admin", "administrator", "author"} and body:
+    ) or (lower_head == role and body_focus_role)
+    if lower_head == role and body_focus_role:
         focus = _focus_from_actor_body(body, role=role)
         if focus:
             return _title_label(f"{focus} {role}")
@@ -338,6 +344,15 @@ def _split_actor_row(value: str) -> tuple[str, str]:
     action_head, action_tail = _split_actor_action_tail(value)
     if action_head:
         return action_head, action_tail
+    marker_head, marker_tail = _split_description_marker(value)
+    if marker_head:
+        marker = _description_marker_between(value, marker_head)
+        body = (
+            f"{marker} {marker_tail}".strip()
+            if marker.endswith("ing") or marker.endswith(" to")
+            else marker_tail
+        )
+        return _title_label(marker_head), body
     return value, ""
 
 
@@ -378,8 +393,23 @@ def _split_description_marker(value: str) -> tuple[str, str]:
     return "", ""
 
 
+def _description_marker_between(value: str, head: str) -> str:
+    lowered = value.casefold()
+    head_length = len(head.strip())
+    matches = sorted(
+        marker.strip()
+        for marker in _DESCRIPTION_MARKERS
+        if marker.strip() and lowered.startswith(f"{head.casefold().strip()}{marker}")
+    )
+    if matches:
+        return matches[0]
+    tail = lowered[head_length:].strip()
+    first = tail.split(" ", 1)[0].strip(".,;:")
+    return first if first.endswith("ing") else ""
+
+
 def _split_actor_action_tail(value: str) -> tuple[str, str]:
-    """Split role labels such as "individual user running..." into label/body."""
+    """Split role labels such as "coordinator reviews..." into label/body."""
 
     text = _clean(value).strip(" .")
     if not text:
@@ -392,7 +422,7 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
         head_candidate = " ".join(words[:index]).strip(" .")
         if token == "being":
             continue
-        if token not in {
+        gerund_boundary = token in {
             "acknowledging",
             "asking",
             "assigning",
@@ -401,8 +431,10 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
             "configuring",
             "coordinating",
             "creating",
+            "deciding",
             "drafting",
             "entering",
+            "evaluating",
             "following",
             "handling",
             "helping",
@@ -420,7 +452,11 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
             "tracking",
             "using",
             "watching",
-        } and not (token.endswith("ing") and _generic_person_head(head_candidate)):
+        } or (token.endswith("ing") and _generic_person_head(head_candidate))
+        finite_action_boundary = looks_like_finite_action_token(token)
+        base_action_boundary = looks_like_base_action_token(token)
+        clause_action_boundary = finite_action_boundary or base_action_boundary
+        if not (gerund_boundary or clause_action_boundary):
             continue
         head = head_candidate
         head = re.sub(r"^(?:a|an|the)\s+", "", head, flags=re.IGNORECASE).strip(" .")
@@ -428,9 +464,45 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
         role = _role_suffix(head)
         if not role and _generic_person_head(head):
             role = "user"
-        if role and 1 <= len(head.split()) <= 4 and tail:
+        subject_head = bool(role) or (
+            clause_action_boundary
+            and _looks_like_finite_actor_subject(head, allow_singular_compound=finite_action_boundary)
+        )
+        if subject_head and 1 <= len(head.split()) <= 4 and tail and (gerund_boundary or len(tail.split()) >= 2):
             return _title_label(head), tail
     return "", ""
+
+
+def _looks_like_finite_actor_subject(value: str, *, allow_singular_compound: bool = False) -> bool:
+    words = [word.casefold().strip(".,;:()") for word in _clean(value).split()]
+    if not 1 <= len(words) <= 4:
+        return False
+    if words[-1] in _TITLE_CONNECTORS or words[-1] in {"that", "which", "who"}:
+        return False
+    content = [word for word in words if word and word not in _TITLE_CONNECTORS]
+    if not content:
+        return False
+    if content[0] in {"it", "that", "there", "this", "what", "which"}:
+        return False
+    if (
+        len(content) == 1
+        and content[0] not in _COLLECTIVE_ACTOR_WORDS
+        and content[0] not in _ROLE_WORDS
+        and not content[0].endswith("s")
+    ):
+        return False
+    tail = content[-1]
+    if tail.endswith("ing"):
+        return False
+    if (
+        len(content) > 1
+        and tail not in _COLLECTIVE_ACTOR_WORDS
+        and tail not in _ROLE_WORDS
+        and not tail.endswith("s")
+        and not allow_singular_compound
+    ):
+        return False
+    return any(word not in _FOCUS_STOPWORDS for word in content)
 
 
 def _split_shared_subject_tail(value: str) -> tuple[str, str]:
@@ -512,6 +584,23 @@ def _head_needs_focus(lower_head: str, *, role: str) -> bool:
     return lower_head == role and role in _GENERIC_ROLE_ONLY
 
 
+def _role_only_body_focus(lower_head: str, role: str) -> bool:
+    return bool(role and lower_head == role and role in _BODY_FOCUS_ROLE_ONLY)
+
+
+def _role_body_prefers_body_focus(role: str, body: str) -> bool:
+    if not _role_only_body_focus(role, role):
+        return False
+    first = _first_body_token(body)
+    if not first:
+        return False
+    if first.endswith("ing"):
+        return True
+    return role == "reviewer" and (
+        looks_like_finite_action_token(first) or looks_like_base_action_token(first)
+    )
+
+
 def _is_concrete_actor_head(head: str, *, lower_head: str, role: str) -> bool:
     if not head:
         return False
@@ -591,6 +680,10 @@ def _body_names_control_focus(value: str) -> bool:
 
 def _focus_from_actor_body(value: str, *, role: str) -> str:
     text = _strip_parenthetical_qualifiers(value)
+    first = _first_body_token(text)
+    finite_action_body = looks_like_finite_action_token(first) or looks_like_base_action_token(first)
+    if finite_action_body:
+        text = " ".join(text.split()[1:]).strip(" .")
     text = re.sub(
         r"^(?:accepting|approving|checking|configuring|coordinating|editing|evaluating|handling|"
         r"following|logging|managing|monitoring|owning|receiving|reviewing|running|sharing|submitting|tracking|using)\s+",
@@ -600,7 +693,16 @@ def _focus_from_actor_body(value: str, *, role: str) -> str:
         flags=re.IGNORECASE,
     )
     text = re.sub(r"^(?:a|an|the|one)\s+", "", text, flags=re.IGNORECASE).strip(" .")
+    if re.match(r"^(?:if|that|whether|who|which)\b", text, flags=re.IGNORECASE):
+        return ""
+    if finite_action_body:
+        text = re.split(r",|\s+\band\b\s+", text, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
     return _focus_from_text(text or value, role=role)
+
+
+def _first_body_token(value: str) -> str:
+    match = re.search(r"[A-Za-z][A-Za-z'-]*", _clean(value))
+    return match.group(0).casefold() if match else ""
 
 
 def _focus_from_text(value: str, *, role: str) -> str:

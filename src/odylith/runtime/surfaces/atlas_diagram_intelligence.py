@@ -205,10 +205,10 @@ def _legacy_greenfield_narrative(*, title: str, kind: str, summary: str, read_gu
         return DiagramNarrative(
             summary=_sentence(
                 f"{title_label} shows what the first release must prove{path_clause}. "
-                "It keeps the first participant action, product responsibilities, and proof boundary visible before implementation expands scope."
+                "It keeps the first product action, product responsibilities, and proof boundary visible before implementation expands scope."
             ),
             read_guide=(
-                "Start with the first participant action. Follow each named product responsibility. Treat proof or blocker notes "
+                "Start with the first product action. Follow each named product responsibility. Treat proof or blocker notes "
                 "as the conditions that must hold before source work or release trust."
             ),
             generated=True,

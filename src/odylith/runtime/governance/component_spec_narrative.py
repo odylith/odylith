@@ -316,16 +316,16 @@ def _state_narrative(
         second = f"The runtime can consume those settings, but configuration itself should not mutate downstream results."
     elif role == "guardrail":
         first = f"The guardrail state is {owned}." if owned else f"{label} needs the first implementation plan to name its stop and recovery state."
-        second = f"It evaluates {accepted} and returns {produced} only after the stop, recovery, or safe-next-step reason is explicit." if accepted and produced else ""
+        second = f"For {label}, it evaluates {accepted} and returns {produced} only after the stop, recovery, or safe-next-step reason is explicit." if accepted and produced else ""
     elif role == "validation":
         first = f"The readiness state is {owned}." if owned else f"{label} needs the first implementation plan to name the readiness state it owns."
-        second = f"It checks {accepted} and returns {produced} only when the next step can trust the result." if accepted and produced else ""
+        second = f"For {label}, it checks {accepted} and returns {produced} only when the next step can trust the result." if accepted and produced else ""
     elif role == "workflow":
         first = f"The workflow state is {owned}." if owned else f"{label} needs the first implementation plan to name its local workflow state."
-        second = f"It accepts {accepted} and produces {produced} as the first path moves forward." if accepted and produced else ""
+        second = f"For {label}, it accepts {accepted} and produces {produced} as the first path moves forward." if accepted and produced else ""
     elif role == "state_store":
         first = f"The owned state is {owned}, and it should stay close to the inputs and corrections that created it."
-        second = f"It accepts {accepted} and returns {produced} only after required information is complete enough to trust."
+        second = f"For {label}, it accepts {accepted} and returns {produced} only after required information is complete enough to trust."
     elif role == "handoff":
         handoff_state = produced or "the next-step output"
         source_context = accepted or "upstream context"
@@ -336,13 +336,13 @@ def _state_narrative(
         second = "Raw input fields should remain with their owner; this component should carry the context another participant needs."
     elif role == "read_model":
         first = f"The visible state should explain {owned} without pretending to own every source record."
-        second = f"It can render {produced}, while stale, empty, or blocked states remain visible."
+        second = f"For {label}, it can render {produced}, while stale, empty, or blocked states remain visible."
     elif role == "evidence":
         first = f"The evidence state should keep {owned} connected to the result being reviewed."
-        second = f"It accepts {accepted} and returns {produced} only when the review trail remains explainable."
+        second = f"For {label}, it accepts {accepted} and returns {produced} only when the review trail remains explainable."
     else:
         first = f"The useful local state is {owned}."
-        second = f"It accepts {accepted} and returns {produced} when the next product step can rely on it."
+        second = f"For {label}, it accepts {accepted} and returns {produced} when the next product step can rely on it."
     material = _material_state_sentence(role=role, material_state=material_state)
     transition = _transition_sentence(label=label, view=view, text=state_path)
     return _sentences(first, second, blocker, material, transition)

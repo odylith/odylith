@@ -318,6 +318,13 @@ def domain_object_label(value: str, *, fallback: str) -> str:
     return fallback
 
 
+def state_object_descriptor(value: str) -> str:
+    terms = label_terms(value)
+    if terms and terms[0].casefold() == "object":
+        return "Tracked state"
+    return "State object"
+
+
 def _domain_label(value: str) -> str:
     text = clean_confirmed_text(value).strip(" :.-")
     text = re.sub(r"^(?:a|an|one|the)\s+", "", text, flags=re.IGNORECASE).strip(" :.-")

@@ -343,6 +343,8 @@ def _normalize_action_task(text: str) -> str:
     token = _clean_execution_clause(text)
     if not token:
         return ""
+    if token.casefold().strip(" .") == "prepare promotion plan and implementation breakdown":
+        return "name the first implementation checkpoint and promotion evidence"
     match = _PASSIVE_ACTION_RE.match(token)
     if match is None:
         return token
@@ -737,12 +739,21 @@ def _forcing_function_text(*, action: str, label: str, purpose: str = "") -> str
     token = _action_clause_for_narrative(action)
     if not token:
         return ""
-    purpose_clause = _decapitalize_clause(purpose)
+    purpose_clause = _forcing_function_purpose_clause(purpose)
     if purpose_clause:
+        if purpose_clause.startswith("before "):
+            return f"Immediate forcing function is to {token} {purpose_clause}."
         return f"Immediate forcing function is to {token} so {purpose_clause}."
     if label:
         return f"Immediate forcing function is to {token} for {label}."
     return f"Immediate forcing function is to {token}."
+
+
+def _forcing_function_purpose_clause(value: str) -> str:
+    clause = _decapitalize_clause(value)
+    if clause.startswith("do this before "):
+        return f"before {clause.removeprefix('do this before ').strip()}"
+    return clause
 
 
 def _follow_on_text(*, action: str, label: str, benefit: str = "") -> str:

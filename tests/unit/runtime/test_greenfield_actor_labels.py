@@ -49,3 +49,27 @@ def test_actor_label_splits_inline_activity_from_role_head() -> None:
     assert project_specific_actor_row(row, project_focus="Personal tracker") == (
         "Discomfort Sufferer: logging and reviewing their own episodes"
     )
+
+
+def test_actor_label_keeps_deciding_whether_out_of_actor_title() -> None:
+    row = "Inventory owner deciding whether the item can return to available stock"
+
+    assert accepted_actor_label(row, project_focus="Returns triage board") == "Inventory Owner"
+    assert project_specific_actor_row(row, project_focus="Returns triage board") == (
+        "Inventory Owner: deciding whether the item can return to available stock"
+    )
+
+
+def test_actor_label_splits_finite_actor_sentences_from_responsibility_text() -> None:
+    assert accepted_actor_label(
+        "Clinic reviewers use the ready-or-blocked status to decide the next action",
+        project_focus="Specialty Clinic Referral Tracker",
+    ) == "Clinic Reviewers"
+    assert project_specific_actor_row(
+        "Referral sources supply missing documents when a blocker is raised",
+        project_focus="Specialty Clinic Referral Tracker",
+    ) == "Referral Sources: supply missing documents when a blocker is raised"
+    assert "Use the" not in accepted_actor_label(
+        "Clinic reviewers use the ready-or-blocked status to decide the next action",
+        project_focus="Specialty Clinic Referral Tracker",
+    )

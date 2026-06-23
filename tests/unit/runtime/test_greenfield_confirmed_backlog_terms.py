@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
+from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import (
     build_workstream_domain_intelligence,
 )
@@ -119,6 +120,39 @@ def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generi
     assert "scope scope" not in rendered.casefold()
     source = BACKLOG_TEXT_MODEL_PATH.read_text(encoding="utf-8")
     assert 'replace("scope scope"' not in source
+
+
+def test_workstream_domain_intelligence_system_slots_are_not_clipped() -> None:
+    packet = build_workstream_domain_intelligence(
+        label="Evidence Routing Console",
+        row_title="Prove One Complete Evidence Routing Path",
+        problem="Teams need one accountable routing path before broader automation expands.",
+        opportunity="Keep release scope narrow while the first routed outcome is proven.",
+        product_view="The first path remains reviewable while source input, status, and evidence stay connected.",
+        first_slice="A reviewer receives a source packet, routes it to a queue, and records proof.",
+        metrics=["One routed path succeeds, blocks, and recovers."],
+        dependencies=["Accepted actor and source packet context."],
+        interfaces=["Source intake, routing queue, review evidence, and release decision."],
+        validation=["Run success, blocked-input, access, replay, and evidence-review paths."],
+        state_object="Evidence Routing Case",
+        evidence_record="Evidence Routing Proof Record",
+        first_path="A reviewer receives a source packet, routes it to a queue, and records proof.",
+        proof_boundary="Release works when one route can be reviewed with evidence.",
+        human_actors=["Review lead: receives source packets and records decisions."],
+        internal_systems=[
+            "Source Intake Register that captures incoming packet facts and ownership.",
+            "Routing Queue Workspace that shows queue state, blockers, and review status.",
+            "Evidence Proof Ledger that records validation output and release decisions.",
+        ],
+        external_systems=["Source packet feed."],
+        non_goals=["Broader routing automation remains deferred."],
+    )
+
+    for path in ("operators.1", "topology.0", "owners.0"):
+        key, index = path.split(".")
+        value = packet[key][int(index)]
+        assert public_prose_quality_issues(value) == []
+        assert not value.rstrip(".").endswith((" for", " of", " the", " to", " with"))
 
 
 def test_confirmed_backlog_rationale_keeps_proof_focus_complete() -> None:

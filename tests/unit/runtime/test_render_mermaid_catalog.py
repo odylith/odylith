@@ -1295,7 +1295,7 @@ def test_atlas_diagram_intelligence_replaces_legacy_greenfield_sequence_dump() -
     assert "messages are calls" not in copy
     assert "First Path Sequence shows what the first release must prove" in narrative.summary
     assert "solo monophonic instrument single take" in narrative.summary
-    assert narrative.read_guide.startswith("Start with the first participant action.")
+    assert narrative.read_guide.startswith("Start with the first product action.")
     assert "named product responsibility" in narrative.read_guide
 
 

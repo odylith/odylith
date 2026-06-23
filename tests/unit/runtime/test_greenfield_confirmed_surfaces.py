@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_description
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_name
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import expand_internal_system_rows
@@ -42,6 +43,46 @@ def test_component_boundary_strips_leading_ownership_verbs_from_owned_state() ->
 
     assert boundary == "Evidence Gap Tracker owns evidence gap tracker state, validation evidence, and local handoff decisions."
     assert "owns owns" not in boundary.casefold()
+
+
+def test_state_object_descriptor_avoids_adjacent_object_object_copy() -> None:
+    state = "Object Loan Condition Case"
+    components = [
+        {"component_id": "loan-case-intake", "label": "Loan Case Intake Register Service", "active_in_release": True},
+        {"component_id": "condition-evidence", "label": "Condition Evidence Ledger", "active_in_release": True},
+    ]
+
+    brief = confirmed_project_brief(
+        label="Museum Loan Condition Review",
+        prompt="Draft a greenfield proposal for a museum loan condition review workspace.",
+        release="0.0.1",
+        state_object=state,
+        evidence_record="Condition Evidence Record",
+        human_actors=["Collections Registrar"],
+        internal_systems=["Loan case intake register", "Condition evidence ledger"],
+    )
+    diagrams = confirmed_diagrams(
+        label="Museum Loan Condition Review",
+        components=components,
+        diagram_slugs={
+            "context": "context",
+            "sequence": "sequence",
+            "state_evidence": "state-evidence",
+            "component_boundaries": "component-boundaries",
+            "ownership": "ownership",
+            "proof_review": "proof-review",
+        },
+        state_object=state,
+        evidence_record="Condition Evidence Record",
+        human_actors=["Collections Registrar"],
+        proof_boundary="Release proof keeps the condition report reviewable.",
+    )
+    rendered = json.dumps({"brief": brief, "diagrams": diagrams})
+
+    assert "versioned tracked state: object loan condition case" in rendered
+    assert "Tracked state<br/>Object Loan Condition Case" in rendered
+    assert "state object: object" not in rendered.casefold()
+    assert "state object<br/>object" not in rendered.casefold()
 
 
 def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
@@ -122,7 +163,7 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
     assert "User opens LiveScore" not in sequence["summary"]
     assert "This sequence shows what the first release must prove from Solo performer (primary)" in sequence["summary"]
     assert "solo monophonic instrument single take" in sequence["summary"]
-    assert sequence["read_guide"].startswith("Start with the first participant action.")
+    assert sequence["read_guide"].startswith("Start with the first product action.")
     assert "component handoff" not in sequence["read_guide"]
     assert "component; messages are calls" not in sequence["read_guide"]
     assert "State object" in state_evidence["mermaid_source"]

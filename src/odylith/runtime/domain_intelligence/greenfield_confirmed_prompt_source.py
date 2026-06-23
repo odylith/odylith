@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
@@ -25,13 +27,18 @@ _REQUEST_PRODUCT_WORDS = frozenset(
     {
         "app",
         "application",
+        "board",
+        "builder",
         "dashboard",
         "desk",
         "experience",
         "console",
         "controller",
         "engine",
+        "executor",
         "hub",
+        "manager",
+        "monitor",
         "platform",
         "planner",
         "portal",
@@ -44,16 +51,50 @@ _REQUEST_PRODUCT_WORDS = frozenset(
         "system",
         "tool",
         "tracker",
+        "workbench",
         "workspace",
     }
 )
 _REQUEST_HELPER_WORDS = frozenset({"allow", "allows", "enable", "enables", "help", "helps", "let", "lets"})
 _REQUEST_LEAD_CONNECTORS = ("where", "that", "so", "for", "to")
+_DIRECT_TITLE_BOUNDARY_CONNECTORS = frozenset({"where", "that", "so"})
+
+
+@dataclass(frozen=True)
+class PromptIntentSource:
+    """Operator prompt interpretation before confirmed-intent recovery."""
+
+    title: str
+    first_path: str
+    command_led: bool
 
 
 def prompt_first_path_source(value: str) -> str:
     """Return product-path text without a host command or product wrapper."""
 
+    return prompt_intent_source(value).first_path
+
+
+def prompt_project_title_source(value: str) -> str:
+    """Return the product noun phrase from an operator request."""
+
+    return prompt_intent_source(value).title
+
+
+def prompt_intent_source(value: str) -> PromptIntentSource:
+    """Return shared title and first-path sources for thin prompt recovery."""
+
+    text = clean_markdown_text(value).strip(" .")
+    words = _request_words(text)
+    start, command_led = _request_content_start(words)
+    return PromptIntentSource(
+        title=_project_title_source_from_words(words, start=start, command_led=command_led),
+        first_path=_first_path_source_from_text(text),
+        command_led=command_led,
+    )
+
+
+def _first_path_source_from_text(value: str) -> str:
     text = _strip_operator_request_wrapper(clean_markdown_text(value).strip(" ."))
     for marker in ("where", "that", "so"):
         candidate = _tail_after_word(text, marker)
@@ -65,23 +106,28 @@ def prompt_first_path_source(value: str) -> str:
     return text
 
 
-def prompt_project_title_source(value: str) -> str:
-    """Return the product noun phrase from a command-shaped operator request."""
-
-    words = _request_words(value)
+def _request_content_start(words: list[str]) -> tuple[int, bool]:
     command_led = len(words) >= 3 and words[0].casefold() in _REQUEST_COMMAND_WORDS
-    if not command_led:
-        return ""
-    start = 1
-    if words[start].casefold() in {"a", "an", "the"}:
+    start = 1 if command_led else 0
+    if start < len(words) and words[start].casefold() in {"a", "an", "the"}:
         start += 1
-    start = _skip_proposal_wrapper(words, start)
+    if command_led:
+        start = _skip_proposal_wrapper(words, start)
+    return start, command_led
+
+
+def _project_title_source_from_words(words: list[str], *, start: int, command_led: bool) -> str:
     if start >= len(words):
         return ""
     lowered = [word.casefold().strip(",:;") for word in words]
     for index in range(start + 1, len(words)):
-        if lowered[index] not in _REQUEST_LEAD_CONNECTORS:
+        connector = lowered[index]
+        if connector not in _REQUEST_LEAD_CONNECTORS:
             continue
+        if not command_led and connector not in _DIRECT_TITLE_BOUNDARY_CONNECTORS:
+            tail = " ".join(words[index + 1 :]).strip(" .")
+            if not _looks_like_recoverable_first_path(tail):
+                continue
         lead = words[start:index]
         if _looks_like_product_title_phrase(lead):
             return " ".join(lead).strip(" .")
@@ -205,4 +251,4 @@ def _looks_like_recoverable_first_path(value: str) -> bool:
     return len(model.steps) >= 2 or bool(model.material_action or model.visible_outcome)
 
 
-__all__ = ["prompt_first_path_source", "prompt_project_title_source"]
+__all__ = ["PromptIntentSource", "prompt_first_path_source", "prompt_intent_source", "prompt_project_title_source"]

@@ -23,13 +23,18 @@ _NON_HUMAN_ACTOR_TERMS = frozenset(
     {
         "api",
         "application",
+        "board",
+        "builder",
         "controller",
         "database",
         "device",
         "engine",
+        "executor",
         "hardware",
         "ledger",
+        "manager",
         "model",
+        "monitor",
         "platform",
         "policy",
         "product",
@@ -41,6 +46,7 @@ _NON_HUMAN_ACTOR_TERMS = frozenset(
         "software",
         "system",
         "tool",
+        "workbench",
         "workspace",
     }
 )
@@ -75,11 +81,16 @@ _PRODUCT_CONTAINER_TERMS = frozenset(
         "coach",
         "console",
         "controller",
+        "board",
+        "builder",
         "dashboard",
         "desk",
         "engine",
         "experience",
+        "executor",
         "hub",
+        "manager",
+        "monitor",
         "platform",
         "planner",
         "portal",
@@ -90,6 +101,7 @@ _PRODUCT_CONTAINER_TERMS = frozenset(
         "system",
         "tool",
         "tracker",
+        "workbench",
         "workspace",
     }
 )
@@ -103,8 +115,8 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     title_source = _recover_title_source(source) if prefer_product_title else ""
     title = _recovered_title(title_source or first_path_outcome_phrase(recovered_first_path_source, fallback=""))
     first_path_source = _usable_first_path_source(recovered_first_path_source, title=title) or _generic_first_path_source(title)
-    actor_rows = _human_actor_rows_from_first_path(first_path_source)
-    lead_actor = _lead_actor_label(actor_rows) or "First Participant"
+    actor_rows = _human_actor_rows_from_first_path(first_path_source, title=title)
+    lead_actor = _lead_actor_label(actor_rows) or _fallback_actor_label(title)
     lead_action = _lead_actor_action(actor_rows) or base_action_clause(first_path_source)
     outcome = _stable_outcome_phrase(
         first_path_outcome_phrase(first_path_source, fallback=""),
@@ -252,7 +264,7 @@ def _sentence_start(value: str) -> str:
     return f"{text[:1].upper()}{text[1:]}"
 
 
-def _human_actor_rows_from_first_path(value: str) -> list[str]:
+def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[str]:
     rows: list[str] = []
     for clause in _first_path_actor_clauses(value):
         row = _human_actor_row_from_clause(clause, allow_subject_fallback=not rows)
@@ -260,7 +272,12 @@ def _human_actor_rows_from_first_path(value: str) -> list[str]:
             rows.append(row)
     if rows:
         return rows[:3]
-    return ["First Participant: needs the product to complete the first path and keep the result visible and reviewable"]
+    return [f"{_fallback_actor_label(title)}: needs the product to complete the first path and keep the result visible and reviewable"]
+
+
+def _fallback_actor_label(title: str) -> str:
+    label = _clean(title).strip(" .") or "Product"
+    return f"{label} User"
 
 
 def _first_path_actor_clauses(value: str) -> list[str]:
@@ -388,8 +405,10 @@ def _internal_system_rows_from_recovered_title(title: str) -> list[str]:
 def _stable_outcome_phrase(value: str, *, title: str) -> str:
     text = _clean(value).strip(" .")
     lowered = text.casefold()
+    first_word = lowered.split(maxsplit=1)[0] if lowered.split() else ""
     if (
         not text
+        or first_word in _LEADING_CONNECTORS
         or word_count(text) > 8
         or _looks_like_status_only_outcome(lowered)
         or _looks_like_generic_result_outcome(lowered)
@@ -453,7 +472,7 @@ def _has_product_container_title(value: str) -> bool:
 def _actor_reference(value: str) -> str:
     text = lower_plain_title_subject_fragment(value, action_offset=0).strip(" .")
     if not text:
-        return "a participant"
+        return "a product user"
     if len(text.split()) == 1 and not text.isupper():
         text = text.casefold()
     if text.split(maxsplit=1)[0].casefold() in _LEADING_ARTICLES:

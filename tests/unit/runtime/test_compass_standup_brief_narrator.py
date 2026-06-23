@@ -7,6 +7,7 @@ import time
 
 import pytest
 
+from odylith.runtime.surfaces import compass_briefing_support
 from odylith.runtime.surfaces import compass_standup_brief_narrator as narrator
 from odylith.runtime.reasoning import odylith_reasoning
 
@@ -60,6 +61,35 @@ class _FailingProvider:
 
     def generate_finding(self, *, prompt_payload):  # noqa: ANN001, ARG002
         raise AssertionError("Compass standup narration should use structured generation only.")
+
+
+def test_forcing_function_fallback_normalizes_default_queue_action() -> None:
+    text = compass_briefing_support._forcing_function_text(  # noqa: SLF001
+        action="Prepare promotion plan and implementation breakdown",
+        label="Coastal shelter readiness",
+        purpose="Do this before implementation expands so the workstream has a tested first slice.",
+    )
+
+    assert text == (
+        "Immediate forcing function is to name the first implementation checkpoint and promotion evidence "
+        "before implementation expands so the workstream has a tested first slice."
+    )
+    assert "land Prepare" not in text
+    assert "so do this before" not in text
+
+
+def test_local_fact_compaction_does_not_leave_dangling_tail_words() -> None:
+    text = (
+        "Prove the first release path: triage referrals, flag missing documents, and review a "
+        "ready-or-blocked status; Prove One Complete Specialty Clinic Referral Path (B-001) "
+        "is queued for execution."
+    )
+
+    compacted = narrator._compact_local_fact_text(text, limit=150)  # noqa: SLF001
+
+    assert compacted.endswith(".")
+    assert not compacted.endswith(" queued for.")
+    assert not compacted.endswith(" for.")
 
 
 def _reasoning_config() -> odylith_reasoning.ReasoningConfig:

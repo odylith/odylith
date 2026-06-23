@@ -8,7 +8,7 @@ from collections.abc import Callable
 _ACTION_LEAD_VERB_RE = re.compile(
     r"^(?:add|align|audit|backfill|bind|build|capture|clean(?:\s+up)?|close|codify|complete|convert|cut|"
     r"define|deliver|document|enable|enforce|finish|give|harden|implement|introduce|land|let|migrate|"
-    r"move|prove|publish|reconcile|refresh|remove|replace|seed|ship|show|stabilize|tighten|turn|update|"
+    r"move|name|prepare|prove|publish|reconcile|refresh|remove|replace|seed|ship|show|stabilize|tighten|turn|update|"
     r"validate|verify|wire)\b",
     re.IGNORECASE,
 )

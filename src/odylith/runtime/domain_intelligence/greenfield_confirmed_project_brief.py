@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_object_descriptor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
@@ -50,6 +51,7 @@ def confirmed_project_brief(
     label_lower = sentence_label(label)
     state_label = domain_object_label(state_object, fallback=f"{label} state")
     state_reference = _state_reference_text(state_object, state_label=state_label)
+    state_descriptor = state_object_descriptor(state_reference)
     evidence_label = domain_object_label(evidence_record, fallback=evidence_record)
     state_ref = sentence_label(state_label)
     evidence_ref = sentence_label(evidence_label)
@@ -148,8 +150,8 @@ def confirmed_project_brief(
             ),
             _brief_option(
                 "D2",
-                "State object",
-                f"Confirm this as the versioned state object: {state_reference}.",
+                state_descriptor,
+                f"Confirm this as the versioned {state_descriptor.casefold()}: {state_reference}.",
                 "Changes storage ownership and replay proof.",
             ),
             _brief_option(
@@ -212,7 +214,7 @@ def confirmed_project_brief(
                 "path": "Confirm product intent",
                 "command": confirm_command,
                 "works_in": "shell, Codex, Claude Code",
-                "use_when": "Use before records are written so the operator can confirm or edit the interpretation.",
+                "use_when": "Use before records are written while the accepted interpretation can still be confirmed or edited.",
             },
             {
                 "path": "Create confirmed records",

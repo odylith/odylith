@@ -35,6 +35,7 @@ _INFINITIVE_TO_FINITE = {
     "classify": "classifies",
     "click": "clicks",
     "clean": "cleans",
+    "cluster": "clusters",
     "collect": "collects",
     "compare": "compares",
     "compute": "computes",
@@ -105,6 +106,7 @@ _INFINITIVE_TO_FINITE = {
     "pay": "pays",
     "perform": "performs",
     "place": "places",
+    "prepare": "prepares",
     "predict": "predicts",
     "present": "presents",
     "progress": "progresses",
@@ -157,6 +159,7 @@ _INFINITIVE_TO_FINITE = {
     "stop": "stops",
     "submit": "submits",
     "suggest": "suggests",
+    "supply": "supplies",
     "support": "supports",
     "surface": "surfaces",
     "sync": "syncs",
@@ -207,6 +210,43 @@ _FINITE_ACTION_SUFFIX_FALSE_POSITIVES = frozenset(
 )
 _MODAL_BASE_FORM_MARKERS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "will", "would"})
 _MODAL_COORDINATORS = frozenset({"and", "or"})
+DEFAULT_DANGLING_TAIL_WORDS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "as",
+        "at",
+        "before",
+        "by",
+        "for",
+        "from",
+        "in",
+        "into",
+        "of",
+        "or",
+        "so",
+        "the",
+        "to",
+        "with",
+    }
+)
+
+
+def strip_dangling_word_tail(
+    value: str,
+    *,
+    dangling_words: set[str] | frozenset[str] | tuple[str, ...] | list[str],
+    rstrip_chars: str = " ,;:.",
+) -> str:
+    """Trim incomplete connector tails after word-boundary clipping."""
+
+    words = str(value or "").rstrip(rstrip_chars).split()
+    dangling = {str(word or "").casefold().strip(".,;:") for word in dangling_words}
+    dangling.discard("")
+    while words and words[-1].casefold().strip(".,;:") in dangling:
+        words.pop()
+    return " ".join(words).rstrip(rstrip_chars)
 
 
 def looks_like_finite_action(value: str) -> bool:
@@ -283,7 +323,7 @@ def looks_like_base_action_token(value: str) -> bool:
 
 
 def _modal_segments(value: str) -> list[str]:
-    return [segment for segment in re.split(r"[.!?;:]+", str(value or "")) if segment.strip()]
+    return [segment for segment in re.split(r"[.!?;:,]+", str(value or "")) if segment.strip()]
 
 
 def _word_tokens(value: str) -> list[str]:

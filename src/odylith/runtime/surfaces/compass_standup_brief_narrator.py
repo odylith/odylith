@@ -23,6 +23,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.common.prose_grammar import DEFAULT_DANGLING_TAIL_WORDS, strip_dangling_word_tail
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.context_engine import odylith_context_cache
 from odylith.runtime.surfaces import compass_standup_brief_substrate
@@ -1041,13 +1042,11 @@ def _compact_local_fact_text(value: Any, *, limit: int = 190) -> str:
         return ""
     if len(text) <= limit:
         return text
-    clipped = text[:limit].rsplit(" ", 1)[0].strip()
-    return f"{clipped.rstrip('.,;:')}."
+    clipped = strip_dangling_word_tail(text[:limit].rsplit(" ", 1)[0].strip(), dangling_words=DEFAULT_DANGLING_TAIL_WORDS)
+    return f"{clipped.rstrip('.,;:')}." if clipped else ""
 
 
 def _local_runtime_fallback_digest(*, fact_packet: Mapping[str, Any]) -> list[str]:
-    """Return a small deterministic readout when AI narration is unavailable."""
-
     lines: list[str] = []
     section_order = (
         ("current_execution", "Current"),

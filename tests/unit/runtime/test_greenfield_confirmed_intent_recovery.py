@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 
+from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 
@@ -66,6 +68,52 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         )
         == "classroom lab safety tracker"
     )
+
+
+def test_prompt_intent_source_splits_direct_product_title_from_first_path() -> None:
+    source = prompt_intent_source(
+        "factory line changeover readiness board where supervisors verify tooling, materials, safety checks, and restart approval"
+    )
+
+    assert source.title == "factory line changeover readiness board"
+    assert source.first_path == "supervisors verify tooling, materials, safety checks, and restart approval"
+    assert not source.command_led
+    assert (
+        prompt_project_title_source(
+            "collaborative robot safety case builder where engineers map hazards, mitigations, validation tests, and release signoff evidence"
+        )
+        == "collaborative robot safety case builder"
+    )
+    assert (
+        prompt_project_title_source(
+            "customer data retention policy executor where privacy teams classify records, schedule deletions, and prove exceptions are approved"
+        )
+        == "customer data retention policy executor"
+    )
+
+
+def test_host_guidance_recovery_keeps_direct_where_prompt_title_instead_of_terminal_outcome() -> None:
+    prompt = (
+        "factory line changeover readiness board where supervisors verify tooling, materials, "
+        "safety checks, and restart approval"
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Factory Line Changeover Readiness Board"
+    assert "supervisors verify tooling" in intent["first_path"]
+    assert "the and restart approval" not in rendered
+    assert "And Restart Approval Workspace" not in rendered
+    assert "Factory Line Changeover Readiness Board Intake Register" in rendered
+    assert greenfield_quality_issues(proposal) == []
 
 
 def test_host_guidance_recovery_builds_clean_confirmed_proposal_from_controller_prompt() -> None:
@@ -256,3 +304,102 @@ def test_host_guidance_recovery_handles_plural_actor_clauses_without_generic_wor
     assert "Teachers needs" not in rendered
     assert "teachers can prepare experiments" in rendered
     assert greenfield_quality_issues(proposal) == []
+
+
+def test_confirmed_completion_splits_finite_actor_sentences_before_domain_intelligence(tmp_path) -> None:
+    prompt = (
+        "specialty clinic referral tracker where coordinators triage referrals, flag missing documents, "
+        "and review a ready-or-blocked status"
+    )
+    intent = parse_confirmed_intent_text(
+        """
+# Specialty Clinic Referral Tracker
+
+## Product story
+Specialty clinics need one shared referral tracker so coordinators can triage incoming referrals, see missing documents, and keep each referral in a ready-or-blocked state before it is reviewed.
+
+## State object
+A referral case records the patient-facing request, referral source, specialty destination, required documents, triage status, blocker reason, owner, timestamps, and review evidence.
+
+## First complete path
+Coordinators triage one new referral, flag any missing documents, resolve or document the blocker, and review a ready-or-blocked status that can be trusted by the clinic team.
+
+## Actors
+- Coordinators manage referral intake and document readiness.
+- Clinic reviewers use the ready-or-blocked status to decide the next action.
+- Referral sources supply missing documents when a blocker is raised.
+
+## Systems
+- Referral intake queue
+- Document checklist service
+- Status review workspace
+- Audit evidence log
+
+## Assumptions
+- The first release focuses on one specialty clinic team and one referral source workflow.
+
+## Ambiguities
+- Which source system should send the initial referral payload first?
+
+## Proof boundary
+Release 0.0.1 is ready when one coordinator can triage a referral, mark missing documents, clear or preserve a blocker, and produce a ready-or-blocked review trail without relying on an external spreadsheet.
+""",
+        prompt=prompt,
+    )
+
+    completed = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert "Clinic Reviewers Use the" not in rendered
+    assert "Referral Sources Supply" not in rendered
+    assert "Use the." not in rendered
+    assert greenfield_quality_issues(completed) == []
+
+
+def test_confirmed_recovery_uses_actor_subject_for_public_response_prompt(tmp_path) -> None:
+    prompt = (
+        "public comment response tracker where agency staff cluster comments, draft replies, "
+        "and prove publication readiness"
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    completed = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert intent["human_actors"][0].startswith("Agency Staff:")
+    assert "Public Comment Response Participant" not in rendered
+    assert "First Participant" not in rendered
+    assert "participant" not in next(
+        row for row in completed["diagrams"] if row["title"] == "First Path Sequence"
+    )["mermaid_source"].casefold()
+    assert greenfield_quality_issues(completed) == []
+
+
+def test_confirmed_recovery_fallback_actor_does_not_emit_participant(tmp_path) -> None:
+    prompt = "incident intake console where analysts wrangle incoming reports"
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    completed = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert "First Participant" not in rendered
+    assert "Participant:" not in rendered
+    assert "participant" not in next(
+        row for row in completed["diagrams"] if row["title"] == "First Path Sequence"
+    )["mermaid_source"].casefold()
+    assert greenfield_quality_issues(completed) == []

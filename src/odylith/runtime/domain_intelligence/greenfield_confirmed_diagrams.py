@@ -9,6 +9,7 @@ from odylith.runtime.domain_intelligence import greenfield_confirmed_diagram_tex
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_object_descriptor
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
@@ -97,7 +98,7 @@ def confirmed_diagrams(
                 )
             ),
             "read_guide": (
-                f"Start with the first participant action. Follow {actor_phrase} through each product responsibility. The release must still prove: "
+                f"Start with the first product action. Follow {actor_phrase} through each product responsibility. The release must still prove: "
                 f"{proof_brief or 'the promised user-visible result'}."
             ),
             "owner": "repo",
@@ -322,10 +323,11 @@ def _state_evidence_mermaid(
     review_owner = diagram_text.component_label(components, len(components) - 1, fallback="Review owner")
     actor_label = diagram_text.short_label(actors[0] if actors else diagram_text.actor_phrase(actors, label=label))
     proof_label = diagram_text.release_proof_label(proof_boundary) or "source-backed release check"
+    state_descriptor = state_object_descriptor(state_object)
     lines = [
         "flowchart LR",
         f'  action["First action<br/>{actor_label}"] --> owner1["{diagram_text.escape_label(first_owner)}"]',
-        f'  owner1 --> domain_state["State object<br/>{diagram_text.escape_label(diagram_text.trim(state_object, 62))}"]',
+        f'  owner1 --> domain_state["{state_descriptor}<br/>{diagram_text.escape_label(diagram_text.trim(state_object, 62))}"]',
         f'  domain_state --> owner2["{diagram_text.escape_label(evidence_owner)}"]',
         f'  owner2 --> evidence_record["Evidence record<br/>{diagram_text.escape_label(diagram_text.trim(evidence_record, 62))}"]',
         f'  evidence_record --> owner3["{diagram_text.escape_label(review_owner)}"]',

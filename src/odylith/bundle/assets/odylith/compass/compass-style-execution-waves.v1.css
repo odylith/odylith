@@ -768,6 +768,14 @@
   background: linear-gradient(180deg, #fcfefc 0%, #ffffff 100%);
 }
 
+.execution-wave-program-stack-release .execution-wave-card {
+  pointer-events: none;
+}
+
+.execution-wave-program-stack-release .execution-wave-chip-link {
+  pointer-events: auto;
+}
+
 .execution-wave-program-stack-release .execution-wave-section-title {
   font-size: 14px;
 }

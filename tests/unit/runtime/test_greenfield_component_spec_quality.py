@@ -1042,6 +1042,12 @@ def test_component_specs_use_label_role_before_generic_decision_terms() -> None:
         )
     }
     rendered = "\n".join(specs.values())
+    issues = greenfield_rendered_package_quality_issues(
+        SimpleNamespace(
+            proposal={},
+            rendered_component_specs=specs,
+        )
+    )
 
     assert "Ingredient Readiness Service checks whether the next product step has the conditions it needs" in rendered
     assert "Cooking Run Orchestration Service coordinates the ordered work that moves the first path forward" in rendered
@@ -1049,6 +1055,7 @@ def test_component_specs_use_label_role_before_generic_decision_terms() -> None:
     assert "turns prepared evidence into a product outcome" not in rendered
     assert "the important lifecycle is staged, selected state, prompted" not in rendered
     assert "the lifecycle should make accepted, blocked, corrected, completed, and handed-off states explicit" in rendered
+    assert "repeats a noncanonical sentence" not in "\n".join(issues)
 
 
 def test_component_contract_focus_does_not_clip_confirmed_first_path_tail() -> None:

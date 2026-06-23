@@ -385,6 +385,8 @@ def _candidate_is_product_result(value: str) -> bool:
     text = clean_text(value)
     if word_count(text) < 2:
         return False
+    if _starts_with_connector(text):
+        return False
     if _starts_with_result_modifier(text):
         return False
     if _contains_proof_control_claim(text):
@@ -393,6 +395,11 @@ def _candidate_is_product_result(value: str) -> bool:
     if lowered in {"next action", "next step", "what happens next", "what happened next"}:
         return False
     return True
+
+
+def _starts_with_connector(value: str) -> bool:
+    words = clean_text(value).split()
+    return bool(words and words[0].casefold().strip(".,:;") in {"and", "or", "then"})
 
 
 def _starts_with_result_modifier(value: str) -> bool:
