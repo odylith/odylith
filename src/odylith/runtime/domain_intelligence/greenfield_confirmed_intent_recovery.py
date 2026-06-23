@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
@@ -43,6 +44,30 @@ _NON_HUMAN_ACTOR_TERMS = frozenset(
         "workspace",
     }
 )
+_HUMAN_ACTOR_TERMS = frozenset(
+    {
+        "admin",
+        "analyst",
+        "approver",
+        "coordinator",
+        "customer",
+        "designer",
+        "employee",
+        "guest",
+        "manager",
+        "member",
+        "operator",
+        "owner",
+        "participant",
+        "person",
+        "planner",
+        "reviewer",
+        "staff",
+        "supervisor",
+        "user",
+        "worker",
+    }
+)
 _PRODUCT_CONTAINER_TERMS = frozenset(
     {
         "app",
@@ -73,9 +98,10 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     """Return a structured confirmation when the host passed guidance instead of the visible answer."""
 
     source = _clean(intent_text).strip(" .")
-    first_path_source = prompt_first_path_source(source)
+    recovered_first_path_source = prompt_first_path_source(source)
     title_source = prompt_project_title_source(source) if prefer_product_title else ""
-    title = _recovered_title(title_source or first_path_outcome_phrase(first_path_source, fallback=""))
+    title = _recovered_title(title_source or first_path_outcome_phrase(recovered_first_path_source, fallback=""))
+    first_path_source = _usable_first_path_source(recovered_first_path_source, title=title) or _generic_first_path_source(title)
     actor_rows = _human_actor_rows_from_first_path(first_path_source)
     lead_actor = _lead_actor_label(actor_rows) or "First Participant"
     lead_action = _lead_actor_action(actor_rows) or base_action_clause(first_path_source)
@@ -87,17 +113,19 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     lead_actor_ref = _actor_reference(lead_actor)
     lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
     first_path = first_path_source
+    first_path_inline = _lower_leading_word(first_path_source.rstrip("."))
     story = (
-        f"{title} helps {lead_actor_ref} complete a first path where {first_path_source.rstrip('.')}. "
+        f"{title} helps {lead_actor_ref} complete a first path where {first_path_inline}. "
         f"It keeps {outcome_object} tied to source input, current state, blockers, handoffs, and proof evidence "
         "so the next step is clear."
     )
+    state_subject = _state_record_subject(outcome)
     state = (
-        f"A {outcome.strip(' .')} record tracks the actor, source input, current status, owner, blocker, "
-        "handoff, evidence, and version history for the first path."
+        f"{_sentence_start(_indefinite_phrase(state_subject))} record tracks the actor, source input, current status, owner, "
+        "blocker, handoff, evidence, and version history for the first path."
     )
     proof = (
-        f"Release 0.0.1 succeeds when {first_path_source.rstrip('.')}. "
+        f"Release 0.0.1 succeeds when {first_path_inline}. "
         f"The product shows {outcome_object}, handles missing or invalid input with a clear blocker, "
         "and keeps replayable evidence for review."
     )
@@ -136,6 +164,62 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
             "Proof boundary\n" + proof,
         )
     )
+
+
+def _usable_first_path_source(value: str, *, title: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text or _path_source_restates_title(text, title=title):
+        return ""
+    model = first_path_model(text)
+    if len(model.steps) >= 2:
+        return text
+    if word_count(text) >= 6 and (model.material_action or model.visible_outcome):
+        return text
+    return ""
+
+
+def _path_source_restates_title(value: str, *, title: str) -> bool:
+    value_terms = _semantic_terms(value)
+    title_terms = _semantic_terms(title)
+    return bool(value_terms and title_terms and value_terms <= title_terms)
+
+
+def _semantic_terms(value: str) -> set[str]:
+    return {term.casefold() for term in label_terms(value) if term.casefold() not in _LEADING_ARTICLES}
+
+
+def _generic_first_path_source(title: str) -> str:
+    request = _indefinite_phrase(f"{lower_plain_title_subject_fragment(title, action_offset=0)} request")
+    actor = _indefinite_phrase(f"{lower_plain_title_subject_fragment(title, action_offset=0)} user")
+    return (
+        f"{actor[:1].upper()}{actor[1:]} starts {request}, the product records required information, "
+        "the product shows a reviewable result, and the product marks the request ready or blocked"
+    )
+
+
+def _indefinite_phrase(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "a request"
+    first = text.split(maxsplit=1)[0].casefold()
+    if first in _LEADING_ARTICLES:
+        return text
+    article = "an" if first[:1] in {"a", "e", "i", "o", "u"} else "a"
+    return f"{article} {text}"
+
+
+def _lower_leading_word(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    return f"{text[:1].lower()}{text[1:]}"
+
+
+def _sentence_start(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    return f"{text[:1].upper()}{text[1:]}"
 
 
 def _human_actor_rows_from_first_path(value: str) -> list[str]:
@@ -212,6 +296,8 @@ def _human_actor_row(actor: str, action: str) -> str:
 
 def _looks_like_non_human_actor(value: str) -> bool:
     terms = {term.casefold() for term in label_terms(value)}
+    if terms & _HUMAN_ACTOR_TERMS:
+        return False
     return bool(terms & _NON_HUMAN_ACTOR_TERMS)
 
 
@@ -272,9 +358,25 @@ def _internal_system_rows_from_recovered_title(title: str) -> list[str]:
 def _stable_outcome_phrase(value: str, *, title: str) -> str:
     text = _clean(value).strip(" .")
     lowered = text.casefold()
-    if not text or word_count(text) > 8 or any(f" {marker} " in f" {lowered} " for marker in _MODAL_MARKERS):
+    if (
+        not text
+        or word_count(text) > 8
+        or _looks_like_status_only_outcome(lowered)
+        or _looks_like_generic_result_outcome(lowered)
+        or any(f" {marker} " in f" {lowered} " for marker in _MODAL_MARKERS)
+    ):
         return f"{lower_plain_title_subject_fragment(title, action_offset=0)} result"
     return text
+
+
+def _looks_like_status_only_outcome(value: str) -> bool:
+    text = f" {_clean(value).casefold()} "
+    return " ready or blocked " in text or " ready or rejected " in text or " ready or accepted " in text
+
+
+def _looks_like_generic_result_outcome(value: str) -> bool:
+    words = [word.casefold() for word in _words(value)]
+    return bool(words and words[-1] == "result" and set(words[:-1]) <= {"a", "an", "the", "visible", "reviewable"})
 
 
 def _object_result_phrase(value: str) -> str:
@@ -285,6 +387,16 @@ def _object_result_phrase(value: str) -> str:
     if text.split(maxsplit=1)[0].casefold() in _LEADING_ARTICLES:
         return text
     return f"the {text}"
+
+
+def _state_record_subject(value: str) -> str:
+    text = lower_plain_title_subject_fragment(_clean(value), action_offset=0).strip(" .")
+    if not text:
+        return "first visible result"
+    words = _strip_leading_articles(_words(text))
+    if words and words[-1].casefold() == "record":
+        words = words[:-1]
+    return " ".join(words).strip(" .") or "first visible result"
 
 
 def _recovered_title(outcome: str) -> str:

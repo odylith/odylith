@@ -68,7 +68,8 @@ def prompt_project_title_source(value: str) -> str:
     """Return the product noun phrase from a command-shaped operator request."""
 
     words = _request_words(value)
-    if len(words) < 3 or words[0].casefold() not in _REQUEST_COMMAND_WORDS:
+    command_led = len(words) >= 3 and words[0].casefold() in _REQUEST_COMMAND_WORDS
+    if not command_led:
         return ""
     start = 1
     if words[start].casefold() in {"a", "an", "the"}:
@@ -83,6 +84,9 @@ def prompt_project_title_source(value: str) -> str:
         lead = words[start:index]
         if _looks_like_product_title_phrase(lead):
             return " ".join(lead).strip(" .")
+    lead = words[start:]
+    if _looks_like_product_title_phrase(lead):
+        return " ".join(lead).strip(" .")
     return ""
 
 

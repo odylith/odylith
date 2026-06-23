@@ -33,6 +33,14 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         == "cooking robot controller"
     )
     assert (
+        prompt_project_title_source("Draft a greenfield proposal for a cooking robot controller")
+        == "cooking robot controller"
+    )
+    assert (
+        prompt_project_title_source("Draft a greenfield proposal for a solar energy installation planning hub")
+        == "solar energy installation planning hub"
+    )
+    assert (
         prompt_project_title_source(
             "Draft a greenfield proposal for a contract redline review room where reviewers compare clauses."
         )
@@ -77,6 +85,68 @@ def test_host_guidance_recovery_builds_clean_confirmed_proposal_from_controller_
     assert "Only accepted actors or systems can move first-path state: A." not in rendered
     assert "the cooking Robot Controller result" not in rendered
     assert "the cooking robot controller result" in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_host_guidance_recovery_handles_broad_product_prompt_without_parser_debris() -> None:
+    prompt = "Draft a greenfield proposal for a cooking robot controller"
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Cooking Robot Controller"
+    assert intent["first_path"] == (
+        "A cooking robot controller user starts a cooking robot controller request, "
+        "the product records required information, the product shows a reviewable result, "
+        "and the product marks the request ready or blocked."
+    )
+    assert intent["human_actors"] == [
+        "Cooking Robot Controller User: needs the product to start a cooking robot controller request and keep the result visible and reviewable"
+    ]
+    assert intent["state_object"].startswith("A cooking robot controller result record tracks")
+    assert "the cooking robot controller result" in rendered
+    assert "A a " not in rendered
+    assert "A the " not in rendered
+    assert "where A " not in rendered
+    assert "Provides:" not in rendered
+    assert "Reviews:" not in rendered
+    assert "First Participant" not in rendered
+    assert "Recovered Product Workspace" not in rendered
+    assert "Cooking Robot Controller Participant review" not in rendered
+    assert "sequence/parser debris" not in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_host_guidance_recovery_rejects_long_title_noun_as_first_path() -> None:
+    prompt = "Draft a greenfield proposal for a solar energy installation planning hub"
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Solar Energy Installation Planning Hub"
+    assert intent["first_path"].startswith(
+        "A solar energy installation planning hub user starts a solar energy installation planning hub request"
+    )
+    assert "when a solar energy installation planning hub." not in intent["proof_boundary"]
+    assert intent["human_actors"] == [
+        "Solar Energy Installation Planning Hub User: needs the product to start a solar energy installation planning hub request and keep the result visible and reviewable"
+    ]
+    assert "sequence/parser debris" not in rendered
+    assert "First Participant" not in rendered
     assert greenfield_quality_issues(proposal) == []
 
 
