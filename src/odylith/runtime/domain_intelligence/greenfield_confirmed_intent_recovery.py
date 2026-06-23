@@ -185,7 +185,12 @@ def _path_source_restates_title(value: str, *, title: str) -> bool:
 
 
 def _semantic_terms(value: str) -> set[str]:
-    return {term.casefold() for term in label_terms(value) if term.casefold() not in _LEADING_ARTICLES}
+    terms: set[str] = set()
+    for term in label_terms(value):
+        for token in str(term).casefold().replace("-", " ").replace("/", " ").split():
+            if token not in _LEADING_ARTICLES:
+                terms.add(token)
+    return terms
 
 
 def _generic_first_path_source(title: str) -> str:

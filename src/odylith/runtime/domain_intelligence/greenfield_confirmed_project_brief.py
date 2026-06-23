@@ -298,10 +298,85 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
     text = re.sub(r"^the first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
     text = _repair_show_actor_artifact(text)
+    text = _polish_brief_clause(text)
     if len(text) <= limit:
         return text
     clipped = clip_text_at_word_boundary(text, limit=limit)
-    return _remove_orphan_without_it_tail(strip_dangling_tail(clipped).rstrip(" ,;:"))
+    return _polish_brief_clause(clipped)
+
+
+def _polish_brief_clause(value: str) -> str:
+    text = strip_dangling_tail(compact_text(value).rstrip(" ,;:"))
+    text = _repair_incomplete_clause_tail(text)
+    return _remove_orphan_without_it_tail(text)
+
+
+def _repair_incomplete_clause_tail(value: str) -> str:
+    text = compact_text(value).rstrip(" ,;:.")
+    while True:
+        words = text.split()
+        if len(words) < 3:
+            return text
+        last = words[-1].strip(".,;:").casefold()
+        previous = words[-2].strip(".,;:").casefold()
+        if previous in {"a", "an", "the"} and _looks_like_unfinished_modifier(last):
+            repaired = _drop_trailing_clause_or_words(text, drop_words=2)
+        elif _looks_like_incomplete_terminal_verb(last):
+            repaired = _drop_trailing_clause_or_words(text, drop_words=1)
+        else:
+            return text
+        repaired = strip_dangling_tail(repaired).rstrip(" ,;:.")
+        if not repaired or repaired == text:
+            return text
+        text = repaired
+
+
+def _looks_like_unfinished_modifier(value: str) -> bool:
+    token = value.strip(".,;:").casefold()
+    return len(token) >= 5 and token.endswith(("able", "ible", "ive", "al", "ful", "less", "ous", "ed", "ing"))
+
+
+def _looks_like_incomplete_terminal_verb(value: str) -> bool:
+    return value.strip(".,;:").casefold() in {
+        "cover",
+        "covers",
+        "display",
+        "displays",
+        "include",
+        "includes",
+        "keep",
+        "keeps",
+        "make",
+        "makes",
+        "present",
+        "presents",
+        "produce",
+        "produces",
+        "provide",
+        "provides",
+        "record",
+        "records",
+        "return",
+        "returns",
+        "show",
+        "shows",
+        "surface",
+        "surfaces",
+    }
+
+
+def _drop_trailing_clause_or_words(value: str, *, drop_words: int) -> str:
+    text = compact_text(value).rstrip(" ,;:.")
+    separator_indexes = [text.rfind(separator) for separator in (",", ";", ":")]
+    separator_index = max(separator_indexes)
+    if separator_index > 0:
+        prefix = text[:separator_index].rstrip(" ,;:.")
+        if _word_count(prefix) >= 6:
+            return prefix
+    words = text.split()
+    if len(words) > drop_words:
+        return " ".join(words[:-drop_words]).rstrip(" ,;:.")
+    return text
 
 
 def _first_path_brief(value: str, *, human_actors: list[str] | None = None, label: str = "", limit: int = 180) -> str:

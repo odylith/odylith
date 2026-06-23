@@ -1,12 +1,38 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
 
 
 ROOT = Path(__file__).resolve().parents[3]
 DOMAIN_INTELLIGENCE = ROOT / "src/odylith/runtime/domain_intelligence"
+
+
+def _proposal_from_guidance_prompt(prompt: str) -> dict[str, object]:
+    intent_text = f"""Product Intent Confirmation needed
+No files changed. Source posture: empty_or_no_app_source.
+
+Visible format contract
+- Render the visible confirmation as sectioned Markdown.
+
+Original user intent
+{prompt}
+Next step
+- Confirm.
+"""
+    intent = parse_confirmed_intent_text(intent_text, prompt=prompt)
+    return build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=str(intent["title"]),
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
 
 
 def test_project_brief_rendering_stays_in_project_brief_owner() -> None:
@@ -86,3 +112,13 @@ def test_project_brief_rendering_uses_shared_row_coercion_and_keeps_plain_lines(
     ) in lines
     assert "  - Confirmed create: `odylith greenfield create --confirm` (Codex and Claude Code)" in lines
     assert all("not a row" not in line for line in lines)
+
+
+def test_confirmed_project_brief_does_not_clip_article_modifier_tail_from_broad_prompt() -> None:
+    proposal = _proposal_from_guidance_prompt("Draft a greenfield proposal for a training roster readiness hub")
+    brief = proposal["project_brief"]
+    readiness_copy = json.dumps(brief["coding_readiness_gates"], sort_keys=True)
+
+    assert "a reviewable." not in readiness_copy
+    assert "product shows." not in readiness_copy
+    assert generated_public_copy_issues("training roster project brief", brief) == ()

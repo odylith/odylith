@@ -41,6 +41,10 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         == "solar energy installation planning hub"
     )
     assert (
+        prompt_project_title_source("Draft a greenfield proposal for a clinic follow-up coordination desk")
+        == "clinic follow-up coordination desk"
+    )
+    assert (
         prompt_project_title_source(
             "Draft a greenfield proposal for a contract redline review room where reviewers compare clauses."
         )
@@ -145,6 +149,29 @@ def test_host_guidance_recovery_rejects_long_title_noun_as_first_path() -> None:
     assert intent["human_actors"] == [
         "Solar Energy Installation Planning Hub User: needs the product to start a solar energy installation planning hub request and keep the result visible and reviewable"
     ]
+    assert "sequence/parser debris" not in rendered
+    assert "First Participant" not in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_host_guidance_recovery_rejects_hyphenated_title_noun_as_first_path() -> None:
+    prompt = "Draft a greenfield proposal for a clinic follow-up coordination desk"
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Clinic Follow Up Coordination Desk"
+    assert intent["first_path"].startswith(
+        "A clinic follow up coordination desk user starts a clinic follow up coordination desk request"
+    )
+    assert "when a clinic follow-up coordination desk." not in intent["proof_boundary"]
     assert "sequence/parser debris" not in rendered
     assert "First Participant" not in rendered
     assert greenfield_quality_issues(proposal) == []
