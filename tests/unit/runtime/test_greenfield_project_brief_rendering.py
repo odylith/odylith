@@ -6,6 +6,9 @@ from pathlib import Path
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_project_brief import normalize_project_brief
+from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
 
 
@@ -123,3 +126,67 @@ def test_confirmed_project_brief_does_not_clip_article_modifier_tail_from_broad_
     assert "product shows." not in readiness_copy
     assert "the product shows a result" not in readiness_copy
     assert generated_public_copy_issues("training roster project brief", brief) == ()
+
+
+def test_confirmed_project_brief_skips_short_scope_preface_for_project_outcome() -> None:
+    intent = {
+        "title": "Project Coordination Workspace",
+        "product_story": (
+            "This workspace helps operators turn a broad objective into a coordinated project path with "
+            "visible state, validation, review, and handoff evidence."
+        ),
+        "state_object": (
+            "A project execution record that tracks the objective, task assignments, validation results, "
+            "review decisions, blockers, and final handoff."
+        ),
+        "first_path": (
+            "An operator submits an objective, the workspace creates a bounded plan, assigned roles complete "
+            "tasks, validation checks the result, and a reviewer approves the final handoff."
+        ),
+        "proof_boundary": (
+            "The proof should not claim production readiness yet. The first credible proof is one complete "
+            "workflow where an operator submits an objective, the system records state, validation catches "
+            "or confirms outcomes, and a reviewer can approve the result."
+        ),
+        "human_actors": [
+            "Operator: submits the objective and watches progress",
+            "Reviewer: approves or rejects the final handoff",
+        ],
+        "internal_systems": [
+            "Planning Workspace",
+            "Task Assignment Register",
+            "Validation Evidence Ledger",
+        ],
+    }
+
+    proposal = build_confirmed_greenfield_proposal(
+        prompt="a workspace for coordinated project execution",
+        title="Project Coordination Workspace",
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    brief = proposal["project_brief"]
+
+    assert "one complete workflow" in brief["project_outcome"]
+    assert word_count(brief["project_outcome"]) >= 10
+    assert project_brief_issues(brief) == []
+
+
+def test_project_brief_normalization_repairs_shallow_outcome_from_accepted_intent() -> None:
+    normalized = normalize_project_brief(
+        {"project_outcome": "The proof should not claim production readiness yet."},
+        intent={
+            "title": "Project Coordination Workspace",
+            "first_path": "An operator submits an objective and reviews a validated handoff.",
+            "proof_boundary": (
+                "The proof should not claim production readiness yet. The first credible proof is a complete "
+                "reviewable path with accepted input, visible state, validation evidence, and an approved result."
+            ),
+            "state_object": "Project execution record",
+        },
+        release_selector="0.0.1",
+    )
+
+    assert "complete reviewable path" in normalized["project_outcome"]
+    assert word_count(normalized["project_outcome"]) >= 10

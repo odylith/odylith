@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import fi
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
+from odylith.runtime.domain_intelligence.greenfield_project_brief import project_outcome_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 
@@ -78,7 +79,16 @@ def confirmed_project_brief(
         f"Release {release} succeeds only when {state_ref} and "
         f"{evidence_ref} can be reviewed together."
     )
-    proof = _brief_clause(proof_claim_summary(proof_source, limit=300), limit=300)
+    proof = project_outcome_text(
+        _brief_clause(proof_claim_summary(proof_source, limit=300), limit=300),
+        intent={
+            "title": label,
+            "first_path": first_path or first,
+            "proof_boundary": proof_source,
+            "state_object": state_object,
+        },
+        release_selector=release,
+    )
     first_gate = _first_path_readiness_summary(
         first_path or first,
         fallback=first,

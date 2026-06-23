@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -429,11 +430,20 @@ def _workstream_title_matches_component(title: str, row: Mapping[str, Any]) -> b
 def _validation_items(*, row: Mapping[str, Any], wave: Mapping[str, Any]) -> tuple[str, ...]:
     return unique_text(
         [
-            *row_text_tuple(row, "validation", "test_strategy"),
-            *row_text_tuple(row, "success_metrics"),
-            *_wave_validation_items(wave),
+            cleaned
+            for item in [
+                *row_text_tuple(row, "validation", "test_strategy"),
+                *row_text_tuple(row, "success_metrics"),
+                *_wave_validation_items(wave),
+            ]
+            if (cleaned := _preview_safe_validation_item(item))
         ]
     )
+
+
+def _preview_safe_validation_item(value: Any) -> str:
+    text = _short_contract_text(value, limit=220)
+    return normalize_cover_article_language(text)
 
 
 def _wave_validation_items(wave: Mapping[str, Any]) -> tuple[str, ...]:

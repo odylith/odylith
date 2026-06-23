@@ -787,7 +787,7 @@ def test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates(tmp_path,
     )
     identity.pop("recommended_first_slice")
     identity["validation"] = [
-        "Browser proof passes for failed-checkout recovery",
+        "Browser proof covers happy path and failed-checkout recovery",
         "Replay proof blocks duplicate order creation",
     ]
     proposal["program"]["waves"][0].pop("validation_gate", None)
@@ -811,6 +811,8 @@ def test_greenfield_apply_scalar_wave_validation_dedupes_handoff_gates(tmp_path,
         "Failed-payment recovery proof passes",
     ]
     assert joined_wave_gate not in result["next_steps"]["validation_gates"]
+    assert "Browser proof covers the happy path and failed-checkout recovery" in result["next_steps"]["validation_gates"]
+    assert "Browser proof covers happy path" not in json.dumps(result["next_steps"], sort_keys=True)
     assert result["next_steps"]["validation_gates"][-2:] == first_wave["validation"]
 
 

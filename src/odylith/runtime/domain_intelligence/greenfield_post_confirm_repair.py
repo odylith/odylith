@@ -10,6 +10,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 
 
@@ -133,6 +134,7 @@ def _repair_public_copy_line(value: str) -> str:
 
 def _repair_public_copy_scalar(value: str) -> str:
     text = normalize_visible_result_language(str(value))
+    text = normalize_cover_article_language(text)
     text = re.sub(r"\b(?P<word>[A-Za-z][A-Za-z0-9'-]*)\s+(?P=word)\b", r"\g<word>", text, flags=re.IGNORECASE)
     text = _repair_responsibility_verb_pairs(text)
     text = re.sub(

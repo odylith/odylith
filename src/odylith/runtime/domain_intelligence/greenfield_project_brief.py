@@ -8,10 +8,14 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_text_list
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
 PROJECT_BRIEF_SCHEMA_VERSION = "odylith.greenfield.project_brief.v1"
+PROJECT_OUTCOME_MIN_WORDS = 10
+_PROJECT_OUTCOME_LIMIT = 300
 
 
 def normalize_project_brief(
@@ -20,14 +24,18 @@ def normalize_project_brief(
     intent: Mapping[str, Any],
     release_selector: str,
 ) -> dict[str, Any]:
-    """Normalize a proposal project brief without manufacturing content."""
+    """Normalize a proposal project brief without inventing beyond accepted intent."""
 
-    _ = intent, release_selector
     if not isinstance(value, Mapping):
         return {}
 
     result = dict(value)
     result.setdefault("schema_version", PROJECT_BRIEF_SCHEMA_VERSION)
+    result["project_outcome"] = project_outcome_text(
+        result.get("project_outcome"),
+        intent=intent,
+        release_selector=release_selector,
+    )
     result["blueprint_sections"] = _normalize_brief_rows(
         result.get("blueprint_sections"),
         required_keys=("section", "must_capture", "why_it_matters"),
@@ -47,6 +55,27 @@ def normalize_project_brief(
         required_keys=("path", "command", "works_in", "use_when"),
     )
     return result
+
+
+def project_outcome_text(
+    value: Any,
+    *,
+    intent: Mapping[str, Any],
+    release_selector: str = "",
+    fallback: Any = "",
+) -> str:
+    """Return a release-outcome clause that satisfies the project-brief floor."""
+
+    for candidate in _project_outcome_candidates(
+        value,
+        intent=intent,
+        release_selector=release_selector,
+        fallback=fallback,
+    ):
+        text = _brief_field_text(candidate, limit=_PROJECT_OUTCOME_LIMIT)
+        if word_count(text) >= PROJECT_OUTCOME_MIN_WORDS:
+            return text
+    return _brief_field_text(value or fallback, limit=_PROJECT_OUTCOME_LIMIT)
 
 
 def project_brief_issues(value: Any) -> list[str]:
@@ -97,6 +126,70 @@ def project_brief_issues(value: Any) -> list[str]:
         required_keys=("path", "command", "works_in", "use_when"),
     )
     return issues
+
+
+def _project_outcome_candidates(
+    value: Any,
+    *,
+    intent: Mapping[str, Any],
+    release_selector: str,
+    fallback: Any,
+) -> list[str]:
+    existing = clean_text(value)
+    proof_boundary = clean_text(intent.get("proof_boundary"))
+    first_path = clean_text(intent.get("first_path"))
+    state_object = clean_text(intent.get("state_object"))
+    title = clean_text(intent.get("title") or intent.get("source_title"))
+    release = clean_text(release_selector) or "the first release"
+    candidates: list[str] = [existing]
+    candidates.extend(_sentence_candidates(proof_boundary))
+    candidates.append(_brief_field_text(proof_boundary, limit=_PROJECT_OUTCOME_LIMIT))
+    if first_path and proof_boundary:
+        candidates.append(f"{first_path} Proof remains bounded to {proof_boundary}")
+    if first_path:
+        candidates.append(
+            f"Release {release} is ready when the accepted first path is complete, reviewable, "
+            f"and backed by evidence: {first_path}"
+        )
+    if proof_boundary:
+        candidates.append(
+            f"Release {release} is ready only when the accepted proof boundary is visible and reviewable: "
+            f"{proof_boundary}"
+        )
+    if state_object:
+        candidates.append(
+            f"Release {release} must leave {state_object} reviewable with evidence for the accepted first path."
+        )
+    if title:
+        candidates.append(
+            f"Release {release} proves the accepted {title} direction through one reviewable first path."
+        )
+    candidates.append(clean_text(fallback))
+    return unique_text(candidates)
+
+
+def _sentence_candidates(value: str) -> list[str]:
+    sentences = _split_sentences(value)
+    candidates: list[str] = [*sentences]
+    for index in range(len(sentences) - 1):
+        candidates.append(f"{sentences[index]} {sentences[index + 1]}")
+    return candidates
+
+
+def _split_sentences(value: str) -> list[str]:
+    text = clean_text(value)
+    if not text:
+        return []
+    for marker in (".", "!", "?"):
+        text = text.replace(f"{marker} ", f"{marker}\n")
+    return [part.strip(" .!?") for part in text.splitlines() if part.strip(" .!?")]
+
+
+def _brief_field_text(value: Any, *, limit: int) -> str:
+    text = clean_text(value).strip(" .")
+    if len(text) <= limit:
+        return text
+    return clip_text_at_word_boundary(text, limit=limit).strip(" .")
 
 
 def render_project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:

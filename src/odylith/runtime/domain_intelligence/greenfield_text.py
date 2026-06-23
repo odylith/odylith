@@ -18,6 +18,29 @@ _CONTROL_ACTION_TARGET_RE = re.compile(
     r"\b(?P<action>control\s+actions?)\s+to\s+(?:the\s+)?(?P<target>[^.;:,]+)",
     re.IGNORECASE,
 )
+_COVER_ARTICLE_SKIP_WORDS = frozenset(
+    {
+        "a",
+        "all",
+        "an",
+        "another",
+        "any",
+        "both",
+        "each",
+        "either",
+        "every",
+        "its",
+        "no",
+        "our",
+        "that",
+        "the",
+        "their",
+        "these",
+        "this",
+        "those",
+        "your",
+    }
+)
 
 
 def clean_text(value: Any) -> str:
@@ -106,6 +129,37 @@ def normalize_visible_result_language(value: Any) -> str:
     )
     text = normalize_action_target_language(text)
     return clean_text(text)
+
+
+def normalize_cover_article_language(value: Any) -> str:
+    """Insert a missing article after cover/covers in clipped validation copy."""
+
+    text = clean_text(value)
+    if not text:
+        return ""
+    for marker in (" covers ", " cover "):
+        repaired = _add_article_after_cover_marker(text, marker)
+        if repaired != text:
+            return repaired
+    for marker in ("covers ", "cover "):
+        if text.casefold().startswith(marker):
+            return _add_article_after_cover_marker(text, marker)
+    return text
+
+
+def _add_article_after_cover_marker(value: str, marker: str) -> str:
+    text = clean_text(value)
+    lowered = text.casefold()
+    index = lowered.find(marker)
+    if index < 0:
+        return text
+    prefix_end = index + len(marker)
+    tail = text[prefix_end:]
+    tail_words = tail.split(maxsplit=1)
+    first_word = tail_words[0].strip(" ,;:.").casefold() if tail_words else ""
+    if first_word and first_word not in _COVER_ARTICLE_SKIP_WORDS:
+        return f"{text[:prefix_end]}the {tail}"
+    return text
 
 
 def normalize_reviewed_result_nouns(value: Any) -> str:
