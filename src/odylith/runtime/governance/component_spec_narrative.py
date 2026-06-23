@@ -14,6 +14,10 @@ from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collap
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import RELATION_TAIL_WORDS
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import relation_object_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import ComponentNarrativeView
+from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import component_narrative_view
+from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import narrative_items
+from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import phrases_too_similar
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text, text_values, unique_text
 
 
@@ -54,7 +58,7 @@ def build_narrative_component_spec(
     release_selector = _handoff_text(handoff, "release_selector")
     wave_label = _handoff_text(handoff, "wave_label")
     source_boundary = path or "selected by the first implementation plan"
-    role = _narrative_role(
+    view = component_narrative_view(
         label=label,
         owns=owns,
         accepts=accepts,
@@ -63,6 +67,7 @@ def build_narrative_component_spec(
         outside=outside,
         proofs=proofs,
     )
+    role = view.role
 
     lines = [
         f"# {label}",
@@ -82,10 +87,7 @@ def build_narrative_component_spec(
         _state_narrative(
             label=label,
             role=role,
-            owns=owns,
-            accepts=accepts,
-            produces=produces,
-            transitions=transitions,
+            view=view,
         ),
         "",
         _boundary_narrative(
@@ -140,63 +142,6 @@ def _planning_note(
     return f"> Planned from {evidence}.{source}{trace_text}"
 
 
-def _narrative_role(
-    *,
-    label: str,
-    owns: Sequence[str],
-    accepts: Sequence[str],
-    produces: Sequence[str],
-    transitions: Sequence[str],
-    outside: Sequence[str],
-    proofs: Sequence[str],
-) -> str:
-    text = " ".join([label, *_string_rows(owns), *_string_rows(accepts), *_string_rows(produces), *_string_rows(transitions), *_string_rows(outside), *_string_rows(proofs)]).casefold()
-    label_text = label.casefold()
-    if re.search(r"\b(catalog|knowledge|reference)\b", label_text):
-        return "reference"
-    if re.search(r"\b(store|repository|record|records|profile|registry|history|log|logging|tracking)\b", label_text):
-        return "state_store"
-    if re.search(r"\b(audit|evidence|file|ledger|provenance|trail)\b", label_text):
-        return "evidence"
-    if re.search(r"\b(config|configuration|admin|administrator|policy|setting)\b", label_text):
-        return "configuration"
-    if re.search(r"\b(safety|stop|recovery|guard|guardrail|interlock|limit|override)\b", label_text):
-        return "guardrail"
-    if re.search(r"\b(readiness|validation|verification|check|quality|eligibility)\b", label_text):
-        return "validation"
-    if re.search(r"\b(orchestrat\w*|workflow|sequence|sequencer|control|controller|runner|scheduler|coordination)\b", label_text):
-        return "workflow"
-    if re.search(r"\b(view|timeline|dashboard|summary|report|export|surface|display|history|trend)\b", label_text):
-        return "read_model"
-    if re.search(r"\b(decision|outcome|reason|approve|approval|decline|explain|rationale|recommendation)\b", label_text):
-        return "decision"
-    if re.search(r"\b(compute|calculation|calculator|engine|score|rank|compare|threshold|ratio|rule|eligibility|pricing)\b", label_text):
-        return "calculation"
-    if re.search(r"\b(queue|route|routing|handoff|follow-up|notification|assignment|case)\b", label_text):
-        return "handoff"
-    if re.search(r"\b(intake|capture|entry|submit|upload|log|record|draft)\b", label_text):
-        return "entry"
-    role_patterns = (
-        ("read_model", r"\b(view|timeline|dashboard|summary|report|export|surface|display|history|trend)\b"),
-        ("decision", r"\b(decision|outcome|reason|approve|approval|decline|qualified|eligible|explain|rationale|recommendation)\b"),
-        ("calculation", r"\b(compute|calculate|evaluate|score|rank|compare|threshold|ratio|rule|eligibility|pricing)\b"),
-        ("configuration", r"\b(config|configuration|admin|administrator|policy|rule|threshold|template|setting)\b"),
-        ("state_store", r"\b(store|repository|record|records|profile|history|log|persist|saved|stored)\b"),
-        ("handoff", r"\b(queue|route|routing|handoff|follow-up|notification|assignment|case)\b"),
-        ("evidence", r"\b(audit|evidence|provenance|source|replay|retention|version|history|attachment)\b"),
-        ("guardrail", r"\b(safety|stop|guard|guardrail|interlock|limit|override)\b"),
-        ("validation", r"\b(readiness|validation|verification|check|quality|eligibility)\b"),
-        ("workflow", r"\b(orchestrat\w*|workflow|sequence|sequencer|control|controller|runner|scheduler|coordination)\b"),
-        ("recovery", r"\b(edit|correction|recover|revision|blocked|blocker|stale|missing|invalid)\b"),
-        ("integration", r"\b(adapter|provider|external|import|feed|integration|sync)\b"),
-        ("entry", r"\b(intake|capture|entry|submit|submitted|upload|log|record|draft|required field|input)\b"),
-    )
-    for role, pattern in role_patterns:
-        if re.search(pattern, text):
-            return role
-    return "service"
-
-
 def _opening_narrative(
     *,
     label: str,
@@ -224,7 +169,7 @@ def _opening_narrative(
             _preferred_calculation_result(_calculation_parts(output_focus))
             or _preferred_calculation_result(_calculation_parts(focus))
         )
-        if has_calculation_result or _phrases_too_similar(input_focus, output_focus):
+        if has_calculation_result or phrases_too_similar(input_focus, output_focus):
             calculation_subject = _calculation_subject(calculation_focus)
             body = (
                 f"It should explain how {calculation_subject} "
@@ -343,27 +288,24 @@ def _state_narrative(
     *,
     label: str,
     role: str,
-    owns: Sequence[str],
-    accepts: Sequence[str],
-    produces: Sequence[str],
-    transitions: Sequence[str],
+    view: ComponentNarrativeView,
 ) -> str:
-    owned_rows = _narrative_items(owns, limit=4)
+    owned_rows = view.owned_items
     owned = _human_join(owned_rows)
-    material_state = _human_join(_supplemental_state_items(owns, existing=owned_rows, limit=5))
-    accepted_rows = _narrative_items(accepts, limit=3)
-    produced_rows = _narrative_items(produces, limit=3)
+    material_state = _human_join(view.material_state_items)
+    accepted_rows = view.accepted_items
+    produced_rows = view.produced_items
     accepted = _human_join(accepted_rows)
     produced = _human_join(produced_rows)
-    blocker_state = _human_join(_supplemental_state_items([*accepts, *produces], existing=(*owned_rows, *accepted_rows, *produced_rows), limit=3))
-    transition_rows = _transition_items(transitions, limit=12)
+    blocker_state = _human_join(view.blocker_state_items)
+    transition_rows = view.transition_items
     state_path = _human_join(transition_rows)
     blocker = f"Specific missing or blocked inputs include {blocker_state}" if role in {"entry", "recovery"} and blocker_state else ""
     if role in {"entry", "recovery"}:
         first = f"It owns {owned}." if owned else f"{label} needs the first implementation plan to name its local state."
         second = f"The component can take in {accepted}, but it should only move forward after required values, corrections, or blockers are explicit." if accepted else ""
     elif role in {"decision", "calculation"}:
-        if accepted and produced and not _phrases_too_similar(accepted, produced):
+        if accepted and produced and not phrases_too_similar(accepted, produced):
             first = f"For {label}, the useful state is the explanation that connects incoming {accepted} to {produced}."
         else:
             first = f"{label} must keep its input facts, calculation context, and visible result together."
@@ -402,23 +344,16 @@ def _state_narrative(
         first = f"The useful local state is {owned}."
         second = f"It accepts {accepted} and returns {produced} when the next product step can rely on it."
     material = _material_state_sentence(role=role, material_state=material_state)
-    transition = _transition_sentence(label=label, rows=transition_rows, text=state_path)
+    transition = _transition_sentence(label=label, view=view, text=state_path)
     return _sentences(first, second, blocker, material, transition)
 
 
-def _transition_sentence(*, label: str, rows: Sequence[str], text: str) -> str:
+def _transition_sentence(*, label: str, view: ComponentNarrativeView, text: str) -> str:
     if not text:
         return ""
-    short_rows = [row for row in rows if len(clean_text(row).split()) <= 2]
-    concrete_rows = [
-        row
-        for row in rows
-        if len(clean_text(row).split()) > 2 or "-" in clean_text(row)
-    ]
-    material_status_count = sum(1 for row in rows if _transition_material_score(row) >= 3)
-    if concrete_rows or material_status_count >= 4:
+    if view.concrete_transition_items or view.material_transition_count >= 4:
         return f"For {label}, the important lifecycle is {text}."
-    if len(rows) > 7 or len(short_rows) >= max(4, len(rows) // 2):
+    if len(view.transition_items) > 7 or len(view.short_transition_items) >= max(4, len(view.transition_items) // 2):
         return (
             f"For {label}, the lifecycle should make accepted, blocked, corrected, completed, "
             "and handed-off states explicit before implementation expands."
@@ -785,143 +720,8 @@ _CONTRACT_CARRIER_TERMS = {
 
 
 def _fallback_phrase(values: Sequence[str], fallback: str) -> str:
-    rows = _narrative_items(values, limit=3)
+    rows = narrative_items(values, limit=3)
     return _human_join(rows) if rows else _lower_first(fallback)
-
-
-def _narrative_items(values: Sequence[str], *, limit: int, allow_status: bool = False) -> tuple[str, ...]:
-    rows: list[str] = []
-    filler_status_tokens = {
-        "accepted",
-        "confirmed",
-        "needed",
-        "received",
-        "requested",
-        "trusted",
-        "visible",
-    }
-    material_values = [
-        clean_text(value).strip(" .")
-        for value in values
-        if clean_text(value).strip(" .")
-    ]
-    has_material_alternative = any(not _generated_boundary_state_item(value) for value in material_values)
-    for value in material_values:
-        text = clean_text(value).strip(" .")
-        if not text:
-            continue
-        lowered = text.casefold()
-        if has_material_alternative and _generated_boundary_state_item(text):
-            continue
-        if not allow_status and lowered in filler_status_tokens:
-            continue
-        if re.search(
-            r"\b(?:responsibilities not named|adjacent component|silent overwrite|release approval|mutation of original|mutation of upstream|local blockers?|recovery context owned elsewhere|guide path|capture allowed command)\b",
-            lowered,
-        ):
-            continue
-        if lowered in {
-            "blocker state",
-            "blocked states",
-            "correction marker",
-            "handoff context",
-            "next-step context",
-            "reviewer explanation",
-            "source evidence",
-            "validation context",
-        }:
-            continue
-        if any(_phrases_too_similar(text, existing) for existing in rows):
-            continue
-        rows.append(text)
-        if len(rows) >= limit:
-            break
-    return tuple(rows)
-
-
-def _generated_boundary_state_item(value: str) -> bool:
-    return bool(
-        re.fullmatch(
-            r"[a-z0-9][a-z0-9 '-]{0,80}\s+(?:adapter|client|component|engine|queue|service|store|surface|system|view)\s+state",
-            clean_text(value).casefold(),
-        )
-    )
-
-
-def _supplemental_state_items(values: Sequence[str], *, existing: Sequence[str], limit: int) -> tuple[str, ...]:
-    candidates: list[tuple[int, int, str]] = []
-    for index, value in enumerate(values):
-        text = clean_text(value).strip(" .")
-        if not text:
-            continue
-        if any(_phrases_too_similar(text, row) for row in existing):
-            continue
-        score = _state_material_score(text)
-        if score <= 0:
-            continue
-        candidates.append((score, index, text))
-    candidates.sort(key=lambda row: (-row[0], row[1]))
-    selected: list[tuple[int, str]] = []
-    for _score, index, text in candidates:
-        if any(_phrases_too_similar(text, chosen) for _chosen_index, chosen in selected):
-            continue
-        selected.append((index, text))
-        if len(selected) >= limit:
-            break
-    return tuple(text for _index, text in sorted(selected))
-
-
-def _transition_items(values: Sequence[str], *, limit: int) -> tuple[str, ...]:
-    rows = _narrative_items(values, limit=24, allow_status=True)
-    if len(rows) <= limit:
-        return rows
-    selected: list[tuple[int, str]] = [(index, text) for index, text in enumerate(rows[: min(6, limit)])]
-    for index, text in enumerate(rows[min(6, limit) :], start=min(6, limit)):
-        if _transition_material_score(text) <= 0:
-            continue
-        if any(_phrases_too_similar(text, existing) for _existing_index, existing in selected):
-            continue
-        selected.append((index, text))
-        if len(selected) >= limit:
-            break
-    if len(selected) < limit:
-        for index, text in enumerate(rows):
-            if any(index == existing_index or _phrases_too_similar(text, existing) for existing_index, existing in selected):
-                continue
-            selected.append((index, text))
-            if len(selected) >= limit:
-                break
-    return tuple(text for _index, text in sorted(selected))
-
-
-def _transition_material_score(value: str) -> int:
-    text = clean_text(value).casefold()
-    score = 0
-    for pattern, weight in (
-        (r"\b(?:accepted|approved|declined|denied|rejected|qualified|eligible|ineligible|decided)\b", 3),
-        (r"\b(?:scheduled|completed|closed|final|published|delivered|sent|received)\b", 3),
-        (r"\b(?:blocked|stale|missing|invalid|failed|error|returned|revised|corrected)\b", 3),
-        (r"\b(?:draft|open|started|submitted|created|ready|reviewed)\b", 1),
-    ):
-        if re.search(pattern, text):
-            score += weight
-    return score
-
-
-def _state_material_score(value: str) -> int:
-    text = clean_text(value).casefold()
-    score = 0
-    for pattern, weight in (
-        (r"\b(?:validation|validated|validates?|completeness|complete)\b", 3),
-        (r"\b(?:missing|blocked|blocker|invalid|correction|recovery)\b", 3),
-        (r"\b(?:provenance|source|evidence|attachment|uploaded|document)\b", 3),
-        (r"\b(?:access|permission|privacy|sensitive|retention|deletion|consent)\b", 3),
-        (r"\b(?:lifecycle|history|timeline|transition|status)\b", 2),
-        (r"\b(?:visibility|visible|reviewable|audit|traceable|replay)\b", 2),
-    ):
-        if re.search(pattern, text):
-            score += weight
-    return score
 
 
 def _material_state_sentence(*, role: str, material_state: str) -> str:
@@ -960,14 +760,6 @@ def _human_join(values: Sequence[str]) -> str:
     if len(rows) == 2:
         return f"{rows[0]} and {rows[1]}"
     return f"{', '.join(rows[:-1])}, and {rows[-1]}"
-
-
-def _phrases_too_similar(left: str, right: str) -> bool:
-    left_terms = set(re.findall(r"[a-z0-9][a-z0-9-]+", clean_text(left).casefold()))
-    right_terms = set(re.findall(r"[a-z0-9][a-z0-9-]+", clean_text(right).casefold()))
-    if not left_terms or not right_terms:
-        return False
-    return len(left_terms & right_terms) / max(1, min(len(left_terms), len(right_terms))) >= 0.72
 
 
 def _calculation_focus(*, focus: str, output_focus: str, label: str) -> str:
@@ -1030,10 +822,6 @@ _CALCULATION_RESULT_TERMS = {
     "score",
     "summary",
 }
-
-
-def _string_rows(values: Sequence[str]) -> tuple[str, ...]:
-    return tuple(str(item).strip() for item in values if str(item).strip())
 
 
 def _finalize_narrative_spec_text(value: str) -> str:

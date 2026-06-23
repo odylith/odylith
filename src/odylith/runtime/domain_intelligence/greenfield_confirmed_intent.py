@@ -32,15 +32,17 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import preferred_internal_rows as _preferred_internal_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import role_or_system_rows as _role_or_system_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     clean_first_path_text as _clean_first_path,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
-
 
 
 def load_confirmed_intent_file(path: Path, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
@@ -168,6 +170,7 @@ def _complete_confirmed_intent_before_validation(intent: Mapping[str, Any]) -> d
 def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
     """Parse the human Product Intent Confirmation that the host already showed."""
 
+    text = _recover_host_guidance_confirmation(text, prompt=prompt)
     sections = _sections(text)
     raw_title = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
     title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
@@ -217,6 +220,98 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
     return result
 
 
+def _recover_host_guidance_confirmation(text: str, *, prompt: str = "") -> str:
+    """Recover product intent when an Odylith guidance envelope is passed by mistake."""
+
+    raw = str(text or "")
+    if not _looks_like_host_guidance_envelope(raw):
+        return raw
+    sections = _sections(raw)
+    if _has_structured_body_sections(sections):
+        return raw
+    intent_text = _host_guidance_original_intent(raw) or _clean(prompt)
+    if not intent_text:
+        return raw
+    return _confirmation_from_operator_intent(intent_text)
+
+
+def _looks_like_host_guidance_envelope(text: str) -> bool:
+    lowered = str(text or "").casefold()
+    return (
+        "product intent confirmation needed" in lowered
+        and "visible format contract" in lowered
+        and "original user intent" in lowered
+    )
+
+
+def _host_guidance_original_intent(text: str) -> str:
+    lines = str(text or "").splitlines()
+    collecting = False
+    values: list[str] = []
+    for raw_line in lines:
+        line = raw_line.strip()
+        normalized = _normalize_heading(line.rstrip(":"))
+        if normalized == "original user intent":
+            collecting = True
+            continue
+        if collecting and (
+            normalized in {"next step", "confirmed cli after confirmation"}
+            or line.casefold().startswith("confirmed cli after confirmation:")
+        ):
+            break
+        if collecting and line:
+            values.append(line)
+    return _clean(" ".join(values))
+
+
+def _confirmation_from_operator_intent(intent_text: str) -> str:
+    source = _clean(intent_text).strip(" .")
+    first_path_source = prompt_first_path_source(source)
+    outcome = first_path_outcome_phrase(first_path_source, fallback="the first visible result").strip(" .")
+    title = _recovered_title(outcome)
+    outcome_lower = outcome[:1].lower() + outcome[1:] if outcome else "the first visible result"
+    story = (
+        f"The product helps the named participants complete a first path where {first_path_source.rstrip('.')}. "
+        f"It keeps {outcome_lower} tied to source input, current state, blockers, handoffs, and proof evidence "
+        "so the next step is clear."
+    )
+    state = (
+        f"{outcome} record tracks the actor, source input, current status, owner, blocker, handoff, evidence, "
+        "and version history for the first path."
+    )
+    first_path = (
+        f"{first_path_source.rstrip('.')}. "
+        "Product-owned responsibilities preserve current state, blockers, handoffs, and evidence until "
+        f"{outcome_lower} is visible."
+    )
+    proof = (
+        f"Release 0.0.1 succeeds when {first_path_source.rstrip('.')}. "
+        f"The product shows {outcome_lower}, handles missing or invalid input with a clear blocker, "
+        "and keeps replayable evidence for review."
+    )
+    return "\n\n".join(
+        (
+            f"# {title} — Product Intent Confirmation",
+            "Product story\n" + story,
+            "State object\n" + state,
+            "First complete path\n" + first_path,
+            "Human actors\n",
+            "External systems\n",
+            "Internal product systems\n",
+            "Critical assumptions\n- Release 0.0.1 proves the first path before broader automation or live integrations.",
+            "Ambiguities\n- The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
+            "Proof boundary\n" + proof,
+        )
+    )
+
+
+def _recovered_title(outcome: str) -> str:
+    words = _clean(outcome).split()
+    if 1 <= len(words) <= 6 and outcome.casefold() != "the first visible result":
+        return f"{title_case_text(outcome)} Workspace"
+    return "Recovered Product Workspace"
+
+
 def _has_structured_body_sections(sections: Mapping[str, list[str]]) -> bool:
     return any(
         key
@@ -241,8 +336,11 @@ def _canonical_prompt_text(value: Any, *, title_normalization: Any) -> str:
         return ""
     raw_title = _clean(getattr(title_normalization, "raw_title", ""))
     canonical_title = _clean(getattr(title_normalization, "canonical_title", ""))
+    if raw_title and canonical_title and text.casefold() == raw_title.casefold():
+        return canonical_title
     if raw_title and canonical_title and raw_title != canonical_title:
         text = re.sub(re.escape(raw_title), canonical_title, text, flags=re.IGNORECASE)
+    text = prompt_first_path_source(text)
     text = normalize_project_title(text, fallback=canonical_title or "Greenfield Project").canonical_title
     return _clean(text)
 

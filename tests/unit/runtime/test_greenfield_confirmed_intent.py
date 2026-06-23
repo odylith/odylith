@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -39,6 +40,98 @@ def _max_word_overlap(values: list[str]) -> float:
             if left and right:
                 scores.append(len(left & right) / min(len(left), len(right)))
     return max(scores or [0.0])
+
+
+def test_confirmed_intent_prompt_wrapper_semantics_stay_in_prompt_source_owner() -> None:
+    parser_source = (
+        ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py"
+    ).read_text(encoding="utf-8")
+    prompt_source = (
+        ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py"
+    ).read_text(encoding="utf-8")
+
+    assert "prompt_first_path_source" in parser_source
+    assert "_REQUEST_COMMAND_WORDS" not in parser_source
+    assert "def _strip_operator_request_wrapper" not in parser_source
+    assert "def prompt_first_path_source" in prompt_source
+    assert "def _strip_operator_request_wrapper" in prompt_source
+    assert "import re" not in prompt_source
+    assert "re." not in prompt_source
+
+
+def test_confirmed_prompt_source_removes_command_wrapper_without_regex_rules() -> None:
+    assert (
+        prompt_first_path_source("Build a CRM for sales reps to qualify leads and managers to see pipeline health.")
+        == "sales reps can qualify leads and managers can see pipeline health"
+    )
+    assert (
+        prompt_first_path_source(
+            "Draft a tool that helps clinics schedule intake, confirm insurance, and show patients next steps."
+        )
+        == "clinics schedule intake, confirm insurance, and show patients next steps"
+    )
+
+
+def test_confirmed_intent_parser_recovers_from_host_guidance_envelope_without_cli_leakage() -> None:
+    prompt = (
+        "Build a neighborhood tool where residents report broken streetlights, city staff triage duplicate reports, "
+        "dispatch crews, and residents see repair status updates."
+    )
+    intent = parse_confirmed_intent_text(
+        f"""Product Intent Confirmation needed
+No files changed. Source posture: docs_only.
+
+Host reasoning task: Infer the product shape live from the operator prompt and any observed repo source.
+
+Visible format contract
+- Render the visible confirmation as sectioned Markdown in this order.
+
+Original user intent
+{prompt}
+Next step
+- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm.
+- Edit: if the product story is wrong, ask for corrections.
+- Reject: stop here.
+Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+""",
+        prompt=prompt,
+    )
+
+    rendered = json.dumps(intent, sort_keys=True)
+    assert "repo-root" not in rendered
+    assert "Confirmed CLI" not in rendered
+    assert "Visible format contract" not in rendered
+    assert "to first," not in rendered
+    assert "to residents report" not in rendered
+    assert intent["title"] == "Repair Status Updates Workspace"
+    assert "residents report broken streetlights" in intent["first_path"]
+    assert "repair status updates" in intent["proof_boundary"].casefold()
+    assert intent["internal_systems"]
+
+
+def test_confirmed_intent_parser_removes_command_wrapper_from_recovered_first_path() -> None:
+    prompt = "Build a CRM for sales reps to qualify leads and managers to see pipeline health."
+    intent = parse_confirmed_intent_text(
+        f"""Product Intent Confirmation needed
+
+Visible format contract
+- Render the visible confirmation as sectioned Markdown.
+
+Original user intent
+{prompt}
+Next step
+- Confirm the interpretation.
+""",
+        prompt=prompt,
+    )
+
+    rendered = json.dumps(intent, sort_keys=True)
+    assert "Build a CRM" not in rendered
+    assert "where Build" not in rendered
+    assert "sales reps to qualify" not in rendered
+    assert "sales reps can qualify leads" in rendered
+    assert intent["title"] == "Pipeline Health Workspace"
+    assert intent["first_path"].startswith("sales reps can qualify leads")
 
 
 def test_confirmed_intent_completion_preserves_explicit_actor_and_system_rows() -> None:

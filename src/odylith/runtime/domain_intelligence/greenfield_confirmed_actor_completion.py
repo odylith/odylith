@@ -261,6 +261,7 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     clause = _short(scored[0][3], limit=170)
     if not clause:
         return ""
+    clause = _focus_clause_on_actor_label(clause, label=label)
     clause = re.sub(r"^(?:a|an|the)\s+", "", clause, flags=re.IGNORECASE)
     clause = _strip_actor_subject_from_clause(clause, label=label)
     clause = _trim_following_actor_transition(clause)
@@ -326,6 +327,25 @@ def _actor_path_terms(label: str) -> set[str]:
         "user",
     }
 
+def _focus_clause_on_actor_label(value: str, *, label: str) -> str:
+    """Focus a multi-actor clause on the actor label being described."""
+
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    role_words = _actor_path_terms(label) & _ROLE_WORDS
+    if not role_words:
+        return text
+    words = text.split()
+    for index, raw_word in enumerate(words):
+        token = raw_word.strip(".,;:()").casefold()
+        if token not in role_words:
+            continue
+        start = max(0, index - 1)
+        return " ".join(words[start:]).strip(" .,;:")
+    return text
+
+
 def _strip_actor_subject_from_clause(value: str, *, label: str) -> str:
     """Remove a role label when it was copied into a clause as the subject."""
 
@@ -335,7 +355,11 @@ def _strip_actor_subject_from_clause(value: str, *, label: str) -> str:
     label_terms = sorted(_semantic_terms(label), key=len, reverse=True)
     if label_terms:
         lead = r"(?:a|an|the|one)?\s*(?:" + "|".join(re.escape(term) for term in label_terms) + r")"
-        text = re.sub(rf"^{lead}\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
+        for _ in range(4):
+            cleaned = re.sub(rf"^{lead}\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
+            if cleaned == text:
+                break
+            text = cleaned
     if re.search(r"\b(person|user|participant|customer|client)\b", label, re.IGNORECASE):
         text = re.sub(
             r"^(?:a|an|the|one)\s+(?:new\s+)?(?:person|user|participant|customer|client)\s+",

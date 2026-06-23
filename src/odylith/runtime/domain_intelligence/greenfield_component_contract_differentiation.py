@@ -446,10 +446,8 @@ def _join_contract_clauses(*values: Any) -> str:
 
 def _outside_boundary(*, axis: ComponentAxis, sibling_axis: ComponentAxis | None, sibling_label: str) -> str:
     outside = _clean_contract_clause(axis.outside_boundary)
-    if sibling_axis:
-        sibling_focus = _clean_contract_clause(sibling_axis.owned_state.split(" for ", 1)[0])
-        sibling_name = f" owned by {sibling_label}" if sibling_label else ""
-        outside = _join_contract_clauses(outside, f"{sibling_focus}{sibling_name}" if sibling_focus else "")
+    if sibling_axis and sibling_label:
+        outside = _join_contract_clauses(outside, f"{sibling_label} ownership of local state")
     return outside
 
 

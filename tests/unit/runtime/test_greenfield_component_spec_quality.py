@@ -50,6 +50,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_anchor_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import derive_component_semantic_contract
+from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import component_narrative_view
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import sentence_fragment
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
@@ -95,6 +96,10 @@ COMPONENT_SEMANTIC_CONTEXT_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_context.py"
 )
 COMPONENT_AXES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_axes.py"
+COMPONENT_NARRATIVE_VIEW_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_narrative_view.py"
+)
+COMPONENT_SPEC_NARRATIVE_PATH = ROOT / "src/odylith/runtime/governance/component_spec_narrative.py"
 SEMANTIC_QUALITY_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py"
 APPLY_WRITE_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py"
 
@@ -239,6 +244,82 @@ def test_component_contract_artifact_sentence_stays_in_text_owner() -> None:
         source = caller.read_text(encoding="utf-8")
         assert "clean_artifact_sentence" in source
         assert 'return text[:1].upper() + text[1:] + "."' not in source
+
+
+def test_component_spec_narrative_semantics_stay_in_view_owner() -> None:
+    renderer_source = COMPONENT_SPEC_NARRATIVE_PATH.read_text(encoding="utf-8")
+    view_source = COMPONENT_NARRATIVE_VIEW_PATH.read_text(encoding="utf-8")
+
+    assert "greenfield_component_narrative_view import component_narrative_view" in renderer_source
+    assert "def _narrative_role" not in renderer_source
+    assert "def _narrative_items" not in renderer_source
+    assert "def _transition_material_score" not in renderer_source
+    assert "def _state_material_score" not in renderer_source
+    assert "def _phrases_too_similar" not in renderer_source
+    assert "re.findall" not in renderer_source
+
+    assert "class ComponentNarrativeView" in view_source
+    assert "def narrative_role" in view_source
+    assert "def transition_material_score" in view_source
+    assert "import re" not in view_source
+    assert "re." not in view_source
+
+
+def test_component_narrative_view_derives_roles_and_material_items_without_renderer_rules() -> None:
+    view = component_narrative_view(
+        label="Planning Engine",
+        owns=(
+            "planning target result",
+            "planning target result state",
+            "blocked-state explanation",
+            "source evidence attachment",
+        ),
+        accepts=("progress snapshot", "status window", "validation context"),
+        produces=("planning recommendation result", "planning recommendation result", "next-step context"),
+        transitions=("draft", "submitted", "blocked", "corrected", "ready-for-next-step"),
+        outside=("adjacent component state owned elsewhere", "release approval"),
+        proofs=("Replay evidence still connects the actor, input facts, status, and explanation.",),
+    )
+
+    assert view.role == "calculation"
+    assert view.owned_items == ("planning target result", "blocked-state explanation", "source evidence attachment")
+    assert view.produced_items == ("planning recommendation result",)
+    assert "ready-for-next-step" in view.transition_items
+    assert view.material_transition_count >= 2
+
+    handoff_view = component_narrative_view(
+        label="Coordinator Review Queue",
+        owns=("review request state",),
+        accepts=("accepted input facts",),
+        produces=("next-step handoff",),
+        transitions=("requested", "reviewed", "ready-for-next-step"),
+        outside=("release approval",),
+        proofs=("Handoff evidence remains replayable.",),
+    )
+    assert handoff_view.role == "handoff"
+
+
+def test_component_contract_differentiation_keeps_sibling_boundary_as_component_ownership() -> None:
+    axis = derive_component_axis(
+        label_text="Crew Assignment Gate Service",
+        context_text="owns duplicate review, severity check, assignment decision, blocker reason, and handoff evidence",
+    )
+    sibling_axis = derive_component_axis(
+        label_text="Public Update Status Board Service",
+        context_text="owns public update text, response status, publication state, and replayable communication proof",
+    )
+    assert axis is not None
+    assert sibling_axis is not None
+
+    outside = contract_differentiation._outside_boundary(
+        axis=axis,
+        sibling_axis=sibling_axis,
+        sibling_label="Public Update Status Board Service",
+    ).casefold()
+
+    assert "public update status board service ownership of local state" in outside
+    assert "board a" not in outside
+    assert "assignment is" not in outside
 
 
 def test_exact_string_dedupe_stays_in_common_value_owner() -> None:

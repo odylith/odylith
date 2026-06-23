@@ -27,7 +27,7 @@ _SYSTEM_NAME_NOUNS = frozenset(
     adapter adapters api apis client clients console consoles controller controllers coordinator coordinators
     dashboard dashboards engine engines flow flows gateway gateways harness harnesses integration integrations
     libraries library ledger ledgers log logging manager managers model models module modules monitor monitoring
-    nudge nudges pipeline pipelines queue queues record records recorder recorders reminder reminders schedule
+    nudge nudges pipeline pipelines queue queues record records recorder recorders register registers reminder reminders schedule
     schedules scheduling screen screens service services store stores surface surfaces tracker trackers tracking view
     views workflow workflows
     """.split()
@@ -151,6 +151,10 @@ def expand_internal_system_rows(rows: list[str], *, context_text: str = "") -> l
             return [descriptor_row]
     if len(cleaned) == 1 and _explicit_system_row(cleaned[0]):
         return [_system_sentence_row(cleaned[0], context_text=context_text) or cleaned[0]]
+    if len(cleaned) == 1:
+        system_name, description = _split_system_action_clause(cleaned[0])
+        if description and system_name != cleaned[0] and _system_name_head_is_plausible(system_name):
+            return [_format_system_row(system_name, description, context_text=context_text)]
     sentence_rows = _system_sentence_rows(" ".join(cleaned), context_text=context_text)
     if len(cleaned) == 1 and len(sentence_rows) >= 2:
         return sentence_rows
@@ -233,7 +237,7 @@ def has_meaningful_system_description(row: str, *, minimum_words: int = 5) -> bo
     return bool(
         _word_count(description) >= 3
         and re.search(
-            r"\b(?:blocks?|blocking|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+            r"\b(?:blocks?|blocking|captures?|capturing|owns?|owning|validates?|validating|computes?|computing|evaluates?|evaluating|"
             r"explains?|explaining|prevents?|preventing|protects?|protecting|produces?|producing|proposes?|proposing|"
             r"recommends?|recommending|suggests?|suggesting|"
             r"returns?|returning|routes?|routing|records?|recording|stores?|storing|preserves?|preserving|"
@@ -288,7 +292,7 @@ def _split_system_action_clause(value: str) -> tuple[str, str]:
         return relative
     split_pattern = re.compile(
         r"\s+(?=(?:owned\s+by|"
-        r"blocks?|blocking|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
+        r"blocks?|blocking|captures?|capturing|owns?|owning|validates?|validating|computes?|computing|evaluates?|evaluating|"
         r"exposes?|exposing|explains?|explaining|prevents?|preventing|protects?|protecting|"
         r"produces?|producing|proposes?|proposing|recommends?|recommending|suggests?|suggesting|"
         r"returns?|returning|routes?|routing|records?|recording|stores?|storing|"
@@ -384,7 +388,7 @@ def _system_name_head_is_plausible(value: str) -> bool:
         return False
     return bool(
         re.search(
-            r"\b(adapter|application|console|dashboard|engine|flow|ledger|library|log|logging|model|monitoring|nudge|portal|queue|record|registry|reminder|schedule|scheduling|service|store|surface|tracker|tracking|trail|view|workspace)\b",
+            r"\b(adapter|application|console|dashboard|engine|flow|ledger|library|log|logging|model|monitoring|nudge|portal|queue|record|register|registry|reminder|schedule|scheduling|service|store|surface|tracker|tracking|trail|view|workspace)\b",
             head,
             flags=re.IGNORECASE,
         )

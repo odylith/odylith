@@ -11,6 +11,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_description
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_name
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import expand_internal_system_rows
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 
@@ -222,6 +224,22 @@ def test_purpose_clause_system_row_keeps_purpose_out_of_component_identity() -> 
     assert "Maintains sustain" not in json.dumps(components)
     assert "helps sustain" not in json.dumps(components)
     assert "to Sustain" not in components[0]["label"]
+
+
+def test_ownership_clause_system_row_keeps_responsibility_out_of_component_identity() -> None:
+    row = "Request intake register owns request identity, documents, and submitted state"
+    rows = expand_internal_system_rows([row], context_text="")
+    components = confirmed_components(
+        label="Review Workspace",
+        label_slug="review-workspace",
+        internal_systems=rows,
+    )
+
+    assert confirmed_system_name(row) == "Request intake register"
+    assert confirmed_system_description(row).startswith("owns request identity")
+    assert rows[0].startswith("Request Intake Register — owns request identity")
+    assert components[0]["label"] == "Request Intake Register Service"
+    assert "Owns Request Identity" not in components[0]["label"]
 
 
 def test_long_system_descriptors_do_not_become_component_identity() -> None:
