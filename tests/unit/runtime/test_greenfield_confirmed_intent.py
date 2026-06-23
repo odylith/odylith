@@ -179,7 +179,7 @@ def test_confirmed_intent_parser_lifts_one_line_operator_request_into_confirmati
     assert "the proven response path before launch" in encoded
     assert "support leads can triage delayed orders" in intent["first_path"]
     assert intent["human_actors"] == [
-        "Support Leads: needs the product to triage delayed orders and keep the result visible and reviewable"
+        "Support Leads: need the product to triage delayed orders and keep the result visible and reviewable"
     ]
     assert intent["internal_systems"] == [
         (

@@ -1,0 +1,347 @@
+"""Synthetic Product Intent Confirmation recovery from host guidance envelopes."""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
+from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
+
+_MODAL_MARKERS = frozenset({"can", "will", "must", "needs", "need"})
+_LEADING_ARTICLES = frozenset({"a", "an", "the"})
+_LEADING_CONNECTORS = frozenset({"and", "or", "then"})
+_NON_HUMAN_ACTOR_TERMS = frozenset(
+    {
+        "api",
+        "application",
+        "controller",
+        "database",
+        "device",
+        "engine",
+        "hardware",
+        "ledger",
+        "model",
+        "platform",
+        "policy",
+        "product",
+        "proof",
+        "record",
+        "register",
+        "sensor",
+        "service",
+        "software",
+        "system",
+        "tool",
+        "workspace",
+    }
+)
+_PRODUCT_CONTAINER_TERMS = frozenset(
+    {
+        "app",
+        "application",
+        "coach",
+        "console",
+        "controller",
+        "dashboard",
+        "desk",
+        "engine",
+        "experience",
+        "hub",
+        "platform",
+        "portal",
+        "product",
+        "room",
+        "service",
+        "studio",
+        "system",
+        "tool",
+        "tracker",
+        "workspace",
+    }
+)
+
+
+def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title: bool = False) -> str:
+    """Return a structured confirmation when the host passed guidance instead of the visible answer."""
+
+    source = _clean(intent_text).strip(" .")
+    first_path_source = prompt_first_path_source(source)
+    title_source = prompt_project_title_source(source) if prefer_product_title else ""
+    title = _recovered_title(title_source or first_path_outcome_phrase(first_path_source, fallback=""))
+    actor_rows = _human_actor_rows_from_first_path(first_path_source)
+    lead_actor = _lead_actor_label(actor_rows) or "First Participant"
+    lead_action = _lead_actor_action(actor_rows) or base_action_clause(first_path_source)
+    outcome = _stable_outcome_phrase(
+        first_path_outcome_phrase(first_path_source, fallback=""),
+        title=title,
+    )
+    outcome_object = _object_result_phrase(outcome)
+    lead_actor_ref = _actor_reference(lead_actor)
+    lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
+    first_path = first_path_source
+    story = (
+        f"{title} helps {lead_actor_ref} complete a first path where {first_path_source.rstrip('.')}. "
+        f"It keeps {outcome_object} tied to source input, current state, blockers, handoffs, and proof evidence "
+        "so the next step is clear."
+    )
+    state = (
+        f"A {outcome.strip(' .')} record tracks the actor, source input, current status, owner, blocker, "
+        "handoff, evidence, and version history for the first path."
+    )
+    proof = (
+        f"Release 0.0.1 succeeds when {first_path_source.rstrip('.')}. "
+        f"The product shows {outcome_object}, handles missing or invalid input with a clear blocker, "
+        "and keeps replayable evidence for review."
+    )
+    problem = (
+        f"{lead_actor} {lead_needs} a dependable way to {lead_action.rstrip('.')} and trust the result without stitching "
+        "together scattered context."
+    )
+    product_view = (
+        f"{title} is useful when {lead_actor_ref} can {lead_action.rstrip('.')} and the result remains "
+        "visible, blocked when needed, and reviewable."
+    )
+    actor_lines = "\n".join(f"- {row}" for row in actor_rows)
+    system_lines = "\n".join(f"- {row}" for row in _internal_system_rows_from_recovered_title(title))
+    return "\n\n".join(
+        (
+            f"# {title} - Product Intent Confirmation",
+            "Product story\n" + story,
+            "State object\n" + state,
+            "First complete path\n" + first_path.rstrip(".") + ".",
+            "Human actors\n" + actor_lines,
+            "External systems\n",
+            "Internal product systems\n" + system_lines,
+            "Problem\n" + problem,
+            "Opportunity\n" + f"Prove the smallest complete {title.lower()} path before broader automation expands.",
+            "Product view\n" + product_view,
+            "Success metrics\n"
+            + "\n".join(
+                (
+                    f"- {lead_actor} can {lead_action.rstrip('.')} and see the visible result.",
+                    "- Missing or invalid input produces a clear blocker instead of a false success.",
+                    f"- Review evidence backs {outcome_object} with replayable proof.",
+                )
+            ),
+            "Critical assumptions\n- Release 0.0.1 proves the first path before broader automation or live integrations.",
+            "Ambiguities\n- The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
+            "Proof boundary\n" + proof,
+        )
+    )
+
+
+def _human_actor_rows_from_first_path(value: str) -> list[str]:
+    rows: list[str] = []
+    for clause in _first_path_actor_clauses(value):
+        row = _human_actor_row_from_clause(clause, allow_subject_fallback=not rows)
+        if row and row.casefold() not in {existing.casefold() for existing in rows}:
+            rows.append(row)
+    if rows:
+        return rows[:3]
+    return ["First Participant: needs the product to complete the first path and keep the result visible and reviewable"]
+
+
+def _first_path_actor_clauses(value: str) -> list[str]:
+    text = _clean(value)
+    if not text:
+        return []
+    clauses: list[str] = []
+    for part in text.replace("; ", ", ").split(","):
+        part = _clean(part)
+        if not part:
+            continue
+        for subpart in part.split(" and "):
+            cleaned = _clean(subpart)
+            if cleaned:
+                clauses.append(cleaned)
+    return clauses
+
+
+def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -> str:
+    words = _words(clause)
+    if len(words) < 2:
+        return ""
+    marker_index = _first_word_index(words, _MODAL_MARKERS)
+    if marker_index > 0 and marker_index + 1 < len(words):
+        actor = " ".join(words[:marker_index])
+        action = " ".join(words[marker_index + 1 :])
+        return _human_actor_row(actor, action)
+    action_index = _action_start_index(words)
+    if action_index > 0:
+        actor = " ".join(words[:action_index])
+        action = " ".join(words[action_index:])
+        return _human_actor_row(actor, action)
+    fallback = _plural_subject_fallback(words, allow_single_subject=allow_subject_fallback)
+    if fallback:
+        actor, action = fallback
+        return _human_actor_row(actor, action)
+    return ""
+
+
+def _action_start_index(words: Sequence[str]) -> int:
+    for index in range(1, max(1, len(words) - 1)):
+        if looks_like_action_clause(" ".join(words[index:])):
+            return index
+    return -1
+
+
+def _first_word_index(words: Sequence[str], targets: set[str] | frozenset[str]) -> int:
+    for index, word in enumerate(words):
+        if word.casefold() in targets:
+            return index
+    return -1
+
+
+def _human_actor_row(actor: str, action: str) -> str:
+    actor_words = _strip_leading_articles(_words(actor))
+    actor_label = title_case_text(" ".join(actor_words))
+    action_text = base_action_clause(_clean(action))
+    if not actor_label or not action_text or _looks_like_non_human_actor(actor_label):
+        return ""
+    need_verb = _actor_verb(actor_label, singular="needs", plural="need")
+    return f"{actor_label}: {need_verb} the product to {action_text} and keep the result visible and reviewable"
+
+
+def _looks_like_non_human_actor(value: str) -> bool:
+    terms = {term.casefold() for term in label_terms(value)}
+    return bool(terms & _NON_HUMAN_ACTOR_TERMS)
+
+
+def _plural_subject_fallback(words: Sequence[str], *, allow_single_subject: bool) -> tuple[str, str]:
+    cleaned = _strip_leading_articles(words)
+    if len(cleaned) < 3:
+        return ("", "")
+    if len(cleaned) >= 4 and _looks_plural(cleaned[1]):
+        return (" ".join(cleaned[:2]), " ".join(cleaned[2:]))
+    if allow_single_subject and _looks_plural(cleaned[0]):
+        return (cleaned[0], " ".join(cleaned[1:]))
+    if _looks_plural(cleaned[0]) and len(cleaned) >= 3:
+        return (cleaned[0], " ".join(cleaned[1:]))
+    return ("", "")
+
+
+def _looks_plural(value: str) -> bool:
+    token = str(value or "").casefold().strip(".,:;")
+    return len(token) > 3 and token.endswith("s") and not token.endswith("ss")
+
+
+def _lead_actor_label(actor_rows: Sequence[str]) -> str:
+    for row in actor_rows:
+        label, _, _body = str(row).partition(":")
+        label = _clean(label)
+        if label:
+            return label
+    return ""
+
+
+def _lead_actor_action(actor_rows: Sequence[str]) -> str:
+    for row in actor_rows:
+        _label, _separator, body = str(row).partition(":")
+        for marker in ("needs the product to ", "need the product to "):
+            if marker in body:
+                return body.split(marker, 1)[1].split(" and keep ", 1)[0].strip(" .")
+    return ""
+
+
+def _internal_system_rows_from_recovered_title(title: str) -> list[str]:
+    label = title_case_text(_clean(title) or "Product")
+    return [
+        (
+            f"{label} Intake Register - records source input, current status, owner, blocker, "
+            "handoff, and version history for the first path"
+        ),
+        (
+            f"{label} Review Workspace - presents current state, missing input, user-facing confirmation, "
+            "and the next useful action"
+        ),
+        (
+            f"{label} Proof Ledger - keeps validation results, release decisions, failure reasons, "
+            "and replayable evidence for review"
+        ),
+    ]
+
+
+def _stable_outcome_phrase(value: str, *, title: str) -> str:
+    text = _clean(value).strip(" .")
+    lowered = text.casefold()
+    if not text or word_count(text) > 8 or any(f" {marker} " in f" {lowered} " for marker in _MODAL_MARKERS):
+        return f"{lower_plain_title_subject_fragment(title, action_offset=0)} result"
+    return text
+
+
+def _object_result_phrase(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "the first visible result"
+    text = lower_plain_title_subject_fragment(text, action_offset=0)
+    if text.split(maxsplit=1)[0].casefold() in _LEADING_ARTICLES:
+        return text
+    return f"the {text}"
+
+
+def _recovered_title(outcome: str) -> str:
+    words = _clean(outcome).split()
+    if 1 <= len(words) <= 8 and outcome.casefold() != "the first visible result":
+        title = title_case_text(outcome)
+        if _has_product_container_title(title):
+            return title
+        return f"{title} Workspace"
+    return "Recovered Product Workspace"
+
+
+def _has_product_container_title(value: str) -> bool:
+    terms = [term.casefold() for term in label_terms(value)]
+    return bool(terms and terms[-1] in _PRODUCT_CONTAINER_TERMS)
+
+
+def _actor_reference(value: str) -> str:
+    text = lower_plain_title_subject_fragment(value, action_offset=0).strip(" .")
+    if not text:
+        return "a participant"
+    if len(text.split()) == 1 and not text.isupper():
+        text = text.casefold()
+    if text.split(maxsplit=1)[0].casefold() in _LEADING_ARTICLES:
+        return text
+    if _looks_plural(text.split()[-1]):
+        return text
+    return f"a {text}"
+
+
+def _actor_verb(value: str, *, singular: str, plural: str) -> str:
+    words = _words(value)
+    if words and _looks_plural(words[-1]):
+        return plural
+    return singular
+
+
+def _strip_leading_articles(words: Sequence[str]) -> list[str]:
+    cleaned = [word for word in words if str(word).strip()]
+    while cleaned and cleaned[0].casefold() in _LEADING_ARTICLES:
+        cleaned = cleaned[1:]
+    return cleaned
+
+
+def _words(value: str) -> list[str]:
+    words = [
+        word.strip("()[]{}\"'.,:;")
+        for word in _clean(value).replace("/", " ").split()
+        if word.strip("()[]{}\"'.,:;")
+    ]
+    while words and words[0].casefold() in _LEADING_CONNECTORS:
+        words = words[1:]
+    return words
+
+
+def _clean(value: object) -> str:
+    return clean_markdown_text(value)
+
+
+__all__ = ["confirmation_from_operator_intent"]
