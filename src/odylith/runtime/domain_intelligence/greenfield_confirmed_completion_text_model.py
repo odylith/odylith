@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import imperative_action_with_copula_words
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _LABEL_FOCUS_STOPWORDS = {
@@ -140,7 +141,7 @@ def outcome_phrase(proposal: Mapping[str, Any]) -> str:
 
 
 def outcome_action_phrase(outcome: str) -> str:
-    text = _clean(outcome).rstrip(" .") or "the product result"
+    text = _reviewable_result_object(_clean(outcome).rstrip(" .") or "the product result")
     actor_review = _actor_led_outcome_review_action(text)
     if actor_review:
         return actor_review
@@ -162,6 +163,12 @@ def outcome_action_phrase(outcome: str) -> str:
     if words & _VISIBLE_RESULT_OBJECT_HINTS:
         return f"use {object_text}"
     return f"reach {object_text}"
+
+
+def _reviewable_result_object(value: str) -> str:
+    """Normalize result nouns before composing review/use/see actions."""
+
+    return normalize_reviewed_result_nouns(_clean(value)).strip(" .")
 
 
 def _actor_led_outcome_review_action(value: str) -> str:

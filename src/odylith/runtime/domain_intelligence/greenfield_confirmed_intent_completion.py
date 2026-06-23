@@ -563,7 +563,26 @@ def _state_focus_phrase(state: str, *, title: str) -> str:
     text = re.sub(r"^a\s+", "the ", text, flags=re.I)
     first_clause = re.split(r";|(?<=[.!?])\s+", text, maxsplit=1)[0].strip(" .")
     first_clause = re.split(r":\s*", first_clause, maxsplit=1)[-1].strip(" .")
+    compact_label = _state_label_before_detail_list(first_clause)
+    if compact_label:
+        return compact_label
     return _short(first_clause, fallback=f"{_focus_label(title).lower()} state", limit=160).rstrip(".")
+
+
+def _state_label_before_detail_list(value: str) -> str:
+    text = _clean(value).strip(" .")
+    match = re.match(
+        r"^(?:a|an|the)?\s*(?P<label>[A-Za-z][A-Za-z0-9 '&/-]{1,80}?)\s+with\s+",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    label = _clean(match.group("label")).strip(" .")
+    if not 2 <= _word_count(label) <= 6:
+        return ""
+    article = "an" if label[:1].casefold() in {"a", "e", "i", "o", "u"} else "a"
+    return label if label.casefold().startswith(("a ", "an ", "the ")) else f"{article} {label.casefold()}"
 
 
 def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
@@ -625,9 +644,25 @@ def _non_goal_row_from_sentence(value: str) -> str:
             tail = text[index + len(marker) :].strip(" ,.;:")
             verb = "claim" if "claim" in marker else "cover"
             return _sentence(f"Do not {verb} {tail}") if tail else ""
-    if any(marker in lowered for marker in ("out of scope", "deferred", "defer ", "later", "future", "beyond the first")):
+    if _sentence_declares_deferred_scope(lowered):
         return _sentence(text)
     return ""
+
+
+def _sentence_declares_deferred_scope(lowered: str) -> bool:
+    if not lowered:
+        return False
+    if re.search(r"\bnot\s+later\b", lowered) and not re.search(
+        r"\b(?:out\s+of\s+scope|deferred?|future|beyond\s+the\s+first|not\s+included|not\s+claim|without\s+claim)\b",
+        lowered,
+    ):
+        return False
+    if any(marker in lowered for marker in ("out of scope", "deferred", "defer ", "future", "beyond the first")):
+        return True
+    return bool(
+        re.search(r"\b(?:later|future)\b", lowered)
+        and re.search(r"\b(?:can|could|should|must|will|would|may|might|wait|outside|separate|after|until)\b", lowered)
+    )
 
 
 def _proof_boundary_metric(proof_boundary: str, *, outcome: str = "") -> str:

@@ -245,6 +245,9 @@ def status_only_artifact_fragment(value: str) -> bool:
     words = [word.casefold() for word in visible_words(text) if any(char.isalpha() for char in word)]
     if not words:
         return False
+    abstract = {"approval", "approvals", "gate", "gates", "name", "result", "status", "story"}
+    if len(words) >= 3 and all(word in abstract for word in words):
+        return True
     if any(word in {"state", "status", "record", "result", "summary", "decision", "request"} for word in words):
         return False
     return all(word.endswith("ed") or word in {"allowed", "blocked", "rejected", "scheduled"} for word in words)

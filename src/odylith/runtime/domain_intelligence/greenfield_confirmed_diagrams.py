@@ -89,11 +89,11 @@ def confirmed_diagrams(
             "summary": diagram_text.sentence(
                 (
                     f"This sequence shows what the first release must prove from {actor_phrase} through {component_phrase} "
-                    f"to the reviewed outcome: {first_path_brief}"
+                    f"to the visible outcome: {first_path_brief}"
                 )
                 if first_path_brief
                 else (
-                    f"This sequence shows what the first release must prove from {actor_phrase} through {component_phrase} to the reviewed outcome. "
+                    f"This sequence shows what the first release must prove from {actor_phrase} through {component_phrase} to the visible outcome. "
                     "Use this view to check which responsibilities must preserve state, evidence, and blockers."
                 )
             ),

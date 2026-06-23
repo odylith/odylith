@@ -96,7 +96,16 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
 
 def _first_path_source_from_text(value: str) -> str:
     text = _strip_operator_request_wrapper(clean_markdown_text(value).strip(" ."))
-    for marker in ("where", "that", "so"):
+    for marker in ("where", "that"):
+        candidate = _tail_after_word(text, marker)
+        if not candidate:
+            continue
+        candidate = _strip_operator_request_wrapper(candidate)
+        if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
+            return candidate
+    if _looks_like_recoverable_first_path(text):
+        return text
+    for marker in ("so",):
         candidate = _tail_after_word(text, marker)
         if not candidate:
             continue

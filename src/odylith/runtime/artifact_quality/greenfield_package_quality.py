@@ -9,6 +9,7 @@ from typing import Any
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
+from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenfield_artifact_judgment_issues
 from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfield_project_judgment_issues
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
@@ -135,6 +136,7 @@ def greenfield_rendered_package_quality_issues(package: Any) -> list[str]:
             issues.extend(_mermaid_connectivity_issues(artifact))
     issues.extend(_package_component_identity_issues(package))
     issues.extend(_package_repetition_issues(package, artifacts))
+    issues.extend(greenfield_artifact_judgment_issues(package))
     issues.extend(greenfield_project_judgment_issues(package))
     return unique_text(issues)
 

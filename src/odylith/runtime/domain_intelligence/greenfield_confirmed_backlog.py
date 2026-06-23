@@ -349,7 +349,7 @@ def confirmed_backlog_rows(
         )
     else:
         result_metric = (
-            f"Success proof covers the first path actions: {first_path_proof_capability}. "
+            f"Success proof includes the first path actions: {first_path_proof_capability}. "
             f"Verified result: {outcome_summary}. Adjacent scope stays outside the release."
         )
     workflow_action = backlog_actions.actor_interaction_action(
@@ -431,9 +431,9 @@ def confirmed_backlog_rows(
         ),
         metrics=[
             (
-                f"The first interaction covers {first_path_proof_capability} with success, blocked-input, replay, and handoff evidence."
+                f"The first interaction proves this path with success, blocked-input, replay, and handoff evidence: {first_path_proof_capability}."
                 if backlog_text.result_terms_covered(outcome_action, first_path_proof_capability)
-                else f"The first interaction covers {first_path_proof_capability} and lets {recipient_phrase} {outcome_action}."
+                else f"The first interaction proves this path: {first_path_proof_capability}. It also lets {recipient_phrase} {outcome_action}."
             ),
             "Missing or invalid information produces clear correction guidance instead of a misleading result.",
             f"{follow_up_subject} can use the saved context without asking the user to repeat the same details.",

@@ -504,6 +504,98 @@ def test_confirmed_guidance_prompt_modal_objects_and_decisions_stay_coherent() -
     assert "submit can record requests" not in records_rendered
 
 
+def test_agent_os_confirmed_path_repairs_internal_actions_and_reviewed_result_copy() -> None:
+    intent = complete_confirmed_intent(
+        parse_confirmed_intent_text(
+            """
+# AI Agent OS
+
+## Product story
+AI Agent OS is a workspace-native operating layer for coordinating AI agents as accountable collaborators.
+
+## State object
+The core state object is an agent workspace with goals, active tasks, agent roles, tool permissions, source context, memory, artifacts, decisions, validation evidence, and unresolved risks.
+
+## First complete path
+A user opens a workspace, describes a project goal, and the system turns that intent into a bounded plan. The OS assigns work to one or more agents, controls tool access, tracks progress, captures artifacts, runs validation, and returns a reviewed outcome with a clear audit trail.
+
+## Human actors
+- Operator who sets goals and approves meaningful actions
+- Reviewer who inspects agent outputs, evidence, and risks
+
+## Internal product systems
+- Intent intake and goal shaping
+- Agent orchestration and task routing
+- Permission and tool-access control
+- Human control surface for status, approvals, and intervention
+
+## Critical assumptions
+- Trust, auditability, and recoverability are product requirements, not later enterprise add-ons.
+
+## Proof boundary
+The first proof should show that a user can start with a broad goal, get a structured plan, delegate bounded work to agents, inspect progress, approve risky actions, validate outputs, and preserve useful memory for the next session.
+""",
+            prompt="Draft an AI Agent OS proposal.",
+        )
+    )
+    proposal = build_confirmed_greenfield_proposal(
+        prompt="Draft an AI Agent OS proposal.",
+        title=str(intent["title"]),
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+    systems = "\n".join(intent.get("internal_systems", []))
+    brief = json.dumps(proposal.get("project_brief"), sort_keys=True)
+
+    assert "not later enterprise add-ons" not in "\n".join(intent.get("non_goals", [])).casefold()
+    assert first_path_capability_phrase(intent["first_path"], max_fragments=8) == (
+        "open a workspace, describe a project goal, and see an outcome with a clear audit trail"
+    )
+    assert outcome_action_phrase("a reviewed outcome with a clear audit trail") == (
+        "review an outcome with a clear audit trail"
+    )
+    assert "reviewed outcome" not in rendered.casefold()
+    assert "review a reviewed outcome" not in rendered.casefold()
+    assert "a outcome" not in rendered.casefold()
+    assert "covers status approvals" not in rendered.casefold()
+    assert "can controls tool access" not in rendered.casefold()
+    assert "controls tool access with success" not in rendered.casefold()
+    assert "supports status approvals" not in systems.casefold()
+    assert "Trust, auditability, and recoverability are product requirements" in brief
+    assert generated_semantic_slop_issues(proposal) == []
+
+
+def test_rendered_package_judgment_rejects_role_quality_failures() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        backlog_result={
+            "idea_files": {
+                "odylith/radar/source/W-001.md": (
+                    "Users can operator controls tool access. "
+                    "Users can review a reviewed outcome with a clear audit trail. "
+                    "Trust is a product requirement, not later enterprise add-ons. "
+                    "- deferred for now: Trust is a product requirement, not later enterprise add-ons waits for a later wave."
+                )
+            }
+        },
+        rendered_component_specs={
+            "Human Control Surface.md": (
+                "Accepted inputs: covers status approvals, authorized actor, and validation context.\n"
+                "Produced outputs: gate story name result."
+            )
+        },
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert any("repeats an outcome modifier" in issue for issue in issues)
+    assert any("internal processing as a user capability" in issue for issue in issues)
+    assert any("component-contract noun slots" in issue for issue in issues)
+    assert any("turns a requirement stated as `not later` into deferred scope" in issue for issue in issues)
+
+
 def test_state_reference_preserves_participial_descriptions_without_embedding_finite_restatements() -> None:
     proposal = {
         "intent": {
@@ -2756,3 +2848,42 @@ def test_public_quality_gate_rejects_raw_contract_parser_debris() -> None:
     assert "mechanical boundary placeholder" in joined
     assert "parser action debris" in joined
     assert "mechanical dependency scaffold" in joined
+
+
+def test_thin_prompt_recovery_preserves_input_list_before_purpose_tail(tmp_path: Path) -> None:
+    prompt = (
+        "Create a solar energy assessment workspace where a homeowner enters roof details, utility usage, "
+        "shading concerns, and financing preferences so a coordinator can prepare a reviewed solar recommendation "
+        "with savings, risk, and installation readiness."
+    )
+    intent = parse_confirmed_intent_text(prompt, prompt=prompt, fallback_title="Solar Energy Assessment Workspace")
+    model = first_path_model(str(intent["first_path"]))
+
+    assert "roof details" in intent["first_path"]
+    assert "utility usage" in intent["first_path"]
+    assert "shading concerns" in intent["first_path"]
+    assert "financing preferences" in intent["first_path"]
+    assert model.steps == (
+        "A homeowner enters roof details, utility usage, shading concerns, and financing preferences",
+        "Coordinator prepares a reviewed solar recommendation with savings, risk and installation readiness",
+    )
+    assert [row.split(":", 1)[0] for row in intent["human_actors"]] == ["Homeowner", "Coordinator"]
+
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert "financing preferences so a coordinator:" not in rendered
+    assert "actors include homeowner, financing preferences" not in rendered
+    assert "first-path state: homeowner, financing preferences" not in rendered
+    assert "roof details" in rendered
+    assert "utility usage" in rendered
+    assert "shading concerns" in rendered
+    assert "financing preferences" in rendered
+    assert "solar recommendation" in rendered
+    assert generated_semantic_slop_issues(proposal) == []
+    assert public_prose_quality_issues(proposal) == []

@@ -41,9 +41,8 @@ def workflow_title_action(*, first_path: str, actor: str, fallback: str) -> str:
         action = backlog_text.capability_action_clause(backlog_text.sentence_fragment(terminal))
         if action:
             return action
-    if len(fragments) > 1:
-        joined = f"{fragments[0]}, {fragments[1]}" if ("," in fragments[0] or "(" in fragments[0]) else join_action_fragments(fragments[:2])
-        action = backlog_text.capability_action_clause(joined)
+    if len(fragments) > 1 and ("," in fragments[0] or "(" in fragments[0]):
+        action = backlog_text.capability_action_clause(f"{fragments[0]}, {fragments[1]}")
         if action:
             return action
     selected = _preferred_title_fragment(fragments)

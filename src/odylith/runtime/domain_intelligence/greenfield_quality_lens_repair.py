@@ -235,7 +235,7 @@ def _ensure_measurable_success(
         row_title = clean_text(row.get("title")) or f"{title} workstream {index}"
         metrics = text_values(row.get("success_metrics"))
         additions = [
-            sentence_text(f"{row_title} success proof for release {release} covers {proof}.", limit=520),
+            sentence_text(f"{row_title} success proof for release {release} includes {proof}.", limit=520),
             sentence_text(
                 f"{row_title} result proof confirms the user can {outcome_action} after they {action}.",
                 limit=520,

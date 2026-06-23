@@ -21,8 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects im
     is_routing_pronoun_result,
     saved_destination_result_object,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
+from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment, normalize_reviewed_result_nouns, normalize_visible_result_language
 
 TRIVIAL_START_RE = re.compile(
     r"^(?:a|an|the)?\s*[^,.;]{0,40}?\b(?:open|opens|launch|launches|start|starts)\s+"
@@ -43,7 +42,7 @@ _PRESERVED_SHORT_ACTOR_TERMS = frozenset({"ai", "ml", "ui", "ux"})
 _MODAL_ACTOR_MARKERS = frozenset({"can", "could", "must", "should", "will", "would"})
 _SUBORDINATE_SUBJECT_MARKERS = frozenset({"if", "that", "when", "where", "whether", "which", "while"})
 _SYSTEM_SUBJECT_TERMS = frozenset(
-    {"app", "application", "dashboard", "engine", "platform", "product", "service", "system", "tool", "view", "workspace"}
+    "app application dashboard engine model os pipeline platform product service system tool view workspace".split()
 )
 def visible_action_clause(value: str) -> str:
     text = strip_action_subject(clean_visible_result_phrase(value) or clean_first_path_text(value))
@@ -57,21 +56,21 @@ def is_system_generated_action(value: str) -> bool:
     if not text:
         return False
     system_verb = (
-        r"advances?|applies?|asks?|calculates?|checks?|computes?|derives?|displays?|emits?|evaluates?|generates?|ingests?|marks?|monitors?|normalizes?|notifies?|presents?|preserves?|processes?|records?|renders?|returns?|routes?|runs?|"
+        r"advances?|applies?|asks?|assigns?|calculates?|captures?|checks?|computes?|controls?|derives?|displays?|emits?|evaluates?|generates?|ingests?|marks?|monitors?|normalizes?|notifies?|presents?|preserves?|processes?|records?|renders?|returns?|routes?|runs?|tracks?|turns?|"
         r"persists?|pulls?|pushes?|saves?|scores?|shows?|stores?|transforms?|updates?|validates?"
     )
     system_subject = (
-        r"product|system|app|application|service|platform|tool|workspace|engine|pipeline|calculator|dashboard|view|model"
+        r"product|system|os|app|application|service|platform|tool|workspace|engine|pipeline|calculator|dashboard|view|model"
     )
     if re.match(rf"^(?:the\s+)?(?:{system_subject})\s+(?:{system_verb})\b", text, flags=re.IGNORECASE):
         return True
-    return bool(re.match(rf"^[A-Z][A-Za-z0-9_-]{{2,}}\s+(?:{system_verb})\b", text))
+    return bool(re.match(rf"^[A-Z][A-Za-z0-9_-]{{1,}}\s+(?:{system_verb})\b", text))
 
 def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
     return bool(
         re.search(
-            r"\b(?:compare|compares|confirm|confirms|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|surfaces|update|updates|view|views|receive|receives)\b",
+            r"\b(?:compare|compares|confirm|confirms|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|keep|keeps|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|store|stores|surfaces|update|updates|view|views|receive|receives)\b",
             text,
             re.IGNORECASE,
         )
@@ -158,7 +157,7 @@ def action_chain_fragment(value: str) -> str:
     _modal_actor, modal_action = _modal_actor_action_parts(text)
     if modal_action:
         text = modal_action
-    outcome = visible_result_object(text)
+    outcome = "" if (re.search(r"\b(?:route|routes|send|sends|submit|submits)\b", text, flags=re.IGNORECASE) and re.search(r"\bto\s+(?:a|an|the)?\s*[A-Za-z0-9]", text, flags=re.IGNORECASE)) else visible_result_object(text)
     if outcome and not re.search(r"\b(?:receives?|gets?)\b", text, flags=re.IGNORECASE):
         stripped = strip_action_subject(text)
         if re.match(
@@ -245,7 +244,7 @@ def visible_result_object(value: str) -> str:
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
         r"\b(?P<verb>sends?|publishes?|returns?|delivers?)\s+or\s+"
         r"(?:sends?|publishes?|returns?|delivers?)\s+(?P<object>.+)$",
-        r"\b(?P<verb>compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"\b(?P<verb>compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
@@ -298,6 +297,7 @@ def nominal_visible_result_object(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     if not text:
         return ""
+    text = normalize_reviewed_result_nouns(text).strip(" .")
     nominal = _nominalize_leading_result_action(text)
     if nominal:
         return nominal
@@ -316,6 +316,7 @@ def nominal_visible_result_object(value: str) -> str:
     ):
         return f"the usage-linked metric change view{protocol_suffix}"
     return text
+
 
 _RESULT_ACTION_NOMINALS = {
     "capture": "captured",

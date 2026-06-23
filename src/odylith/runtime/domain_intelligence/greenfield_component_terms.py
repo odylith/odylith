@@ -121,6 +121,8 @@ def clean_artifact_phrase(value: str) -> str:
     if not text:
         return ""
     lowered = text.casefold()
+    if _abstract_label_residue_fragment(lowered):
+        return ""
     if re.search(r"\bstays?\s+outside\b", lowered):
         return ""
     if re.search(r"\b(?:runs?|evaluates?|checks?|computes?|returns?|produces?|captures?|validates?)\s+(?:it|them|their|they)\b", lowered):
@@ -213,6 +215,12 @@ def _strip_relation_tail(value: str) -> str:
     while words and words[-1].casefold().strip(".,;:") in RELATION_TAIL_TERMS:
         words.pop()
     return " ".join(words).strip(" .,;:")
+
+
+def _abstract_label_residue_fragment(value: str) -> bool:
+    words = [word.casefold() for word in visible_words(value) if word[:1].isalpha()]
+    abstract = {"approval", "approvals", "gate", "gates", "name", "result", "status", "story"}
+    return len(words) >= 3 and all(word in abstract for word in words)
 
 
 def _looks_like_long_command_noun_pile(words: Sequence[str]) -> bool:

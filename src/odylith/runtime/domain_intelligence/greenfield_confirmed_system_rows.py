@@ -548,7 +548,7 @@ def _descriptor_system_description(name: str, descriptor: str) -> str:
         return f"presents {subject} while keeping source facts and blockers clear"
     if re.search(r"\b(?:library|store|registry|ledger|log|record|tracker)\b", name_text):
         return f"keeps {subject} with required inputs, blockers, and proof evidence clear"
-    return f"covers {subject} while keeping required inputs, blockers, and proof evidence clear"
+    return f"supports {subject} while keeping required inputs, blockers, and proof evidence clear"
 
 
 def _readable_descriptor_list(value: str) -> str:
@@ -770,7 +770,9 @@ def _repair_system_description(*, name: str, description: str) -> str:
         return relation
     text = re.sub(r"^(?:and|or)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\bRelated path\s*:\s*[^.;]+[.;]?", "", text, flags=re.IGNORECASE).strip(" .;:")
-    text = re.sub(r"^for\s+", "covers ", text, flags=re.IGNORECASE)
+    purpose = _for_purpose_description(text)
+    if purpose:
+        return purpose
     text = re.sub(r"^with\s+", "keeps ", text, flags=re.IGNORECASE)
     if re.match(r"^owned\s+by\s+", text, flags=re.IGNORECASE):
         return f"keeps {_system_topic_from_name(name)} state under the named owner with validation and change evidence"
@@ -779,6 +781,17 @@ def _repair_system_description(*, name: str, description: str) -> str:
     if re.match(r"^(?:their|they|them|it|this|that|who|which|where)\b", text, flags=re.IGNORECASE):
         return ""
     return text
+
+
+def _for_purpose_description(value: str) -> str:
+    text = _clean(value).strip(" .;:")
+    match = re.match(r"^for\s+(?P<body>.+)$", text, flags=re.IGNORECASE)
+    if not match:
+        return ""
+    body = _clean(match.group("body")).strip(" .,;:")
+    if not body:
+        return ""
+    return f"supports {body} with visible state, blocker handling, and proof evidence"
 
 
 def _usable_system_description(value: str) -> bool:
@@ -845,7 +858,9 @@ def _system_name_prefix(text: str) -> tuple[str, str] | None:
         qualifier = re.search(r"\b(for|with)\b", candidate, flags=re.IGNORECASE)
         if qualifier:
             prefix = _clean(candidate[: qualifier.start()].strip(" ,:;.-"))
-            tail = _clean(" ".join([candidate[qualifier.start() :], *tokens[index:]]).strip(" ,:;.-"))
+            tail = _qualified_tail_from_source(text, prefix) or _clean(
+                " ".join([candidate[qualifier.start() :], *tokens[index:]]).strip(" ,:;.-")
+            )
             if _looks_like_system_name(prefix) and _word_count(tail) >= 4:
                 return prefix, tail
         if not _looks_like_system_name(candidate):
@@ -854,6 +869,16 @@ def _system_name_prefix(text: str) -> tuple[str, str] | None:
         if body:
             return candidate, body
     return None
+
+
+def _qualified_tail_from_source(text: str, prefix: str) -> str:
+    source = _clean(text).strip(" .")
+    head = _clean(prefix).strip(" .")
+    if not source or not head:
+        return ""
+    pattern = rf"^{re.escape(head)}\s+(?P<tail>(?:for|with)\b.+)$"
+    match = re.match(pattern, source, flags=re.IGNORECASE)
+    return _clean(match.group("tail")).strip(" ,:;.-") if match else ""
 
 
 def _looks_like_system_name(value: str) -> bool:

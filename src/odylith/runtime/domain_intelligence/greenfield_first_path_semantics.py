@@ -337,7 +337,7 @@ def _strip_dangling_step_tail(value: str) -> str:
 def _normalize_role_can_step(value: str) -> str:
     text = _clean(value).strip(" .")
     match = re.match(
-        r"^(?:a|an|the|one)\s+(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+can\s+"
+        r"^(?:(?:a|an|the|one)\s+)?(?P<role>[A-Za-z][A-Za-z0-9 /&'()-]{1,60}?)\s+can\s+"
         r"(?P<verb>[A-Za-z]+)\b(?P<rest>.*)$",
         text,
         flags=re.IGNORECASE,
@@ -345,6 +345,9 @@ def _normalize_role_can_step(value: str) -> str:
     if not match:
         return text
     role = match.group("role").strip()
+    role_words = {word.casefold().strip(".,:;") for word in role.split()}
+    if role_words & {"if", "that", "when", "where", "whether", "which", "while"}:
+        return text
     rest = _normalize_role_can_rest(match.group("rest"))
     return f"{role} {third_person_action_verb(match.group('verb'))}{rest}".strip(" .")
 
@@ -393,20 +396,38 @@ def _split_action_pieces(value: str) -> list[str]:
     pieces: list[str] = []
     subject_prefix = ""
     for raw_segment in [part.strip(" .") for part in _ACTION_SPLIT_RE.split(value) if part.strip(" .")]:
-        for segment in _split_temporal_action_tail(raw_segment):
-            current = ""
-            for part in [piece.strip(" .") for piece in re.split(r",\s+", segment) if piece.strip(" .")]:
-                if current and _starts_new_action_clause(part):
+        for purpose_segment in _split_purpose_action_tail(raw_segment):
+            for segment in _split_temporal_action_tail(purpose_segment):
+                current = ""
+                for part in [piece.strip(" .") for piece in re.split(r",\s+", segment) if piece.strip(" .")]:
+                    if current and _starts_new_action_clause(part):
+                        pieces.append(current.strip(" ."))
+                        current = _with_carried_subject(part, subject_prefix)
+                    else:
+                        current = f"{current}, {part}" if current else _with_carried_subject(part, subject_prefix)
+                    explicit_subject = _carried_subject_prefix(current)
+                    if explicit_subject:
+                        subject_prefix = explicit_subject
+                if current:
                     pieces.append(current.strip(" ."))
-                    current = _with_carried_subject(part, subject_prefix)
-                else:
-                    current = f"{current}, {part}" if current else _with_carried_subject(part, subject_prefix)
-                explicit_subject = _carried_subject_prefix(current)
-                if explicit_subject:
-                    subject_prefix = explicit_subject
-            if current:
-                pieces.append(current.strip(" ."))
     return pieces
+
+
+def _split_purpose_action_tail(value: str) -> list[str]:
+    text = _clean(value).strip(" .")
+    if not text:
+        return []
+    match = re.search(
+        rf"\s+so\s+(?P<tail>(?:(?:a|an|the|one)\s+)?[A-Za-z][A-Za-z0-9 /&'()-]{{1,60}}?\s+can\s+"
+        rf"(?:{_ACTION_BASE_VERB_PATTERN})\b.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match or not _MATERIAL_ACTION_RE.search(text[: match.start()]):
+        return [text]
+    head = text[: match.start()].strip(" ,")
+    tail = _normalize_role_can_step(match.group("tail").strip(" ,"))
+    return [part for part in (head, tail) if part]
 
 
 def _split_temporal_action_tail(value: str) -> list[str]:

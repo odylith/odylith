@@ -88,6 +88,7 @@ def confirmed_project_brief(
     non_goal_summary = (
         boundary_clause_text(non_goals) or "wider automation, live irreversible integrations, and production scaling"
     )
+    assumption_summary = boundary_clause_text(assumptions) or "accepted first-release assumptions"
     command_prompt = _command_prompt(label=label, first=first, fallback=prompt)
     confirm_command = f"odylith greenfield propose --repo-root . --prompt {shell_quote(command_prompt)}"
     create_command = (
@@ -139,6 +140,11 @@ def confirmed_project_brief(
                 "section": "Actors and systems",
                 "must_capture": f"Actors include {actor_summary}. External systems include {external_summary}.",
                 "why_it_matters": "Actor and system boundaries keep user value separate from implementation mechanics.",
+            },
+            {
+                "section": "Critical assumptions",
+                "must_capture": assumption_summary,
+                "why_it_matters": "Assumptions that affect trust, safety, scope, or release confidence must remain visible.",
             },
         ],
         "customization_options": [

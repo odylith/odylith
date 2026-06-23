@@ -483,7 +483,7 @@ def _proof_obligations(
             key="first_path_contract",
             claim=_first_path_contract_claim(first_path_contract),
             required_evidence=(
-                f"Fixture covers required fields {', '.join(first_path_contract.required_fields[:6]) or first_path_contract.entity}, "
+                f"Fixture includes required fields: {', '.join(first_path_contract.required_fields[:6]) or first_path_contract.entity}; "
                 f"mutation evidence for {first_path_contract.action or 'the first action'}, persistence, visible result, and recovery behavior."
             ),
         ),
@@ -496,7 +496,7 @@ def _proof_obligations(
     for component in components:
         if component.release_scope == "out_of_scope":
             continue
-        proof = component.proof_obligations[0] if component.proof_obligations else "Local proof covers owned state, inputs, outputs, blockers, and handoff."
+        proof = component.proof_obligations[0] if component.proof_obligations else "Local proof includes owned state, inputs, outputs, blockers, and handoff."
         obligations.append(
             ProofObligation(
                 key=f"component_{component.component_id}",
@@ -666,7 +666,7 @@ def _is_visible_result(value: str, *, visible_result: str = "", is_last: bool = 
         return False
     return bool(
         re.search(
-            r"\b(?:available|choose|chooses|compare|compares|display|displays|find|finds|highlight|highlights|inspect|inspects|present|presents|produce|produces|ready|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|select|selects|show|shows|update|updates|view|views|review|reviews|receive|receives|publish|publishes|restored|viewable)\b",
+            r"\b(?:available|choose|chooses|compare|compares|display|displays|find|finds|highlight|highlights|inspect|inspects|keep|keeps|present|presents|produce|produces|ready|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|select|selects|show|shows|store|stores|update|updates|view|views|review|reviews|receive|receives|publish|publishes|restored|viewable)\b",
             text,
             re.IGNORECASE,
         )

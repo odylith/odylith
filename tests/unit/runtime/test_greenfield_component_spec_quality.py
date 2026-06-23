@@ -628,6 +628,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("sequence until cooking reach") == ""
     assert clean_artifact_phrase("recipe move readiness") == "recipe readiness"
     assert clean_artifact_phrase("cooking reach finished state") == "finished state"
+    assert clean_artifact_phrase("gate story name result") == ""
     assert visible_words("blocked-state update") == ("blocked", "state", "update")
     assert component_contract._state_terms_from_context(
         "submitted draft was blocked-state, ready, recovered, and ready again"
@@ -635,6 +636,7 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert contract_differentiation._trigger_hits(("status", "window"), "Status-window proof") == 2
     assert status_only_artifact_fragment("blocked update")
     assert not status_only_artifact_fragment("blocked-state update")
+    assert status_only_artifact_fragment("gate story name result")
     assert contract_list_text("ranked status windows, blocked update") == "status windows"
     assert contract_focus(
         object_list="Primary user request status",

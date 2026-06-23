@@ -284,6 +284,9 @@ def _first_path_actor_clauses(value: str) -> list[str]:
     text = _clean(value)
     if not text:
         return []
+    model_steps = [_clean(step) for step in first_path_model(text).steps if _clean(step)]
+    if model_steps:
+        return model_steps
     clauses: list[str] = []
     for part in text.replace("; ", ", ").split(","):
         part = _clean(part)

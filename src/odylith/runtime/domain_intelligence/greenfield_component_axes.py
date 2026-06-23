@@ -122,7 +122,7 @@ def derive_component_axis(*, label_text: str, context_text: str = "") -> Compone
             "release approval and broader rollout decisions"
         ),
         local_proof=(
-            f"{primary} proof covers required inputs, owned state, produced outputs, and recovery context.",
+            f"{primary} proof includes required inputs, owned state, produced outputs, and recovery context.",
             f"Missing, stale, or invalid {input_focus} context blocks the {primary} result.",
             f"{primary} keeps sibling-owned state separate while preserving its own proof trail.",
         ),

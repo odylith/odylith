@@ -87,6 +87,7 @@ def normalize_visible_result_language(value: Any) -> str:
     text = re.sub(r"\bintaked\b", "received", text, flags=re.IGNORECASE)
     text = _normalize_saved_destination_language(text)
     text = _normalize_possessive_result_lists(text)
+    text = normalize_reviewed_result_nouns(text)
     text = _replace_casefolded_phrase(text, "reasons against", "uses for comparison")
     text = _replace_casefolded_phrase(text, "reason against", "use for comparison")
     text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
@@ -105,6 +106,33 @@ def normalize_visible_result_language(value: Any) -> str:
     )
     text = normalize_action_target_language(text)
     return clean_text(text)
+
+
+def normalize_reviewed_result_nouns(value: Any) -> str:
+    """Remove generic review modifiers from result nouns while preserving grammar."""
+
+    def replace(match: re.Match[str]) -> str:
+        noun = match.group("noun")
+        article = _review_result_article(match.group("article"), noun)
+        return f"{article} {noun}"
+
+    return re.sub(
+        r"\b(?P<article>a|an|the)\s+reviewed\s+"
+        r"(?P<noun>answer|decision|evidence|outcome|plan|record|report|result|summary|view)\b",
+        replace,
+        clean_text(value),
+        flags=re.IGNORECASE,
+    )
+
+
+def _review_result_article(article: str, noun: str) -> str:
+    token = str(noun or "").casefold()
+    if token == "evidence":
+        return "the"
+    requested = str(article or "").casefold()
+    if requested == "the":
+        return "the"
+    return "an" if token[:1] in {"a", "e", "i", "o", "u"} else "a"
 
 
 def _normalize_progress_status_terminal_result(value: str) -> str:
