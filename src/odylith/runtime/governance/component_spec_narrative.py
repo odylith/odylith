@@ -10,6 +10,7 @@ from typing import Any
 from odylith.runtime.common import display_text
 from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import RELATION_TAIL_WORDS
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import relation_object_phrase
@@ -115,7 +116,7 @@ def build_narrative_component_spec(
         f"- {dt.date.today().isoformat()}: Registered {label} as a {status or 'planned'} {kind or 'component'} from user intent{_plan_link(first_workstream)}.",
         "",
     ]
-    return "\n".join(line for line in lines if line is not None)
+    return _finalize_narrative_spec_text("\n".join(line for line in lines if line is not None))
 
 
 def _planning_note(
@@ -1035,6 +1036,11 @@ def _string_rows(values: Sequence[str]) -> tuple[str, ...]:
     return tuple(str(item).strip() for item in values if str(item).strip())
 
 
+def _finalize_narrative_spec_text(value: str) -> str:
+    text = collapse_adjacent_duplicate_terms(value)
+    return re.sub(r",\s+(?=(?:When|If|While)\b)", ". ", text)
+
+
 def _sentences(*values: str) -> str:
     return " ".join(_sentence(value) for value in values if clean_text(value)).strip()
 
@@ -1044,6 +1050,7 @@ def _sentence(value: str) -> str:
     if not text:
         return ""
     text = re.sub(r"\s+([,.;:])", r"\1", text)
+    text = re.sub(r",\s+(?=(?:When|If|While)\b)", ". ", text)
     return f"{text[:1].upper()}{text[1:]}."
 
 

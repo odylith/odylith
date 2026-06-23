@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_clauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
@@ -306,7 +307,7 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
 def _first_path_brief(value: str, *, human_actors: list[str] | None = None, label: str = "", limit: int = 180) -> str:
     steps = first_path_steps(value)
     if steps:
-        text = base_adverbial_note_action(". ".join(steps))
+        text = base_adverbial_note_action(_first_path_step_summary(list(steps), limit=limit))
     else:
         text = base_adverbial_note_action(value)
     return _brief_clause(
@@ -318,6 +319,32 @@ def _first_path_brief(value: str, *, human_actors: list[str] | None = None, labe
         ),
         limit=limit,
     )
+
+
+def _first_path_step_summary(steps: list[str], *, limit: int) -> str:
+    rows = [compact_text(step).strip(" .") for step in steps if compact_text(step).strip(" .")]
+    if not rows:
+        return ""
+    candidate = ". ".join(rows)
+    if len(candidate) <= limit:
+        return candidate
+    terminal = rows[-1]
+    if len(rows) > 2 and looks_like_visible_result(terminal):
+        without_intermediate_visible = [
+            row for row in rows[:-1] if not looks_like_visible_result(row)
+        ]
+        candidate = ". ".join([*without_intermediate_visible, terminal])
+        if len(candidate) <= limit:
+            return candidate
+        for head_count in (3, 2, 1):
+            head = rows[:head_count]
+            if terminal in head:
+                candidate = ". ".join(head)
+            else:
+                candidate = ". ".join([*head, terminal])
+            if len(candidate) <= limit:
+                return candidate
+    return ". ".join(rows)
 
 
 def _story_readiness_summary(value: str, *, fallback: str, limit: int = 220) -> str:
@@ -353,7 +380,24 @@ def _first_path_readiness_summary(
     )
     capability = _dedupe_repeated_capability(clauses.capability_chain)
     text = capability or clauses.action_chain or fallback
+    outcome = compact_text(clauses.visible_result).strip(" .")
+    if outcome and not _result_terms_covered(outcome, text):
+        text = f"{text} and validate the promised result: {outcome}"
     return _brief_clause(base_adverbial_note_action(text), limit=limit)
+
+
+def _result_terms_covered(result: str, text: str) -> bool:
+    result_terms = {
+        word.strip(".,:;()[]{}").casefold()
+        for word in compact_text(result).replace("-", " ").split()
+        if len(word.strip(".,:;()[]{}")) >= 4
+    }
+    text_terms = {
+        word.strip(".,:;()[]{}").casefold()
+        for word in compact_text(text).replace("-", " ").split()
+        if len(word.strip(".,:;()[]{}")) >= 4
+    }
+    return bool(result_terms and result_terms <= text_terms)
 
 
 def _summary_sentences(value: str) -> list[str]:
@@ -393,7 +437,7 @@ def _remove_orphan_without_it_tail(value: str) -> str:
 
 def _repair_show_actor_artifact(value: str) -> str:
     return re.sub(
-        r"\bshows\s+the\s+(?P<actor>[a-z][a-z'-]*(?:\s+(?!a\b|an\b|the\b)[a-z][a-z'-]*){0,3})\s+"
+        r"\bshows\s+the\s+(?P<actor>[a-z][a-z'-]*(?:\s+(?!a\b|an\b|the\b|with\b|for\b|to\b|by\b|from\b|on\b|in\b|of\b)[a-z][a-z'-]*){0,3})\s+"
         r"(?P<article>a|an|the)\s+"
         r"(?P<object>[a-z][a-z0-9 '&/-]{1,90}?)(?=,\s+and\b|[.;]|$)",
         lambda match: (

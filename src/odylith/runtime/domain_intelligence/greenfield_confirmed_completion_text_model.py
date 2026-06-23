@@ -73,6 +73,7 @@ _VISIBLE_SEE_RESULT_HINTS = {
     "report",
     "result",
     "slot",
+    "state",
     "summary",
     "timeline",
     "trend",

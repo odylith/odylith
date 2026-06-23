@@ -342,7 +342,8 @@ def confirmed_backlog_rows(
         )
     else:
         result_metric = (
-            f"Success proof connects {first_path_proof_capability} to {outcome_summary} without adjacent scope being pulled into the release."
+            f"Success proof covers the first path actions: {first_path_proof_capability}. "
+            f"Verified result: {outcome_summary}. Adjacent scope stays outside the release."
         )
     workflow_action = backlog_actions.actor_interaction_action(
         first_path=first_path_for_clauses,

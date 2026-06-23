@@ -142,6 +142,12 @@ def _first_path_capability_text(
         if is_system_generated_action(step):
             visible_seen = visible_seen or visible_step
             continue
+        step_actor = _actor_signature(step)
+        if visible_step and primary_actor and step_actor and step_actor != primary_actor:
+            if visible_object and _visible_outcome_covered(visible_object, model_visible_object):
+                included_visible_result = True
+            visible_seen = True
+            continue
         if primary_actor and _actor_signature(step) and _actor_signature(step) != primary_actor and visible_seen:
             continue
         if len(selected) >= max(1, max_fragments):

@@ -544,6 +544,101 @@ Release 0.0.1 succeeds when one authorized request can link a protected record, 
         assert banned not in rendered
 
 
+def test_greenfield_create_cli_repairs_generic_confirmed_first_path_actor(
+    tmp_path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(
+        """# Cooking Robot Controller
+
+Product story
+A control system turns a recipe into safe repeatable physical cooking. A home cook selects a dish and the controller sequences motions, dosing, heat, and safety stops.
+
+State object
+A cook session: active recipe, current step, sensor readings, actuator state, and safety status.
+
+First complete path
+Operator picks a recipe, the controller validates the robot is ready, runs the step sequence, surfaces progress, and reaches a finished safe state.
+
+Human actors
+- Home cook / operator who selects dishes and responds to prompts
+- Kitchen technician who calibrates, maintains, and clears faults
+- Recipe author who defines the step-by-step cooking program
+
+External systems
+- Robot hardware: arm actuators, ingredient dispensers, and heat element
+- Sensors: temperature probes, scales, and presence sensing
+- Emergency-stop hardware interlock
+
+Internal product systems
+- Recipe / step sequencer that interprets cooking programs
+- Real-time control loop for heat, timing, and motion
+- Safety supervisor that can override the sequencer
+- Session and telemetry state tracking the live cook
+
+Critical assumptions
+- A single robot cell per controller instance for the first version
+- Recipes are pre-authored structured programs
+
+Ambiguities
+- Software simulation/controller only, or driving real hardware from day one?
+- Target host: embedded device, edge box, or general server?
+
+Proof boundary
+First version proves load a recipe, run its steps with closed-loop control, hit a safe finished state, and honor an emergency stop.
+""",
+        encoding="utf-8",
+    )
+    _stub_dashboard_refresh(monkeypatch)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            "Draft a greenfield proposal for a cooking robot controller",
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0, output
+    assert "greenfield create wrote confirmed proposal" in output
+    assert "- validation gate: passed" in output
+    assert "generic actor label `Operator`" not in output
+    accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
+    project_brief = accepted["proposal"]["project_brief"]
+    first_path = project_brief["blueprint_sections"][1]["must_capture"]
+    joined_specs = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md")
+    )
+    joined_diagrams = "\n".join(path.read_text(encoding="utf-8") for path in (tmp_path / "odylith/atlas/source").glob("*.mmd"))
+    rendered = "\n".join([json.dumps(accepted, sort_keys=True), joined_specs, joined_diagrams])
+
+    assert first_path.startswith("Home cook picks a recipe")
+    assert "The controller reaches a finished safe state" in first_path
+    assert "home cook" in rendered.casefold()
+    assert "robot is ready" in rendered.casefold()
+    assert "safe finished state" in rendered.casefold() or "finished safe state" in rendered.casefold()
+    assert "Operator picks a recipe" not in rendered
+    assert "Home Cook / Operator" not in rendered
+    assert "A finished safe state" not in first_path
+    assert not re.search(r"\bOperator\b", first_path)
+    assert "generic actor label" not in rendered
+
+
 def test_greenfield_create_cli_bootstraps_missing_indexes_and_repairs_scaffold_language(
     tmp_path,
     monkeypatch,

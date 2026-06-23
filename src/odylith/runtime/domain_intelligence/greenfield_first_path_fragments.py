@@ -67,7 +67,7 @@ def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
     return bool(
         re.search(
-            r"\b(?:compare|compares|confirm|confirms|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|update|updates|view|views|receive|receives)\b",
+            r"\b(?:compare|compares|confirm|confirms|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|surfaces|update|updates|view|views|receive|receives)\b",
             text,
             re.IGNORECASE,
         )
@@ -238,7 +238,7 @@ def visible_result_object(value: str) -> str:
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
         r"\b(?P<verb>sends?|publishes?|returns?|delivers?)\s+or\s+"
         r"(?:sends?|publishes?|returns?|delivers?)\s+(?P<object>.+)$",
-        r"\b(?P<verb>compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|views?|receives?|gets?|reads?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"\b(?P<verb>compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)

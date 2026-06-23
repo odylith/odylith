@@ -121,6 +121,7 @@ _INFINITIVE_TO_FINITE = {
     "rank": "ranks",
     "rate": "rates",
     "read": "reads",
+    "reach": "reaches",
     "receive": "receives",
     "recommend": "recommends",
     "record": "records",

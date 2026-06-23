@@ -718,6 +718,35 @@ def test_greenfield_component_spec_renderer_normalizes_boundary_component_label_
     assert generated_public_copy_issues("Registry component spec `Decision Service`", spec) == ()
 
 
+def test_greenfield_component_spec_renderer_collapses_adjacent_duplicate_terms() -> None:
+    spec = build_narrative_component_spec(
+        component_id="quote-review-handoff",
+        label="Quote Review Handoff Preserves Risk Notes, Follow Up Status, and Coordinator Decision",
+        path="src/example/quote_review_handoff.py",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-001",),
+        component_contract={
+            "owned_state": "risk notes, follow-up status, and coordinator decision decision",
+            "accepted_inputs": "quote assumptions, roof uncertainty, and homeowner handoff context",
+            "produced_outputs": "coordinator decision decision and review-ready quote status",
+            "states_or_transitions": "flagged, reviewed, decided, and handed off",
+            "upstream_truth": "Solar Fit Estimator Service",
+            "downstream_consumers": "Coordinator Review Queue",
+            "outside_boundary": "utility tariffs, roof imagery, and financing approval",
+            "local_proof": ["Replay one quote handoff with risk notes and coordinator decision visible."],
+            "unique_failure": "coordinator decision decision loses the risk note explanation",
+        },
+    )
+
+    assert "decision decision" not in spec.casefold()
+    assert generated_public_copy_issues(
+        "Registry component spec `Quote Review Handoff Preserves Risk Notes, Follow Up Status, and Coordinator Decision`",
+        spec,
+    ) == ()
+
+
 def test_greenfield_component_spec_renderer_cleans_guardrail_verb_phrases() -> None:
     contract = derive_component_semantic_contract(
         {
