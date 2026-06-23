@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import cli
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
     lowercase_leading_article as _lowercase_leading_article,
 )
+from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment as _gerund_action_fragment
@@ -236,14 +237,16 @@ def _actor_led_capability_fragments(fragments: list[str]) -> list[str]:
 def _actor_led_action_parts(value: str) -> tuple[str, str]:
     words = clean_first_path_text(value).strip(" .").split()
     for index in range(1, min(len(words), 6)):
+        prefix = " ".join(words[:index]).strip(" .")
+        if not looks_like_actor_led_subject_prefix(prefix, value):
+            continue
         candidate = " ".join(words[index:]).strip(" .")
         if not looks_like_finite_action(candidate):
             continue
         action = base_action_clause(candidate).strip(" .")
         if action and action.casefold() != candidate.casefold():
-            return " ".join(words[:index]).strip(" ."), action
+            return prefix, action
     return "", ""
-
 
 def _first_path_outcome_text(
     model: FirstPathModel,

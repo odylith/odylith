@@ -162,7 +162,7 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
                 [
                     *(validation if isinstance(validation, list) else []),
                     f"Success proof covers {proof_capability}.",
-                    f"Result proof confirms the user can {outcome_action} and explains the visible result.",
+                    f"Result proof confirms the user can {outcome_action} with the visible result explained.",
                     f"Release proof stays inside this promise: {proof_summary}.",
                     f"{completion_text.state_reference(proposal)} can be reconstructed with actor, timestamp, status, and result.",
                     f"Readiness fails when required input, access, privacy, safety, or result explanation is missing.",
@@ -476,7 +476,7 @@ def _repair_validation_strategy(proposal: dict[str, Any], *, release_selector: s
     proof_summary = _validation_proof_summary(proposal)
     rows = [
         _sentence(f"Success proof for release {release} covers {proof_capability}.", limit=700),
-        _sentence(f"Result proof confirms the user can {completion_text.outcome_action_phrase(outcome)} and explains the visible result.", limit=520),
+        _sentence(f"Result proof confirms the user can {completion_text.outcome_action_phrase(outcome)} with the visible result explained.", limit=520),
         _sentence(f"Evidence proof stays inside this first-release promise: {proof_summary}.", limit=620),
         _sentence(f"Blocked-path proof: missing input, invalid state, failed validation, absent explanation, or unresolved review blocks readiness for {state_object}.", limit=520),
         _sentence(f"Replay proof: {state_object} can be reconstructed with actor, timestamp, prior state, current state, result, and explanation.", limit=520),

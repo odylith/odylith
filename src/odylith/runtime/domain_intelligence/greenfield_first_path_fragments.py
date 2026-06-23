@@ -41,6 +41,7 @@ TRIVIAL_AUTH_RE = re.compile(
 _ACTOR_SIGNATURE_STOPWORDS = frozenset({"a", "an", "the", "one", "this", "that", "each", "another", "can"})
 _PRESERVED_SHORT_ACTOR_TERMS = frozenset({"ai", "ml", "ui", "ux"})
 _MODAL_ACTOR_MARKERS = frozenset({"can", "could", "must", "should", "will", "would"})
+_SUBORDINATE_SUBJECT_MARKERS = frozenset({"if", "that", "when", "where", "whether", "which", "while"})
 _SYSTEM_SUBJECT_TERMS = frozenset(
     {"app", "application", "dashboard", "engine", "platform", "product", "service", "system", "tool", "view", "workspace"}
 )
@@ -256,6 +257,9 @@ def visible_result_object(value: str) -> str:
             destination_result = saved_destination_result_object(verb, result)
             if destination_result:
                 result = destination_result
+            decision_result = _decision_result_object(verb, result)
+            if decision_result:
+                result = decision_result
             result = re.split(r"(?<=[.!?])\s+", result, maxsplit=1)[0]
             result = re.split(r"\s+[–—-]\s+(?:all|under|while|with|within)\b", result, maxsplit=1, flags=re.IGNORECASE)[0]
             result = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", result, flags=re.IGNORECASE)
@@ -281,6 +285,14 @@ def visible_result_object(value: str) -> str:
             limit=150,
         )
     return ""
+
+
+def _decision_result_object(verb: str, result: str) -> str:
+    token = str(verb or "").casefold().strip(".,:;")
+    text = clean_first_path_text(result).strip(" .")
+    if token not in {"decide", "decides"} or not text.casefold().startswith("whether "):
+        return ""
+    return f"a decision about {text}"
 
 def nominal_visible_result_object(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
@@ -426,7 +438,6 @@ def actor_signature(value: str) -> str:
         )
     )
 
-
 def _modal_actor_prefix(value: str) -> str:
     words = [word.strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
     if len(words) < 2:
@@ -443,7 +454,6 @@ def _modal_actor_prefix(value: str) -> str:
         return ""
     return actor
 
-
 def _modal_actor_action_parts(value: str) -> tuple[str, str]:
     words = [word.strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
     if len(words) < 3:
@@ -459,23 +469,22 @@ def _modal_actor_action_parts(value: str) -> tuple[str, str]:
             action = " ".join(words[index + 2 :]).strip(" .")
         else:
             continue
-        if _looks_like_actor_prefix(actor) and action:
+        if _looks_like_actor_prefix(actor) and action and not _contains_subordinate_subject_marker(actor):
             return actor, action
     return "", ""
 
+def _contains_subordinate_subject_marker(value: str) -> bool:
+    tokens = [word.casefold().strip(".,:;") for word in clean_first_path_text(value).split()]
+    return any(token in _SUBORDINATE_SUBJECT_MARKERS for token in tokens)
 
 def modal_actor_action_parts(value: str) -> tuple[str, str]:
     """Return actor and action parts for actor-modal clauses."""
-
     return _modal_actor_action_parts(value)
-
 
 def modal_action_fragment(value: str) -> str:
     """Return the action part of actor-modal clauses such as "reviewers can approve"."""
-
     _actor, action = _modal_actor_action_parts(value)
     return action
-
 
 def _looks_like_actor_prefix(value: str) -> bool:
     terms = {term.casefold() for term in label_terms(value)}
@@ -781,10 +790,9 @@ def _replace_word_token(value: str, replacement: str) -> str:
     return f"{replacement}{suffix}"
 
 __all__ = [
-    "MATERIAL_ACTION_RE", "action_chain_fragment", "actor_signature", "base_adverbial_note_action",
-    "clean_first_path_text", "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment",
-    "is_system_generated_action", "is_trivial_start", "leading_subject_prefix", "looks_like_visible_result",
-    "lowercase_leading_article", "modal_action_fragment", "modal_actor_action_parts",
-    "nominal_visible_result_object", "outcome_capability_fragment",
+    "MATERIAL_ACTION_RE", "action_chain_fragment", "actor_signature", "base_adverbial_note_action", "clean_first_path_text",
+    "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment", "is_system_generated_action",
+    "is_trivial_start", "leading_subject_prefix", "looks_like_visible_result", "lowercase_leading_article",
+    "modal_action_fragment", "modal_actor_action_parts", "nominal_visible_result_object", "outcome_capability_fragment",
     "primary_actor_signature", "strip_action_subject", "visible_action_clause", "visible_result_object",
 ]

@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import term_frequencies
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
@@ -85,10 +86,10 @@ def semantic_repetition_issues(proposal: Mapping[str, Any]) -> list[str]:
 def semantic_overlap_ratio(source: str, target: str) -> float:
     """Return how much of the source semantic signature appears in the target."""
 
-    source_terms = _term_signature(source, minimum=5)
+    source_terms = _term_signature(source, minimum=5, normalize_gerunds=True)
     if not source_terms:
         return 1.0
-    target_terms = _term_signature(target, minimum=5)
+    target_terms = _term_signature(target, minimum=5, normalize_gerunds=True)
     if not target_terms:
         return 0.0
     return len(source_terms & target_terms) / max(1, len(source_terms))
@@ -192,10 +193,10 @@ def _generated_repetition_value_texts(proposal: Mapping[str, Any]) -> list[str]:
     return [clean_text(value) for item in rows for value in text_values(item) if clean_text(value)]
 
 
-def _term_signature(value: str, *, minimum: int) -> set[str]:
+def _term_signature(value: str, *, minimum: int, normalize_gerunds: bool = False) -> set[str]:
     return set(
         ordered_terms(
-            _signature_text(value),
+            _signature_text(value, normalize_gerunds=normalize_gerunds),
             minimum=minimum,
             stopwords=(*_CONTRASTIVE_GENERIC_TERMS, *_CONTRASTIVE_STOPWORDS),
         )
@@ -215,8 +216,14 @@ def _grounded_equivalent_terms(source_text: str, signature_terms: set[str]) -> s
     return terms
 
 
-def _signature_text(value: str) -> str:
-    return clean_text(value).casefold().replace("-", " ").replace("_", " ")
+def _signature_text(value: str, *, normalize_gerunds: bool = False) -> str:
+    text = clean_text(value).casefold().replace("-", " ").replace("_", " ")
+    if not normalize_gerunds:
+        return text
+    base_actions = base_gerund_clause(text)
+    if base_actions and base_actions != text:
+        return f"{text} {base_actions}"
+    return text
 
 
 _CONTRASTIVE_GENERIC_TERMS = {
@@ -249,6 +256,8 @@ _CONTRASTIVE_GENERIC_TERMS = {
     "calculation",
     "central",
     "changed",
+    "checkpoint",
+    "checkpoints",
     "classification",
     "claim",
     "command",

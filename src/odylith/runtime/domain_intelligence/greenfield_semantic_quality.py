@@ -9,6 +9,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_findings
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
+from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
@@ -285,11 +286,7 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             for finding in generated_public_copy_findings(location, text)
             if finding.category in {"mixed_role_case", "prepositional_visible_result"}
         )
-        if re.search(
-            r"\bcan\s+(?:[a-z][a-z0-9'-]*\s+){0,4}"
-            r"(?:adds|asks|chooses|clicks|creates|describes|enters|logs|opens|places|records|reviews|runs|saves|selects|signs|submits|views)\b",
-            lowered,
-        ):
+        if modal_base_form_drift_phrases(text):
             issues.append(f"modal/base-form grammar drift leaked at {location}")
         if re.search(r"\bowns\s+maintains\b", lowered):
             issues.append(f"malformed ownership verb pair leaked at {location}")

@@ -153,7 +153,6 @@ def _flowchart_visible_steps(steps: list[str], *, limit: int = 10) -> list[str]:
         return list(steps)
     return [*steps[: max(0, limit - 1)], steps[-1]]
 
-
 def _ensure_flowchart_event_floor(steps: list[str], visible_result: str) -> list[str]:
     rows = [_compact_text(step).strip(" .") for step in steps if _compact_text(step).strip(" .")]
     if len(rows) >= 3:
@@ -164,7 +163,6 @@ def _ensure_flowchart_event_floor(steps: list[str], visible_result: str) -> list
     while len(rows) < 3:
         rows.append("Review blockers, evidence, and next step")
     return rows
-
 
 def _semantic_visible_result(semantic_model: Mapping[str, Any] | None) -> str:
     if not isinstance(semantic_model, Mapping):
@@ -548,7 +546,6 @@ def _third_person_verb(value: str) -> str:
         return f"{verb[:-1]}ies"
     return f"{verb}s"
 
-
 def _modal_actor_step_label(*, actor: str, action: str) -> str:
     role = _actor_role_label(actor)
     singular = bool(re.match(r"^(?:a|an|the|one)\s+", role, flags=re.IGNORECASE))
@@ -564,10 +561,8 @@ def _modal_actor_step_label(*, actor: str, action: str) -> str:
         rest = _role_can_rest_to_third_person(rest)
     return f"{role} {verb}{rest}".strip()
 
-
 def _role_can_rest_to_third_person(value: str) -> str:
     rest = str(value or "")
-
     def replace_comma(match: re.Match[str]) -> str:
         prefix = " and " if match.group("and") else ", "
         return f"{prefix}{_third_person_verb(match.group('verb'))}"
@@ -796,11 +791,9 @@ def _strip_clipped_terminal_action(value: str) -> str:
     if re.fullmatch(_BASE_ACTION_VERB_PATTERN, token, flags=re.IGNORECASE):
         return head.rstrip(" ,;:.")
     return text
-
 def _compact_text(value: str) -> str:
     return " ".join(str(value or "").split()).strip()
 
 def _node_id(prefix: str, index: int) -> str:
     return f"{prefix}{index}"
-
 __all__ = ["best_component_node_for_text", "first_path_flowchart_mermaid", "sequence_mermaid"]

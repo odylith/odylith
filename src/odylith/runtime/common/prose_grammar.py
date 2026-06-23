@@ -107,6 +107,7 @@ _INFINITIVE_TO_FINITE = {
     "place": "places",
     "predict": "predicts",
     "present": "presents",
+    "progress": "progresses",
     "preserve": "preserves",
     "prevent": "prevents",
     "persist": "persists",
@@ -131,6 +132,7 @@ _INFINITIVE_TO_FINITE = {
     "recompute": "recomputes",
     "refresh": "refreshes",
     "reject": "rejects",
+    "report": "reports",
     "request": "requests",
     "repair": "repairs",
     "render": "renders",
@@ -203,6 +205,8 @@ _FINITE_ACTION_SUFFIX_FALSE_POSITIVES = frozenset(
         "representatives",
     }
 )
+_MODAL_BASE_FORM_MARKERS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "will", "would"})
+_MODAL_COORDINATORS = frozenset({"and", "or"})
 
 
 def looks_like_finite_action(value: str) -> bool:
@@ -217,6 +221,96 @@ def looks_like_finite_action(value: str) -> bool:
     if token in _FINITE_ACTION_SUFFIX_FALSE_POSITIVES:
         return False
     return token.endswith(_FINITE_ACTION_SUFFIXES)
+
+
+def looks_like_finite_action_token(value: str) -> bool:
+    """Return true when a single token is a finite action verb shape."""
+
+    token = _clean_word_token(value)
+    if not token:
+        return False
+    if token in _FINITE_ACTION_VERBS:
+        return True
+    if token in _FINITE_ACTION_SUFFIX_FALSE_POSITIVES:
+        return False
+    return token.endswith(_FINITE_ACTION_SUFFIXES)
+
+
+def modal_base_form_drift_phrases(value: str, *, window: int = 18) -> list[str]:
+    """Return modal/action snippets that use finite verbs where base verbs are required."""
+
+    phrases: list[str] = []
+    for segment in _modal_segments(value):
+        phrases.extend(_modal_base_form_drift_segment(segment, window=window))
+    return _unique_strings(phrases)
+
+
+def _modal_base_form_drift_segment(value: str, *, window: int) -> list[str]:
+    tokens = _word_tokens(value)
+    lowered = [_clean_word_token(token) for token in tokens]
+    phrases: list[str] = []
+    for modal_index, token in enumerate(lowered):
+        if token not in _MODAL_BASE_FORM_MARKERS:
+            continue
+        window_end = min(len(lowered), modal_index + max(2, window))
+        direct_index = _next_modal_candidate(lowered, modal_index + 1, window_end)
+        if direct_index is not None and lowered[direct_index] == "be":
+            continue
+        if direct_index is not None and looks_like_finite_action_token(lowered[direct_index]):
+            phrases.append(" ".join(tokens[modal_index : direct_index + 1]))
+        if (
+            direct_index is not None
+            and not looks_like_base_action_token(lowered[direct_index])
+            and direct_index + 1 < window_end
+            and looks_like_finite_action_token(lowered[direct_index + 1])
+        ):
+            phrases.append(" ".join(tokens[modal_index : direct_index + 2]))
+        for index in range(modal_index + 1, window_end - 1):
+            if lowered[index] not in _MODAL_COORDINATORS:
+                continue
+            candidate_index = _next_modal_candidate(lowered, index + 1, window_end)
+            if candidate_index is None:
+                continue
+            if looks_like_finite_action_token(lowered[candidate_index]):
+                phrases.append(" ".join(tokens[index : candidate_index + 1]))
+    return _unique_strings(phrases)
+
+
+def looks_like_base_action_token(value: str) -> bool:
+    """Return true when a single token is a base action verb Odylith emits."""
+
+    return _clean_word_token(value) in _INFINITIVE_TO_FINITE
+
+
+def _modal_segments(value: str) -> list[str]:
+    return [segment for segment in re.split(r"[.!?;:]+", str(value or "")) if segment.strip()]
+
+
+def _word_tokens(value: str) -> list[str]:
+    return re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", str(value or ""))
+
+
+def _clean_word_token(value: str) -> str:
+    return str(value or "").casefold().strip(".,:;()[]{}")
+
+
+def _next_modal_candidate(tokens: list[str], start: int, end: int) -> int | None:
+    index = start
+    while index < end and tokens[index].endswith("ly"):
+        index += 1
+    return index if index < end else None
+
+
+def _unique_strings(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    rows: list[str] = []
+    for value in values:
+        key = value.casefold()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        rows.append(value)
+    return rows
 
 
 def contains_finite_action(value: str) -> bool:
@@ -408,7 +502,8 @@ def _base_gerund_part(value: str) -> tuple[str, bool]:
     if not base:
         text, converted = _base_embedded_gerunds(body)
         return f"{leading}{prefix}{text}", converted
-    suffix = f" {rest.strip()}" if separator else ""
+    tail, _ = _base_embedded_gerunds(rest.strip()) if separator else ("", False)
+    suffix = f" {tail}" if tail else ""
     return f"{leading}{prefix}{_replace_word_token(first, base)}{suffix}", True
 
 

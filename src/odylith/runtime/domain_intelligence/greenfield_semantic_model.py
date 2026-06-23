@@ -8,6 +8,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.prose_grammar import action_verb_pattern
+from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
@@ -22,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
+from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -507,7 +509,7 @@ def _proof_obligations(
 
 def _first_path_contract_claim(first_path_contract: FirstPathContract) -> str:
     capability = clean_text(first_path_contract.capability).strip(" .") or "complete the first path"
-    action = _actor_led_base_action_phrase(capability) or normalize_action_clause(capability)
+    action = _actor_led_base_action_phrase(capability) or base_gerund_clause(capability) or normalize_action_clause(capability)
     if action and looks_like_action_clause(action):
         return f"{first_path_contract.actor} can {action}."
     return f"{first_path_contract.actor} can complete {capability}."
@@ -516,11 +518,13 @@ def _first_path_contract_claim(first_path_contract: FirstPathContract) -> str:
 def _actor_led_base_action_phrase(value: str) -> str:
     words = clean_text(value).strip(" .").split()
     for index in range(1, min(len(words), 6)):
+        prefix = " ".join(words[:index]).strip(" .")
+        if not looks_like_actor_led_subject_prefix(prefix, value):
+            continue
         candidate = " ".join(words[index:]).strip(" .")
         if looks_like_finite_action(candidate):
             return normalize_action_clause(candidate)
     return ""
-
 
 def _proof_checkpoint(value: str, *, state_label: str) -> str:
     text = _clean(value)
@@ -544,10 +548,20 @@ def _proof_checkpoint(value: str, *, state_label: str) -> str:
 
 
 def _proof_checkpoint_source(contract: FirstPathContract) -> str:
+    visible_result = _clean(contract.visible_result)
     for event in reversed(contract.events):
-        if event.visible_result and _clean(event.text):
-            return event.text
-    return contract.visible_result
+        text = _clean(event.text)
+        if event.visible_result and text and not _is_synthetic_visible_result_event(text, visible_result):
+            return text
+    return visible_result
+
+
+def _is_synthetic_visible_result_event(text: str, visible_result: str) -> bool:
+    if not visible_result:
+        return False
+    normalized = _clean(text).casefold().strip(" .")
+    visible = _clean(visible_result).casefold().strip(" .")
+    return normalized in {f"review {visible}", f"review evidence for {visible}"}
 
 
 def _nominal_proof_checkpoint_clause(value: str) -> str:

@@ -49,7 +49,7 @@ def drop_result_recipient(value: str) -> str:
         return ""
     if re.match(
         r"^(?:a|an|the)\s+(?:[A-Za-z][A-Za-z0-9'-]*\s+){0,3}"
-        r"(?:event|outcome|readout|record|report|result|summary|view)\b",
+        r"(?:decision|event|outcome|readout|record|report|result|summary|view)\b",
         text,
         flags=re.IGNORECASE,
     ):

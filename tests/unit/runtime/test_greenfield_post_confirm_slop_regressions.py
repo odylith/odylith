@@ -13,7 +13,9 @@ from odylith.runtime.artifact_quality.greenfield_package_quality import _chunk_l
 from odylith.runtime.artifact_quality.greenfield_package_quality import _narrative_chunks
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import _proposal_with_component_brief_gate
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract import responsibility_from_contract
@@ -73,6 +75,28 @@ from odylith.runtime.governance.component_spec_narrative import build_narrative_
 
 ROOT = Path(__file__).resolve().parents[3]
 FIRST_PATH_SEMANTICS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py"
+
+
+def _proposal_from_guidance_prompt(prompt: str) -> dict[str, object]:
+    intent_text = f"""Product Intent Confirmation needed
+No files changed. Source posture: empty_or_no_app_source.
+
+Visible format contract
+- Render the visible confirmation as sectioned Markdown.
+
+Original user intent
+{prompt}
+Next step
+- Confirm.
+"""
+    intent = parse_confirmed_intent_text(intent_text, prompt=prompt)
+    return build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=str(intent["title"]),
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
 FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py"
 FIRST_PATH_COMMON_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_common.py"
 FIRST_PATH_FRAGMENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py"
@@ -413,6 +437,68 @@ def test_semantic_model_first_path_claim_uses_base_action_clause() -> None:
     claim = semantic["proof_obligations"][0]["claim"]
     assert claim.startswith("Support Coordinator can create a plan")
     assert "can complete a support coordinator creates" not in claim.casefold()
+
+
+def test_modal_drift_detector_allows_plural_objects_but_rejects_finite_actions() -> None:
+    assert modal_base_form_drift_phrases("Evaluators can upload benchmark runs and see the visible result.") == []
+    assert modal_base_form_drift_phrases("Requesters can submit records requests and see delivery status.") == []
+    assert modal_base_form_drift_phrases("Drivers can report issues and see the visible result.") == []
+    assert modal_base_form_drift_phrases("A decision about whether a model can progress is shown.") == []
+    assert modal_base_form_drift_phrases(
+        "The release must still prove: one site ingests readings, produces a plan, and shows the plan."
+    ) == []
+    assert modal_base_form_drift_phrases(
+        "Review evidence must show the promised result: the path produces a plan and correctly raises a warning."
+    ) == []
+    assert modal_base_form_drift_phrases(
+        "One resident can submit one application. The product explains missing input, and leaves the result reviewable."
+    ) == []
+    assert modal_base_form_drift_phrases("A coordinator accepts jobs that can be scheduled, and follows up.") == []
+    assert modal_base_form_drift_phrases("Evaluators can runs, inspect failures.") == ["can runs"]
+    assert modal_base_form_drift_phrases("Requesters can records proof.") == ["can records"]
+    assert modal_base_form_drift_phrases("The user can coordinator creates packet state.") == [
+        "can coordinator creates"
+    ]
+    assert base_gerund_clause("uploading benchmark runs and inspecting failures") == (
+        "upload benchmark runs and inspect failures"
+    )
+
+
+def test_confirmed_guidance_prompt_modal_objects_and_decisions_stay_coherent() -> None:
+    model_prompt = (
+        "Draft a greenfield proposal for an AI model evaluation lab where evaluators upload benchmark runs, "
+        "risk reviewers inspect failures, and release managers decide whether a model can progress."
+    )
+    model_proposal = _proposal_from_guidance_prompt(model_prompt)
+    model_rendered = json.dumps(model_proposal, sort_keys=True)
+
+    assert greenfield_quality_issues(model_proposal) == []
+    assert generated_semantic_slop_issues(model_proposal) == []
+    assert model_proposal["semantic_model"]["first_path_contract"]["visible_result"] == (
+        "a decision about whether a model can progress"
+    )
+    assert model_proposal["semantic_model"]["proof_obligations"][0]["claim"] == (
+        "Evaluators can upload benchmark runs and inspect failures."
+    )
+    assert "can runs" not in model_rendered
+    assert "can run and inspect failures" not in model_rendered
+    assert "can upload benchmark runs and inspecting failures" not in model_rendered
+    assert "reach a model can progress" not in model_rendered
+    assert "see Release managers decide" not in model_rendered
+
+    records_prompt = (
+        "Draft a greenfield proposal for a public records request tracker where requesters submit records requests, "
+        "clerks classify exemptions, legal reviewers approve redactions, and requesters see delivery status."
+    )
+    records_proposal = _proposal_from_guidance_prompt(records_prompt)
+    records_rendered = json.dumps(records_proposal, sort_keys=True)
+
+    assert greenfield_quality_issues(records_proposal) == []
+    assert generated_semantic_slop_issues(records_proposal) == []
+    assert records_proposal["semantic_model"]["proof_obligations"][0]["claim"] == (
+        "Requesters can submit records requests, classify exemptions, approve redactions, and see delivery status."
+    )
+    assert "submit can record requests" not in records_rendered
 
 
 def test_state_reference_preserves_participial_descriptions_without_embedding_finite_restatements() -> None:

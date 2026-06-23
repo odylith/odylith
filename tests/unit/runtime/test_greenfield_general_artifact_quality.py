@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
     build_greenfield_completion_report,
     build_greenfield_package_report,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import semantic_overlap_ratio
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
     rendered_spec_alignment_issues,
 )
@@ -78,6 +79,13 @@ def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> No
     assert "def semantic_workstream_alignment_issues" in alignment_source
     assert "def semantic_diagram_alignment_issues" in alignment_source
     assert "def rendered_spec_alignment_issues" in alignment_source
+
+
+def test_semantic_overlap_normalizes_gerund_first_path_actions() -> None:
+    assert semantic_overlap_ratio(
+        "submitting proposals and seeing decision status",
+        "Prove the first release path: submit proposals and see decision status.",
+    ) >= 0.3
 
 
 def test_greenfield_tribunal_substance_gate_stays_in_dedicated_owner() -> None:
