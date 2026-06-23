@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_intelligence import 
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import _role_suffixed_label
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import build_traceability_graph
@@ -337,6 +338,11 @@ def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> No
     assert not any("Host Reasoned Project" in label for label in actor_labels)
     assert not any(label in {"Actor", "State object", "Evidence record", "Release gate"} for label in actor_labels)
     assert "stable judgment roles render as domain-specific actors" in decision.dimensions["validation_roles"]
+
+
+def test_tribunal_role_suffixes_do_not_repeat_existing_role_words() -> None:
+    assert _role_suffixed_label("Pattern Relief Studio proof", "proof reviewer") == "Pattern Relief Studio proof reviewer"
+    assert _role_suffixed_label("Decision Workspace", "proof reviewer") == "Decision Workspace proof reviewer"
 
 
 def test_greenfield_tribunal_ignores_runtime_behavior_scaffold_as_actor() -> None:

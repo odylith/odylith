@@ -315,23 +315,7 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
             f"{subject} is intentionally outside the first-release proof boundary for {project_phrase}. "
             "It matters because reviewers need to see which integrations, claims, or responsibilities are deferred."
         )
-    if _has_any(
-        lowered,
-        (
-            "performer",
-            "participant",
-            "beneficiary",
-            "customer",
-            "client",
-            "applicant",
-            "requester",
-            "reviewer",
-            "user",
-        ),
-    ) and not _has_any(
-        lowered,
-        ("service", "provider", "adapter", "interface", "surface", "engine", "store"),
-    ):
+    if _looks_like_person_role_label(clean):
         project_phrase = project if project != "the product" else "this product"
         return (
             f"{subject} is a person {project_phrase} must serve. "
@@ -460,7 +444,7 @@ def _node_action_sentence(label: str, *, context: DiagramBoxContext) -> str:
         return f"{subject} turns governed state into user-visible language without changing the underlying source truth."
     if _has_any(lowered, ("handshake", "contract")):
         return f"{subject} passes agreed state across a boundary and preserves the rules the next step must obey."
-    if _has_any(lowered, ("owner", "operator", "reviewer", "approver", "advocate", "user", "customer", "engineer", "maintainer")):
+    if _has_any(lowered, ("owner", "operator", "reviewer", "approver", "advocate", "user", "engineer", "maintainer")):
         return f"{subject} makes or accepts the decisions this part of the flow depends on."
     if _has_any(lowered, ("sensor", "sensing", "monitor", "measurement", "telemetry", "signal", "probe", "scanner")):
         return f"{subject} measures the current state and feeds the decision or proof step that follows."
@@ -868,6 +852,78 @@ def _looks_like_state_object(label: str) -> bool:
     if lowered.startswith(("one ", "a ", "an ", "the ")):
         return True
     return bool(re.search(r"\b(state|record|object|request|contract|endpoint|entity|item|artifact|package)\b", lowered))
+
+
+def _looks_like_person_role_label(label: str) -> bool:
+    lowered = _clean_label(label).casefold()
+    if not lowered:
+        return False
+    tokens = re.findall(r"[a-z][a-z0-9'-]*", lowered)
+    if not tokens or len(tokens) > 7:
+        return False
+    system_tokens = {
+        "adapter",
+        "app",
+        "application",
+        "console",
+        "command",
+        "dashboard",
+        "desk",
+        "engine",
+        "form",
+        "interface",
+        "intake",
+        "ledger",
+        "model",
+        "platform",
+        "portal",
+        "product",
+        "queue",
+        "register",
+        "registry",
+        "service",
+        "store",
+        "surface",
+        "system",
+        "tool",
+        "tracker",
+        "view",
+        "workspace",
+    }
+    if any(token in system_tokens for token in tokens):
+        return False
+    if _ACTION_START_RE.match(lowered) or re.match(
+        r"^(?:assign|check|choose|collect|compare|create|display|download|enter|export|fix|generate|import|log|open|prove|record|repair|review|route|save|select|send|show|submit|triage|update|upload|validate|view)\b",
+        lowered,
+    ):
+        return False
+    person_tokens = {
+        "actor",
+        "actors",
+        "applicant",
+        "applicants",
+        "beneficiary",
+        "beneficiaries",
+        "client",
+        "clients",
+        "customer",
+        "customers",
+        "lead",
+        "leads",
+        "participant",
+        "participants",
+        "performer",
+        "performers",
+        "requester",
+        "requesters",
+        "reviewer",
+        "reviewers",
+        "stakeholder",
+        "stakeholders",
+        "user",
+        "users",
+    }
+    return any(token in person_tokens for token in tokens)
 
 
 def extract_diagram_boxes_from_mermaid(

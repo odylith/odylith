@@ -58,7 +58,7 @@ def _first_path_text(*, title: str, intent: Mapping[str, Any], brief: Mapping[st
         or f"{title} creates, preserves, and reviews the accepted first-path result"
     )
     if not _VISIBLE_RESULT_RE.search(first_path):
-        first_path = f"{first_path}, then shows the accepted result for review."
+        first_path = f"{first_path.rstrip(' .,;:!?')}, then shows the accepted result for review."
     return first_path
 
 
@@ -71,7 +71,7 @@ def _first_nonempty_backlog_value(rows: list[Mapping[str, Any]], key: str) -> st
 
 
 _VISIBLE_RESULT_RE = re.compile(
-    r"\b(?:available|choose|chooses|compare|compares|find|finds|highlight|highlights|inspect|inspects|ready|report|reports|save|saves|saved|see|sees|select|selects|show|shows|view|views|viewable|review|reviews|receive|receives|publish|publishes|restored)\b",
+    r"\b(?:available|choose|chooses|compare|compares|find|finds|highlight|highlights|inspect|inspects|proof|prove|proves|ready|report|reports|save|saves|saved|see|sees|select|selects|show|shows|verified|view|views|viewable|review|reviews|receive|receives|publish|publishes|restored)\b",
     re.IGNORECASE,
 )
 

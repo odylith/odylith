@@ -35,8 +35,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confir
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
     clean_first_path_text as _clean_first_path,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -172,6 +173,12 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
 
     text = _recover_host_guidance_confirmation(text, prompt=prompt)
     sections = _sections(text)
+    raw_title_candidate = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
+    if not _has_structured_body_sections(sections) and not _has_unheaded_confirmation_shape(text, raw_title_candidate):
+        thin_source = _thin_operator_intent_source(text, prompt=prompt)
+        if thin_source:
+            text = _confirmation_from_operator_intent(thin_source, prefer_product_title=True)
+            sections = _sections(text)
     raw_title = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
     title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
     title = title_normalization.canonical_title
@@ -232,7 +239,59 @@ def _recover_host_guidance_confirmation(text: str, *, prompt: str = "") -> str:
     intent_text = _host_guidance_original_intent(raw) or _clean(prompt)
     if not intent_text:
         return raw
-    return _confirmation_from_operator_intent(intent_text)
+    return _confirmation_from_operator_intent(intent_text, prefer_product_title=True)
+
+
+def _thin_operator_intent_source(text: str, *, prompt: str = "") -> str:
+    """Return an operator request that can be lifted into a full confirmation."""
+
+    raw = _clean(text)
+    if not raw:
+        return ""
+    for candidate in (raw, _clean(prompt)):
+        source = _operator_request_source(candidate)
+        if source:
+            return source
+    return ""
+
+
+def _has_unheaded_confirmation_shape(text: str, title: str) -> bool:
+    paragraphs = _preamble_paragraphs(text, title)
+    if len(paragraphs) < 3:
+        return False
+    state = _derived_state_paragraph(paragraphs)
+    first_path = _derived_first_path_paragraph(paragraphs)
+    proof = _derived_proof_boundary_paragraph(paragraphs)
+    story = _derived_product_story(paragraphs, state=state, first_path=first_path, proof_boundary=proof)
+    return bool(state and first_path and proof and story)
+
+
+def _operator_request_source(value: str) -> str:
+    text = _clean(value)
+    if not text:
+        return ""
+    first_path_source = prompt_first_path_source(text)
+    if _word_count(first_path_source) < 6:
+        return ""
+    model = first_path_model(first_path_source)
+    if len(model.steps) >= 2 or model.material_action or model.visible_outcome:
+        return text
+    return ""
+
+
+def _object_result_phrase(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "the first visible result"
+    text = text[:1].lower() + text[1:]
+    if re.match(r"^(?:a|an|the)\s+", text, flags=re.IGNORECASE):
+        return text
+    return f"the {text}"
+
+
+def _sentence_leading_result(value: str) -> str:
+    text = _clean(value).strip(" .")
+    return text[:1].upper() + text[1:] if text else "The first visible result"
 
 
 def _looks_like_host_guidance_envelope(text: str) -> bool:
@@ -264,40 +323,39 @@ def _host_guidance_original_intent(text: str) -> str:
     return _clean(" ".join(values))
 
 
-def _confirmation_from_operator_intent(intent_text: str) -> str:
+def _confirmation_from_operator_intent(intent_text: str, *, prefer_product_title: bool = False) -> str:
     source = _clean(intent_text).strip(" .")
     first_path_source = prompt_first_path_source(source)
     outcome = first_path_outcome_phrase(first_path_source, fallback="the first visible result").strip(" .")
-    title = _recovered_title(outcome)
-    outcome_lower = outcome[:1].lower() + outcome[1:] if outcome else "the first visible result"
+    title_source = prompt_project_title_source(source) if prefer_product_title else ""
+    title = _recovered_title(title_source or outcome)
+    outcome_object = _object_result_phrase(outcome)
     story = (
         f"The product helps the named participants complete a first path where {first_path_source.rstrip('.')}. "
-        f"It keeps {outcome_lower} tied to source input, current state, blockers, handoffs, and proof evidence "
+        f"It keeps {outcome_object} tied to source input, current state, blockers, handoffs, and proof evidence "
         "so the next step is clear."
     )
     state = (
-        f"{outcome} record tracks the actor, source input, current status, owner, blocker, handoff, evidence, "
+        f"{_sentence_leading_result(outcome_object)} record tracks the actor, source input, current status, owner, blocker, handoff, evidence, "
         "and version history for the first path."
     )
-    first_path = (
-        f"{first_path_source.rstrip('.')}. "
-        "Product-owned responsibilities preserve current state, blockers, handoffs, and evidence until "
-        f"{outcome_lower} is visible."
-    )
+    first_path = f"{first_path_source.rstrip('.')}."
     proof = (
         f"Release 0.0.1 succeeds when {first_path_source.rstrip('.')}. "
-        f"The product shows {outcome_lower}, handles missing or invalid input with a clear blocker, "
+        f"The product shows {outcome_object}, handles missing or invalid input with a clear blocker, "
         "and keeps replayable evidence for review."
     )
+    actor_lines = "\n".join(f"- {row}" for row in _human_actor_rows_from_first_path(first_path_source))
+    system_lines = "\n".join(f"- {row}" for row in _internal_system_rows_from_recovered_title(title))
     return "\n\n".join(
         (
             f"# {title} — Product Intent Confirmation",
             "Product story\n" + story,
             "State object\n" + state,
             "First complete path\n" + first_path,
-            "Human actors\n",
+            "Human actors\n" + actor_lines,
             "External systems\n",
-            "Internal product systems\n",
+            "Internal product systems\n" + system_lines,
             "Critical assumptions\n- Release 0.0.1 proves the first path before broader automation or live integrations.",
             "Ambiguities\n- The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
             "Proof boundary\n" + proof,
@@ -305,11 +363,108 @@ def _confirmation_from_operator_intent(intent_text: str) -> str:
     )
 
 
+def _internal_system_rows_from_recovered_title(title: str) -> list[str]:
+    label = title_case_text(_clean(title) or "Product")
+    return [
+        (
+            f"{label} Intake Register — records source input, current status, owner, blocker, "
+            "handoff, and version history for the first path"
+        ),
+        (
+            f"{label} Review Workspace — presents current state, missing input, user-facing confirmation, "
+            "and the next useful action"
+        ),
+        (
+            f"{label} Proof Ledger — keeps validation results, release decisions, failure reasons, "
+            "and replayable evidence for review"
+        ),
+    ]
+
+
+def _human_actor_rows_from_first_path(value: str) -> list[str]:
+    rows: list[str] = []
+    for clause in _first_path_actor_clauses(value):
+        row = _human_actor_row_from_clause(clause, allow_subject_fallback=not rows)
+        if row and row.casefold() not in {existing.casefold() for existing in rows}:
+            rows.append(row)
+    return rows[:3]
+
+
+def _first_path_actor_clauses(value: str) -> list[str]:
+    text = _clean(value)
+    if not text:
+        return []
+    clauses: list[str] = []
+    for part in text.replace("; ", ", ").split(","):
+        part = _clean(part)
+        if not part:
+            continue
+        for subpart in part.split(" and "):
+            cleaned = _clean(subpart)
+            if cleaned:
+                clauses.append(cleaned)
+    return clauses
+
+
+def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -> str:
+    words = [word.strip(".,:;") for word in _clean(clause).split() if word.strip(".,:;")]
+    if len(words) < 2:
+        return ""
+    marker_index = _first_word_index(words, {"can", "will", "must", "needs", "need"})
+    if marker_index > 0 and marker_index + 1 < len(words):
+        actor = " ".join(words[:marker_index])
+        action = " ".join(words[marker_index + 1 :])
+        return _human_actor_row(actor, action)
+    if allow_subject_fallback and len(words) >= 3:
+        return _human_actor_row(words[0], " ".join(words[1:]))
+    return ""
+
+
+def _first_word_index(words: Sequence[str], targets: set[str]) -> int:
+    for index, word in enumerate(words):
+        if word.casefold() in targets:
+            return index
+    return -1
+
+
+def _human_actor_row(actor: str, action: str) -> str:
+    actor_label = title_case_text(_clean(actor))
+    action_text = _clean(action)
+    if not actor_label or not action_text:
+        return ""
+    return f"{actor_label}: needs the product to {action_text} and keep the result visible and reviewable"
+
+
 def _recovered_title(outcome: str) -> str:
     words = _clean(outcome).split()
     if 1 <= len(words) <= 6 and outcome.casefold() != "the first visible result":
-        return f"{title_case_text(outcome)} Workspace"
+        title = title_case_text(outcome)
+        if _has_product_container_title(title):
+            return title
+        return f"{title} Workspace"
     return "Recovered Product Workspace"
+
+
+def _has_product_container_title(value: str) -> bool:
+    terms = [term.casefold() for term in _label_terms(value)]
+    if not terms:
+        return False
+    return terms[-1] in {
+        "app",
+        "application",
+        "dashboard",
+        "desk",
+        "experience",
+        "platform",
+        "portal",
+        "product",
+        "service",
+        "coach",
+        "studio",
+        "system",
+        "tool",
+        "workspace",
+    }
 
 
 def _has_structured_body_sections(sections: Mapping[str, list[str]]) -> bool:

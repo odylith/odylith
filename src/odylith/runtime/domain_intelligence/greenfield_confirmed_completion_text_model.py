@@ -109,6 +109,8 @@ def _base_user_action_phrase(value: str) -> str:
     if not text:
         return ""
     text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
+    if looks_like_action_clause(text):
+        return base_action_clause(text)
     actor_action = _actor_led_base_action_phrase(text)
     if actor_action:
         return actor_action
@@ -122,7 +124,7 @@ def _actor_led_base_action_phrase(value: str) -> str:
     words = text.split()
     for index in range(1, min(len(words), 6)):
         candidate = " ".join(words[index:]).strip(" .")
-        if looks_like_finite_action(candidate):
+        if looks_like_finite_action(candidate) or looks_like_action_clause(candidate):
             if imperative_action_with_copula_words(words, index):
                 return ""
             return base_action_clause(candidate)
@@ -139,6 +141,9 @@ def outcome_phrase(proposal: Mapping[str, Any]) -> str:
 
 def outcome_action_phrase(outcome: str) -> str:
     text = _clean(outcome).rstrip(" .") or "the product result"
+    actor_review = _actor_led_outcome_review_action(text)
+    if actor_review:
+        return actor_review
     if looks_like_action_clause(text):
         return base_action_clause(text)
     if _looks_like_question_result(text):
@@ -149,11 +154,50 @@ def outcome_action_phrase(outcome: str) -> str:
     if actor_action:
         return actor_action
     words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
+    object_text = _object_phrase(text)
+    if words & {"proof", "proven", "verified", "evidence", "audit"}:
+        return f"review {object_text}"
     if words & _VISIBLE_SEE_RESULT_HINTS:
-        return f"see {text}"
+        return f"see {object_text}"
     if words & _VISIBLE_RESULT_OBJECT_HINTS:
-        return f"use {text}"
-    return f"reach {text}"
+        return f"use {object_text}"
+    return f"reach {object_text}"
+
+
+def _actor_led_outcome_review_action(value: str) -> str:
+    actor_action = _actor_led_base_action_phrase(re.sub(r"^(?:a|an|the)\s+", "", value, flags=re.IGNORECASE))
+    if not actor_action:
+        return ""
+    decision_object = _decision_pair_result_object(actor_action)
+    if decision_object:
+        return f"review {decision_object}"
+    return ""
+
+
+def _decision_pair_result_object(value: str) -> str:
+    text = _clean(value).strip(" .")
+    pairs = {
+        ("accept", "reject"): ("acceptance", "rejection"),
+        ("approve", "reject"): ("approval", "rejection"),
+    }
+    for (left, right), (left_noun, right_noun) in pairs.items():
+        match = re.match(rf"^{left}\s+or\s+{right}\s+(?P<object>.+)$", text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        result_object = _clean(match.group("object")).strip(" .")
+        if result_object:
+            return f"the {left_noun} or {right_noun} of {result_object}"
+    return ""
+
+
+def _object_phrase(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "the product result"
+    lowered = text[:1].lower() + text[1:]
+    if re.match(r"^(?:a|an|the|this|that|one)\s+", lowered, flags=re.IGNORECASE):
+        return lowered
+    return f"the {lowered}"
 
 
 def _looks_like_question_result(value: str) -> bool:

@@ -1030,6 +1030,40 @@ def test_atlas_box_explanations_parse_sequence_participants_without_broken_label
     assert "owns microphone or line-in" in by_label["Audio Capture And Pre-processing Service"]
 
 
+def test_atlas_box_explanations_do_not_classify_product_or_action_labels_as_people() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        "\n".join(
+            [
+                "flowchart LR",
+                '  actor["Support Leads"]',
+                '  product["Customer Recovery Desk"]',
+                '  repair["Repair customer trust"]',
+                '  proof["Proof result<br/>Response path accepted"]',
+                "  actor --> product",
+                "  product --> repair",
+                "  repair --> proof",
+                "",
+            ]
+        ),
+        component_rows=[
+            {
+                "name": "Customer Recovery Desk",
+                "description": "Coordinates recovery work, owner assignment, response evidence, and review state.",
+            },
+        ],
+        diagram_title="First Path Sequence",
+        diagram_summary="Customer Recovery Desk keeps the first release path reviewable for support leads.",
+    )
+    by_label = {box.label: box.description for box in boxes}
+    rendered = "\n".join(by_label.values())
+
+    assert "Support Leads is a person" in by_label["Support Leads"]
+    assert "Customer Recovery Desk is a person" not in rendered
+    assert "Repair customer trust is a person" not in rendered
+    assert "coordinates recovery work" in by_label["Customer Recovery Desk"]
+    assert "Repair customer trust carries the state forward" in by_label["Repair customer trust"]
+
+
 def test_atlas_diagram_intelligence_explains_state_model_transitions() -> None:
     source = "\n".join(
         [
@@ -1261,7 +1295,7 @@ def test_atlas_diagram_intelligence_replaces_legacy_greenfield_sequence_dump() -
     assert "messages are calls" not in copy
     assert "First Path Sequence shows what the first release must prove" in narrative.summary
     assert "solo monophonic instrument single take" in narrative.summary
-    assert narrative.read_guide.startswith("Start with the user action.")
+    assert narrative.read_guide.startswith("Start with the first participant action.")
     assert "named product responsibility" in narrative.read_guide
 
 

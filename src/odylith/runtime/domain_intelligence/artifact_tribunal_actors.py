@@ -146,7 +146,7 @@ def _dedupe_visible_actor_names(names: Mapping[str, str]) -> dict[str, str]:
         if key and key in seen:
             prefix = _actor_label_prefix(label) or label
             suffix = suffixes.get(role, "reviewer")
-            label = f"{prefix} {suffix}".strip()
+            label = _role_suffixed_label(prefix, suffix)
             key = label.casefold()
         if key and key in seen:
             label = f"{label} for {role.replace('_', ' ')}"
@@ -419,7 +419,24 @@ def _derived_role_label(
     label = _actor_label(explicit, fallback="")
     if label:
         return label
-    return f"{fallback_lens} {role_suffix}"
+    return _role_suffixed_label(fallback_lens, role_suffix)
+
+
+def _role_suffixed_label(prefix: str, suffix: str) -> str:
+    label = clean_text(prefix).strip(" .")
+    role_suffix = clean_text(suffix).strip(" .")
+    if not label:
+        return role_suffix
+    if not role_suffix:
+        return label
+    lowered = label.casefold()
+    suffix_lowered = role_suffix.casefold()
+    if lowered.endswith(suffix_lowered):
+        return label
+    first, _separator, rest = role_suffix.partition(" ")
+    if first and lowered.endswith(f" {first.casefold()}") and rest:
+        return f"{label} {rest}".strip()
+    return f"{label} {role_suffix}".strip()
 
 
 def _actor_label_prefix(label: str) -> str:

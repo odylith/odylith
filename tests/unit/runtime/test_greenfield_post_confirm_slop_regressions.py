@@ -48,6 +48,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_s
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
@@ -73,6 +74,7 @@ from odylith.runtime.governance.component_spec_narrative import build_narrative_
 ROOT = Path(__file__).resolve().parents[3]
 FIRST_PATH_SEMANTICS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py"
 FIRST_PATH_CLAUSES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py"
+FIRST_PATH_COMMON_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_common.py"
 FIRST_PATH_FRAGMENTS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py"
 FIRST_PATH_VIEW_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_view.py"
 FIRST_PATH_TYPES_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_first_path_types.py"
@@ -92,6 +94,7 @@ CONFIRMED_DIAGRAM_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/gr
 def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     parser_source = FIRST_PATH_SEMANTICS_PATH.read_text(encoding="utf-8")
     clause_source = FIRST_PATH_CLAUSES_PATH.read_text(encoding="utf-8")
+    common_source = FIRST_PATH_COMMON_PATH.read_text(encoding="utf-8")
     fragment_source = FIRST_PATH_FRAGMENTS_PATH.read_text(encoding="utf-8")
     view_source = FIRST_PATH_VIEW_PATH.read_text(encoding="utf-8")
     type_source = FIRST_PATH_TYPES_PATH.read_text(encoding="utf-8")
@@ -99,6 +102,7 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
 
     assert len(parser_source.splitlines()) < 800
     assert len(clause_source.splitlines()) < 800
+    assert len(common_source.splitlines()) < 800
     assert len(fragment_source.splitlines()) < 800
     assert len(view_source.splitlines()) < 800
     for moved in (
@@ -116,11 +120,19 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
         "def clean_visible_result_phrase",
         "def visible_result_object",
         "def action_chain_fragment",
-        "def clean_first_path_text",
     ):
         assert moved not in parser_source
         assert moved not in clause_source
         assert moved in fragment_source
+    for moved in (
+        "def clean_first_path_text",
+        "def clip_first_path_phrase",
+        "def lowercase_leading_article",
+    ):
+        assert moved not in parser_source
+        assert moved not in clause_source
+        assert moved not in fragment_source
+        assert moved in common_source
     assert "def first_path_model" in parser_source
     assert "greenfield_domain_term_index import label_terms" in parser_source
 
@@ -147,7 +159,11 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     assert "def first_path_step_view" in view_source
     assert "greenfield_domain_term_index import label_terms" in fragment_source
     assert "greenfield_domain_term_index import ordered_terms" in fragment_source
+    assert "greenfield_first_path_common import clean_first_path_text" in clause_source
+    assert "greenfield_first_path_common import clean_first_path_text" in parser_source
+    assert "MATERIAL_ACTION_RE = re.compile" in common_source
     assert "len(re.findall" not in fragment_source
+    assert "len(re.findall" not in common_source
     assert "class FirstPathModel" in type_source
     assert "class FirstPathClauses" in type_source
     assert "def label_terms" in index_source
@@ -189,6 +205,63 @@ def test_first_path_semantic_view_precomputes_step_facts_for_renderers() -> None
     ]
     assert view.steps[-1].is_system_generated is True
     assert view.covers_visible_object(view.steps[-1].visible_object)
+
+
+def test_plural_actor_subjects_and_decision_pair_outcomes_render_as_reviewable_results() -> None:
+    first_path = (
+        "applicants submit permit packets, reviewers check zoning evidence, inspectors add site findings, "
+        "and supervisors approve or reject the permit with an auditable rationale."
+    )
+
+    assert action_chain_fragment("Applicants submit permit packets") == "submit permit packets"
+    assert actor_signature("Applicants submit permit packets") == "applicant"
+    assert actor_signature("Supervisors approve or reject the permit with an auditable rationale") == "supervisor"
+    assert first_path_action_phrase(first_path, max_fragments=1) == "submit permit packets"
+    assert (
+        first_path_capability_phrase(first_path)
+        == "submit permit packets, add site findings, and approve or reject the permit with an auditable rationale"
+    )
+    assert (
+        outcome_action_phrase("Supervisors approve or reject the permit with an auditable rationale")
+        == "review the approval or rejection of the permit with an auditable rationale"
+    )
+
+
+def test_temporal_choice_tail_expands_into_reviewable_first_path_events() -> None:
+    first_path = (
+        "homeowners compare roof options, incentives, installer quotes, financing choices, "
+        "and projected savings before choosing an installation plan."
+    )
+
+    assert first_path_steps(first_path) == (
+        "Homeowners compare roof options, incentives, installer quotes, financing choices and projected savings",
+        "Choose an installation plan",
+    )
+    semantic = asdict(
+        build_greenfield_semantic_model(
+            title="Residential Solar Planning Tool",
+            state_object="selected installation plan record",
+            first_path=first_path,
+            proof_boundary="Release succeeds when the selected installation plan is reviewable.",
+            components=[],
+            human_actors=["Homeowners: compare options and choose a plan."],
+        )
+    )
+
+    events = semantic["first_path_contract"]["events"]
+    assert len(events) == 3
+    assert semantic["first_path_contract"]["visible_result"] == "Selected installation plan"
+    assert events[-1]["text"] == "Review evidence for selected installation plan"
+
+    flowchart = first_path_flowchart_mermaid(
+        label="Residential Solar Planning Tool",
+        actors=["Homeowners: compare options and choose a plan."],
+        components=[],
+        first_path=first_path,
+        semantic_model=semantic,
+    )
+    assert 'S3["Review selected installation' in flowchart
+    assert 'proof["Proof result<br/>Selected installation plan"]' in flowchart
 
 
 def test_role_gerund_actor_rows_stay_clean_and_grammatical() -> None:
@@ -2562,6 +2635,9 @@ def test_first_path_flowchart_drops_launcher_auth_step_and_keeps_domain_routing(
     assert "C4" not in mermaid
     assert "Activity Capture" in mermaid
     assert "Progress View" in mermaid
+    assert "User action" not in mermaid
+    assert "Show outcome:" not in mermaid
+    assert "Proof result" in mermaid
     assert "Done means" not in mermaid
     assert "patient sees" not in mermaid.casefold()
     assert "Activity against" not in mermaid

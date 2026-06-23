@@ -177,7 +177,7 @@ def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:
 def test_inline_markdown_cleanup_shared_by_confirmed_text_callers() -> None:
     callers = [
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_components.py",
-        DOMAIN_INTELLIGENCE / "greenfield_first_path_fragments.py",
+        DOMAIN_INTELLIGENCE / "greenfield_first_path_common.py",
         DOMAIN_INTELLIGENCE / "greenfield_sequence_steps.py",
         DOMAIN_INTELLIGENCE / "greenfield_confirmed_diagram_text.py",
         DOMAIN_INTELLIGENCE / "greenfield_semantic_model.py",
@@ -378,7 +378,7 @@ def test_word_boundary_clipping_stays_in_text_owner() -> None:
     text_owner = GREENFIELD_TEXT_PATH.read_text(encoding="utf-8")
     touched_callers = [
         "greenfield_confirmed_text.py",
-        "greenfield_first_path_fragments.py",
+        "greenfield_first_path_common.py",
         "greenfield_semantic_model.py",
         "greenfield_confirmed_system_rows.py",
         "greenfield_confirmed_diagram_text.py",

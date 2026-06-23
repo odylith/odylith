@@ -26,12 +26,15 @@ _REQUEST_PRODUCT_WORDS = frozenset(
         "app",
         "application",
         "dashboard",
+        "desk",
         "experience",
         "platform",
         "portal",
         "product",
         "project",
         "service",
+        "coach",
+        "studio",
         "system",
         "tool",
         "workspace",
@@ -53,6 +56,41 @@ def prompt_first_path_source(value: str) -> str:
         if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
             return candidate
     return text
+
+
+def prompt_project_title_source(value: str) -> str:
+    """Return the product noun phrase from a command-shaped operator request."""
+
+    words = _request_words(value)
+    if len(words) < 3 or words[0].casefold() not in _REQUEST_COMMAND_WORDS:
+        return ""
+    start = 1
+    if words[start].casefold() in {"a", "an", "the"}:
+        start += 1
+    start = _skip_proposal_wrapper(words, start)
+    if start >= len(words):
+        return ""
+    lowered = [word.casefold().strip(",:;") for word in words]
+    for index in range(start + 1, len(words)):
+        if lowered[index] not in _REQUEST_LEAD_CONNECTORS:
+            continue
+        lead = words[start:index]
+        if _looks_like_product_title_phrase(lead):
+            return " ".join(lead).strip(" .")
+    return ""
+
+
+def _skip_proposal_wrapper(words: list[str], start: int) -> int:
+    index = start
+    while index < len(words) and words[index].casefold().strip(",:;") in {"greenfield", "product-first"}:
+        index += 1
+    if index < len(words) and words[index].casefold().strip(",:;") == "proposal":
+        index += 1
+    if index < len(words) and words[index].casefold().strip(",:;") == "for":
+        index += 1
+    if index < len(words) and words[index].casefold().strip(",:;") in {"a", "an", "the"}:
+        index += 1
+    return index
 
 
 def _tail_after_word(value: str, marker: str) -> str:
@@ -142,9 +180,18 @@ def _request_words(value: str) -> list[str]:
     ]
 
 
+def _looks_like_product_title_phrase(words: list[str]) -> bool:
+    if not words or len(words) > 7:
+        return False
+    lowered = [word.casefold().strip(".,:;") for word in words]
+    if set(lowered) <= {"new", "simple", "small", "greenfield"} | _REQUEST_PRODUCT_WORDS:
+        return False
+    return bool(set(lowered) & _REQUEST_PRODUCT_WORDS) or any(word.isupper() and len(word) <= 6 for word in words)
+
+
 def _looks_like_recoverable_first_path(value: str) -> bool:
     model = first_path_model(value)
     return len(model.steps) >= 2 or bool(model.material_action or model.visible_outcome)
 
 
-__all__ = ["prompt_first_path_source"]
+__all__ = ["prompt_first_path_source", "prompt_project_title_source"]

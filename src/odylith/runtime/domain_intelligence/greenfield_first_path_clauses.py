@@ -7,12 +7,14 @@ from typing import Any, Sequence
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase as _clip_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
+    lowercase_leading_article as _lowercase_leading_article,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathClauses
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import clean_first_path_text
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import clip_first_path_phrase as _clip_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment as _gerund_action_fragment
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import lowercase_leading_article as _lowercase_leading_article
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import outcome_capability_fragment as _outcome_capability_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import FirstPathStepView
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_semantic_view
@@ -115,12 +117,14 @@ def _first_path_capability_text(
     steps = [step for step in view.steps if step.text and not step.is_trivial_start]
     selected: list[FirstPathStepView] = []
     primary_actor = view.primary_actor_signature
+    included_visible_result = False
     if model.material_action:
         material_step = first_path_step_view(model.material_action)
         if not material_step.is_system_generated:
             selected.append(material_step)
+            if material_step.visible_object and view.covers_visible_object(material_step.visible_object):
+                included_visible_result = True
     selected_fragments = {step.fragment_key for step in selected if step.fragment_key}
-    included_visible_result = False
     visible_seen = False
     for step in steps:
         fragment_key = step.fragment_key
@@ -156,7 +160,8 @@ def _first_path_capability_text(
             if gerund:
                 outcome_fragment = re.sub(r"^(?i:see)\s+", "review ", outcome_fragment).strip(" .")
                 outcome_fragment = _gerund_action_fragment(outcome_fragment)
-            fragments.append(outcome_fragment)
+            if not _fragment_already_present(outcome_fragment, fragments):
+                fragments.append(outcome_fragment)
     if not gerund:
         fragments = _actor_led_capability_fragments(fragments)
     text = _join_fragments_within_limit(fragments[: max(1, max_fragments)], limit=limit) or clean_first_path_text(fallback)
@@ -281,6 +286,18 @@ def _join_fragments_within_limit(values: Sequence[str], *, limit: int) -> str:
             break
         return _clip_phrase(row, limit=limit)
     return _join_series(selected) or _clip_phrase(rows[0], limit=limit)
+
+
+def _fragment_already_present(fragment: str, existing: Sequence[str]) -> bool:
+    key = _fragment_key(fragment)
+    return bool(key and any(_fragment_key(value) == key for value in existing))
+
+
+def _fragment_key(value: str) -> tuple[str, ...]:
+    text = clean_first_path_text(value).casefold().strip(" .")
+    text = re.sub(r"^(?:reach|review|see|use)\s+(?:a|an|the|this|that|one)\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^(?:a|an|the|this|that|one)\s+", "", text, flags=re.IGNORECASE)
+    return tuple(re.findall(r"[a-z0-9]+", text))
 
 
 

@@ -202,7 +202,7 @@ def _actor_owned_action_fragments(*, first_path: str, actor: str, include_visibl
         signature_terms = _actor_match_terms(actor_signature(step))
         if actor_terms:
             step_terms = _actor_match_terms(step)
-            matched_actor = bool((signature_terms or step_terms) & actor_terms)
+            matched_actor = bool((signature_terms | step_terms) & actor_terms)
             if not matched_actor:
                 if selected and visible_seen:
                     break
@@ -227,8 +227,25 @@ def _actor_owned_action_fragments(*, first_path: str, actor: str, include_visibl
 
 
 def _actor_match_terms(value: str) -> set[str]:
-    terms = {word.casefold() for word in re.findall(r"[A-Za-z][A-Za-z0-9'-]{2,}", str(value or ""))}
+    terms: set[str] = set()
+    for word in re.findall(r"[A-Za-z][A-Za-z0-9'-]{2,}", str(value or "")):
+        token = word.casefold()
+        terms.add(token)
+        singular = _singular_actor_match_term(token)
+        if singular:
+            terms.add(singular)
     return terms - {"actor", "later", "primary", "reviewer", "user"}
+
+
+def _singular_actor_match_term(value: str) -> str:
+    token = str(value or "").casefold().strip(" .")
+    if len(token) <= 3 or token.endswith(("ics", "ss", "us")):
+        return ""
+    if token.endswith("ies"):
+        return f"{token[:-3]}y"
+    if token.endswith("s"):
+        return token[:-1]
+    return ""
 
 
 __all__ = [

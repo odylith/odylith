@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import FirstPathContract
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import _first_path_contract_claim
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -43,6 +45,30 @@ def test_semantic_model_prefers_terminal_visible_outcome_over_mid_path_confirmat
         ("follows", False),
         ("sees", True),
     ]
+
+
+def test_semantic_model_claim_normalizes_actor_led_finite_tails() -> None:
+    claim = _first_path_contract_claim(
+        FirstPathContract(
+            actor="Coordinators",
+            action="",
+            entity="update",
+            mutation="",
+            required_fields=(),
+            persistence="",
+            visible_result="proven update with source evidence",
+            recovery_path="",
+            deferred_scope=(),
+            capability="Coordinators updates, assigning response owners, publishing status summaries, and proving every update with source evidence",
+            raw_path="",
+            events=(),
+        )
+    )
+
+    assert claim == (
+        "Coordinators can update, assign response owners, publish status summaries, "
+        "and prove every update with source evidence."
+    )
 
 
 def test_outcome_selector_keeps_confirmed_user_result_before_downstream_handoff() -> None:

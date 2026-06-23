@@ -388,16 +388,23 @@ def _first_path_readiness_summary(
 
 def _result_terms_covered(result: str, text: str) -> bool:
     result_terms = {
-        word.strip(".,:;()[]{}").casefold()
+        _coverage_term(word)
         for word in compact_text(result).replace("-", " ").split()
         if len(word.strip(".,:;()[]{}")) >= 4
     }
     text_terms = {
-        word.strip(".,:;()[]{}").casefold()
+        _coverage_term(word)
         for word in compact_text(text).replace("-", " ").split()
         if len(word.strip(".,:;()[]{}")) >= 4
     }
     return bool(result_terms and result_terms <= text_terms)
+
+
+def _coverage_term(value: str) -> str:
+    token = value.strip(".,:;()[]{}").casefold()
+    if token in {"prove", "proves", "proved", "proven", "proof"}:
+        return "proof"
+    return token
 
 
 def _summary_sentences(value: str) -> list[str]:
@@ -423,7 +430,41 @@ def _dedupe_repeated_capability(value: str) -> str:
         right = " and ".join(parts[index:]).strip()
         if left and left.casefold() == right.casefold():
             return left
+    clauses = [part.strip(" ,") for part in re.split(r",\s+|\s+and\s+", text) if part.strip(" ,")]
+    if len(clauses) <= 1:
+        return text
+    seen: set[str] = set()
+    unique: list[str] = []
+    for clause in clauses:
+        key = _capability_clause_key(clause)
+        if key and key in seen:
+            continue
+        if key:
+            seen.add(key)
+        unique.append(clause)
+    if len(unique) != len(clauses):
+        return _join_capability_clauses(unique)
     return text
+
+
+def _capability_clause_key(value: str) -> str:
+    tokens = [
+        _coverage_term(word)
+        for word in compact_text(value).replace("-", " ").split()
+        if len(word.strip(".,:;()[]{}")) >= 4
+    ]
+    return " ".join(tokens)
+
+
+def _join_capability_clauses(values: list[str]) -> str:
+    rows = [row.strip(" ,") for row in values if row.strip(" ,")]
+    if not rows:
+        return ""
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) == 2:
+        return f"{rows[0]} and {rows[1]}"
+    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
 def _remove_orphan_without_it_tail(value: str) -> str:

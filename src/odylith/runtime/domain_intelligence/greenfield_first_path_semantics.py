@@ -11,9 +11,9 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment as _action_chain_fragment
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import clean_first_path_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     clean_visible_result_phrase as _clean_visible_result_phrase,
 )
@@ -201,6 +201,9 @@ def _material_action(steps: Sequence[str]) -> str:
 
 
 def _visible_outcome(steps: Sequence[str]) -> str:
+    terminal_choice = _terminal_choice_outcome(steps)
+    if terminal_choice:
+        return _sentence_case(terminal_choice)
     preferred: list[str] = []
     fallback: list[str] = []
     for step in reversed(steps):
@@ -225,6 +228,25 @@ def _visible_outcome(steps: Sequence[str]) -> str:
     for step in reversed(steps):
         if not _is_scope_or_deferred_statement(step):
             return _sentence_case(step)
+    return ""
+
+
+def _terminal_choice_outcome(steps: Sequence[str]) -> str:
+    for step in reversed(steps):
+        text = _clean(step).strip(" .")
+        if not text or _is_scope_or_deferred_statement(text) or _is_routing_handoff_step(text):
+            continue
+        match = re.match(
+            r"^(?:(?:a|an|the|one|this|that|each|another)\s+)?"
+            r"(?:[A-Za-z][A-Za-z0-9'/-]*\s+){0,5}?"
+            r"(?:choose|chooses|select|selects)\s+(?P<object>.+)$",
+            text,
+            flags=re.IGNORECASE,
+        )
+        if not match:
+            return ""
+        result_object = re.sub(r"^(?:a|an|the)\s+", "", _clean(match.group("object")).strip(" ."), flags=re.IGNORECASE)
+        return f"selected {result_object}" if result_object else ""
     return ""
 
 
@@ -370,20 +392,55 @@ def _normalize_subjectless_action_step(value: str) -> str:
 def _split_action_pieces(value: str) -> list[str]:
     pieces: list[str] = []
     subject_prefix = ""
-    for segment in [part.strip(" .") for part in _ACTION_SPLIT_RE.split(value) if part.strip(" .")]:
-        current = ""
-        for part in [piece.strip(" .") for piece in re.split(r",\s+", segment) if piece.strip(" .")]:
-            if current and _starts_new_action_clause(part):
+    for raw_segment in [part.strip(" .") for part in _ACTION_SPLIT_RE.split(value) if part.strip(" .")]:
+        for segment in _split_temporal_action_tail(raw_segment):
+            current = ""
+            for part in [piece.strip(" .") for piece in re.split(r",\s+", segment) if piece.strip(" .")]:
+                if current and _starts_new_action_clause(part):
+                    pieces.append(current.strip(" ."))
+                    current = _with_carried_subject(part, subject_prefix)
+                else:
+                    current = f"{current}, {part}" if current else _with_carried_subject(part, subject_prefix)
+                explicit_subject = _carried_subject_prefix(current)
+                if explicit_subject:
+                    subject_prefix = explicit_subject
+            if current:
                 pieces.append(current.strip(" ."))
-                current = _with_carried_subject(part, subject_prefix)
-            else:
-                current = f"{current}, {part}" if current else _with_carried_subject(part, subject_prefix)
-            explicit_subject = _carried_subject_prefix(current)
-            if explicit_subject:
-                subject_prefix = explicit_subject
-        if current:
-            pieces.append(current.strip(" ."))
     return pieces
+
+
+def _split_temporal_action_tail(value: str) -> list[str]:
+    text = _clean(value).strip(" .")
+    if not text:
+        return []
+    match = re.search(
+        r"\s+(?:before|after)\s+(?P<verb>[A-Za-z]+ing)\b(?P<tail>[^.;]*)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match or not _MATERIAL_ACTION_RE.search(text[: match.start()]):
+        return [text]
+    base = _base_from_gerund_action(match.group("verb"))
+    if not base:
+        return [text]
+    head = text[: match.start()].strip(" ,")
+    tail = match.group("tail").strip(" ,")
+    action = f"{base} {tail}".strip(" .")
+    return [part for part in (head, action) if part]
+
+
+def _base_from_gerund_action(value: str) -> str:
+    token = str(value or "").casefold().strip(".,;:")
+    if not token.endswith("ing") or len(token) <= 5:
+        return ""
+    stem = token[:-3]
+    candidates = [stem, f"{stem}e"]
+    if len(stem) >= 3 and stem[-1:] == stem[-2:-1]:
+        candidates.append(stem[:-1])
+    for candidate in candidates:
+        if _MATERIAL_ACTION_RE.fullmatch(candidate):
+            return base_action_clause(candidate)
+    return ""
 
 
 def _with_carried_subject(value: str, subject_prefix: str) -> str:
@@ -433,9 +490,17 @@ def _with_carried_subject(value: str, subject_prefix: str) -> str:
 
 def _carried_subject_action_verb(subject_prefix: str, verb: str) -> str:
     subject = _clean(subject_prefix).casefold()
-    if subject in {"they", "we"}:
+    if subject in {"they", "we"} or _looks_like_plural_subject(subject):
         return base_action_clause(verb)
     return third_person_action_verb(verb)
+
+
+def _looks_like_plural_subject(value: str) -> bool:
+    words = [word.strip(".,:;").casefold() for word in _clean(value).split() if word.strip(".,:;")]
+    if not words:
+        return False
+    head = words[-1]
+    return len(head) > 3 and head.endswith("s") and not head.endswith(("ics", "ss", "us"))
 
 
 def _carried_subject_prefix(value: str) -> str:

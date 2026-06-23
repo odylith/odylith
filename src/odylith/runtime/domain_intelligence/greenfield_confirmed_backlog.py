@@ -281,18 +281,22 @@ def confirmed_backlog_rows(
     first_path_capability = backlog_text.capability_action_clause(
         primary_user_action or backlog_text.sentence_fragment(clauses.capability_chain) or first_path_entry_text
     )
-    first_path_full_capability = backlog_text.capability_action_clause(backlog_text.sentence_fragment(clauses.capability_chain) or first_path_capability)
+    first_path_full_capability = _dedupe_capability_phrase(
+        backlog_text.capability_action_clause(backlog_text.sentence_fragment(clauses.capability_chain) or first_path_capability)
+    )
     outcome_summary = backlog_text.sentence_fragment(clauses.visible_result) or backlog_text.first_path_outcome(first_path_summary, proof_boundary=proof_boundary)
     outcome_action = _outcome_action_phrase(outcome_summary)
     proof_focus = backlog_text.proof_focus_phrase(proof_summary, fallback="release decision")
     state_responsibility = _state_responsibility_label(state_label)
     dependency_outcome = outcome_summary or "the promised first-path result"
     first_path_action = backlog_text.capability_action_clause(primary_user_action or first_path_entry_text or first_path_capability)
-    first_path_proof_capability = first_path_capability_phrase(
-        first_path_for_clauses,
-        fallback=first_path_action,
-        limit=340,
-        max_fragments=7,
+    first_path_proof_capability = _dedupe_capability_phrase(
+        first_path_capability_phrase(
+            first_path_for_clauses,
+            fallback=first_path_action,
+            limit=340,
+            max_fragments=7,
+        )
     )
     path_entry_story = backlog_text.sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
     workflow_actor_label = backlog_text.lead_actor_label(first_release_human_actors) or f"{label} user"
@@ -305,6 +309,9 @@ def confirmed_backlog_rows(
     follow_up_subject = downstream_subject if downstream_actor else metric_actor
     follow_up_inline = backlog_text.inline_actor_subject(follow_up_subject)
     metric_actor_inline = backlog_text.inline_actor_subject(metric_actor)
+    metric_actor_needs = _actor_verb(metric_actor, singular="needs", plural="need")
+    metric_actor_provides = _actor_verb(metric_actor_inline, singular="provides", plural="provide")
+    follow_up_receives = _actor_verb(follow_up_subject, singular="receives", plural="receive")
     workflow_audience = backlog_actions.join_distinct_labels([workflow_actor_label, downstream_actor])
     boundary_audience = workflow_audience or f"{label} operators and reviewers"
     proof_audience = downstream_actor or f"{label} proof reviewer"
@@ -406,17 +413,17 @@ def confirmed_backlog_rows(
         label=label,
         title=workflow_title,
         problem=(
-            f"{metric_actor} needs the first interaction to let them {outcome_action}, not just captured input. "
+            f"{metric_actor} {metric_actor_needs} the first interaction to let them {outcome_action}, not just captured input. "
             f"If the path accepts incomplete details or hides why it stopped, {follow_up_inline} cannot act on the result with confidence."
         ),
         customer=workflow_actor_label,
         opportunity=(
-            f"Turn the first actor-owned action into a complete, reviewable outcome: {metric_actor_inline} provides what the product needs, "
+            f"Turn the first actor-owned action into a complete, reviewable outcome: {metric_actor_inline} {metric_actor_provides} what the product needs, "
             f"leaves enough context for follow-up, and lets {recipient_phrase} {outcome_action}."
         ),
         product_view=(
             f"{metric_actor} can {workflow_action}. The product checks the details, explains missing information before it produces a result, "
-            f"{workflow_result_sentence}. {follow_up_subject} receives the saved context needed to continue without reinterpreting the user's intent."
+            f"{workflow_result_sentence}. {follow_up_subject} {follow_up_receives} the saved context needed to continue without reinterpreting the user's intent."
         ),
         first_slice=(
             f"One representative path where {metric_actor_inline} can {workflow_action}"
@@ -424,9 +431,9 @@ def confirmed_backlog_rows(
         ),
         metrics=[
             (
-                f"The first interaction proves {first_path_proof_capability} with success, blocked-input, replay, and handoff evidence."
+                f"The first interaction covers {first_path_proof_capability} with success, blocked-input, replay, and handoff evidence."
                 if backlog_text.result_terms_covered(outcome_action, first_path_proof_capability)
-                else f"The first interaction proves {first_path_proof_capability} and lets {recipient_phrase} {outcome_action}."
+                else f"The first interaction covers {first_path_proof_capability} and lets {recipient_phrase} {outcome_action}."
             ),
             "Missing or invalid information produces clear correction guidance instead of a misleading result.",
             f"{follow_up_subject} can use the saved context without asking the user to repeat the same details.",
@@ -472,7 +479,9 @@ def confirmed_backlog_rows(
             diagram_slugs["component_boundaries"],
             diagram_slugs["ownership"],
         ],
-        dependencies=[f"{primary_component} supplies the user action; accepted external sources stay explicit when the first path names them."],
+        dependencies=[
+            f"{primary_component} supplies the first-path entry action; accepted external sources stay explicit when the first path names them."
+        ],
         interfaces=[
             f"Keep state, review, and external-dependency interfaces separate; state owned by {second_component} stays behind its own boundary."
         ],
@@ -661,6 +670,60 @@ def _backlog_row(
             non_goals=non_goals,
         ),
     }
+
+
+def _actor_verb(subject: str, *, singular: str, plural: str) -> str:
+    text = re.sub(r"\s+", " ", str(subject or "")).strip(" .").casefold()
+    text = re.sub(r"^(?:the|these|those|a|an|one|this|that|each)\s+", "", text).strip()
+    if not text:
+        return singular
+    if " and " in text or "," in text:
+        return plural
+    first = text.split(maxsplit=1)[0]
+    plural_heads = {"people", "users", "customers", "operators", "reviewers", "participants", "teams", "leads"}
+    if first in plural_heads:
+        return plural
+    words = text.split()
+    if words and words[-1].endswith("s") and not words[-1].endswith("ss"):
+        return plural
+    return singular
+
+
+def _dedupe_capability_phrase(value: str) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
+    if not text:
+        return ""
+    clauses = [part.strip(" ,") for part in re.split(r",\s+|\s+and\s+", text) if part.strip(" ,")]
+    if len(clauses) <= 1:
+        return text
+    seen: set[str] = set()
+    unique: list[str] = []
+    for clause in clauses:
+        key = _capability_clause_key(clause)
+        if key and key in seen:
+            continue
+        if key:
+            seen.add(key)
+        unique.append(clause)
+    if len(unique) == len(clauses):
+        return text
+    if len(unique) == 1:
+        return unique[0]
+    if len(unique) == 2:
+        return f"{unique[0]} and {unique[1]}"
+    return f"{', '.join(unique[:-1])}, and {unique[-1]}"
+
+
+def _capability_clause_key(value: str) -> str:
+    tokens: list[str] = []
+    for raw in re.sub(r"[-/]", " ", str(value or "")).split():
+        token = raw.strip(".,:;()[]{}").casefold()
+        if len(token) < 4:
+            continue
+        if token in {"prove", "proves", "proved", "proven", "proof"}:
+            token = "proof"
+        tokens.append(token)
+    return " ".join(tokens)
 
 
 __all__ = [

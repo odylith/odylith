@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import normalize_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -72,6 +73,33 @@ def test_confirmed_prompt_source_removes_command_wrapper_without_regex_rules() -
     )
 
 
+def test_confirmed_prompt_source_recovers_product_title_from_proposal_wrapper() -> None:
+    assert (
+        prompt_project_title_source(
+            "Create a greenfield proposal for a municipal permit review workspace where applicants submit permit packets."
+        )
+        == "municipal permit review workspace"
+    )
+    assert (
+        prompt_project_title_source(
+            "Draft a product-first greenfield proposal for an incident response desk where coordinators route official responses."
+        )
+        == "incident response desk"
+    )
+    assert (
+        prompt_project_title_source(
+            "Create a greenfield proposal for a pattern relief studio where makers capture fabric constraints."
+        )
+        == "pattern relief studio"
+    )
+    assert (
+        prompt_project_title_source(
+            "Create a greenfield proposal for a practice choice coach where learners rehearse decisions."
+        )
+        == "practice choice coach"
+    )
+
+
 def test_confirmed_intent_parser_recovers_from_host_guidance_envelope_without_cli_leakage() -> None:
     prompt = (
         "Build a neighborhood tool where residents report broken streetlights, city staff triage duplicate reports, "
@@ -103,7 +131,7 @@ Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prom
     assert "Visible format contract" not in rendered
     assert "to first," not in rendered
     assert "to residents report" not in rendered
-    assert intent["title"] == "Repair Status Updates Workspace"
+    assert intent["title"] == "Neighborhood Tool"
     assert "residents report broken streetlights" in intent["first_path"]
     assert "repair status updates" in intent["proof_boundary"].casefold()
     assert intent["internal_systems"]
@@ -130,8 +158,43 @@ Next step
     assert "where Build" not in rendered
     assert "sales reps to qualify" not in rendered
     assert "sales reps can qualify leads" in rendered
-    assert intent["title"] == "Pipeline Health Workspace"
+    assert intent["title"] == "CRM Workspace"
     assert intent["first_path"].startswith("sales reps can qualify leads")
+
+
+def test_confirmed_intent_parser_lifts_one_line_operator_request_into_confirmation() -> None:
+    prompt = (
+        "Build a customer recovery desk for support leads to triage delayed orders, assign owners, "
+        "repair customer trust, and prove every response path before launch."
+    )
+
+    intent = parse_confirmed_intent_text(prompt, prompt=prompt)
+    encoded = json.dumps(intent, sort_keys=True)
+
+    assert intent["title"] == "Customer Recovery Desk"
+    assert "Build a customer recovery desk" not in encoded
+    assert "Greenfield Project State" not in encoded
+    assert "keeps prove" not in encoded
+    assert "shows prove" not in encoded
+    assert "the proven response path before launch" in encoded
+    assert "support leads can triage delayed orders" in intent["first_path"]
+    assert intent["human_actors"] == [
+        "Support Leads: needs the product to triage delayed orders and keep the result visible and reviewable"
+    ]
+    assert intent["internal_systems"] == [
+        (
+            "Customer Recovery Desk Intake Register — records source input, current status, owner, blocker, "
+            "handoff, and version history for the first path"
+        ),
+        (
+            "Customer Recovery Desk Review Workspace — presents current state, missing input, "
+            "user-facing confirmation, and the next useful action"
+        ),
+        (
+            "Customer Recovery Desk Proof Ledger — keeps validation results, release decisions, failure reasons, "
+            "and replayable evidence for review"
+        ),
+    ]
 
 
 def test_confirmed_intent_completion_preserves_explicit_actor_and_system_rows() -> None:
@@ -1314,7 +1377,7 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     titles = [str(row["title"]) for row in accepted["proposal"]["backlog"]]
     assert titles == [
         "Prove One Complete Decision Review Workspace Path",
-        "Let Coordinator Use the Final Status with Source Evidence",
+        "Let Coordinator Review the Final Status with Source Evidence",
         "Keep Decision Record Clear After Quality Review Changes It",
         "Show Why Decision Record Can Be Trusted",
     ]
@@ -1322,13 +1385,13 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     assert "Useful for One Complete Outcome" not in encoded
     assert "Ship one complete outcome" not in encoded
     rows_by_title = {str(row["title"]): row for row in accepted["proposal"]["backlog"]}
-    first_path_row = rows_by_title["Let Coordinator Use the Final Status with Source Evidence"]
+    first_path_row = rows_by_title["Let Coordinator Review the Final Status with Source Evidence"]
     state_row = rows_by_title["Keep Decision Record Clear After Quality Review Changes It"]
     proof_row = rows_by_title["Show Why Decision Record Can Be Trusted"]
 
     assert "final status with source evidence" in first_path_row["problem"]
     assert "import one observation" in first_path_row["product_view"]
-    assert "use the final status with source evidence" in first_path_row["product_view"]
+    assert "review the final status with source evidence" in first_path_row["product_view"]
     assert "quality evidence" in encoded
     assert "Decision Record" in state_row["product_view"]
     assert "actor, source, status" in " ".join(state_row["success_metrics"])
@@ -1353,6 +1416,57 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
         for row in (first_path_row, state_row, proof_row)
     ]
     assert _max_word_overlap(child_blobs) < 0.60
+
+
+def test_confirmed_greenfield_create_lifts_one_line_intent_file_before_post_confirm(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    prompt = (
+        "Build a customer recovery desk for support leads to triage delayed orders, assign owners, "
+        "repair customer trust, and prove every response path before launch."
+    )
+    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(prompt + "\n", encoding="utf-8")
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            prompt,
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--release",
+            "0.0.1",
+            "--confirm",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert rc == 0, output
+    assert "greenfield create wrote confirmed proposal" in output
+    accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
+    encoded = json.dumps(accepted)
+    assert "Customer Recovery Desk" in encoded
+    assert "Greenfield Project State" not in encoded
+    assert "Build a customer recovery desk" not in encoded
+    assert "can can" not in encoded.casefold()
+    assert "Let Support Leads Can" not in encoded
+    assert "with reviewable blocker handoff correction release status" not in encoded
+    assert "use proven response path" not in encoded
+    assert "the support leads provides" not in encoded.casefold()
+    assert "the support leads needs" not in encoded.casefold()
+    assert "support leads can triage delayed orders" in encoded
+    assert "the proven response path before launch" in encoded
+    assert accepted["validation_gate"]["status"] == "passed"
 
 
 def test_confirmed_proposal_completion_adds_component_risks_and_fresh_diagram_watch_paths(tmp_path: Path) -> None:

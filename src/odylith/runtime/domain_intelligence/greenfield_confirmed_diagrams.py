@@ -97,7 +97,7 @@ def confirmed_diagrams(
                 )
             ),
             "read_guide": (
-                f"Start with the user action. Follow {actor_phrase} through each product responsibility. The release must still prove: "
+                f"Start with the first participant action. Follow {actor_phrase} through each product responsibility. The release must still prove: "
                 f"{proof_brief or 'the promised user-visible result'}."
             ),
             "owner": "repo",

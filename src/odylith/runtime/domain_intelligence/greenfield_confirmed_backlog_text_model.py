@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
@@ -643,6 +644,7 @@ def capability_action_clause(value: str) -> str:
 
 def normalize_action_clause(value: str) -> str:
     text = base_action_clause(sentence_fragment(value))
+    text = _strip_leading_action_modal(text)
     text = re.sub(
         r"^(?:(?:a|an|the)\s+)?(?:user|owner|person|actor|customer|applicant|participant|operator)\s+",
         "",
@@ -651,6 +653,7 @@ def normalize_action_clause(value: str) -> str:
     )
     for inflected, base in {
         "adds": "add",
+        "assigns": "assign",
         "asks": "ask",
         "logs": "log",
         "enters": "enter",
@@ -664,11 +667,32 @@ def normalize_action_clause(value: str) -> str:
         "records": "record",
         "captures": "capture",
         "confirms": "confirm",
+        "proves": "prove",
+        "publishes": "publish",
         "reviews": "review",
+        "updates": "update",
     }.items():
+        text = re.sub(rf"^{re.escape(inflected)}\b", base, text, flags=re.IGNORECASE)
         text = re.sub(rf"\b(and|then)\s+{re.escape(inflected)}\b", rf"\1 {base}", text, flags=re.IGNORECASE)
         text = re.sub(rf"\b(and|then)\s+manually\s+{re.escape(inflected)}\b", rf"\1 manually {base}", text, flags=re.IGNORECASE)
+    gerund_text = base_gerund_clause(text)
+    if gerund_text:
+        text = gerund_text
     return re.sub(r"\s+", " ", text).strip(" .") or "complete the accepted path"
+
+
+def _strip_leading_action_modal(value: str) -> str:
+    words = str(value or "").strip(" .").split()
+    while words:
+        token = words[0].casefold().strip(".,:;")
+        if token in {"can", "could", "must", "should", "will", "would"}:
+            words = words[1:]
+            continue
+        if len(words) >= 2 and token in {"need", "needs"} and words[1].casefold().strip(".,:;") == "to":
+            words = words[2:]
+            continue
+        break
+    return " ".join(words).strip(" .")
 
 
 def sentence_fragment(value: str) -> str:

@@ -205,10 +205,10 @@ def _legacy_greenfield_narrative(*, title: str, kind: str, summary: str, read_gu
         return DiagramNarrative(
             summary=_sentence(
                 f"{title_label} shows what the first release must prove{path_clause}. "
-                "It keeps the user action, product responsibilities, and proof boundary visible before implementation expands scope."
+                "It keeps the first participant action, product responsibilities, and proof boundary visible before implementation expands scope."
             ),
             read_guide=(
-                "Start with the user action. Follow each named product responsibility. Treat proof or blocker notes "
+                "Start with the first participant action. Follow each named product responsibility. Treat proof or blocker notes "
                 "as the conditions that must hold before source work or release trust."
             ),
             generated=True,
@@ -348,6 +348,10 @@ def describe_graph_node(*, graph: MermaidGraph, node_id: str) -> str:
     outgoing_conditions = _label_list([edge.label for edge in outgoing if edge.label], limit=3)
     subject = _sentence_subject(_primary_label(label))
 
+    if _looks_like_actor_node(node_id=node_id, label=label):
+        if outgoing_targets:
+            return f"{subject} starts this path and supplies the action, decision, or review needed by {outgoing_targets}."
+        return f"{subject} is a participant in this path and should have a clear responsibility, input, or result."
     if _is_exception_label(_primary_label(label)):
         route = incoming_conditions or incoming_sources
         if route:
@@ -394,6 +398,8 @@ def describe_graph_node_role(*, graph: MermaidGraph, node_id: str) -> str:
     visible_incoming = tuple(edge for edge in incoming if edge.source_id != "[*]")
     outgoing = graph.outgoing(node_id)
     lowered = _primary_label(label).casefold()
+    if _looks_like_actor_node(node_id=node_id, label=label):
+        return "Actor"
     if _is_exception_label(_primary_label(label)):
         return "Safety stop"
     if _is_success_label(_primary_label(label)) and incoming:
@@ -735,6 +741,81 @@ def _action_nodes(graph: MermaidGraph) -> tuple[str, ...]:
 def _looks_like_action_label(value: str) -> bool:
     text = _primary_label(value).casefold()
     return bool(_ACTION_RE.search(text) or re.search(r"\b[a-z][a-z0-9-]{2,}ing\b", text))
+
+
+def _looks_like_actor_node(*, node_id: str, label: str) -> bool:
+    key = str(node_id or "").casefold()
+    if key == "actor" or re.fullmatch(r"actor\d*", key):
+        return True
+    lowered = _primary_label(label).casefold()
+    tokens = re.findall(r"[a-z][a-z0-9'-]*", lowered)
+    if not tokens or len(tokens) > 7:
+        return False
+    system_tokens = {
+        "adapter",
+        "app",
+        "application",
+        "command",
+        "console",
+        "dashboard",
+        "desk",
+        "engine",
+        "form",
+        "interface",
+        "intake",
+        "ledger",
+        "model",
+        "platform",
+        "portal",
+        "product",
+        "queue",
+        "register",
+        "registry",
+        "service",
+        "store",
+        "surface",
+        "system",
+        "tool",
+        "tracker",
+        "view",
+        "workspace",
+    }
+    if any(token in system_tokens for token in tokens):
+        return False
+    if re.match(
+        r"^(?:assign|check|choose|collect|compare|create|display|download|enter|export|fix|generate|import|inspect|log|open|prove|record|repair|review|route|save|select|send|show|submit|triage|update|upload|validate|view)\b",
+        lowered,
+    ):
+        return False
+    person_tokens = {
+        "actor",
+        "actors",
+        "applicant",
+        "applicants",
+        "beneficiary",
+        "beneficiaries",
+        "client",
+        "clients",
+        "customer",
+        "customers",
+        "lead",
+        "leads",
+        "operator",
+        "operators",
+        "participant",
+        "participants",
+        "performer",
+        "performers",
+        "requester",
+        "requesters",
+        "reviewer",
+        "reviewers",
+        "stakeholder",
+        "stakeholders",
+        "user",
+        "users",
+    }
+    return any(token in person_tokens for token in tokens)
 
 
 def _state_through_nodes(graph: MermaidGraph) -> tuple[str, ...]:

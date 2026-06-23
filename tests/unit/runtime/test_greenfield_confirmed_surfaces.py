@@ -102,7 +102,7 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
     assert "Walk the accepted first path" not in copy
     assert sequence["kind"] == "flowchart"
     assert sequence["mermaid_source"].startswith("flowchart LR")
-    assert 'actor["User action<br/>Solo performer"]' in sequence["mermaid_source"]
+    assert 'actor["Solo performer"]' in sequence["mermaid_source"]
     assert 'C1["Audio Capture and<br/>Pre-processing Service"]' in sequence["mermaid_source"]
     assert 'S1["Open LiveScore"]' in sequence["mermaid_source"]
     assert 'S2["Tap Record"]' in sequence["mermaid_source"]
@@ -114,13 +114,15 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
     assert "C4-" not in sequence["mermaid_source"]
     assert "<br/>" in sequence["mermaid_source"]
     assert "**" not in sequence["mermaid_source"]
+    assert "User action" not in sequence["mermaid_source"]
+    assert "Show outcome:" not in sequence["mermaid_source"]
     assert "The first complete path" not in sequence["mermaid_source"]
     assert "…" not in sequence["mermaid_source"]
     assert "component cards to decode" not in copy
     assert "User opens LiveScore" not in sequence["summary"]
     assert "This sequence shows what the first release must prove from Solo performer (primary)" in sequence["summary"]
     assert "solo monophonic instrument single take" in sequence["summary"]
-    assert sequence["read_guide"].startswith("Start with the user action.")
+    assert sequence["read_guide"].startswith("Start with the first participant action.")
     assert "component handoff" not in sequence["read_guide"]
     assert "component; messages are calls" not in sequence["read_guide"]
     assert "State object" in state_evidence["mermaid_source"]

@@ -289,7 +289,11 @@ def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) ->
     path = Path(intent_file).expanduser()
     if not path.is_absolute():
         path = repo_root / path
-    intent = load_confirmed_intent_file(path)
+    intent = load_confirmed_intent_file(
+        path,
+        prompt=str(getattr(args, "prompt", "") or ""),
+        fallback_title=_intent_title(str(getattr(args, "prompt", "") or "")),
+    )
     if path.suffix.lower() != ".json":
         write_structured_confirmed_intent_file(path, intent)
     return intent

@@ -8,13 +8,12 @@ import re
 from typing import Any, Mapping, Sequence
 
 from odylith.runtime.common.prose_grammar import action_verb_pattern
-from odylith.runtime.common.prose_grammar import base_action_clause
-from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
 from odylith.runtime.domain_intelligence.greenfield_component_terms import object_clause_focus
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import normalize_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
@@ -365,7 +364,47 @@ def _first_path_events(
                 text=event_text,
             )
         )
-    return events
+    return _ensure_first_path_event_floor(
+        events,
+        actor=current_actor or actor,
+        state_object=state_object,
+        visible_result=visible_result_text,
+    )
+
+
+def _ensure_first_path_event_floor(
+    events: list[FirstPathEvent],
+    *,
+    actor: str,
+    state_object: str,
+    visible_result: str,
+) -> list[FirstPathEvent]:
+    if len(events) >= 3:
+        return events
+    rows = list(events)
+    while len(rows) < 3:
+        if visible_result and not any(event.visible_result for event in rows):
+            text = f"Review {visible_result[:1].lower()}{visible_result[1:]}"
+            is_visible = True
+        elif visible_result:
+            text = f"Review evidence for {visible_result[:1].lower()}{visible_result[1:]}"
+            is_visible = True
+        else:
+            text = "Review blockers, evidence, and next step"
+            is_visible = False
+        rows.append(
+            FirstPathEvent(
+                index=len(rows) + 1,
+                actor=actor,
+                action=_action_label(text),
+                target_entity=_event_target(text, state_object=state_object),
+                mutation=text,
+                visible_result=is_visible,
+                recovery_path=False,
+                text=text,
+            )
+        )
+    return rows
 
 
 def _event_actor(value: str, *, human_actors: Sequence[str], fallback: str) -> str:
@@ -468,7 +507,7 @@ def _proof_obligations(
 
 def _first_path_contract_claim(first_path_contract: FirstPathContract) -> str:
     capability = clean_text(first_path_contract.capability).strip(" .") or "complete the first path"
-    action = _actor_led_base_action_phrase(capability) or base_gerund_clause(capability) or base_action_clause(capability)
+    action = _actor_led_base_action_phrase(capability) or normalize_action_clause(capability)
     if action and looks_like_action_clause(action):
         return f"{first_path_contract.actor} can {action}."
     return f"{first_path_contract.actor} can complete {capability}."
@@ -479,7 +518,7 @@ def _actor_led_base_action_phrase(value: str) -> str:
     for index in range(1, min(len(words), 6)):
         candidate = " ".join(words[index:]).strip(" .")
         if looks_like_finite_action(candidate):
-            return base_action_clause(candidate)
+            return normalize_action_clause(candidate)
     return ""
 
 

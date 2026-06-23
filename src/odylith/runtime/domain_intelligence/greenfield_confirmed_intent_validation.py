@@ -17,6 +17,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIR
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import progression_marker_count
 
 
@@ -72,6 +74,8 @@ def validate_confirmed_intent(intent: Mapping[str, Any]) -> None:
     missing: list[str] = []
     for key, minimum in FIELD_MIN_WORDS.items():
         if key == "product_story" and _product_story_is_clear_enough(intent):
+            continue
+        if key == "first_path" and _first_path_is_clear_enough(intent):
             continue
         if word_count(clean_confirmed_text(intent.get(key))) < minimum:
             missing.append(key)
@@ -147,7 +151,10 @@ def _qualitative_intent_gaps(intent: Mapping[str, Any]) -> list[str]:
         gaps.append("product_story")
     if state and not (_has_meaningful_sentences(state, minimum=1) and has_progression_or_outcome(state)):
         gaps.append("state_object")
-    if path and not (has_progression_or_outcome(path) and _has_semantic_overlap(path, context, minimum=2)):
+    if path and not (
+        _first_path_is_clear_enough(intent)
+        or (has_progression_or_outcome(path) and _has_semantic_overlap(path, context, minimum=2))
+    ):
         gaps.append("first_path")
     if proof and not (
         (has_progression_or_outcome(proof) or _has_release_success_proof_shape(proof))
@@ -159,6 +166,31 @@ def _qualitative_intent_gaps(intent: Mapping[str, Any]) -> list[str]:
     if systems and not _has_semantic_overlap(systems, f"{story} {state} {path} {proof}", minimum=2):
         gaps.append("internal_systems")
     return gaps
+
+
+def _first_path_is_clear_enough(intent: Mapping[str, Any]) -> bool:
+    path = clean_confirmed_text(intent.get("first_path"))
+    if word_count(path) < 6:
+        return False
+    action = first_path_action_phrase(path, fallback="", max_fragments=2)
+    outcome = first_path_outcome_phrase(path, fallback="", limit=160)
+    context = " ".join(
+        part
+        for part in (
+            clean_confirmed_text(intent.get("product_story")),
+            clean_confirmed_text(intent.get("state_object")),
+            clean_confirmed_text(intent.get("proof_boundary")),
+            " ".join(confirmed_text_values(intent.get("human_actors"))),
+            " ".join(confirmed_text_values(intent.get("internal_systems"))),
+        )
+        if part
+    )
+    return bool(
+        clean_confirmed_text(action)
+        and clean_confirmed_text(outcome)
+        and len(semantic_terms(path, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)) >= 4
+        and _has_semantic_overlap(path, context, minimum=1)
+    )
 
 
 def _has_meaningful_sentences(text: str, *, minimum: int) -> bool:

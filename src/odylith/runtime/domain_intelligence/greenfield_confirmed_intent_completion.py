@@ -280,7 +280,7 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
         intent["state_object"] = _sentence(
             f"{state_label} records the current status, actor, source input, decision, blocked reason, evidence links, timestamp, and version history for the accepted first path."
         )
-    if _word_count(first_path) < CORE_FIELD_MIN_WORDS["first_path"]:
+    if _word_count(first_path) < CORE_FIELD_MIN_WORDS["first_path"] and not _first_path_is_complete_enough(first_path):
         primary = actors[0] if actors else f"{_focus_label(title)} operator"
         source_text = ". ".join(value for value in (story, state, proof) if value)
         action = first_path_action_phrase(source_text, fallback="provide the required information", max_fragments=2)
@@ -298,6 +298,15 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
             f"The first release works when a representative user can {action}, the product confirms the user can {outcome_action}, and missing or invalid information leaves a clear correction path instead of a misleading result. "
             f"It must not claim live integrations, broad automation, regulated correctness, or production-scale operation beyond the confirmed {title.lower()} boundary."
         )
+
+
+def _first_path_is_complete_enough(value: str) -> bool:
+    text = _clean(value)
+    if _word_count(text) < 6:
+        return False
+    action = first_path_action_phrase(text, fallback="", max_fragments=2)
+    outcome = first_path_outcome_phrase(text, fallback="", limit=160)
+    return bool(_clean(action) and _clean(outcome) and len(_semantic_terms(text)) >= 4)
 
 
 def _story_needs_completion(value: str) -> bool:

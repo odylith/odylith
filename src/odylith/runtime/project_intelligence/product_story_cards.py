@@ -135,8 +135,8 @@ def _context(
     story = _product_sentence(intent.get("product_story")) or _product_sentence(objective)
     problem = _product_sentence(intent.get("problem")) or _project_line(project, "problem") or _problem_from_story(story)
     resolved_outcome = (
-        _outcome_from_text(first_path)
-        or _product_sentence(outcome)
+        _product_sentence(outcome)
+        or _outcome_from_text(first_path)
         or _project_line(project, "user or stakeholder outcome")
         or _outcome_from_text(story)
         or _product_sentence(intent.get("state_object"))
@@ -600,6 +600,13 @@ def _outcome_phrase(ctx: _StoryCardContext) -> str:
 
 def _outcome_as_noun(value: str) -> str:
     text = _lower_first(value).strip(" .")
+    proof_action = re.match(
+        r"^(?:prove|proves)\s+(?:all|each|every\s+)?(?P<object>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if proof_action:
+        return f"the proven {_clean(proof_action.group('object')).strip(' .')}"
     product_result = re.match(
         r"^(?:the\s+)?(?:product|system|app|application|tool|dashboard|screen|view)\s+"
         r"(?:displays?|offers?|produces?|returns?|shows?)\s+(?P<object>.+)$",
@@ -629,6 +636,12 @@ def _outcome_as_noun(value: str) -> str:
         verb = _clean(match.group("verb")).strip(" .")
         if subject and verb:
             return f"a result that lets {subject} {verb}"
+    if not re.match(r"^(?:a|an|the|this|that|one)\s+", text, flags=re.IGNORECASE) and re.match(
+        r"^(?:accepted|approved|captured|confirmed|exported|preserved|proven|published|recorded|saved|selected|stored|verified)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return f"the {text}"
     return text
 
 

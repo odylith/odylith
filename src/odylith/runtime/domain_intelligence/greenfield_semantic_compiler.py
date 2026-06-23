@@ -14,17 +14,11 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import lowercase_leading_article
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     action_chain_fragment,
-)
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
-    clean_first_path_text,
-)
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
-    clip_first_path_phrase,
-)
-from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
-    lowercase_leading_article,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     nominal_visible_result_object,

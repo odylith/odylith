@@ -10,6 +10,7 @@ from odylith.runtime.common import display_text
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import ACTION_VERB_PATTERN as _ACTION_VERB_PATTERN
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
@@ -100,8 +101,8 @@ def first_path_flowchart_mermaid(
     steps = sequence_event_steps(first_path, semantic_model=semantic_model, dedupe=True)
     if not steps:
         steps = ["Start the accepted path", "Record product state and evidence", "Review the outcome and blockers"]
-    visible_steps = _flowchart_visible_steps(steps)
     terminal_outcome = _semantic_visible_result(semantic_model)
+    visible_steps = _ensure_flowchart_event_floor(_flowchart_visible_steps(steps), terminal_outcome)
     actor_label = _actor_role_label((actors or [f"{label} user"])[0])
     previous = "actor"
     used_components: set[str] = set()
@@ -112,7 +113,7 @@ def first_path_flowchart_mermaid(
         step_rows.append((index, step, owner))
     lines = [
         "flowchart LR",
-        f'  actor["User action<br/>{_flow_label(actor_label, width=26, max_lines=3, limit=72)}"]',
+        f'  actor["{_flow_label(actor_label, width=26, max_lines=3, limit=72)}"]',
     ]
     used_indexes = sorted(int(node[1:]) for node in used_components if node.startswith("C") and node[1:].isdigit())
     for index in used_indexes:
@@ -131,7 +132,7 @@ def first_path_flowchart_mermaid(
         lines.append(f"  {step_node} --> {owner}")
         previous = owner
     proof_label = _flow_label(terminal_outcome, width=30, max_lines=5, limit=168) if terminal_outcome else "state, evidence, and next action stay visible"
-    lines.append(f'  proof["Outcome<br/>{proof_label}"]')
+    lines.append(f'  proof["Proof result<br/>{proof_label}"]')
     lines.append(f"  {previous} --> proof")
     lines.extend(
         [
@@ -152,6 +153,19 @@ def _flowchart_visible_steps(steps: list[str], *, limit: int = 10) -> list[str]:
         return list(steps)
     return [*steps[: max(0, limit - 1)], steps[-1]]
 
+
+def _ensure_flowchart_event_floor(steps: list[str], visible_result: str) -> list[str]:
+    rows = [_compact_text(step).strip(" .") for step in steps if _compact_text(step).strip(" .")]
+    if len(rows) >= 3:
+        return rows
+    outcome = _compact_text(visible_result).strip(" .")
+    if outcome and not any(_sequence_terms(outcome) <= _sequence_terms(step) for step in rows if _sequence_terms(step)):
+        rows.append(f"Review {outcome[:1].lower()}{outcome[1:]}")
+    while len(rows) < 3:
+        rows.append("Review blockers, evidence, and next step")
+    return rows
+
+
 def _semantic_visible_result(semantic_model: Mapping[str, Any] | None) -> str:
     if not isinstance(semantic_model, Mapping):
         return ""
@@ -171,7 +185,7 @@ def _terminal_step_label(step: str, visible_result: str) -> str:
     outcome_terms = _sequence_terms(outcome)
     if step_terms and not step_terms <= outcome_terms:
         return action_label
-    return f"Show outcome: {outcome}"
+    return outcome[:1].upper() + outcome[1:] if outcome else action_label
 
 def best_component_node_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
     """Return the component node id whose local language best matches the text."""
@@ -463,6 +477,11 @@ def _step_message(value: str, *, keep_actor_subject: bool = True) -> str:
 def _step_action_label(value: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _strip_dangling_tail(_trim(value, 220)), flags=re.IGNORECASE)
     text = re.sub(r"^(?:the\s+)?(?:product|app|application|system)\s+", "", text, flags=re.IGNORECASE)
+    modal_actor, modal_action = modal_actor_action_parts(text)
+    if modal_action:
+        text = _modal_actor_step_label(actor=modal_actor, action=modal_action)
+        text = _compress_step_action_label(text)
+        return text[:1].upper() + text[1:] if text else "Advance accepted path"
     if _retains_readable_step_subject(text):
         text = _compress_step_action_label(text)
         return text[:1].upper() + text[1:] if text else "Advance accepted path"
@@ -528,6 +547,23 @@ def _third_person_verb(value: str) -> str:
     if lowered.endswith("y") and len(verb) > 1 and lowered[-2] not in {"a", "e", "i", "o", "u"}:
         return f"{verb[:-1]}ies"
     return f"{verb}s"
+
+
+def _modal_actor_step_label(*, actor: str, action: str) -> str:
+    role = _actor_role_label(actor)
+    singular = bool(re.match(r"^(?:a|an|the|one)\s+", role, flags=re.IGNORECASE))
+    role = re.sub(r"^(?:a|an|the|one)\s+", "", role, flags=re.IGNORECASE).strip()
+    singular = singular or not role.casefold().endswith("s")
+    words = [word for word in _compact_text(action).strip(" .").split() if word]
+    if not role or not words:
+        return action
+    verb = words[0]
+    rest = " " + " ".join(words[1:]) if len(words) > 1 else ""
+    if singular:
+        verb = _third_person_verb(verb)
+        rest = _role_can_rest_to_third_person(rest)
+    return f"{role} {verb}{rest}".strip()
+
 
 def _role_can_rest_to_third_person(value: str) -> str:
     rest = str(value or "")
