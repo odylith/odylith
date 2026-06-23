@@ -613,6 +613,9 @@ def _balance_label(value: str) -> str:
 def _strip_dangling_tail(value: str) -> str:
     text = compact_text(value).rstrip(" ,;:.")
     while True:
+        text = re.sub(r"(?:,\s*)?(?:the\s+)?product\s+(?:show|shows)$", "", text, flags=re.IGNORECASE).rstrip(
+            " ,;:."
+        )
         text = _strip_clipped_terminal_action(text)
         cleaned = re.sub(
             r"\b(?:a|accepted|actionable|an|and|as|at|because|blocking|by|can|capturing|clear|comparing|complete|concrete|daily|final|first|for|from|if|in|into|its|key|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|their|this|through|tied|to|trusted|until|visible|warning|when|while|with|without)$",

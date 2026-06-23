@@ -121,4 +121,5 @@ def test_confirmed_project_brief_does_not_clip_article_modifier_tail_from_broad_
 
     assert "a reviewable." not in readiness_copy
     assert "product shows." not in readiness_copy
+    assert "the product shows a result" not in readiness_copy
     assert generated_public_copy_issues("training roster project brief", brief) == ()

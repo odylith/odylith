@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
+from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import brief_proof_boundary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import proof_checkpoint_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import semantic_proof_checkpoint
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
@@ -133,6 +134,20 @@ def test_confirmed_diagram_text_model_stays_in_dedicated_owner() -> None:
     assert proof_checkpoint_label("Done means: save the `AI/ML` review status and source note.") == (
         "save the AI/ML review status"
     )
+
+
+def test_brief_proof_boundary_does_not_clip_terminal_product_show_clause() -> None:
+    proof = (
+        "Release 0.0.1 succeeds when a warehouse slotting planner user starts a warehouse slotting planner request, "
+        "the product records required information, the product shows a reviewable result, "
+        "and the product marks the request ready or blocked."
+    )
+
+    brief = brief_proof_boundary(proof)
+
+    assert not brief.endswith("product shows")
+    assert "product shows." not in brief
+    assert "records required information" in brief
 
 
 def test_sequence_event_steps_stay_in_dedicated_owner() -> None:

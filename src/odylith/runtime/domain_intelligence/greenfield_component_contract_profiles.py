@@ -266,7 +266,7 @@ def _document_local_proof(
             f"Successful path evidence for {label}: user can attach required {context_label} to the correct {object_base}, "
             f"and uploaded context remains associated with the correct {object_base}."
         ),
-        f"Blocked input evidence for {label}: {missing} blocks submission before the product shows a trusted result.",
+        f"Blocked input evidence for {label}: {missing} blocks submission before a trusted result is presented.",
         (
             f"Replay evidence for {label}: source actor, uploaded context, status, access decision, and proof trail stay attached "
             f"to the correct {object_base}."

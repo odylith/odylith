@@ -81,6 +81,7 @@ _PRODUCT_CONTAINER_TERMS = frozenset(
         "experience",
         "hub",
         "platform",
+        "planner",
         "portal",
         "product",
         "room",
@@ -99,7 +100,7 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
 
     source = _clean(intent_text).strip(" .")
     recovered_first_path_source = prompt_first_path_source(source)
-    title_source = prompt_project_title_source(source) if prefer_product_title else ""
+    title_source = _recover_title_source(source) if prefer_product_title else ""
     title = _recovered_title(title_source or first_path_outcome_phrase(recovered_first_path_source, fallback=""))
     first_path_source = _usable_first_path_source(recovered_first_path_source, title=title) or _generic_first_path_source(title)
     actor_rows = _human_actor_rows_from_first_path(first_path_source)
@@ -200,6 +201,30 @@ def _generic_first_path_source(title: str) -> str:
         f"{actor[:1].upper()}{actor[1:]} starts {request}, the product records required information, "
         "the product shows a reviewable result, and the product marks the request ready or blocked"
     )
+
+
+def _recover_title_source(source: str) -> str:
+    title = prompt_project_title_source(source)
+    if title:
+        return title
+    return _direct_product_title_source(source)
+
+
+def _direct_product_title_source(source: str) -> str:
+    text = _clean(source).strip(" .")
+    words = _words(text)
+    if len(words) < 2 or len(words) > 8:
+        return ""
+    lowered = {word.casefold().strip(".,:;") for word in words}
+    if lowered & {"confirm", "confirmation", "format", "intent", "needed", "original", "sectioned", "visible"}:
+        return ""
+    if lowered <= _LEADING_ARTICLES:
+        return ""
+    if any(marker in lowered for marker in _MODAL_MARKERS):
+        return ""
+    if looks_like_action_clause(text) or first_path_model(text).material_action:
+        return ""
+    return " ".join(words).strip(" .")
 
 
 def _indefinite_phrase(value: str) -> str:
@@ -416,7 +441,13 @@ def _recovered_title(outcome: str) -> str:
 
 def _has_product_container_title(value: str) -> bool:
     terms = [term.casefold() for term in label_terms(value)]
-    return bool(terms and terms[-1] in _PRODUCT_CONTAINER_TERMS)
+    if terms and terms[-1] in _PRODUCT_CONTAINER_TERMS:
+        return True
+    words = [word.casefold().strip(".,:;") for word in _words(value)]
+    for index, word in enumerate(words[:-1]):
+        if word in _PRODUCT_CONTAINER_TERMS and words[index + 1] in {"for", "with"}:
+            return True
+    return False
 
 
 def _actor_reference(value: str) -> str:

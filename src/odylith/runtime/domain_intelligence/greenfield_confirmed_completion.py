@@ -294,7 +294,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3):
             metrics = [
                 f"{label} proves one complete user path and lets the user {outcome_action}.",
-                f"{label} explains blocked, missing, or invalid input before the product shows a result.",
+                f"{label} explains blocked, missing, or invalid input before a result is presented.",
                 f"{label} preserves state responsibility, actor, source, status, result, and recovery context for each accepted change to {state_change_ref or state_ref}.",
             ]
             if completion_text.row_is_release_proof(row):
@@ -508,7 +508,7 @@ def _repair_backlog_success_language(proposal: dict[str, Any], *, release_select
         metrics = [
             _sentence(f"{title} success proof for release {release} covers {proof_capability}.", limit=700),
             _sentence(f"{title} result proof confirms the user can {outcome_action} with a clear explanation.", limit=500),
-            _sentence(f"{title} explains missing or invalid input before the product shows a result.", limit=500),
+            _sentence(f"{title} explains missing or invalid input before a result is presented.", limit=500),
             _sentence(f"{title} preserves enough {state_object} context to explain the actor, status, result, and recovery path.", limit=500),
             _sentence(f"{title} stays inside the first-release promise and keeps deferred outcomes out of the success claim.", limit=500),
         ]
@@ -589,7 +589,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
             metrics = [
                 f"{title} success proof for release {release} covers {proof_capability}.",
                 f"{title} result proof confirms the user can {outcome_action} with a clear explanation.",
-                f"{title} explains missing or invalid input before the product shows a result.",
+                f"{title} explains missing or invalid input before a result is presented.",
                 f"{title} preserves enough {state_object} context to explain the actor, status, result, and recovery path.",
                 f"{title} stays inside the first-release promise without borrowing deferred outcomes.",
             ]

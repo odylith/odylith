@@ -651,6 +651,11 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
             for component in components
             if normalize_string(component.get("component_id")) and normalize_string(component.get("label"))
         ],
+        *[
+            component.get("label")
+            for component in components
+            if normalize_string(component.get("label"))
+        ],
     ]
     keys: set[str] = set()
     for value in values:

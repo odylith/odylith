@@ -45,6 +45,10 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         == "clinic follow-up coordination desk"
     )
     assert (
+        prompt_project_title_source("Draft a greenfield proposal for a warehouse slotting planner")
+        == "warehouse slotting planner"
+    )
+    assert (
         prompt_project_title_source(
             "Draft a greenfield proposal for a contract redline review room where reviewers compare clauses."
         )
@@ -174,6 +178,54 @@ def test_host_guidance_recovery_rejects_hyphenated_title_noun_as_first_path() ->
     assert "when a clinic follow-up coordination desk." not in intent["proof_boundary"]
     assert "sequence/parser debris" not in rendered
     assert "First Participant" not in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_host_guidance_recovery_handles_bare_short_product_noun_phrase() -> None:
+    prompt = "warehouse slotting planner"
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Warehouse Slotting Planner"
+    assert intent["first_path"].startswith(
+        "A warehouse slotting planner user starts a warehouse slotting planner request"
+    )
+    assert len(intent["internal_systems"]) == 3
+    assert intent["internal_systems"][0].startswith("Warehouse Slotting Planner Intake Register ")
+    assert "records source input" in intent["internal_systems"][0]
+    assert intent["internal_systems"][1].startswith("Warehouse Slotting Planner Review Workspace ")
+    assert "presents current state" in intent["internal_systems"][1]
+    assert intent["internal_systems"][2].startswith("Warehouse Slotting Planner Proof Ledger ")
+    assert "replayable evidence" in intent["internal_systems"][2]
+    assert "Recovered Product Workspace" not in rendered
+    assert "First Participant" not in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_host_guidance_recovery_keeps_audience_suffix_inside_product_title() -> None:
+    prompt = "kitchen robot controller for home cooks"
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Kitchen Robot Controller for Home Cooks"
+    assert "Kitchen Robot Controller for Home Cooks Workspace" not in rendered
+    assert "Recovered Product Workspace" not in rendered
     assert greenfield_quality_issues(proposal) == []
 
 

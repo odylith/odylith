@@ -1107,6 +1107,22 @@ def test_greenfield_package_gate_rejects_repeated_noncanonical_rendered_sentence
     assert "repeats a noncanonical sentence" in "\n".join(report.issues)
 
 
+def test_greenfield_package_repetition_allows_component_labels_as_identifiers(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    label = "Kitchen Robot Controller for Home Cooks Intake Register Service"
+    proposal["components"] = [{"component_id": "intake-register", "label": label}]
+    rendered_specs = {
+        f"Component {index}": f"# Component {index}\n\n{label}\n"
+        for index in range(1, 4)
+    }
+
+    issues = greenfield_rendered_package_quality_issues(
+        _package_for_quality_report(proposal, rendered_component_specs=rendered_specs)
+    )
+
+    assert "repeats a noncanonical sentence" not in "\n".join(issues)
+
+
 def test_greenfield_package_repetition_allows_semver_proof_boundary_source_text(tmp_path: Path) -> None:
     repeated = (
         "Version 0.0.1 is proven when a record moves across its full lifecycle, appears as a scheduled item, "

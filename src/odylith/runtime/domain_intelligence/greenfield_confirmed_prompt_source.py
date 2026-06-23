@@ -33,6 +33,7 @@ _REQUEST_PRODUCT_WORDS = frozenset(
         "engine",
         "hub",
         "platform",
+        "planner",
         "portal",
         "product",
         "project",
