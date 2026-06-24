@@ -386,7 +386,7 @@ def confirmed_backlog_rows(
             *(success_metrics or [])[:1],
             result_metric,
             f"{state_responsibility} remains understandable when input is accepted, blocked, corrected, or reviewed.",
-            f"{proof_component} keeps the success evidence replayable so a reviewer can see what happened and why.",
+            f"The proof ledger keeps {proof_component} success evidence replayable so a reviewer can see what happened and why.",
         ],
         component_focus=component_ids,
         diagram_focus=list(diagram_slugs.values()),

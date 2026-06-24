@@ -231,11 +231,11 @@ def _recover_host_guidance_confirmation(text: str, *, prompt: str = "") -> str:
     raw = str(text or "")
     if not _looks_like_host_guidance_envelope(raw):
         return raw
-    sections = _sections(raw)
-    if _has_structured_body_sections(sections):
-        return raw
     intent_text = _host_guidance_original_intent(raw) or _clean(prompt)
     if not intent_text:
+        sections = _sections(raw)
+        if _has_structured_body_sections(sections):
+            return raw
         return raw
     return confirmation_from_operator_intent(intent_text, prefer_product_title=True)
 

@@ -12,9 +12,14 @@ from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import compact_text as _compact_text
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label as _flow_label
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import node_id as _node_id
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import strip_dangling_tail as _strip_dangling_tail
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import trim as _trim
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import without_ellipsis as _without_ellipsis
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import ACTION_VERB_PATTERN as _ACTION_VERB_PATTERN
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
-from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 
 _BASE_ACTION_VERB_PATTERN = action_base_verb_pattern()
 
@@ -742,58 +747,4 @@ def _actor_role_label(value: object) -> str:
     text = re.sub(r"\s+", " ", text).strip(" ,.;:-")
     return _trim(text or "Product user", 58)
 
-def _flow_label(value: str, *, width: int, max_lines: int, limit: int) -> str:
-    return _without_ellipsis(mermaid_text.wrap_mermaid_label(_trim(value, limit), width=width, max_lines=max_lines, limit=limit))
-
-def _without_ellipsis(value: str) -> str:
-    return str(value or "").replace("…", "").replace("...", "").rstrip(" ,;:")
-
-def _trim(value: str, limit: int) -> str:
-    text = _compact_text(value)
-    if len(text) <= limit:
-        return text
-    clipped = clip_text_at_word_boundary(text, limit=limit)
-    return _balance_label(_strip_dangling_tail(clipped))
-
-def _balance_label(value: str) -> str:
-    text = _compact_text(value).strip(" ,;:.")
-    if text.count("(") > text.count(")"):
-        text = text.rsplit("(", 1)[0].rstrip(" ,;:.")
-    if text.count("[") > text.count("]"):
-        text = text.rsplit("[", 1)[0].rstrip(" ,;:.")
-    return text
-
-def _strip_dangling_tail(value: str) -> str:
-    text = _compact_text(value).rstrip(" ,;:.")
-    while True:
-        text = _strip_clipped_terminal_action(text)
-        cleaned = re.sub(
-            r"\b(?:a|accepted|actionable|an|and|as|at|because|by|can|capturing|clear|comparing|complete|concrete|daily|first|for|from|if|in|into|lets|must|of|on|one|or|receiving|reviewable|safety|should|specific|that|the|through|tied|to|trusted|until|visible|warning|when|while|with|without|alongside)$",
-            "",
-            text,
-            flags=re.IGNORECASE,
-        ).rstrip(" ,;:.")
-        cleaned = _strip_clipped_terminal_action(cleaned)
-        if cleaned == text:
-            return cleaned
-        text = cleaned
-
-def _strip_clipped_terminal_action(value: str) -> str:
-    text = _compact_text(value).rstrip(" ,;:.")
-    if "," not in text:
-        return text
-    head, tail = text.rsplit(",", 1)
-    token = tail.strip(" ,;:.").casefold()
-    if not token or " " in token:
-        return text
-    if token.endswith("ing") and len(token) > 5:
-        return head.rstrip(" ,;:.")
-    if re.fullmatch(_BASE_ACTION_VERB_PATTERN, token, flags=re.IGNORECASE):
-        return head.rstrip(" ,;:.")
-    return text
-def _compact_text(value: str) -> str:
-    return " ".join(str(value or "").split()).strip()
-
-def _node_id(prefix: str, index: int) -> str:
-    return f"{prefix}{index}"
 __all__ = ["best_component_node_for_text", "first_path_flowchart_mermaid", "sequence_mermaid"]

@@ -42,6 +42,7 @@ from odylith.runtime.domain_intelligence.greenfield_quality_gate import _contain
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
@@ -64,6 +65,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_boundary_language
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import build_workstream_domain_intelligence
 from odylith.runtime.domain_intelligence.proposal_tribunal_substance import (
@@ -596,6 +598,13 @@ def test_rendered_package_judgment_rejects_role_quality_failures() -> None:
     assert any("turns a requirement stated as `not later` into deferred scope" in issue for issue in issues)
 
 
+def test_reviewed_result_normalization_preserves_multi_word_result_nouns() -> None:
+    assert (
+        normalize_reviewed_result_nouns("review a reviewed installation plan with blockers")
+        == "review an installation plan with blockers"
+    )
+
+
 def test_state_reference_preserves_participial_descriptions_without_embedding_finite_restatements() -> None:
     proposal = {
         "intent": {
@@ -894,7 +903,8 @@ def test_backlog_rationale_does_not_clip_connector_interrupter_or_scope_predicat
     assert "see a history and a basic pattern summary" in proof_focus
     assert "after several entries in the same release story" not in release_basis
     assert "see a history and a basic pattern summary" in release_basis
-    assert "- deferred for now: External integrations, exports, and multi-user roles wait for" in rationale[3]
+    assert rationale[3].startswith("- deferred for now: Prove One Complete IncidentLog Path:")
+    assert "external integrations, exports, and multi-user roles wait for" in rationale[3].casefold()
     assert "out of scope for this first proof wait" not in rationale[3]
 
 
@@ -1394,6 +1404,35 @@ def test_generated_copy_quality_rejects_malformed_relative_clause_split() -> Non
     assert generated_semantic_slop_issues({"owned_state": "checks are meant to address"}) == [
         "malformed relative-clause split leaked at artifact.owned_state"
     ]
+
+
+def test_first_path_flowchart_strips_clipped_terminal_final_label() -> None:
+    source = (
+        "A grant coordinator preserves denial reasons, evidence gaps, appeal package readiness, and final submission state."
+    )
+    mermaid = first_path_flowchart_mermaid(
+        label="Grant Appeal Workspace",
+        actors=["Grant coordinator"],
+        components=[{"label": "Appeal Package Readiness Service", "release_scope": "first_path_required"}],
+        first_path=source,
+        semantic_model={
+            "first_path_contract": {
+                "events": [source],
+                "visible_result": "appeal package readiness and final submission state",
+            }
+        },
+    )
+
+    assert "and final\"]" not in mermaid
+    assert "and final<br/>" not in mermaid
+    assert (
+        "final<br/>submission state" in mermaid
+        or "final submission<br/>state" in mermaid
+        or "final submission state" in mermaid
+    )
+    assert not _artifact_surface_language_issues(
+        RenderedArtifact("Atlas Mermaid", "grant-appeal-first-path.mmd", mermaid, kind="mermaid")
+    )
 
 
 def test_package_quality_allows_plural_noun_after_to() -> None:

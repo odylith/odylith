@@ -381,7 +381,7 @@ def _is_supporting_evidence_artifact(value: str) -> bool:
     text = clean_text(value).casefold()
     if not text:
         return False
-    if any(term in text for term in ("summary", "report", "decision", "recommendation", "route", "result", "view")):
+    if any(term in text for term in ("summary", "report", "decision", "recommendation", "route", "result", "status", "view")):
         return False
     return bool(
         re.search(

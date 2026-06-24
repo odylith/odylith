@@ -275,9 +275,7 @@ def _strip_relative_system_label_clause(value: str) -> str:
 def _relative_system_label_parts(value: str) -> tuple[str, str]:
     text = _clean(value).strip(" .")
     match = re.match(
-        r"(?P<head>.+?\b(?:adapter|application|boundary|capture|console|dashboard|engine|flow|ledger|"
-        r"library|log|management|manager|module|nudge|portal|queue|record|reminder|service|store|"
-        r"surface|tracker|view|workspace))\s+(?:that|which|who)\s+(?P<body>.+)$",
+        r"(?P<head>.+?)\s+(?:that|which|who)\s+(?P<body>.+)$",
         text,
         flags=re.IGNORECASE,
     )
@@ -285,9 +283,20 @@ def _relative_system_label_parts(value: str) -> tuple[str, str]:
         return "", ""
     head = _clean(match.group("head")).strip(" .")
     body = _clean(match.group("body")).strip(" .")
-    if head and _word_count(head) <= 12 and _word_count(body) >= 2 and looks_like_finite_action(body):
+    if _relative_system_head_is_plausible(head) and _word_count(body) >= 2 and looks_like_finite_action(body):
         return head, body
     return "", ""
+
+
+def _relative_system_head_is_plausible(value: str) -> bool:
+    head = _clean(value).strip(" .")
+    if not head or _word_count(head) > 12:
+        return False
+    if looks_like_finite_action(head):
+        return False
+    if re.search(r"\b(?:because|matter|must|while|still|enough|first path|product)\b", head, flags=re.IGNORECASE):
+        return False
+    return _word_count(head) >= 2
 
 
 def _flatten_parenthetical_label(value: str) -> str:

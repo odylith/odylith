@@ -68,6 +68,12 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         )
         == "classroom lab safety tracker"
     )
+    assert (
+        prompt_project_title_source(
+            "Draft a greenfield proposal for a digestive health tracking notebook where a person records meals."
+        )
+        == "digestive health tracking notebook"
+    )
 
 
 def test_prompt_intent_source_splits_direct_product_title_from_first_path() -> None:
@@ -109,10 +115,56 @@ def test_host_guidance_recovery_keeps_direct_where_prompt_title_instead_of_termi
     rendered = json.dumps(proposal, sort_keys=True)
 
     assert intent["title"] == "Factory Line Changeover Readiness Board"
-    assert "supervisors verify tooling" in intent["first_path"]
+    assert "supervisors verify tooling" in intent["first_path"].casefold()
     assert "the and restart approval" not in rendered
     assert "And Restart Approval Workspace" not in rendered
     assert "Factory Line Changeover Readiness Board Intake Register" in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_host_guidance_recovery_uses_original_intent_over_visible_format_instructions() -> None:
+    prompt = (
+        "Draft a greenfield proposal for a digestive health tracking notebook where a person records meals, "
+        "symptoms, timing, triggers, and a reviewable pattern summary without making diagnosis claims."
+    )
+    envelope = f"""Product Intent Confirmation needed
+No files changed. Source posture: empty_or_no_app_source.
+
+Host reasoning task: Infer the product shape live from the operator prompt and any observed repo source.
+
+Visible format contract
+Product story
+State object
+First complete path
+Human actors
+External systems
+Internal product systems
+Proof boundary
+
+Original user intent
+{prompt}
+Next step
+- Confirm: write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md.
+Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prompt "{prompt}" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+"""
+
+    intent = parse_confirmed_intent_text(envelope, prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Digestive Health Tracking Notebook"
+    assert "records meals, symptoms" in intent["first_path"].casefold()
+    assert len(intent["internal_systems"]) == 3
+    assert all("visible format" not in row.casefold() for row in intent["internal_systems"])
+    assert "post-confirm repair loop" not in rendered.casefold()
+    assert "product intent confirmation needed" not in rendered.casefold()
+    assert "Visible Format Contract" not in rendered
     assert greenfield_quality_issues(proposal) == []
 
 
@@ -203,6 +255,35 @@ def test_host_guidance_recovery_rejects_long_title_noun_as_first_path() -> None:
     ]
     assert "sequence/parser debris" not in rendered
     assert "First Participant" not in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_host_guidance_recovery_does_not_promote_verb_led_path_to_actor() -> None:
+    prompt = (
+        "Create a solar installation planning product that turns roof, utility, incentive, "
+        "and installer constraints into a homeowner-ready installation plan, with review gates "
+        "for feasibility, cost, and next actions."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Solar Installation Planning Product"
+    assert intent["human_actors"]
+    assert all("Installation Plan with" not in row for row in intent["human_actors"])
+    assert "helps a with" not in rendered
+    assert "With needs" not in rendered
+    assert "where turns" not in rendered
+    assert "when turns" not in rendered
+    assert "the product turns roof" in rendered
+    assert "Turn Roof Utility Incentive and Installer Constraints Into a Homeowner Ready Installation Plan with" not in rendered
     assert greenfield_quality_issues(proposal) == []
 
 

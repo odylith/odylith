@@ -184,10 +184,12 @@ def _sentence(label: str, value: str) -> str:
 
 
 def _scoped_sentence(label: str, focus: str, value: str) -> str:
-    _ = focus
     text = _without_existing_label(label=label, value=clean_text(value))
     if not text:
         return ""
+    focus_text = clean_text(focus).strip(" .")
+    if focus_text and focus_text.casefold() not in text.casefold():
+        return f"{label}: {focus_text} — {text}"
     return f"{label}: {text}"
 
 

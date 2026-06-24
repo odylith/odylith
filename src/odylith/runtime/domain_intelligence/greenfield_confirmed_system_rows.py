@@ -318,9 +318,7 @@ def _split_would_clip_system_name(head: str) -> bool:
 def _split_relative_system_action_clause(value: str) -> tuple[str, str]:
     text = _clean(value)
     match = re.match(
-        r"(?P<head>.+?\b(?:adapter|application|boundary|capture|console|dashboard|engine|flow|ledger|"
-        r"library|log|management|manager|model|module|nudge|portal|queue|record|reminder|schedule|service|store|"
-        r"surface|tracker|tracking|view|workspace))\s+(?:that|which|who)\s+(?P<body>.+)$",
+        r"(?P<head>.+?)\s+(?:that|which|who)\s+(?P<body>.+)$",
         text,
         flags=re.IGNORECASE,
     )
@@ -328,7 +326,7 @@ def _split_relative_system_action_clause(value: str) -> tuple[str, str]:
         return "", ""
     head = _clean(match.group("head")).strip(" .")
     body = _clean(match.group("body")).strip(" .")
-    if _system_name_head_is_plausible(head) and _word_count(body) >= 2 and looks_like_finite_action(body):
+    if _relative_system_head_is_plausible(head) and _word_count(body) >= 2 and looks_like_finite_action(body):
         return _clean_system_name_head(head), body
     return "", ""
 
@@ -393,6 +391,15 @@ def _system_name_head_is_plausible(value: str) -> bool:
             flags=re.IGNORECASE,
         )
     )
+
+
+def _relative_system_head_is_plausible(value: str) -> bool:
+    head = _clean(value)
+    if _system_name_head_is_plausible(head):
+        return True
+    if not head or _word_count(head) > 8:
+        return False
+    return _usable_internal_system_candidate(head) and not looks_like_finite_action(head)
 
 
 def _row_detail_score(row: str) -> int:

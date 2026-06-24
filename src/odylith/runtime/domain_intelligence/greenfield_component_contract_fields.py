@@ -168,7 +168,7 @@ def state_transition_text(
 def _localized_state_terms(object_phrases: Sequence[str]) -> list[str]:
     rows: list[str] = []
     for phrase_value in object_phrases:
-        phrase_text = clean_artifact_phrase(str(phrase_value or "")).strip(" .")
+        phrase_text = (_action_clause_artifact_noun(str(phrase_value or "")) or clean_artifact_phrase(str(phrase_value or ""))).strip(" .")
         if not phrase_text or component_shell_artifact(phrase_text):
             continue
         words = [word for word in visible_words(phrase_text) if word]
@@ -225,6 +225,9 @@ def noun_slot_artifact_phrase(value: str) -> str:
     text = clean_artifact_text(value).strip(" .")
     if not text:
         return "local proof evidence"
+    action_artifact = _action_clause_artifact_noun(text)
+    if action_artifact:
+        return action_artifact
     if looks_like_action_clause(text):
         action = base_action_clause(text).strip(" .")
         return f"evidence for {action}" if action else "local proof evidence"
@@ -288,7 +291,11 @@ def _contract_text_items(value: str) -> list[str]:
     rows: list[str] = []
     for raw in re.split(r",\s+", _clean(value), flags=re.IGNORECASE):
         raw = re.sub(r"^(?:and|or)\s+", "", raw, flags=re.IGNORECASE)
-        phrase = _preserved_relation_phrase(raw) or _dedupe_adjacent_words(_ranked_contract_phrase(raw) or clean_artifact_phrase(raw))
+        phrase = (
+            _preserved_relation_phrase(raw)
+            or _action_clause_artifact_noun(raw)
+            or _dedupe_adjacent_words(_ranked_contract_phrase(raw) or clean_artifact_phrase(raw))
+        )
         if component_shell_artifact(phrase):
             continue
         if status_only_artifact_fragment(phrase):
@@ -352,12 +359,40 @@ def _ranked_output_artifact(value: str) -> str:
 
 def _safe_artifact_focus(value: str) -> str:
     text = _clean(value).strip(" .")
+    action_artifact = _action_clause_artifact_noun(text)
+    if action_artifact:
+        return action_artifact
     if generic_actor_label_prefix(text):
         cleaned = clean_artifact_phrase(text)
         if cleaned and not generic_actor_label_prefix(cleaned):
             return cleaned
         return localize_generic_actor_label(text)
     return text
+
+
+def _action_clause_artifact_noun(value: str) -> str:
+    text = clean_artifact_text(value).strip(" .,;")
+    if not text:
+        return ""
+    match = re.match(
+        r"^(?:cover|covers|covered|check|checks|checked|prove|proves|proved|validate|validates|validated)\s+"
+        r"(?P<object>[a-z0-9][a-z0-9 '-]{2,120})$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    artifact = clean_artifact_phrase(match.group("object")).strip(" .,;")
+    if not artifact or status_only_artifact_fragment(artifact):
+        return ""
+    if artifact.casefold().endswith(" evidence"):
+        return artifact
+    terms = {term.casefold() for term in content_terms(artifact)}
+    if "evidence" in terms:
+        return artifact
+    if terms & ARTIFACT_CARRIER_TERMS:
+        return artifact
+    return f"{artifact} evidence"
 
 
 def _ranked_contract_phrase(value: str) -> str:
@@ -572,6 +607,7 @@ def _proof_focus(*, critical: str, output_focus: str, object_list: str) -> str:
     preferred = _proof_result_phrase(output_focus) or _proof_result_phrase(object_list)
     for candidate in (preferred, critical, output_focus, object_list):
         text = _dedupe_adjacent_words(clean_artifact_phrase(_clean(candidate)))
+        text = _action_clause_artifact_noun(text) or text
         if not text:
             continue
         lowered = text.casefold()

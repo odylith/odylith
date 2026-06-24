@@ -239,7 +239,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
         ):
             row["security_posture"] = (
                 f"Security and privacy posture: {label} protects user-entered facts, result history, and recovery details. "
-                f"For {label}, access, audit, retention, accessibility, and safety obligations stay visible."
+                f"Access, audit, retention, accessibility, and safety obligations stay visible for {label}."
             )
             changed = True
         if (
@@ -285,6 +285,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         outcome = completion_text.outcome_phrase(proposal)
         outcome_action = completion_text.outcome_action_phrase(outcome)
         drifted = completion_text.row_drifted_from_component(row, component)
+        row_title = _clean(row.get("title")) or label
         if _text_needs_repair(row.get("product_view")):
             row["product_view"] = (
                 f"{label} should support the user action: {action}. "
@@ -299,22 +300,27 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             changed = True
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3):
             metrics = [
-                f"{label} proves one complete user path and lets the user {outcome_action}.",
-                f"{label} explains blocked, missing, or invalid input before a result is presented.",
-                f"{label} preserves state responsibility, actor, source, status, result, and recovery context for each accepted change to {state_change_ref or state_ref}.",
+                f"{row_title} success evidence proves {label} owns {focus} while keeping the result visible and reviewable.",
+                f"{label} blocks incomplete {focus} before any result is presented, then explains what has to change.",
+                (
+                    f"{row_title} keeps actor, source, status, result, and recovery context attached to "
+                    f"{state_change_ref or state_ref}."
+                ),
             ]
             if completion_text.row_is_release_proof(row):
                 if non_goal_rows:
-                    metrics.append(f"{label} keeps this deferred outcome outside the release claim: {_clean(non_goal_rows[0]).rstrip('.')}.")
+                    metrics.append(
+                        f"Deferred scope stays out of {label} validation evidence: {_clean(non_goal_rows[0]).rstrip('.')}."
+                    )
                 metrics.append(
-                    f"{label} stays inside the first-release outcome described by the accepted product direction."
+                    f"{label} validation evidence focuses on {outcome}, with blocked-input, replay, and handoff cases visible."
                 )
             row["success_metrics"] = metrics
             changed = True
         if _sequence_needs_repair(row.get("interfaces"), required_tokens=("input", "output"), min_items=1) or drifted:
             row["interfaces"] = [
                 f"{label} accepts the facts needed for {focus} and rejects incomplete entries before they look usable.",
-                f"{label} returns the result, correction state, or explanation needed for the next product step.",
+                f"The next product step receives the {focus} result, correction state, or explanation with reviewable evidence.",
             ]
             changed = True
         if (
@@ -332,7 +338,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         ):
             row["security_posture"] = (
                 f"Security and privacy posture: {label} protects user-entered facts, result history, and recovery details. "
-                f"For {label}, access, audit, retention, accessibility, and safety obligations stay visible."
+                f"Access, audit, retention, accessibility, and safety obligations stay visible for {label}."
             )
             changed = True
         if (

@@ -43,6 +43,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_windows impor
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import nearby_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import contract_focus
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import contract_list_text
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import noun_slot_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import proof_rows
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import produced_outputs_text
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
@@ -1056,7 +1057,7 @@ def test_component_specs_use_label_role_before_generic_decision_terms() -> None:
     assert "Safety Stop and Recovery Service protects the first path when an unsafe, invalid, or blocked condition appears" in rendered
     assert "turns prepared evidence into a product outcome" not in rendered
     assert "the important lifecycle is staged, selected state, prompted" not in rendered
-    assert "the lifecycle should make accepted, blocked, corrected, completed, and handed-off states explicit" in rendered
+    assert "The lifecycle for Ingredient Readiness Service should make accepted, blocked, corrected, completed, and handed-off states explicit" in rendered
     assert "repeats a noncanonical sentence" not in "\n".join(issues)
 
 
@@ -1078,6 +1079,35 @@ def test_component_contract_focus_does_not_clip_confirmed_first_path_tail() -> N
 
     assert "handoff boundaries f" not in rendered
     assert "handoff boundaries" in rendered
+
+
+def test_component_contract_artifact_slots_nominalize_validation_action_clauses() -> None:
+    assert noun_slot_artifact_phrase("cover successful completion") == "successful completion evidence"
+    assert noun_slot_artifact_phrase("cover successful completion evidence") == "successful completion evidence"
+    normalized = normalize_contract(
+        {
+            "owned_state": "cover successful completion evidence",
+            "accepted_inputs": "cover successful completion",
+            "produced_outputs": "cover successful completion evidence, completion builder",
+            "states_or_transitions": "validated state, blocked state",
+            "outside_boundary": "adjacent state",
+            "local_proof": ["Successful path evidence: cover successful completion, required inputs."],
+            "upstream_truth": "upstream state",
+            "downstream_consumers": "release review",
+            "unique_failure": "missing successful completion evidence",
+        }
+    )
+    assert "cover successful" not in " ".join(str(value) for value in normalized.values()).casefold()
+    assert "validated state" in normalized["states_or_transitions"].casefold()
+    assert (
+        contract_focus(
+            object_list="cover successful completion",
+            action_terms=("record",),
+            fallback="completion record",
+            role="output",
+        )
+        == "validated successful completion evidence state, correction marker, and replayable change evidence"
+    )
 
 
 def test_component_specs_suppress_generated_contract_boilerplate_as_accepted_intent() -> None:

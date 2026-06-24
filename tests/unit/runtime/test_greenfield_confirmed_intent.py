@@ -132,7 +132,7 @@ Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prom
     assert "to first," not in rendered
     assert "to residents report" not in rendered
     assert intent["title"] == "Neighborhood Tool"
-    assert "residents report broken streetlights" in intent["first_path"]
+    assert "residents report broken streetlights" in intent["first_path"].casefold()
     assert "repair status updates" in intent["proof_boundary"].casefold()
     assert intent["internal_systems"]
 
@@ -159,7 +159,7 @@ Next step
     assert "sales reps to qualify" not in rendered
     assert "sales reps can qualify leads" in rendered
     assert intent["title"] == "CRM Workspace"
-    assert intent["first_path"].startswith("sales reps can qualify leads")
+    assert intent["first_path"].casefold().startswith("sales reps can qualify leads")
 
 
 def test_confirmed_intent_parser_lifts_one_line_operator_request_into_confirmation() -> None:
@@ -650,11 +650,11 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         "permission state",
     ):
         assert phrase.casefold() in assignment_spec.casefold()
-    assert "outside this boundary" in assignment_spec.casefold()
+    assert "outside the review assignment and permission system boundary" in assignment_spec.casefold()
     assert "refused domain responsibilities:" not in assignment_spec.casefold()
     for phrase in ("review fields", "scoring rubric", "score output"):
         assert phrase.casefold() in form_spec.casefold()
-    assert "outside this boundary" in form_spec.casefold()
+    assert "outside the structured review form and scoring templates boundary" in form_spec.casefold()
     assert "refused domain responsibilities:" not in form_spec.casefold()
     for phrase in (
         "current decision summary",
@@ -664,7 +664,7 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         "user-facing decision state",
     ):
         assert phrase.casefold() in dashboard_spec.casefold()
-    assert "outside this boundary" in dashboard_spec.casefold()
+    assert "outside the decision dashboard and comparison view boundary" in dashboard_spec.casefold()
     assert "refused domain responsibilities:" not in dashboard_spec.casefold()
     for phrase in (
         "immutable event history",
@@ -675,7 +675,7 @@ Release 0.0.1 succeeds when reviewer assignment respects eligibility and permiss
         "replay evidence",
     ):
         assert phrase.casefold() in audit_spec.casefold()
-    assert "outside this boundary" in audit_spec.casefold()
+    assert "outside the audit trail, version history, and retention controls boundary" in audit_spec.casefold()
     assert "refused domain responsibilities:" not in audit_spec.casefold()
 
 
@@ -928,11 +928,12 @@ Success means the exported package explains which records were included or exclu
     assignment_spec = spec_for("Review Assignment and Conflict Resolution")
     assert "eligibility criteria" in criteria_spec.casefold()
     assert "protocol version" in criteria_spec.casefold()
-    assert "outside this boundary" in criteria_spec.casefold()
+    assert "outside the eligibility criteria and protocol management service boundary" in criteria_spec.casefold()
+    assert "before downstream decisions use." not in criteria_spec.casefold()
     assert "refused domain responsibilities:" not in criteria_spec.casefold()
     assert "eligible reviewers" in assignment_spec.casefold()
     assert "appropriate access" in assignment_spec.casefold()
-    assert "outside this boundary" in assignment_spec.casefold()
+    assert "outside the review assignment and conflict resolution boundary" in assignment_spec.casefold()
     assert "refused domain responsibilities:" not in assignment_spec.casefold()
     assert "conflict" in assignment_spec.casefold()
 

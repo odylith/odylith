@@ -166,13 +166,16 @@ def normalize_reviewed_result_nouns(value: Any) -> str:
     """Remove generic review modifiers from result nouns while preserving grammar."""
 
     def replace(match: re.Match[str]) -> str:
+        modifiers = clean_text(match.group("modifiers")).strip()
         noun = match.group("noun")
-        article = _review_result_article(match.group("article"), noun)
-        return f"{article} {noun}"
+        object_text = f"{modifiers} {noun}".strip()
+        article = _review_result_article(match.group("article"), object_text)
+        return f"{article} {object_text}"
 
     return re.sub(
         r"\b(?P<article>a|an|the)\s+reviewed\s+"
-        r"(?P<noun>answer|decision|evidence|outcome|plan|record|report|result|summary|view)\b",
+        r"(?P<modifiers>(?:[a-z][a-z0-9'-]*\s+){0,4})"
+        r"(?P<noun>answer|decision|evidence|outcome|packet|plan|record|report|result|summary|view)\b",
         replace,
         clean_text(value),
         flags=re.IGNORECASE,

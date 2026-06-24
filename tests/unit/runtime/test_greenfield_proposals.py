@@ -1213,9 +1213,9 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
     assert "Trace links for Storefront: workstreams B-002" in storefront_spec
     assert "Trace links for Checkout Orchestrator: workstreams B-002" in checkout_spec
     assert "Trace links for Catalog Boundary: workstreams B-003" in catalog_spec
-    assert "For Storefront, use B-002 (Define Storefront boundary) as the implementation anchor" in storefront_spec
-    assert "For Catalog Boundary, use B-003 (Define Catalog boundary) as the implementation anchor" in catalog_spec
-    assert "For Catalog Boundary, use B-002 (Define Storefront boundary) as the implementation anchor" not in catalog_spec
+    assert "Use B-002 (Define Storefront boundary) as the implementation anchor for Storefront" in storefront_spec
+    assert "Use B-003 (Define Catalog boundary) as the implementation anchor for Catalog Boundary" in catalog_spec
+    assert "Use B-002 (Define Storefront boundary) as the implementation anchor for Catalog Boundary" not in catalog_spec
     assert "## Component Brief" not in storefront_spec
     assert "## Boundary Narrative" not in storefront_spec
     assert "## First Release Proof" not in checkout_spec

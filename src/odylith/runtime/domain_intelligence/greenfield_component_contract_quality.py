@@ -186,9 +186,9 @@ def normalize_contract(value: Mapping[str, Any]) -> dict[str, Any]:
     for key in CONTRACT_KEYS:
         raw = value.get(key)
         if key == "local_proof":
-            normalized[key] = [_sentence(item) for item in text_values(raw) if _clean(item)]
+            normalized[key] = [_sentence(_normalize_contract_artifact_actions(item)) for item in text_values(raw) if _clean(item)]
         else:
-            normalized[key] = _sentence(_clean(raw))
+            normalized[key] = _sentence(_normalize_contract_artifact_actions(raw))
     return normalized
 
 
@@ -196,6 +196,27 @@ def contract_is_complete(value: Mapping[str, Any]) -> bool:
     """Return whether every component contract field has usable text."""
 
     return all(text_values(value.get(key)) for key in CONTRACT_KEYS)
+
+
+def _normalize_contract_artifact_actions(value: Any) -> str:
+    text = _clean(value)
+    if not text:
+        return ""
+    text = re.sub(
+        r"\b(?:cover|covers|covered|check|checks|checked|prove|proves|proved|validate|validates|validated)\s+"
+        r"(?P<object>[a-z0-9][a-z0-9 '-]{2,100}\s+evidence)\b",
+        lambda match: match.group("object"),
+        text,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"\b(?:cover|covers|covered)\s+"
+        r"(?P<object>[a-z0-9][a-z0-9 '-]{2,100})\b",
+        lambda match: f"{match.group('object').rstrip(' .,;')} evidence",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return _clean(text)
 
 
 def component_contract_issues(proposal: Mapping[str, Any]) -> list[str]:

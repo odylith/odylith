@@ -11,7 +11,9 @@ from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_proposals
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     build_greenfield_package_report,
@@ -312,6 +314,20 @@ def _package_for_quality_report(
     return GreenfieldCompletionPackage(proposal=proposal, **values)
 
 
+def test_confirmed_completion_varies_success_proof_metrics_before_package_gate(tmp_path: Path) -> None:
+    proposal = complete_confirmed_proposal(_proposal(tmp_path), release_selector="0.0.1")
+    rendered = "\n".join(
+        "\n".join(str(item) for item in row.get("success_metrics", []))
+        for row in proposal.get("backlog", [])
+        if isinstance(row, dict)
+    )
+    report = build_greenfield_package_report(_package_for_quality_report(proposal))
+
+    assert "The proof record explains blocked, missing, or invalid input before a result is presented" not in rendered
+    assert "State responsibility, actor, source, status, result, and recovery context stay attached" not in rendered
+    assert "repeats a noncanonical sentence" not in "\n".join(report.issues)
+
+
 def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_path: Path) -> None:
     prompt = "Draft a greenfield proposal for a calorie burn optimizer"
     proposal = greenfield_proposals.build_greenfield_proposal(
@@ -375,7 +391,7 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_
     assert "while Activity Log and Profile Store ownership" not in component_text
     assert " outside boundary" not in component_text
     assert "ownership over Activity Log and Profile Store local state" not in component_text
-    assert "can consume next-day adjustment recommendation without owning or rewriting state owned by Recommendation Engine" in component_text
+    assert "Activity Log and Profile Store can consume next-day adjustment recommendation without owning or rewriting Recommendation Engine state" in component_text
     assert "## Proposed Solution\nBurn Estimation Engine should support" not in idea_text
     assert "Start with the smallest implementation slice" not in idea_text
     assert "\n- for " not in rendered_text
@@ -952,6 +968,18 @@ def test_greenfield_package_gate_rejects_clipped_terminal_modifier(tmp_path: Pat
     assert "clipped modifier phrase" in "\n".join(report.issues)
 
 
+def test_next_steps_preview_trims_clipped_terminal_fragments() -> None:
+    assert greenfield_experience._trim_preview_terminal_fragment(  # noqa: SLF001
+        "Assemble denial reasons, reviewer objections, and final"
+    ) == "Assemble denial reasons, reviewer objections"
+    assert greenfield_experience._trim_preview_terminal_fragment(  # noqa: SLF001
+        "Review source context and accepted participants without"
+    ) == "Review source context and accepted participants"
+    assert greenfield_experience._trim_preview_terminal_fragment(  # noqa: SLF001
+        "The appeal status is final"
+    ) == "The appeal status is final"
+
+
 def test_greenfield_package_gate_rejects_clipped_terminal_article(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     backlog_result = _prewrite_backlog_result(proposal)
@@ -1455,6 +1483,15 @@ def test_greenfield_apply_bootstraps_target_repo_only_after_package_gate(tmp_pat
 
     assert result["validation_gate"]["status"] == "passed"
     assert (tmp_path / "odylith/radar/source/INDEX.md").is_file()
+    project_brief_path = tmp_path / "odylith/runtime/source/project-brief.v1.md"
+    assert project_brief_path.is_file()
+    assert result["memory"]["project_brief"] == str(project_brief_path)
+    project_brief_text = project_brief_path.read_text(encoding="utf-8")
+    assert "## Brief" in project_brief_text
+    assert "outcome:" in project_brief_text
+    assert "\n## Brief\n" in project_brief_text
+    assert "\n- project design board:\n" in project_brief_text
+    assert len(project_brief_text.splitlines()) >= 20
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
     assert list((tmp_path / "odylith/atlas/source").glob("*.mmd"))

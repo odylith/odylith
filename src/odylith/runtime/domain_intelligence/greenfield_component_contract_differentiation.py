@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_axes import (
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
+    build_component_contract,
     dependencies_from_contract,
     interfaces_from_contract,
     responsibility_from_contract,
@@ -87,6 +88,18 @@ _GENERATED_CONTRACT_MARKERS = (
     "representative input covering",
     "required inputs",
 )
+
+_STATUS_PROFILE_TERMS = {
+    "accepted",
+    "blocked",
+    "completed",
+    "declined",
+    "received",
+    "requested",
+    "scheduled",
+    "sent",
+    "stale",
+}
 
 
 def differentiate_component_contracts(proposal: dict[str, Any], *, max_passes: int = 5) -> bool:
@@ -296,6 +309,17 @@ def _repair_row(
         upstream=upstream,
         downstream=downstream,
     )
+    profile_contract = build_component_contract(
+        row,
+        proposal=proposal,
+        previous_label=previous_label,
+        next_label=next_label,
+    )
+    if _profile_contract_preserves_status_lifecycle(row=row, contract=profile_contract):
+        contract = normalize_contract(profile_contract)
+        row["component_contract"] = contract
+        _sync_generated_component_fields(row, label=label, contract=contract, previous_contract=previous_contract)
+        return
     semantic_contract = derive_component_semantic_contract(
         row,
         proposal=proposal,
@@ -318,6 +342,17 @@ def _repair_row(
     )
     row["component_contract"] = contract
     _sync_generated_component_fields(row, label=label, contract=contract, previous_contract=previous_contract)
+
+
+def _profile_contract_preserves_status_lifecycle(*, row: Mapping[str, Any], contract: Mapping[str, Any]) -> bool:
+    label_text = _component_label(row, 0).casefold()
+    description_text = _clean(row.get("source_system_description")).casefold()
+    if not (
+        {"status", "timeline", "lifecycle", "notification", "owner"} & set(visible_words(f"{label_text} {description_text}"))
+    ):
+        return False
+    transition_terms = set(visible_words(_clean(contract.get("states_or_transitions")).casefold().replace("-", " ")))
+    return len(transition_terms & _STATUS_PROFILE_TERMS) >= 3
 
 
 def _axis_for(*, row: Mapping[str, Any] | None, proposal: Mapping[str, Any]) -> ComponentAxis:

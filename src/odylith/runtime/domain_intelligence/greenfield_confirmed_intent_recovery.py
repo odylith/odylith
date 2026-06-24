@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Sequence
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
@@ -35,6 +37,7 @@ _NON_HUMAN_ACTOR_TERMS = frozenset(
         "manager",
         "model",
         "monitor",
+        "notebook",
         "platform",
         "policy",
         "product",
@@ -89,8 +92,11 @@ _PRODUCT_CONTAINER_TERMS = frozenset(
         "experience",
         "executor",
         "hub",
+        "journal",
+        "logbook",
         "manager",
         "monitor",
+        "notebook",
         "platform",
         "planner",
         "portal",
@@ -125,8 +131,8 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     outcome_object = _object_result_phrase(outcome)
     lead_actor_ref = _actor_reference(lead_actor)
     lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
-    first_path = first_path_source
-    first_path_inline = _lower_leading_word(first_path_source.rstrip("."))
+    first_path_inline = _embedded_first_path_clause(first_path_source.rstrip("."))
+    first_path = _sentence_start(first_path_inline)
     story = (
         f"{title} helps {lead_actor_ref} complete a first path where {first_path_inline}. "
         f"It keeps {outcome_object} tied to source input, current state, blockers, handoffs, and proof evidence "
@@ -215,6 +221,16 @@ def _generic_first_path_source(title: str) -> str:
     )
 
 
+def _embedded_first_path_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    clause = _lower_leading_word(text)
+    if looks_like_action_clause(clause):
+        clause = f"the product {clause}"
+    return clause
+
+
 def _recover_title_source(source: str) -> str:
     title = prompt_project_title_source(source)
     if title:
@@ -284,9 +300,14 @@ def _first_path_actor_clauses(value: str) -> list[str]:
     text = _clean(value)
     if not text:
         return []
+    clauses = _split_actor_candidate_clauses(text)
     model_steps = [_clean(step) for step in first_path_model(text).steps if _clean(step)]
     if model_steps:
-        return model_steps
+        clauses.extend(model_steps)
+    return _unique_clauses(clauses)
+
+
+def _split_actor_candidate_clauses(text: str) -> list[str]:
     clauses: list[str] = []
     for part in text.replace("; ", ", ").split(","):
         part = _clean(part)
@@ -294,14 +315,46 @@ def _first_path_actor_clauses(value: str) -> list[str]:
             continue
         for subpart in part.split(" and "):
             cleaned = _clean(subpart)
-            if cleaned:
-                clauses.append(cleaned)
+            clauses.extend(_purpose_split_actor_clauses(cleaned))
     return clauses
+
+
+def _purpose_split_actor_clauses(value: str) -> list[str]:
+    text = _clean(value)
+    if not text:
+        return []
+    parts = [part for part in re.split(r"\s+so\s+", text, maxsplit=1, flags=re.IGNORECASE) if _clean(part)]
+    if len(parts) != 2:
+        return [text]
+    prefix, suffix = (_clean(parts[0]), _clean(parts[1]))
+    suffix_words = _words(suffix)
+    if _first_word_index(suffix_words, _MODAL_MARKERS) > 0:
+        rows = []
+        if prefix:
+            rows.append(prefix)
+        rows.append(suffix)
+        return rows
+    return [text]
+
+
+def _unique_clauses(values: Sequence[str]) -> list[str]:
+    rows: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = _clean(value)
+        key = text.casefold()
+        if not text or key in seen:
+            continue
+        seen.add(key)
+        rows.append(text)
+    return rows
 
 
 def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -> str:
     words = _words(clause)
     if len(words) < 2:
+        return ""
+    if _starts_with_action_without_actor(clause):
         return ""
     marker_index = _first_word_index(words, _MODAL_MARKERS)
     if marker_index > 0 and marker_index + 1 < len(words):
@@ -318,6 +371,23 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
         actor, action = fallback
         return _human_actor_row(actor, action)
     return ""
+
+
+def _starts_with_action_without_actor(clause: str) -> bool:
+    text = _clean(clause)
+    if not looks_like_action_clause(text):
+        return False
+    words = _strip_leading_articles(_words(text))
+    if len(words) < 2:
+        return False
+    if _first_word_index(words, _MODAL_MARKERS) > 0:
+        return False
+    leading_terms = {term.casefold() for term in label_terms(words[0])}
+    if leading_terms & _HUMAN_ACTOR_TERMS:
+        return False
+    if _looks_plural(words[0]) and not contains_finite_action(words[0]):
+        return False
+    return True
 
 
 def _action_start_index(words: Sequence[str]) -> int:
@@ -337,11 +407,29 @@ def _first_word_index(words: Sequence[str], targets: set[str] | frozenset[str]) 
 def _human_actor_row(actor: str, action: str) -> str:
     actor_words = _strip_leading_articles(_words(actor))
     actor_label = title_case_text(" ".join(actor_words))
-    action_text = base_action_clause(_clean(action))
+    action_text = base_action_clause(_primary_actor_action_segment(action))
+    if _starts_with_relation_word(actor_label) or _starts_with_relation_word(action_text):
+        return ""
     if not actor_label or not action_text or _looks_like_non_human_actor(actor_label):
         return ""
     need_verb = _actor_verb(actor_label, singular="needs", plural="need")
     return f"{actor_label}: {need_verb} the product to {action_text} and keep the result visible and reviewable"
+
+
+def _starts_with_relation_word(value: str) -> bool:
+    words = _words(value)
+    return bool(
+        words
+        and words[0].casefold()
+        in {"and", "as", "at", "by", "for", "from", "in", "into", "of", "on", "or", "then", "to", "with", "without"}
+    )
+
+
+def _primary_actor_action_segment(value: str) -> str:
+    text = _clean(value)
+    if not text:
+        return ""
+    return text.replace(";", ",").split(",", 1)[0].strip(" .")
 
 
 def _looks_like_non_human_actor(value: str) -> bool:

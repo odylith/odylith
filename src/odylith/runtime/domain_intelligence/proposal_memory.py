@@ -18,8 +18,10 @@ from odylith.runtime.common import display_text
 from odylith.runtime.common import log_compass_timeline_event
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
+from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
 
 ACCEPTED_PROJECT_SOURCE_PATH = "odylith/runtime/source/accepted-project.v1.json"
+PROJECT_BRIEF_SOURCE_PATH = "odylith/runtime/source/project-brief.v1.md"
 
 
 def _clean(value: Any) -> str:
@@ -86,6 +88,10 @@ def _accepted_project_source_path(repo_root: Path) -> Path:
     return Path(repo_root).expanduser().resolve() / ACCEPTED_PROJECT_SOURCE_PATH
 
 
+def _project_brief_source_path(repo_root: Path) -> Path:
+    return Path(repo_root).expanduser().resolve() / PROJECT_BRIEF_SOURCE_PATH
+
+
 def build_greenfield_acceptance_event_preview(
     *,
     proposal: Mapping[str, Any],
@@ -102,6 +108,7 @@ def build_greenfield_acceptance_event_preview(
     component_ids = [_clean(row.get("component_id")) for row in component_items if _clean(row.get("component_id"))]
     artifacts = _first_nonempty(
         [
+            PROJECT_BRIEF_SOURCE_PATH,
             *[str(row.get("idea_path", "")) for row in backlog_items if _clean(row.get("idea_path"))],
             *[str(row.get("spec_path", "")) for row in component_items if _clean(row.get("spec_path"))],
         ],
@@ -176,6 +183,41 @@ def build_accepted_project_source_payload(
         "validation_gate": dict(validation_gate or {}),
     }
     return dict(_normalize_accepted_memory_copy(display_text.strip_inline_markdown_emphasis_tree(payload)))
+
+
+def build_project_brief_source_markdown(
+    *,
+    proposal: Mapping[str, Any],
+    backlog_items: Sequence[Mapping[str, Any]],
+    component_items: Sequence[Mapping[str, Any]],
+    diagram_ids: Sequence[str],
+    release_selector: str,
+    release_id: str,
+    accepted_at: str = "",
+) -> str:
+    """Build the durable human-readable project brief artifact."""
+
+    intent = _intent(proposal)
+    title = _clean(intent.get("title")) or "Greenfield Project"
+    brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
+    body_lines = render_project_brief_lines(brief)
+    lines = [
+        f"# {title} Project Brief",
+        "",
+        "- schema: odylith.greenfield.project_brief.v1",
+        "- origin: greenfield",
+        f"- accepted_at: {_clean(accepted_at) or 'prewrite'}",
+        f"- release: {_release_label(release_selector=release_selector, release_id=release_id)}",
+        f"- workstreams: {len(backlog_items)}",
+        f"- components: {len(component_items)}",
+        f"- diagrams: {len(diagram_ids)}",
+        "",
+        "## Brief",
+        *(body_lines or ["- outcome: Accepted project brief was preserved in the accepted project record."]),
+        "",
+    ]
+    text = "\n".join(lines)
+    return display_text.strip_inline_markdown_emphasis_tokens(text).rstrip() + "\n"
 
 
 def _accepted_memory_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
@@ -281,6 +323,32 @@ def _write_accepted_project_source(
     return path
 
 
+def _write_project_brief_source(
+    *,
+    repo_root: Path,
+    proposal: Mapping[str, Any],
+    backlog_items: Sequence[Mapping[str, Any]],
+    component_items: Sequence[Mapping[str, Any]],
+    diagram_ids: Sequence[str],
+    release_selector: str,
+    release_id: str,
+    event: Mapping[str, Any],
+) -> Path:
+    path = _project_brief_source_path(repo_root)
+    payload = build_project_brief_source_markdown(
+        proposal=proposal,
+        backlog_items=backlog_items,
+        component_items=component_items,
+        diagram_ids=diagram_ids,
+        release_selector=release_selector,
+        release_id=release_id,
+        accepted_at=_clean(event.get("ts_iso")),
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(payload, encoding="utf-8")
+    return path
+
+
 def record_greenfield_acceptance(
     *,
     repo_root: Path,
@@ -339,11 +407,22 @@ def record_greenfield_acceptance(
         validation_gate=validation_gate or tribunal,
         event=payload,
     )
+    project_brief_path = _write_project_brief_source(
+        repo_root=root,
+        proposal=proposal,
+        backlog_items=backlog_items,
+        component_items=component_items,
+        diagram_ids=diagram_ids,
+        release_selector=release_selector,
+        release_id=release_id,
+        event=payload,
+    )
     return {
         "recorded": True,
         "reused_existing": reused_existing,
         "stream": str(stream_path),
         "accepted_project": str(accepted_project_path),
+        "project_brief": str(project_brief_path),
         "event": payload,
     }
 

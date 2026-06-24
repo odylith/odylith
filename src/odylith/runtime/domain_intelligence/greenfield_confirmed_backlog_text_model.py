@@ -773,7 +773,10 @@ def rationale_lines(
     )
     proof_focus = rationale_proof_focus(proof_boundary, fallback=expected_outcome)
     release_basis = rationale_release_basis(title=title, label=label, first_slice=first_slice, proof_boundary=proof_boundary)
-    deferred_rationale = _deferred_rationale_sentence(deferred_focus)
+    deferred_rationale = _scoped_deferred_rationale(
+        title=title,
+        rationale=_deferred_rationale_sentence(deferred_focus),
+    )
     lines = [
         f"- why now: {why_now}.",
         f"- expected outcome: {expected_outcome}.",
@@ -834,6 +837,14 @@ def _deferred_rationale_sentence(value: str) -> str:
         text = deferred_focus[:1].upper() + deferred_focus[1:]
     verb = "wait" if _deferred_focus_is_plural(text) else "waits"
     return f"{text} {verb} for a separate owner, acceptance gate, and proof path"
+
+
+def _scoped_deferred_rationale(*, title: str, rationale: str) -> str:
+    text = _compact_text(rationale).strip(" .")
+    title_focus = _short_summary(title, limit=90).strip(" .")
+    if not text or not title_focus or title_focus.casefold() in text.casefold():
+        return text
+    return f"{title_focus}: {text}"
 
 
 def _deferred_focus_is_plural(value: str) -> bool:

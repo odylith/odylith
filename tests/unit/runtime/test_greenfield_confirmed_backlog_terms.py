@@ -210,6 +210,34 @@ def test_confirmed_backlog_rationale_uses_distinct_bullet_jobs() -> None:
     assert "Multiple age bands, authoring workflows, reminders, and live classroom management" in text
 
 
+def test_confirmed_backlog_deferred_rationale_is_scoped_to_workstream_title() -> None:
+    shared_deferred_scope = [
+        "Do not expand into adjacent workflows, broader automation, or operational scale until the first outcome works."
+    ]
+    first = rationale_lines(
+        label="Permit Desk",
+        title="Prepare Permit Intake Evidence",
+        opportunity="Prove the first permit intake path before optional scope expands.",
+        first_slice="Capture one permit packet and keep blockers visible.",
+        proof_boundary="Release works when one permit packet can be reviewed.",
+        deferred_scope=shared_deferred_scope,
+    )
+    second = rationale_lines(
+        label="Permit Desk",
+        title="Show Permit Review Decision",
+        opportunity="Prove the first permit review path before optional scope expands.",
+        first_slice="Review one permit packet and show the decision evidence.",
+        proof_boundary="Release works when one decision can be reviewed.",
+        deferred_scope=shared_deferred_scope,
+    )
+
+    assert first[3] != second[3]
+    assert first[3].startswith("- deferred for now: Prepare Permit Intake Evidence:")
+    assert second[3].startswith("- deferred for now: Show Permit Review Decision:")
+    assert "adjacent workflows" in first[3]
+    assert "adjacent workflows" in second[3]
+
+
 def test_confirmed_backlog_rationale_does_not_splice_scope_question_into_wait_clause() -> None:
     lines = rationale_lines(
         label="Cellar",
@@ -223,7 +251,7 @@ def test_confirmed_backlog_rationale_does_not_splice_scope_question_into_wait_cl
 
     assert "? wait" not in text
     assert (
-        "- deferred for now: Regulatory spray compliance scope remains deferred; separate owner, acceptance gate, and proof path required."
+        "- deferred for now: Prove One Complete Cellar Path: Regulatory spray compliance scope remains deferred; separate owner, acceptance gate, and proof path required."
         in text
     )
 

@@ -106,12 +106,12 @@ def test_project_brief_rendering_uses_shared_row_coercion_and_keeps_plain_lines(
         "Why: It proves the workflow without wider property-management scope."
     ) in lines
     assert (
-        "  - Proof depth: Require a status timeline before coding. Choices: timeline, notification. "
+        "  - Proof depth: Require a status timeline before coding. Options for Proof depth: timeline, notification. "
         "Impact: Changes the first release gate."
     ) in lines
     assert (
-        "  - Status evidence: Which status proves the request is reviewable? "
-        "Done when: The first release names that status and its reviewer."
+        "  - Status evidence: Which status proves the request is reviewable; "
+        "done when The first release names that status and its reviewer."
     ) in lines
     assert "  - Confirmed create: `odylith greenfield create --confirm` (Codex and Claude Code)" in lines
     assert all("not a row" not in line for line in lines)

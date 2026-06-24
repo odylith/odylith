@@ -307,7 +307,7 @@ def _project_option_lines(value: Any) -> list[str]:
         )
         impact = clean_text(row.get("impact"))
         if decision and recommended:
-            suffix = f" Choices: {rendered_choices}." if rendered_choices else ""
+            suffix = f" Options for {decision}: {rendered_choices}." if rendered_choices else ""
             impact_text = f" Impact: {impact}" if impact else ""
             lines.append(f"{decision}: {recommended}{suffix}{impact_text}")
     return lines
@@ -324,7 +324,9 @@ def _project_checkpoint_lines(value: Any) -> list[str]:
         question = clean_text(row.get("operator_question"))
         done_when = clean_text(row.get("done_when"))
         if checkpoint and question:
-            lines.append(f"{checkpoint}: {question} Done when: {done_when}")
+            question_text = question.rstrip(".?!")
+            done_text = done_when.rstrip(".?!")
+            lines.append(f"{checkpoint}: {question_text}; done when {done_text}.")
     return lines
 
 

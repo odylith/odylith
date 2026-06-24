@@ -320,7 +320,7 @@ def _patch_sections(
             [
                 f"First implementation step: {first_slice}" if first_slice else "",
                 (
-                    f"{scope_ref} keeps success, blocked-input, replay, and handoff proof together "
+                    f"Traceability for {scope_ref} keeps success, blocked-input, replay, and handoff proof together "
                     "before adjacent source ownership expands."
                 )
                 if focus
@@ -363,9 +363,9 @@ def _patch_sections(
         ]
     )
     sections["Impacted Components"] = _bullets(
-        component_lines
+        _scoped_trace_rows(focus, component_lines)
         or [
-            "No candidate component was inferred for this workstream; the first technical plan must resolve ownership before implementation.",
+            f"{focus}: no candidate component was inferred; the first technical plan must resolve ownership before implementation.",
         ]
     )
     sections["Interface Changes"] = _bullets(
@@ -377,10 +377,10 @@ def _patch_sections(
     )
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     sections["Rollout"] = _bullets(
-        _section_items(row.get("rollout", []))
-        or _milestone_lines(release_plan.get("release_stages") or release_plan.get("milestones"))[:3]
+        _scoped_trace_rows(focus, _section_items(row.get("rollout", [])))
+        or _scoped_trace_rows(focus, _milestone_lines(release_plan.get("release_stages") or release_plan.get("milestones"))[:3])
         or [
-            "Keep the workstream queued until the first implementation plan binds scope, proof, and release gates.",
+            f"{focus}: keep the workstream queued until the first implementation plan binds scope, proof, and release gates.",
         ]
     )
     sections["Why Now"] = _why_now_text(row=row, focus=scope_ref, first_slice=first_slice) or sections.get("Why Now", "")
@@ -388,7 +388,9 @@ def _patch_sections(
     if not row_questions and _is_parent_workstream(row):
         row_questions = _scoped_question_lines(open_questions[:3], focus=focus)
     sections["Open Questions"] = (
-        _bullets(row_questions) if row_questions else "- No unresolved questions are recorded for this slice."
+        _bullets(_scoped_trace_rows(focus, row_questions))
+        if row_questions
+        else f"- {focus}: no unresolved questions are recorded for this slice."
     )
     sections.update(build_artifact_enrichment(row=row, proposal=proposal).radar_sections)
 
@@ -412,6 +414,20 @@ def _section_items(value: Any) -> list[str]:
                 rows.extend(text_values(item, split_scalar=True, split_commas=False, strip_bullets=True))
         return _unique(rows)
     return list(text_values(value, split_scalar=True, split_commas=False, strip_bullets=True))
+
+
+def _scoped_trace_rows(focus: str, values: Sequence[str]) -> list[str]:
+    focus_text = _clean(focus)
+    rows: list[str] = []
+    for value in values:
+        text = _clean(value)
+        if not text:
+            continue
+        if focus_text and focus_text.casefold() not in text.casefold():
+            rows.append(f"{focus_text}: {text}")
+        else:
+            rows.append(text)
+    return rows
 
 
 def _clean(value: Any) -> str:

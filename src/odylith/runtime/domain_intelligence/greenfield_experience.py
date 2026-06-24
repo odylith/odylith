@@ -64,7 +64,11 @@ _PREVIEW_DANGLING_WORDS = frozenset(
         "the",
         "to",
         "with",
+        "without",
     }
+)
+_PREVIEW_TERMINAL_FINAL_STATE_WORDS = frozenset(
+    {"case", "decision", "match", "record", "result", "review", "score", "status"}
 )
 
 
@@ -483,7 +487,26 @@ def _trim_preview_terminal_fragment(value: str) -> str:
         tail = words[-1].casefold().strip(".,;:")
         if previous in {"a", "an", "one", "the", "this", "that"} and tail in _PREVIEW_TERMINAL_MODIFIERS:
             text = " ".join(words[:-2]).strip(" ,;:.")
+        elif tail == "final" and not _preview_allows_terminal_final(words):
+            text = " ".join(words[:-1]).strip(" ,;:.")
     return strip_dangling_word_tail(text, dangling_words=_PREVIEW_DANGLING_WORDS)
+
+
+def _preview_allows_terminal_final(words: Sequence[str]) -> bool:
+    lowered = [word.casefold().strip(".,;:'") for word in words if word.strip(".,;:'")]
+    if len(lowered) < 2 or lowered[-1] != "final":
+        return False
+    previous = lowered[-2]
+    if previous in _PREVIEW_TERMINAL_FINAL_STATE_WORDS:
+        return True
+    if previous in {"is", "becomes", "became"} and any(
+        token in _PREVIEW_TERMINAL_FINAL_STATE_WORDS for token in lowered[:-2]
+    ):
+        return True
+    return any(
+        token in {"finalize", "finalizes", "finalized", "finalizing", "mark", "marked", "marks"}
+        for token in lowered[:-1]
+    )
 
 
 def _wave_validation_items(wave: Mapping[str, Any]) -> tuple[str, ...]:

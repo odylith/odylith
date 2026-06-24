@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
@@ -382,7 +383,7 @@ def test_word_boundary_clipping_stays_in_text_owner() -> None:
         "greenfield_semantic_model.py",
         "greenfield_confirmed_system_rows.py",
         "greenfield_confirmed_diagram_text.py",
-        "greenfield_sequence_diagram.py",
+        "greenfield_sequence_labeling.py",
         "greenfield_experience.py",
         "greenfield_confirmed_project_brief.py",
     ]
@@ -400,6 +401,14 @@ def test_word_boundary_clipping_stays_in_text_owner() -> None:
         source = (DOMAIN_INTELLIGENCE / caller).read_text(encoding="utf-8")
         assert "clip_text_at_word_boundary" in source
         assert '.rsplit(" ", 1)' not in source
+
+
+def test_confirmed_tail_repair_strips_clipped_terminal_fragments() -> None:
+    assert strip_dangling_tail("The first release narrows scope to a first") == "The first release narrows scope"
+    assert strip_dangling_tail("Collect denial reasons, reviewer notes, and final") == (
+        "Collect denial reasons, reviewer notes"
+    )
+    assert strip_dangling_tail("The review status is final") == "The review status is final"
 
 
 def test_confirmed_focus_label_uses_shared_label_terms() -> None:

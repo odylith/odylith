@@ -112,6 +112,22 @@ CONFIRMED_DANGLING_WORDS = {
     "without",
 }
 
+_TERMINAL_MODIFIER_WORDS = {
+    "accepted",
+    "actionable",
+    "clear",
+    "complete",
+    "concrete",
+    "daily",
+    "first",
+    "reviewable",
+    "specific",
+    "trusted",
+    "visible",
+}
+_TERMINAL_MODIFIER_PRECEDERS = {"a", "an", "one", "the", "this", "that"}
+_TERMINAL_FINAL_STATE_WORDS = {"case", "decision", "match", "record", "result", "review", "score", "status"}
+
 _TITLE_CONNECTOR_WORDS = {
     "a",
     "an",
@@ -369,6 +385,7 @@ def strip_dangling_tail(value: str) -> str:
     text = compact_text(value).rstrip(" ,;:.")
     while True:
         text = re.sub(r"(?:^|(?<=[.!?])\s+)It\s+should$", "", text, flags=re.IGNORECASE).rstrip(" ,;:.")
+        text = _strip_clipped_terminal_fragment(text)
         cleaned = re.sub(
             r"\b(?:a|an|and|as|at|because|by|for|from|if|in|into|of|on|or|required|the|to|when|while|with|without)$",
             "",
@@ -378,6 +395,31 @@ def strip_dangling_tail(value: str) -> str:
         if cleaned == text:
             return cleaned
         text = cleaned
+
+
+def _strip_clipped_terminal_fragment(value: str) -> str:
+    text = compact_text(value).rstrip(" ,;:.")
+    words = text.split()
+    if len(words) >= 2:
+        previous = words[-2].strip(".,;:'").casefold()
+        tail = words[-1].strip(".,;:'").casefold()
+        if previous in _TERMINAL_MODIFIER_PRECEDERS and tail in _TERMINAL_MODIFIER_WORDS:
+            return " ".join(words[:-2]).rstrip(" ,;:.")
+    if words and words[-1].strip(".,;:'").casefold() == "final" and not _allows_terminal_final(words):
+        return " ".join(words[:-1]).rstrip(" ,;:.")
+    return text
+
+
+def _allows_terminal_final(words: list[str]) -> bool:
+    lowered = [word.strip(".,;:'").casefold() for word in words if word.strip(".,;:'")]
+    if len(lowered) < 2 or lowered[-1] != "final":
+        return False
+    previous = lowered[-2]
+    if previous in _TERMINAL_FINAL_STATE_WORDS:
+        return True
+    if previous in {"is", "becomes", "became"} and any(token in _TERMINAL_FINAL_STATE_WORDS for token in lowered[:-2]):
+        return True
+    return any(token in {"finalize", "finalizes", "finalized", "finalizing", "mark", "marked", "marks"} for token in lowered[:-1])
 
 
 def problem_text(*, label: str, problem: str, product_story: str, first_path: str) -> str:

@@ -39,6 +39,7 @@ _REQUEST_PRODUCT_WORDS = frozenset(
         "hub",
         "manager",
         "monitor",
+        "notebook",
         "platform",
         "planner",
         "portal",
@@ -51,6 +52,8 @@ _REQUEST_PRODUCT_WORDS = frozenset(
         "system",
         "tool",
         "tracker",
+        "journal",
+        "logbook",
         "workbench",
         "workspace",
     }

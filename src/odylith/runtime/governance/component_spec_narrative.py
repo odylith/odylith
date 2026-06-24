@@ -20,6 +20,41 @@ from odylith.runtime.domain_intelligence.greenfield_component_narrative_view imp
 from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import phrases_too_similar
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text, text_values, unique_text
 
+_PRONOUN_OBJECT_PRECEDERS = frozenset(
+    {
+        "accept",
+        "accepts",
+        "apply",
+        "applies",
+        "check",
+        "checks",
+        "compare",
+        "compares",
+        "consume",
+        "consumes",
+        "inspect",
+        "inspects",
+        "mutate",
+        "mutates",
+        "read",
+        "reads",
+        "review",
+        "reviews",
+        "rewrite",
+        "rewrites",
+        "see",
+        "sees",
+        "trust",
+        "trusts",
+        "use",
+        "uses",
+        "validate",
+        "validates",
+        "view",
+        "views",
+    }
+)
+
 
 def build_narrative_component_spec(
     *,
@@ -203,8 +238,9 @@ def _opening_narrative(
         lead = f"{label} is the component that makes accepted product state understandable to a person."
         body = f"It should present {focus} from trusted inputs rather than becoming the owner of the source records it displays."
     elif role == "evidence":
-        lead = f"{label} preserves the evidence that makes the first release reviewable."
-        body = f"Its job is to keep {focus} tied to the result a reviewer needs to understand, without turning the evidence record into the decision owner."
+        evidence_focus = focus or "the first release"
+        lead = f"Evidence for {evidence_focus} preserves the proof that makes the first release reviewable."
+        body = f"Its job is to keep {evidence_focus} tied to the result a reviewer needs to understand, without turning the evidence record into the decision owner."
     elif role == "integration":
         lead = f"{label} is the seam between the product and an outside source or protocol."
         body = f"It should translate {input_focus} into {output_focus} without letting provider-specific behavior leak across the rest of the first release."
@@ -306,26 +342,26 @@ def _state_narrative(
         second = f"The component can take in {accepted}, but it should only move forward after required values, corrections, or blockers are explicit." if accepted else ""
     elif role in {"decision", "calculation"}:
         if accepted and produced and not phrases_too_similar(accepted, produced):
-            first = f"For {label}, the useful state is the explanation that connects incoming {accepted} to {produced}."
+            first = f"The useful state for {label} is the explanation that connects incoming {accepted} to {produced}."
         else:
             first = f"{label} must keep its input facts, calculation context, and visible result together."
         review_subject = produced or owned or f"{label} result"
-        second = f"For {label}, that link keeps {review_subject} explainable instead of turning the outcome into a black-box claim."
+        second = f"That link keeps {review_subject} explainable instead of turning the outcome into a black-box claim."
     elif role == "configuration":
         first = f"The owned state is {owned}, and changes to it should read like intentional product policy."
         second = f"The runtime can consume those settings, but configuration itself should not mutate downstream results."
     elif role == "guardrail":
         first = f"The guardrail state is {owned}." if owned else f"{label} needs the first implementation plan to name its stop and recovery state."
-        second = f"For {label}, it evaluates {accepted} and returns {produced} only after the stop, recovery, or safe-next-step reason is explicit." if accepted and produced else ""
+        second = f"It evaluates {accepted} and returns {produced} only after the stop, recovery, or safe-next-step reason is explicit." if accepted and produced else ""
     elif role == "validation":
         first = f"The readiness state is {owned}." if owned else f"{label} needs the first implementation plan to name the readiness state it owns."
-        second = f"For {label}, it checks {accepted} and returns {produced} only when the next step can trust the result." if accepted and produced else ""
+        second = f"It checks {accepted} and returns {produced} only when the next step can trust the result." if accepted and produced else ""
     elif role == "workflow":
         first = f"The workflow state is {owned}." if owned else f"{label} needs the first implementation plan to name its local workflow state."
-        second = f"For {label}, it accepts {accepted} and produces {produced} as the first path moves forward." if accepted and produced else ""
+        second = f"It accepts {accepted} and produces {produced} as the first path moves forward." if accepted and produced else ""
     elif role == "state_store":
         first = f"The owned state is {owned}, and it should stay close to the inputs and corrections that created it."
-        second = f"For {label}, it accepts {accepted} and returns {produced} only after required information is complete enough to trust."
+        second = f"It accepts {accepted} and returns {produced} only after required information is complete enough to trust."
     elif role == "handoff":
         handoff_state = produced or "the next-step output"
         source_context = accepted or "upstream context"
@@ -336,13 +372,13 @@ def _state_narrative(
         second = "Raw input fields should remain with their owner; this component should carry the context another participant needs."
     elif role == "read_model":
         first = f"The visible state should explain {owned} without pretending to own every source record."
-        second = f"For {label}, it can render {produced}, while stale, empty, or blocked states remain visible."
+        second = f"It can render {produced}, while stale, empty, or blocked states remain visible."
     elif role == "evidence":
         first = f"The evidence state should keep {owned} connected to the result being reviewed."
-        second = f"For {label}, it accepts {accepted} and returns {produced} only when the review trail remains explainable."
+        second = f"It accepts {accepted} and returns {produced} only when the review trail remains explainable."
     else:
         first = f"The useful local state is {owned}."
-        second = f"For {label}, it accepts {accepted} and returns {produced} when the next product step can rely on it."
+        second = f"It accepts {accepted} and returns {produced} when the next product step can rely on it."
     material = _material_state_sentence(role=role, material_state=material_state)
     transition = _transition_sentence(label=label, view=view, text=state_path)
     return _sentences(first, second, blocker, material, transition)
@@ -352,15 +388,15 @@ def _transition_sentence(*, label: str, view: ComponentNarrativeView, text: str)
     if not text:
         return ""
     if view.concrete_transition_items or view.material_transition_count >= 4:
-        return f"For {label}, the important lifecycle is {text}."
+        return f"The important lifecycle for {label} is {text}."
     if len(view.transition_items) > 7 or len(view.short_transition_items) >= max(4, len(view.transition_items) // 2):
         return (
-            f"For {label}, the lifecycle should make accepted, blocked, corrected, completed, "
+            f"The lifecycle for {label} should make accepted, blocked, corrected, completed, "
             "and handed-off states explicit before implementation expands."
         )
     if len(text) <= 260:
-        return f"For {label}, the important lifecycle is {text}."
-    return f"For {label}, the important lifecycle is {text}."
+        return f"The important lifecycle for {label} is {text}."
+    return f"The important lifecycle for {label} is {text}."
 
 
 def _boundary_narrative(
@@ -388,12 +424,12 @@ def _boundary_narrative(
     if upstream_text and downstream_text and _has_no_source_dependency(upstream_text):
         relation = (
             f"{label} has no claimed source dependency yet and prepares work for {downstream_text}. "
-            f"For {label}, that handoff keeps upstream ownership and downstream responsibility separate."
+            f"The handoff from {label} to {downstream_text} keeps upstream ownership and downstream responsibility separate."
         )
     elif upstream_text and downstream_text:
         relation = (
-            f"{label} receives its trusted context from {upstream_text} and prepares work for {downstream_text}. "
-            f"For {label}, that handoff keeps upstream ownership and downstream responsibility separate."
+            f"This boundary for {label} receives its trusted context from {upstream_text} and prepares work for {downstream_text}. "
+            f"The handoff from {label} to {downstream_text} keeps upstream ownership and downstream responsibility separate."
         )
     elif upstream_text:
         relation = f"{label} starts from {upstream_text} and keeps that input relationship visible."
@@ -402,15 +438,15 @@ def _boundary_narrative(
     else:
         relation = f"{label} must keep its state, validation result, blocker state, and evidence together."
     if not kept:
-        boundary = f"For {label}, unrelated input truth, release approval, and adjacent component state stay outside this boundary."
+        boundary = f"Unrelated input truth, release approval, and adjacent component state stay outside the {label} boundary."
     elif role == "configuration":
-        boundary = f"For {label}, keep {outside_text} outside this boundary so administrative policy does not become hidden runtime authority."
+        boundary = f"Keep {outside_text} outside the {label} boundary so administrative policy does not become hidden runtime authority."
     elif role == "state_store":
-        boundary = f"For {label}, keep {outside_text} outside this boundary so this component stores the product record without taking over adjacent decisions."
+        boundary = f"Keep {outside_text} outside the {label} boundary so this component stores the product record without taking over adjacent decisions."
     elif role == "read_model":
-        boundary = f"For {label}, keep {outside_text} outside this boundary so display logic does not rewrite original input facts."
+        boundary = f"Keep {outside_text} outside the {label} boundary so display logic does not rewrite original input facts."
     else:
-        boundary = f"For {label}, keep {outside_text} outside this boundary unless a later release explicitly assigns it here."
+        boundary = f"Keep {outside_text} outside the {label} boundary unless a later release explicitly assigns it here."
     upstream_separation = _upstream_handoff_separation_sentence(label=label, upstream=upstream_text, input_focus=input_focus)
     downstream_separation = _downstream_handoff_separation_sentence(label=label, downstream=downstream_text, output_focus=output_focus)
     return _sentences(relation, upstream_separation, downstream_separation, boundary)
@@ -426,7 +462,7 @@ def _upstream_handoff_separation_sentence(*, label: str, upstream: str, input_fo
     subject = _primary_boundary_subject(input_focus)
     if not owner or not subject or _has_no_source_dependency(upstream):
         return ""
-    return f"{label} can consume {subject} without owning or rewriting state owned by {owner}."
+    return f"It can consume {subject} for {label} without owning or rewriting state owned by {owner}."
 
 
 def _downstream_handoff_separation_sentence(*, label: str, downstream: str, output_focus: str) -> str:
@@ -436,7 +472,7 @@ def _downstream_handoff_separation_sentence(*, label: str, downstream: str, outp
         return ""
     if consumer.casefold() in {"release review", "the next product boundary and release proof review"}:
         return ""
-    return f"{consumer} can consume {subject} without owning or rewriting state owned by {label}."
+    return f"{consumer} can consume {subject} without owning or rewriting {label} state."
 
 
 def _primary_boundary_subject(value: str) -> str:
@@ -566,7 +602,7 @@ def _implementation_narrative(
     parts = [opening]
     if first_workstream:
         title = f" ({first_workstream_title})" if first_workstream_title else ""
-        parts.append(f"For {label}, use {first_workstream}{title} as the implementation anchor.")
+        parts.append(f"Use {first_workstream}{title} as the implementation anchor for {label}.")
     if first_slice:
         parts.append(first_slice)
     if wave_label:
@@ -672,7 +708,7 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
     text = re.sub(r"\bexplicit(?:ly)?\b", "", text, flags=re.I)
     text = re.sub(r"^(?:them|it|their|they|this|that)\s+(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"^(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
-    text = re.sub(r"\b(?:them|it|their|they|this|that)\b(?!\s+(?:are|is|was|were)\b)", "", text, flags=re.I)
+    text = _drop_unanchored_pronouns(text)
     text = re.sub(
         r"\bbefore\s+(creates?|presents?|shows?|returns?|produces?)\b",
         r"before it \1",
@@ -695,6 +731,23 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
     if len(text.split()) <= 2 and lowered in {"state", "command", "record", "result", "evidence", "handoff"}:
         return ""
     return _lower_first(text)
+
+
+def _drop_unanchored_pronouns(value: str) -> str:
+    def replace(match: re.Match[str]) -> str:
+        previous = str(match.group("previous") or "")
+        pronoun = str(match.group("pronoun") or "")
+        previous_word = previous.strip().casefold()
+        if previous_word in _PRONOUN_OBJECT_PRECEDERS:
+            return f"{previous}{pronoun}"
+        return previous
+
+    return re.sub(
+        r"(?P<previous>\b[A-Za-z][A-Za-z'-]*\s+)?\b(?P<pronoun>them|it|their|they|this|that)\b(?!\s+(?:are|is|was|were)\b)",
+        replace,
+        value,
+        flags=re.I,
+    )
 
 
 def _entity_text(value: Any) -> str:
@@ -801,12 +854,25 @@ def _preferred_calculation_result(values: Sequence[str]) -> str:
 
 
 def _calculation_subject(value: str) -> str:
-    text = clean_text(value).strip(" .") or "result"
+    text = _calculation_result_subject(clean_text(value).strip(" .")) or "result"
     first_word = text.split(maxsplit=1)[0].casefold().strip(".,;:")
     if first_word in {"a", "an", "the", "this", "that", "these", "those"}:
         return text
     if text[:1].islower():
         return f"the {text}"
+    return text
+
+
+def _calculation_result_subject(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ""
+    text = re.sub(
+        r"\s+(?:evidence|proof|record|artifact|trace|trail)\b$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
     return text
 
 
