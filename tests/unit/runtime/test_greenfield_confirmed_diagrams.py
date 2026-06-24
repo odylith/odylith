@@ -73,28 +73,28 @@ def test_atlas_component_cards_explain_specific_boundary_without_path_boilerplat
 
     assert components["Source Import Adapter"] == (
         "Translates external source import inputs into product-owned records and preserves source provenance. "
-        "Reviewers need to see which source supplied the input and what normalized result entered the product."
+        "The Source Import Adapter boundary must show which source supplied the input and what normalized result entered the product."
     )
     assert components["Decision Scoring Engine"] == (
-        "Scores candidate decisions with confidence, inputs, and rule version. Reviewers need to see the inputs, "
-        "rule version, result, and downstream decision that depended on it."
+        "Scores candidate decisions with confidence, inputs, and rule version. The Decision Scoring Engine boundary "
+        "must show inputs, rule versions, results, and downstream decisions that depended on it."
     )
     assert components["State Ledger Service"] == (
-        "Records versioned state changes, actor, timestamp, and source evidence. Reviewers need to see the "
-        "versioned state, source evidence, and decisions that depended on this record."
+        "Records versioned state changes, actor, timestamp, and source evidence. The State Ledger Service boundary "
+        "must show versioned state, source evidence, and decisions that depended on this record."
     )
     assert components["Exception Review Workflow"] == (
-        "Coordinates exception review, handoff, blocked-state recovery, and final outcome. Reviewers need to see "
-        "each responsibility transfer, failure state, recovery action, and final outcome."
+        "Coordinates exception review, handoff, blocked-state recovery, and final outcome. The Exception Review Workflow "
+        "boundary must show responsibility transfers, failure states, recovery actions, and final outcomes."
     )
     assert components["User Review Surface"] == (
         "Presents review screen for user approval and correction to users and captures the action or decision the "
-        "product needs next. Reviewers need to see what the user saw, submitted, corrected, or approved and which "
-        "product state changed after that action."
+        "product needs next. The User Review Surface boundary must show what the user saw, submitted, corrected, or "
+        "approved and which product state changed after that action."
     )
     assert components["Assignment Planner"] == (
         "Owns product responsibility to assign jobs to available resources while respecting priority, capacity, "
-        "and constraints. Reviewers need to see what this boundary receives, produces, records, and makes available next."
+        "and constraints. The Assignment Planner boundary must show what this boundary receives, produces, records, and makes available next."
     )
     assert "accepted first release path" not in encoded
     assert "for the accepted first" not in encoded

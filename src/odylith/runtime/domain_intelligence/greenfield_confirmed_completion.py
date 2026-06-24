@@ -16,6 +16,12 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_component_completi
     complete_component_rows,
     repair_component_sentence_lists,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import (
+    project_specific_actor_labels,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import (
+    value_starts_with_generic_actor_label,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_intelligence import complete_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_repair import repair_project_title
@@ -427,6 +433,8 @@ def _repair_preflight_issues(
         or "modal/base-form" in issue_text
     ):
         changed |= _repair_generated_sentence_lists(proposal, release_selector=release_selector)
+    if "generic actor label" in issue_text or "project-specific actor" in issue_text:
+        changed |= _repair_generic_actor_labels(proposal)
     return changed
 
 
@@ -636,6 +644,37 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
             "summary",
             fallback=f"Shows how {completion_text.project_title(proposal)} preserves first-path state, evidence, and proof.",
         )
+    return changed
+
+
+def _repair_generic_actor_labels(proposal: dict[str, Any]) -> bool:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    labels = project_specific_actor_labels(intent if isinstance(intent, Mapping) else {})
+    if not labels:
+        labels = project_specific_actor_labels(
+            {
+                "title": completion_text.project_title(proposal),
+                "human_actors": proposal.get("human_actors"),
+            }
+        )
+    if not labels:
+        return False
+    summary = "; ".join(labels[:2])
+    changed = False
+    for row in dict_rows(proposal.get("backlog")):
+        if value_starts_with_generic_actor_label(row.get("customer")):
+            row["customer"] = summary
+            changed = True
+        intelligence = row.get("domain_intelligence")
+        if not isinstance(intelligence, dict):
+            continue
+        actors = list(text_values(intelligence.get("actors")))
+        if actors and any(value_starts_with_generic_actor_label(value) for value in actors):
+            intelligence["actors"] = labels[:3]
+            changed = True
+        elif not actors:
+            intelligence["actors"] = labels[:2]
+            changed = True
     return changed
 
 

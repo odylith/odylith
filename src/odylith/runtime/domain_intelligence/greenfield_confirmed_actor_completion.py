@@ -121,6 +121,30 @@ def actor_labels(intent: Mapping[str, Any]) -> list[str]:
     return [label for label in labels if label]
 
 
+def project_specific_actor_labels(intent: Mapping[str, Any]) -> list[str]:
+    labels: list[str] = []
+    title = _clean(intent.get("title")) or "Project"
+    for row in confirmed_text_values(intent.get("human_actors")):
+        label = _clean(row.split("—", 1)[0].split(":", 1)[0]).strip(" .")
+        if label and not value_starts_with_generic_actor_label(label):
+            labels.append(label)
+            continue
+        repaired = _actor_label(row, title=title)
+        if repaired and not value_starts_with_generic_actor_label(repaired):
+            labels.append(repaired)
+    return list(unique_text(labels))
+
+
+def value_starts_with_generic_actor_label(value: Any) -> bool:
+    words = [word.casefold().strip(".,:;()[]{}") for word in _clean(value).split()]
+    words = [word for word in words if word]
+    if not words or words[0] not in _GENERIC_ACTOR_VALUE_HEADS:
+        return False
+    if len(words) == 1:
+        return True
+    return words[1] in _GENERIC_ACTOR_VALUE_ACTIONS
+
+
 def actor_row_description(value: str) -> str:
     text = _clean(value)
     for separator in (":", " — ", " – ", " - "):
@@ -671,4 +695,49 @@ def _actor_context(intent: Mapping[str, Any]) -> str:
     return ". ".join(part.strip(" .") for part in parts if part)
 
 
-__all__ = ["actor_labels", "actor_row_description", "completed_actor_rows"]
+_GENERIC_ACTOR_VALUE_HEADS = {
+    "admin",
+    "administrator",
+    "customer",
+    "operator",
+    "owner",
+    "participant",
+    "person",
+    "reviewer",
+    "support",
+    "user",
+}
+_GENERIC_ACTOR_VALUE_ACTIONS = {
+    "adds",
+    "approves",
+    "can",
+    "checks",
+    "chooses",
+    "creates",
+    "enters",
+    "inspects",
+    "is",
+    "logs",
+    "must",
+    "needs",
+    "opens",
+    "records",
+    "reviews",
+    "sees",
+    "should",
+    "submits",
+    "updates",
+    "uses",
+    "views",
+    "will",
+    "would",
+}
+
+
+__all__ = [
+    "actor_labels",
+    "actor_row_description",
+    "completed_actor_rows",
+    "project_specific_actor_labels",
+    "value_starts_with_generic_actor_label",
+]

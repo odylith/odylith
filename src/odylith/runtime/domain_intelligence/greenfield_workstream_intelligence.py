@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_i
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import project_specific_actor_labels
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms_tree
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -173,7 +174,8 @@ def build_workstream_domain_intelligence(
     dependency_summary = join_brief_items(dependencies, limit=2, item_limit=150)
     interface_summary = join_brief_items(interfaces, limit=2, item_limit=150)
     validation_summary = join_brief_items(validation, limit=3, item_limit=150)
-    actor_summary = _join_actor_labels(actors) or join_items(actors)
+    actor_labels = project_specific_actor_labels({"title": label, "human_actors": actors})
+    actor_summary = _join_actor_labels(actor_labels) or _join_actor_labels(actors) or join_items(actors)
     packet = {
         "schema_version": "odylith.greenfield.workstream_intelligence.v1",
         "family": slugify(label).replace("-", "_") or "confirmed_product",

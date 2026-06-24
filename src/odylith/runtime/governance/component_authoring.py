@@ -198,7 +198,7 @@ def _public_what_it_is(*, label: str, kind: str, responsibility: str) -> str:
     focus = _registry_focus_phrase(label=label, responsibility=responsibility)
     return (
         f"{label} defines the planned {kind} ownership boundary for {focus}. "
-        "It keeps local result, blocked cases, recovery path, release proof, and review evidence together."
+        f"{label} keeps local result, blocked cases, recovery path, release proof, and review evidence together."
     )
 
 

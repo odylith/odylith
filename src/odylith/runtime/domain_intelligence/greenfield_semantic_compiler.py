@@ -357,6 +357,10 @@ def _candidate_confidence(value: str, *, source_kind: str) -> float:
         score += 0.08
     if re.search(r"\bavailable\s+for\s+[^.]{0,60}\breview\b", clean_text(value), flags=re.IGNORECASE):
         score -= 0.18
+    if _is_supporting_evidence_artifact(value):
+        score -= 0.12
+    if _is_capability_action_candidate(value):
+        score -= 0.12
     if word_count(value) >= 4:
         score += 0.05
     return score
@@ -368,7 +372,34 @@ def _terminal_visible_outcome_bonus(value: str) -> float:
         return 0.0
     if re.search(r"\bavailable\s+for\s+[^.]{0,60}\breview\b", text):
         return 0.0
+    if _is_supporting_evidence_artifact(text):
+        return 0.0
     return 0.12
+
+
+def _is_supporting_evidence_artifact(value: str) -> bool:
+    text = clean_text(value).casefold()
+    if not text:
+        return False
+    if any(term in text for term in ("summary", "report", "decision", "recommendation", "route", "result", "view")):
+        return False
+    return bool(
+        re.search(
+            r"\b(?:audit\s+trail|comparison\s+evidence|evidence\s+packet|evidence\s+record|proof\s+record|replay\s+output)\b",
+            text,
+        )
+        or re.search(r"\b(?:audit|evidence|proof|replay)\b", text)
+    )
+
+
+def _is_capability_action_candidate(value: str) -> bool:
+    text = clean_text(value).casefold()
+    return bool(
+        re.search(
+            r"\b(?:allows?|enables?|lets?)\b.{0,80}\b(?:choose|enter|open|select|submit|update)\b",
+            text,
+        )
+    )
 
 
 def _confirmed_result_object(*, source: str, result: str) -> str:

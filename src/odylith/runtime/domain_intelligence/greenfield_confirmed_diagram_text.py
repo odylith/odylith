@@ -355,19 +355,20 @@ def _base_initial_action_clause(value: str) -> str:
 
 
 def _component_review_sentence(*, label: str, subject: str, kind: str) -> str:
+    lead = f"The {label} boundary must show"
     if kind == "adapter":
-        return "Reviewers need to see which source supplied the input and what normalized result entered the product"
+        return f"{lead} which source supplied the input and what normalized result entered the product"
     if kind == "client":
-        return "Reviewers need to see what the user saw, submitted, corrected, or approved and which product state changed after that action"
+        return f"{lead} what the user saw, submitted, corrected, or approved and which product state changed after that action"
     if _is_workflow_like(label, subject):
-        return "Reviewers need to see each responsibility transfer, failure state, recovery action, and final outcome"
+        return f"{lead} responsibility transfers, failure states, recovery actions, and final outcomes"
     if _is_record_like(label, subject):
         if re.search(r"\b(?:audit|evidence|provenance|source|trail|version|versioned)\b", f"{label} {subject}", re.IGNORECASE):
-            return "Reviewers need to see the versioned state, source evidence, and decisions that depended on this record"
-        return "Reviewers need to see the saved state, important inputs, status changes, and decisions that depended on this record"
+            return f"{lead} versioned state, source evidence, and decisions that depended on this record"
+        return f"{lead} saved state, important inputs, status changes, and decisions that depended on this record"
     if _is_decision_like(label, subject):
-        return "Reviewers need to see the inputs, rule version, result, and downstream decision that depended on it"
-    return "Reviewers need to see what this boundary receives, produces, records, and makes available next"
+        return f"{lead} inputs, rule versions, results, and downstream decisions that depended on it"
+    return f"{lead} what this boundary receives, produces, records, and makes available next"
 
 
 def _clean_component_subject(value: str) -> str:

@@ -181,9 +181,9 @@ def boundary_from_contract(label: str, contract: Mapping[str, Any]) -> str:
 
 def interfaces_from_contract(contract: Mapping[str, Any]) -> list[str]:
     return [
-        _sentence(f"Accepts {contract.get('accepted_inputs')}"),
-        _sentence(f"Produces {contract.get('produced_outputs')}"),
-        _sentence(f"Renders, emits, or transitions {contract.get('states_or_transitions')}"),
+        _sentence(f"Accepts {_lower_clause(contract.get('accepted_inputs'))}"),
+        _sentence(f"Produces {_lower_clause(contract.get('produced_outputs'))}"),
+        _sentence(f"Renders, emits, or transitions {_lower_clause(contract.get('states_or_transitions'))}"),
     ]
 
 

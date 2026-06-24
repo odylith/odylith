@@ -417,7 +417,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     if not current_non_goals or _sequence_has_generic_non_goals(current_non_goals):
         extracted_non_goals = _non_goal_rows(intent, title=title)
         intent["non_goals"] = extracted_non_goals or [
-            "Do not expand into adjacent workflows, personalized automation, or broader operational scale until the first outcome works for a representative user.",
+            "Do not expand into adjacent workflows, broader automation, or operational scale until the first outcome works for a representative user.",
             f"Do not claim adjacent automation, live dependency behavior, or broader operational scale until those outcomes are described and proven separately.",
         ]
     if not story:
@@ -480,10 +480,12 @@ def _customer_needs_repair(value: Any) -> bool:
 
 def _sequence_has_generic_non_goals(values: Sequence[str]) -> bool:
     text = " ".join(_clean(value) for value in values)
+    lowered = text.casefold()
     return bool(
         re.search(r"\bstays\s+limited\s+to\s+the\s+accepted\b", text, re.I)
         or re.search(r"\bbroader\s+users,\s+integrations,\s+datasets,\s+edge\s+cases\b", text, re.I)
         or re.search(r"\bseparately\s+accepted\s+proof\s+boundary\b", text, re.I)
+        or "personalized automation" in lowered
     )
 
 

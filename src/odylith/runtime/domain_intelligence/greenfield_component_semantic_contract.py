@@ -79,7 +79,7 @@ def derive_component_semantic_contract(
     label = _label(row)
     description = _description(row)
     proposal_context = _proposal_context(proposal)
-    local_text = " ".join(text for text in (label, description, proposal_context) if text)
+    local_text = " ".join(text for text in (label, description) if text)
     clauses = semantic_context.clauses(description or label)
     action_terms = _actions(" ".join(text for text in (label, description) if text)) or _actions(local_text)
     relation_phrases = _relation_phrases(description)
@@ -175,8 +175,6 @@ def derive_component_semantic_contract(
     states = _state_transition_text(
         action_terms=action_terms,
         object_phrases=object_phrases,
-        context_text=proposal_context,
-        anchor_terms=(*_content_terms(label), *_content_terms(description)),
     )
     sibling_label = _label(sibling) if isinstance(sibling, Mapping) else ""
     handoff_label = next_label or "release review"

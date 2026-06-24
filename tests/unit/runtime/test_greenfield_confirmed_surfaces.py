@@ -211,16 +211,16 @@ def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:
         assert len(description) < 260
     assert [row["description"] for row in sequence["components"]] == [
         (
-            "Owns microphone or line-in capture and normalization. Reviewers need to see what this boundary receives, "
-            "produces, records, and makes available next."
+            "Owns microphone or line-in capture and normalization. The Audio Capture and Pre-processing Service boundary "
+            "must show what this boundary receives, produces, records, and makes available next."
         ),
         (
-            "Owns product responsibility to perform frame-level pitch tracking. Reviewers need to see the inputs, rule version, result, "
-            "and downstream decision that depended on it."
+            "Owns product responsibility to perform frame-level pitch tracking. The Pitch and Onset Detection Engine boundary "
+            "must show inputs, rule versions, results, and downstream decisions that depended on it."
         ),
         (
-            "Owns product responsibility to engrave the score model to PDF and MusicXML. Reviewers need to see the inputs, rule version, result, "
-            "and downstream decision that depended on it."
+            "Owns product responsibility to engrave the score model to PDF and MusicXML. The Score Renderer Service boundary "
+            "must show inputs, rule versions, results, and downstream decisions that depended on it."
         ),
     ]
 
@@ -256,11 +256,11 @@ def test_confirmed_greenfield_noun_phrase_responsibilities_stay_grammatical() ->
     assert components[0]["responsibility"] == "Status dashboard for operator review, queue health, and decision history"
     assert first_description == (
         "Presents status dashboard for operator review, queue health, and decision history to users and captures "
-        "the action or decision the product needs next. Reviewers need to see what the user saw, submitted, "
+        "the action or decision the product needs next. The Status Dashboard boundary must show what the user saw, submitted, "
         "corrected, or approved and which product state changed after that action."
     )
     assert "Coordinates follow-up actions, reviewer handoff, and blocked-state recovery" in encoded
-    assert "each responsibility transfer, failure state, recovery action, and final outcome" in encoded
+    assert "responsibility transfers, failure states, recovery actions, and final outcomes" in encoded
 
 
 def test_parenthetical_system_descriptor_stays_one_component_row() -> None:

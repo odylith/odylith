@@ -345,6 +345,11 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     _stub_dashboard_refresh(monkeypatch, dashboard_calls)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_proposals,
+        "assert_greenfield_completion_ready",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("builder must not own final create readiness")),
+    )
     apply_ready_flags: list[bool] = []
     original_apply = greenfield_proposals.apply_greenfield_proposal
 

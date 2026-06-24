@@ -320,8 +320,8 @@ def _patch_sections(
             [
                 f"First implementation step: {first_slice}" if first_slice else "",
                 (
-                    f"Keep success, blocked-input, replay, and handoff proof tied to {scope_ref} "
-                    "before expanding adjacent source ownership."
+                    f"{scope_ref} keeps success, blocked-input, replay, and handoff proof together "
+                    "before adjacent source ownership expands."
                 )
                 if focus
                 else "",
@@ -338,7 +338,7 @@ def _patch_sections(
         or [
             f"Do not claim source-backed implementation ownership for {scope_ref} before code exists.",
             (
-                f"Do not treat the {scope_ref} as release-ready until success, blocked-input, replay, "
+                f"Do not treat {scope_ref} as release-ready until its success, blocked-input, replay, "
                 "and handoff evidence are written and reviewed."
             ),
         ]

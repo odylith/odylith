@@ -86,7 +86,7 @@ def _domain_reviewer_issues(identity: str, lowered: str) -> list[str]:
 
 
 def _has_contract_fragment_tuple(lowered: str) -> bool:
-    if re.search(r"\bcovers?\s+(?!the\b|a\b|an\b)\w+\s+\w+\b", lowered):
+    if re.search(r"\bcovers?\s+(?!(?:a|an|one|that|the|their|this)\b)\w+\s+\w+\b", lowered):
         return True
     if re.search(r"\bgate\s+\w+\s+\w+\s+(?:result|status|state)\b", lowered):
         return True

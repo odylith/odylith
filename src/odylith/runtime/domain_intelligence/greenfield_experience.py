@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
+from odylith.runtime.domain_intelligence.greenfield_text import strip_dangling_word_tail
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence import greenfield_traceability
@@ -35,6 +36,34 @@ _HANDOFF_MATCH_STOPWORDS = frozenset(
         "state",
         "surface",
         "system",
+    }
+)
+_PREVIEW_TERMINAL_MODIFIERS = frozenset(
+    {
+        "accepted",
+        "actionable",
+        "clear",
+        "complete",
+        "concrete",
+        "first",
+        "reviewable",
+        "specific",
+        "trusted",
+        "visible",
+    }
+)
+_PREVIEW_DANGLING_WORDS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "for",
+        "from",
+        "of",
+        "or",
+        "the",
+        "to",
+        "with",
     }
 )
 
@@ -443,7 +472,18 @@ def _validation_items(*, row: Mapping[str, Any], wave: Mapping[str, Any]) -> tup
 
 def _preview_safe_validation_item(value: Any) -> str:
     text = _short_contract_text(value, limit=220)
-    return normalize_cover_article_language(text)
+    return _trim_preview_terminal_fragment(normalize_cover_article_language(text))
+
+
+def _trim_preview_terminal_fragment(value: str) -> str:
+    text = str(value or "").strip(" ,;:.")
+    words = text.split()
+    if len(words) >= 2:
+        previous = words[-2].casefold().strip(".,;:")
+        tail = words[-1].casefold().strip(".,;:")
+        if previous in {"a", "an", "one", "the", "this", "that"} and tail in _PREVIEW_TERMINAL_MODIFIERS:
+            text = " ".join(words[:-2]).strip(" ,;:.")
+    return strip_dangling_word_tail(text, dangling_words=_PREVIEW_DANGLING_WORDS)
 
 
 def _wave_validation_items(wave: Mapping[str, Any]) -> tuple[str, ...]:

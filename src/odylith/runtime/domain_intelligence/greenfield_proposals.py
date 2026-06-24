@@ -230,6 +230,7 @@ def build_greenfield_proposal(
     prompt: str,
     release_selector: str = "",
     confirmed_intent: Mapping[str, Any] | None = None,
+    require_completion_ready: bool = True,
 ) -> dict[str, Any]:
     """Return the governed proposal after Product Intent is confirmed.
 
@@ -263,7 +264,8 @@ def build_greenfield_proposal(
     validate_host_reasoned_proposal(proposal)
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     raise_for_failed_greenfield_tribunal(run_greenfield_tribunal(proposal, release_selector=selector))
-    assert_greenfield_completion_ready(proposal, release_selector=selector)
+    if require_completion_ready:
+        assert_greenfield_completion_ready(proposal, release_selector=selector)
     return proposal
 
 
@@ -713,6 +715,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 prompt=str(args.prompt),
                 release_selector=str(args.release),
                 confirmed_intent=confirmed_intent,
+                require_completion_ready=False,
             )
             result, captured = _run_with_optional_stdout_capture(
                 enabled=bool(args.as_json),

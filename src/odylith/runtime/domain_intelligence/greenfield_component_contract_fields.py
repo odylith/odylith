@@ -152,6 +152,7 @@ def state_transition_text(
     states = unique_text(
         [
             *transitions,
+            *_localized_state_terms(object_phrases),
             "requested",
             "received",
             *verbs,
@@ -162,6 +163,21 @@ def state_transition_text(
         ]
     )
     return ", ".join(state for state in states[:18] if state not in {"needed", "required"})
+
+
+def _localized_state_terms(object_phrases: Sequence[str]) -> list[str]:
+    rows: list[str] = []
+    for phrase_value in object_phrases:
+        phrase_text = clean_artifact_phrase(str(phrase_value or "")).strip(" .")
+        if not phrase_text or component_shell_artifact(phrase_text):
+            continue
+        words = [word for word in visible_words(phrase_text) if word]
+        if not 2 <= len(words) <= 5:
+            continue
+        rows.extend([f"{phrase_text} received", f"{phrase_text} validated"])
+        if len(rows) >= 4:
+            break
+    return unique_text(rows)
 
 
 def outside_boundary(*, sibling_focus: str) -> str:

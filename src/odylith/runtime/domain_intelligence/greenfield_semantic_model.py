@@ -320,6 +320,8 @@ def _reconciled_visible_result(
         return current
     if not current:
         return terminal_result
+    if _is_supporting_evidence_result(terminal_result) and not _is_supporting_evidence_result(current):
+        return current
     if _accepted_result_matches_step(terminal.text, current):
         return current
     matched_event = next((event for event in events if _accepted_result_matches_step(event.text, current)), None)
@@ -328,6 +330,21 @@ def _reconciled_visible_result(
     if terminal.index == len(events) and len(ordered_terms(current, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)) <= 4:
         return terminal_result
     return current
+
+
+def _is_supporting_evidence_result(value: str) -> bool:
+    text = _clean(value).casefold()
+    if not text:
+        return False
+    if any(term in text for term in ("summary", "report", "decision", "recommendation", "route", "result", "view")):
+        return False
+    return bool(
+        re.search(
+            r"\b(?:audit\s+trail|comparison\s+evidence|evidence\s+packet|evidence\s+record|proof\s+record|replay\s+output)\b",
+            text,
+        )
+        or re.search(r"\b(?:audit|evidence|proof|replay)\b", text)
+    )
 
 
 def _first_path_events(

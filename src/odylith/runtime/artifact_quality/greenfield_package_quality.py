@@ -312,6 +312,10 @@ def _allowed_terminal_final_state_phrase(chunk: str, lowered: Sequence[str]) -> 
     previous = lowered[-2]
     if previous in {"case", "match", "record", "result", "score", "status"}:
         return True
+    if previous in {"is", "becomes", "became"} and any(
+        token in {"decision", "review", "result", "status"} for token in lowered[:-2]
+    ):
+        return True
     if any(token in {"finalize", "finalizes", "finalized", "finalizing", "mark", "marked", "marks"} for token in lowered[:-1]):
         return True
     if previous == "to" and any(
