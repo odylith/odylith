@@ -585,6 +585,7 @@ def _allowed_structured_repetition_key(key: str) -> bool:
             "proof ",
             "question ",
             "readiness gate ",
+            "release wave ",
             "recovery gate ",
             "review condition ",
             "risk ",

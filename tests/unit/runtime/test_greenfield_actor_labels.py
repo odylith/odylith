@@ -73,3 +73,33 @@ def test_actor_label_splits_finite_actor_sentences_from_responsibility_text() ->
         "Clinic reviewers use the ready-or-blocked status to decide the next action",
         project_focus="Specialty Clinic Referral Tracker",
     )
+
+
+def test_actor_label_keeps_relative_clause_actions_out_of_role_label() -> None:
+    assert accepted_actor_label(
+        "Operator who launches runs and monitors active work",
+        project_focus="Distributed Multi-Agent Platform",
+    ) == "Distributed Multi-Agent Operator"
+    assert project_specific_actor_row(
+        "Operator who launches runs and monitors active work",
+        project_focus="Distributed Multi-Agent Platform",
+    ) == "Distributed Multi-Agent Operator: launches runs and monitors active work"
+    assert project_specific_actor_row(
+        "Operator Who Launches: launches runs and monitors active work",
+        project_focus="Distributed Multi-Agent Platform",
+    ) == "Distributed Multi-Agent Operator: launches runs and monitors active work"
+
+
+def test_actor_label_keeps_generic_relative_role_descriptions_as_body() -> None:
+    assert project_specific_actor_row(
+        "Reviewer who approves risky actions or validates final outputs",
+        project_focus="Distributed Multi-Agent Platform",
+    ) == "Risky Actions or Validates Final Outputs Reviewer: approves risky actions or validates final outputs"
+    assert project_specific_actor_row(
+        "Developer who builds agent plugins, tools, and custom routing logic",
+        project_focus="Distributed Multi-Agent Platform",
+    ) == "Developer: builds agent plugins, tools, and custom routing logic"
+    assert project_specific_actor_row(
+        "Platform admin who manages tenants, credentials, quotas, and integrations",
+        project_focus="Distributed Multi-Agent Platform",
+    ) == "Platform Admin: manages tenants, credentials, quotas, and integrations"

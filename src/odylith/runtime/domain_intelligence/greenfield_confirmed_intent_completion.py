@@ -659,6 +659,11 @@ def _sentence_declares_deferred_scope(lowered: str) -> bool:
         return False
     if any(marker in lowered for marker in ("out of scope", "deferred", "defer ", "future", "beyond the first")):
         return True
+    if re.search(r"\bnot\s+(?:required|needed|necessary)\b", lowered) and re.search(
+        r"\b(?:first|release|path|scope|proof|live|integration|sync)\b",
+        lowered,
+    ):
+        return True
     return bool(
         re.search(r"\b(?:later|future)\b", lowered)
         and re.search(r"\b(?:can|could|should|must|will|would|may|might|wait|outside|separate|after|until)\b", lowered)

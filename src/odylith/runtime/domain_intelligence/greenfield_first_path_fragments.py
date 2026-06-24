@@ -11,10 +11,8 @@ from odylith.runtime.common.prose_grammar import (
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
-from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
-from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
-from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase
-from odylith.runtime.domain_intelligence.greenfield_first_path_common import lowercase_leading_article
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE, clean_first_path_text
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase, lowercase_leading_article
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects import (
     drop_result_recipient,
@@ -65,6 +63,7 @@ def is_system_generated_action(value: str) -> bool:
     if re.match(rf"^(?:the\s+)?(?:{system_subject})\s+(?:{system_verb})\b", text, flags=re.IGNORECASE):
         return True
     return bool(re.match(rf"^[A-Z][A-Za-z0-9_-]{{1,}}\s+(?:{system_verb})\b", text))
+
 
 def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
@@ -161,7 +160,7 @@ def action_chain_fragment(value: str) -> str:
     if outcome and not re.search(r"\b(?:receives?|gets?)\b", text, flags=re.IGNORECASE):
         stripped = strip_action_subject(text)
         if re.match(
-            r"^(?:checks?|decides?|inspects?|publishes?|reads?|reports?|reviews?|sees?|uses?|views?)\b",
+            r"^(?:checks?|closes?|decides?|inspects?|publishes?|reads?|reports?|reviews?|sees?|uses?|views?)\b",
             stripped,
             flags=re.IGNORECASE,
         ):
@@ -244,7 +243,7 @@ def visible_result_object(value: str) -> str:
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
         r"\b(?P<verb>sends?|publishes?|returns?|delivers?)\s+or\s+"
         r"(?:sends?|publishes?|returns?|delivers?)\s+(?P<object>.+)$",
-        r"\b(?P<verb>compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"\b(?P<verb>closes?|compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
@@ -321,6 +320,8 @@ def nominal_visible_result_object(value: str) -> str:
 _RESULT_ACTION_NOMINALS = {
     "capture": "captured",
     "captures": "captured",
+    "close": "closed",
+    "closes": "closed",
     "confirm": "confirmed",
     "confirms": "confirmed",
     "export": "exported",
@@ -668,6 +669,7 @@ _GERUND_ACTION_VERBS = {
     "views": "viewing",
 }
 
+
 def gerund_action_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
@@ -791,9 +793,7 @@ def _replace_word_token(value: str, replacement: str) -> str:
     return f"{replacement}{suffix}"
 
 __all__ = [
-    "MATERIAL_ACTION_RE", "action_chain_fragment", "actor_signature", "base_adverbial_note_action", "clean_first_path_text",
-    "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment", "is_system_generated_action",
-    "is_trivial_start", "leading_subject_prefix", "looks_like_visible_result", "lowercase_leading_article",
-    "modal_action_fragment", "modal_actor_action_parts", "nominal_visible_result_object", "outcome_capability_fragment",
-    "primary_actor_signature", "strip_action_subject", "visible_action_clause", "visible_result_object",
+    "MATERIAL_ACTION_RE", "action_chain_fragment", "actor_signature", "base_adverbial_note_action", "clean_first_path_text", "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment", "is_system_generated_action", "is_trivial_start",
+    "leading_subject_prefix", "looks_like_visible_result", "lowercase_leading_article", "modal_action_fragment", "modal_actor_action_parts", "nominal_visible_result_object", "outcome_capability_fragment", "primary_actor_signature",
+    "strip_action_subject", "visible_action_clause", "visible_result_object",
 ]

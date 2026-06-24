@@ -35,6 +35,7 @@ _INFINITIVE_TO_FINITE = {
     "classify": "classifies",
     "click": "clicks",
     "clean": "cleans",
+    "close": "closes",
     "cluster": "clusters",
     "collect": "collects",
     "compare": "compares",

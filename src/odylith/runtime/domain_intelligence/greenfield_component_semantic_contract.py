@@ -387,7 +387,6 @@ def _looks_generated_scaffold(value: str) -> bool:
 
 def _proposal_context(proposal: Mapping[str, Any]) -> str:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    project_brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
     semantic_model = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
     ontology = semantic_model.get("domain_ontology") if isinstance(semantic_model.get("domain_ontology"), Mapping) else {}
     values = [
@@ -397,7 +396,6 @@ def _proposal_context(proposal: Mapping[str, Any]) -> str:
         intent.get("product_story"),
         intent.get("external_systems"),
         proposal.get("external_systems"),
-        *project_brief.values(),
         *ontology.values(),
     ]
     return " ".join(_clean(value) for value in values if _clean(value))

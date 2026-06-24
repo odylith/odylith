@@ -3,10 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_component_contract import boundary_from_contract
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import component_kind_echo_safe_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import contract_focus
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import proof_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
@@ -33,6 +35,30 @@ def test_component_proof_phrases_do_not_echo_short_component_kind_labels() -> No
 
     assert "Successful path evidence for Review Queue: review state result" in rows[0]
     assert "Review Queue: queue" not in " ".join(rows)
+
+
+def test_component_proof_focus_skips_action_modified_result_noun_piles() -> None:
+    output_focus = contract_focus(
+        object_list="exception blocked state, tracker exception, failure reason ledger, use tracker state",
+        action_terms=(),
+        fallback="downstream state",
+        role="output",
+    )
+    rows = proof_rows(
+        label="Exception and Blocked Use Tracker",
+        object_list="exception blocked state, use tracker state",
+        critical="exception blocked state",
+        input_focus="exception reason",
+        output_focus=output_focus,
+        sibling_label="Review Signoff Ledger",
+        sibling_focus="review signoff state",
+    )
+    rendered = " ".join([output_focus, *rows]).casefold()
+
+    assert "use tracker state result" not in rendered
+    assert "use tracker state evidence" in rendered
+    assert "successful path evidence for exception and blocked use tracker: exception blocked state" in rendered
+    assert generated_public_copy_issues("component proof rows", rows) == ()
 
 
 def test_component_boundary_strips_leading_ownership_verbs_from_owned_state() -> None:

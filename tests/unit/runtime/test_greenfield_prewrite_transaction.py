@@ -110,8 +110,6 @@ A user opens the app after a burn, captures a photo and answers the intake quest
 ### Proof boundary
 This is a confirmation-only draft, so no product code exists yet. The first thing the product must prove is that the intake-to-first-plan path produces a safe, evidence-grounded recovery plan and correctly raises an escalation warning when severity or warning signs cross a safety threshold. A close second is that day-over-day check-ins reliably detect whether skin is healing or worsening.
 """
-
-
 def test_greenfield_apply_prewrite_component_and_diagram_phases_stay_dedicated() -> None:
     parent_source = APPLY_PREWRITE_PATH.read_text(encoding="utf-8")
     component_source = APPLY_COMPONENTS_PATH.read_text(encoding="utf-8")
@@ -372,7 +370,7 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_
     assert "body stats plus logged activity, energy-out number, and burn estimation are calculated" not in component_text
     assert "If something is missing" not in rendered_text
     assert ", Whether wearable" not in rendered_text
-    assert "wearable integration scope remains deferred" in rendered_text
+    assert "Live wearable sync scope remains deferred" in rendered_text
     assert '?".' not in rendered_text
     assert "while Activity Log and Profile Store ownership" not in component_text
     assert " outside boundary" not in component_text

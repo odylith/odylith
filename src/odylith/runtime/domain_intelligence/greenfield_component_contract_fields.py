@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import generic_actor_label_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
@@ -65,7 +66,7 @@ def contract_focus(
             return f"{adjustment} request, {support}, prior state, and explanation context"
         rationale_terms = set(content_terms(focus)) | set(contract_terms)
         rationale = "adjustment rationale" if "rationale" in rationale_terms else "review rationale"
-        return f"{adjustment} result, {rationale}, blocked-state detail, and next-step context"
+        return f"{_result_output_artifact(adjustment)}, {rationale}, blocked-state detail, and next-step context"
     if role == "input":
         if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "forecast", "optimize", "predict", "score")):
             input_focus = f"input facts for {focus}" if _ends_with_term(focus, "state") else f"{focus} inputs"
@@ -84,16 +85,16 @@ def contract_focus(
     if any(action in action_terms for action in ("capture", "create", "edit", "log", "record", "save", "store", "submit")):
         return f"validated {_state_focus(focus)}, correction marker, and replayable change evidence"
     if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "forecast", "optimize", "predict", "score")):
-        return f"{focus} result, rule explanation, and review evidence"
+        return f"{_result_output_artifact(focus)}, rule explanation, and review evidence"
     if any(action in action_terms for action in ("compare", "order", "rank")):
         return f"{_ranked_output_artifact(focus)}, comparison explanation, and selection rationale"
     if any(action in action_terms for action in ("select", "choose")):
-        return f"selected {focus} result, selection explanation, and selection rationale"
+        return f"{_result_output_artifact(f'selected {focus}')}, selection explanation, and selection rationale"
     if any(action in action_terms for action in ("export", "delete")):
         return f"{focus} decision, allowed or blocked marker, and lifecycle evidence"
     if "request" in action_terms:
         return f"{focus} state update, allowed or blocked marker, and next-step context"
-    return f"{focus} result, state update, and review detail"
+    return f"{_result_output_artifact(focus)}, state update, and review detail"
 
 
 def _ends_with_term(value: str, term: str) -> bool:
@@ -575,6 +576,8 @@ def _proof_result_phrase(value: str) -> str:
         text = _dedupe_adjacent_words(clean_artifact_phrase(part))
         if not text:
             continue
+        if _awkward_result_action_modifier(text):
+            continue
         terms = set(content_terms(text))
         score = len(terms & _PROOF_RESULT_TERMS) * 10
         if "result" in terms:
@@ -587,6 +590,27 @@ def _proof_result_phrase(value: str) -> str:
             best_score = score
             best = text
     return best
+
+
+def _result_output_artifact(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "local result"
+    candidate = f"{text} result"
+    if _awkward_result_action_modifier(candidate):
+        return f"{text} evidence"
+    return candidate
+
+
+def _awkward_result_action_modifier(value: str) -> bool:
+    words = [word.casefold().strip(".,:;") for word in visible_words(value) if word.strip(".,:;")]
+    for index, token in enumerate(words):
+        if token not in _PROOF_RESULT_TERMS:
+            continue
+        left = words[max(0, index - 4) : index]
+        if any(looks_like_base_action_token(word) for word in left):
+            return True
+    return False
 
 
 def _dedupe_adjacent_words(value: str) -> str:

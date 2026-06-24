@@ -849,16 +849,29 @@ def _deferred_focus_sentence(value: str) -> str:
     if not cleaned:
         return ""
     lowered = cleaned.casefold()
-    if not re.search(r"\b(?:out\s+of\s+scope|outside|deferred|future|later|not\s+included|must\s+not\s+claim|does\s+not\s+claim)\b", lowered):
+    if not re.search(
+        r"\b(?:out\s+of\s+scope|outside|deferred|future|later|not\s+included|not\s+required|"
+        r"not\s+needed|not\s+necessary|must\s+not\s+claim|does\s+not\s+claim)\b",
+        lowered,
+    ):
         return ""
     scope_question = re.match(
-        r"^(?:is|are|should|will|would|can|could|does|do)\s+(?P<subject>.+?)\s+"
+        r"^(?:whether\s+)?(?:is|are|should|will|would|can|could|does|do)?\s*(?P<subject>.+?)\s+"
         r"(?:in\s+scope|included|part\s+of\s+(?:the\s+)?scope)\b",
         cleaned,
         flags=re.IGNORECASE,
     )
     if scope_question:
         subject = _short_summary(scope_question.group("subject"), limit=90).strip(" .")
+        if subject:
+            return f"{subject[:1].upper()}{subject[1:]} scope remains deferred"
+    not_required = re.match(
+        r"^(?P<subject>.+?)\s+(?:is|are)\s+[^.]{0,120}?\bnot\s+(?:required|needed|necessary)\b",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    if not_required:
+        subject = _short_summary(not_required.group("subject"), limit=90).strip(" .")
         if subject:
             return f"{subject[:1].upper()}{subject[1:]} scope remains deferred"
     cleaned = re.sub(

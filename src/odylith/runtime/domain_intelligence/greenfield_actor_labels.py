@@ -203,6 +203,8 @@ def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
     if not text:
         return ""
     head, body = _split_actor_row(text)
+    if body and (repaired := _repaired_repeated_action_label(head, body, project_focus=project_focus)):
+        return repaired
     explicit_body = bool(body)
     original_head = _strip_modal_actor_tail(_strip_qualifiers(head).strip(" ."))
     original_role = _role_suffix(original_head)
@@ -311,10 +313,12 @@ def project_specific_actor_row(row: str, *, project_focus: str) -> str:
     text = _clean(row).strip(" .")
     if not text:
         return ""
-    _head, body = _split_actor_row(text)
+    head, body = _split_actor_row(text)
     label = actor_display_label(text, project_focus=project_focus)
     if not label:
         return text
+    label = _repaired_repeated_action_label(label, body, project_focus=project_focus) or label
+    label = _repaired_repeated_action_label(head, body, project_focus=project_focus) or label
     return f"{label}: {body}" if body else label
 
 
@@ -341,6 +345,9 @@ def _split_actor_row(value: str) -> tuple[str, str]:
     )
     if comma and 1 <= len(comma.group("head").split()) <= 5:
         return comma.group("head").strip(" ."), comma.group("body").strip(" .")
+    relative_head, relative_tail = _split_relative_actor_marker(value)
+    if relative_head:
+        return relative_head, relative_tail
     action_head, action_tail = _split_actor_action_tail(value)
     if action_head:
         return action_head, action_tail
@@ -354,6 +361,68 @@ def _split_actor_row(value: str) -> tuple[str, str]:
         )
         return _title_label(marker_head), body
     return value, ""
+
+
+def _repaired_repeated_action_label(label: str, body: str, *, project_focus: str) -> str:
+    """Return a role label when an action was accidentally absorbed into it."""
+
+    label_words = _clean(label).split()
+    body_words = _clean(body).split()
+    if len(label_words) < 2 or not body_words:
+        return ""
+    label_tail = _word_key(label_words[-1])
+    body_head = _word_key(body_words[0])
+    if not label_tail or label_tail != body_head:
+        return ""
+    role_prefix = _role_prefix(label_words[:-1])
+    if not role_prefix:
+        return ""
+    role = _role_suffix(role_prefix)
+    lower_prefix = _key(role_prefix)
+    if _is_concrete_actor_head(role_prefix, lower_head=lower_prefix, role=role) and not _role_only_body_focus(
+        lower_prefix,
+        role,
+    ):
+        return _title_label(role_prefix)
+    focus = _focus_from_actor_body(body, role=role) if _role_body_prefers_body_focus(role, body) else ""
+    focus = focus or _focus_from_text(project_focus, role=role) or _focus_from_actor_body(body, role=role)
+    if focus and role:
+        return _title_label(f"{focus} {role}")
+    return _title_label(role_prefix)
+
+
+def _role_prefix(words: Sequence[str]) -> str:
+    for end in range(len(words), 0, -1):
+        candidate = _clean(" ".join(words[:end])).strip(" .")
+        if _role_suffix(candidate):
+            return candidate
+    return ""
+
+
+def _word_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9'-]+", "", str(value or "").casefold())
+
+
+def _split_relative_actor_marker(value: str) -> tuple[str, str]:
+    text = _clean(value).strip(" .")
+    lowered = text.casefold()
+    for marker in (" who ", " that "):
+        index = lowered.find(marker)
+        if index <= 0:
+            continue
+        head = text[:index].strip(" .")
+        tail = text[index + len(marker) :].strip(" .")
+        if not head or not tail:
+            continue
+        first = _first_body_token(tail)
+        if marker.strip() == "that" and not (
+            looks_like_finite_action_token(first)
+            or looks_like_base_action_token(first)
+            or first.endswith("ing")
+        ):
+            continue
+        return _title_label(_strip_actor_head_articles(head)), tail
+    return "", ""
 
 
 def _split_description_marker(value: str) -> tuple[str, str]:
