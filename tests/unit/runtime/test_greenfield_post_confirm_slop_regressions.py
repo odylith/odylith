@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_risk
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import state_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_product_view
@@ -34,6 +35,7 @@ from odylith.runtime.domain_intelligence import greenfield_confirmed_diagram_tex
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_evidence_record_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import _actor_verb
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
@@ -54,6 +56,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_view import first_path_semantic_view
@@ -62,6 +65,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_boundary_language
@@ -70,6 +74,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import normalize_visibl
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import build_workstream_domain_intelligence
 from odylith.runtime.domain_intelligence.proposal_tribunal_substance import (
     _check_atlas_source_preserves_first_path_tail,
+    _check_first_path_flowchart,
 )
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
@@ -676,6 +681,17 @@ def test_confirmed_diagram_labels_summarize_release_proof_and_deferred_scope_bef
     )
     assert "catch one blocking issue" in diagram_text.trim(diagram_text.release_proof_label(blocking_proof), 82)
     assert not diagram_text.release_proof_label(blocking_proof).endswith(", assign")
+    release_boundary = (
+        "Release 0.0.1 is complete when one research lead can map claims to evidence, "
+        "resolve one missing-section blocker, and see a readiness decision."
+    )
+    assert diagram_text.release_proof_label(release_boundary) == "one research lead can map claims to evidence"
+    assert diagram_text.deferred_scope_label(release_boundary) == "beyond accepted first path"
+    succeeds_boundary = (
+        "Release 0.0.1 succeeds when one learner can start a practice session, receive feedback, "
+        "and see a learning summary."
+    )
+    assert diagram_text.deferred_scope_label(succeeds_boundary) == "beyond accepted first path"
     assert (
         diagram_text.deferred_scope_label(
             "Do not expand beyond opening the checklist, recording findings, validating one mismatch, "
@@ -1435,6 +1451,52 @@ def test_first_path_flowchart_strips_clipped_terminal_final_label() -> None:
     )
 
 
+def test_first_path_flowchart_keeps_coordinated_object_tail_and_allows_participant_actor() -> None:
+    first_path = (
+        "A participant records symptoms, triggers, chosen practice steps, check-in results, "
+        "safety boundaries, and progress evidence."
+    )
+    semantic = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Daily Comfort Practice Coach",
+            state_object="comfort practice record",
+            first_path=first_path,
+            proof_boundary="Release succeeds when progress evidence is reviewable.",
+            components=[],
+            human_actors=["Daily Comfort Practice Participant"],
+        )
+    )
+    components = [
+        {"label": "Intake Register Service", "release_scope": "first_path_required"},
+        {"label": "Review Workspace", "release_scope": "first_path_required"},
+        {"label": "Proof Ledger", "release_scope": "first_path_required"},
+    ]
+
+    steps = sequence_event_steps(first_path, semantic_model=semantic, dedupe=True)
+    mermaid = first_path_flowchart_mermaid(
+        label="Daily Comfort Practice Coach",
+        actors=["Daily Comfort Practice Participant"],
+        components=components,
+        first_path=first_path,
+        semantic_model=semantic,
+    )
+    issues: list[str] = []
+    _check_first_path_flowchart(
+        proposal={"intent": {"first_path": first_path}},
+        components=components,
+        title="First Path Sequence",
+        source=mermaid,
+        issues=issues,
+    )
+
+    assert "Record progress evidence" in steps
+    assert "Progresses evidence" not in mermaid
+    assert "And progress evidence" not in mermaid
+    assert "participant records symptoms" not in mermaid.casefold()
+    assert 'S3["Record progress evidence"]' in mermaid
+    assert not [issue for issue in issues if "sequence/parser debris" in issue]
+
+
 def test_package_quality_allows_plural_noun_after_to() -> None:
     text = "Routes comparison evidence to alternatives by fare, travel time, walking time, reliability, and preference."
     issues = _chunk_language_issues(
@@ -1659,6 +1721,7 @@ def test_outcome_action_phrase_does_not_wrap_action_outcomes_as_visible_objects(
         "see a simple recap showing what the child explored"
     )
     assert outcome_action_phrase("a lead creates a readiness review") == "create a readiness review"
+    assert outcome_action_phrase("the publication status") == "see the publication status"
 
 
 def test_user_can_gate_allows_base_action_with_action_shaped_object() -> None:
@@ -2094,6 +2157,42 @@ def test_first_path_gerund_chain_handles_set_draft_and_send_actions() -> None:
     )
     assert "seting" not in capability
     assert "drafts a response" not in capability
+
+
+def test_first_path_capability_preserves_routed_review_actions_without_duplicate_outcome() -> None:
+    first_path = (
+        "A case worker creates an appeal case from a denied grant decision, records evidence, schedules a hearing, "
+        "prepares the decision packet, sends the packet for review, and marks the appeal final when the decision is recorded."
+    )
+    capability = first_path_capability_phrase(first_path, fallback="prepare appeal review", max_fragments=8, limit=400)
+
+    assert action_chain_fragment("A case worker sends the packet for review") == "send the packet for review"
+    assert visible_result_object("A case worker sends the packet for review") == ""
+    assert "send the packet for review" in capability
+    assert "review the packet for review" not in capability
+    assert "see a case worker marks" not in capability
+    assert capability.count("mark the appeal final") == 1
+
+
+def test_workstream_risk_uses_compact_state_label_instead_of_field_list() -> None:
+    risk = workstream_risk(
+        label="Decision and Reason Publisher Service",
+        outcome="the decision with reasons",
+        state=(
+            "a permit application record with applicant identity, parcel address, permit type, required documents, "
+            "zoning checks, correction requests, review status, inspection readiness, staff notes, and final decision"
+        ),
+    )
+
+    assert "permit application record is incomplete" in risk
+    assert "applicant identity, parcel address" not in risk
+    assert risk.count(",") <= 2
+
+
+def test_actor_verb_treats_singular_actor_with_modifier_nouns_as_singular() -> None:
+    assert _actor_verb("the homeowner comparing solar options", singular="provides", plural="provide") == "provides"
+    assert _actor_verb("the student choosing recommended books", singular="needs", plural="need") == "needs"
+    assert _actor_verb("reviewers checking requests", singular="receives", plural="receive") == "receive"
 
 
 def test_first_path_model_drops_meta_loop_summary_from_visible_outcome() -> None:

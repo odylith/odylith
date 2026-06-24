@@ -25,6 +25,8 @@ def sequence_needs_repair(value: Any, *, required_tokens: Sequence[str], min_ite
     values = text_values(value)
     if len(values) < min_items:
         return True
+    if any(_is_too_shallow(item) for item in values):
+        return True
     joined = " ".join(values).casefold()
     if any(token not in joined for token in required_tokens):
         return True
@@ -32,7 +34,12 @@ def sequence_needs_repair(value: Any, *, required_tokens: Sequence[str], min_ite
 
 
 def sequence_has_text_repair(value: Any) -> bool:
-    return any(text_needs_repair(item) for item in text_values(value))
+    return any(_is_too_shallow(item) or text_needs_repair(item) for item in text_values(value))
+
+
+def _is_too_shallow(value: Any) -> bool:
+    text = _clean(value)
+    return bool(text and len(text.split()) < 4)
 
 
 def text_needs_repair(value: Any) -> bool:

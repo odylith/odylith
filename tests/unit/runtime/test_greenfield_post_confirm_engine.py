@@ -217,9 +217,88 @@ def test_post_confirm_engine_passes_quality_lens_context_to_proposal_repair(
     assert context.pass_index == 0
     assert context.report.status == "failed"
     assert context.issues[0].code == "quality_lens_gap"
+    assert context.repair_tier == "rescue"
+    assert context.budget_seconds == 90.0
+    assert context.rescue_activated is True
     assert context.quality_lenses["status"] == "failed"
     assert context.quality_lenses["lenses"]["product_manager"]["status"] == "failed"
     assert context.semantic_compiler["version"] == "odylith.greenfield.semantic_compiler.v1"
+
+
+def test_post_confirm_auto_tier_stays_standard_when_first_pass_succeeds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = GreenfieldCompletionReport(
+        status="passed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"next_steps_previews": 1},
+        tribunal_status="passed",
+        issues=(),
+    )
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        engine,
+        "repair_greenfield_package_until_clean",
+        lambda package: SimpleNamespace(package=package, initial_report=report, report=report, passes=0, changed=False),
+    )
+
+    result = engine.run_greenfield_post_confirm_engine(
+        proposal={"intent": {"title": "Tier Test"}},
+        release_selector="0.0.1",
+        build_prewrite=lambda current, _tribunal: SimpleNamespace(
+            package=GreenfieldCompletionPackage(proposal=current, release_selector="0.0.1"),
+            backlog_result={},
+        ),
+        repair_proposal=lambda current, _context: current,
+        proposal_ready=True,
+        repair_tier="auto",
+    )
+
+    assert result.manifest["repair_tier"] == "standard"
+    assert result.manifest["requested_repair_tier"] == "auto"
+    assert result.manifest["budget_seconds"] == 60.0
+    assert result.manifest["rescue_activated"] is False
+
+
+def test_post_confirm_deep_tier_requires_explicit_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = GreenfieldCompletionReport(
+        status="passed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"next_steps_previews": 1},
+        tribunal_status="passed",
+        issues=(),
+    )
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        engine,
+        "repair_greenfield_package_until_clean",
+        lambda package: SimpleNamespace(package=package, initial_report=report, report=report, passes=0, changed=False),
+    )
+
+    result = engine.run_greenfield_post_confirm_engine(
+        proposal={"intent": {"title": "Deep Tier Test"}},
+        release_selector="0.0.1",
+        build_prewrite=lambda current, _tribunal: SimpleNamespace(
+            package=GreenfieldCompletionPackage(proposal=current, release_selector="0.0.1"),
+            backlog_result={},
+        ),
+        repair_proposal=lambda current, _context: current,
+        proposal_ready=True,
+        repair_tier="deep",
+    )
+
+    assert result.manifest["repair_tier"] == "deep"
+    assert result.manifest["requested_repair_tier"] == "deep"
+    assert result.manifest["budget_seconds"] == 120.0
+    assert result.manifest["rescue_activated"] is True
 
 
 def test_post_confirm_classifier_preserves_semantic_compiler_counterexamples() -> None:

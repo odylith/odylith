@@ -127,7 +127,7 @@ def _component_risks(
 ) -> list[str]:
     values = risks_from_contract(label, contract)
     action = completion_text.action_phrase(proposal)
-    outcome = completion_text.outcome_phrase(proposal)
+    outcome = completion_text.inline_result_phrase(completion_text.outcome_phrase(proposal))
     state_object = completion_text.state_object(proposal)
     context = _best_context_line(row=row, proposal=proposal)
     values.append(

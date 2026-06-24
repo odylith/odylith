@@ -1490,7 +1490,8 @@ def test_greenfield_apply_bootstraps_target_repo_only_after_package_gate(tmp_pat
     assert "## Brief" in project_brief_text
     assert "outcome:" in project_brief_text
     assert "\n## Brief\n" in project_brief_text
-    assert "\n- project design board:\n" in project_brief_text
+    assert "\n## Project Design Board\n" in project_brief_text
+    assert "\n## Governance Package\n" in project_brief_text
     assert len(project_brief_text.splitlines()) >= 20
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
     assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))

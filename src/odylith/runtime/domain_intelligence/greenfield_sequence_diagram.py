@@ -12,6 +12,8 @@ from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
+from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import compact_result_object_label as _compact_result_object_label
+from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import strip_actor_role_subject as _strip_actor_role_subject
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label as _flow_label
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import node_id as _node_id
@@ -175,7 +177,18 @@ def _semantic_visible_result(semantic_model: Mapping[str, Any] | None) -> str:
     contract = semantic_model.get("first_path_contract")
     if not isinstance(contract, Mapping):
         return ""
-    return _compact_text(str(contract.get("visible_result") or "")).strip(" .")
+    return _lower_leading_possessive_fragment(_compact_text(str(contract.get("visible_result") or "")).strip(" ."))
+
+
+def _lower_leading_possessive_fragment(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return ""
+    words = text.split(maxsplit=1)
+    first = words[0].strip(".,:;").casefold() if words else ""
+    if first in {"my", "your", "their", "his", "her", "our", "its"}:
+        return f"{text[:1].casefold()}{text[1:]}"
+    return text
 
 def _terminal_step_label(step: str, visible_result: str) -> str:
     outcome = _compact_text(visible_result).strip(" .")
@@ -480,6 +493,9 @@ def _step_message(value: str, *, keep_actor_subject: bool = True) -> str:
 def _step_action_label(value: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _strip_dangling_tail(_trim(value, 220)), flags=re.IGNORECASE)
     text = re.sub(r"^(?:the\s+)?(?:product|app|application|system)\s+", "", text, flags=re.IGNORECASE)
+    compact_result = _compact_result_object_label(text)
+    if compact_result:
+        return compact_result
     modal_actor, modal_action = modal_actor_action_parts(text)
     if modal_action:
         text = _modal_actor_step_label(actor=modal_actor, action=modal_action)
@@ -607,6 +623,7 @@ def _strip_primary_actor_subject(value: str) -> str:
         count=1,
         flags=re.IGNORECASE,
     ).strip(" .")
+    text = _strip_actor_role_subject(text)
     match = re.match(
         rf"^(?P<subject>(?:(?:a|an|the|one)\s+)(?:[A-Za-z0-9][A-Za-z0-9/-]*\s+){{1,4}})(?P<verb>{_ACTION_VERB_PATTERN})\b(?!-)(?P<rest>.*)$",
         text,

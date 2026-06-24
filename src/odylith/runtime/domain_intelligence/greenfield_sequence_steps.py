@@ -7,9 +7,14 @@ import re
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import action_verb_pattern
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
@@ -48,11 +53,26 @@ def _semantic_event_steps(semantic_model: Mapping[str, Any] | None) -> list[str]
         if not isinstance(row, Mapping):
             continue
         text = _compact_text(str(row.get("text") or row.get("mutation") or ""))
+        if _is_generated_floor_event(text, visible_result):
+            continue
         if text:
             text = _normalize_event_step(text)
             text = _anchor_visible_result_step(text, visible_result)
             steps.append(text)
     return _dedupe_steps(_expand_compound_steps(steps))
+
+
+def _is_generated_floor_event(value: str, visible_result: str) -> bool:
+    target = _compact_text(visible_result).strip(" .")
+    text = _compact_text(value).strip(" .")
+    if not target or not text:
+        return False
+    target = f"{target[:1].lower()}{target[1:]}"
+    return text.casefold() in {
+        f"review evidence for {target}".casefold(),
+        f"confirm proof for {target}".casefold(),
+        f"keep {target} visible for review".casefold(),
+    }
 
 
 def _drop_launcher_only_steps(values: list[str]) -> list[str]:
@@ -235,17 +255,113 @@ def _expand_compound_steps(values: list[str]) -> list[str]:
 def _carry_subject_across_parts(values: list[str]) -> list[str]:
     rows: list[str] = []
     current_subject = ""
+    current_action = ""
     for value in values:
         text = _compact_text(value).strip(" .")
         if not text:
             continue
         subject = leading_subject_prefix(text)
+        core, has_connector = _strip_leading_connector(text)
         if subject:
             current_subject = subject
+            current_action = _leading_base_action(text)
+        elif current_action and _looks_like_carried_object_fragment(core, has_connector=has_connector):
+            text = f"{current_action[:1].upper()}{current_action[1:]} {core}".strip(" .")
+        elif current_subject and has_connector and _starts_with_action_word(core):
+            text = f"{current_subject} {_subject_action_clause(current_subject, core)}"
         elif current_subject and _starts_with_action_word(text):
-            text = f"{current_subject} {text[:1].lower()}{text[1:]}"
+            text = f"{current_subject} {_subject_action_clause(current_subject, text)}"
         rows.append(text)
     return rows
+
+
+def _subject_action_clause(subject: str, action: str) -> str:
+    text = _compact_text(action).strip(" .")
+    if not text:
+        return ""
+    first, separator, rest = text.partition(" ")
+    verb = first.casefold().strip(".,:;")
+    if separator and _subject_uses_singular_verb(subject):
+        first = third_person_action_verb(verb)
+    return f"{first}{separator}{rest}".strip(" .")
+
+
+def _subject_uses_singular_verb(value: str) -> bool:
+    words = [word.strip(".,:;()[]{}").casefold() for word in _compact_text(value).split() if word.strip(".,:;()[]{}")]
+    if not words:
+        return True
+    if words[0] in {"a", "an", "one"}:
+        return True
+    head = words[-1]
+    return not (head.endswith("s") and not head.endswith(("ss", "us", "is")))
+
+
+def _leading_base_action(value: str) -> str:
+    stripped = strip_action_subject(value).strip(" .")
+    if not stripped or not looks_like_action_clause(stripped):
+        return ""
+    base = base_action_clause(stripped).strip(" .")
+    first, _separator, _rest = base.partition(" ")
+    return first.casefold().strip(".,:;")
+
+
+def _strip_leading_connector(value: str) -> tuple[str, bool]:
+    words = [word.strip(".,:;") for word in _compact_text(value).split() if word.strip(".,:;")]
+    if words and words[0].casefold() in {"and", "or"}:
+        return " ".join(words[1:]).strip(" ."), True
+    return _compact_text(value).strip(" ."), False
+
+
+def _looks_like_carried_object_fragment(value: str, *, has_connector: bool) -> bool:
+    text = _compact_text(value).strip(" .")
+    if len(label_terms(text)) < 2:
+        return False
+    if leading_subject_prefix(text):
+        return False
+    if looks_like_finite_action(text):
+        return False
+    words = [word.strip(".,:;()[]{}").casefold() for word in text.split() if word.strip(".,:;()[]{}")]
+    if has_connector and _connector_core_starts_action_clause(words):
+        return False
+    if looks_like_action_clause(text) and not has_connector:
+        return False
+    return True
+
+
+def _connector_core_starts_action_clause(words: list[str]) -> bool:
+    if len(words) < 2:
+        return False
+    if words[0] in {"at", "after", "before", "during", "on", "when"}:
+        for index in range(1, min(len(words), 5)):
+            if looks_like_finite_action(" ".join(words[index:])):
+                return True
+    if words[0] in {"get", "gets", "read", "reads", "receive", "receives", "see", "sees", "show", "shows", "view", "views"}:
+        return True
+    return words[0].endswith("s") and words[1] in {
+        "a",
+        "an",
+        "the",
+        "this",
+        "that",
+        "one",
+        "my",
+        "your",
+        "their",
+        "his",
+        "her",
+        "our",
+        "its",
+        "against",
+        "as",
+        "for",
+        "from",
+        "if",
+        "into",
+        "through",
+        "to",
+        "when",
+        "with",
+    }
 
 
 def _dedupe_steps(values: list[str]) -> list[str]:

@@ -12,8 +12,10 @@ from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import RELATION_TAIL_WORDS
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_action_splice_phrase
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import relation_object_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import action_object_artifact_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import ComponentNarrativeView
 from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import component_narrative_view
 from odylith.runtime.domain_intelligence.greenfield_component_narrative_view import narrative_items
@@ -119,33 +121,42 @@ def build_narrative_component_spec(
             accepted_intent=accepted_intent,
         ),
         "",
-        _state_narrative(
-            label=label,
-            role=role,
-            view=view,
+        _narrative_section(
+            "State and Ownership",
+            _state_narrative(
+                label=label,
+                role=role,
+                view=view,
+            ),
         ),
         "",
-        _boundary_narrative(
-            label=label,
-            role=role,
-            upstream=upstream,
-            downstream=downstream,
-            input_focus=input_focus,
-            output_focus=output_focus,
-            outside=outside,
+        _narrative_section(
+            "Boundary and Handoff",
+            _boundary_narrative(
+                label=label,
+                role=role,
+                upstream=upstream,
+                downstream=downstream,
+                input_focus=input_focus,
+                output_focus=output_focus,
+                outside=outside,
+            ),
         ),
         "",
-        _proof_narrative(label=label, role=role, failure=failure, proofs=proofs),
+        _narrative_section("Proof and Failure Modes", _proof_narrative(label=label, role=role, failure=failure, proofs=proofs)),
         "",
-        _implementation_narrative(
-            label=label,
-            role=role,
-            source_boundary=source_boundary,
-            first_workstream=first_workstream,
-            first_workstream_title=first_workstream_title,
-            first_slice=first_slice,
-            release_selector=release_selector,
-            wave_label=wave_label,
+        _narrative_section(
+            "Implementation Handoff",
+            _implementation_narrative(
+                label=label,
+                role=role,
+                source_boundary=source_boundary,
+                first_workstream=first_workstream,
+                first_workstream_title=first_workstream_title,
+                first_slice=first_slice,
+                release_selector=release_selector,
+                wave_label=wave_label,
+            ),
         ),
         "",
         "## Feature History",
@@ -154,6 +165,27 @@ def build_narrative_component_spec(
         "",
     ]
     return _finalize_narrative_spec_text("\n".join(line for line in lines if line is not None))
+
+
+def _narrative_section(title: str, narrative: str) -> str:
+    """Render dense generated narrative as a scan-friendly component section."""
+
+    rows = _sentence_rows(narrative)
+    if not rows:
+        return f"## {title}"
+    return "\n".join([f"## {title}", "", *(f"- {row}" for row in rows)])
+
+
+def _sentence_rows(value: str) -> list[str]:
+    text = clean_text(value)
+    if not text:
+        return []
+    rows: list[str] = []
+    for sentence in text.split(". "):
+        row = sentence.strip()
+        if row:
+            rows.append(row if row.endswith(".") else f"{row}.")
+    return rows
 
 
 def _planning_note(
@@ -173,7 +205,7 @@ def _planning_note(
         trace.append(f"workstreams {workstream_text}")
     if diagram_text:
         trace.append(f"diagrams {diagram_text}")
-    trace_text = f" Trace links for {label}: {', '.join(trace)}." if trace else ""
+    trace_text = f" Trace links for {label}: {'; '.join(trace)}." if trace else ""
     return f"> Planned from {evidence}.{source}{trace_text}"
 
 
@@ -188,6 +220,12 @@ def _opening_narrative(
     accepted_intent: str,
 ) -> str:
     noun = _kind_noun(kind)
+    raw_focus = focus
+    raw_input_focus = input_focus
+    raw_output_focus = output_focus
+    focus = _compact_opening_focus(focus, fallback_noun="state")
+    input_focus = _compact_opening_focus(input_focus, fallback_noun="input")
+    output_focus = _compact_opening_focus(output_focus, fallback_noun="output")
     if role == "entry":
         lead = f"{label} is responsible for the first product information this boundary must make reliable."
         body = f"It keeps {focus} together so the next product step can move forward without another boundary guessing what the user meant or what is still missing."
@@ -199,12 +237,12 @@ def _opening_narrative(
         )
     elif role == "calculation":
         lead = f"{label} carries the product logic that interprets accepted inputs before anyone treats the result as true."
-        calculation_focus = _calculation_focus(focus=focus, output_focus=output_focus, label=label)
+        calculation_focus = _calculation_focus(focus=raw_focus, output_focus=raw_output_focus, label=label)
         has_calculation_result = bool(
-            _preferred_calculation_result(_calculation_parts(output_focus))
-            or _preferred_calculation_result(_calculation_parts(focus))
+            _preferred_calculation_result(_calculation_parts(raw_output_focus))
+            or _preferred_calculation_result(_calculation_parts(raw_focus))
         )
-        if has_calculation_result or phrases_too_similar(input_focus, output_focus):
+        if has_calculation_result or phrases_too_similar(raw_input_focus, raw_output_focus):
             calculation_subject = _calculation_subject(calculation_focus)
             body = (
                 f"It should explain how {calculation_subject} "
@@ -239,7 +277,7 @@ def _opening_narrative(
         body = f"It should present {focus} from trusted inputs rather than becoming the owner of the source records it displays."
     elif role == "evidence":
         evidence_focus = focus or "the first release"
-        lead = f"Evidence for {evidence_focus} preserves the proof that makes the first release reviewable."
+        lead = f"{label} preserves the proof that makes the first release reviewable."
         body = f"Its job is to keep {evidence_focus} tied to the result a reviewer needs to understand, without turning the evidence record into the decision owner."
     elif role == "integration":
         lead = f"{label} is the seam between the product and an outside source or protocol."
@@ -251,7 +289,24 @@ def _opening_narrative(
         lead = f"{label} is a {noun} for {focus}."
         body = f"It works with {input_focus} and returns {output_focus} only when the local state is ready for the next step."
     intent = f" {accepted_intent}" if accepted_intent else ""
-    return _sentences(lead, body, intent.strip())
+    return _opening_sentences(lead, body, intent.strip())
+
+
+def _compact_opening_focus(value: str, *, fallback_noun: str) -> str:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ""
+    parts: list[str] = []
+    for part in text_values(text, split_scalar=True, split_commas=True):
+        parts.extend(candidate.strip(" .") for candidate in part.split(" and ") if candidate.strip(" ."))
+    material = [part for part in parts if len(part.split()) >= 2]
+    if len(material) >= 3:
+        return f"{material[0]} and related {fallback_noun}"
+    return text
+
+
+def _opening_sentences(*values: str) -> str:
+    return "\n\n".join(_sentence(value) for value in values if clean_text(value)).strip()
 
 
 def _accepted_intent_sentence(value: str, *, label: str) -> str:
@@ -294,8 +349,21 @@ def _accepted_intent_sentence(value: str, *, label: str) -> str:
                 f"It keeps {_lower_first(tail)}",
             )
     if looks_like_finite_action(text):
-        return _sentence(f"Accepted intent says {label} {_lower_first(text)}")
-    return _sentence(f"Accepted intent centers {label} on {_lower_first(text)}")
+        return _sentences(
+            f"Accepted intent says {label} {_lower_first(text)}",
+            _accepted_material_terms_sentence(text),
+        )
+    return _sentences(
+        f"Accepted intent centers {label} on {_lower_first(text)}",
+        _accepted_material_terms_sentence(text),
+    )
+
+
+def _accepted_material_terms_sentence(value: str) -> str:
+    rows = action_object_artifact_phrases(value)
+    if not rows:
+        return ""
+    return f"Material contract terms include {'; '.join(rows[:8])}"
 
 
 def _accepted_intent_is_low_signal(value: str) -> bool:
@@ -380,13 +448,30 @@ def _state_narrative(
         first = f"The useful local state is {owned}."
         second = f"It accepts {accepted} and returns {produced} when the next product step can rely on it."
     material = _material_state_sentence(role=role, material_state=material_state)
+    material_contract = _material_contract_sentence(label=label, view=view)
     transition = _transition_sentence(label=label, view=view, text=state_path)
-    return _sentences(first, second, blocker, material, transition)
+    return _sentences(first, second, blocker, material, material_contract, transition)
+
+
+def _material_contract_sentence(*, label: str, view: ComponentNarrativeView) -> str:
+    rows = [row for row in (*view.blocker_state_items, *view.material_state_items) if row]
+    rows = list(unique_text(rows))
+    if not rows:
+        return ""
+    return f"{label} also needs material checks for {'; '.join(rows[:4])}"
 
 
 def _transition_sentence(*, label: str, view: ComponentNarrativeView, text: str) -> str:
     if not text:
         return ""
+    if len(view.transition_items) > 5 or text.count(",") >= 3 or len(text) > 180:
+        transition_summary = _short_transition_summary(view.transition_items)
+        if transition_summary:
+            return f"The lifecycle for {label} includes {transition_summary}."
+        return (
+            f"The lifecycle for {label} should make accepted, blocked, corrected, completed, "
+            "and handed-off states explicit before implementation expands. Sent, received, declined, and scheduled status handoffs stay visible."
+        )
     if view.concrete_transition_items or view.material_transition_count >= 4:
         return f"The important lifecycle for {label} is {text}."
     if len(view.transition_items) > 7 or len(view.short_transition_items) >= max(4, len(view.transition_items) // 2):
@@ -397,6 +482,18 @@ def _transition_sentence(*, label: str, view: ComponentNarrativeView, text: str)
     if len(text) <= 260:
         return f"The important lifecycle for {label} is {text}."
     return f"The important lifecycle for {label} is {text}."
+
+
+def _short_transition_summary(values: Sequence[str]) -> str:
+    rows = [clean_text(value).strip(" .") for value in values if clean_text(value).strip(" .")]
+    if not rows:
+        return ""
+    selected = rows[:8]
+    if sum(1 for row in selected if row.casefold().endswith(" state")) >= 2:
+        return ""
+    if any(len(row.split()) > 4 or len(row) > 48 for row in selected):
+        return ""
+    return "; ".join(selected)
 
 
 def _boundary_narrative(
@@ -411,15 +508,7 @@ def _boundary_narrative(
 ) -> str:
     upstream_text = _boundary_entity_text(re.sub(r"^The\s+next\b", "the next", upstream).strip())
     downstream_text = _boundary_entity_text(re.sub(r"^The\s+next\b", "the next", downstream).strip())
-    kept = [
-        item
-        for item in outside
-        if not re.search(
-            r"\b(?:runtime implementation|release approval|silent overwrite|guide path|capture allowed command)\b",
-            item,
-            flags=re.I,
-        )
-    ]
+    kept = _outside_boundary_scope_items(outside)
     outside_text = _human_join(kept[:4])
     if upstream_text and downstream_text and _has_no_source_dependency(upstream_text):
         relation = (
@@ -440,16 +529,58 @@ def _boundary_narrative(
     if not kept:
         boundary = f"Unrelated input truth, release approval, and adjacent component state stay outside the {label} boundary."
     elif role == "configuration":
-        boundary = f"Keep {outside_text} outside the {label} boundary so administrative policy does not become hidden runtime authority."
+        boundary = f"{label} keeps {outside_text} outside the {label} boundary so administrative policy does not become hidden runtime authority."
     elif role == "state_store":
-        boundary = f"Keep {outside_text} outside the {label} boundary so this component stores the product record without taking over adjacent decisions."
+        boundary = f"{label} keeps {outside_text} outside the {label} boundary so this component stores the product record without taking over adjacent decisions."
     elif role == "read_model":
-        boundary = f"Keep {outside_text} outside the {label} boundary so display logic does not rewrite original input facts."
+        boundary = f"{label} keeps {outside_text} outside the {label} boundary so display logic does not rewrite original input facts."
     else:
-        boundary = f"Keep {outside_text} outside the {label} boundary unless a later release explicitly assigns it here."
+        boundary = f"{label} keeps {outside_text} outside the {label} boundary unless a later release explicitly assigns it here."
     upstream_separation = _upstream_handoff_separation_sentence(label=label, upstream=upstream_text, input_focus=input_focus)
     downstream_separation = _downstream_handoff_separation_sentence(label=label, downstream=downstream_text, output_focus=output_focus)
     return _sentences(relation, upstream_separation, downstream_separation, boundary)
+
+
+_GENERIC_OUTSIDE_BOUNDARY_TERMS = frozenset(
+    {
+        "capture allowed command",
+        "guide path",
+        "release approval",
+        "runtime implementation",
+        "silent overwrite",
+    }
+)
+
+
+def _outside_boundary_scope_items(outside: Sequence[str]) -> tuple[str, ...]:
+    """Keep material sibling ownership while removing generic release-process noise."""
+
+    rows: list[str] = []
+    for item in outside:
+        text = clean_text(item).strip(" .")
+        if not text:
+            continue
+        candidates = _split_boundary_scope_item(text) if _has_generic_outside_boundary_term(text) else (text,)
+        for candidate in candidates:
+            cleaned = _clean_fragment(candidate)
+            if cleaned and not _has_generic_outside_boundary_term(cleaned):
+                rows.append(cleaned)
+    return unique_text(rows)
+
+
+def _has_generic_outside_boundary_term(value: str) -> bool:
+    text = clean_text(value).casefold()
+    return any(term in text for term in _GENERIC_OUTSIDE_BOUNDARY_TERMS)
+
+
+def _split_boundary_scope_item(value: str) -> tuple[str, ...]:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ()
+    rows: list[str] = []
+    for comma_part in text.split(","):
+        rows.extend(part.strip(" .") for part in comma_part.split(" and ") if part.strip(" ."))
+    return tuple(rows)
 
 
 def _upstream_handoff_separation_sentence(*, label: str, upstream: str, input_focus: str) -> str:
@@ -706,6 +837,7 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
     text = re.sub(r"^guides?\s+the\s+first\s+path,?\s*", "", text, flags=re.I)
     text = re.sub(r"^keep(?:s|ing)?\s+", "", text, flags=re.I)
     text = re.sub(r"\bexplicit(?:ly)?\b", "", text, flags=re.I)
+    text = normalize_action_splice_phrase(text)
     text = re.sub(r"^(?:them|it|their|they|this|that)\s+(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = re.sub(r"^(?:against|with|to|from|for|into)\s+", "", text, flags=re.I)
     text = _drop_unanchored_pronouns(text)
@@ -900,11 +1032,14 @@ def _sentences(*values: str) -> str:
 
 
 def _sentence(value: str) -> str:
-    text = clean_text(value).strip(" .")
+    text = clean_text(value).strip(" .;:,")
     if not text:
         return ""
     text = re.sub(r"\s+([,.;:])", r"\1", text)
     text = re.sub(r",\s+(?=(?:When|If|While)\b)", ". ", text)
+    text = text.rstrip(" .;:,")
+    if not text:
+        return ""
     return f"{text[:1].upper()}{text[1:]}."
 
 

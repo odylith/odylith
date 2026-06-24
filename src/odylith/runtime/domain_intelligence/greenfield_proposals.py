@@ -55,6 +55,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     POST_CONFIRM_MAX_PASSES,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
+    POST_CONFIRM_REPAIR_TIERS,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     run_greenfield_post_confirm_engine,
 )
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import repair_proposal_for_quality_lens_gaps
@@ -169,6 +172,7 @@ _TITLE_ACRONYMS = {
 }
 
 _MAX_PACKAGE_REPAIR_PASSES = POST_CONFIRM_MAX_PASSES
+_DEFAULT_POST_CONFIRM_REPAIR_TIER = "auto"
 
 
 def _title_token(token: str) -> str:
@@ -431,6 +435,7 @@ def _build_repaired_prewrite_package(
     proposal: Mapping[str, Any],
     release_selector: str,
     proposal_ready: bool = False,
+    repair_tier: str = _DEFAULT_POST_CONFIRM_REPAIR_TIER,
 ) -> tuple[Mapping[str, Any], Any, greenfield_apply_prewrite.GreenfieldPrewriteBuild, dict[str, Any]]:
     def build_prewrite(
         current_proposal: Mapping[str, Any],
@@ -456,6 +461,7 @@ def _build_repaired_prewrite_package(
         ),
         proposal_ready=proposal_ready,
         max_passes=_MAX_PACKAGE_REPAIR_PASSES,
+        repair_tier=repair_tier,
     )
     return result.proposal, result.tribunal, result.prewrite_build, result.manifest
 
@@ -500,6 +506,7 @@ def apply_greenfield_proposal(
     confirm: bool,
     release_selector: str = "",
     proposal_ready: bool = False,
+    repair_tier: str = _DEFAULT_POST_CONFIRM_REPAIR_TIER,
 ) -> dict[str, Any]:
     """Apply a confirmed proposal using owned governance authoring paths."""
 
@@ -522,6 +529,7 @@ def apply_greenfield_proposal(
         proposal=proposal,
         release_selector=release_selector,
         proposal_ready=proposal_ready,
+        repair_tier=repair_tier,
     )
     if isinstance(prewrite_build.package.proposal, Mapping):
         proposal = prewrite_build.package.proposal
@@ -576,6 +584,15 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     apply.add_argument("--proposal-json", default="")
     apply.add_argument("--confirm", action="store_true")
     apply.add_argument("--release", default="")
+    apply.add_argument(
+        "--repair-tier",
+        choices=POST_CONFIRM_REPAIR_TIERS,
+        default=_DEFAULT_POST_CONFIRM_REPAIR_TIER,
+        help=(
+            "Post-confirm repair budget: auto keeps the standard path under 60s and enters 90s rescue only "
+            "after a repairable final semantic or quality gate failure; deep is explicit 120s premium/CI repair."
+        ),
+    )
     apply.add_argument("--json", action="store_true", dest="as_json")
     create = subparsers.add_parser("create", help="Create confirmed greenfield records from Product Intent.")
     create.add_argument("--repo-root", default=".")
@@ -589,6 +606,15 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     create.add_argument("--confirm", action="store_true")
     create.add_argument("--release", default="")
+    create.add_argument(
+        "--repair-tier",
+        choices=POST_CONFIRM_REPAIR_TIERS,
+        default=_DEFAULT_POST_CONFIRM_REPAIR_TIER,
+        help=(
+            "Post-confirm repair budget: auto keeps the standard path under 60s and enters 90s rescue only "
+            "after a repairable final semantic or quality gate failure; deep is explicit 120s premium/CI repair."
+        ),
+    )
     create.add_argument("--json", action="store_true", dest="as_json")
     return parser.parse_args(argv)
 
@@ -684,6 +710,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     proposal=proposal,
                     confirm=bool(args.confirm),
                     release_selector=str(args.release),
+                    repair_tier=str(args.repair_tier),
                 ),
             )
         except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
@@ -725,6 +752,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     confirm=True,
                     release_selector=str(args.release),
                     proposal_ready=True,
+                    repair_tier=str(args.repair_tier),
                 ),
             )
         except (ValueError, RuntimeError, json.JSONDecodeError) as exc:

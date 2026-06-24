@@ -448,10 +448,21 @@ def _visible_spec_headings(text: str) -> tuple[str, ...]:
         if not line.startswith("##"):
             continue
         heading = line.lstrip("# ").strip().casefold()
-        if heading in {"feature history"}:
+        if heading in _COMMON_COMPONENT_SPEC_HEADINGS:
             continue
         headings.append(re.sub(r"\s+", " ", heading))
     return tuple(headings)
+
+
+_COMMON_COMPONENT_SPEC_HEADINGS = frozenset(
+    {
+        "state and ownership",
+        "boundary and handoff",
+        "proof and failure modes",
+        "implementation handoff",
+        "feature history",
+    }
+)
 
 
 def _substantive_spec_line(line: str) -> bool:

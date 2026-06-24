@@ -299,7 +299,7 @@ def clip_text_at_word_boundary(
     limit: int,
     dangling_words: Iterable[str] = (),
     strip_edges: str = "",
-    rstrip_chars: str = " ,;:",
+    rstrip_chars: str = " ,;:-",
 ) -> str:
     text = clean_text(value)
     if strip_edges:

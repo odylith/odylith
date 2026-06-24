@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_clauses
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
@@ -305,16 +306,37 @@ def _split_actor_boundary_item(value: str) -> tuple[str, str, str]:
 
 
 def _command_prompt(*, label: str, first: str, fallback: str) -> str:
-    prompt = compact_text(f"{label}: {first}").strip(" .:")
+    first_prompt = _command_first_path_summary(first)
+    prompt = compact_text(f"{label}: {first_prompt}").strip(" .:")
     if prompt and len(prompt) <= 240:
         return prompt
     return _brief_clause(prompt or fallback or label, limit=240)
 
 
+def _command_first_path_summary(value: str) -> str:
+    text = _brief_clause(value, limit=160).strip(" .")
+    text = text.replace(",.", ".").replace(", .", ".")
+    if text.count(",") >= 3:
+        head = text.split(",", 1)[0].strip(" .")
+        return f"{head} through the accepted first path" if head else "accepted first path"
+    if ". " in text:
+        return text.split(". ", 1)[0].strip(" .")
+    return text or "accepted first path"
+
+
 def _brief_clause(value: str, *, limit: int = 180) -> str:
     text = short_summary(value, limit=limit).strip(" .")
-    text = re.sub(r"^the first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^first complete path to prove should be\s*:?\s+", "", text, flags=re.IGNORECASE)
+    for phrase in ("the first complete path to prove should be", "first complete path to prove should be"):
+        lowered = text.casefold()
+        if lowered.startswith(phrase):
+            text = text[len(phrase) :].lstrip(" :").strip(" .")
+            break
+    lowered = text.casefold()
+    for connector in ("and", "or", "then", "but"):
+        prefix = f"{connector} "
+        if lowered.startswith(prefix):
+            text = text[len(prefix) :].strip(" .")
+            break
     text = _repair_show_actor_artifact(text)
     text = _polish_brief_clause(text)
     if len(text) <= limit:
@@ -474,23 +496,32 @@ def _first_path_readiness_summary(
     capability = _dedupe_repeated_capability(clauses.capability_chain)
     text = capability or clauses.action_chain or fallback
     outcome = compact_text(clauses.visible_result).strip(" .")
-    if outcome and not _result_terms_covered(outcome, text):
+    if outcome and not _result_terms_covered(outcome, text) and not _outcome_action_covered(outcome, text):
         text = f"{text} and validate the promised result: {outcome}"
     return _brief_clause(base_adverbial_note_action(text), limit=limit)
 
 
+def _outcome_action_covered(outcome: str, text: str) -> bool:
+    action = action_chain_fragment(outcome)
+    if not action:
+        return False
+    action_terms = _coverage_terms(action)
+    text_terms = _coverage_terms(text)
+    return bool(action_terms and action_terms <= text_terms)
+
+
 def _result_terms_covered(result: str, text: str) -> bool:
-    result_terms = {
-        _coverage_term(word)
-        for word in compact_text(result).replace("-", " ").split()
-        if len(word.strip(".,:;()[]{}")) >= 4
-    }
-    text_terms = {
-        _coverage_term(word)
-        for word in compact_text(text).replace("-", " ").split()
-        if len(word.strip(".,:;()[]{}")) >= 4
-    }
+    result_terms = _coverage_terms(result)
+    text_terms = _coverage_terms(text)
     return bool(result_terms and result_terms <= text_terms)
+
+
+def _coverage_terms(value: str) -> set[str]:
+    return {
+        _coverage_term(word)
+        for word in compact_text(value).replace("-", " ").split()
+        if len(word.strip(".,:;()[]{}")) >= 4
+    }
 
 
 def _coverage_term(value: str) -> str:

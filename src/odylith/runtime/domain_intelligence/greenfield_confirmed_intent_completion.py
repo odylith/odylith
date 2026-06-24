@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion i
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows as _completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_release_actor_rows as _first_release_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import inline_result_phrase as _inline_result_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase as _outcome_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import completed_system_rows as _completed_system_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import state_label as _state_label
@@ -26,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_confirmed_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import title as _title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import title_needs_repair as _title_needs_repair
@@ -365,8 +367,15 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         gerund=True,
         max_fragments=8,
     )
+    proof_capability = readable_action_chain_phrase(
+        first_path,
+        fallback=proof_capability,
+        limit=240,
+        max_steps=4,
+    )
     needs_verb = _needs_verb(customer_text)
     decision_phrase = _decision_problem_phrase(outcome_text)
+    outcome_inline = _inline_result_phrase(outcome_text)
 
     if not _clean(intent.get("problem")):
         intent["problem"] = _sentence(
@@ -385,7 +394,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         intent["customer"] = _sentence(_customer_sentence(actor_rows, title=title, first_path=first_path))
     if not _clean(intent.get("opportunity")):
         intent["opportunity"] = _sentence(
-            f"Make the first version valuable by proving the smallest complete outcome: {path_capability}, ending in {outcome_text}."
+            f"Make the first version valuable by proving the smallest complete outcome: {path_capability}, ending in {outcome_inline}."
         )
     if not _clean(intent.get("product_view")) or _product_view_needs_repair(intent.get("product_view")):
         outcome_action = _outcome_action_phrase(outcome_text)
@@ -398,8 +407,8 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         intent["success_metrics"] = [
             f"The first release proves the first path: {proof_capability}.",
             f"Users can {metric_outcome_action} without manual interpretation outside the product.",
-            f"The product handles missing or incorrect input by explaining what must be fixed before {outcome_text} is treated as real.",
-            _proof_boundary_metric(proof, outcome=outcome_text),
+            f"The product handles missing or incorrect input by explaining what must be fixed before {outcome_inline} is treated as real.",
+            _proof_boundary_metric(proof, outcome=outcome_inline),
         ]
     if not confirmed_text_values(intent.get("assumptions")):
         intent["assumptions"] = [
@@ -435,7 +444,7 @@ def _story_problem_sentence(value: str) -> str:
 
 
 def _decision_problem_phrase(outcome_text: str) -> str:
-    outcome = _clean(outcome_text).rstrip(" .") or "the product result"
+    outcome = _inline_result_phrase(_clean(outcome_text).rstrip(" .") or "the product result")
     if outcome.casefold().startswith("the usage-linked metric change view"):
         return "act on the metric-change view"
     return f"decide what to do using {outcome}"
@@ -539,7 +548,8 @@ def _customer_sentence(actors: Sequence[str], *, title: str, first_path: str) ->
             rows.append(f"{label} participates in the product outcome")
     if rows:
         return "; ".join(rows)
-    return f"{_focus_label(title)} users need to {first_path_capability_phrase(first_path)} and understand the outcome."
+    path = readable_action_chain_phrase(first_path, fallback=first_path_capability_phrase(first_path))
+    return f"{_focus_label(title)} users need to {path} and understand the outcome."
 
 
 def _needs_verb(label: str) -> str:

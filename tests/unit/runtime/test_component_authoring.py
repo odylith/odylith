@@ -82,7 +82,7 @@ def test_component_spec_template_uses_greenfield_responsibility_and_links() -> N
 
     assert "payment handoff" in text
     assert "order draft" in text
-    assert "Trace links for Checkout Boundary: workstreams B-200, B-201, diagrams D-200" in text
+    assert "Trace links for Checkout Boundary: workstreams B-200, B-201; diagrams D-200" in text
     assert "## Component Brief" not in text
     assert "## Boundary Narrative" not in text
     assert "## First Release Proof" not in text

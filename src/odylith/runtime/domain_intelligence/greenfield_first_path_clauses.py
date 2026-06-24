@@ -87,6 +87,30 @@ def first_path_action_phrase(
     return _first_path_action_text(model, fallback=fallback, limit=limit, max_fragments=max_fragments)
 
 
+def readable_action_chain_phrase(
+    value: Any,
+    *,
+    fallback: str = "complete the accepted product path",
+    limit: int = 220,
+    max_steps: int = 4,
+    include_visible_results: bool = False,
+) -> str:
+    """Return a step-view action phrase for prose fields that cannot carry long lists."""
+
+    text = clean_first_path_text(value).strip(" ,.")
+    fallback_text = clean_first_path_text(fallback).strip(" ,.")
+    if not text:
+        text = fallback_text
+    if not text:
+        return ""
+    model = _model_for(text)
+    rows = _readable_action_steps(model, max_steps=max_steps, include_visible_results=include_visible_results)
+    candidate = _join_step_rows_within_limit(rows, limit=limit)
+    if candidate:
+        return candidate
+    return _clip_phrase(_readable_action_step_fragment(text), limit=limit).strip(" ,.") or fallback_text
+
+
 def first_path_outcome_phrase(
     value: Any,
     *,
@@ -154,6 +178,10 @@ def _first_path_capability_text(
                 selected_fragments.add(fragment_key)
         visible_seen = visible_seen or step.is_visible_result
     fragments = _unique([_step_fragment(step, gerund=gerund) for step in selected])
+    if model.visible_outcome and not included_visible_result:
+        visible_action = first_path_step_view(model.visible_outcome).fragment
+        if visible_action and _fragment_already_present(visible_action, fragments):
+            included_visible_result = True
     if model.visible_outcome and not included_visible_result:
         outcome = view.visible_outcome_object or clean_first_path_text(model.visible_outcome)
         if outcome:
@@ -223,6 +251,76 @@ def _first_path_action_text(
 
 def _step_fragment(step: FirstPathStepView, *, gerund: bool) -> str:
     return _gerund_action_fragment(step.text) if gerund else step.fragment
+
+
+def _readable_action_steps(
+    model: FirstPathModel,
+    *,
+    max_steps: int,
+    include_visible_results: bool = False,
+) -> list[str]:
+    view = first_path_semantic_view(model)
+    rows: list[str] = []
+    for step in view.steps:
+        if step.is_trivial_start or step.is_dash_detail or step.is_system_generated:
+            continue
+        if step.is_visible_result and not include_visible_results:
+            continue
+        fragment = _readable_action_step_fragment(step.fragment or step.text)
+        if fragment:
+            rows.append(fragment)
+        if len(rows) >= max(1, max_steps):
+            break
+    if rows:
+        return _unique(rows)
+    fallback = _readable_action_step_fragment(model.material_action)
+    return [fallback] if fallback else []
+
+
+def _readable_action_step_fragment(value: str) -> str:
+    text = clean_first_path_text(value).strip(" ,.")
+    if not text:
+        return ""
+    if text.count(",") < 2:
+        return text
+    head = text.split(",", 1)[0].strip(" ,.")
+    if not head:
+        return _clip_phrase(text, limit=92).strip(" ,.")
+    first = head.split(maxsplit=1)[0].casefold().strip(" ,.;:")
+    if first in {
+        "add",
+        "capture",
+        "choose",
+        "configure",
+        "describe",
+        "enter",
+        "import",
+        "log",
+        "provide",
+        "record",
+        "request",
+        "select",
+        "submit",
+        "upload",
+    }:
+        return f"{head} and related inputs"
+    return _clip_phrase(head, limit=92).strip(" ,.")
+
+
+def _join_step_rows_within_limit(values: Sequence[str], *, limit: int) -> str:
+    rows = [clean_first_path_text(value).strip(" ,.") for value in values if clean_first_path_text(value).strip(" ,.")]
+    if not rows:
+        return ""
+    selected: list[str] = []
+    for row in rows:
+        candidate = "; ".join([*selected, row])
+        if len(candidate) <= limit:
+            selected.append(row)
+            continue
+        if selected:
+            break
+        return _clip_phrase(row, limit=limit).strip(" ,.")
+    return "; ".join(selected).strip(" ,.")
 
 
 def _actor_led_capability_fragments(fragments: list[str]) -> list[str]:
@@ -315,4 +413,5 @@ __all__ = [
     "first_path_capability_phrase",
     "first_path_clauses",
     "first_path_outcome_phrase",
+    "readable_action_chain_phrase",
 ]

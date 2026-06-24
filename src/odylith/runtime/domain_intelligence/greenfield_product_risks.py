@@ -162,7 +162,7 @@ def build_product_risks_from_proposal(proposal: Mapping[str, Any], *, release: s
             or _project_line(project, "ontology")
         ),
         proof_boundary=_first_text(intent, "proof_boundary") or _project_line(project, "evidence"),
-        human_actors=text_values(project.get("operators")),
+        human_actors=text_values(intent.get("human_actors")) or text_values(project.get("operators")),
         external_systems=text_values(project.get("scope")),
         internal_systems=[],
         non_goals=text_values(project.get("constraints")),

@@ -35,6 +35,12 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confir
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import confirmation_from_operator_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_title_extraction import (
+    looks_like_confirmation_instruction,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_title_extraction import (
+    title_from_product_intent_line,
+)
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
     clean_first_path_text as _clean_first_path,
@@ -501,23 +507,24 @@ def _normalize_heading(value: str) -> str:
 
 def _title_from_text(text: str) -> str:
     for raw_line in str(text or "").splitlines():
-        line = _clean(raw_line.lstrip("#").strip())
-        if not line:
-            continue
-        match = re.match(r"(.+?)\s+[—-]\s+Product Intent Confirmation$", line)
-        if match:
-            return _clean(match.group(1))
-        if "product intent confirmation" in line.casefold():
-            candidate = _clean(re.sub(r"product intent confirmation", "", line, flags=re.IGNORECASE))
-            if candidate:
-                return candidate
-    for raw_line in str(text or "").splitlines():
         raw = str(raw_line or "").strip()
         if not raw.startswith("#"):
             continue
         line = _clean(raw.lstrip("#").strip())
+        candidate = title_from_product_intent_line(line)
+        if candidate:
+            return candidate
         if line and not _classify_heading(line):
             return line
+    for raw_line in str(text or "").splitlines():
+        if looks_like_confirmation_instruction(raw_line):
+            continue
+        line = _clean(raw_line.lstrip("#").strip())
+        if not line:
+            continue
+        candidate = title_from_product_intent_line(line)
+        if candidate:
+            return candidate
     return ""
 
 

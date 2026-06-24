@@ -464,7 +464,7 @@ def _action_object_phrase(description: str) -> str:
     if visible:
         return visible
     text = re.sub(
-        r"^(?:accepts?|assembles?|captures?|computes?|creates?|displays?|exposes?|forecasts?|handles?|helps?|imports?|issues?|keeps?|links?|maintains?|normalizes?|optimizes?|owns?|predicts?|produces?|pulls?|records?|renders?|shows?|stores?|tracks?|validates?)\s+",
+        r"^(?:accepts?|assembles?|captures?|computes?|creates?|displays?|exposes?|forecasts?|handles?|helps?|imports?|issues?|keeps?|links?|maintains?|normalizes?|optimizes?|owns?|predicts?|produces?|pulls?|records?|renders?|shows?|stores?|tracks?|uses?|validates?)\s+",
         "",
         action,
         flags=re.IGNORECASE,

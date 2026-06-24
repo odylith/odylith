@@ -77,6 +77,26 @@ _HUMAN_ACTOR_TERMS = frozenset(
         "worker",
     }
 )
+_HUMAN_ROLE_SUFFIXES = ("ant", "ent", "er", "ian", "ist", "or", "ee", "owner")
+_MATERIAL_FRAGMENT_ACTION_WORDS = frozenset(
+    {
+        "approval",
+        "context",
+        "decision",
+        "design",
+        "details",
+        "documentation",
+        "evidence",
+        "paperwork",
+        "plan",
+        "readiness",
+        "record",
+        "report",
+        "review",
+        "status",
+        "summary",
+    }
+)
 _PRODUCT_CONTAINER_TERMS = frozenset(
     {
         "app",
@@ -282,9 +302,12 @@ def _sentence_start(value: str) -> str:
 
 def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[str]:
     rows: list[str] = []
+    seen_labels: set[str] = set()
     for clause in _first_path_actor_clauses(value):
         row = _human_actor_row_from_clause(clause, allow_subject_fallback=not rows)
-        if row and row.casefold() not in {existing.casefold() for existing in rows}:
+        label = row.split(":", 1)[0].casefold() if row else ""
+        if row and label not in seen_labels:
+            seen_labels.add(label)
             rows.append(row)
     if rows:
         return rows[:3]
@@ -365,12 +388,35 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
     if action_index > 0:
         actor = " ".join(words[:action_index])
         action = " ".join(words[action_index:])
+        if _looks_like_material_actor_fragment(words[:action_index], words[action_index:]):
+            return ""
         return _human_actor_row(actor, action)
     fallback = _plural_subject_fallback(words, allow_single_subject=allow_subject_fallback)
     if fallback:
         actor, action = fallback
         return _human_actor_row(actor, action)
     return ""
+
+
+def _looks_like_material_actor_fragment(actor_words: Sequence[str], action_words: Sequence[str]) -> bool:
+    cleaned_actor = _strip_leading_articles(actor_words)
+    if not cleaned_actor or not action_words:
+        return False
+    if len(cleaned_actor) != 1:
+        return False
+    raw_actor_has_article = bool(actor_words and actor_words[0].casefold() in _LEADING_ARTICLES)
+    actor_token = cleaned_actor[0].casefold().strip(".,:;")
+    action_token = action_words[0].casefold().strip(".,:;")
+    if raw_actor_has_article or _looks_plural(actor_token):
+        return False
+    if _semantic_terms(actor_token) & _HUMAN_ACTOR_TERMS or _looks_like_human_actor_token(actor_token):
+        return False
+    return action_token in _MATERIAL_FRAGMENT_ACTION_WORDS
+
+
+def _looks_like_human_actor_token(value: str) -> bool:
+    token = str(value or "").casefold().strip(".,:;")
+    return len(token) >= 5 and token.endswith(_HUMAN_ROLE_SUFFIXES)
 
 
 def _starts_with_action_without_actor(clause: str) -> bool:
@@ -526,7 +572,9 @@ def _object_result_phrase(value: str) -> str:
     text = lower_plain_title_subject_fragment(text, action_offset=0)
     if text.split(maxsplit=1)[0].casefold() in _LEADING_ARTICLES:
         return text
-    return f"the {text}"
+    if text[:2].isupper():
+        return f"the {text}"
+    return f"the {text[:1].casefold()}{text[1:]}"
 
 
 def _state_record_subject(value: str) -> str:

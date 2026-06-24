@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_components import 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import sentence as diagram_sentence
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment
@@ -152,6 +153,34 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
         )
         == "Permit Application"
     )
+    assert (
+        domain_object_label(
+            (
+                "Permit packet with parcel details, required document checklist, fee-status note, applicant contact, "
+                "completeness state, correction request state, decision result, reason notes, and review evidence."
+            ),
+            fallback="Permit state",
+        )
+        == "Permit Packet"
+    )
+
+
+def test_readable_action_chain_compacts_list_heavy_first_path() -> None:
+    phrase = readable_action_chain_phrase(
+        (
+            "open the planner, enter roof details, usage, shading concerns, financing preferences and timeline, "
+            "review ranked installation plans, and check cost assumptions and blockers, then see a saved plan record"
+        ),
+        limit=240,
+        max_steps=4,
+    )
+
+    assert phrase == (
+        "open the planner; enter roof details and related inputs; "
+        "review ranked installation plans; check cost assumptions and blockers"
+    )
+    assert phrase.count(",") == 0
+    assert not phrase.endswith(("and", "with", ","))
 
 
 def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:

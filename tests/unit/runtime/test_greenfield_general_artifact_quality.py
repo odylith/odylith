@@ -1211,6 +1211,18 @@ def test_contrastive_domain_drift_allows_generic_lifecycle_terms(tmp_path: Path)
     assert issues == []
 
 
+def test_contrastive_domain_drift_allows_generic_provenance_governance_term(tmp_path: Path) -> None:
+    proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
+    proposal["components"][0]["component_contract"]["outside_boundary"] += (
+        ", source provenance, normalized provenance, upstream provenance, provider provenance, "
+        "provenance preservation, provenance replay, provenance handoff, and provenance review"
+    )
+
+    issues = _contrastive_domain_drift_issues(proposal, proposal["semantic_model"])
+
+    assert issues == []
+
+
 def test_greenfield_post_confirm_completion_fails_near_duplicate_generated_sentences(tmp_path: Path) -> None:
     proposal = copy.deepcopy(_protocol_effect_tracking_proposal(tmp_path))
     repeated = (

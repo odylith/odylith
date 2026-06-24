@@ -117,6 +117,41 @@ def test_artifact_enrichment_graph_and_tribunal_actors_stay_in_dedicated_owners(
     )
 
 
+def test_artifact_enrichment_dedupes_focus_detail_boundary_terms() -> None:
+    review_line = artifact_enrichment._scoped_sentence(
+        "Evidence record",
+        "Let Communications Coordinator Send It for Review",
+        "Review evidence belongs in Public Response Drafting Queue Proof Record.",
+    )
+    evidence_line = artifact_enrichment._scoped_sentence(
+        "Evidence record",
+        "Let Case Worker Record Evidence",
+        "Evidence contents belong in Appeal Proof Record.",
+    )
+
+    assert "Review Review" not in review_line
+    assert review_line.endswith("Review — evidence belongs in Public Response Drafting Queue Proof Record")
+    assert "Evidence Evidence" not in evidence_line
+    assert evidence_line.endswith("Evidence — contents belong in Appeal Proof Record")
+
+
+def test_artifact_enrichment_splits_long_first_path_action_chains() -> None:
+    lines = artifact_enrichment._first_path_enrichment_lines(
+        focus="Prove One Complete Municipal Permit Review Path",
+        first_slice=(
+            "Prove one first-release path: enter parcel details, attach required document references, "
+            "record fee status and contact information, submit the packet, receive completeness feedback, "
+            "and review record, then let the permit staff reviewer publish a decision."
+        ),
+    )
+
+    assert len(lines) == 3
+    assert lines[0].startswith("First path:")
+    assert lines[1].startswith("Path actions:")
+    assert lines[2].startswith("Completion check:")
+    assert all(len(line) < 220 for line in lines)
+
+
 def test_product_risk_specificity_uses_shared_term_index() -> None:
     domain_index_source = GREENFIELD_DOMAIN_TERM_INDEX_PATH.read_text(encoding="utf-8")
     component_index_source = GREENFIELD_COMPONENT_TERM_INDEX_PATH.read_text(encoding="utf-8")

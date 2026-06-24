@@ -56,7 +56,7 @@ def workflow_title_action(*, first_path: str, actor: str, fallback: str) -> str:
 
 
 def actor_interaction_action(*, first_path: str, actor: str, fallback: str) -> str:
-    selected = _actor_owned_action_fragments(first_path=first_path, actor=actor, include_visible=True, max_fragments=3)
+    selected = _actor_owned_action_fragments(first_path=first_path, actor=actor, include_visible=False, max_fragments=3)
     action = join_action_fragments(selected)
     return backlog_text.capability_action_clause(action or fallback)
 

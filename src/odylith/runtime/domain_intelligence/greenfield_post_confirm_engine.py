@@ -38,8 +38,14 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield
 
 POST_CONFIRM_ENGINE_VERSION = "greenfield-post-confirm-fixpoint-v1"
 POST_CONFIRM_QUALITY_MANIFEST_VERSION = "greenfield-post-confirm-quality-manifest-v1"
-POST_CONFIRM_BUDGET_SECONDS = 60.0
+POST_CONFIRM_STANDARD_BUDGET_SECONDS = 60.0
+POST_CONFIRM_RESCUE_BUDGET_SECONDS = 90.0
+POST_CONFIRM_DEEP_BUDGET_SECONDS = 120.0
+POST_CONFIRM_BUDGET_SECONDS = POST_CONFIRM_STANDARD_BUDGET_SECONDS
 POST_CONFIRM_MAX_PASSES = 4
+POST_CONFIRM_RESCUE_MAX_PASSES = 6
+POST_CONFIRM_DEEP_MAX_PASSES = 8
+POST_CONFIRM_REPAIR_TIERS = ("auto", "standard", "rescue", "deep")
 
 
 @dataclass(frozen=True)
@@ -79,6 +85,8 @@ class GreenfieldPostConfirmRepairContext:
     issues: tuple[GreenfieldPostConfirmIssue, ...]
     quality_lenses: Mapping[str, Any]
     semantic_compiler: Mapping[str, Any]
+    repair_tier: str = "standard"
+    rescue_activated: bool = False
 
 
 @dataclass(frozen=True)
@@ -107,11 +115,19 @@ def run_greenfield_post_confirm_engine(
     proposal_ready: bool = False,
     max_passes: int = POST_CONFIRM_MAX_PASSES,
     budget_seconds: float = POST_CONFIRM_BUDGET_SECONDS,
+    repair_tier: str = "auto",
     clock: Callable[[], float] = time.perf_counter,
 ) -> GreenfieldPostConfirmEngineResult:
     """Build, repair, and revalidate post-confirm output before governed writes."""
 
     started = clock()
+    requested_tier = _normalize_repair_tier(repair_tier)
+    active_tier = _initial_active_tier(requested_tier)
+    rescue_activated = active_tier in {"rescue", "deep"}
+    active_budget_seconds = _tier_budget_seconds(active_tier, fallback=budget_seconds)
+    effective_budget_seconds = active_budget_seconds
+    if requested_tier == "auto":
+        effective_budget_seconds = POST_CONFIRM_RESCUE_BUDGET_SECONDS
     seen_failures: set[str] = set()
     pass_records: list[GreenfieldPostConfirmPass] = []
     repaired_issue_codes: set[str] = set()
@@ -119,12 +135,17 @@ def run_greenfield_post_confirm_engine(
     last_prewrite_build: Any = None
     current = proposal
     bounded_passes = max(1, int(max_passes))
+    if active_tier == "rescue":
+        bounded_passes = max(bounded_passes, POST_CONFIRM_RESCUE_MAX_PASSES)
+    elif active_tier == "deep":
+        bounded_passes = max(bounded_passes, POST_CONFIRM_DEEP_MAX_PASSES)
     stop_reason = "max_passes"
     tribunal: Any = None
+    pass_index = 0
 
-    for pass_index in range(bounded_passes):
+    while pass_index < bounded_passes:
         elapsed = max(0.0, clock() - started)
-        if elapsed >= budget_seconds:
+        if elapsed >= effective_budget_seconds:
             stop_reason = "time_budget_exhausted"
             break
 
@@ -179,7 +200,10 @@ def run_greenfield_post_confirm_engine(
                     pass_records=pass_records,
                     repaired_issue_codes=repaired_issue_codes,
                     max_passes=bounded_passes,
-                    budget_seconds=budget_seconds,
+                    budget_seconds=active_budget_seconds,
+                    requested_repair_tier=requested_tier,
+                    active_repair_tier=active_tier,
+                    rescue_activated=rescue_activated,
                     quality_lenses=quality_lenses,
                     semantic_compiler=semantic_compiler,
                 ),
@@ -190,20 +214,32 @@ def run_greenfield_post_confirm_engine(
             stop_reason = "no_progress"
             break
         seen_failures.add(failure_signature)
+        if active_tier == "standard" and requested_tier == "auto":
+            if not _rescue_eligible(typed_issues):
+                stop_reason = "not_rescue_eligible"
+                break
+            active_tier = "rescue"
+            rescue_activated = True
+            active_budget_seconds = POST_CONFIRM_RESCUE_BUDGET_SECONDS
+            effective_budget_seconds = POST_CONFIRM_RESCUE_BUDGET_SECONDS
+            bounded_passes = max(bounded_passes, POST_CONFIRM_RESCUE_MAX_PASSES)
         current = _repair_proposal_with_context(
             repair_proposal,
             current,
             GreenfieldPostConfirmRepairContext(
                 pass_index=pass_index,
                 elapsed_seconds=round(max(0.0, clock() - started), 3),
-                budget_seconds=float(budget_seconds),
+                budget_seconds=float(active_budget_seconds),
                 report=report,
                 issues=typed_issues,
                 quality_lenses=quality_lenses,
                 semantic_compiler=semantic_compiler,
+                repair_tier=active_tier,
+                rescue_activated=rescue_activated,
             ),
         )
         proposal_ready = False
+        pass_index += 1
 
     if last_report is None:
         last_report = GreenfieldCompletionReport(
@@ -223,7 +259,10 @@ def run_greenfield_post_confirm_engine(
         pass_records=pass_records,
         repaired_issue_codes=repaired_issue_codes,
         max_passes=bounded_passes,
-        budget_seconds=budget_seconds,
+        budget_seconds=active_budget_seconds,
+        requested_repair_tier=requested_tier,
+        active_repair_tier=active_tier,
+        rescue_activated=rescue_activated,
         quality_lenses=(
             build_greenfield_quality_lens_report(last_prewrite_build.package)
             if last_prewrite_build is not None
@@ -250,6 +289,65 @@ def classify_greenfield_post_confirm_issues(
     return tuple(_classify_issue(issue) for issue in report.issues)
 
 
+def _normalize_repair_tier(value: str) -> str:
+    tier = str(value or "auto").strip().casefold().replace("_", "-")
+    aliases = {
+        "default": "auto",
+        "premium": "deep",
+        "deep-repair": "deep",
+        "ci": "deep",
+        "ci-simulation": "deep",
+    }
+    tier = aliases.get(tier, tier)
+    if tier not in POST_CONFIRM_REPAIR_TIERS:
+        return "auto"
+    return tier
+
+
+def _normalize_active_repair_tier(value: str) -> str:
+    tier = _normalize_repair_tier(value)
+    return "standard" if tier == "auto" else tier
+
+
+def _initial_active_tier(requested_tier: str) -> str:
+    tier = _normalize_repair_tier(requested_tier)
+    return "standard" if tier == "auto" else tier
+
+
+def _tier_budget_seconds(tier: str, *, fallback: float) -> float:
+    active = _normalize_active_repair_tier(tier)
+    if active == "deep":
+        return POST_CONFIRM_DEEP_BUDGET_SECONDS
+    if active == "rescue":
+        return POST_CONFIRM_RESCUE_BUDGET_SECONDS
+    try:
+        value = float(fallback)
+    except (TypeError, ValueError):
+        value = POST_CONFIRM_STANDARD_BUDGET_SECONDS
+    return min(value if value > 0 else POST_CONFIRM_STANDARD_BUDGET_SECONDS, POST_CONFIRM_STANDARD_BUDGET_SECONDS)
+
+
+def _rescue_eligible(issues: Sequence[GreenfieldPostConfirmIssue]) -> bool:
+    if not issues:
+        return False
+    if any(issue.repairability == "unrepairable" for issue in issues):
+        return False
+    rescue_codes = {
+        "artifact_shape_drift",
+        "atlas_render_quality",
+        "component_contract_quality",
+        "generated_copy_quality",
+        "missing_semantic_model",
+        "post_confirm_contract",
+        "quality_lens_gap",
+        "release_package_drift",
+        "semantic_alignment",
+        "semantic_compiler",
+        "semantic_drift",
+    }
+    return any(issue.code in rescue_codes and issue.repairability in {"proposal_repair", "safe_package_repair"} for issue in issues)
+
+
 def build_greenfield_post_confirm_manifest(
     *,
     report: GreenfieldCompletionReport,
@@ -261,6 +359,9 @@ def build_greenfield_post_confirm_manifest(
     repaired_issue_codes: set[str],
     max_passes: int,
     budget_seconds: float,
+    requested_repair_tier: str = "standard",
+    active_repair_tier: str = "standard",
+    rescue_activated: bool = False,
     whole_project_elapsed_seconds: float | None = None,
     write_transaction_status: str = "not_started",
     quality_lenses: Mapping[str, Any] | None = None,
@@ -277,6 +378,17 @@ def build_greenfield_post_confirm_manifest(
         "validation_status": report.status,
         "stop_reason": stop_reason,
         "budget_seconds": float(budget_seconds),
+        "standard_budget_seconds": POST_CONFIRM_STANDARD_BUDGET_SECONDS,
+        "rescue_budget_seconds": POST_CONFIRM_RESCUE_BUDGET_SECONDS,
+        "deep_budget_seconds": POST_CONFIRM_DEEP_BUDGET_SECONDS,
+        "requested_repair_tier": _normalize_repair_tier(requested_repair_tier),
+        "repair_tier": _normalize_active_repair_tier(active_repair_tier),
+        "rescue_activated": bool(rescue_activated),
+        "repair_tier_policy": {
+            "standard": "under 60s when no host-semantic rescue is needed",
+            "rescue": "up to 90s only after a repairable final semantic or quality gate failure",
+            "deep": "up to 120s only when explicitly requested for premium/deep repair or CI simulation",
+        },
         "elapsed_seconds": round(float(elapsed_seconds), 3),
         "passes": int(passes),
         "max_passes": int(max_passes),
@@ -510,9 +622,13 @@ __all__ = [
     "GreenfieldPostConfirmIssue",
     "GreenfieldPostConfirmRepairContext",
     "POST_CONFIRM_BUDGET_SECONDS",
+    "POST_CONFIRM_DEEP_BUDGET_SECONDS",
     "POST_CONFIRM_ENGINE_VERSION",
     "POST_CONFIRM_MAX_PASSES",
     "POST_CONFIRM_QUALITY_MANIFEST_VERSION",
+    "POST_CONFIRM_REPAIR_TIERS",
+    "POST_CONFIRM_RESCUE_BUDGET_SECONDS",
+    "POST_CONFIRM_STANDARD_BUDGET_SECONDS",
     "build_greenfield_post_confirm_manifest",
     "classify_greenfield_post_confirm_issues",
     "finalize_greenfield_post_confirm_manifest",

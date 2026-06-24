@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import (
+    _proof_focus_summary,
     confirmed_backlog_rows,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
@@ -30,6 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
     shares_product_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_action_splice_phrase
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
@@ -69,16 +71,29 @@ def test_confirmed_backlog_terms_use_shared_domain_index() -> None:
         "Deliver the accepted first product path.",
         "The release result lets the user complete that path.",
     )
+
+
+def test_greenfield_phrase_quality_normalizes_use_action_splices() -> None:
+    assert normalize_action_splice_phrase("uses create share-ready summary") == "creates share-ready summary"
+    assert (
+        normalize_action_splice_phrase("evidence for use create share-ready summary")
+        == "evidence for creating share-ready summary"
+    )
     assert proof_focus_phrase(
         "Operator approval, with a very long release readiness decision and many additional words, final signoff",
         fallback="fallback",
     ) == "operator approval"
     assert looks_mechanical_summary("required actor identity and required validation context")
     assert word_occurrences("Required proof, source evidence, and required signoff.", "required") == 2
+    assert _proof_focus_summary("and final approval status") == "final approval status"
 
 
 def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generically() -> None:
     assert collapse_adjacent_duplicate_terms("Keep release scope scope small.") == "Keep release scope small."
+    assert (
+        collapse_adjacent_duplicate_terms("Keep comparison review, review. When the path blocks, explain why.")
+        == "Keep comparison review. When the path blocks, explain why."
+    )
     assert (
         normalize_artifact_tail("public match summary correction final", carrier_terms={"summary", "status"})
         == "public match summary correction final status"

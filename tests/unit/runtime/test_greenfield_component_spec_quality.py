@@ -1270,6 +1270,10 @@ def test_narrative_component_spec_splits_keeping_summary_without_repetition() ->
 
     assert "while keeping" not in spec
     assert "It keeps inputs, blockers, and proof evidence clear." in spec
+    assert "Evidence for review evidence" not in spec
+    assert "Review Evidence Panel preserves the proof that makes the first release reviewable." in spec
+    assert "- Keep score entry ownership" not in spec
+    assert "Review Evidence Panel keeps score entry ownership" in spec
     assert not any("repeated keeping summary" in issue for issue in issues)
 
 

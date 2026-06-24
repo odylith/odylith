@@ -61,6 +61,21 @@ _REQUEST_PRODUCT_WORDS = frozenset(
 _REQUEST_HELPER_WORDS = frozenset({"allow", "allows", "enable", "enables", "help", "helps", "let", "lets"})
 _REQUEST_LEAD_CONNECTORS = ("where", "that", "so", "for", "to")
 _DIRECT_TITLE_BOUNDARY_CONNECTORS = frozenset({"where", "that", "so"})
+_RELEASE_PROOF_ACTION_WORDS = frozenset(
+    {
+        "complete",
+        "completes",
+        "completed",
+        "pass",
+        "passes",
+        "prove",
+        "proves",
+        "proved",
+        "succeed",
+        "succeeds",
+        "succeeded",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -105,17 +120,17 @@ def _first_path_source_from_text(value: str) -> str:
             continue
         candidate = _strip_operator_request_wrapper(candidate)
         if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
-            return candidate
+            return _strip_release_proof_tail(candidate)
     if _looks_like_recoverable_first_path(text):
-        return text
+        return _strip_release_proof_tail(text)
     for marker in ("so",):
         candidate = _tail_after_word(text, marker)
         if not candidate:
             continue
         candidate = _strip_operator_request_wrapper(candidate)
         if word_count(candidate) >= 8 and _looks_like_recoverable_first_path(candidate):
-            return candidate
-    return text
+            return _strip_release_proof_tail(candidate)
+    return _strip_release_proof_tail(text)
 
 
 def _request_content_start(words: list[str]) -> tuple[int, bool]:
@@ -239,6 +254,41 @@ def _smooth_request_first_path_clause(value: str) -> str:
             continue
         smoothed.append(word)
     return " ".join(smoothed).strip(" .")
+
+
+def _strip_release_proof_tail(value: str) -> str:
+    words = _request_words(value)
+    if len(words) < 5:
+        return clean_markdown_text(value).strip(" .")
+    lowered = [_word_key(word) for word in words]
+    for index, word in enumerate(lowered[:-2]):
+        if word not in {"before", "until", "when"}:
+            continue
+        if lowered[index + 1] not in {"release", "version"}:
+            continue
+        action_index = index + 2
+        if action_index < len(words) and _looks_like_release_selector(words[action_index]):
+            action_index += 1
+        if _release_proof_tail_starts(lowered[action_index:]):
+            return " ".join(words[:index]).strip(" ,.;:")
+    return clean_markdown_text(value).strip(" .")
+
+
+def _release_proof_tail_starts(words: list[str]) -> bool:
+    if not words:
+        return False
+    if words[0] in _RELEASE_PROOF_ACTION_WORDS:
+        return True
+    return len(words) >= 2 and words[0] == "is" and words[1] in {"complete", "completed", "ready"}
+
+
+def _looks_like_release_selector(value: str) -> bool:
+    token = str(value or "").strip(".,:;")
+    return bool(token) and all(char.isalnum() or char in "._-" for char in token)
+
+
+def _word_key(value: str) -> str:
+    return str(value or "").casefold().strip(".,:;")
 
 
 def _request_words(value: str) -> list[str]:

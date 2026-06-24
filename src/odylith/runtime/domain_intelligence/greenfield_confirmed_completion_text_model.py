@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import project_specific_actor_labels
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -75,6 +76,7 @@ _VISIBLE_SEE_RESULT_HINTS = {
     "result",
     "slot",
     "state",
+    "status",
     "summary",
     "timeline",
     "trend",
@@ -158,6 +160,8 @@ def outcome_action_phrase(outcome: str) -> str:
     object_text = _object_phrase(text)
     if words & {"proof", "proven", "verified", "evidence", "audit"}:
         return f"review {object_text}"
+    if "status" in words and words & {"tracking", "readiness", "lifecycle"}:
+        return f"reach {object_text}"
     if words & _VISIBLE_SEE_RESULT_HINTS:
         return f"see {object_text}"
     if words & _VISIBLE_RESULT_OBJECT_HINTS:
@@ -202,9 +206,16 @@ def _object_phrase(value: str) -> str:
     if not text:
         return "the product result"
     lowered = text[:1].lower() + text[1:]
-    if re.match(r"^(?:a|an|the|this|that|one)\s+", lowered, flags=re.IGNORECASE):
+    words = lowered.split(maxsplit=1)
+    first = words[0].strip(".,:;").casefold() if words else ""
+    if first in {"a", "an", "the", "this", "that", "one", "my", "your", "their", "his", "her", "our", "its"}:
         return lowered
     return f"the {lowered}"
+
+
+def inline_result_phrase(value: str) -> str:
+    text = _reviewable_result_object(_clean(value).rstrip(" .") or "the product result")
+    return lower_first(text)
 
 
 def _looks_like_question_result(value: str) -> bool:
@@ -297,10 +308,41 @@ def workstream_product_view(*, label: str, action: str, outcome: str) -> str:
 
 
 def workstream_risk(*, label: str, outcome: str, state: str) -> str:
+    state_focus = sentence_label(domain_object_label(state, fallback="the accepted state"))
+    role = _workstream_risk_role(label)
+    outcome_text = inline_result_phrase(outcome)
+    if role == "proof":
+        return _sentence(
+            f"Risk: {label} can make evidence look trustworthy before {state_focus} is complete or replayable.",
+            limit=420,
+        )
+    if role == "review":
+        return _sentence(
+            f"Risk: {label} can present {outcome_text} if {state_focus} is incomplete or correction context is unclear.",
+            limit=420,
+        )
+    if role == "release":
+        return _sentence(
+            f"Risk: {label} can mark the release ready before {state_focus} has success, blocked-input, and replay proof.",
+            limit=420,
+        )
     return _sentence(
-        f"Risk: {label} can create false confidence if {outcome} is shown while {state} is incomplete, stale, or hard to explain.",
+        f"Risk: {label} can accept incomplete input and make {outcome_text} look safer than the evidence supports.",
         limit=420,
     )
+
+
+def _workstream_risk_role(label: str) -> str:
+    text = _clean(label).casefold()
+    if any(term in text for term in ("review", "clear", "result", "outcome", "decision", "publisher")):
+        return "review"
+    if any(term in text for term in ("intake", "register", "submit", "enter", "capture", "record")):
+        return "input"
+    if any(term in text for term in ("complete", "release", "path")):
+        return "release"
+    if any(term in text for term in ("proof", "trust", "evidence", "ledger")):
+        return "proof"
+    return "input"
 
 
 def has_connector_clipped_risk_subject(value: str) -> bool:
@@ -502,6 +544,11 @@ def _state_object_source(proposal: Mapping[str, Any]) -> str:
 
 
 def actor_summary(proposal: Mapping[str, Any]) -> str:
+    intent = proposal.get("intent")
+    if isinstance(intent, Mapping):
+        labels = project_specific_actor_labels(intent)
+        if labels:
+            return _sentence("; ".join(labels[:3]), limit=280)
     intelligence = proposal.get("project_intelligence")
     if isinstance(intelligence, Mapping):
         actors = [value for value in text_values(intelligence.get("operators")) if not text_needs_repair(value)][:2]
@@ -529,6 +576,7 @@ __all__ = [
     "first_path",
     "human_label",
     "has_connector_clipped_risk_subject",
+    "inline_result_phrase",
     "keywords",
     "lower_first",
     "outcome_action_phrase",

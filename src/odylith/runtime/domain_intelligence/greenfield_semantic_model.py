@@ -406,7 +406,7 @@ def _ensure_first_path_event_floor(
             text = f"Review {visible_result[:1].lower()}{visible_result[1:]}"
             is_visible = True
         elif visible_result:
-            text = f"Review evidence for {visible_result[:1].lower()}{visible_result[1:]}"
+            text = _unique_visible_result_review(rows, visible_result)
             is_visible = True
         else:
             text = "Review blockers, evidence, and next step"
@@ -424,6 +424,20 @@ def _ensure_first_path_event_floor(
             )
         )
     return rows
+
+
+def _unique_visible_result_review(events: list[FirstPathEvent], visible_result: str) -> str:
+    target = visible_result[:1].lower() + visible_result[1:]
+    candidates = (
+        f"Review evidence for {target}",
+        f"Confirm proof for {target}",
+        f"Keep {target} visible for review",
+    )
+    existing = {_clean(event.text).casefold().strip(" .") for event in events}
+    for candidate in candidates:
+        if _clean(candidate).casefold().strip(" .") not in existing:
+            return candidate
+    return candidates[-1]
 
 
 def _event_actor(value: str, *, human_actors: Sequence[str], fallback: str) -> str:

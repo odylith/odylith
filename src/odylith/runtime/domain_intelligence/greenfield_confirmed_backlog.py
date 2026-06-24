@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_actions as backlog_actions
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
@@ -19,6 +20,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import proble
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label as _sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text as _clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import text_values as _text_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
@@ -294,10 +298,17 @@ def confirmed_backlog_rows(
         first_path_capability_phrase(
             first_path_for_clauses,
             fallback=first_path_action,
-            limit=340,
-            max_fragments=7,
+            limit=240,
+            max_fragments=4,
         )
     )
+    readable_first_path_proof_capability = readable_action_chain_phrase(
+        first_path_for_clauses,
+        fallback=first_path_proof_capability or first_path_action,
+        limit=220,
+        max_steps=4,
+    )
+    metric_first_path_proof_capability = _metric_capability_summary(readable_first_path_proof_capability)
     path_entry_story = backlog_text.sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
     workflow_actor_label = backlog_text.lead_actor_label(first_release_human_actors) or f"{label} user"
     metric_actor = backlog_text.problem_actor_subject(workflow_actor_label, fallback=f"{label} user")
@@ -324,32 +335,40 @@ def confirmed_backlog_rows(
         fallback=problem_summary,
     )
     parent_opportunity = _parent_opportunity_sentence(
-        capability=first_path_proof_capability,
+        capability=readable_first_path_proof_capability,
         outcome_action=outcome_action,
         state_label=state_label,
         recipient=recipient_phrase,
     )
     parent_view = _parent_product_view_sentence(
         label=label,
-        capability=first_path_proof_capability,
+        capability=readable_first_path_proof_capability,
         outcome_action=outcome_action,
         state_label=state_label,
         recipient=recipient_phrase,
     )
-    first_slice_action = first_path_full_capability or first_path_action
+    first_slice_capability = first_path_full_capability or first_path_proof_capability or first_path_action
+    readable_first_slice_capability = readable_action_chain_phrase(
+        first_path_for_clauses,
+        fallback=first_slice_capability,
+        limit=320,
+        max_steps=7,
+        include_visible_results=True,
+    )
+    first_slice_action = readable_first_slice_capability or first_slice_capability
     outcome_already_covered = backlog_text.result_terms_covered(outcome_summary, first_slice_action)
     if outcome_summary and not outcome_already_covered and not backlog_text.shares_product_terms(first_slice_action, outcome_summary):
-        first_slice = f"Prove one first-release path: {first_path_proof_capability}, then let {recipient_phrase} {outcome_action}."
+        first_slice = f"Prove one first-release path: {first_slice_action}, then let {recipient_phrase} {outcome_action}."
     else:
-        first_slice = f"Prove one first-release path: {first_path_proof_capability}."
+        first_slice = f"Prove one first-release path: {first_slice_action}."
     first_slice = backlog_actions.dedupe_repeated_visible_result_tail(first_slice)
-    if backlog_text.result_terms_covered(outcome_summary, first_path_proof_capability):
+    if backlog_text.result_terms_covered(outcome_summary, metric_first_path_proof_capability):
         result_metric = (
             f"Success proof keeps {state_label} and {evidence_label} reviewable without adjacent scope being pulled into the release."
         )
     else:
         result_metric = (
-            f"Success proof includes the first path actions: {first_path_proof_capability}. "
+            f"Success proof includes the first path actions: {metric_first_path_proof_capability}. "
             f"Verified result: {outcome_summary}. Adjacent scope stays outside the release."
         )
     workflow_action = backlog_actions.actor_interaction_action(
@@ -431,9 +450,10 @@ def confirmed_backlog_rows(
         ),
         metrics=[
             (
-                f"The first interaction proves this path with success, blocked-input, replay, and handoff evidence: {first_path_proof_capability}."
-                if backlog_text.result_terms_covered(outcome_action, first_path_proof_capability)
-                else f"The first interaction proves this path: {first_path_proof_capability}. It also lets {recipient_phrase} {outcome_action}."
+                f"First interaction evidence covers {metric_first_path_proof_capability}. "
+                "It includes success, blocked input, replay, and handoff checks."
+                if backlog_text.result_terms_covered(outcome_action, metric_first_path_proof_capability)
+                else f"The first interaction proves this path: {metric_first_path_proof_capability}. It also lets {recipient_phrase} {outcome_action}."
             ),
             "Missing or invalid information produces clear correction guidance instead of a misleading result.",
             f"{follow_up_subject} can use the saved context without asking the user to repeat the same details.",
@@ -508,14 +528,14 @@ def confirmed_backlog_rows(
             "the release decision, and deferred scope."
         ),
         product_view=(
-            f"{proof_component} explains why the outcome can be trusted. It shows whether {state_label}, validation output, {proof_focus}, required context, "
-            f"and deferred scope support the promised result: {outcome_summary}."
+            f"{proof_component} explains why the outcome can be trusted. "
+            f"It connects {state_label}, validation output, and {_proof_focus_summary(proof_focus)} to the promised result: {outcome_summary}."
         ),
         first_slice=(
-            f"Produce one {proof_record_label} that links the first path, {state_label}, validation result, release decision, and deferred scope."
+            f"Produce one {proof_record_label} that links the first path, {state_label}, and validation result to release scope."
         ),
         metrics=[
-            f"{proof_record_label} links accepted input, {state_label}, validation output, release decision, and outcome.",
+            f"{proof_record_label} links accepted input, {state_label}, and validation output to the outcome.",
             "Missing evidence blocks proof review instead of producing a release-ready claim.",
             "The proof view checks the promised result without expanding deferred scope.",
             f"Deferred scope remains visible: {non_goal_text}.",
@@ -684,6 +704,8 @@ def _actor_verb(subject: str, *, singular: str, plural: str) -> str:
     if first in plural_heads:
         return plural
     words = text.split()
+    if len(words) > 1 and not words[0].endswith("s") and words[1].endswith("ing"):
+        return singular
     if words and words[-1].endswith("s") and not words[-1].endswith("ss"):
         return plural
     return singular
@@ -712,6 +734,58 @@ def _dedupe_capability_phrase(value: str) -> str:
     if len(unique) == 2:
         return f"{unique[0]} and {unique[1]}"
     return f"{', '.join(unique[:-1])}, and {unique[-1]}"
+
+
+def _metric_capability_summary(value: str) -> str:
+    text = _strip_leading_connector(_clean_text(value).strip(" ."))
+    if text.casefold().startswith("the "):
+        tail = text[4:].strip(" .")
+        first_tail_word = tail.split(maxsplit=1)[0] if tail else ""
+        if first_tail_word[:1].islower():
+            text = tail
+    if not text:
+        return "the promised first-path result"
+    parts = []
+    for part in _text_values(text, split_scalar=True, split_commas=True):
+        part = part.strip(" .")
+        part = _strip_leading_connector(part)
+        if part:
+            parts.append(part)
+    if len(parts) >= 2 and any(looks_like_action_clause(part) for part in parts):
+        return "the completed first-path actions"
+    if len(parts) >= 3:
+        return f"{parts[0]} through the promised result"
+    if len(parts) == 2:
+        return f"{parts[0]} and {parts[1]}"
+    return parts[0] if parts else text
+
+
+def _proof_focus_summary(value: str) -> str:
+    text = _strip_leading_connector(_clean_text(value).strip(" ."))
+    if not text:
+        return "review evidence"
+    parts: list[str] = []
+    for part in _text_values(text, split_scalar=True, split_commas=True):
+        parts.extend(
+            normalized
+            for candidate in part.split(" and ")
+            if (normalized := _strip_leading_connector(candidate.strip(" .")))
+        )
+    if len(parts) >= 3:
+        return f"{parts[0]} plus related proof context"
+    if len(parts) == 2:
+        return f"{parts[0]} and {parts[1]}"
+    return parts[0] if parts else text
+
+
+def _strip_leading_connector(value: str) -> str:
+    text = _clean_text(value).strip(" .")
+    lowered = text.casefold()
+    for connector in ("and", "or", "then", "but"):
+        prefix = f"{connector} "
+        if lowered.startswith(prefix):
+            return text[len(prefix) :].strip(" .")
+    return text
 
 
 def _capability_clause_key(value: str) -> str:

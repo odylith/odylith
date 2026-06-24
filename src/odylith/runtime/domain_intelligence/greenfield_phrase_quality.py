@@ -69,6 +69,85 @@ TRAILING_RELATION_ACTIONS = frozenset(
         "remains",
     }
 )
+ACTION_SPLICE_VERBS = frozenset(
+    {
+        "add",
+        "approve",
+        "assign",
+        "create",
+        "draft",
+        "enter",
+        "group",
+        "log",
+        "map",
+        "publish",
+        "record",
+        "resolve",
+        "review",
+        "save",
+        "select",
+        "submit",
+        "upload",
+    }
+)
+
+
+def normalize_action_splice_phrase(value: str) -> str:
+    """Repair generated phrases that accidentally compose ``use`` with a base action."""
+
+    text = clean_text(value)
+    if not text:
+        return ""
+    words = text.split()
+    repaired: list[str] = []
+    index = 0
+    while index < len(words):
+        current = _word_key(words[index])
+        next_word = _word_key(words[index + 1]) if index + 1 < len(words) else ""
+        after_next = _word_key(words[index + 2]) if index + 2 < len(words) else ""
+        after_that = _word_key(words[index + 3]) if index + 3 < len(words) else ""
+        if (
+            current in {"context", "evidence", "failure", "proof", "trail"}
+            and next_word == "for"
+            and after_next == "use"
+            and after_that in ACTION_SPLICE_VERBS
+        ):
+            repaired.extend([words[index], words[index + 1], _gerund_action(after_that)])
+            index += 4
+            continue
+        if current in {"use", "uses"} and next_word in ACTION_SPLICE_VERBS:
+            repaired.append(_finite_action(next_word))
+            index += 2
+            continue
+        repaired.append(words[index])
+        index += 1
+    return clean_text(" ".join(repaired))
+
+
+def _word_key(value: str) -> str:
+    return str(value or "").strip(".,:;()[]{}").casefold()
+
+
+def _gerund_action(value: str) -> str:
+    verb = value.casefold()
+    if verb == "group":
+        return "grouping"
+    if verb == "map":
+        return "mapping"
+    if verb == "submit":
+        return "submitting"
+    if verb.endswith("e"):
+        return f"{verb[:-1]}ing"
+    return f"{verb}ing"
+
+
+def _finite_action(value: str) -> str:
+    verb = value.casefold()
+    if verb.endswith(("s", "x", "z")) or verb.endswith(("ch", "sh")):
+        return f"{verb}es"
+    if verb.endswith("y") and len(verb) > 1 and verb[-2] not in "aeiou":
+        return f"{verb[:-1]}ies"
+    return f"{verb}s"
 
 
 def normalize_artifact_tail(
@@ -309,10 +388,20 @@ def _collapse_adjacent_duplicate_terms_line(value: str) -> str:
     for word in words:
         key = _term_key(word)
         if key and key == previous and len(key) >= 4:
+            if result:
+                result[-1] = _merge_duplicate_term_punctuation(result[-1], word)
             continue
         result.append(word)
         previous = key
     return " ".join(result)
+
+
+def _merge_duplicate_term_punctuation(previous: str, duplicate: str) -> str:
+    replacement = previous.rstrip(",;:")
+    duplicate_terminal = duplicate.rstrip()
+    if duplicate_terminal.endswith((".", "!", "?")) and not replacement.endswith((".", "!", "?")):
+        replacement = f"{replacement}{duplicate_terminal[-1]}"
+    return replacement
 
 
 def _term_key(value: str) -> str:

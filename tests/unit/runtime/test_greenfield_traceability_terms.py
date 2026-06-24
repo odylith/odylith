@@ -63,3 +63,28 @@ def test_greenfield_traceability_terms_use_shared_domain_index(tmp_path: Path) -
     )
 
     assert plan.component_workstreams["status-windows"] == ("B-001", "B-002")
+
+
+def test_greenfield_traceability_splits_long_first_slice_lines() -> None:
+    lines = greenfield_traceability._first_implementation_step_lines(
+        "Prove one first-release path: enter parcel details, attach required document references, "
+        "record fee status and contact information, submit the packet, receive completeness feedback, "
+        "and review record, then let the reviewer publish a decision."
+    )
+
+    assert lines[0] == "First implementation step: Prove one first-release path."
+    assert lines[1].startswith("Path actions: enter parcel details; attach required document references")
+    assert lines[2].startswith("Completion check:")
+    assert all(len(line) < 220 for line in lines)
+
+
+def test_greenfield_traceability_why_now_starts_with_workstream_focus() -> None:
+    text = greenfield_traceability._why_now_text(
+        row={},
+        focus="Permit Packet Intake",
+        first_slice="Submit one permit packet.",
+    )
+
+    assert text.startswith("Permit Packet Intake should land early")
+    assert "accepted input and recovery behavior" in text
+    assert not text.startswith("Do this before implementation expands")

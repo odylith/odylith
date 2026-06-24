@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import strip_dangling_w
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence import greenfield_traceability
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIRMED_DANGLING_WORDS
 
 _HANDOFF_MATCH_STOPWORDS = frozenset(
     {
@@ -52,21 +53,7 @@ _PREVIEW_TERMINAL_MODIFIERS = frozenset(
         "visible",
     }
 )
-_PREVIEW_DANGLING_WORDS = frozenset(
-    {
-        "a",
-        "an",
-        "and",
-        "for",
-        "from",
-        "of",
-        "or",
-        "the",
-        "to",
-        "with",
-        "without",
-    }
-)
+_PREVIEW_DANGLING_WORDS = frozenset((CONFIRMED_DANGLING_WORDS - {"final"}) | {"from"})
 _PREVIEW_TERMINAL_FINAL_STATE_WORDS = frozenset(
     {"case", "decision", "match", "record", "result", "review", "score", "status"}
 )

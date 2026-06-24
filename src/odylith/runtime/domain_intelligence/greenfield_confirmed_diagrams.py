@@ -144,6 +144,7 @@ def confirmed_diagrams(
                 components=release_components,
                 actors=actors,
                 proof_boundary=proof_boundary,
+                semantic_model=semantic_model,
             ),
         },
         {
@@ -197,6 +198,7 @@ def confirmed_diagrams(
                 components=release_components,
                 internal_systems=internals,
                 proof_boundary=proof_boundary,
+                semantic_model=semantic_model,
             ),
         },
         {
@@ -283,6 +285,7 @@ def _ownership_mermaid(
     components: list[dict[str, Any]],
     internal_systems: list[str],
     proof_boundary: str,
+    semantic_model: Mapping[str, Any] | None = None,
 ) -> str:
     lines = ["flowchart TB"]
     if not components:
@@ -294,7 +297,7 @@ def _ownership_mermaid(
         if index > 1:
             lines.append(f"  {_node_id('owner', index - 1)} --> {node}")
     proof_node = _node_id("proof", 1)
-    proof_label = diagram_text.release_proof_label(proof_boundary) or "promised outcome"
+    proof_label = diagram_text.semantic_proof_checkpoint(semantic_model) or diagram_text.release_proof_label(proof_boundary) or "promised outcome"
     lines.append(f'  {proof_node}["Release proof<br/>{diagram_text.escape_label(diagram_text.trim(proof_label, 72))}"]')
     if components:
         lines.append(f"  {_node_id('owner', min(len(components), 7))} --> {proof_node}")
@@ -317,12 +320,13 @@ def _state_evidence_mermaid(
     components: list[dict[str, Any]],
     actors: list[str],
     proof_boundary: str,
+    semantic_model: Mapping[str, Any] | None = None,
 ) -> str:
     first_owner = diagram_text.component_label(components, 0, fallback="First path owner")
     evidence_owner = _component_label_for_text(evidence_record, components=components) or diagram_text.component_label(components, min(2, max(0, len(components) - 1)), fallback="Proof Review Component")
     review_owner = diagram_text.component_label(components, len(components) - 1, fallback="Review owner")
     actor_label = diagram_text.short_label(actors[0] if actors else diagram_text.actor_phrase(actors, label=label))
-    proof_label = diagram_text.release_proof_label(proof_boundary) or "source-backed release check"
+    proof_label = diagram_text.semantic_proof_checkpoint(semantic_model) or diagram_text.release_proof_label(proof_boundary) or "source-backed release check"
     state_descriptor = state_object_descriptor(state_object)
     lines = [
         "flowchart LR",

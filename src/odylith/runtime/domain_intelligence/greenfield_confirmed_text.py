@@ -112,6 +112,49 @@ CONFIRMED_DANGLING_WORDS = {
     "without",
 }
 
+_DOMAIN_LABEL_PREDICATE_WORDS = frozenset(
+    {
+        "are",
+        "captures",
+        "capture",
+        "captured",
+        "carrying",
+        "changes",
+        "change",
+        "changed",
+        "containing",
+        "coordinates",
+        "coordinate",
+        "coordinated",
+        "holding",
+        "is",
+        "maintains",
+        "maintain",
+        "maintained",
+        "manages",
+        "manage",
+        "managed",
+        "moves",
+        "move",
+        "moved",
+        "orchestrates",
+        "orchestrate",
+        "orchestrated",
+        "produces",
+        "produce",
+        "produced",
+        "records",
+        "record",
+        "recorded",
+        "starts",
+        "start",
+        "started",
+        "tracks",
+        "track",
+        "tracked",
+    }
+)
+
 _TERMINAL_MODIFIER_WORDS = {
     "accepted",
     "actionable",
@@ -281,6 +324,9 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         return fallback
     first_clause = re.split(r"[.;\n]", text, maxsplit=1)[0].strip(" :.-")
     dash_head = re.split(r"\s+[—-]\s+", first_clause, maxsplit=1)[0].strip(" :.-")
+    compact_list_label = "" if _has_domain_label_predicate(dash_head) else _compact_list_like_domain_label(dash_head)
+    if compact_list_label:
+        return compact_list_label
     patterns = (
         r"\b(?:the\s+)?(?:unit\s+of\s+truth|source\s+of\s+truth|central\s+object|core\s+unit|core\s+record|main\s+record)\s+is\s+"
         r"(?:(?:the|an|a|one)\s+)?(?P<label>[^.;:]+)(?=$|[:;])",
@@ -322,11 +368,7 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         if match:
             candidate = match.group("label").strip(" :.-")
             return _domain_label(candidate) or fallback
-    if dash_head and not re.search(
-        r"\b(is|are|starts?|moves?|changes?|tracks?|records?|captures?|produces?|manages?|maintains?|coordinates?|orchestrates?|holding|carrying|containing)\b",
-        dash_head,
-        re.IGNORECASE,
-    ):
+    if dash_head and not _has_domain_label_predicate(dash_head):
         return title_label(dash_head) or fallback
     words = text.split()
     if len(words) <= 7:
@@ -344,6 +386,7 @@ def state_object_descriptor(value: str) -> str:
 def _domain_label(value: str) -> str:
     text = clean_confirmed_text(value).strip(" :.-")
     text = re.sub(r"^(?:a|an|one|the)\s+", "", text, flags=re.IGNORECASE).strip(" :.-")
+    text = _compact_list_like_domain_label_text(text) or text
     text = re.sub(
         r"\s+for\s+(?:a|an|the)\s+(?:single\s+)?"
         r"(?:site|home|household|user|customer|account|team|tenant|organization|project|workspace|case)\b.*$",
@@ -352,6 +395,44 @@ def _domain_label(value: str) -> str:
         flags=re.IGNORECASE,
     ).strip(" :.-")
     return title_label(text)
+
+
+def _compact_list_like_domain_label(value: str) -> str:
+    text = _compact_list_like_domain_label_text(value)
+    return title_label(text) if text else ""
+
+
+def _compact_list_like_domain_label_text(value: str) -> str:
+    text = clean_confirmed_text(value).strip(" :.-")
+    if text.count(",") < 2 and len(text.split()) <= 9:
+        return ""
+    if _has_domain_label_predicate(text):
+        colon_head = text.split(":", 1)[0].strip(" :.-")
+        if colon_head and colon_head != text:
+            text = colon_head
+        else:
+            return ""
+    head = text.split(":", 1)[0].split(",", 1)[0].strip(" :.-")
+    lowered = head.casefold()
+    for marker in (" with ", " containing ", " including ", " that ", " for "):
+        index = lowered.find(marker)
+        if index >= 0:
+            head = head[:index].strip(" :.-")
+            break
+    terms = label_terms(head)
+    if 2 <= len(terms) <= 6:
+        return head
+    if len(terms) > 6:
+        return " ".join(terms[:4])
+    return ""
+
+
+def _has_domain_label_predicate(value: str) -> bool:
+    tokens = {
+        token.strip(".,:;()[]{}").casefold()
+        for token in clean_confirmed_text(value).replace("-", " ").split()
+    }
+    return bool(tokens & _DOMAIN_LABEL_PREDICATE_WORDS)
 
 
 def short_summary(value: str, *, limit: int = 280) -> str:

@@ -318,13 +318,8 @@ def _patch_sections(
     if product_view or first_slice:
         sections["Proposed Solution"] = _paragraph(
             [
-                f"First implementation step: {first_slice}" if first_slice else "",
-                (
-                    f"Traceability for {scope_ref} keeps success, blocked-input, replay, and handoff proof together "
-                    "before adjacent source ownership expands."
-                )
-                if focus
-                else "",
+                *_first_implementation_step_lines(first_slice),
+                _traceability_scope_line(row=row, scope_ref=scope_ref) if focus else "",
             ]
         )
     sections["Scope"] = _bullets(
@@ -335,13 +330,7 @@ def _patch_sections(
     )
     sections["Non-Goals"] = _bullets(
         _section_items(row.get("non_goals", []))
-        or [
-            f"Do not claim source-backed implementation ownership for {scope_ref} before code exists.",
-            (
-                f"Do not treat {scope_ref} as release-ready until its success, blocked-input, replay, "
-                "and handoff evidence are written and reviewed."
-            ),
-        ]
+        or _non_goal_fallback_lines(row=row, scope_ref=scope_ref)
     )
     sections["Risks"] = _bullets(_risk_lines(row.get("risks", [])) or risks[:3])
     sections["Dependencies"] = _bullets(
@@ -358,9 +347,7 @@ def _patch_sections(
     sections["Validation"] = _bullets(validation_items)
     sections["Test Strategy"] = _bullets(
         _section_items(row.get("test_strategy", []))
-        or [
-            f"Turn {scope_ref} success metrics into focused reproducibility, contract, or smoke proof before source implementation starts.",
-        ]
+        or _test_strategy_fallback_lines(row=row, scope_ref=scope_ref)
     )
     sections["Impacted Components"] = _bullets(
         _scoped_trace_rows(focus, component_lines)
@@ -398,6 +385,72 @@ def _patch_sections(
 def _is_parent_workstream(row: Mapping[str, Any]) -> bool:
     text = _clean(row.get("workstream_type") or row.get("type") or row.get("shape")).casefold()
     return text in {"program_parent", "umbrella", "parent", "program"}
+
+
+def _traceability_scope_line(*, row: Mapping[str, Any], scope_ref: str) -> str:
+    role = _workstream_role(row)
+    if role == "release":
+        return f"Release traceability for {scope_ref} ties the success path to blocked-input, replay, and handoff proof."
+    if role == "proof":
+        return f"Evidence traceability for {scope_ref} keeps source facts, review notes, and replay context together."
+    if role == "review":
+        return f"Review traceability for {scope_ref} connects the visible result to correction and handoff evidence."
+    return f"Input traceability for {scope_ref} links accepted facts, missing-input recovery, and the next product step."
+
+
+def _non_goal_fallback_lines(*, row: Mapping[str, Any], scope_ref: str) -> list[str]:
+    role = _workstream_role(row)
+    if role == "release":
+        return [
+            f"Keep {scope_ref} out of source-backed implementation claims until code exists.",
+            f"Release readiness for {scope_ref} requires success, blocked-input, replay, and handoff evidence.",
+        ]
+    if role == "proof":
+        return [
+            f"Keep {scope_ref} from becoming the product decision owner before source code exists.",
+            f"Evidence in {scope_ref} is not release-ready until replay and blocked-input records are reviewed.",
+        ]
+    if role == "review":
+        return [
+            f"Keep {scope_ref} from rewriting source input before implementation assigns that authority.",
+            f"Review output from {scope_ref} needs success, correction, and handoff evidence before release.",
+        ]
+    return [
+        f"Keep {scope_ref} from claiming runtime ownership before source code exists.",
+        f"Input behavior in {scope_ref} needs success, missing-input, and recovery evidence before release.",
+    ]
+
+
+def _test_strategy_fallback_lines(*, row: Mapping[str, Any], scope_ref: str) -> list[str]:
+    role = _workstream_role(row)
+    if _is_parent_workstream(row):
+        return [
+            f"Prove release readiness for {scope_ref}: one successful path, one blocked path, and one replayable handoff."
+        ]
+    if role == "proof":
+        return [
+            f"Prove evidence replay for {scope_ref}: stored facts, reviewer explanation, and blocked-input history stay linked."
+        ]
+    if role == "review":
+        return [
+            f"Prove result review for {scope_ref}: the visible outcome explains success, correction, and handoff state."
+        ]
+    return [
+        f"Prove intake behavior for {scope_ref}: accepted input, missing input, and recovery evidence are captured before source work starts."
+    ]
+
+
+def _workstream_role(row: Mapping[str, Any]) -> str:
+    if _is_parent_workstream(row):
+        return "release"
+    title = _clean(row.get("title") or row.get("name") or row.get("component_focus") or "").casefold()
+    if any(term in title for term in ("review", "clear", "result", "outcome")):
+        return "review"
+    if any(term in title for term in ("intake", "register", "submit", "enter", "capture", "record")):
+        return "input"
+    if any(term in title for term in ("proof", "trust", "evidence", "ledger")):
+        return "proof"
+    return "input"
 
 
 def _section_items(value: Any) -> list[str]:
@@ -456,13 +509,55 @@ def _workstream_focus(row: Mapping[str, Any]) -> str:
     return _clean(row.get("title")) or _clean(row.get("recommended_first_slice")) or "this workstream"
 
 
+def _first_implementation_step_lines(first_slice: str) -> list[str]:
+    text = _clean(first_slice).strip(" .")
+    if not text:
+        return []
+    if len(text) <= 240 or text.count(",") < 5:
+        return [f"First implementation step: {text}."]
+    lead, separator, detail = text.partition(":")
+    if not separator:
+        lead = "First implementation step"
+        detail = text
+    lead_text = _clean(lead).strip(" .:") or "First implementation step"
+    segments = [
+        _first_slice_segment(segment)
+        for segment in text_values(detail, split_scalar=True, split_commas=True)
+    ]
+    segments = [segment for segment in segments if segment]
+    if len(segments) < 3:
+        return [f"First implementation step: {text}."]
+    midpoint = max(2, min(len(segments) - 1, (len(segments) + 1) // 2))
+    first_group = "; ".join(segments[:midpoint]).strip(" ;.")
+    second_group = "; ".join(segments[midpoint:]).strip(" ;.")
+    return [
+        f"First implementation step: {lead_text}.",
+        f"Path actions: {first_group}.",
+        f"Completion check: {second_group}.",
+    ]
+
+
+def _first_slice_segment(value: str) -> str:
+    text = _clean(value).strip(" .")
+    lowered = text.casefold()
+    for connector in ("and", "or"):
+        prefix = f"{connector} "
+        if lowered.startswith(prefix):
+            return text[len(prefix) :].strip(" .")
+    return text
+
+
 def _why_now_text(*, row: Mapping[str, Any], focus: str, first_slice: str) -> str:
     focus_text = _clean(focus) or "this workstream"
     if first_slice:
-        return (
-            f"Do this before implementation expands so this workstream has a tested first slice for {focus_text}, clear ownership, "
-            "and a release boundary the team can review."
-        )
+        role = _workstream_role(row)
+        if role == "release":
+            return f"{focus_text} should land first because it fixes the release proof boundary before implementation expands."
+        if role == "proof":
+            return f"{focus_text} should land early because reviewable evidence must exist before teams trust the result."
+        if role == "review":
+            return f"{focus_text} should land early because the visible outcome needs correction and handoff proof."
+        return f"{focus_text} should land early because accepted input and recovery behavior define the first usable slice."
     opportunity = _clean(row.get("opportunity"))
     if not opportunity:
         return ""

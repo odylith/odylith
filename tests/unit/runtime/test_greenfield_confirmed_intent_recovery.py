@@ -258,6 +258,35 @@ def test_host_guidance_recovery_rejects_long_title_noun_as_first_path() -> None:
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_host_guidance_recovery_strips_release_proof_tail_from_first_path() -> None:
+    prompt = (
+        "Draft a product-first greenfield proposal for a rooftop solar planning workspace where a homeowner "
+        "captures roof details, utility constraints, installer options, incentive paperwork, design review, "
+        "and installation readiness before release 0.0.1 proves one complete solar project planning path."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Rooftop Solar Planning Workspace"
+    assert "roof details" in intent["first_path"].casefold()
+    assert "installation readiness" in intent["first_path"].casefold()
+    assert "0.0.1 proves" not in intent["first_path"]
+    assert "one complete solar project planning path" not in intent["state_object"].casefold()
+    assert [row.split(":", 1)[0] for row in intent["human_actors"]] == ["Homeowner"]
+    assert "Installation Readiness Before Release" not in rendered
+    assert "A 1 proves" not in rendered
+    assert "and and" not in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_host_guidance_recovery_does_not_promote_verb_led_path_to_actor() -> None:
     prompt = (
         "Create a solar installation planning product that turns roof, utility, incentive, "

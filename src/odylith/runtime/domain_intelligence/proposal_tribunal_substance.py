@@ -277,7 +277,7 @@ def _check_first_path_flowchart(
     step_count = mermaid_text.numbered_flowchart_node_count(source, prefix="S")
     if step_count < 3:
         issues.append(f"confirmed Atlas flowchart `{title}` collapses the first path into too few events")
-    if "C4-" in source or re.search(r"\bparticipant\b", source, re.IGNORECASE):
+    if "C4-" in source or _contains_sequence_participant_debris(source):
         issues.append(f"confirmed Atlas flowchart `{title}` contains sequence/parser debris")
     if re.search(r"\bDone means\b|parser debris|accepted user action", source, re.IGNORECASE):
         issues.append(f"confirmed Atlas flowchart `{title}` contains mechanical parser copy")
@@ -294,6 +294,13 @@ def _check_first_path_flowchart(
         source=source,
         issues=issues,
     )
+
+
+def _contains_sequence_participant_debris(source: str) -> bool:
+    for line in str(source or "").splitlines():
+        if line.strip().casefold().startswith("participant "):
+            return True
+    return False
 
 
 def _check_sequence_preserves_first_path_tail(

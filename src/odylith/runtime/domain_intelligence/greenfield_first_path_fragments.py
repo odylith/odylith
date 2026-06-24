@@ -19,7 +19,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects im
     is_routing_pronoun_result,
     saved_destination_result_object,
 )
-from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment, normalize_reviewed_result_nouns, normalize_visible_result_language
+from odylith.runtime.domain_intelligence.greenfield_first_path_routing import routing_action_clause as _routing_action_clause
+from odylith.runtime.domain_intelligence.greenfield_first_path_text_case import lower_initial_for_fragment as _lower_initial_for_fragment
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns, normalize_visible_result_language
 
 TRIVIAL_START_RE = re.compile(
     r"^(?:a|an|the)?\s*[^,.;]{0,40}?\b(?:open|opens|launch|launches|start|starts)\s+"
@@ -156,6 +158,9 @@ def action_chain_fragment(value: str) -> str:
     _modal_actor, modal_action = _modal_actor_action_parts(text)
     if modal_action:
         text = modal_action
+    routing_action = _routing_action_clause(text, strip_subject=strip_action_subject)
+    if routing_action:
+        return _lower_initial_for_fragment(routing_action)
     outcome = "" if (re.search(r"\b(?:route|routes|send|sends|submit|submits)\b", text, flags=re.IGNORECASE) and re.search(r"\bto\s+(?:a|an|the)?\s*[A-Za-z0-9]", text, flags=re.IGNORECASE)) else visible_result_object(text)
     if outcome and not re.search(r"\b(?:receives?|gets?)\b", text, flags=re.IGNORECASE):
         stripped = strip_action_subject(text)
@@ -235,6 +240,8 @@ def visible_result_object(value: str) -> str:
     if nominal.casefold().startswith("the usage-linked metric change view"):
         return nominal
     text = strip_action_subject(text)
+    if _routing_action_clause(text, strip_subject=strip_action_subject):
+        return ""
     nominal = nominal_visible_result_object(text)
     if nominal.casefold().startswith("the usage-linked metric change view"):
         return nominal
@@ -677,23 +684,6 @@ def gerund_action_fragment(value: str) -> str:
     text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
     text = action_chain_fragment(text) or text
     return _gerund_following_action_verbs(text).strip(" ,.") or _lower_initial_for_fragment(text)
-def _lower_initial_for_fragment(value: str) -> str:
-    text = clean_first_path_text(value).strip(" ,.")
-    if not text:
-        return ""
-    match = MATERIAL_ACTION_RE.search(text)
-    plain_subject = lower_plain_title_subject_fragment(text, action_offset=match.start() if match else 0)
-    if plain_subject != text:
-        return plain_subject
-    match = re.match(r"(?P<prefix>[^A-Za-z0-9]*)(?P<token>[A-Za-z0-9][A-Za-z0-9_/-]*)", text)
-    if not match:
-        return text[:1].casefold() + text[1:]
-    token = match.group("token")
-    letters = [char for char in token if char.isalpha()]
-    if len(letters) >= 2 and (all(char.isupper() for char in letters) or any(char.isupper() for char in letters[1:])):
-        return text
-    index = len(match.group("prefix"))
-    return f"{text[:index]}{text[index:index + 1].casefold()}{text[index + 1:]}"
 
 def _gerund_following_action_verbs(value: str) -> str:
     text = clean_first_path_text(value)

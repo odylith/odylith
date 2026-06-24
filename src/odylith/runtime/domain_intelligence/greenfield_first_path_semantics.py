@@ -9,6 +9,7 @@ from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
@@ -23,6 +24,12 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     looks_like_visible_result as _looks_like_visible_result,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    nominal_visible_result_object as _nominal_visible_result_object,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    strip_action_subject as _strip_action_subject,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     visible_action_clause as _visible_action_clause,
@@ -227,8 +234,19 @@ def _visible_outcome(steps: Sequence[str]) -> str:
         return _sentence_case(fallback[0])
     for step in reversed(steps):
         if not _is_scope_or_deferred_statement(step):
-            return _sentence_case(step)
+            return _sentence_case(_nominal_material_outcome(step) or step)
     return ""
+
+
+def _nominal_material_outcome(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    stripped = _strip_action_subject(text).strip(" .")
+    if not stripped or not _MATERIAL_ACTION_RE.search(stripped):
+        return ""
+    nominal = _nominal_visible_result_object(stripped).strip(" .")
+    return nominal if nominal and nominal != stripped else ""
 
 
 def _terminal_choice_outcome(steps: Sequence[str]) -> str:
@@ -400,7 +418,7 @@ def _split_action_pieces(value: str) -> list[str]:
             for segment in _split_temporal_action_tail(purpose_segment):
                 current = ""
                 for part in [piece.strip(" .") for piece in re.split(r",\s+", segment) if piece.strip(" .")]:
-                    if current and _starts_new_action_clause(part):
+                    if current and _starts_new_action_clause(part) and not _continues_subject_object_list(part, current):
                         pieces.append(current.strip(" ."))
                         current = _with_carried_subject(part, subject_prefix)
                     else:
@@ -504,9 +522,50 @@ def _with_carried_subject(value: str, subject_prefix: str) -> str:
     action = re.match(rf"^(?P<verb>{_ACTION_BASE_VERB_PATTERN})\b(?P<tail>.*)$", text, flags=re.IGNORECASE)
     if action and _MATERIAL_ACTION_RE.match(action.group("verb")):
         return f"{subject_prefix} {_carried_subject_action_verb(subject_prefix, action.group('verb'))}{action.group('tail')}"
+    if subject_prefix and _connector_core_starts_action_clause(text):
+        return f"{subject_prefix} {text[:1].lower()}{text[1:]}"
     if _MATERIAL_ACTION_RE.match(text):
         return f"{subject_prefix} {text[:1].lower()}{text[1:]}"
     return text
+
+
+def _continues_subject_object_list(value: str, current: str) -> bool:
+    words = [word.strip(".,:;()[]{}").casefold() for word in _clean(value).split() if word.strip(".,:;()[]{}")]
+    if len(words) < 2 or words[0] not in {"and", "or"}:
+        return False
+    core = " ".join(words[1:]).strip()
+    if not core:
+        return False
+    if _leading_subject_prefix(core) or _carried_subject_prefix(core):
+        return False
+    if _connector_core_starts_action_clause(core):
+        return False
+    return bool(_carried_subject_prefix(current))
+
+
+def _connector_core_starts_action_clause(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if looks_like_finite_action(text):
+        return True
+    words = [word.strip(".,:;()[]{}").casefold() for word in text.split() if word.strip(".,:;()[]{}")]
+    if len(words) < 2:
+        return False
+    if words[0] in {"at", "after", "before", "during", "on", "when"}:
+        for index in range(1, min(len(words), 5)):
+            if looks_like_finite_action(" ".join(words[index:])):
+                return True
+    return words[0].endswith("s") and words[1] in {
+        "against",
+        "as",
+        "for",
+        "from",
+        "if",
+        "into",
+        "through",
+        "to",
+        "when",
+        "with",
+    }
 
 
 def _carried_subject_action_verb(subject_prefix: str, verb: str) -> str:

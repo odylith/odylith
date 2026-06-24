@@ -259,7 +259,7 @@ def component_narrative_view(
     blocker_state_items = supplemental_state_items(
         [*accepts, *produces],
         existing=(*owned_items, *accepted_items, *produced_items),
-        limit=3,
+        limit=5,
     )
     transition_items = transition_narrative_items(transitions, limit=12)
     concrete_transition_items = tuple(

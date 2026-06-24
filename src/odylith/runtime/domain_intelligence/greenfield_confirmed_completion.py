@@ -16,6 +16,12 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_component_completi
     complete_component_rows,
     repair_component_sentence_lists,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_domain_intelligence_repair import (
+    repair_domain_intelligence_metrics,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_domain_intelligence_repair import (
+    repair_domain_intelligence_sentence_lists,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import (
     project_specific_actor_labels,
 )
@@ -189,6 +195,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
     outcome_action = completion_text.outcome_action_phrase(outcome)
     proof_capability = completion_text.proof_capability_phrase(proposal)
     state = completion_text.state_reference(proposal)
+    state_label = completion_text.state_object(proposal)
     actors = completion_text.actor_summary(proposal)
     components = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
     for index, row in enumerate(rows, start=1):
@@ -220,7 +227,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
                         f"Success proof includes {proof_capability}.",
                         f"Result proof confirms the user can {outcome_action} with a clear explanation.",
                         f"Missing or incorrect input produces a clear correction path instead of a misleading result.",
-                        f"The result can be explained from the recorded {state} without relying on memory or hidden assumptions.",
+                        f"The result can be explained from the recorded {state_label} without relying on memory or hidden assumptions.",
                     ]
                 )
             )
@@ -237,10 +244,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
             or _text_needs_repair(row.get("security_posture"))
             or completion_text.has_connector_clipped_risk_subject(row.get("security_posture", ""))
         ):
-            row["security_posture"] = (
-                f"Security and privacy posture: {label} protects user-entered facts, result history, and recovery details. "
-                f"Access, audit, retention, accessibility, and safety obligations stay visible for {label}."
-            )
+            row["security_posture"] = _security_posture_text(label)
             changed = True
         if (
             not text_values(row.get("risks"))
@@ -300,8 +304,8 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             changed = True
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3):
             metrics = [
-                f"{row_title} success evidence proves {label} owns {focus} while keeping the result visible and reviewable.",
-                f"{label} blocks incomplete {focus} before any result is presented, then explains what has to change.",
+                f"{row_title} success evidence proves {label} is accountable for evidence and rules around {focus} while keeping the result visible and reviewable.",
+                f"{label} blocks incomplete evidence before presenting a result, then explains what has to change for {focus}.",
                 (
                     f"{row_title} keeps actor, source, status, result, and recovery context attached to "
                     f"{state_change_ref or state_ref}."
@@ -313,14 +317,15 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
                         f"Deferred scope stays out of {label} validation evidence: {_clean(non_goal_rows[0]).rstrip('.')}."
                     )
                 metrics.append(
-                    f"{label} validation evidence focuses on {outcome}, with blocked-input, replay, and handoff cases visible."
+                    f"{label} validation evidence focuses on {completion_text.inline_result_phrase(outcome)}, "
+                    "with blocked-input, replay, and handoff cases visible."
                 )
             row["success_metrics"] = metrics
             changed = True
         if _sequence_needs_repair(row.get("interfaces"), required_tokens=("input", "output"), min_items=1) or drifted:
             row["interfaces"] = [
                 f"{label} accepts the facts needed for {focus} and rejects incomplete entries before they look usable.",
-                f"The next product step receives the {focus} result, correction state, or explanation with reviewable evidence.",
+                f"{row_title} hands off the {focus} result, correction state, and explanation with reviewable evidence.",
             ]
             changed = True
         if (
@@ -336,10 +341,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             or completion_text.has_connector_clipped_risk_subject(row.get("security_posture", ""))
             or drifted
         ):
-            row["security_posture"] = (
-                f"Security and privacy posture: {label} protects user-entered facts, result history, and recovery details. "
-                f"Access, audit, retention, accessibility, and safety obligations stay visible for {label}."
-            )
+            row["security_posture"] = _security_posture_text(label)
             changed = True
         if (
             not text_values(row.get("risks"))
@@ -414,6 +416,8 @@ def _repair_preflight_issues(
         or "clipped" in issue_text
         or "unfinished" in issue_text
         or "concrete success" in issue_text
+        or "success_metrics" in issue_text
+        or "too shallow" in issue_text
         or "too thin to guide implementation" in issue_text
         or "not anchored to enough project-specific nouns" in issue_text
         or "repeats scaffold language" in issue_text
@@ -545,6 +549,8 @@ def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release
     state_object = completion_text.state_reference(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
+    proof_boundary = completion_text.proof_boundary(proposal)
+    actors = completion_text.actor_summary(proposal)
     outcome_action = completion_text.outcome_action_phrase(outcome)
     proof_capability = completion_text.proof_capability_phrase(proposal)
     rows = [
@@ -564,6 +570,8 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
     state_object = completion_text.state_reference(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
+    proof_boundary = completion_text.proof_boundary(proposal)
+    actors = completion_text.actor_summary(proposal)
     if _validation_strategy_needs_repair(proposal):
         changed |= _repair_validation_strategy(proposal, release_selector=release_selector)
     for row in dict_rows(proposal.get("backlog")):
@@ -593,8 +601,8 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
             row,
             "security_posture",
             fallback=(
-                f"Security and privacy posture: {title} states who can see or change the product state, "
-                f"what sensitive information is involved, and how audit, retention, accessibility, safety, and recovery stay visible for {title} before release."
+                f"Security and privacy posture: {title} states who can see or change product state. "
+                f"{title} keeps audit, retention, safety, and recovery obligations visible before release."
             ),
         )
         if _sequence_has_text_repair(row.get("success_metrics")):
@@ -612,7 +620,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
                 "success_metrics",
                 metrics,
             )
-            changed |= _repair_domain_intelligence_metrics(row, title=title, action=action, outcome=outcome, state_object=state_object)
+            changed |= repair_domain_intelligence_metrics(row, title=title, action=action, outcome=outcome, state_object=state_object)
         if _sequence_has_text_repair(row.get("validation")):
             changed |= _set_list(
                 row,
@@ -622,13 +630,15 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
                     f"Reject release readiness when {title} cannot explain its result, changed state, access posture, or recovery path.",
                 ],
             )
-        changed |= _repair_domain_intelligence_metrics(row, title=title, action=action, outcome=outcome, state_object=state_object)
-        changed |= _repair_domain_intelligence_sentence_lists(
+        changed |= repair_domain_intelligence_metrics(row, title=title, action=action, outcome=outcome, state_object=state_object)
+        changed |= repair_domain_intelligence_sentence_lists(
             row,
             title=title,
             action=action,
             outcome=outcome,
             state_object=state_object,
+            proof_boundary=proof_boundary,
+            actor_summary=actors,
         )
         if _sequence_has_text_repair(row.get("rationale_lines")):
             changed |= _set_list(
@@ -684,71 +694,48 @@ def _repair_generic_actor_labels(proposal: dict[str, Any]) -> bool:
     return changed
 
 
-def _repair_domain_intelligence_metrics(
-    row: dict[str, Any],
-    *,
-    title: str,
-    action: str,
-    outcome: str,
-    state_object: str,
-) -> bool:
-    intelligence = row.get("domain_intelligence")
-    if not isinstance(intelligence, dict):
-        return False
-    if not _sequence_has_text_repair(intelligence.get("metrics")):
-        return False
-    outcome_action = completion_text.outcome_action_phrase(outcome)
-    return _set_list(
-        intelligence,
-        "metrics",
-        [
-            f"{title} proof shows users can {action}.",
-            f"{title} result evidence proves the user can {outcome_action}.",
-            f"Every readiness assertion for {title} has state, explanation, validation, release-review, and non-goal references.",
-            f"{title} keeps {state_object} clear when the result is blocked, corrected, or replayed.",
-        ],
-    )
-
-
-def _repair_domain_intelligence_sentence_lists(
-    row: dict[str, Any],
-    *,
-    title: str,
-    action: str,
-    outcome: str,
-    state_object: str,
-) -> bool:
-    intelligence = row.get("domain_intelligence")
-    if not isinstance(intelligence, dict):
-        return False
-    outcome_action = completion_text.outcome_action_phrase(outcome)
-    changed = False
-    if _sequence_has_text_repair(intelligence.get("scope")):
-        changed |= _set_list(
-            intelligence,
-            "scope",
-            [
-                f"{title} starts with a representative user who can {action}.",
-                f"{title} stays inside the first release until the product can {outcome_action} and explain blocked input.",
-            ],
-        )
-    if _sequence_has_text_repair(intelligence.get("state")):
-        changed |= _set_list(
-            intelligence,
-            "state",
-            [
-                f"State focus: {title} records the facts needed to support {action}.",
-                f"{state_object} remains trustworthy when the visible result, blocker, and recovery path can be replayed.",
-            ],
-        )
-    return changed
-
-
 def _ensure_text(row: dict[str, Any], key: str, default: str, *, repair_bad_text: bool = False) -> bool:
     if _clean(row.get(key)) and not (repair_bad_text and _text_needs_repair(row.get(key))):
         return False
     row[key] = default
     return True
+
+
+def _security_posture_text(label: str) -> str:
+    owner = _clean(label) or "This workstream"
+    role = _security_posture_role(owner)
+    if role == "proof":
+        return (
+            f"Security proof for {owner}: evidence access must stay auditable. "
+            f"{owner} keeps privacy policy, accessibility, audit history, and safety checks visible before release."
+        )
+    if role == "review":
+        return (
+            f"Review security for {owner}: only authorized actors should change the visible outcome. "
+            f"{owner} keeps privacy policy, accessibility, correction history, and access decisions reviewable before release."
+        )
+    if role == "release":
+        return (
+            f"Release security for {owner}: promotion waits for access and privacy proof. "
+            f"{owner} keeps accessibility, audit history, retention policy, and safety checks visible before release."
+        )
+    return (
+        f"Input security for {owner}: accepted facts and recovery history must be protected. "
+        f"{owner} keeps privacy policy, accessibility, access control, and audit evidence visible before release."
+    )
+
+
+def _security_posture_role(label: str) -> str:
+    text = _clean(label).casefold()
+    if any(term in text for term in ("review", "clear", "result", "outcome")):
+        return "review"
+    if any(term in text for term in ("intake", "register", "submit", "enter", "capture", "record")):
+        return "input"
+    if any(term in text for term in ("release", "complete", "path")):
+        return "release"
+    if any(term in text for term in ("proof", "trust", "evidence", "ledger")):
+        return "proof"
+    return "input"
 
 
 def _path_phrase(value: str) -> str:

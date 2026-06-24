@@ -100,21 +100,44 @@ def test_project_brief_rendering_uses_shared_row_coercion_and_keeps_plain_lines(
 
     lines = render_project_brief_lines(brief)
 
-    assert "- project design board:" in lines
+    assert "## Project Design Board" in lines
+    assert "## Governance Package" in lines
     assert (
-        "  - First repair path: Resident request, staff triage, status update, and review result. "
+        "- First repair path: Resident request, staff triage, status update, and review result. "
         "Why: It proves the workflow without wider property-management scope."
     ) in lines
-    assert (
-        "  - Proof depth: Require a status timeline before coding. Options for Proof depth: timeline, notification. "
-        "Impact: Changes the first release gate."
-    ) in lines
+    assert "  - Proof depth: Require a status timeline before coding.\n    - Options: timeline, notification.\n    - Impact: Changes the first release gate." in lines
     assert (
         "  - Status evidence: Which status proves the request is reviewable; "
         "done when The first release names that status and its reviewer."
     ) in lines
     assert "  - Confirmed create: `odylith greenfield create --confirm` (Codex and Claude Code)" in lines
     assert all("not a row" not in line for line in lines)
+
+
+def test_project_brief_rendering_splits_long_blueprint_rationale_rows() -> None:
+    lines = render_project_brief_lines(
+        {
+            "blueprint_sections": [
+                {
+                    "section": "Product story",
+                    "must_capture": (
+                        "Homeowners need to compare roof fit, usage, incentives, quotes, financing, and savings "
+                        "before selecting a solar installation plan"
+                    ),
+                    "why_it_matters": (
+                        "Readers need to understand the product, user, problem, and real-world outcome before "
+                        "implementation boundaries appear."
+                    ),
+                }
+            ]
+        }
+    )
+    rendered = "\n".join(lines)
+
+    assert "Product story: Homeowners need to compare roof fit" in rendered
+    assert "\n  - Why: Readers need to understand" in rendered
+    assert "installation plan Why:" not in rendered
 
 
 def test_confirmed_project_brief_does_not_clip_article_modifier_tail_from_broad_prompt() -> None:
@@ -190,3 +213,52 @@ def test_project_brief_normalization_repairs_shallow_outcome_from_accepted_inten
 
     assert "complete reviewable path" in normalized["project_outcome"]
     assert word_count(normalized["project_outcome"]) >= 10
+
+
+def test_project_brief_long_outcome_uses_state_object_label_not_state_sentence() -> None:
+    normalized = normalize_project_brief(
+        {
+            "project_outcome": (
+                "A participant records symptoms, triggers, chosen practice steps, check-in results, safety boundaries, "
+                "and progress evidence before the first release proves the accepted path."
+            )
+        },
+        intent={
+            "title": "Daily Comfort Practice Coach",
+            "first_path": (
+                "A participant records symptoms, triggers, chosen practice steps, check-in results, safety boundaries, "
+                "and progress evidence."
+            ),
+            "proof_boundary": "Release 0.0.1 proves one accepted Daily Comfort Practice Coach path.",
+            "state_object": "A daily comfort practice coach result record tracks the actor, source, status, result, and recovery context.",
+        },
+        release_selector="0.0.1",
+    )
+
+    assert "and A daily comfort practice coach result record tracks" not in normalized["project_outcome"]
+    assert "Daily Comfort Practice Coach Result Record stay connected" in normalized["project_outcome"]
+    assert generated_public_copy_issues("project outcome", normalized["project_outcome"]) == ()
+
+
+def test_project_brief_renderer_keeps_comma_heavy_story_as_coherent_sentence() -> None:
+    lines = render_project_brief_lines(
+        {
+            "project_outcome": "Release 0.0.1 proves the accepted path.",
+            "blueprint_sections": [
+                {
+                    "section": "Product story",
+                    "must_capture": (
+                        "Daily Comfort Practice Coach helps a participant complete a first path where a participant records symptoms, "
+                        "triggers, chosen practice steps, check-in results, safety boundaries, and progress evidence. It keeps the "
+                        "daily comfort practice coach result tied to source input and proof evidence so the next step is clear."
+                    ),
+                    "why_it_matters": "Readers need one coherent product story before implementation boundaries appear.",
+                }
+            ],
+        }
+    )
+    rendered = "\n".join(lines)
+
+    assert "\n  - Chosen practice steps" not in rendered
+    assert "\n  - Check-in results" not in rendered
+    assert "records symptoms, triggers, chosen practice steps, check-in results" in rendered

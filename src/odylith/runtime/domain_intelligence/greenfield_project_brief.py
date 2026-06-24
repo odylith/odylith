@@ -5,11 +5,13 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_text_list
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -73,6 +75,7 @@ def project_outcome_text(
         fallback=fallback,
     ):
         text = _brief_field_text(candidate, limit=_PROJECT_OUTCOME_LIMIT)
+        text = _readable_project_outcome(text, intent=intent, release_selector=release_selector)
         if word_count(text) >= PROJECT_OUTCOME_MIN_WORDS:
             return text
     return _brief_field_text(value or fallback, limit=_PROJECT_OUTCOME_LIMIT)
@@ -192,6 +195,30 @@ def _brief_field_text(value: Any, *, limit: int) -> str:
     return clip_text_at_word_boundary(text, limit=limit).strip(" .")
 
 
+def _readable_project_outcome(value: str, *, intent: Mapping[str, Any], release_selector: str) -> str:
+    text = clean_text(value).strip(" .")
+    if text.count(",") < 5 and len(text) <= _PROJECT_OUTCOME_LIMIT:
+        return text
+    title = clean_text(intent.get("title") or intent.get("source_title")) or "the accepted project"
+    state_object = _brief_state_label(clean_text(intent.get("state_object")) or "the product state")
+    release = clean_text(release_selector) or "the first release"
+    return (
+        f"Release {release} proves one accepted {title} path. "
+        f"The visible result and {state_object} stay connected with blocked-path and review evidence."
+    )
+
+
+def _brief_state_label(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    label = domain_object_label(text, fallback="")
+    if label:
+        return label
+    parts = list(text_values(text, split_scalar=True, split_commas=True))
+    if len(parts) >= 3:
+        return parts[0]
+    return text or "the product state"
+
+
 def render_project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:
     """Render the project-first brief used in proposal review text."""
 
@@ -209,29 +236,37 @@ def render_project_brief_lines(project_brief: Mapping[str, Any]) -> list[str]:
         lines.append(f"- review posture: {posture}")
     blueprint_lines = _blueprint_section_lines(project_brief.get("blueprint_sections"))
     if blueprint_lines:
-        lines.extend(["- project design board:"])
-        lines.extend(f"  - {line}" for line in blueprint_lines[:7])
+        _append_section(lines, "## Project Design Board")
+        lines.extend(f"- {line}" for line in blueprint_lines[:7])
     option_lines = _project_option_lines(project_brief.get("customization_options"))
+    prompt_lines = _text_list_lines(project_brief.get("customization_prompts"))
+    checkpoint_lines = _project_checkpoint_lines(project_brief.get("pre_coding_checkpoints"))
+    gates = _text_list_lines(project_brief.get("coding_readiness_gates"))
+    paths = _project_path_lines(project_brief.get("host_independent_paths"))
+    if option_lines or prompt_lines or checkpoint_lines or gates or paths:
+        _append_section(lines, "## Governance Package")
     if option_lines:
         lines.extend(["- choose before coding:"])
         lines.extend(f"  - {line}" for line in option_lines[:8])
-    prompt_lines = _text_list_lines(project_brief.get("customization_prompts"))
     if prompt_lines:
         lines.extend(["- customize by saying:"])
         lines.extend(f"  - {line}" for line in prompt_lines[:4])
-    checkpoint_lines = _project_checkpoint_lines(project_brief.get("pre_coding_checkpoints"))
     if checkpoint_lines:
         lines.extend(["- checkpoints:"])
         lines.extend(f"  - {line}" for line in checkpoint_lines[:5])
-    gates = _text_list_lines(project_brief.get("coding_readiness_gates"))
     if gates:
         lines.extend(["- coding readiness gates:"])
         lines.extend(f"  - {gate}" for gate in gates[:5])
-    paths = _project_path_lines(project_brief.get("host_independent_paths"))
     if paths:
         lines.extend(["- host-independent customization paths:"])
         lines.extend(f"  - {line}" for line in paths[:3])
     return lines
+
+
+def _append_section(lines: list[str], heading: str) -> None:
+    if lines and lines[-1] != "":
+        lines.append("")
+    lines.append(heading)
 
 
 def _normalize_brief_rows(value: Any, *, required_keys: Sequence[str]) -> list[dict[str, Any]]:
@@ -289,9 +324,36 @@ def _blueprint_section_lines(value: Any) -> list[str]:
         must_capture = clean_text(row.get("must_capture"))
         why = clean_text(row.get("why_it_matters"))
         if section and must_capture:
+            detail_parts = _long_detail_parts(must_capture)
+            if detail_parts:
+                block = [f"{section}:", *(f"  - {part}" for part in detail_parts[:6])]
+                if why:
+                    block.append(f"  - Why: {why}")
+                lines.append("\n".join(block))
+                continue
+            if why and _combined_detail_is_hard_to_scan(section=section, detail=must_capture, why=why):
+                lines.append("\n".join([f"{section}: {must_capture}", f"  - Why: {why}"]))
+                continue
             suffix = f" Why: {why}" if why else ""
             lines.append(f"{section}: {must_capture}{suffix}")
     return lines
+
+
+def _combined_detail_is_hard_to_scan(*, section: str, detail: str, why: str) -> bool:
+    combined = f"{section}: {detail} Why: {why}"
+    return len(combined) > 260 or (combined.count(",") >= 6 and len(combined) > 180)
+
+
+def _long_detail_parts(value: str) -> list[str]:
+    text = clean_text(value)
+    has_long_comma_list = len(text) > 220 and text.count(",") >= 4
+    if len(text) <= 320 and text.count(";") < 3 and not has_long_comma_list:
+        return []
+    candidates: list[str] = []
+    for sentence in text.split(". "):
+        candidates.extend(text_values(sentence, split_scalar=True, split_commas=False))
+    parts = [part.strip(" .") for part in candidates if part.strip(" .")]
+    return [part for part in (_brief_list_fragment(part) for part in parts) if word_count(part) >= 3]
 
 
 def _project_option_lines(value: Any) -> list[str]:
@@ -307,14 +369,54 @@ def _project_option_lines(value: Any) -> list[str]:
         )
         impact = clean_text(row.get("impact"))
         if decision and recommended:
-            suffix = f" Options for {decision}: {rendered_choices}." if rendered_choices else ""
-            impact_text = f" Impact: {impact}" if impact else ""
-            lines.append(f"{decision}: {recommended}{suffix}{impact_text}")
+            block = _option_line_block(
+                decision=decision,
+                recommended=recommended,
+                rendered_choices=rendered_choices,
+                impact=impact,
+            )
+            if block:
+                lines.append(block)
     return lines
 
 
+def _option_line_block(*, decision: str, recommended: str, rendered_choices: str, impact: str) -> str:
+    detail_parts = _long_detail_parts(recommended)
+    if detail_parts:
+        rows = [f"{decision}:", *(f"    - {part}" for part in detail_parts[:6])]
+    else:
+        rows = [f"{decision}: {recommended}"]
+    if rendered_choices:
+        rows.append(f"    - Options: {rendered_choices}.")
+    if impact:
+        rows.append(f"    - Impact: {impact}")
+    return "\n".join(rows)
+
+
 def _text_list_lines(value: Any) -> list[str]:
-    return [clean_text(item) for item in value if clean_text(item)] if isinstance(value, list) else []
+    if not isinstance(value, list):
+        return []
+    return [line for line in (_brief_list_fragment(clean_text(item)) for item in value) if line]
+
+
+def _brief_list_fragment(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ""
+    lowered = text.casefold()
+    for connector in ("and", "then", "or", "but"):
+        prefix = f"{connector} "
+        if lowered.startswith(prefix):
+            text = text[len(prefix) :].strip(" .")
+            break
+    lowered = text.casefold()
+    broader_prefix = "broader operational scale until "
+    if lowered.startswith(broader_prefix):
+        return f"Broader operational scale stays deferred until {text[len(broader_prefix):].strip(' .')}"
+    operational_prefix = "operational scale until "
+    if lowered.startswith(operational_prefix):
+        return f"Operational scale stays deferred until {text[len(operational_prefix):].strip(' .')}"
+    return f"{text[:1].upper()}{text[1:]}" if text and text[:1].islower() else text
 
 
 def _project_checkpoint_lines(value: Any) -> list[str]:

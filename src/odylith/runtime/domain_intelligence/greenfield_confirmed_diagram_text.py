@@ -111,6 +111,7 @@ def semantic_proof_checkpoint(semantic_model: Mapping[str, Any] | None) -> str:
         visible = normalize_visible_result_language(compact_text(str(contract.get("visible_result") or "")))
         visible = _strip_dangling_tail(visible)
         visible = _proof_checkpoint_from_visible_result(visible)
+        visible = _lower_leading_possessive_fragment(visible)
         if word_count(visible) >= 3:
             return trim(visible, 80)
     graph = semantic_model.get("diagram_event_graph")
@@ -129,7 +130,7 @@ def semantic_visible_result_label(semantic_model: Mapping[str, Any] | None) -> s
     if not isinstance(contract, Mapping):
         return ""
     visible = normalize_visible_result_language(compact_text(str(contract.get("visible_result") or "")))
-    return _strip_dangling_tail(visible)
+    return _lower_leading_possessive_fragment(_strip_dangling_tail(visible))
 
 
 def proof_evidence_label(*, components: list[dict[str, Any]], fallback: str) -> str:
@@ -188,12 +189,54 @@ def release_proof_label(value: str) -> str:
     brief = brief_proof_boundary(value)
     if not brief:
         return ""
-    return proof_checkpoint_label(brief) or trim(brief, 80)
+    label = proof_checkpoint_label(brief) or trim(brief, 80)
+    return _strip_release_label_prefix(label)
+
+
+def _strip_release_label_prefix(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    text = _release_label_tail(text)
+    complete_prefix = "is complete when "
+    if text.casefold().startswith(complete_prefix):
+        text = text[len(complete_prefix) :].strip(" .")
+    release_prefix = "release "
+    if text.casefold().startswith(release_prefix):
+        text = text[len(release_prefix) :].strip(" .")
+    return text
+
+
+def _release_label_tail(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    lowered = text.casefold()
+    for prefix in ("release ", "version "):
+        if not lowered.startswith(prefix):
+            continue
+        tail = text[len(prefix) :].strip()
+        version, separator, rest = tail.partition(" ")
+        if separator and _looks_like_release_selector(version):
+            return rest.strip(" .")
+    return text
+
+
+def _looks_like_release_selector(value: str) -> bool:
+    token = str(value or "").strip()
+    return bool(token) and all(char.isalnum() or char in "._-" for char in token)
+
+
+def _is_release_completion_label(value: str) -> bool:
+    tail = _release_label_tail(value)
+    if tail.casefold().startswith(("is complete when ", "is ready when ", "succeeds when ", "succeeds only when ")):
+        return True
+    return value.casefold() != tail.casefold() and tail.casefold().startswith(
+        ("complete when ", "ready when ", "succeeds when ", "succeeds only when ")
+    )
 
 
 def deferred_scope_label(value: str, *, label: str = "", fallback: str = "beyond accepted first path") -> str:
     text = compact_text(value)
     if not text:
+        return fallback
+    if _is_release_completion_label(text):
         return fallback
     if _looks_like_deferred_component_label(text):
         return trim(text, 72) or fallback
@@ -513,6 +556,17 @@ def _lower_fragment_start(value: str) -> str:
     return text
 
 
+def _lower_leading_possessive_fragment(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if not text:
+        return ""
+    words = text.split(maxsplit=1)
+    first = words[0].strip(".,:;").casefold() if words else ""
+    if first in {"my", "your", "their", "his", "her", "our", "its"}:
+        return f"{text[:1].casefold()}{text[1:]}"
+    return text
+
+
 def _explicit_deferred_scope(value: str) -> str:
     text = compact_text(value).strip(" .")
     if not text:
@@ -612,10 +666,10 @@ def _balance_label(value: str) -> str:
 
 
 def _strip_dangling_tail(value: str) -> str:
-    text = compact_text(value).rstrip(" ,;:.")
+    text = compact_text(value).rstrip(" ,;:.-")
     while True:
         text = re.sub(r"(?:,\s*)?(?:the\s+)?product\s+(?:show|shows)$", "", text, flags=re.IGNORECASE).rstrip(
-            " ,;:."
+            " ,;:.-"
         )
         text = _strip_clipped_terminal_action(text)
         cleaned = re.sub(
@@ -623,7 +677,7 @@ def _strip_dangling_tail(value: str) -> str:
             "",
             text,
             flags=re.IGNORECASE,
-        ).rstrip(" ,;:.")
+        ).rstrip(" ,;:.-")
         cleaned = _strip_clipped_terminal_action(cleaned)
         if cleaned == text:
             return cleaned
@@ -631,19 +685,19 @@ def _strip_dangling_tail(value: str) -> str:
 
 
 def _strip_clipped_terminal_action(value: str) -> str:
-    text = compact_text(value).rstrip(" ,;:.")
+    text = compact_text(value).rstrip(" ,;:.-")
     if "," not in text:
         return text
     head, tail = text.rsplit(",", 1)
-    token = tail.strip(" ,;:.").casefold()
+    token = tail.strip(" ,;:.-").casefold()
     if not token or " " in token:
         return text
     if token in {"assign", "check", "compare", "create", "deduplicate", "export", "import", "record", "resolve", "review", "screen", "submit"}:
-        return head.rstrip(" ,;:.")
+        return head.rstrip(" ,;:.-")
     if token.endswith("ing") and len(token) > 5:
-        return head.rstrip(" ,;:.")
+        return head.rstrip(" ,;:.-")
     if looks_like_action_clause(f"{token} placeholder") and not looks_like_finite_action(f"{token} placeholder"):
-        return head.rstrip(" ,;:.")
+        return head.rstrip(" ,;:.-")
     return text
 
 

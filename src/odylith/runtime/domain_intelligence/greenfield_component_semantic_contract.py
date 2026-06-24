@@ -52,6 +52,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_windows impor
     literal_label_terms as _literal_label_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_action_splice_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -223,22 +224,38 @@ def derive_component_semantic_contract(
         else "built from the wrong inputs"
     )
     critical_noun = _noun_slot_artifact_phrase(critical)
-    fields = {
-        "owned_state": _contract_list_text(*owned_seed),
-        "accepted_inputs": _accepted_inputs_text(input_focus),
-        "produced_outputs": _produced_outputs_text(output_focus),
-        "states_or_transitions": states,
-        "outside_boundary": _outside_boundary(sibling_focus=handoff_focus),
-        "local_proof": proof,
-        "upstream_truth": _upstream_truth(previous_label),
-        "downstream_consumers": next_label or "release review",
-        "unique_failure": (
-            f"{label} can mislead users if {critical_noun} {_present_verb(critical_noun, singular='is', plural='are')} missing, stale, {failure_cause}, "
-            "or shown without enough explanation to recover"
-        ),
-    }
+    fields = _sanitize_contract_fields(
+        {
+            "owned_state": _contract_list_text(*owned_seed),
+            "accepted_inputs": _accepted_inputs_text(input_focus),
+            "produced_outputs": _produced_outputs_text(output_focus),
+            "states_or_transitions": states,
+            "outside_boundary": _outside_boundary(sibling_focus=handoff_focus),
+            "local_proof": proof,
+            "upstream_truth": _upstream_truth(previous_label),
+            "downstream_consumers": next_label or "release review",
+            "unique_failure": (
+                f"{label} can mislead users if {critical_noun} {_present_verb(critical_noun, singular='is', plural='are')} missing, stale, {failure_cause}, "
+                "or shown without enough explanation to recover"
+            ),
+        }
+    )
     confidence = len(object_phrases) * 3 + len(action_terms) * 2 + min(len(local_terms), 8)
     return SemanticComponentContract(fields=fields, confidence=confidence, local_terms=tuple(local_terms))
+
+
+def _sanitize_contract_fields(fields: Mapping[str, Any]) -> dict[str, Any]:
+    sanitized: dict[str, Any] = {}
+    for key, value in fields.items():
+        if isinstance(value, list):
+            sanitized[key] = [normalize_action_splice_phrase(str(item)) for item in value]
+        elif isinstance(value, tuple):
+            sanitized[key] = tuple(normalize_action_splice_phrase(str(item)) for item in value)
+        elif isinstance(value, str):
+            sanitized[key] = normalize_action_splice_phrase(value)
+        else:
+            sanitized[key] = value
+    return sanitized
 
 
 def _result_like_phrase(value: str) -> str:

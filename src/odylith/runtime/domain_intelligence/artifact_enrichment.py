@@ -8,7 +8,6 @@ native language instead of being pasted into every artifact as a generic
 
 from __future__ import annotations
 
-import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -19,6 +18,7 @@ from odylith.runtime.domain_intelligence.artifact_graph import DomainIntelligenc
 from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
 from odylith.runtime.domain_intelligence.artifact_graph import graph_layer as _layer
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -67,7 +67,7 @@ def radar_enrichment_sections(
 
     first_path = _bullets(
         [
-            _scoped_sentence("First path", focus, first_slice),
+            *_first_path_enrichment_lines(focus=focus, first_slice=first_slice),
             _scoped_sentence("State object", focus, _first(graph.state_objects)),
             _scoped_sentence("Boundary", focus, _first(_layer(row, "scope")) or _first(graph.maturity_and_origin)),
         ]
@@ -188,9 +188,96 @@ def _scoped_sentence(label: str, focus: str, value: str) -> str:
     if not text:
         return ""
     focus_text = clean_text(focus).strip(" .")
+    focus_label = _compact_focus_label(focus_text)
+    detail = _compact_detail_text(_drop_boundary_repeated_lead(focus_text, text))
     if focus_text and focus_text.casefold() not in text.casefold():
-        return f"{label}: {focus_text} — {text}"
-    return f"{label}: {text}"
+        return f"{label}: {focus_label} — {detail}"
+    return f"{label}: {_compact_detail_text(text)}"
+
+
+def _first_path_enrichment_lines(*, focus: str, first_slice: str) -> list[str]:
+    text = _without_existing_label(label="First path", value=clean_text(first_slice)).strip(" .")
+    if not text:
+        return []
+    if len(text) <= 240 or text.count(",") < 5:
+        return [_scoped_sentence("First path", focus, text)]
+    lead, separator, detail = text.partition(":")
+    if not separator:
+        lead = "Accepted first path"
+        detail = text
+    segments = [
+        _first_path_segment(segment)
+        for segment in text_values(detail, split_scalar=True, split_commas=True)
+    ]
+    segments = [segment for segment in segments if segment]
+    if len(segments) < 3:
+        return [_scoped_sentence("First path", focus, text)]
+    midpoint = max(2, min(len(segments) - 1, (len(segments) + 1) // 2))
+    return [
+        _scoped_sentence("First path", focus, f"{lead.strip(' .:')}."),
+        f"Path actions: {'; '.join(segments[:midpoint]).strip(' ;.')}.",
+        f"Completion check: {'; '.join(segments[midpoint:]).strip(' ;.')}.",
+    ]
+
+
+def _first_path_segment(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    lowered = text.casefold()
+    for connector in ("and", "or", "then"):
+        prefix = f"{connector} "
+        if lowered.startswith(prefix):
+            return text[len(prefix) :].strip(" .")
+    return text
+
+
+def _compact_focus_label(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    parts = _readable_phrase_parts(text)
+    if len(parts) >= 3:
+        return f"{parts[0]} and related scope"
+    return text
+
+
+def _compact_detail_text(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    if text.count(",") < 4 and len(text) <= 260:
+        return text
+    parts = _readable_phrase_parts(text)
+    if len(parts) < 4:
+        return text
+    first = parts[0]
+    second = parts[1]
+    proof_terms = {"evidence", "proof", "review", "trace", "validation"}
+    tail = "proof context" if proof_terms.intersection(_boundary_terms(text)) else "scope context"
+    return f"{first} and {second} with related {tail}"
+
+
+def _readable_phrase_parts(value: str) -> list[str]:
+    parts: list[str] = []
+    for part in text_values(value, split_scalar=True, split_commas=True):
+        for and_part in part.split(" and "):
+            token = clean_text(and_part).strip(" .")
+            if token:
+                parts.append(token)
+    return parts
+
+
+def _drop_boundary_repeated_lead(focus: str, value: str) -> str:
+    focus_terms = _boundary_terms(focus)
+    value_terms = _boundary_terms(value)
+    if not focus_terms or not value_terms or focus_terms[-1] != value_terms[0]:
+        return value
+    text = clean_text(value)
+    lead = value_terms[0]
+    repaired = text[len(lead) :].strip(" ,;:.") if text.casefold().startswith(lead) else text
+    return repaired if len(_boundary_terms(repaired)) >= 2 else value
+
+
+def _boundary_terms(value: str) -> list[str]:
+    text = clean_text(value).replace("-", " ")
+    for punctuation in ",.;:!?()[]{}\"`":
+        text = text.replace(punctuation, " ")
+    return [token.strip("'").casefold() for token in text.split() if token[:1].isalpha()]
 
 
 def _without_existing_label(*, label: str, value: str) -> str:
@@ -249,9 +336,15 @@ def _bullets(values: Sequence[str]) -> str:
 
 def _bullet_dedupe_key(value: str) -> str:
     text = clean_text(value).casefold()
-    text = re.sub(r"^(?:proof|gate|risk|control|owner|boundary|first path|state object):\s*", "", text)
-    text = re.sub(r"\b(?:proof|gate|risk|control|owner|boundary)\b", "", text)
-    return re.sub(r"[^a-z0-9]+", " ", text).strip()
+    for label in ("proof", "gate", "risk", "control", "owner", "boundary", "first path", "state object"):
+        prefix = f"{label}:"
+        if text.startswith(prefix):
+            text = text[len(prefix) :].strip()
+            break
+    for punctuation in ",.;:!?()[]{}\"'`-/":
+        text = text.replace(punctuation, " ")
+    ignored = {"proof", "gate", "risk", "control", "owner", "boundary"}
+    return " ".join(word for word in text.split() if word and word not in ignored)
 
 
 def _tuple_limit(values: Sequence[str], limit: int) -> tuple[str, ...]:

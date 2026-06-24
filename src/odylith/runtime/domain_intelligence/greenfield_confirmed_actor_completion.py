@@ -17,8 +17,36 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+
+_DANGLING_ACTOR_LABEL_TAILS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "as",
+        "at",
+        "because",
+        "by",
+        "for",
+        "from",
+        "if",
+        "in",
+        "into",
+        "of",
+        "on",
+        "or",
+        "that",
+        "the",
+        "to",
+        "when",
+        "while",
+        "with",
+        "without",
+    }
+)
 
 
 _ROLE_WORDS = {
@@ -126,11 +154,11 @@ def project_specific_actor_labels(intent: Mapping[str, Any]) -> list[str]:
     title = _clean(intent.get("title")) or "Project"
     for row in confirmed_text_values(intent.get("human_actors")):
         label = _clean(row.split("—", 1)[0].split(":", 1)[0]).strip(" .")
-        if label and not value_starts_with_generic_actor_label(label):
+        if label and _actor_label_is_usable(label):
             labels.append(label)
             continue
         repaired = _actor_label(row, title=title)
-        if repaired and not value_starts_with_generic_actor_label(repaired):
+        if repaired and _actor_label_is_usable(repaired):
             labels.append(repaired)
     return list(unique_text(labels))
 
@@ -291,8 +319,8 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     clause = _trim_following_actor_transition(clause)
     if not clause:
         return ""
-    action = capability_action_clause(clause)
-    return f"uses the product to {action} and needs the outcome to remain clear enough to act on"
+    action = readable_action_chain_phrase(clause, fallback=capability_action_clause(clause), limit=170, max_steps=3)
+    return f"uses the product to {action}; the outcome stays clear enough to choose the next step"
 
 
 def _trim_following_actor_transition(value: str) -> str:
@@ -438,7 +466,10 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str) -> list[str]
     for candidate in candidates:
         if _word_count(candidate) <= 5:
             label = _title_case(candidate)
-            if not _actor_label_has_clause_lead(label):
+            if value_starts_with_generic_actor_label(label):
+                role = label.casefold()
+                label = _title_case(f"{_role_focus(focus, role)} {role}")
+            if _actor_label_is_usable(label):
                 labels.append(label)
     labels = _dedupe_actor_labels(list(unique_text(labels)))
     if len(labels) < 2:
@@ -632,6 +663,20 @@ def _actor_label_has_clause_lead(value: str) -> bool:
     )
 
 
+def _actor_label_has_dangling_tail(value: str) -> bool:
+    words = [word.casefold().strip(".,;:()[]{}") for word in _clean(value).split()]
+    return bool(words and words[-1] in _DANGLING_ACTOR_LABEL_TAILS)
+
+
+def _actor_label_is_usable(value: str) -> bool:
+    return (
+        bool(_clean(value))
+        and not value_starts_with_generic_actor_label(value)
+        and not _actor_label_has_clause_lead(value)
+        and not _actor_label_has_dangling_tail(value)
+    )
+
+
 def _actor_label(row: str, *, title: str) -> str:
     raw = _clean(str(row).split("—", 1)[0].split(":", 1)[0])
     raw = re.sub(r"^(?:a|an|the)\s+", "", raw, flags=re.IGNORECASE).strip()
@@ -641,13 +686,15 @@ def _actor_label(row: str, *, title: str) -> str:
     accepted = accepted_actor_label(str(row), project_focus=_focus_label(title))
     if accepted:
         accepted = re.sub(r"^(?:one|first|main|primary)\s+", "", accepted, flags=re.IGNORECASE).strip()
-        return accepted if _actor_row_has_usable_description(str(row)) else _title_case(accepted)
+        accepted = accepted if _actor_row_has_usable_description(str(row)) else _title_case(accepted)
+        return accepted if _actor_label_is_usable(accepted) else ""
     specific = _specific_role_label(raw)
     if specific:
-        return specific
+        return specific if _actor_label_is_usable(specific) else ""
     if raw.casefold() in {"operator", "reviewer", "user", "owner", "helper", "support", "admin"}:
         raw = f"{_role_focus(_focus_label(title), raw)} {raw}"
-    return _title_case(raw)
+    label = _title_case(raw)
+    return label if _actor_label_is_usable(label) else ""
 
 
 def _specific_role_label(value: str) -> str:

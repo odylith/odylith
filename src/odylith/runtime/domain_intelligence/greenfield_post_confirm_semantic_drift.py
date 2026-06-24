@@ -327,6 +327,7 @@ _CONTRASTIVE_GENERIC_TERMS = {
     "planned",
     "policy",
     "privacy",
+    "provenance",
     "proof",
     "proposal",
     "produce",
