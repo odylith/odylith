@@ -37,6 +37,8 @@ _FINITE_TO_BASE = {
 _BASE_ACTIONS = "|".join(re.escape(value) for value in sorted(set(_FINITE_TO_BASE.values()), key=len, reverse=True))
 _FINITE_ACTIONS = "|".join(re.escape(value) for value in sorted(_FINITE_TO_BASE, key=len, reverse=True))
 _SCALAR_CLAUSE_SPLIT_RE = re.compile(r"([,;.!?])\s*")
+_MARKDOWN_LINK_TARGET_RE = re.compile(r"\]\(([^)\s]+)\)")
+_PROTECTED_INLINE_PREFIX = "__ODYLITH_INLINE_ROUTE_"
 
 
 @dataclass(frozen=True)
@@ -189,9 +191,10 @@ def _looks_like_structured_diagram_line(value: str) -> bool:
 
 def _repair_dangling_clause_tails(value: str) -> str:
     text = str(value or "").strip()
-    pieces = _SCALAR_CLAUSE_SPLIT_RE.split(text)
+    protected_text, protected_spans = _protect_structured_inline_routes(text)
+    pieces = _SCALAR_CLAUSE_SPLIT_RE.split(protected_text)
     if len(pieces) <= 1:
-        return _strip_terminal_dangling_tail(text)
+        return _restore_structured_inline_routes(_strip_terminal_dangling_tail(protected_text), protected_spans)
     repaired: list[str] = []
     index = 0
     while index < len(pieces):
@@ -209,7 +212,25 @@ def _repair_dangling_clause_tails(value: str) -> str:
             if index + 2 < len(pieces):
                 repaired.append(" ")
         index += 2
-    return re.sub(r"\s+([,;.!?])", r"\1", "".join(repaired)).strip()
+    rendered = re.sub(r"\s+([,;.!?])", r"\1", "".join(repaired)).strip()
+    return _restore_structured_inline_routes(rendered, protected_spans)
+
+
+def _protect_structured_inline_routes(value: str) -> tuple[str, tuple[str, ...]]:
+    spans: list[str] = []
+
+    def replace(match: re.Match[str]) -> str:
+        spans.append(match.group(1))
+        return f"]({_PROTECTED_INLINE_PREFIX}{len(spans) - 1}__)"
+
+    return _MARKDOWN_LINK_TARGET_RE.sub(replace, value), tuple(spans)
+
+
+def _restore_structured_inline_routes(value: str, spans: Sequence[str]) -> str:
+    text = value
+    for index, span in enumerate(spans):
+        text = text.replace(f"{_PROTECTED_INLINE_PREFIX}{index}__", span)
+    return text
 
 
 def _strip_terminal_dangling_tail(value: str) -> str:

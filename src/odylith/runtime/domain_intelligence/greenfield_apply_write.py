@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_targets i
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_completion_report
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_until_clean
 from odylith.runtime.domain_intelligence.proposal_memory import record_greenfield_acceptance
 from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 from odylith.runtime.governance import component_authoring
@@ -207,6 +208,7 @@ def write_greenfield_proposal(
         program_result=program_result,
         release_selector=release_selector,
     )
+    next_steps = _repair_final_next_steps(next_steps)
     _raise_for_final_package_quality(
         root=root,
         proposal=proposal,
@@ -348,6 +350,16 @@ def _raise_for_final_package_quality(
     if issues:
         detail = "\n".join(f"- {issue}" for issue in issues)
         raise ValueError(f"greenfield post-confirm final write quality failed with {len(issues)} issue(s):\n{detail}")
+
+
+def _repair_final_next_steps(next_steps: Mapping[str, Any]) -> Mapping[str, Any]:
+    probe = GreenfieldCompletionPackage(
+        proposal={},
+        release_selector="",
+        next_steps_preview=next_steps,
+    )
+    repaired = repair_greenfield_package_until_clean(probe).package.next_steps_preview
+    return repaired if isinstance(repaired, Mapping) else next_steps
 
 
 def _actual_component_specs(*, root: Path, components: Sequence[Mapping[str, Any]]) -> dict[str, str]:

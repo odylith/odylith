@@ -385,6 +385,46 @@ def test_package_repair_collapses_adjacent_duplicate_words() -> None:
     assert repaired.rendered_component_specs == {"spec.md": "The record stays attached to the accepted state."}
 
 
+def test_package_repair_preserves_markdown_plan_link_targets() -> None:
+    summary = (
+        "2026-06-25: Registered Flood Shelter Intake System Intake Register Service as a planned service from user intent "
+        "(Plan: [B-002](odylith/radar/radar.html?view=plan&workstream=B-002))."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        component_registry_preview=(
+            {
+                "component_id": "intake-register",
+                "feature_history": [{"date": "2026-06-25", "summary": summary}],
+            },
+        ),
+        rendered_component_specs={"spec.md": f"## Feature History\n- {summary}\n"},
+    )
+
+    repaired = repair_greenfield_package_once(package)
+
+    repaired_summary = repaired.component_registry_preview[0]["feature_history"][0]["summary"]
+    assert "odylith/radar/radar.html?view=plan&workstream=B-002" in repaired_summary
+    assert "radar. html? view=plan" not in repaired_summary
+    assert "odylith/radar/radar.html?view=plan&workstream=B-002" in repaired.rendered_component_specs["spec.md"]
+
+
+def test_final_next_steps_repair_matches_prewrite_copy_repair() -> None:
+    repaired = greenfield_apply_write._repair_final_next_steps(
+        {
+            "start_workstream_id": "B-002",
+            "validation_gates": [
+                "Flood Shelter Intake System Intake Register Service owns flood shelter intake intake register evidence, review rules, and result visibility",
+                "Flood Shelter Intake System Intake Register Service blocks incomplete evidence before presenting a result, then explains what has to change for flood shelter intake intake register",
+            ],
+        }
+    )
+
+    rendered = "\n".join(repaired["validation_gates"])
+    assert "intake intake" not in rendered.casefold()
+    assert "flood shelter intake register evidence" in rendered.casefold()
+
+
 def test_greenfield_apply_result_carries_post_confirm_quality_manifest(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
