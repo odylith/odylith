@@ -11,6 +11,8 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import finite_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import rationale_deferred_focus
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
@@ -545,8 +547,23 @@ def _proof_checkpoint_from_visible_result(value: str) -> str:
         text,
         flags=re.IGNORECASE,
     ):
-        return f"The result on {text[:1].lower()}{text[1:]}"
+        if _looks_like_actor_led_visible_result(text):
+            return sentence(text).rstrip(".")
+        return f"The visible result shows {text[:1].lower()}{text[1:]}"
     return _lower_fragment_start(sentence(text).rstrip("."))
+
+
+def _looks_like_actor_led_visible_result(value: str) -> bool:
+    words = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", compact_text(value))
+    if len(words) < 3:
+        return False
+    start = 1 if words[0].casefold() in {"a", "an", "the"} else 0
+    max_subject_words = min(start + 4, len(words) - 1)
+    for verb_index in range(start + 1, max_subject_words + 1):
+        token = words[verb_index].casefold().strip(".,:;")
+        if looks_like_base_action_token(token) or looks_like_finite_action_token(token):
+            return True
+    return False
 
 
 def _lower_fragment_start(value: str) -> str:

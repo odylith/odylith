@@ -653,7 +653,7 @@ def test_greenfield_health_tracking_defers_later_scope_and_keeps_atlas_implement
 
     assert "Deferred scope<br/>Medication and Relief Tracking with Reminders Service" in boundary
     assert "Deferred scope<br/>Shareable Visit Summary Generation Service" in boundary
-    assert "Proof checkpoint<br/>The result on a timeline and trend view" in proof
+    assert "Proof checkpoint<br/>A timeline and trend view" in proof
     assert "Proven when one person can create a pain entry" not in proof
     assert "done, path, mean, person" not in proof
 

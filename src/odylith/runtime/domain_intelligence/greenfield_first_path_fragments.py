@@ -269,7 +269,7 @@ def visible_result_object(value: str) -> str:
             result = re.split(r"(?<=[.!?])\s+", result, maxsplit=1)[0]
             result = re.split(r"\s+[–—-]\s+(?:all|under|while|with|within)\b", result, maxsplit=1, flags=re.IGNORECASE)[0]
             result = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", result, flags=re.IGNORECASE)
-            result = re.sub(r"^(?:it|them)\s+(?=(?:on|in|with|as)\b)", "the result ", result, flags=re.IGNORECASE)
+            result = re.sub(r"^(?:it|them)\s+(?:on|in|with|as)\s+", "", result, flags=re.IGNORECASE)
             result = drop_result_recipient(result)
             result = re.sub(
                 r",?\s+and\s+(?:reads?|receives?|sees?|views?)\b.+$",

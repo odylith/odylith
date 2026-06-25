@@ -196,6 +196,34 @@ def test_host_guidance_recovery_builds_clean_confirmed_proposal_from_controller_
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_host_guidance_recovery_nominalizes_actor_led_state_outcomes() -> None:
+    prompt = (
+        "Build a research replication package tracker where a principal investigator registers datasets, "
+        "analysts attach reproducibility evidence, reviewers flag missing methods, and the lab publishes "
+        "a clean audit trail before submission."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    state = intent["state_object"]
+
+    assert state.startswith(("A missing methods record tracks", "A clean audit trail record tracks"))
+    assert "A Reviewers flag" not in state
+    assert "A reviewers flag" not in state
+
+
+def test_host_guidance_recovery_lowercases_generated_state_article_body() -> None:
+    prompt = (
+        "Build a hospital equipment sterilization handoff board where technicians log tray readiness, "
+        "nurses reserve urgent kits, supervisors verify failed-cycle evidence, and operating rooms see "
+        "only safe release status."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+
+    assert intent["state_object"].startswith("A safe release status record tracks")
+    assert "An Only" not in intent["state_object"]
+
+
 def test_host_guidance_recovery_handles_broad_product_prompt_without_parser_debris() -> None:
     prompt = "Draft a greenfield proposal for a cooking robot controller"
 

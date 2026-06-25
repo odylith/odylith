@@ -8,11 +8,14 @@ from collections.abc import Sequence
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import nominal_visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -282,8 +285,22 @@ def _indefinite_phrase(value: str) -> str:
     first = text.split(maxsplit=1)[0].casefold()
     if first in _LEADING_ARTICLES:
         return text
+    text = _lower_article_body(text)
+    first = text.split(maxsplit=1)[0].casefold()
     article = "an" if first[:1] in {"a", "e", "i", "o", "u"} else "a"
     return f"{article} {text}"
+
+
+def _lower_article_body(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    first, _separator, _tail = text.partition(" ")
+    if first.isupper() and len(first) <= 4:
+        return text
+    if first.casefold() in _LEADING_ARTICLES:
+        return text
+    return f"{text[:1].casefold()}{text[1:]}"
 
 
 def _lower_leading_word(value: str) -> str:
@@ -591,10 +608,47 @@ def _state_record_subject(value: str) -> str:
     text = lower_plain_title_subject_fragment(_clean(value), action_offset=0).strip(" .")
     if not text:
         return "first visible result"
+    action_object = _actor_action_object(text)
+    if action_object:
+        text = nominal_visible_result_object(action_object).strip(" .") or action_object
     words = _strip_leading_articles(_words(text))
+    if len(words) >= 3 and words[0].casefold() == "only":
+        words = words[1:]
     if words and words[-1].casefold() == "record":
         words = words[:-1]
     return " ".join(words).strip(" .") or "first visible result"
+
+
+def _actor_action_object(value: str) -> str:
+    words = _words(value)
+    if len(words) < 3:
+        return ""
+    max_subject_words = min(4, len(words) - 2)
+    for verb_index in range(1, max_subject_words + 1):
+        verb = words[verb_index].casefold().strip(".,:;")
+        if not (looks_like_base_action_token(verb) or looks_like_finite_action_token(verb)):
+            continue
+        subject = words[:verb_index]
+        if not _looks_like_actor_subject(subject):
+            continue
+        obj = " ".join(words[verb_index + 1 :]).strip(" .")
+        if obj.casefold().startswith("when "):
+            obj = obj[5:].strip(" .")
+        return obj
+    return ""
+
+
+def _looks_like_actor_subject(words: Sequence[str]) -> bool:
+    cleaned = _strip_leading_articles(words)
+    if not cleaned:
+        return False
+    last = cleaned[-1].casefold().strip(".,:;")
+    singular = last[:-1] if last.endswith("s") else last
+    if singular in _HUMAN_ACTOR_TERMS or last in _HUMAN_ACTOR_TERMS:
+        return True
+    if any(singular.endswith(suffix) or last.endswith(suffix) for suffix in _HUMAN_ROLE_SUFFIXES):
+        return True
+    return False
 
 
 def _recovered_title(outcome: str) -> str:
