@@ -223,7 +223,7 @@ def confirmed_project_brief(
                 f"The {label_lower} components come from product systems named in the accepted product "
                 f"direction: {component_summary}."
             ),
-            f"Release {release} has validation gates for success, failure, replay, access, and review evidence.",
+            f"Release {release} has proof checks for success, failure, replay, access, and review evidence.",
             f"External dependencies for {label_lower} are simulated, sandboxed, source-backed, or explicitly deferred.",
         ],
         "host_independent_paths": [

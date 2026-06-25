@@ -248,6 +248,7 @@ DEFAULT_DANGLING_TAIL_WORDS = frozenset(
         "so",
         "the",
         "to",
+        "until",
         "with",
     }
 )

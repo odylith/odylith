@@ -377,9 +377,10 @@ def _wave_label(wave: Mapping[str, Any]) -> str:
 
 
 def _first_slice_text(row: Mapping[str, Any]) -> str:
-    return (
+    return _preview_safe_fragment(
         " ".join(row_text_tuple(row, "recommended_first_slice", "first_slice_proof")).strip()
-        or "Implement the smallest source-backed slice for this workstream and prove it with the listed validation gates."
+        or "Implement the smallest source-backed slice for this workstream and prove it with the listed proof checks.",
+        limit=420,
     )
 
 
@@ -423,7 +424,7 @@ def _short_contract_text(value: Any, *, limit: int = 180) -> str:
         value,
         limit=limit,
         strip_edges=" .",
-        dangling_words={"a", "an", "and", "for", "from", "of", "or", "the", "to", "with"},
+        dangling_words=_PREVIEW_DANGLING_WORDS,
     ).strip(" ,;:")
 
 
@@ -462,8 +463,18 @@ def _validation_items(*, row: Mapping[str, Any], wave: Mapping[str, Any]) -> tup
 
 
 def _preview_safe_validation_item(value: Any) -> str:
-    text = _short_contract_text(value, limit=220)
-    return _trim_preview_terminal_fragment(normalize_cover_article_language(text))
+    return _preview_safe_fragment(normalize_cover_article_language(value), limit=220)
+
+
+def _preview_safe_fragment(value: Any, *, limit: int) -> str:
+    text = clip_text_at_word_boundary(
+        value,
+        limit=limit,
+        strip_edges=" .",
+        dangling_words=_PREVIEW_DANGLING_WORDS,
+        rstrip_chars=" ,;:.",
+    )
+    return _trim_preview_terminal_fragment(text).strip(" ,;:")
 
 
 def _trim_preview_terminal_fragment(value: str) -> str:

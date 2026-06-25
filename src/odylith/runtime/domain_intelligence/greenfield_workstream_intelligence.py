@@ -213,7 +213,7 @@ def build_workstream_domain_intelligence(
             f"{evidence_record} is the source of truth for review readiness and release confidence.",
         ],
         "evidence_model": [
-            f"Review evidence belongs in {evidence_record}; validation gates stay separate from narrative claims.",
+            f"Review evidence belongs in {evidence_record}; proof checks stay separate from narrative claims.",
             f"{evidence_record} must show the accepted input, changed state, validation result, decision, and visible outcome.",
         ],
         "decisions": [

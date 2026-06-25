@@ -106,6 +106,7 @@ CONFIRMED_DANGLING_WORDS = {
     "required",
     "the",
     "to",
+    "until",
     "when",
     "while",
     "with",

@@ -999,6 +999,28 @@ def test_next_steps_preview_trims_clipped_terminal_fragments() -> None:
     assert greenfield_experience._trim_preview_terminal_fragment(  # noqa: SLF001
         "The appeal status is final"
     ) == "The appeal status is final"
+    assert greenfield_experience._first_slice_text(  # noqa: SLF001
+        {"recommended_first_slice": "Do not expand beyond recording first entry and logging again until"}
+    ) == "Do not expand beyond recording first entry and logging again"
+
+
+def test_greenfield_package_repair_cleans_operator_next_step_dangling_tail(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    next_steps = _next_steps_preview()
+    next_steps["implementation_prompt"] = (
+        "After project-first scope is accepted, start B-002: Do not expand beyond referral triage, "
+        "guardian consent, and payer-ready service proof until."
+    )
+    package = _package_for_quality_report(proposal, next_steps_preview=next_steps)
+
+    initial = build_greenfield_package_report(package)
+    repaired = repair_greenfield_package_until_clean(package)
+
+    assert not initial.passed
+    assert repaired.report.passed
+    rendered = json.dumps(repaired.package.next_steps_preview, sort_keys=True)
+    assert "proof until" not in rendered
+    assert "payer-ready service proof." in rendered
 
 
 def test_greenfield_package_gate_rejects_clipped_terminal_article(tmp_path: Path) -> None:

@@ -10,8 +10,10 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIRMED_DANGLING_WORDS
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
+from odylith.runtime.domain_intelligence.greenfield_text import strip_dangling_word_tail
 
 
 _DEFAULT_PACKAGE_REPAIR_PASSES = 4
@@ -150,7 +152,22 @@ def _repair_public_copy_scalar(value: str) -> str:
         text,
         flags=re.IGNORECASE,
     )
-    return text
+    return _repair_dangling_tail(text)
+
+
+def _repair_dangling_tail(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return text
+    terminal = text[-1] if text[-1] in ".!?" else ""
+    repaired = strip_dangling_word_tail(
+        text,
+        dangling_words=CONFIRMED_DANGLING_WORDS,
+        rstrip_chars=" ,;:.",
+    )
+    if repaired and terminal and repaired[-1] not in ".!?":
+        return f"{repaired}{terminal}"
+    return repaired
 
 
 def _repair_responsibility_verb_pairs(value: str) -> str:
