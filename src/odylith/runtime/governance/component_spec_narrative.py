@@ -735,7 +735,7 @@ def _implementation_narrative(
     parts = [opening]
     if first_workstream:
         title = f" ({first_workstream_title})" if first_workstream_title else ""
-        parts.append(f"Use {first_workstream}{title} as the implementation anchor for {label}.")
+        parts.append(f"Implementation anchor for {label}: {first_workstream}{title}.")
     if first_slice:
         parts.append(first_slice)
     if wave_label:

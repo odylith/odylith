@@ -831,6 +831,44 @@ def test_greenfield_component_spec_renderer_collapses_adjacent_duplicate_terms()
     ) == ()
 
 
+def test_greenfield_component_spec_renderer_uses_neutral_implementation_anchor() -> None:
+    spec = build_narrative_component_spec(
+        component_id="review-workspace",
+        label="Review Workspace",
+        path="src/example/review_workspace",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-003",),
+        implementation_handoff={
+            "workstream_id": "B-003",
+            "workstream_title": "Keep Consequence Record Clear After Review Workspace Changes It",
+            "first_slice": "When Review Workspace receives missing or invalid input, keep the result reviewable.",
+            "release_selector": "0.0.1",
+            "wave_label": "Review state and evidence boundary",
+        },
+        component_contract={
+            "owned_state": "user-facing confirmation, review note, and failure reason ledger",
+            "accepted_inputs": "profile choice, missing input, and correction context",
+            "produced_outputs": "user-facing confirmation, review note, blocked-state detail, and next-step context",
+            "states_or_transitions": "accepted, blocked, corrected, completed, and handed-off",
+            "upstream_truth": "Intake Register Service",
+            "downstream_consumers": "Proof Ledger",
+            "outside_boundary": "adjacent component state, original input facts, and broader rollout decisions",
+            "local_proof": [
+                "Successful path evidence for Review Workspace: user-facing confirmation, required inputs, visible result, and reviewer explanation.",
+                "Blocked input evidence for Review Workspace: missing or malformed input, stops before a trusted result, and recovery explanation.",
+                "Replay evidence for Review Workspace: actor, input facts, status, and explanation.",
+            ],
+            "unique_failure": "Review Workspace can mislead users if user-facing confirmation is missing or stale.",
+        },
+    )
+
+    assert "Use B-003" not in spec
+    assert "Implementation anchor for Review Workspace: B-003" in spec
+    assert generated_public_copy_issues("Registry component spec `Review Workspace`", spec) == ()
+
+
 def test_greenfield_component_spec_renderer_cleans_guardrail_verb_phrases() -> None:
     contract = derive_component_semantic_contract(
         {
