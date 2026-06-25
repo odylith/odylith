@@ -509,15 +509,20 @@ def _package_repetition_issues(package: Any, artifacts: list[RenderedArtifact]) 
             key = _sentence_key(chunk)
             if key and key not in allowed and not _allowed_structured_repetition_key(key):
                 occurrences.setdefault(key, []).append((artifact, normalize_string(chunk)))
+        if artifact.kind != "mermaid":
+            for chunk in _markdown_section_body_chunks(artifact.text):
+                key = _repetition_key(chunk)
+                if key and key not in allowed and not _allowed_structured_repetition_key(key):
+                    occurrences.setdefault(key, []).append((artifact, normalize_string(chunk)))
     issues: list[str] = []
     for key, rows in occurrences.items():
         identities = sorted({artifact.identity for artifact, _chunk in rows})
-        if len(identities) < 3:
+        if len(identities) < 3 and not (len(identities) == 1 and len(rows) >= 4):
             continue
         sample = rows[0][1]
         issues.append(
-            "greenfield rendered package repeats a noncanonical sentence across "
-            f"{len(identities)} artifacts: `{_clip(sample, 140)}`"
+            "greenfield rendered package repeats noncanonical prose across "
+            f"{len(identities)} artifact(s) and {len(rows)} occurrence(s): `{_clip(sample, 140)}`"
         )
     return issues
 
@@ -629,7 +634,6 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
     intent = _as_mapping(proposal.get("intent"))
     semantic_model = _as_mapping(proposal.get("semantic_model"))
     first_path = _as_mapping(semantic_model.get("first_path_contract"))
-    ontology = _as_mapping(semantic_model.get("domain_ontology"))
     component_rows = proposal.get("components", [])
     component_sequence = (
         component_rows
@@ -643,16 +647,8 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
     ]
     values = [
         intent.get("title"),
-        intent.get("first_path"),
-        intent.get("proof_boundary"),
         _actor_label_summary(text_values(intent.get("human_actors"))),
-        first_path.get("raw_path"),
-        first_path.get("capability"),
-        first_path.get("visible_result"),
-        *_first_path_event_values(first_path.get("events")),
-        ontology.get("proof_boundary"),
-        *text_values(proposal.get("assumptions")),
-        *_open_question_repetition_values(proposal.get("open_questions")),
+        *_semantic_label_repetition_values(first_path),
         *[
             f"{component.get('component_id', '')} {component.get('label', '')}"
             for component in components
@@ -667,42 +663,24 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
     keys: set[str] = set()
     for value in values:
         for chunk in _repetition_chunks(str(value or "")):
-            key = _sentence_key(chunk)
+            key = _repetition_key(chunk)
             if key:
                 keys.add(key)
     return keys
 
 
-def _first_path_event_values(value: Any) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        return []
-    rows: list[str] = []
-    for item in value:
-        if not isinstance(item, Mapping):
-            continue
-        for key in ("text", "mutation", "target_entity"):
-            text = normalize_string(item.get(key))
-            if text:
-                rows.append(text)
-    return rows
-
-
-def _open_question_repetition_values(value: Any) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        return text_values(value)
-    rows: list[str] = []
-    for item in value:
-        if isinstance(item, Mapping):
-            question = normalize_string(item.get("question") or item.get("prompt"))
-            impact = normalize_string(item.get("impact"))
-            if question and impact:
-                question_text = question if question[-1:] in {".", "?", "!"} else f"{question}."
-                rows.append(f"{question_text} Impact: {impact.rstrip(' .')}.")
-            elif question:
-                rows.append(question)
-            continue
-        rows.extend(text_values(item))
-    return rows
+def _semantic_label_repetition_values(first_path: Mapping[str, Any]) -> list[str]:
+    values = [
+        normalize_string(first_path.get("capability")),
+        normalize_string(first_path.get("visible_result")),
+    ]
+    events = first_path.get("events")
+    if isinstance(events, Sequence) and not isinstance(events, (str, bytes, bytearray)):
+        for item in events:
+            if not isinstance(item, Mapping):
+                continue
+            values.append(normalize_string(item.get("target_entity")))
+    return [value for value in values if value and len(_word_tokens(value)) <= 10]
 
 
 def _actor_label_summary(values: list[str]) -> str:
@@ -807,6 +785,27 @@ def _repetition_chunks(value: str) -> list[str]:
     return chunks
 
 
+def _markdown_section_body_chunks(value: str) -> list[str]:
+    chunks: list[str] = []
+    section = ""
+    for raw_line in str(value or "").splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if line.startswith("## "):
+            section = line.lstrip("#").strip()
+            continue
+        if not section or line.startswith("#") or line.startswith("|") or line.startswith("```"):
+            continue
+        body = _markdown_bullet_body(line) or line.strip(" -*")
+        body = normalize_string(body).strip()
+        if not body:
+            continue
+        chunks.append(f"{section}: {body}")
+        section = ""
+    return chunks
+
+
 def _mermaid_label_chunks(value: str) -> list[str]:
     labels: list[str] = []
     for raw_line in str(value or "").splitlines():
@@ -882,7 +881,19 @@ def _skip_narrative_line(line: str) -> bool:
         return True
     if line.endswith(":") and "_" in line:
         return True
+    if _looks_like_governance_metadata_line(line):
+        return True
     return False
+
+
+def _looks_like_governance_metadata_line(value: str) -> bool:
+    key, separator, _body = str(value or "").partition(":")
+    if not separator:
+        return False
+    token = key.strip()
+    if not token or len(token) > 48:
+        return False
+    return all(char.islower() or char.isdigit() or char == "_" for char in token)
 
 
 def _skip_mermaid_line(line: str) -> bool:
@@ -1041,6 +1052,17 @@ def _sentence_key(value: str) -> str:
         return ""
     key = " ".join(tokens)
     return key if len(key) >= _REPETITION_MIN_CHARS else ""
+
+
+def _repetition_key(value: str) -> str:
+    sentence = _sentence_key(value)
+    if sentence:
+        return sentence
+    tokens = [token.casefold() for token in _word_tokens(value)]
+    if len(tokens) < 5:
+        return ""
+    key = " ".join(tokens)
+    return key if len(key) >= 36 else ""
 
 
 def _has_doubled_sentence_punctuation(value: str) -> bool:

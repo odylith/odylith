@@ -472,7 +472,7 @@ def _transition_sentence(*, label: str, view: ComponentNarrativeView, text: str)
             return f"The lifecycle for {label} includes {transition_summary}."
         return (
             f"The lifecycle for {label} should make accepted, blocked, corrected, completed, "
-            "and handed-off states explicit before implementation expands. Sent, received, declined, and scheduled status handoffs stay visible."
+            f"and handed-off states explicit before implementation expands. {label} keeps sent, received, declined, and scheduled handoffs visible."
         )
     if view.concrete_transition_items or view.material_transition_count >= 4:
         return f"The important lifecycle for {label} is {text}."

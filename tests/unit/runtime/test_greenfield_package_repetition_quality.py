@@ -25,3 +25,23 @@ def test_repetition_gate_allows_shared_release_wave_labels() -> None:
     issues = greenfield_rendered_package_quality_issues(package)
 
     assert "repeats a noncanonical sentence" not in "\n".join(issues)
+
+
+def test_repetition_gate_rejects_repeated_markdown_section_boilerplate() -> None:
+    package = SimpleNamespace(
+        proposal={},
+        backlog_result={
+            "idea_files": {
+                f"B-{index:03d}.md": "## Migration/Compatibility\n- No migration impact recorded yet.\n"
+                for index in range(1, 4)
+            }
+        },
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_preview={},
+        next_steps_preview={},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" in "\n".join(issues)

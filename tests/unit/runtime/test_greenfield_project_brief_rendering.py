@@ -5,6 +5,7 @@ from pathlib import Path
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_project_brief import normalize_project_brief
@@ -36,6 +37,26 @@ Next step
         release_selector="0.0.1",
         confirmed_intent=intent,
     )
+
+
+def test_confirmed_project_brief_checkpoint_done_when_text_is_checkpoint_specific() -> None:
+    brief = confirmed_project_brief(
+        label="Shelter Capacity Router",
+        prompt="Create a shelter capacity router.",
+        release="0.0.1",
+        state_object="Shelter intake status record",
+        evidence_record="Resident routing proof record",
+        product_story="City staff need one place to route residents to available shelter capacity.",
+        first_path="A staff member records capacity, blocks an unsafe intake, and routes a family to an available shelter.",
+        proof_boundary="Release 0.0.1 proves one reviewable shelter routing handoff with replay evidence.",
+        human_actors=["City emergency staff", "Shelter coordinator"],
+        internal_systems=["Capacity intake service", "Routing review workspace", "Proof ledger"],
+    )
+
+    done_when = [row["done_when"] for row in brief["pre_coding_checkpoints"]]
+
+    assert len(done_when) == len(set(done_when))
+    assert "The answer is visible in the accepted proposal" not in json.dumps(brief)
 
 
 def test_project_brief_rendering_stays_in_project_brief_owner() -> None:

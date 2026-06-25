@@ -179,6 +179,8 @@ def _force_bad_rendered_specs(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:
     rows = [row for row in proposal.get("backlog", []) if isinstance(row, dict)]
+    first_path = str(proposal["intent"]["first_path"])
+    proof_boundary = str(proposal["intent"]["proof_boundary"])
     created = [
         {
             "idea_id": f"B-{index:03d}",
@@ -190,12 +192,28 @@ def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:
     return {
         "created": created,
         "idea_files": {
-            f"/tmp/test-{index}.md": f"# {row['title']}\n\n{proposal['intent']['first_path']}\n\n{proposal['intent']['proof_boundary']}\n"
+            f"/tmp/test-{index}.md": (
+                f"# {row['title']}\n\n"
+                f"{_fixture_first_path_line(row['title'], first_path, index=index)}\n\n"
+                f"{_fixture_proof_line(row['title'], proof_boundary, index=index, total=len(created))}\n"
+            )
             for index, row in enumerate(created, start=1)
         },
         "backlog_index_text": "\n".join(str(row["title"]) for row in created),
         "validation_gate": {"status": "passed"},
     }
+
+
+def _fixture_first_path_line(title: object, first_path: str, *, index: int) -> str:
+    if index == 1:
+        return f"Accepted first path: {first_path}"
+    return f"{title} supports the accepted first path through its scoped state, handoff, or evidence responsibility."
+
+
+def _fixture_proof_line(title: object, proof_boundary: str, *, index: int, total: int) -> str:
+    if index == total:
+        return f"Release proof for {title}: {proof_boundary}"
+    return f"{title} contributes evidence toward the accepted proof boundary without restating every release condition."
 
 
 def _prewrite_component_preview(proposal: dict[str, object]) -> tuple[dict[str, object], ...]:
@@ -1133,7 +1151,7 @@ def test_greenfield_package_gate_rejects_repeated_noncanonical_rendered_sentence
     )
 
     assert not report.passed
-    assert "repeats a noncanonical sentence" in "\n".join(report.issues)
+    assert "repeats noncanonical prose" in "\n".join(report.issues)
 
 
 def test_greenfield_package_repetition_allows_component_labels_as_identifiers(tmp_path: Path) -> None:
@@ -1152,7 +1170,7 @@ def test_greenfield_package_repetition_allows_component_labels_as_identifiers(tm
     assert "repeats a noncanonical sentence" not in "\n".join(issues)
 
 
-def test_greenfield_package_repetition_allows_semver_proof_boundary_source_text(tmp_path: Path) -> None:
+def test_greenfield_package_repetition_rejects_repeated_proof_boundary_source_text(tmp_path: Path) -> None:
     repeated = (
         "Version 0.0.1 is proven when a record moves across its full lifecycle, appears as a scheduled item, "
         "shows a live status with an event timeline, and settles into a finished result that remains browsable."
@@ -1173,7 +1191,7 @@ def test_greenfield_package_repetition_allows_semver_proof_boundary_source_text(
 
     issues = greenfield_rendered_package_quality_issues(package)
 
-    assert "repeats a noncanonical sentence" not in "\n".join(issues)
+    assert "repeats noncanonical prose" in "\n".join(issues)
 
 
 def test_greenfield_package_gate_rejects_staged_paths_in_accepted_project_preview(tmp_path: Path) -> None:

@@ -640,10 +640,20 @@ def _state_reference_text(state_object: str, *, state_label: str) -> str:
 
 
 def _checkpoint(name: str, question: str) -> dict[str, str]:
+    done_when_by_name = {
+        "product story accepted": "Done when the accepted brief names the user, problem, first path, and deferred scope in one readable story.",
+        "state ownership accepted": "Done when the state owner, version history, and review responsibility are explicit enough to plan implementation.",
+        "evidence path accepted": "Done when reviewers can tell which evidence proves the result without relying on implementation prose.",
+        "release proof accepted": "Done when release gates block promotion unless the promised result, replay evidence, and review evidence are present.",
+    }
+    done_when = done_when_by_name.get(
+        name.casefold(),
+        "Done when the accepted proposal gives this checkpoint a named owner, decision, and verification target.",
+    )
     return {
         "checkpoint": name,
         "operator_question": question,
-        "done_when": "The answer is visible in the accepted proposal and reflected in validation gates.",
+        "done_when": done_when,
     }
 
 

@@ -369,6 +369,11 @@ def _patch_sections(
             "Candidate interfaces are proposal-level only until the first source-backed plan defines runtime contracts.",
         ]
     )
+    sections["Migration/Compatibility"] = _bullets(
+        _section_items(row.get("migration_compatibility", []))
+        or _section_items(row.get("compatibility", []))
+        or _migration_compatibility_lines(row=row, scope_ref=scope_ref)
+    )
     release_plan = proposal.get("release_plan", {}) if isinstance(proposal.get("release_plan"), Mapping) else {}
     sections["Rollout"] = _bullets(
         _scoped_trace_rows(focus, _section_items(row.get("rollout", [])))
@@ -569,6 +574,26 @@ def _why_now_text(*, row: Mapping[str, Any], focus: str, first_slice: str) -> st
     if not opportunity:
         return ""
     return f"Do this now because the opportunity is ready to turn into reviewable scope: {opportunity}"
+
+
+def _migration_compatibility_lines(*, row: Mapping[str, Any], scope_ref: str) -> list[str]:
+    scope = _clean(scope_ref) or _workstream_focus(row)
+    role = _workstream_role(row)
+    if role == "release":
+        return [
+            f"{scope}: keep release targeting additive until a technical plan names runtime, data, or operator migration work.",
+        ]
+    if role == "proof":
+        return [
+            f"{scope}: preserve accepted evidence and replay history; any schema or retention change needs a reviewed migration plan.",
+        ]
+    if role == "review":
+        return [
+            f"{scope}: keep review and handoff records backward-readable while correction or escalation rules evolve.",
+        ]
+    return [
+        f"{scope}: keep first-path state changes additive and versioned until implementation names a concrete migration boundary.",
+    ]
 
 
 def _scoped_question_lines(values: Sequence[str], *, focus: str) -> list[str]:
