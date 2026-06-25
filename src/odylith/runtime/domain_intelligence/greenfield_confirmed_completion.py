@@ -707,21 +707,21 @@ def _security_posture_text(label: str) -> str:
     if role == "proof":
         return (
             f"Security proof for {owner}: evidence access must stay auditable. "
-            f"{owner} keeps privacy policy, accessibility, audit history, and safety checks visible before release."
+            f"Before release, {owner} must show who accessed its proof, what evidence made replay safe, and which safety check passed."
         )
     if role == "review":
         return (
             f"Review security for {owner}: only authorized actors should change the visible outcome. "
-            f"{owner} keeps privacy policy, accessibility, correction history, and access decisions reviewable before release."
+            f"{owner} must keep correction history and access decisions tied to each visible outcome without exposing private context."
         )
     if role == "release":
         return (
             f"Release security for {owner}: promotion waits for access and privacy proof. "
-            f"{owner} keeps accessibility, audit history, retention policy, and safety checks visible before release."
+            f"{owner} promotion evidence must show accessibility, retention, audit history, and privacy checks together before release."
         )
     return (
         f"Input security for {owner}: accepted facts and recovery history must be protected. "
-        f"{owner} keeps privacy policy, accessibility, access control, and audit evidence visible before release."
+        f"{owner} must keep accepted facts, access control, recovery history, and audit evidence traceable without exposing private context."
     )
 
 
