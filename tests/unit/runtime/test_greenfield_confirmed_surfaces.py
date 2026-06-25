@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_name
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import expand_internal_system_rows
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.proposal_validation import validated_mermaid_source
 
 
 def test_component_proof_phrases_do_not_echo_short_component_kind_labels() -> None:
@@ -109,6 +110,55 @@ def test_state_object_descriptor_avoids_adjacent_object_object_copy() -> None:
     assert "Tracked state<br/>Object Loan Condition Case" in rendered
     assert "state object: object" not in rendered.casefold()
     assert "state object<br/>object" not in rendered.casefold()
+
+
+def test_confirmed_diagrams_wrap_long_host_derived_flowchart_labels() -> None:
+    rows = confirmed_diagrams(
+        label="Multi Party Security Disclosure Council",
+        diagram_slugs={
+            "context": "security-context",
+            "sequence": "security-sequence",
+            "state_evidence": "security-state-evidence",
+            "component_boundaries": "security-component-boundaries",
+            "ownership": "security-ownership",
+            "proof_review": "security-proof-review",
+        },
+        components=[
+            {
+                "component_id": "coordinated-disclosure-intake",
+                "label": "Coordinated Security Disclosure Intake and Cross Organization Triage Service",
+                "active_in_release": True,
+            },
+            {
+                "component_id": "embargo-resolution-evidence",
+                "label": "Embargo Resolution Evidence Custody and Reviewer Signoff Ledger",
+                "active_in_release": True,
+            },
+            {
+                "component_id": "publication-decision-control",
+                "label": "Public Advisory Publication Decision Control and Partner Notification Desk",
+                "active_in_release": True,
+            },
+        ],
+        state_object=(
+            "Coordinated disclosure case state for vulnerability intake, embargo decisioning, partner review, "
+            "and public advisory readiness"
+        ),
+        evidence_record=(
+            "Embargo resolution evidence record linking finder report, affected partner response, reviewer decision, "
+            "and publication approval"
+        ),
+        proof_boundary=(
+            "A release is acceptable only when security, legal, partner, and publication reviewers can trace the "
+            "accepted disclosure path without losing evidence custody."
+        ),
+        human_actors=["Disclosure coordinator", "Security reviewer"],
+        external_systems=["External finder report with affected partner references"],
+        non_goals=["Automated personalized notification campaigns remain outside the accepted first release."],
+    )
+
+    for row in rows:
+        validated_mermaid_source(row)
 
 
 def test_confirmed_greenfield_diagrams_use_compact_atlas_narration() -> None:

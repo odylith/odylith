@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label as wrapped_flow_label
 
 
 def confirmed_diagrams(
@@ -325,17 +326,17 @@ def _state_evidence_mermaid(
     first_owner = diagram_text.component_label(components, 0, fallback="First path owner")
     evidence_owner = _component_label_for_text(evidence_record, components=components) or diagram_text.component_label(components, min(2, max(0, len(components) - 1)), fallback="Proof Review Component")
     review_owner = diagram_text.component_label(components, len(components) - 1, fallback="Review owner")
-    actor_label = diagram_text.short_label(actors[0] if actors else diagram_text.actor_phrase(actors, label=label))
+    actor_label = _diagram_label(actors[0] if actors else diagram_text.actor_phrase(actors, label=label), limit=72, fallback="Actor")
     proof_label = diagram_text.semantic_proof_checkpoint(semantic_model) or diagram_text.release_proof_label(proof_boundary) or "source-backed release check"
     state_descriptor = state_object_descriptor(state_object)
     lines = [
         "flowchart LR",
-        f'  action["First action<br/>{actor_label}"] --> owner1["{diagram_text.escape_label(first_owner)}"]',
-        f'  owner1 --> domain_state["{state_descriptor}<br/>{diagram_text.escape_label(diagram_text.trim(state_object, 62))}"]',
-        f'  domain_state --> owner2["{diagram_text.escape_label(evidence_owner)}"]',
-        f'  owner2 --> evidence_record["Evidence record<br/>{diagram_text.escape_label(diagram_text.trim(evidence_record, 62))}"]',
-        f'  evidence_record --> owner3["{diagram_text.escape_label(review_owner)}"]',
-        f'  owner3 --> review["Proof check<br/>{diagram_text.escape_label(diagram_text.trim(proof_label, 72))}"]',
+        f'  action["First action<br/>{actor_label}"] --> owner1["{_diagram_label(first_owner, limit=96, fallback="First path owner")}"]',
+        f'  owner1 --> domain_state["{state_descriptor}<br/>{_diagram_label(state_object, limit=96, fallback="Tracked state")}"]',
+        f'  domain_state --> owner2["{_diagram_label(evidence_owner, limit=96, fallback="Evidence owner")}"]',
+        f'  owner2 --> evidence_record["Evidence record<br/>{_diagram_label(evidence_record, limit=96, fallback="Evidence record")}"]',
+        f'  evidence_record --> owner3["{_diagram_label(review_owner, limit=96, fallback="Review owner")}"]',
+        f'  owner3 --> review["Proof check<br/>{_diagram_label(proof_label, limit=120, fallback="Source-backed release check")}"]',
         '  review --> correction["Blocked or corrected<br/>path stays visible"]',
         "  classDef personActionStyle fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
         "  classDef owner fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
@@ -376,10 +377,10 @@ def _component_boundary_mermaid(
         for component in components
         if str(component.get("release_scope", "")).strip() in {"deferred", "out_of_scope", "external"}
     ][:3]
-    lines = ["flowchart TB", f'  subgraph product["{diagram_text.escape_label(diagram_text.trim(label, 70))}<br/>release boundary"]']
+    lines = ["flowchart TB", f'  subgraph product["{_diagram_label(label, limit=96, fallback="Product")}<br/>release boundary"]']
     for index, component in enumerate(selected_components, start=1):
         node = _node_id("boundary", index)
-        lines.append(f'    {node}["{diagram_text.escape_label(diagram_text.trim(str(component.get("label", "")) or f"Component {index}", 64))}"]')
+        lines.append(f'    {node}["{_diagram_label(str(component.get("label", "")) or f"Component {index}", limit=96, fallback=f"Component {index}")}"]')
         if index > 1:
             lines.append(f"    {_node_id('boundary', index - 1)} --> {node}")
     lines.append("  end")
@@ -388,7 +389,7 @@ def _component_boundary_mermaid(
         node = _node_id("input", index)
         target = _boundary_node_for_text(external, selected_components=selected_components, fallback=first_node)
         external_label = boundary_clause_item(external, limit=80) or external
-        lines.append(f'  {node}["External input<br/>{diagram_text.short_label(external_label)}"] --> {target}')
+        lines.append(f'  {node}["External input<br/>{_diagram_label(external_label, limit=96, fallback="External input")}"] --> {target}')
     deferred_items = [
         *(str(component.get("label", "")).strip() for component in deferred_components if str(component.get("label", "")).strip()),
         *non_goals,
@@ -397,7 +398,7 @@ def _component_boundary_mermaid(
         node = _node_id("deferred", index)
         target = _boundary_node_for_text(item, selected_components=selected_components, fallback=first_node)
         deferred_label = diagram_text.deferred_scope_label(item, label=label)
-        lines.append(f'  {node}["Deferred scope<br/>{diagram_text.escape_label(diagram_text.trim(deferred_label, 82))}"] -. later .-> {target}')
+        lines.append(f'  {node}["Deferred scope<br/>{_diagram_label(deferred_label, limit=112, fallback="Beyond accepted first path")}"] -. later .-> {target}')
     lines.extend(
         [
             "  classDef product fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;",
@@ -430,10 +431,10 @@ def _proof_review_mermaid(
     evidence_label = diagram_text.proof_evidence_label(components=components, fallback=evidence_record)
     lines = [
         "flowchart LR",
-        f'  outcome["Visible result<br/>{diagram_text.escape_label(diagram_text.trim(outcome_label, 72))}"] --> domain_state',
-        f'  domain_state["Domain state<br/>{diagram_text.escape_label(diagram_text.trim(state_object, 58))}"] --> evidence_record',
-        f'  evidence_record["Evidence record<br/>{diagram_text.escape_label(diagram_text.trim(evidence_label, 72))}"] --> proof_gate',
-        f'  proof_gate["Proof checkpoint<br/>{diagram_text.escape_label(proof_label)}"] --> release_decision',
+        f'  outcome["Visible result<br/>{_diagram_label(outcome_label, limit=120, fallback="Promised outcome")}"] --> domain_state',
+        f'  domain_state["Domain state<br/>{_diagram_label(state_object, limit=96, fallback="Domain state")}"] --> evidence_record',
+        f'  evidence_record["Evidence record<br/>{_diagram_label(evidence_label, limit=120, fallback="Evidence record")}"] --> proof_gate',
+        f'  proof_gate["Proof checkpoint<br/>{_diagram_label(proof_label, limit=128, fallback="Proof checkpoint")}"] --> release_decision',
         '  release_decision["Release decision<br/>accept, revise, or block"] --> release_claim',
         '  release_claim["Release claim<br/>matches the promised outcome"]',
         "  classDef outcomeClass fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
@@ -447,7 +448,7 @@ def _proof_review_mermaid(
     ]
     if non_goals:
         deferred = diagram_text.deferred_scope_label(non_goals[0], fallback="beyond accepted first path")
-        lines.insert(7, f'  deferred["Outside release<br/>{diagram_text.escape_label(deferred)}"] -. not claimed .-> release_decision')
+        lines.insert(7, f'  deferred["Outside release<br/>{_diagram_label(deferred, limit=112, fallback="Beyond accepted first path")}"] -. not claimed .-> release_decision')
         lines.extend(
             [
                 "  classDef laterScopeStyle fill:#FEF2F2,stroke:#FCA5A5,color:#17233A,stroke-width:1px;",
@@ -483,6 +484,17 @@ def _adapter_node(components: list[dict[str, Any]]) -> str:
 def _node_id(prefix: str, index: int) -> str:
     return f"{prefix}{index}"
 
+
+def _diagram_label(
+    value: str,
+    *,
+    limit: int,
+    fallback: str,
+    width: int = 30,
+    max_lines: int = 4,
+) -> str:
+    text = str(value or "").strip() or fallback
+    return wrapped_flow_label(text, width=width, max_lines=max_lines, limit=limit) or diagram_text.escape_label(fallback)
 
 
 __all__ = ["confirmed_diagrams"]

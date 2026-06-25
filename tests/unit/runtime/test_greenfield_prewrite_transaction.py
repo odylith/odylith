@@ -404,7 +404,7 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_
     assert "body stats plus logged activity, energy-out number, and burn estimation are calculated" not in component_text
     assert "If something is missing" not in rendered_text
     assert ", Whether wearable" not in rendered_text
-    assert "Live wearable sync scope remains deferred" in rendered_text
+    assert "Live wearable sync scope<br/>remains deferred" in rendered_text
     assert '?".' not in rendered_text
     assert "while Activity Log and Profile Store ownership" not in component_text
     assert " outside boundary" not in component_text
