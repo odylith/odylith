@@ -595,7 +595,7 @@ def _upstream_handoff_separation_sentence(*, label: str, upstream: str, input_fo
     subject = _primary_boundary_subject(input_focus)
     if not owner or not subject or _has_no_source_dependency(upstream):
         return ""
-    return f"It can consume {subject} for {label} without owning or rewriting state owned by {owner}."
+    return f"It can consume {subject} for {label} while leaving state ownership with {owner}."
 
 
 def _downstream_handoff_separation_sentence(*, label: str, downstream: str, output_focus: str) -> str:
@@ -605,7 +605,7 @@ def _downstream_handoff_separation_sentence(*, label: str, downstream: str, outp
         return ""
     if consumer.casefold() in {"release review", "the next product boundary and release proof review"}:
         return ""
-    return f"{consumer} can consume {subject} without owning or rewriting {label} state."
+    return f"{consumer} can consume {subject} while {label} keeps ownership of its state."
 
 
 def _primary_boundary_subject(value: str) -> str:

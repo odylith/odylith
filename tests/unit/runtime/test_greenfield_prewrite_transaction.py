@@ -391,7 +391,10 @@ def test_greenfield_prewrite_package_passes_calorie_burn_quality_regression(tmp_
     assert "while Activity Log and Profile Store ownership" not in component_text
     assert " outside boundary" not in component_text
     assert "ownership over Activity Log and Profile Store local state" not in component_text
-    assert "Activity Log and Profile Store can consume next-day adjustment recommendation without owning or rewriting Recommendation Engine state" in component_text
+    assert (
+        "Activity Log and Profile Store can consume next-day adjustment recommendation while Recommendation Engine keeps ownership of its state"
+        in component_text
+    )
     assert "## Proposed Solution\nBurn Estimation Engine should support" not in idea_text
     assert "Start with the smallest implementation slice" not in idea_text
     assert "\n- for " not in rendered_text

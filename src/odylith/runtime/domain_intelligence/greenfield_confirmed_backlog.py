@@ -291,7 +291,7 @@ def confirmed_backlog_rows(
     outcome_summary = backlog_text.sentence_fragment(clauses.visible_result) or backlog_text.first_path_outcome(first_path_summary, proof_boundary=proof_boundary)
     outcome_action = _outcome_action_phrase(outcome_summary)
     proof_focus = backlog_text.proof_focus_phrase(proof_summary, fallback="release decision")
-    state_responsibility = _state_responsibility_label(state_label)
+    state_responsibility = backlog_actions.state_responsibility_label(state_label)
     dependency_outcome = outcome_summary or "the promised first-path result"
     first_path_action = backlog_text.capability_action_clause(primary_user_action or first_path_entry_text or first_path_capability)
     first_path_proof_capability = _dedupe_capability_phrase(
@@ -317,6 +317,11 @@ def confirmed_backlog_rows(
     downstream_subject = backlog_text.problem_actor_subject(downstream_actor, fallback="the next participant") if downstream_actor else "The next participant"
     outcome_recipient = downstream_subject if downstream_actor else metric_actor
     recipient_phrase = backlog_actions.recipient_phrase(outcome_recipient)
+    actor_owned_outcome_event = backlog_actions.actor_owned_outcome_event(
+        outcome=outcome_summary,
+        outcome_action=outcome_action,
+        known_actors=first_release_human_actors,
+    )
     follow_up_subject = downstream_subject if downstream_actor else metric_actor
     follow_up_inline = backlog_text.inline_actor_subject(follow_up_subject)
     metric_actor_inline = backlog_text.inline_actor_subject(metric_actor)
@@ -334,16 +339,20 @@ def confirmed_backlog_rows(
         outcome=outcome_summary,
         fallback=problem_summary,
     )
-    parent_opportunity = _parent_opportunity_sentence(
+    parent_opportunity = backlog_actions.parent_opportunity_sentence(
         capability=readable_first_path_proof_capability,
+        outcome=outcome_summary,
         outcome_action=outcome_action,
+        outcome_event=actor_owned_outcome_event,
         state_label=state_label,
         recipient=recipient_phrase,
     )
-    parent_view = _parent_product_view_sentence(
+    parent_view = backlog_actions.parent_product_view_sentence(
         label=label,
         capability=readable_first_path_proof_capability,
+        outcome=outcome_summary,
         outcome_action=outcome_action,
+        outcome_event=actor_owned_outcome_event,
         state_label=state_label,
         recipient=recipient_phrase,
     )
@@ -356,9 +365,16 @@ def confirmed_backlog_rows(
         include_visible_results=True,
     )
     first_slice_action = readable_first_slice_capability or first_slice_capability
-    outcome_already_covered = backlog_text.result_terms_covered(outcome_summary, first_slice_action)
+    outcome_already_covered = backlog_text.result_terms_covered(
+        outcome_summary, first_slice_action
+    ) or backlog_text.result_terms_covered(outcome_action, first_slice_action)
     if outcome_summary and not outcome_already_covered and not backlog_text.shares_product_terms(first_slice_action, outcome_summary):
-        first_slice = f"Prove one first-release path: {first_slice_action}, then let {recipient_phrase} {outcome_action}."
+        outcome_followup = (
+            f"show that {actor_owned_outcome_event}"
+            if actor_owned_outcome_event
+            else f"let {recipient_phrase} {outcome_action}"
+        )
+        first_slice = f"Prove one first-release path: {first_slice_action}, then {outcome_followup}."
     else:
         first_slice = f"Prove one first-release path: {first_slice_action}."
     first_slice = backlog_actions.dedupe_repeated_visible_result_tail(first_slice)
@@ -381,6 +397,7 @@ def confirmed_backlog_rows(
         outcome=outcome_summary,
         outcome_action=outcome_action,
         recipient=outcome_recipient,
+        known_actors=first_release_human_actors,
     )
     workflow_missing_input_tail = backlog_actions.missing_input_tail(
         action=workflow_action,
@@ -392,6 +409,23 @@ def confirmed_backlog_rows(
         outcome=outcome_summary,
         outcome_action=outcome_action,
         recipient=outcome_recipient,
+        known_actors=first_release_human_actors,
+    )
+    workflow_goal_phrase = (
+        f"show that {actor_owned_outcome_event}"
+        if actor_owned_outcome_event
+        else f"let them {outcome_action}"
+    )
+    workflow_followup_clause = (
+        f"the product shows that {actor_owned_outcome_event}"
+        if actor_owned_outcome_event
+        else f"lets {recipient_phrase} {outcome_action}"
+    )
+    workflow_metric_sentence = (
+        f"The first interaction proves this path: {metric_first_path_proof_capability}. "
+        f"It also shows that {actor_owned_outcome_event}."
+        if actor_owned_outcome_event
+        else f"The first interaction proves this path: {metric_first_path_proof_capability}. It also lets {recipient_phrase} {outcome_action}."
     )
     parent = _backlog_row(
         label=label,
@@ -432,13 +466,13 @@ def confirmed_backlog_rows(
         label=label,
         title=workflow_title,
         problem=(
-            f"{metric_actor} {metric_actor_needs} the first interaction to let them {outcome_action}, not just captured input. "
+            f"{metric_actor} {metric_actor_needs} the first interaction to {workflow_goal_phrase}, not just captured input. "
             f"If the path accepts incomplete details or hides why it stopped, {follow_up_inline} cannot act on the result with confidence."
         ),
         customer=workflow_actor_label,
         opportunity=(
             f"Turn the first actor-owned action into a complete, reviewable outcome: {metric_actor_inline} {metric_actor_provides} what the product needs, "
-            f"leaves enough context for follow-up, and lets {recipient_phrase} {outcome_action}."
+            f"leaves enough context for follow-up, and {workflow_followup_clause}."
         ),
         product_view=(
             f"{metric_actor} can {workflow_action}. The product checks the details, explains missing information before it produces a result, "
@@ -453,7 +487,7 @@ def confirmed_backlog_rows(
                 f"First interaction evidence covers {metric_first_path_proof_capability}. "
                 "It includes success, blocked input, replay, and handoff checks."
                 if backlog_text.result_terms_covered(outcome_action, metric_first_path_proof_capability)
-                else f"The first interaction proves this path: {metric_first_path_proof_capability}. It also lets {recipient_phrase} {outcome_action}."
+                else workflow_metric_sentence
             ),
             "Missing or invalid information produces clear correction guidance instead of a misleading result.",
             f"{follow_up_subject} can use the saved context without asking the user to repeat the same details.",
@@ -564,15 +598,6 @@ def confirmed_backlog_rows(
     return [parent, workflow, boundary, proof]
 
 
-def _state_responsibility_label(state_label: str) -> str:
-    text = str(state_label or "").strip(" .")
-    if not text:
-        return "State responsibility"
-    if text.casefold().endswith(" state"):
-        return f"{text} responsibility"
-    return f"{text} state responsibility"
-
-
 def _first_release_problem_summary(value: str, human_actors: list[str]) -> str:
     if not value:
         return ""
@@ -593,35 +618,6 @@ def _mentions_actor_label(value: str, labels: list[str]) -> bool:
         if normalized and normalized in text:
             return True
     return False
-
-
-def _parent_opportunity_sentence(*, capability: str, outcome_action: str, state_label: str, recipient: str) -> str:
-    proof_subject = _proof_subject_phrase(capability)
-    if outcome_action and not _terms_covered(outcome_action, capability):
-        return f"Prove the first release path: {proof_subject}, then let {recipient} {outcome_action}."
-    return f"Prove the first release path: {proof_subject}. Keep {state_label} reviewable through success, blocked, and replay evidence."
-
-
-def _parent_product_view_sentence(*, label: str, capability: str, outcome_action: str, state_label: str, recipient: str) -> str:
-    proof_subject = _proof_subject_phrase(capability)
-    if outcome_action and not _terms_covered(outcome_action, capability):
-        return (
-            f"{label} should feel complete when the accepted first path proves {proof_subject} "
-            f"while letting {recipient} {outcome_action} and keeping the first-release boundary clear."
-        )
-    return (
-        f"{label} should feel complete when the accepted first path proves {proof_subject} "
-        f"while keeping {state_label} clear and making the first-release boundary explicit."
-    )
-
-
-def _proof_subject_phrase(value: str) -> str:
-    phrase = backlog_text.proof_action_subject(value)
-    return phrase or value
-
-
-def _terms_covered(needle: str, haystack: str) -> bool:
-    return backlog_text.result_terms_covered(needle, haystack)
 
 
 def _backlog_row(

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import re
 
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
@@ -75,9 +76,23 @@ def actor_appears_in_path(first_path: str, actor: str) -> bool:
     return False
 
 
-def append_outcome_action(*, action: str, outcome: str, outcome_action: str, recipient: str) -> str:
+def append_outcome_action(
+    *,
+    action: str,
+    outcome: str,
+    outcome_action: str,
+    recipient: str,
+    known_actors: Sequence[str] | None = None,
+) -> str:
     if backlog_text.result_terms_covered(outcome, action) or backlog_text.result_terms_covered(outcome_action, action):
         return ""
+    actor_event = actor_owned_outcome_event(
+        outcome=outcome,
+        outcome_action=outcome_action,
+        known_actors=known_actors,
+    )
+    if actor_event:
+        return f", and the product shows that {actor_event}"
     return f", and {recipient_phrase(recipient)} can {outcome_action}" if outcome_action else ""
 
 
@@ -89,10 +104,57 @@ def missing_input_tail(*, action: str, outcome: str, outcome_already_appended: b
     return ", and see what to fix when required information is missing"
 
 
-def workflow_result_sentence(*, action: str, outcome: str, outcome_action: str, recipient: str) -> str:
+def workflow_result_sentence(
+    *,
+    action: str,
+    outcome: str,
+    outcome_action: str,
+    recipient: str,
+    known_actors: Sequence[str] | None = None,
+) -> str:
     if backlog_text.result_terms_covered(outcome, action) or backlog_text.result_terms_covered(outcome_action, action):
         return "and keeps the saved result reviewable"
+    actor_event = actor_owned_outcome_event(
+        outcome=outcome,
+        outcome_action=outcome_action,
+        known_actors=known_actors,
+    )
+    if actor_event:
+        return f"and shows that {actor_event}"
     return f"and lets {recipient_phrase(recipient)} {outcome_action}"
+
+
+def actor_owned_outcome_event(
+    *,
+    outcome: str,
+    outcome_action: str,
+    known_actors: Sequence[str] | None = None,
+) -> str:
+    """Return an outcome event that already names the actor who performs it."""
+
+    actor, actor_action = backlog_text.actor_action_parts(outcome)
+    if not actor or not actor_action:
+        actor = actor_signature(outcome)
+        actor_action = action_chain_fragment(outcome)
+    if not actor or not actor_action:
+        return ""
+    known_terms = _known_actor_match_terms(known_actors or ())
+    if known_terms and not (_actor_match_terms(actor) & known_terms):
+        return ""
+    if not (
+        backlog_text.result_terms_covered(actor_action, outcome_action)
+        or backlog_text.result_terms_covered(outcome_action, actor_action)
+        or backlog_text.sentence_fragment(actor_action) == backlog_text.sentence_fragment(outcome_action)
+    ):
+        return ""
+    return backlog_text.sentence_fragment(outcome)
+
+
+def _known_actor_match_terms(values: Sequence[str]) -> set[str]:
+    terms: set[str] = set()
+    for value in values:
+        terms |= _actor_match_terms(backlog_text.actor_label(str(value)))
+    return terms
 
 
 def recipient_phrase(value: str) -> str:
@@ -168,6 +230,54 @@ def dedupe_repeated_visible_result_tail(value: str) -> str:
     if backlog_text.result_terms_covered(tail, head):
         return f"{head}."
     return f"{text}."
+
+
+def state_responsibility_label(state_label: str) -> str:
+    text = str(state_label or "").strip(" .")
+    if not text:
+        return "State responsibility"
+    if text.casefold().endswith(" state"):
+        return f"{text} responsibility"
+    return f"{text} state responsibility"
+
+
+def parent_opportunity_sentence(
+    *,
+    capability: str,
+    outcome: str,
+    outcome_action: str,
+    outcome_event: str,
+    state_label: str,
+    recipient: str,
+) -> str:
+    proof_subject = _proof_subject_phrase(capability)
+    if outcome_action and not _terms_covered(outcome_action, capability) and not _terms_covered(outcome, capability):
+        outcome_followup = f"show that {outcome_event}" if outcome_event else f"let {recipient} {outcome_action}"
+        return f"Prove the first release path: {proof_subject}, then {outcome_followup}."
+    return f"Prove the first release path: {proof_subject}. Keep {state_label} reviewable through success, blocked, and replay evidence."
+
+
+def parent_product_view_sentence(
+    *,
+    label: str,
+    capability: str,
+    outcome: str,
+    outcome_action: str,
+    outcome_event: str,
+    state_label: str,
+    recipient: str,
+) -> str:
+    proof_subject = _proof_subject_phrase(capability)
+    if outcome_action and not _terms_covered(outcome_action, capability) and not _terms_covered(outcome, capability):
+        outcome_followup = f"showing that {outcome_event}" if outcome_event else f"letting {recipient} {outcome_action}"
+        return (
+            f"{label} should feel complete when the accepted first path proves {proof_subject} "
+            f"while {outcome_followup} and keeping the first-release boundary clear."
+        )
+    return (
+        f"{label} should feel complete when the accepted first path proves {proof_subject} "
+        f"while keeping {state_label} clear and making the first-release boundary explicit."
+    )
 
 
 def _preferred_title_fragment(values: list[str]) -> str:
@@ -266,17 +376,30 @@ def _singular_actor_match_term(value: str) -> str:
     return ""
 
 
+def _proof_subject_phrase(value: str) -> str:
+    phrase = backlog_text.proof_action_subject(value)
+    return phrase or value
+
+
+def _terms_covered(needle: str, haystack: str) -> bool:
+    return backlog_text.result_terms_covered(needle, haystack)
+
+
 __all__ = [
     "actor_verb",
     "actor_appears_in_path",
     "actor_interaction_action",
+    "actor_owned_outcome_event",
     "append_outcome_action",
     "dedupe_repeated_visible_result_tail",
     "join_action_fragments",
     "join_distinct_labels",
     "missing_input_tail",
+    "parent_opportunity_sentence",
+    "parent_product_view_sentence",
     "prefer_outcome_title",
     "recipient_phrase",
+    "state_responsibility_label",
     "workflow_result_sentence",
     "workflow_title_action",
 ]

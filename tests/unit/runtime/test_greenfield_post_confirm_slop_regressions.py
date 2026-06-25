@@ -26,6 +26,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import action_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import component_focus_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_risk
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_phrase
@@ -1761,6 +1762,17 @@ def test_outcome_action_phrase_does_not_wrap_action_outcomes_as_visible_objects(
     )
     assert outcome_action_phrase("a lead creates a readiness review") == "create a readiness review"
     assert outcome_action_phrase("the publication status") == "see the publication status"
+
+
+def test_component_focus_phrase_drops_terminal_preposition_from_label_focus() -> None:
+    assert (
+        component_focus_phrase(
+            label="Account and Child Profile Management with Age Bands Service",
+            contract={"owned_state": ["Account and child profile management with age bands"]},
+            fallback="child profile state",
+        )
+        == "account and child profile management"
+    )
 
 
 def test_user_can_gate_allows_base_action_with_action_shaped_object() -> None:

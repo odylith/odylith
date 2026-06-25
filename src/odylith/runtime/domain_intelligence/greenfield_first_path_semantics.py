@@ -10,6 +10,7 @@ from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
@@ -135,7 +136,7 @@ def _first_path_steps(value: str) -> list[str]:
                 normalized.append(cleaned)
     if len(normalized) > 1 and _is_trivial_start(normalized[0]):
         normalized = normalized[1:]
-    return _unique(_merge_leading_modifier_steps(normalized))
+    return _unique(_drop_leading_context_fragments(_merge_leading_modifier_steps(normalized)))
 
 
 def _merge_leading_modifier_steps(steps: Sequence[str]) -> list[str]:
@@ -151,6 +152,35 @@ def _merge_leading_modifier_steps(steps: Sequence[str]) -> list[str]:
             continue
         merged.append(cleaned)
     return merged
+
+
+def _drop_leading_context_fragments(steps: Sequence[str]) -> list[str]:
+    rows = list(steps)
+    while len(rows) > 1 and _is_leading_context_fragment(rows[0]) and any(
+        _step_has_action_signal(step) for step in rows[1:]
+    ):
+        rows.pop(0)
+    return rows
+
+
+def _is_leading_context_fragment(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text or _step_has_action_signal(text):
+        return False
+    return len(label_terms(text)) <= 6
+
+
+def _step_has_action_signal(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    return bool(
+        text
+        and (
+            _MATERIAL_ACTION_RE.search(text)
+            or _looks_like_visible_result(text)
+            or _connector_core_starts_action_clause(text)
+            or looks_like_finite_action(text)
+        )
+    )
 
 
 def _is_leading_modifier_step(value: str) -> bool:
@@ -337,6 +367,7 @@ def _clean_step(value: str) -> str:
     ).strip(" .")
     text = _normalize_role_can_step(text)
     text = _normalize_subjectless_action_step(text)
+    text = repair_modal_base_form_drift(text)
     text = _strip_dangling_step_tail(text)
     return _sentence_case(text)
 

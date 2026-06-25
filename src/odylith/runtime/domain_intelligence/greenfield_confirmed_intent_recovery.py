@@ -156,21 +156,18 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
     first_path_inline = _embedded_first_path_clause(first_path_source.rstrip("."))
     first_path = _sentence_start(first_path_inline)
-    story = (
-        f"{title} helps {lead_actor_ref} complete a first path where {first_path_inline}. "
-        f"It keeps {outcome_object} tied to source input, current state, blockers, handoffs, and proof evidence "
-        "so the next step is clear."
+    story = _recovered_story_text(
+        title=title,
+        lead_actor_ref=lead_actor_ref,
+        first_path_inline=first_path_inline,
+        outcome_object=outcome_object,
     )
     state_subject = _state_record_subject(outcome)
     state = (
         f"{_sentence_start(_indefinite_phrase(state_subject))} record tracks the actor, source input, current status, owner, "
         "blocker, handoff, evidence, and version history for the first path."
     )
-    proof = (
-        f"Release 0.0.1 succeeds when {first_path_inline}. "
-        f"The product shows {outcome_object}, handles missing or invalid input with a clear blocker, "
-        "and keeps replayable evidence for review."
-    )
+    proof = _recovered_proof_text(first_path_inline=first_path_inline, outcome_object=outcome_object)
     problem = (
         f"{lead_actor} {lead_needs} a dependable way to {lead_action.rstrip('.')} and trust the result without stitching "
         "together scattered context."
@@ -214,10 +211,24 @@ def _usable_first_path_source(value: str, *, title: str) -> str:
         return ""
     model = first_path_model(text)
     if len(model.steps) >= 2:
-        return text
+        if _preserve_one_line_capability_source(text):
+            return text
+        return _first_path_source_from_steps(model.steps) or text
     if word_count(text) >= 6 and (model.material_action or model.visible_outcome):
         return text
     return ""
+
+
+def _first_path_source_from_steps(steps: Sequence[str]) -> str:
+    rows = [_clean(step).strip(" .") for step in steps if _clean(step).strip(" .")]
+    return ". ".join(rows)
+
+
+def _preserve_one_line_capability_source(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text or any(mark in text for mark in ".!?"):
+        return False
+    return "can" in {word.casefold().strip(".,:;") for word in text.split()}
 
 
 def _path_source_restates_title(value: str, *, title: str) -> bool:
@@ -252,6 +263,36 @@ def _embedded_first_path_clause(value: str) -> str:
     if looks_like_action_clause(clause):
         clause = f"the product {clause}"
     return clause
+
+
+def _recovered_story_text(
+    *,
+    title: str,
+    lead_actor_ref: str,
+    first_path_inline: str,
+    outcome_object: str,
+) -> str:
+    first_path = _sentence_start(first_path_inline)
+    if "." in first_path_inline:
+        opening = f"{title} helps {lead_actor_ref} complete this first path: {first_path}."
+    else:
+        opening = f"{title} helps {lead_actor_ref} complete a first path where {first_path_inline}."
+    return (
+        f"{opening} It keeps {outcome_object} tied to source input, current state, blockers, handoffs, "
+        "and proof evidence so the next step is clear."
+    )
+
+
+def _recovered_proof_text(*, first_path_inline: str, outcome_object: str) -> str:
+    first_path = _sentence_start(first_path_inline)
+    if "." in first_path_inline:
+        opening = f"Release 0.0.1 succeeds when this first path is complete: {first_path}."
+    else:
+        opening = f"Release 0.0.1 succeeds when {first_path_inline}."
+    return (
+        f"{opening} The product shows {outcome_object}, handles missing or invalid input with a clear blocker, "
+        "and keeps replayable evidence for review."
+    )
 
 
 def _recover_title_source(source: str) -> str:
@@ -349,7 +390,7 @@ def _first_path_actor_clauses(value: str) -> list[str]:
 
 def _split_actor_candidate_clauses(text: str) -> list[str]:
     clauses: list[str] = []
-    for part in text.replace("; ", ", ").split(","):
+    for part in re.split(r";\s+|,\s+|(?<=[.!?])\s+", text):
         part = _clean(part)
         if not part:
             continue

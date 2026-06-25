@@ -426,7 +426,7 @@ def _label_focus_phrase(label: str) -> str:
 
 def _trim_terminal_connector(value: str) -> str:
     words = value.split()
-    while words and words[-1].casefold().strip(".,;:") in {"and", "or", "plus"}:
+    while words and words[-1].casefold().strip(".,;:") in {"and", "for", "of", "or", "plus", "to", "with"}:
         words.pop()
     return " ".join(words).strip()
 
