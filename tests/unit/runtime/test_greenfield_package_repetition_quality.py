@@ -45,3 +45,23 @@ def test_repetition_gate_rejects_repeated_markdown_section_boilerplate() -> None
     issues = greenfield_rendered_package_quality_issues(package)
 
     assert "repeats noncanonical prose" in "\n".join(issues)
+
+
+def test_repetition_gate_allows_shared_customer_metadata() -> None:
+    package = SimpleNamespace(
+        proposal={},
+        backlog_result={
+            "idea_files": {
+                f"B-{index:03d}.md": "## Customer\nSemiconductor lab operators who need custody evidence.\n"
+                for index in range(1, 4)
+            }
+        },
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_preview={},
+        next_steps_preview={},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" not in "\n".join(issues)

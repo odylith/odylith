@@ -586,6 +586,7 @@ def _allowed_structured_repetition_key(key: str) -> bool:
         (
             "boundary ",
             "control ",
+            "customer ",
             "evidence ",
             "evidence contents ",
             "evidence record ",

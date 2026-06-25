@@ -36,6 +36,7 @@ _FINITE_TO_BASE = {
 }
 _BASE_ACTIONS = "|".join(re.escape(value) for value in sorted(set(_FINITE_TO_BASE.values()), key=len, reverse=True))
 _FINITE_ACTIONS = "|".join(re.escape(value) for value in sorted(_FINITE_TO_BASE, key=len, reverse=True))
+_SCALAR_CLAUSE_SPLIT_RE = re.compile(r"([,;.!?])\s*")
 
 
 @dataclass(frozen=True)
@@ -156,6 +157,62 @@ def _repair_public_copy_scalar(value: str) -> str:
 
 
 def _repair_dangling_tail(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return text
+    if not any(char.isspace() for char in text):
+        return text
+    if not any(char.isalpha() for char in text):
+        return text
+    if _looks_like_verification_command(text) or _looks_like_structured_diagram_line(text):
+        return text
+    return _repair_dangling_clause_tails(text)
+
+
+def _looks_like_verification_command(value: str) -> bool:
+    text = str(value or "").strip()
+    return text.startswith(("./", "odylith ", "python ", "python3 ", "bash ", "git "))
+
+
+def _looks_like_structured_diagram_line(value: str) -> bool:
+    text = str(value or "").strip()
+    if text.startswith(("flowchart ", "graph ", "sequenceDiagram", "stateDiagram", "classDiagram", "journey")):
+        return True
+    return bool(
+        "-->" in text
+        or "---" in text
+        or "->" in text
+        or re.match(r"^[A-Za-z0-9_-]+\s*(?:\[|\(|\{)", text)
+        or re.match(r"^[A-Za-z0-9_-]+\\s*::", text)
+    )
+
+
+def _repair_dangling_clause_tails(value: str) -> str:
+    text = str(value or "").strip()
+    pieces = _SCALAR_CLAUSE_SPLIT_RE.split(text)
+    if len(pieces) <= 1:
+        return _strip_terminal_dangling_tail(text)
+    repaired: list[str] = []
+    index = 0
+    while index < len(pieces):
+        segment = pieces[index]
+        separator = pieces[index + 1] if index + 1 < len(pieces) else ""
+        cleaned = _strip_terminal_dangling_tail(segment)
+        if cleaned:
+            repaired.append(cleaned)
+            if separator:
+                repaired.append(separator)
+                if index + 2 < len(pieces):
+                    repaired.append(" ")
+        elif separator and repaired:
+            repaired.append(separator)
+            if index + 2 < len(pieces):
+                repaired.append(" ")
+        index += 2
+    return re.sub(r"\s+([,;.!?])", r"\1", "".join(repaired)).strip()
+
+
+def _strip_terminal_dangling_tail(value: str) -> str:
     text = str(value or "").strip()
     if not text:
         return text

@@ -1023,6 +1023,26 @@ def test_greenfield_package_repair_cleans_operator_next_step_dangling_tail(tmp_p
     assert "payer-ready service proof." in rendered
 
 
+def test_greenfield_package_repair_cleans_radar_clause_dangling_tails(tmp_path: Path) -> None:
+    proposal = _proposal(tmp_path)
+    backlog_result = _prewrite_backlog_result(proposal)
+    first_path = next(iter(backlog_result["idea_files"]))
+    backlog_result["idea_files"][first_path] += (
+        "\n## Generated Clause Check\n"
+        "- The path should not leave a clause dangling from, or another clause dangling into.\n"
+    )
+    package = _package_for_quality_report(proposal, backlog_result=backlog_result)
+
+    initial = build_greenfield_package_report(package)
+    repaired = repair_greenfield_package_until_clean(package)
+
+    assert not initial.passed
+    assert repaired.report.passed
+    rendered = "\n".join(str(value) for value in repaired.package.backlog_result["idea_files"].values())
+    assert "dangling from," not in rendered
+    assert "dangling into." not in rendered
+
+
 def test_greenfield_package_gate_rejects_clipped_terminal_article(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     backlog_result = _prewrite_backlog_result(proposal)
