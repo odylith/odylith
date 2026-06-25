@@ -48,6 +48,14 @@ def contract_focus(
 ) -> str:
     focus = _safe_artifact_focus(_clean(object_list) or _clean(fallback).casefold() or "accepted state")
     focus = _strip_trailing_status_only_focus(focus)
+    adjustment = _adjustment_artifact(focus) if _component_owns_adjustment(contract_terms) else ""
+    if adjustment:
+        support = _supporting_artifacts(focus, exclude_terms=set(content_terms(adjustment)))
+        if role == "input":
+            return f"{adjustment} request, {support}, prior state, and explanation context"
+        rationale_terms = set(content_terms(focus)) | set(contract_terms)
+        rationale = "adjustment rationale" if "rationale" in rationale_terms else "review rationale"
+        return f"{_result_output_artifact(adjustment)}, {rationale}, blocked-state detail, and next-step context"
     recommendation = (
         _recommendation_artifact(focus, action_terms=action_terms)
         if _component_owns_recommendation(action_terms, contract_terms)
@@ -59,14 +67,6 @@ def contract_focus(
         if role == "input":
             return f"{support}, goal or constraint context, prior state, and explanation context"
         return f"{recommendation}, {rationale}, blocked-state detail, and next-step context"
-    adjustment = _adjustment_artifact(focus) if _component_owns_adjustment(contract_terms) else ""
-    if adjustment and any(action in action_terms for action in ("adjust", "calculate", "compute", "derive")):
-        support = _supporting_artifacts(focus, exclude_terms=set(content_terms(adjustment)))
-        if role == "input":
-            return f"{adjustment} request, {support}, prior state, and explanation context"
-        rationale_terms = set(content_terms(focus)) | set(contract_terms)
-        rationale = "adjustment rationale" if "rationale" in rationale_terms else "review rationale"
-        return f"{_result_output_artifact(adjustment)}, {rationale}, blocked-state detail, and next-step context"
     if role == "input":
         if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "forecast", "optimize", "predict", "score")):
             input_focus = f"input facts for {focus}" if _ends_with_term(focus, "state") else f"{focus} inputs"
@@ -427,13 +427,13 @@ def _adjustment_artifact(value: str) -> str:
 
 def _component_owns_adjustment(terms: Sequence[str]) -> bool:
     local = set(terms)
-    return bool(local & {"adjustment", "recommendation", "target"} and local & {"plan", "target", "recommendation"})
+    return bool(local & {"adjustment"} and local & {"decision", "plan", "rationale", "target"})
 
 
 def _component_owns_recommendation(action_terms: Sequence[str], contract_terms: Sequence[str]) -> bool:
     local = set(contract_terms)
     actions = set(action_terms)
-    return bool(actions & {"propose", "recommend", "suggest"} or local & {"recommendation", "suggestion", "adjustment"})
+    return bool(actions & {"propose", "recommend", "suggest"} or local & {"recommendation", "suggestion"})
 
 
 def _recommendation_artifact(value: str, *, action_terms: Sequence[str] = ()) -> str:

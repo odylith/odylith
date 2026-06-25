@@ -25,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
 )
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
     differentiate_component_contracts,
+    preserve_first_path_signal_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -175,6 +176,7 @@ def _confirmed_system_components(
             non_goals=non_goals or (),
         )
         rows.append(row)
+    _differentiate_duplicate_component_labels(rows, label_slug=label_slug, path_slug=path_slug)
     proposal_context = {
         "intent": {
             "title": label,
@@ -207,6 +209,7 @@ def _confirmed_system_components(
         contract = row.get("component_contract")
         if not isinstance(contract, dict):
             continue
+        preserve_first_path_signal_terms(contract, first_path=first_path)
         label_text = str(row.get("label", "")).strip()
         if _generated_or_weak(row.get("responsibility")):
             row["responsibility"] = responsibility_from_contract(label_text, contract)
@@ -217,6 +220,83 @@ def _confirmed_system_components(
         row["validation"] = validation_from_contract(contract)
         row["risks"] = risks_from_contract(label_text, contract)
     return rows
+
+
+def _differentiate_duplicate_component_labels(
+    rows: list[dict[str, Any]],
+    *,
+    label_slug: str,
+    path_slug: str,
+) -> None:
+    label_counts: dict[str, int] = {}
+    for row in rows:
+        key = _label_key(row.get("label"))
+        if key:
+            label_counts[key] = label_counts.get(key, 0) + 1
+    if not any(count > 1 for count in label_counts.values()):
+        return
+    rewritten: list[dict[str, Any]] = []
+    used_labels: set[str] = set()
+    for index, row in enumerate(rows, start=1):
+        original_label = str(row.get("label", "")).strip()
+        if label_counts.get(_label_key(original_label), 0) <= 1:
+            used_labels.add(_label_key(original_label))
+            rewritten.append(row)
+            continue
+        replacement = _local_component_label(row)
+        if not replacement or _label_key(replacement) == _label_key(original_label):
+            replacement = _fallback_duplicate_label(original_label, row=row, index=index)
+        while _label_key(replacement) in used_labels:
+            replacement = _fallback_duplicate_label(original_label, row=row, index=index, prior=replacement)
+            index += 1
+        row["label"] = replacement
+        component_slug = slugify(replacement) or f"{label_slug}-component-{index}"
+        if not component_slug.startswith(label_slug) and len(component_slug.split("-")) <= 2:
+            component_id = _component_id(label_slug, component_slug)
+        else:
+            component_id = component_slug
+        row["component_id"] = _unique_component_id(_dedupe_slug_tokens(component_id), rewritten, index)
+        row["intended_path"] = f"src/{path_slug}/{_path_slug(row['component_id'])}"
+        used_labels.add(_label_key(replacement))
+        rewritten.append(row)
+
+
+def _local_component_label(row: Mapping[str, Any]) -> str:
+    kind = str(row.get("kind", "service")).strip() or "service"
+    for key in ("source_system_description", "responsibility", "boundary"):
+        detail, _rationale = _system_detail(str(row.get(key, "") or ""))
+        candidate = _component_label(_title_phrase(detail), kind) if detail else ""
+        if _label_is_specific(candidate):
+            return candidate
+    return ""
+
+
+def _fallback_duplicate_label(
+    original_label: str,
+    *,
+    row: Mapping[str, Any],
+    index: int,
+    prior: str = "",
+) -> str:
+    seed = prior or original_label
+    slug_tail = " ".join(_slug_tokens(str(row.get("component_id", "")))[-4:])
+    if slug_tail:
+        candidate = _component_label(_title_phrase(slug_tail), str(row.get("kind", "service")) or "service")
+        if _label_is_specific(candidate):
+            return candidate
+    return f"{_title_phrase(seed)} Boundary {index}"
+
+
+def _label_key(value: Any) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", str(value or "").casefold()).strip()
+
+
+def _label_is_specific(value: str) -> bool:
+    text = _label_key(value)
+    if not text:
+        return False
+    words = [word for word in text.split() if word not in _STOPWORDS and word not in {"service", "surface", "adapter"}]
+    return len(words) >= 2
 
 
 def _release_neighbor_labels(rows: list[dict[str, Any]], index: int) -> tuple[str, str]:
@@ -530,6 +610,8 @@ def _strip_ownership_verb(value: str) -> str:
         "handles": "handling of",
         "imports": "import of",
         "issues": "",
+        "keep": "",
+        "keeps": "",
         "links": "links between",
         "normalizes": "normalized view of",
         "optimizes": "optimized result for",
@@ -711,8 +793,4 @@ def _path_slug(label_slug: str) -> str:
     return slugify(label_slug).replace("-", "_") or "greenfield"
 
 
-__all__ = [
-    "confirmed_components",
-    "domain_label",
-    "system_component_name",
-]
+__all__ = ["confirmed_components", "domain_label", "system_component_name"]

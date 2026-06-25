@@ -6,7 +6,10 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token, looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import CONFIRMED_ACTOR_ROLE_TERMS as _ROLE_WORDS
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal as _word_has_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import capability_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
@@ -35,6 +38,7 @@ _DANGLING_ACTOR_LABEL_TAILS = frozenset(
         "if",
         "in",
         "into",
+        "final",
         "of",
         "on",
         "or",
@@ -48,41 +52,6 @@ _DANGLING_ACTOR_LABEL_TAILS = frozenset(
     }
 )
 
-
-_ROLE_WORDS = {
-    "admin",
-    "analyst",
-    "auditor",
-    "applicant",
-    "beneficiary",
-    "chief",
-    "client",
-    "contact",
-    "coordinator",
-    "customer",
-    "director",
-    "engineer",
-    "expert",
-    "guardian",
-    "inspector",
-    "lead",
-    "manager",
-    "member",
-    "operator",
-    "owner",
-    "planner",
-    "reviewer",
-    "requester",
-    "staff",
-    "submitter",
-    "supervisor",
-    "support",
-    "sufferer",
-    "team",
-    "trainee",
-    "user",
-    "volunteer",
-}
 
 _INLINE_ACTION_DESCRIPTION_VERBS = {
     "acknowledging",
@@ -115,13 +84,17 @@ _INLINE_ACTION_DESCRIPTION_VERBS = {
     "watching",
 }
 
+_NON_ACTOR_SUBJECT_TAILS = frozenset(
+    {"decision", "entry", "evidence", "note", "packet", "ready", "record", "report", "result", "summary", "view"}
+)
+
 
 def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     rows = [row for row in confirmed_text_values(intent.get("human_actors")) if not _actor_row_is_meta(row)]
     labels = [_actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label and not _actor_label_has_clause_lead(label)]
     if not labels:
-        labels.extend(_derived_actor_labels(intent, title=title))
+        labels.extend(_derived_actor_labels(intent, title=title, allow_generic_fallback=True))
     labels = list(unique_text(labels))[:5]
 
     first_path = _short(_clean(intent.get("first_path")), fallback="the accepted first path")
@@ -228,7 +201,7 @@ def _actor_head_contains_role(value: str) -> bool:
     words = [word.casefold().strip(".,;:()") for word in _clean(value).replace("/", " ").split()]
     if not words:
         return False
-    if words[-1] in _ROLE_WORDS:
+    if _word_has_role_signal(words[-1]):
         return True
     if len(words) >= 2 and " ".join(words[-2:]) in _ROLE_WORDS:
         return True
@@ -449,7 +422,7 @@ def _actor_row_has_usable_description(value: str) -> bool:
     return bool(actor_row_description(value))
 
 
-def _derived_actor_labels(intent: Mapping[str, Any], *, title: str) -> list[str]:
+def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generic_fallback: bool = True) -> list[str]:
     focus = _focus_label(title)
     first_path = _clean(intent.get("first_path"))
     story = _clean(intent.get("product_story"))
@@ -469,10 +442,10 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str) -> list[str]
             if value_starts_with_generic_actor_label(label):
                 role = label.casefold()
                 label = _title_case(f"{_role_focus(focus, role)} {role}")
-            if _actor_label_is_usable(label):
+            if _actor_label_is_usable(label) and _derived_actor_label_has_human_signal(label):
                 labels.append(label)
     labels = _dedupe_actor_labels(list(unique_text(labels)))
-    if len(labels) < 2:
+    if allow_generic_fallback and len(labels) < 2:
         labels.extend(
             [
                 f"{focus} operator",
@@ -482,6 +455,16 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str) -> list[str]
             ]
         )
     return list(unique_text(labels))
+
+
+def _derived_actor_label_has_human_signal(value: str) -> bool:
+    words = [word.casefold().strip(".,;:()[]{}") for word in _clean(value).replace("/", " ").split() if word.strip(".,;:()[]{}")]
+    return any(_word_has_role_signal(word) or _looks_like_derived_human_token(word) for word in words)
+
+
+def _looks_like_derived_human_token(value: str) -> bool:
+    token = value[:-1] if value.endswith("s") else value
+    return len(token) >= 5 and token.endswith(("ant", "ent", "er", "ian", "ist", "or", "ee", "owner"))
 
 
 def _role_candidates(text: str) -> list[str]:
@@ -496,7 +479,8 @@ def _role_candidates(text: str) -> list[str]:
                 continue
             if _role_token_is_artifact_context(words, index):
                 continue
-            start = max(0, index - 2)
+            previous = words[index - 1].casefold().strip(".,;:-") if index > 0 else ""
+            start = index if previous in {"by", "for", "to", "with"} else max(0, index - 2)
             phrase = " ".join(words[start : index + 1])
             phrase = re.sub(
                 r"^(?:a|an|and|the|one|first|main|primary|current)\s+",
@@ -523,6 +507,13 @@ def _role_candidates(text: str) -> list[str]:
 
 
 def _subject_candidate(sentence: str) -> str:
+    relative = re.match(
+        r"^(?P<head>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+(?:who|that)\s+(?P<body>.+)$",
+        _clean(sentence),
+        flags=re.IGNORECASE,
+    )
+    if relative and _actor_head_contains_role(relative.group("head")):
+        return _trim_non_actor_lead_words(relative.group("head"))
     subject = leading_subject_prefix(sentence)
     if not subject:
         return ""
@@ -531,6 +522,8 @@ def _subject_candidate(sentence: str) -> str:
     subject = re.sub(r"\s+can\s*$", "", subject, flags=re.IGNORECASE).strip(" .")
     words = subject.split()
     if not 1 <= len(words) <= 4:
+        return ""
+    if words[-1].casefold().strip(".,;:()") in _NON_ACTOR_SUBJECT_TAILS:
         return ""
     lowered = subject.casefold()
     if lowered in {"app", "application", "product", "service", "system", "tool", "workspace"}:
@@ -577,6 +570,7 @@ def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:
         "note",
         "notes",
         "record",
+        "ready",
         "status",
         "visible",
     }
@@ -668,12 +662,18 @@ def _actor_label_has_dangling_tail(value: str) -> bool:
     return bool(words and words[-1] in _DANGLING_ACTOR_LABEL_TAILS)
 
 
+def _actor_label_is_action_fragment(value: str) -> bool:
+    words = [word for word in (raw.casefold().strip(".,;:()[]{}") for raw in _clean(value).split()) if word]
+    return bool(words and not any(_word_has_role_signal(word) for word in words) and (looks_like_base_action_token(words[0]) or looks_like_finite_action_token(words[0]) or words[0].endswith("ing")))
+
+
 def _actor_label_is_usable(value: str) -> bool:
     return (
         bool(_clean(value))
         and not value_starts_with_generic_actor_label(value)
         and not _actor_label_has_clause_lead(value)
         and not _actor_label_has_dangling_tail(value)
+        and not _actor_label_is_action_fragment(value)
     )
 
 
@@ -781,10 +781,4 @@ _GENERIC_ACTOR_VALUE_ACTIONS = {
 }
 
 
-__all__ = [
-    "actor_labels",
-    "actor_row_description",
-    "completed_actor_rows",
-    "project_specific_actor_labels",
-    "value_starts_with_generic_actor_label",
-]
+__all__ = ["actor_labels", "actor_row_description", "completed_actor_rows", "project_specific_actor_labels", "value_starts_with_generic_actor_label"]

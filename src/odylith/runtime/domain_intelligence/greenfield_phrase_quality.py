@@ -386,14 +386,24 @@ def _collapse_adjacent_duplicate_terms_line(value: str) -> str:
     result: list[str] = []
     previous = ""
     for word in words:
+        if _duplicate_term_separator(word):
+            result.append(word)
+            continue
         key = _term_key(word)
         if key and key == previous and len(key) >= 4:
+            while result and _duplicate_term_separator(result[-1]):
+                result.pop()
             if result:
                 result[-1] = _merge_duplicate_term_punctuation(result[-1], word)
             continue
         result.append(word)
-        previous = key
+        if key:
+            previous = key
     return " ".join(result)
+
+
+def _duplicate_term_separator(value: str) -> bool:
+    return str(value or "").strip() in {"-", "--", "---", "–", "—", ":", "|", "/"}
 
 
 def _merge_duplicate_term_punctuation(previous: str, duplicate: str) -> str:

@@ -11,6 +11,7 @@ from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_text import collect_delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -176,9 +177,15 @@ def apply_backlog_traceability(
             validation_strategy=validation_strategy,
             open_questions=open_questions,
         )
+        _clean_traceability_sections(sections)
         workstream.path.write_text(backlog_authoring._render_idea_text(metadata=metadata, sections=sections), encoding="utf-8")
         touched.append(_repo_relative(repo_root=repo_root, path=workstream.path))
     return touched
+
+
+def _clean_traceability_sections(sections: dict[str, str]) -> None:
+    for key, value in list(sections.items()):
+        sections[key] = collapse_adjacent_duplicate_terms(str(value or ""))
 
 
 def _created_workstreams(

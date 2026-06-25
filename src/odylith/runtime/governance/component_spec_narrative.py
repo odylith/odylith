@@ -10,6 +10,7 @@ from typing import Any
 from odylith.runtime.common import display_text
 from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import RELATION_TAIL_WORDS
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_action_splice_phrase
@@ -143,7 +144,7 @@ def build_narrative_component_spec(
             ),
         ),
         "",
-        _narrative_section("Proof and Failure Modes", _proof_narrative(label=label, role=role, failure=failure, proofs=proofs)),
+        _narrative_section("Proof and Risk Controls", _proof_narrative(label=label, role=role, failure=failure, proofs=proofs)),
         "",
         _narrative_section(
             "Implementation Handoff",
@@ -428,7 +429,8 @@ def _state_narrative(
         first = f"The workflow state is {owned}." if owned else f"{label} needs the first implementation plan to name its local workflow state."
         second = f"It accepts {accepted} and produces {produced} as the first path moves forward." if accepted and produced else ""
     elif role == "state_store":
-        first = f"The owned state is {owned}, and it should stay close to the inputs and corrections that created it."
+        state_owned = _state_store_owned_text(owned_rows) or owned
+        first = f"The owned state is {state_owned}; it should stay close to the inputs and corrections that created it."
         second = f"It accepts {accepted} and returns {produced} only after required information is complete enough to trust."
     elif role == "handoff":
         handoff_state = produced or "the next-step output"
@@ -947,6 +949,13 @@ def _human_join(values: Sequence[str]) -> str:
     return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
+def _state_store_owned_text(values: Sequence[str]) -> str:
+    rows = [str(item).strip(" .") for item in values if str(item).strip(" .")]
+    if len(rows) >= 3 and rows[-1].casefold().endswith((" result", " update")):
+        return f"{_human_join(rows[:-1])}, with {rows[-1]}"
+    return _human_join(rows)
+
+
 def _calculation_focus(*, focus: str, output_focus: str, label: str) -> str:
     output_parts = _calculation_parts(output_focus)
     focus_parts = _calculation_parts(focus)
@@ -1024,6 +1033,7 @@ _CALCULATION_RESULT_TERMS = {
 
 def _finalize_narrative_spec_text(value: str) -> str:
     text = collapse_adjacent_duplicate_terms(value)
+    text = repair_modal_base_form_drift(text)
     return re.sub(r",\s+(?=(?:When|If|While)\b)", ". ", text)
 
 

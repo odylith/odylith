@@ -420,13 +420,21 @@ def _has_mixed_compact_action_inflection(text: str) -> bool:
 
 
 def _has_saved_destination_result_slop(text: str) -> bool:
-    return bool(
-        re.search(
-            r"\b(?:session|entry|record|result|item)\s+to\s+(?:history|log|ledger|journal|timeline|archive)\b",
-            text,
-            flags=re.IGNORECASE,
-        )
+    pattern = re.compile(
+        r"\b(?:session|entry|record|result|item)\s+to\s+(?:history|log|ledger|journal|timeline|archive)\b",
+        flags=re.IGNORECASE,
     )
+    for match in pattern.finditer(text):
+        if _saved_destination_target_continues_as_component_label(text, match.end()):
+            continue
+        return True
+    return False
+
+
+def _saved_destination_target_continues_as_component_label(text: str, end_index: int) -> bool:
+    tail = str(text or "")[end_index:]
+    match = re.match(r"\s+[A-Z][A-Za-z0-9'-]+(?:\s+[A-Z][A-Za-z0-9'-]+){0,3}\b", tail)
+    return bool(match)
 
 
 def _has_possessive_result_list_slop(text: str) -> bool:
@@ -493,7 +501,13 @@ def _has_malformed_component_responsibility(tokens: tuple[str, ...]) -> bool:
 
 
 def _has_malformed_relative_clause_split(tokens: tuple[str, ...]) -> bool:
-    for index, token in enumerate(tokens[:-3]):
+    for index, token in enumerate(tokens[:-1]):
+        if token == "can" and tokens[index + 1] in {"that", "who"}:
+            return True
+        if token == "to" and tokens[index + 1] == "who":
+            return True
+        if index + 3 >= len(tokens):
+            continue
         if token.endswith("s") and tokens[index + 1 : index + 4] == ("are", "meant", "to"):
             return True
     return False

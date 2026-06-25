@@ -1748,3 +1748,55 @@ The community archive first workflow passes end to end with fixture-backed input
 
     with pytest.raises(ValueError, match="missing or too thin"):
         parse_confirmed_intent_text(bad_intent, prompt="Create a community archive")
+
+
+def test_confirmed_intent_allows_domain_evidence_packet_language() -> None:
+    prompt = (
+        "Create a greenfield product for finance teams to intake disputes, gather evidence, "
+        "coordinate responses, and maintain a governed ledger."
+    )
+
+    intent = parse_confirmed_intent_text(
+        """# Governed Dispute Evidence Ledger
+
+## Product story
+A finance team needs a dispute workflow that keeps each payment dispute, response deadline, evidence packet, owner, and submission result in one governed ledger.
+
+## State object
+A dispute ledger containing claims, deadlines, evidence packets, owner responses, submission state, and decision outcomes.
+
+## First complete path
+A finance analyst records a dispute, gathers evidence, assigns a response owner, submits a response packet, and reviews the outcome with the deadline and evidence trail preserved.
+
+## Human actors
+- Finance analyst who intakes disputes
+- Response owner who supplies evidence
+- Compliance reviewer who checks submission readiness
+
+## Internal product systems
+- Dispute intake queue
+- Evidence packet builder
+- Response tracker
+- Submission readiness gate
+- Ledger outcome viewer
+
+## External systems
+- Payment processor dispute feed
+- Support system
+- Document storage provider
+
+## Critical assumptions
+- The first release coordinates evidence and response readiness for one dispute workflow.
+- Evidence attachments are referenced from storage rather than copied into public records.
+
+## Ambiguities
+- Whether processor submission is automated or tracked as an operator task.
+
+## Proof boundary
+The product is proven when a finance analyst can intake one dispute, assemble evidence, coordinate a response, and preserve the decision outcome in the ledger.
+""",
+        prompt=prompt,
+    )
+
+    assert intent["product_story"].startswith("A finance team needs")
+    assert "evidence packet" in json.dumps(intent).casefold()

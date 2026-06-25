@@ -8,6 +8,8 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_gerund_clause
+from odylith.runtime.common.prose_grammar import gerund_action_verb
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
@@ -353,6 +355,8 @@ def _actor_title_word_limit(words: Sequence[str]) -> int:
     if len(words) <= 4:
         return len(words)
     lowered = [word.casefold().strip(".,;:") for word in words]
+    if lowered[-1] in _SHORT_ACTOR_ROLE_WORDS:
+        return min(len(words), 6)
     if any(word in {"and", "or"} for word in lowered[:4]) and any(
         word in _SHORT_ACTOR_ROLE_WORDS for word in lowered[4:6]
     ):
@@ -640,6 +644,35 @@ def capability_action_clause(value: str) -> str:
         return normalize_action_clause(actor_action)
     converted = base_action_clause(text)
     return normalize_action_clause(converted or text)
+
+
+def proof_action_subject(value: str) -> str:
+    text = normalize_action_clause(value)
+    words = text.split()
+    if not words:
+        return ""
+    rows: list[str] = []
+    convert_next = True
+    converted = False
+    for word in words:
+        token = word.strip(".,:;").casefold()
+        gerund = gerund_action_verb(token) if convert_next and looks_like_base_action_token(token) else ""
+        if gerund:
+            rows.append(_replace_word_token(word, gerund))
+            converted = True
+            convert_next = False
+            continue
+        rows.append(word)
+        convert_next = token in {"and", "or", "then"} or (converted and word.endswith(","))
+    return re.sub(r"\s+", " ", " ".join(rows)).strip(" .") if converted else text
+
+
+def _replace_word_token(value: str, replacement: str) -> str:
+    suffix = ""
+    while value and value[-1] in ".,:;":
+        suffix = value[-1] + suffix
+        value = value[:-1]
+    return f"{replacement}{suffix}"
 
 
 def normalize_action_clause(value: str) -> str:
@@ -991,6 +1024,7 @@ __all__ = [
     "normalize_action_clause",
     "problem_actor_subject",
     "program_problem",
+    "proof_action_subject",
     "proof_claim_summary",
     "proof_focus_phrase",
     "proof_title_object",

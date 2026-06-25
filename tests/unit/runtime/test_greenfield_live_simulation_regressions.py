@@ -5,10 +5,17 @@ from pathlib import Path
 import re
 
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
+from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
+from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
+from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
 
 
 def _intent_from_prompt(prompt: str) -> dict[str, object]:
@@ -21,6 +28,37 @@ Original user intent
 """,
         prompt=prompt,
     )
+
+
+def _visible_confirmation_intent(prompt: str) -> dict[str, object]:
+    confirmation = build_product_intent_confirmation(
+        prompt=prompt,
+        title="greenfield simulation",
+        repo_name="greenfield-simulation",
+        observed_source={},
+    )
+    return parse_confirmed_intent_text(format_product_intent_confirmation_text(confirmation), prompt=prompt)
+
+
+def _proposal_and_prewrite(tmp_path: Path, prompt: str):
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=_visible_confirmation_intent(prompt),
+        require_completion_ready=False,
+    )
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+    return proposal, prewrite
 
 
 def test_confirmed_actor_labels_drop_dangling_action_fragments(tmp_path: Path) -> None:
@@ -76,3 +114,106 @@ def test_repaired_interfaces_do_not_repeat_generic_next_step_copy(tmp_path: Path
     assert handoffs
     assert len(handoffs) == len(set(handoffs))
     assert not any("repeats a noncanonical sentence" in issue for issue in greenfield_rendered_package_quality_issues(package))
+
+
+def test_distributed_agent_confirmation_preserves_actor_and_component_boundaries(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield product for platform operators who submit distributed agent jobs, "
+        "track assigned worker progress, collect execution evidence, surface blockers, and publish "
+        "a final run record with reviewer approval."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    encoded = json.dumps(proposal, sort_keys=True)
+    component_labels = [
+        str(row.get("label", "")).strip()
+        for row in proposal.get("components", [])
+        if isinstance(row, dict) and str(row.get("label", "")).strip()
+    ]
+    report = build_greenfield_package_report(prewrite.package)
+
+    assert "Publish a Final" not in encoded
+    assert "can run record with reviewer approval" not in encoded.casefold()
+    assert "reviewer run record with reviewer approval" not in encoded.casefold()
+    assert any("Platform Operators" in row for row in proposal["intent"]["human_actors"])
+    assert len(component_labels) >= 3
+    assert len(component_labels) == len(set(component_labels))
+    assert len(prewrite.package.rendered_component_specs or {}) == len(component_labels)
+    assert report.issues == ()
+
+
+def test_relative_actor_confirmation_does_not_promote_outcome_terms_to_people(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield product for community sports organizers who schedule FIFA-style neighborhood "
+        "tournaments, register teams, assign referees, publish fixtures, record match results, and show "
+        "standings with dispute review."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    public_payload = json.dumps(
+        {
+            "intent": proposal.get("intent"),
+            "backlog": proposal.get("backlog"),
+            "next_steps": prewrite.package.next_steps_preview,
+        },
+        sort_keys=True,
+    )
+    actors = [str(row) for row in proposal["intent"]["human_actors"]]
+    actor_labels = [row.split(":", 1)[0] for row in actors]
+    report = build_greenfield_package_report(prewrite.package)
+
+    assert any(label == "Community Sports Organizers" for label in actor_labels)
+    assert "Dispute" not in actor_labels
+    assert "can who" not in public_payload.casefold()
+    assert "to who" not in public_payload.casefold()
+    assert report.issues == ()
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+
+
+def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield product for digestive health patients who log meals, symptoms, medications, "
+        "and bowel patterns, then prepare a clinician-ready follow-up summary with safety escalation notes."
+    )
+
+    intent = _visible_confirmation_intent(prompt)
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    actor_labels = [str(row).split(":", 1)[0] for row in proposal["intent"]["human_actors"]]
+    system_rows = [str(row) for row in intent["internal_systems"]]
+
+    assert intent["title"] == "Clinician Ready Follow Up Summary Workspace"
+    assert actor_labels == ["Digestive Health Patients"]
+    assert len(system_rows) >= 3
+    assert not any("Recovered Product" in row or "— keeps Safety" in row for row in system_rows)
+    assert build_greenfield_package_report(prewrite.package).issues == ()
+
+
+def test_review_and_adjustment_prompts_avoid_generic_handoff_and_recommendation_drift(tmp_path: Path) -> None:
+    tenant_prompt = (
+        "Create a greenfield product for tenant aid coordinators who intake housing requests, verify "
+        "eligibility documents, match residents to assistance programs, track case blockers, and prepare "
+        "approval packets for supervisor review."
+    )
+    warehouse_prompt = (
+        "Create a greenfield product for warehouse shift leads who reconcile inventory exceptions, compare "
+        "scanner counts against expected stock, assign cycle-count follow-up, and publish an auditable "
+        "adjustment decision."
+    )
+
+    tenant_proposal, tenant_prewrite = _proposal_and_prewrite(tmp_path / "tenant", tenant_prompt)
+    warehouse_proposal, warehouse_prewrite = _proposal_and_prewrite(tmp_path / "warehouse", warehouse_prompt)
+    tenant_payload = json.dumps(
+        {"proposal": tenant_proposal, "next_steps": tenant_prewrite.package.next_steps_preview},
+        sort_keys=True,
+    ).casefold()
+    warehouse_payload = json.dumps(
+        {"proposal": warehouse_proposal, "next_steps": warehouse_prewrite.package.next_steps_preview},
+        sort_keys=True,
+    ).casefold()
+    tenant_actor_labels = [str(row).split(":", 1)[0] for row in tenant_proposal["intent"]["human_actors"]]
+
+    assert "downstream actor" not in tenant_payload
+    assert "Packets for Supervisor" not in tenant_actor_labels
+    assert "recommendation" not in warehouse_payload
+    assert build_greenfield_package_report(tenant_prewrite.package).issues == ()
+    assert build_greenfield_package_report(warehouse_prewrite.package).issues == ()

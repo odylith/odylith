@@ -29,8 +29,8 @@ def document_context_contract(
     upload_docs = _uploaded_document_phrase(docs)
     missing = _missing_document_phrase(context)
     sensitive = _sensitive_material_phrase(context)
-    recipient = _recipient_actor(context)
     downstream = next_label or _downstream_from_context(context, fallback="lifecycle tracking")
+    recipient = _recipient_actor(context, fallback=downstream)
     outside = _document_outside_boundary(context)
     local_proof = _document_local_proof(
         label=label,
@@ -80,6 +80,7 @@ def status_view_contract(
     object_name = _object_phrase(state_label)
     object_base = _status_object_base(context, object_name=object_name)
     timeline = f"{object_base} status timeline"
+    view_scope = _status_view_scope(label=label, context=context)
     role_scope = _role_scope_phrase(context)
     stale_indicator = f"stale or blocked {object_base} indicators"
     upstream = previous_label or _upstream_from_context(context, fallback=f"{object_base} lifecycle tracking")
@@ -91,7 +92,7 @@ def status_view_contract(
     )
     return {
         "owned_state": (
-            f"{timeline}, current next-action owner, {role_scope}, transition history, blocked or stale indicators, "
+            f"{view_scope + ', ' if view_scope else ''}{timeline}, current next-action owner, {role_scope}, transition history, blocked or stale indicators, "
             "notification freshness marker, and audit trail"
         ),
         "accepted_inputs": (
@@ -110,6 +111,18 @@ def status_view_contract(
             "or status history can lose its source event."
         ),
     }
+
+
+def _status_view_scope(*, label: str, context: str) -> str:
+    text = f"{label} {context}".casefold()
+    rows: list[str] = []
+    if re.search(r"\bsearch(?:ing)?\b", text):
+        rows.append("search state")
+    if re.search(r"\bfilter(?:ing|s)?\b", text):
+        rows.append("filter state")
+    if re.search(r"\bdashboards?\b", text):
+        rows.append("dashboard state")
+    return ", ".join(unique_text(rows))
 
 
 def _object_phrase(value: str) -> str:
@@ -224,8 +237,15 @@ def _sensitive_material_phrase(context: str) -> str:
     return "sensitive context materials"
 
 
-def _recipient_actor(context: str) -> str:
+def _recipient_actor(context: str, *, fallback: str = "") -> str:
     lowered = context.casefold()
+    role_review = re.search(r"\b(?P<role>supervisor|reviewer|approver|manager|coordinator|owner)\s+review\b", lowered)
+    if role_review:
+        role = role_review.group("role")
+        return "reviewer" if role == "reviewer" else f"{role} reviewer"
+    role_target = re.search(r"\b(?:for|to)\s+(?P<role>supervisor|reviewer|approver|manager|coordinator|owner)\b", lowered)
+    if role_target:
+        return role_target.group("role")
     for pattern in (
         r"\b(destination\s+[a-z][a-z-]+)\b",
         r"\b(approving\s+[a-z][a-z-]+)\b",
@@ -234,7 +254,7 @@ def _recipient_actor(context: str) -> str:
         match = re.search(pattern, lowered)
         if match:
             return match.group(1)
-    return "downstream actor"
+    return fallback.casefold() or "review owner"
 
 
 def _document_outside_boundary(context: str) -> str:
@@ -273,7 +293,7 @@ def _document_local_proof(
         ),
         f"Access evidence for {label}: unauthorized users cannot view or mutate {context_label}.",
         (
-            f"Handoff evidence for {recipient}: {recipient} can see the {context_label} needed to complete local review "
+            f"Handoff evidence for {label}: {recipient} can see the {context_label} needed to complete local review "
             "or request more information."
         ),
     ]

@@ -324,7 +324,7 @@ def _join_step_rows_within_limit(values: Sequence[str], *, limit: int) -> str:
 
 
 def _actor_led_capability_fragments(fragments: list[str]) -> list[str]:
-    if len(fragments) < 2:
+    if not fragments:
         return fragments
     actor, action = _actor_led_action_parts(fragments[0])
     if not actor or not action:

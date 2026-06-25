@@ -61,6 +61,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     run_greenfield_post_confirm_engine,
 )
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import repair_proposal_for_quality_lens_gaps
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     repair_greenfield_semantic_projections,
@@ -366,9 +367,20 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
         extra_sections.update(enrichment.radar_sections)
         if extra_sections:
             override["extra_sections"] = extra_sections
+        override = _clean_greenfield_backlog_override(override)
         overrides[title] = override
         overrides[slugify(title)] = override
     return overrides
+
+
+def _clean_greenfield_backlog_override(value: Any) -> Any:
+    if isinstance(value, str):
+        return collapse_adjacent_duplicate_terms(value)
+    if isinstance(value, list):
+        return [_clean_greenfield_backlog_override(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _clean_greenfield_backlog_override(item) for key, item in value.items()}
+    return value
 
 
 def _greenfield_ordering_rationale(row: Mapping[str, Any]) -> str:

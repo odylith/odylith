@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_brief import render_
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 
 DEFAULT_GREENFIELD_RELEASE_SELECTOR = greenfield_programs.DEFAULT_GREENFIELD_RELEASE_SELECTOR
+_PROJECT_REQUIREMENTS_TEXT_PREVIEW_LIMIT = 90
 
 
 def _release_selector(release_plan: Mapping[str, Any]) -> str:
@@ -359,7 +360,13 @@ def _format_governed_proposal_text(
     intelligence_text = render_project_intelligence_section(project_intelligence, preview=True)
     if intelligence_text:
         lines.extend(["", "Project requirements"])
-        lines.extend(_indent_markdown_preview(intelligence_text))
+        lines.extend(
+            _bounded_preview_lines(
+                _indent_markdown_preview(intelligence_text),
+                limit=_PROJECT_REQUIREMENTS_TEXT_PREVIEW_LIMIT,
+                label="project requirement rows",
+            )
+        )
     brief_lines = render_project_brief_lines(project_brief)
     if brief_lines:
         lines.extend(["", "Project-first blueprint"])
@@ -490,6 +497,13 @@ def _indent_markdown_preview(text: str) -> list[str]:
     return lines
 
 
+def _bounded_preview_lines(lines: list[str], *, limit: int, label: str) -> list[str]:
+    if len(lines) <= limit:
+        return lines
+    hidden = len(lines) - limit
+    return [*lines[:limit], f"- plus {hidden} additional {label} in --format json"]
+
+
 def _render_evidence_item(item: Any, preferred_key: str) -> str:
     if isinstance(item, Mapping):
         text = str(item.get(preferred_key) or item.get("statement") or item.get("question") or item.get("claim") or "").strip()
@@ -524,15 +538,9 @@ def _atlas_diagram_lines(row: Mapping[str, Any]) -> list[str]:
     state_label = "first draft" if state in {"atlas_first_draft", "architecture_first_draft"} else state
     heading = f"- {slug}: {title} ({state_label})".strip()
     lines = [heading]
-    for label, key in (
-        ("summary", "summary"),
-        ("review", "review_focus"),
-        ("question", "operator_question"),
-        ("gate", "proof_gate"),
-    ):
-        value = str(row.get(key, "")).strip()
-        if value:
-            lines.append(f"  - {label}: {value}")
+    gate = str(row.get("proof_gate", "")).strip()
+    if gate:
+        lines.append(f"  - gate: {gate}")
     return lines
 
 

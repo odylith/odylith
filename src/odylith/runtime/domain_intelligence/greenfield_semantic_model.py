@@ -592,7 +592,12 @@ def _is_synthetic_visible_result_event(text: str, visible_result: str) -> bool:
         return False
     normalized = _clean(text).casefold().strip(" .")
     visible = _clean(visible_result).casefold().strip(" .")
-    return normalized in {f"review {visible}", f"review evidence for {visible}"}
+    return normalized in {
+        f"review {visible}",
+        f"review evidence for {visible}",
+        f"confirm proof for {visible}",
+        f"keep {visible} visible for review",
+    }
 
 
 def _nominal_proof_checkpoint_clause(value: str) -> str:

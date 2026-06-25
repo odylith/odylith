@@ -53,7 +53,7 @@ _PREVIEW_TERMINAL_MODIFIERS = frozenset(
         "visible",
     }
 )
-_PREVIEW_DANGLING_WORDS = frozenset((CONFIRMED_DANGLING_WORDS - {"final"}) | {"from"})
+_PREVIEW_DANGLING_WORDS = frozenset((CONFIRMED_DANGLING_WORDS - {"final"}) | {"around", "from"})
 _PREVIEW_TERMINAL_FINAL_STATE_WORDS = frozenset(
     {"case", "decision", "match", "record", "result", "review", "score", "status"}
 )

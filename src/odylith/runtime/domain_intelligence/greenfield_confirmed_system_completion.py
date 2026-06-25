@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import normalize_binary_action_control_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
@@ -166,6 +167,8 @@ def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
 
 def _clean_system_description(value: str) -> str:
     text = _clean(value).strip(" .")
+    text = re.sub(r"^(?:hold|holds|holding)\s+", "maintains ", text, flags=re.IGNORECASE)
+    text = normalize_binary_action_control_phrase(text)
     text = re.sub(
         r"\b(?:captures?|capturing)\s+user\s+actions?\b",
         "captures the product interaction",

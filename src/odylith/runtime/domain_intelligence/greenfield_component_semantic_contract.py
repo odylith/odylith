@@ -94,6 +94,8 @@ def derive_component_semantic_contract(
     description_phrases = unique_text([*relation_phrases, *description_phrases])
     label_terms = _content_terms(label)
     description_terms = _content_terms(description)
+    context_terms = _context_contract_terms(proposal_context, label_terms=label_terms, description_terms=description_terms)
+    contract_terms = (*label_terms, *description_terms, *context_terms)
     context_phrases = semantic_context.context_object_phrases(
         proposal_context,
         label_terms=label_terms,
@@ -163,14 +165,14 @@ def derive_component_semantic_contract(
         action_terms=action_terms,
         fallback=previous_label or "accepted upstream state",
         role="input",
-        contract_terms=(*label_terms, *description_terms),
+        contract_terms=contract_terms,
     )
     output_focus = _contract_focus(
         object_list=focus_list,
         action_terms=action_terms,
         fallback=next_label or "downstream state",
         role="output",
-        contract_terms=(*label_terms, *description_terms),
+        contract_terms=contract_terms,
     )
     critical = _component_kind_echo_safe_phrase(label=label, phrase=_result_like_phrase(output_focus) or critical)
     states = _state_transition_text(
@@ -414,6 +416,19 @@ def _proposal_context(proposal: Mapping[str, Any]) -> str:
         *ontology.values(),
     ]
     return " ".join(_clean(value) for value in values if _clean(value))
+
+
+def _context_contract_terms(value: str, *, label_terms: Sequence[str], description_terms: Sequence[str]) -> tuple[str, ...]:
+    context_terms = set(_content_terms(value))
+    local_terms = set(label_terms) | set(description_terms)
+    if context_terms & {"adjust", "adjusted", "adjusting", "adjustment"} and local_terms & {
+        "decision",
+        "plan",
+        "rationale",
+        "target",
+    }:
+        return ("adjustment",)
+    return ()
 
 
 def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:

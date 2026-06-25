@@ -260,6 +260,7 @@ def _product_result_from_visible_outcome(value: Any) -> str:
         return ""
     candidate = visible_result_object(text) or nominal_visible_result_object(text) or text
     candidate = _confirmed_result_object(source=text, result=candidate)
+    candidate = _binary_actor_action_result_object(candidate) or candidate
     candidate = _resolve_result_anaphora(candidate)
     candidate = nominal_visible_result_object(candidate) or candidate
     return lowercase_leading_article(candidate).strip(" .")
@@ -271,8 +272,48 @@ def _product_result_from_proof_boundary(value: Any) -> str:
         return ""
     candidate = visible_result_object(text) or action_chain_fragment(text) or text
     candidate = _strip_proof_leading_clause(candidate)
+    candidate = _binary_actor_action_result_object(candidate) or candidate
     candidate = _resolve_result_anaphora(candidate)
     return lowercase_leading_article(nominal_visible_result_object(candidate) or candidate).strip(" .")
+
+
+_BINARY_RESULT_PARTICIPLES = {
+    "accept": "accepted",
+    "accepts": "accepted",
+    "approve": "approved",
+    "approves": "approved",
+    "block": "blocked",
+    "blocks": "blocked",
+    "decline": "declined",
+    "declines": "declined",
+    "deny": "denied",
+    "denies": "denied",
+    "dismiss": "dismissed",
+    "dismisses": "dismissed",
+    "reject": "rejected",
+    "rejects": "rejected",
+}
+
+
+def _binary_actor_action_result_object(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .")
+    if not text:
+        return ""
+    action = "|".join(re.escape(verb) for verb in sorted(_BINARY_RESULT_PARTICIPLES, key=len, reverse=True))
+    match = re.match(
+        rf"^(?:(?:a|an|the)\s+)?[A-Za-z][A-Za-z0-9'-]*(?:\s+[A-Za-z][A-Za-z0-9'-]*){{0,4}}\s+"
+        rf"(?P<left>{action})\s+or\s+(?P<right>{action})\s+(?P<object>[^.;]+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    left = _BINARY_RESULT_PARTICIPLES.get(match.group("left").casefold(), "")
+    right = _BINARY_RESULT_PARTICIPLES.get(match.group("right").casefold(), "")
+    result_object = re.sub(r"^(?:a|an|the)\s+", "", match.group("object").strip(" ."), flags=re.IGNORECASE)
+    if not left or not right or not result_object:
+        return ""
+    return f"the {left} or {right} {result_object}".strip(" .")
 
 
 def _resolve_result_anaphora(value: str) -> str:

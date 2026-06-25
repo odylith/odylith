@@ -87,12 +87,27 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
     metrics = confirmed_text_values(intent.get("success_metrics"))
     if metrics:
         intent["success_metrics"] = [_sentence(_normalize_visible_result_language(_normalize_proof_boundary(row))) for row in metrics]
+    for key in ("assumptions", "ambiguities", "non_goals"):
+        rows = confirmed_text_values(intent.get(key))
+        if rows:
+            intent[key] = [_sentence(_normalize_visible_result_language(_normalize_open_clause(row))) for row in rows]
     if external_systems := confirmed_text_values(intent.get("external_systems")):
         intent["external_systems"] = [
             normalized
             for row in external_systems
             if (normalized := _boundary_clause_item(_normalize_external_system_language(row), limit=180))
         ]
+
+
+def _normalize_open_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    text = re.sub(
+        r"\bwhere\s+(?P<subject>[^.;:]{2,140}?)\s+comes\s+from$",
+        lambda match: f"where {match.group('subject').strip()} is sourced",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return text
 
 
 def _normalize_confirmed_actor_context(intent: dict[str, Any], *, title: str) -> None:
@@ -399,7 +414,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     if not _clean(intent.get("product_view")) or _product_view_needs_repair(intent.get("product_view")):
         outcome_action = _outcome_action_phrase(outcome_text)
         intent["product_view"] = _sentence(
-            f"{title} is useful when {customer_text} can {path_capability} and confidently {outcome_action} to decide the next action."
+            f"{title} is release-ready when {customer_text} can {path_capability}, confidently {outcome_action}, and recover when required context is missing."
         )
     metrics = confirmed_text_values(intent.get("success_metrics"))
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):

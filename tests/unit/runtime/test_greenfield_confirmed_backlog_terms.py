@@ -35,6 +35,7 @@ from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normal
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_artifact_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import (
     build_workstream_domain_intelligence,
 )
@@ -95,6 +96,10 @@ def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generi
         == "Keep comparison review. When the path blocks, explain why."
     )
     assert (
+        collapse_adjacent_duplicate_terms("Owner: Let Response Coordinator Register a Shelter - Shelter Manager")
+        == "Owner: Let Response Coordinator Register a Shelter Manager"
+    )
+    assert (
         normalize_artifact_tail("public match summary correction final", carrier_terms={"summary", "status"})
         == "public match summary correction final status"
     )
@@ -135,6 +140,27 @@ def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generi
     assert "scope scope" not in rendered.casefold()
     source = BACKLOG_TEXT_MODEL_PATH.read_text(encoding="utf-8")
     assert 'replace("scope scope"' not in source
+
+
+def test_greenfield_quality_gate_allows_product_evidence_packet_language() -> None:
+    proposal = {
+        "intent": {
+            "summary": "The product publishes a reviewed evidence packet with decision proof.",
+            "product_story": "A team needs one place to assemble an evidence packet before a final decision is recorded.",
+        },
+        "backlog": [
+            {
+                "title": "Publish Review Evidence",
+                "problem": "Reviewers need the evidence packet to stay tied to the decision record.",
+                "customer": "Review team",
+                "opportunity": "Keep response evidence, decision state, and ownership visible.",
+                "product_view": "A reviewer can inspect the evidence packet and understand the decision outcome.",
+                "success_metrics": ["One evidence packet is reviewed before the decision is closed."],
+            }
+        ],
+    }
+
+    assert greenfield_quality_issues(proposal) == []
 
 
 def test_workstream_domain_intelligence_system_slots_are_not_clipped() -> None:

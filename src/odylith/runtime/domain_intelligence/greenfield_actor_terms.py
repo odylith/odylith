@@ -44,6 +44,44 @@ ACTOR_LEAD_TERMS = ROLEISH_TERMS | {
     "team",
 }
 
+CONFIRMED_ACTOR_ROLE_TERMS = frozenset(
+    {
+        "admin",
+        "analyst",
+        "auditor",
+        "applicant",
+        "beneficiary",
+        "chief",
+        "client",
+        "contact",
+        "coordinator",
+        "crew",
+        "customer",
+        "director",
+        "engineer",
+        "expert",
+        "guardian",
+        "inspector",
+        "lead",
+        "manager",
+        "member",
+        "operator",
+        "owner",
+        "planner",
+        "reviewer",
+        "requester",
+        "staff",
+        "submitter",
+        "supervisor",
+        "support",
+        "sufferer",
+        "team",
+        "trainee",
+        "user",
+        "volunteer",
+    }
+)
+
 GENERIC_ACTOR_LABELS = (
     "implementation owner",
     "project release owner",
@@ -70,6 +108,11 @@ def looks_actor_term(value: str) -> bool:
     return bool(token in ACTOR_LEAD_TERMS or re.search(r"(?:er|or|ist|ian|ant|ee)$", token))
 
 
+def word_has_actor_role_signal(value: str) -> bool:
+    token = str(value or "").casefold().strip(".,;:()[]{}")
+    return bool(token in CONFIRMED_ACTOR_ROLE_TERMS or (token.endswith("s") and token[:-1] in CONFIRMED_ACTOR_ROLE_TERMS))
+
+
 def generic_actor_label_prefix(value: str) -> str:
     text = " ".join(str(value or "").split()).strip(" .")
     lowered = text.casefold()
@@ -94,10 +137,12 @@ def localize_generic_actor_label(value: str) -> str:
 
 __all__ = [
     "ACTOR_LEAD_TERMS",
+    "CONFIRMED_ACTOR_ROLE_TERMS",
     "GENERIC_ACTOR_LABELS",
     "ROLEISH_TERMS",
     "generic_actor_label_prefix",
     "localize_generic_actor_label",
     "looks_actor_term",
     "starts_with_generic_actor_label",
+    "word_has_actor_role_signal",
 ]

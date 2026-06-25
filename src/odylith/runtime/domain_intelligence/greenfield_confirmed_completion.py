@@ -304,7 +304,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             changed = True
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3):
             metrics = [
-                f"{row_title} success evidence proves {label} is accountable for evidence and rules around {focus} while keeping the result visible and reviewable.",
+                f"{label} owns {focus} evidence, review rules, and result visibility.",
                 f"{label} blocks incomplete evidence before presenting a result, then explains what has to change for {focus}.",
                 (
                     f"{row_title} keeps actor, source, status, result, and recovery context attached to "

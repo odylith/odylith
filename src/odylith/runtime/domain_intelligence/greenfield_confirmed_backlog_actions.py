@@ -133,6 +133,25 @@ def join_action_fragments(values: list[str]) -> str:
     return f"{', '.join(fragments[:-1])}, and {fragments[-1]}"
 
 
+def actor_verb(subject: str, *, singular: str, plural: str) -> str:
+    text = re.sub(r"\s+", " ", str(subject or "")).strip(" .").casefold()
+    text = re.sub(r"^(?:the|these|those|a|an|one|this|that|each)\s+", "", text).strip()
+    if not text:
+        return singular
+    if " and " in text or "," in text:
+        return plural
+    first = text.split(maxsplit=1)[0]
+    plural_heads = {"people", "users", "customers", "operators", "reviewers", "participants", "teams", "leads"}
+    if first in plural_heads:
+        return plural
+    words = text.split()
+    if len(words) > 1 and not words[0].endswith("s") and words[1].endswith("ing"):
+        return singular
+    if words and words[-1].endswith("s") and not words[-1].endswith("ss"):
+        return plural
+    return singular
+
+
 def dedupe_repeated_visible_result_tail(value: str) -> str:
     text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
     if not text:
@@ -248,6 +267,7 @@ def _singular_actor_match_term(value: str) -> str:
 
 
 __all__ = [
+    "actor_verb",
     "actor_appears_in_path",
     "actor_interaction_action",
     "append_outcome_action",

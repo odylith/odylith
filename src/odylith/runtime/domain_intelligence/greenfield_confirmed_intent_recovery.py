@@ -173,7 +173,7 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
         "together scattered context."
     )
     product_view = (
-        f"{title} is useful when {lead_actor_ref} can {lead_action.rstrip('.')} and the result remains "
+        f"{title} earns trust when {lead_actor_ref} can {lead_action.rstrip('.')} and the result remains "
         "visible, blocked when needed, and reviewable."
     )
     actor_lines = "\n".join(f"- {row}" for row in actor_rows)
@@ -374,6 +374,15 @@ def _unique_clauses(values: Sequence[str]) -> list[str]:
 
 
 def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -> str:
+    relative = re.match(
+        r"^(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+(?:who|that)\s+(?P<action>.+)$",
+        _clean(clause),
+        flags=re.IGNORECASE,
+    )
+    if relative:
+        row = _human_actor_row(relative.group("actor"), relative.group("action"))
+        if row:
+            return row
     words = _words(clause)
     if len(words) < 2:
         return ""
@@ -420,7 +429,7 @@ def _looks_like_human_actor_token(value: str) -> bool:
 
 
 def _starts_with_action_without_actor(clause: str) -> bool:
-    text = _clean(clause)
+    text = re.sub(r"^(?:and|or|then)\s+", "", _clean(clause), flags=re.IGNORECASE)
     if not looks_like_action_clause(text):
         return False
     words = _strip_leading_articles(_words(text))
@@ -480,7 +489,8 @@ def _primary_actor_action_segment(value: str) -> str:
 
 def _looks_like_non_human_actor(value: str) -> bool:
     terms = {term.casefold() for term in label_terms(value)}
-    if terms & _HUMAN_ACTOR_TERMS:
+    role_terms = terms | {term[:-1] for term in terms if term.endswith("s")}
+    if role_terms & _HUMAN_ACTOR_TERMS:
         return False
     return bool(terms & _NON_HUMAN_ACTOR_TERMS)
 
@@ -588,13 +598,32 @@ def _state_record_subject(value: str) -> str:
 
 
 def _recovered_title(outcome: str) -> str:
-    words = _clean(outcome).split()
-    if 1 <= len(words) <= 8 and outcome.casefold() != "the first visible result":
-        title = title_case_text(outcome)
+    title_source = _title_source_from_outcome(outcome)
+    words = _clean(title_source).split()
+    if 1 <= len(words) <= 8 and title_source.casefold() != "the first visible result":
+        title = title_case_text(title_source)
         if _has_product_container_title(title):
             return title
         return f"{title} Workspace"
     return "Recovered Product Workspace"
+
+
+def _title_source_from_outcome(value: str) -> str:
+    text = _clean(value).strip(" .")
+    match = re.match(
+        r"^(?:accept|approve|capture|collect|complete|create|display|generate|issue|log|prepare|produce|publish|record|return|save|show|submit|surface|verify)\s+(?P<object>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if match:
+        text = re.sub(r"^(?:a|an|the|one)\s+", "", match.group("object").strip(" ."), flags=re.IGNORECASE)
+    if " with " in f" {text.casefold()} ":
+        parts = re.split(r"\s+with\s+", text, maxsplit=1, flags=re.IGNORECASE)
+        head = parts[0].strip(" .")
+        head_words = _words(head)
+        if len(head_words) >= 3 and head_words[-1].casefold() in {"decision", "packet", "record", "report", "summary"}:
+            text = head
+    return text
 
 
 def _has_product_container_title(value: str) -> bool:

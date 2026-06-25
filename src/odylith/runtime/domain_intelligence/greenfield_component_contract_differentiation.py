@@ -317,6 +317,7 @@ def _repair_row(
     )
     if _profile_contract_preserves_status_lifecycle(row=row, contract=profile_contract):
         contract = normalize_contract(profile_contract)
+        preserve_first_path_signal_terms(contract, first_path=_proposal_text(proposal, "intent.first_path", "first_path"))
         row["component_contract"] = contract
         _sync_generated_component_fields(row, label=label, contract=contract, previous_contract=previous_contract)
         return
@@ -340,8 +341,24 @@ def _repair_row(
             ),
         )
     )
+    preserve_first_path_signal_terms(contract, first_path=_proposal_text(proposal, "intent.first_path", "first_path"))
     row["component_contract"] = contract
     _sync_generated_component_fields(row, label=label, contract=contract, previous_contract=previous_contract)
+
+
+def preserve_first_path_signal_terms(contract: dict[str, Any], *, first_path: str) -> None:
+    owned = _clean(contract.get("owned_state"))
+    if "signal" not in owned.casefold():
+        return
+    match = re.search(r"\b(?P<signal>recent\s+[a-z][a-z0-9 -]{1,80}?\s+signals?)\b", first_path, flags=re.IGNORECASE)
+    if not match:
+        return
+    signal = match.group("signal").strip(" .")
+    if signal.casefold().endswith("signals"):
+        signal = signal[:-1]
+    if signal.casefold() in owned.casefold():
+        return
+    contract["owned_state"] = f"{signal}, {owned}"
 
 
 def _profile_contract_preserves_status_lifecycle(*, row: Mapping[str, Any], contract: Mapping[str, Any]) -> bool:

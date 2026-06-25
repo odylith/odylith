@@ -320,9 +320,9 @@ def confirmed_backlog_rows(
     follow_up_subject = downstream_subject if downstream_actor else metric_actor
     follow_up_inline = backlog_text.inline_actor_subject(follow_up_subject)
     metric_actor_inline = backlog_text.inline_actor_subject(metric_actor)
-    metric_actor_needs = _actor_verb(metric_actor, singular="needs", plural="need")
-    metric_actor_provides = _actor_verb(metric_actor_inline, singular="provides", plural="provide")
-    follow_up_receives = _actor_verb(follow_up_subject, singular="receives", plural="receive")
+    metric_actor_needs = backlog_actions.actor_verb(metric_actor, singular="needs", plural="need")
+    metric_actor_provides = backlog_actions.actor_verb(metric_actor_inline, singular="provides", plural="provide")
+    follow_up_receives = backlog_actions.actor_verb(follow_up_subject, singular="receives", plural="receive")
     workflow_audience = backlog_actions.join_distinct_labels([workflow_actor_label, downstream_actor])
     boundary_audience = workflow_audience or f"{label} operators and reviewers"
     proof_audience = downstream_actor or f"{label} proof reviewer"
@@ -596,21 +596,28 @@ def _mentions_actor_label(value: str, labels: list[str]) -> bool:
 
 
 def _parent_opportunity_sentence(*, capability: str, outcome_action: str, state_label: str, recipient: str) -> str:
+    proof_subject = _proof_subject_phrase(capability)
     if outcome_action and not _terms_covered(outcome_action, capability):
-        return f"Prove the first release path: {capability}, then let {recipient} {outcome_action}."
-    return f"Prove the first release path: {capability}. Keep {state_label} reviewable through success, blocked, and replay evidence."
+        return f"Prove the first release path: {proof_subject}, then let {recipient} {outcome_action}."
+    return f"Prove the first release path: {proof_subject}. Keep {state_label} reviewable through success, blocked, and replay evidence."
 
 
 def _parent_product_view_sentence(*, label: str, capability: str, outcome_action: str, state_label: str, recipient: str) -> str:
+    proof_subject = _proof_subject_phrase(capability)
     if outcome_action and not _terms_covered(outcome_action, capability):
         return (
-            f"{label} should feel complete when the accepted first path proves {capability} "
+            f"{label} should feel complete when the accepted first path proves {proof_subject} "
             f"while letting {recipient} {outcome_action} and keeping the first-release boundary clear."
         )
     return (
-        f"{label} should feel complete when the accepted first path proves {capability} "
+        f"{label} should feel complete when the accepted first path proves {proof_subject} "
         f"while keeping {state_label} clear and making the first-release boundary explicit."
     )
+
+
+def _proof_subject_phrase(value: str) -> str:
+    phrase = backlog_text.proof_action_subject(value)
+    return phrase or value
 
 
 def _terms_covered(needle: str, haystack: str) -> bool:
@@ -690,25 +697,6 @@ def _backlog_row(
             non_goals=non_goals,
         ),
     }
-
-
-def _actor_verb(subject: str, *, singular: str, plural: str) -> str:
-    text = re.sub(r"\s+", " ", str(subject or "")).strip(" .").casefold()
-    text = re.sub(r"^(?:the|these|those|a|an|one|this|that|each)\s+", "", text).strip()
-    if not text:
-        return singular
-    if " and " in text or "," in text:
-        return plural
-    first = text.split(maxsplit=1)[0]
-    plural_heads = {"people", "users", "customers", "operators", "reviewers", "participants", "teams", "leads"}
-    if first in plural_heads:
-        return plural
-    words = text.split()
-    if len(words) > 1 and not words[0].endswith("s") and words[1].endswith("ing"):
-        return singular
-    if words and words[-1].endswith("s") and not words[-1].endswith("ss"):
-        return plural
-    return singular
 
 
 def _dedupe_capability_phrase(value: str) -> str:

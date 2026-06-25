@@ -28,6 +28,72 @@ def test_plain_title_actor_subjects_lower_coherently_before_finite_actions() -> 
     assert generated_semantic_slop_issues({"fragment": action_chain_fragment("Station Lead Review")}) == []
 
 
+def test_robotic_safety_parent_workstream_uses_proof_subject_and_visible_status() -> None:
+    intent = parse_confirmed_intent_text(
+        """
+# Robotic Warehouse Safety Stop Console
+
+## Product story
+Warehouse operators need a safety console that makes blocked aisles, impacted robots, inventory moves, stop decisions, overrides, maintenance actions, and recovery evidence visible before automation resumes.
+
+## State object
+A robotics exception record tracks aisle blocker, impacted robots, inventory moves, stop or resume decision, safety reviewer approval, override reason, maintenance action, incident evidence, and recovery status.
+
+## First complete path
+A floor operator reports a blocked aisle, the console maps impacted robots and moves, a safety reviewer confirms whether to stop or resume automation, maintenance records corrective action, and operations receives recovery status with unsafe states still visible.
+
+## Human actors
+- Floor operator who reports blocked aisles and exceptions
+- Safety reviewer who approves stop or resume decisions
+- Maintenance technician who records corrective action
+- Operations lead who accepts recovery status
+- Automation supervisor who reviews overrides
+
+## External systems
+- Warehouse robot control system
+- Inventory movement system
+- Safety interlock telemetry
+- Maintenance ticketing system
+
+## Internal systems
+- Exception intake console
+- Robot impact mapper
+- Safety stop decision ledger
+- Override and interlock tracker
+- Maintenance recovery record
+- Operations readiness view
+
+## Critical assumptions
+- Unsafe states must stop the first path rather than be hidden.
+- The product records safety decisions and handoffs but does not bypass physical interlocks.
+- Recovery needs evidence before automation resumes.
+
+## Ambiguities
+- Whether robot commands are sent directly or exported for the control system.
+- Which incident evidence is mandatory for each stop class.
+
+## Proof boundary
+Release 0.0.1 succeeds when one blocked aisle incident can stop automation, record impacted robots and inventory moves, capture corrective action, and show reviewed recovery status before resume.
+""",
+        prompt="Robotic warehouse safety stop console",
+    )
+    proposal = build_confirmed_greenfield_proposal(
+        prompt="Robotic warehouse safety stop console",
+        title="Robotic Warehouse Safety Stop Console",
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert generated_semantic_slop_issues(proposal) == []
+    assert "proves map impacted robots" not in rendered
+    assert "maping impacted robots" not in rendered
+    assert "letting the safety reviewer state still visible" not in rendered
+    assert "proves mapping impacted robots and moves" in rendered
+    assert "letting the safety reviewer see the recovery status with unsafe states still visible" in rendered
+
+
 def test_confirmed_intent_accepts_trustworthy_when_proof_boundary() -> None:
     intent = parse_confirmed_intent_text(
         """

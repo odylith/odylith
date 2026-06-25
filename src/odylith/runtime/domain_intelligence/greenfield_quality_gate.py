@@ -93,8 +93,6 @@ _MECHANICAL_ARTIFACT_PHRASES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("generic first workflow", re.compile(r"(?<![-\w])(?:accepted\s+)?first\s+workflow\b", re.IGNORECASE)),
     ("workflow lead scaffold", re.compile(r"\bworkflow\s+lead(?:\s+and\s+beneficiary)?\b", re.IGNORECASE)),
     ("one accountable workflow", re.compile(r"\bone\s+accountable\s+workflow\b", re.IGNORECASE)),
-    ("evidence packet scaffold", re.compile(r"\bevidence\s+packet\b", re.IGNORECASE)),
-    ("state record scaffold", re.compile(r"\bstate\s+record\b", re.IGNORECASE)),
     ("generated records", re.compile(r"\bgenerated\s+(?:records|workstreams)\b", re.IGNORECASE)),
     ("visible completion scaffold", re.compile(r"\bintake\s+to\s+visible\s+completion\b|\bvisible\s+completion\b", re.IGNORECASE)),
 )

@@ -8,6 +8,7 @@ from odylith.runtime.common.prose_grammar import (
     action_base_verb_pattern,
     base_action_clause,
     base_following_action_verbs,
+    gerund_action_verb,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
@@ -384,6 +385,9 @@ def outcome_capability_fragment(value: str) -> str:
 def strip_action_subject(value: str) -> str:
     text = clean_first_path_text(value)
     text = re.sub(r"^on\s+save,\s*", "save, ", text, flags=re.IGNORECASE)
+    _relative_actor, relative_action = _relative_actor_action_parts(text)
+    if relative_action:
+        return relative_action
     _modal_actor, modal_action = _modal_actor_action_parts(text)
     if modal_action:
         return modal_action
@@ -421,8 +425,11 @@ def actor_signature(value: str) -> str:
     subject = leading_subject_prefix(value)
     if not subject:
         text = clean_first_path_text(value)
+        relative_actor, _relative_action = _relative_actor_action_parts(text)
+        if relative_actor:
+            subject = relative_actor
         modal_actor, _modal_action = _modal_actor_action_parts(text)
-        if modal_actor:
+        if not subject and modal_actor:
             subject = modal_actor
         match = MATERIAL_ACTION_RE.search(text)
         if not subject and match and match.start() > 0:
@@ -463,6 +470,17 @@ def _modal_actor_prefix(value: str) -> str:
         return ""
     return actor
 
+
+def _relative_actor_action_parts(value: str) -> tuple[str, str]:
+    pattern = r"^(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,100}?)\s+(?:who|that)\s+(?P<action>.+)$"
+    match = re.match(pattern, clean_first_path_text(value).strip(" ."), flags=re.IGNORECASE)
+    if not match:
+        return "", ""
+    actor = match.group("actor").strip(" .")
+    action = match.group("action").strip(" .")
+    return (actor, action) if action and MATERIAL_ACTION_RE.search(action) and _looks_like_actor_prefix(actor) else ("", "")
+
+
 def _modal_actor_action_parts(value: str) -> tuple[str, str]:
     words = [word.strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
     if len(words) < 3:
@@ -487,21 +505,16 @@ def _contains_subordinate_subject_marker(value: str) -> bool:
     return any(token in _SUBORDINATE_SUBJECT_MARKERS for token in tokens)
 
 def modal_actor_action_parts(value: str) -> tuple[str, str]:
-    """Return actor and action parts for actor-modal clauses."""
     return _modal_actor_action_parts(value)
 
 def modal_action_fragment(value: str) -> str:
-    """Return the action part of actor-modal clauses such as "reviewers can approve"."""
     _actor, action = _modal_actor_action_parts(value)
     return action
 
 def _looks_like_actor_prefix(value: str) -> bool:
+    text = clean_first_path_text(value).strip(" .")
     terms = {term.casefold() for term in label_terms(value)}
-    if not terms or len(terms) > 6:
-        return False
-    if terms & _SYSTEM_SUBJECT_TERMS:
-        return False
-    return True
+    return bool(terms and len(terms) <= 6 and (not terms & _SYSTEM_SUBJECT_TERMS or _has_actor_role_word(text)))
 
 
 def _looks_like_actor_subject_prefix(value: str) -> bool:
@@ -512,16 +525,14 @@ def _looks_like_actor_subject_prefix(value: str) -> bool:
         return False
     if re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", text, flags=re.IGNORECASE):
         return False
-    if re.search(
-        r"\b(?:actor|applicants?|coordinators?|customers?|inspectors?|leads?|makers?|managers?|operators?|owners?|"
-        r"participants?|people|persons?|planners?|preparers?|recipients?|requesters?|reviewers?|supervisors?|"
-        r"travelers?|users?)\b",
-        text,
-        flags=re.IGNORECASE,
-    ):
+    if _has_actor_role_word(text):
         return True
     terms = [term.casefold() for term in label_terms(text)]
     return len(terms) == 1 and _looks_like_plural_actor_term(terms[0])
+
+
+def _has_actor_role_word(value: str) -> bool:
+    return bool(re.search(r"\b(?:actors?|applicants?|coordinators?|customers?|inspectors?|leads?|makers?|managers?|operators?|owners?|participants?|people|persons?|planners?|preparers?|recipients?|requesters?|reviewers?|supervisors?|travelers?|users?)\b", value, flags=re.IGNORECASE))
 
 
 def _looks_like_plural_actor_term(value: str) -> bool:
@@ -733,15 +744,8 @@ def _gerund_for_action_token(token: str) -> str:
     if mapped:
         return mapped
     if re.fullmatch(action_base_verb_pattern(), token):
-        return _regular_gerund(token)
+        return gerund_action_verb(token)
     return ""
-
-def _regular_gerund(token: str) -> str:
-    if token.endswith("ie"):
-        return f"{token[:-2]}ying"
-    if token.endswith("e") and not token.endswith(("ee", "oe", "ye")):
-        return f"{token[:-1]}ing"
-    return f"{token}ing"
 
 def _looks_like_ambiguous_artifact_noun(
     token: str,

@@ -32,10 +32,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_mo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import state_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_product_view
 from odylith.runtime.domain_intelligence import greenfield_confirmed_diagram_text as diagram_text
+from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_actions as backlog_actions
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_evidence_record_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import _actor_verb
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
@@ -450,6 +450,15 @@ def test_modal_drift_detector_allows_plural_objects_but_rejects_finite_actions()
     assert modal_base_form_drift_phrases("Evaluators can upload benchmark runs and see the visible result.") == []
     assert modal_base_form_drift_phrases("Requesters can submit records requests and see delivery status.") == []
     assert modal_base_form_drift_phrases("Drivers can report issues and see the visible result.") == []
+    assert modal_base_form_drift_phrases(
+        "Floor Operator can report a blocked aisle and map impacted robots and moves."
+    ) == []
+    assert modal_base_form_drift_phrases(
+        "Floor Operator can report a blocked aisle and sees the result."
+    ) == ["and sees"]
+    assert modal_base_form_drift_phrases(
+        "Release readiness requires evidence that a handoff summary that the incoming lead can acknowledge is correct."
+    ) == []
     assert modal_base_form_drift_phrases("A decision about whether a model can progress is shown.") == []
     assert modal_base_form_drift_phrases(
         "The release must still prove: one site ingests readings, produces a plan, and shows the plan."
@@ -472,6 +481,36 @@ def test_modal_drift_detector_allows_plural_objects_but_rejects_finite_actions()
     assert base_gerund_clause("uploading benchmark runs and inspecting failures") == (
         "upload benchmark runs and inspect failures"
     )
+
+
+def test_actor_led_common_workflow_verbs_compile_to_base_actions() -> None:
+    first_path = (
+        "A coordinator registers a shelter, updates bed and supply capacity, records a supply request, "
+        "assigns a fulfillment owner, and publishes a public availability update with the latest status."
+    )
+
+    assert action_chain_fragment("A coordinator registers a shelter") == "register a shelter"
+    assert backlog_actions.workflow_title_action(
+        first_path=first_path,
+        actor="Response Coordinator",
+        fallback="register a shelter",
+    ) == "register a shelter"
+    assert backlog_actions.actor_interaction_action(
+        first_path=first_path,
+        actor="Response Coordinator",
+        fallback="register a shelter",
+    ) == "register a shelter"
+
+
+def test_saved_destination_detector_allows_component_handoff_targets() -> None:
+    assert generated_public_copy_issues(
+        "component spec",
+        "Submission Readiness Gate Service passes readiness gate result to Ledger Outcome Viewer.",
+    ) == ()
+    assert generated_public_copy_issues(
+        "component spec",
+        "The workflow saves result to ledger before review.",
+    ) == ("component spec leaked saved-destination result prose",)
 
 
 def test_confirmed_guidance_prompt_modal_objects_and_decisions_stay_coherent() -> None:
@@ -2190,9 +2229,9 @@ def test_workstream_risk_uses_compact_state_label_instead_of_field_list() -> Non
 
 
 def test_actor_verb_treats_singular_actor_with_modifier_nouns_as_singular() -> None:
-    assert _actor_verb("the homeowner comparing solar options", singular="provides", plural="provide") == "provides"
-    assert _actor_verb("the student choosing recommended books", singular="needs", plural="need") == "needs"
-    assert _actor_verb("reviewers checking requests", singular="receives", plural="receive") == "receive"
+    assert backlog_actions.actor_verb("the homeowner comparing solar options", singular="provides", plural="provide") == "provides"
+    assert backlog_actions.actor_verb("the student choosing recommended books", singular="needs", plural="need") == "needs"
+    assert backlog_actions.actor_verb("reviewers checking requests", singular="receives", plural="receive") == "receive"
 
 
 def test_first_path_model_drops_meta_loop_summary_from_visible_outcome() -> None:

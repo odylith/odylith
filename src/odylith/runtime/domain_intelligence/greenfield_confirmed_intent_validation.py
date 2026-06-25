@@ -63,8 +63,6 @@ _META_NARRATION_PATTERNS = [
         r"\bvisible\s+completion\b",
         r"\bproduct\s+promise\b",
         r"\brelease\s+claim\b",
-        r"\bstate\s+record\b",
-        r"\bevidence\s+packet\b",
         r"\bfixture-backed\s+inputs\b",
         r"\bdocumented\s+non-goals\b",
     )

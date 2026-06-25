@@ -12,6 +12,7 @@ import re
 
 _INFINITIVE_TO_FINITE = {
     "accept": "accepts",
+    "acknowledge": "acknowledges",
     "add": "adds",
     "advance": "advances",
     "allow": "allows",
@@ -22,6 +23,7 @@ _INFINITIVE_TO_FINITE = {
     "assemble": "assembles",
     "ask": "asks",
     "attach": "attaches",
+    "attest": "attests",
     "assign": "assigns",
     "bind": "binds",
     "block": "blocks",
@@ -33,6 +35,7 @@ _INFINITIVE_TO_FINITE = {
     "check": "checks",
     "choose": "chooses",
     "classify": "classifies",
+    "clear": "clears",
     "click": "clicks",
     "clean": "cleans",
     "close": "closes",
@@ -68,6 +71,7 @@ _INFINITIVE_TO_FINITE = {
     "enter": "enters",
     "estimate": "estimates",
     "evaluate": "evaluates",
+    "exchange": "exchanges",
     "expose": "exposes",
     "explain": "explains",
     "export": "exports",
@@ -79,6 +83,7 @@ _INFINITIVE_TO_FINITE = {
     "find": "finds",
     "finish": "finishes",
     "follow": "follows",
+    "gather": "gathers",
     "get": "gets",
     "guide": "guides",
     "handle": "handles",
@@ -134,9 +139,12 @@ _INFINITIVE_TO_FINITE = {
     "receive": "receives",
     "recommend": "recommends",
     "record": "records",
+    "reconcile": "reconciles",
     "recompute": "recomputes",
     "refresh": "refreshes",
+    "register": "registers",
     "reject": "rejects",
+    "remove": "removes",
     "report": "reports",
     "request": "requests",
     "repair": "repairs",
@@ -157,6 +165,7 @@ _INFINITIVE_TO_FINITE = {
     "send": "sends",
     "set": "sets",
     "share": "shares",
+    "split": "splits",
     "start": "starts",
     "store": "stores",
     "stop": "stops",
@@ -176,6 +185,7 @@ _INFINITIVE_TO_FINITE = {
     "use": "uses",
     "view": "views",
     "validate": "validates",
+    "verify": "verifies",
     "watch": "watches",
     "write": "writes",
 }
@@ -214,6 +224,12 @@ _FINITE_ACTION_SUFFIX_FALSE_POSITIVES = frozenset(
 )
 _MODAL_BASE_FORM_MARKERS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "will", "would"})
 _MODAL_COORDINATORS = frozenset({"and", "or"})
+_MODAL_COORDINATED_PLURAL_OBJECT_TERMS = frozenset(
+    {"blocks", "checks", "controls", "moves", "records", "requests", "runs", "signals", "updates"}
+)
+_MODAL_COORDINATED_OBJECT_BOUNDARIES = frozenset(
+    {"", "after", "and", "because", "before", "for", "from", "if", "into", "or", "then", "through", "to", "until", "when", "where", "which", "while", "with", "without"}
+)
 DEFAULT_DANGLING_TAIL_WORDS = frozenset(
     {
         "a",
@@ -315,9 +331,21 @@ def _modal_base_form_drift_segment(value: str, *, window: int) -> list[str]:
             candidate_index = _next_modal_candidate(lowered, index + 1, window_end)
             if candidate_index is None:
                 continue
+            if looks_like_base_action_token(lowered[candidate_index]):
+                continue
+            if _coordinated_candidate_is_plural_object(lowered, candidate_index, window_end):
+                continue
             if looks_like_finite_action_token(lowered[candidate_index]):
                 phrases.append(" ".join(tokens[index : candidate_index + 1]))
     return _unique_strings(phrases)
+
+
+def _coordinated_candidate_is_plural_object(tokens: list[str], candidate_index: int, window_end: int) -> bool:
+    token = tokens[candidate_index]
+    if token not in _MODAL_COORDINATED_PLURAL_OBJECT_TERMS:
+        return False
+    next_token = tokens[candidate_index + 1] if candidate_index + 1 < window_end else ""
+    return next_token in _MODAL_COORDINATED_OBJECT_BOUNDARIES
 
 
 def looks_like_base_action_token(value: str) -> bool:
@@ -416,6 +444,76 @@ def third_person_action_verb(value: str) -> str:
     if lowered.endswith("y") and len(lowered) > 1 and lowered[-2] not in {"a", "e", "i", "o", "u"}:
         return f"{verb[:-1]}ies"
     return f"{verb}s"
+
+
+def gerund_action_verb(value: str) -> str:
+    """Return a narrow gerund form for action verbs Odylith emits."""
+
+    token = _clean_word_token(value)
+    if not token:
+        return ""
+    if token in _INFINITIVE_TO_FINITE:
+        return _regular_gerund_form(token)
+    base = _FINITE_TO_BASE.get(token)
+    return _regular_gerund_form(base) if base else ""
+
+
+def normalize_binary_action_control_phrase(value: str) -> str:
+    """Repair clipped phrases like ``accept or dismiss control``."""
+
+    action_pattern = action_verb_pattern(include_base=True, include_finite=True)
+
+    def replace(match: re.Match[str]) -> str:
+        left = gerund_action_verb(match.group("left"))
+        right = gerund_action_verb(match.group("right"))
+        if not left or not right:
+            return match.group(0)
+        return f"control for {left} or {right}"
+
+    return re.sub(
+        rf"\b(?P<left>{action_pattern})\s+or\s+(?P<right>{action_pattern})\s+control\b",
+        replace,
+        str(value or ""),
+        flags=re.IGNORECASE,
+    )
+
+
+def repair_modal_base_form_drift(value: str) -> str:
+    """Repair generated modal clauses that coordinate finite verbs."""
+
+    finite_pattern = "|".join(re.escape(verb) for verb in sorted(_FINITE_TO_BASE, key=len, reverse=True))
+    modal_pattern = "|".join(re.escape(modal) for modal in sorted(_MODAL_BASE_FORM_MARKERS))
+
+    def replace_clause(match: re.Match[str]) -> str:
+        return f"{match.group('modal')} {_repair_modal_clause_body(match.group('body'), finite_pattern=finite_pattern)}"
+
+    return re.sub(
+        rf"\b(?P<modal>{modal_pattern})\s+(?P<body>[^.!?;:]+)",
+        replace_clause,
+        str(value or ""),
+        flags=re.IGNORECASE,
+    )
+
+
+def _repair_modal_clause_body(value: str, *, finite_pattern: str) -> str:
+    text = str(value or "")
+    first, separator, rest = text.partition(" ")
+    first_token = _clean_word_token(first)
+    if separator and first_token != "be" and first_token in _FINITE_TO_BASE:
+        text = f"{_replace_word_token(first, _FINITE_TO_BASE[first_token])} {rest}"
+
+    def replace_coordinated(match: re.Match[str]) -> str:
+        verb = match.group("verb")
+        base = _FINITE_TO_BASE.get(_clean_word_token(verb), verb.casefold())
+        return f"{match.group('connector')} {match.group('modifier') or ''}{_replace_word_token(verb, base)}"
+
+    return re.sub(
+        rf"(?P<connector>\b(?:and|or)|,)\s+(?P<modifier>(?:[a-z]+ly\s+)?)"
+        rf"(?P<verb>{finite_pattern})\b",
+        replace_coordinated,
+        text,
+        flags=re.IGNORECASE,
+    )
 
 
 def action_base_verb_pattern() -> str:

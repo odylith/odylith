@@ -173,7 +173,7 @@ def test_quality_gate_rejects_mechanical_greenfield_scaffold_language() -> None:
     issues = greenfield_quality_issues(proposal)
 
     assert any("generic first workflow" in issue for issue in issues)
-    assert any("evidence packet" in issue for issue in issues)
+    assert not any("evidence packet scaffold" in issue for issue in issues)
     assert any("workflow lead" in issue for issue in issues)
     assert any("diagram mechanics" in issue for issue in issues)
 

@@ -126,6 +126,9 @@ def _actor_led_base_action_phrase(value: str) -> str:
         return ""
     words = text.split()
     for index in range(1, min(len(words), 6)):
+        prefix = " ".join(words[:index]).strip(" .")
+        if re.search(r"\b(?:as|at|by|for|from|in|of|on|through|to|via|with|without)\b", prefix, flags=re.IGNORECASE):
+            continue
         candidate = " ".join(words[index:]).strip(" .")
         if looks_like_finite_action(candidate) or looks_like_action_clause(candidate):
             if imperative_action_with_copula_words(words, index):
@@ -147,17 +150,21 @@ def outcome_action_phrase(outcome: str) -> str:
     actor_review = _actor_led_outcome_review_action(text)
     if actor_review:
         return actor_review
+    if _looks_like_past_result_noun(text):
+        return f"see {_object_phrase(text)}"
     if looks_like_action_clause(text):
         return base_action_clause(text)
     if _looks_like_question_result(text):
         return f"see {text}"
     if _looks_like_predicate_result(text):
         return f"see that {text}"
+    words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
+    object_text = _object_phrase(text)
+    if "status" in words and "visible" in words:
+        return f"see {object_text}"
     actor_action = _actor_led_base_action_phrase(re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE))
     if actor_action:
         return actor_action
-    words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
-    object_text = _object_phrase(text)
     if words & {"proof", "proven", "verified", "evidence", "audit"}:
         return f"review {object_text}"
     if "status" in words and words & {"tracking", "readiness", "lifecycle"}:
@@ -173,6 +180,11 @@ def _reviewable_result_object(value: str) -> str:
     """Normalize result nouns before composing review/use/see actions."""
 
     return normalize_reviewed_result_nouns(_clean(value)).strip(" .")
+
+
+def _looks_like_past_result_noun(value: str) -> bool:
+    words = [word.strip(".,:;").casefold() for word in _clean(value).replace("-", " ").split() if word.strip(".,:;")]
+    return bool(words and words[0] in {"approved", "confirmed", "generated", "published", "recorded", "saved", "verified"} and set(words) & (_VISIBLE_RESULT_OBJECT_HINTS | _VISIBLE_SEE_RESULT_HINTS))
 
 
 def _actor_led_outcome_review_action(value: str) -> str:

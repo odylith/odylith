@@ -235,7 +235,7 @@ def _repair_card(*, label: str, body: str, ctx: _StoryCardContext) -> str:
         return fallback
     outcome = _outcome_phrase(ctx)
     return _ensure_period(
-        f"{ctx.title} is useful when {ctx.actor} can {_outcome_action_phrase(outcome)} and {ctx.participant} can understand what happened next"
+        f"{ctx.title} earns trust when {ctx.actor} can {_outcome_action_phrase(outcome)} and {ctx.participant} can understand what happened next"
     )
 
 
