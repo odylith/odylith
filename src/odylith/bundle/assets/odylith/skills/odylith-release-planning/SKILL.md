@@ -14,6 +14,13 @@ release.
   deterministic CLI and source contract.
 - Keep release planning separate from umbrella execution waves and separate
   from the canonical maintainer publication lane.
+- Governance-learning: release claims require fresh governance learning. Do not build, publish,
+  or claim release readiness while escaped defects, failed simulations,
+  contract changes, topology changes, or proof checkpoints are still only in
+  chat memory. Search existing Casebook and related governance truth first,
+  read prior failed mechanisms, do not repeat a fix path that already failed,
+  and route new mechanism-level learning through Casebook, Radar/plans,
+  Registry, Atlas, and Compass before release closeout.
 
 ## Keep It Separate
 - Use release planning when the question is "what release should this

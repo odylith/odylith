@@ -243,6 +243,8 @@ def _compact_detail_text(value: str) -> str:
     text = clean_text(value).strip(" .")
     if text.count(",") < 4 and len(text) <= 260:
         return text
+    if len(text) <= 260 and _preserve_complete_validation_predicate(text):
+        return text
     parts = _readable_phrase_parts(text)
     if len(parts) < 4:
         return text
@@ -258,6 +260,20 @@ def _join_compact_phrase_parts(parts: list[str]) -> str:
         return normalize_connector_sequence(f"{rows[0]} {connector}{rows[1]}")
     connector = "" if rows[2].casefold().startswith(("and ", "or ")) else "and "
     return normalize_connector_sequence(f"{rows[0]}, {rows[1]}, {connector}{rows[2]}")
+
+
+def _preserve_complete_validation_predicate(value: str) -> bool:
+    lowered = clean_text(value).casefold()
+    return any(
+        marker in lowered
+        for marker in (
+            "fails closed when",
+            "is missing",
+            "are missing",
+            "cannot explain",
+            "instead of producing",
+        )
+    )
 
 
 def _readable_phrase_parts(value: str) -> list[str]:

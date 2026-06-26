@@ -7,7 +7,16 @@ Use when capturing a new Casebook bug record or updating an open bug with fresh 
 
 ## Rules
 
+- Governance-learning: Casebook capture is mandatory for every durable error, escaped defect,
+  failed mechanism, failed simulation, live repro, bad generated artifact, semantic drift,
+  quality-gate failure, latency breach, validator miss, or quality-gate false
+  positive/false negative before the next fix pass, commit, build, release, or
+  completion claim.
 - Search for an existing bug first; update, reopen, or consolidate the existing record before creating a parallel duplicate.
+- Read prior failed mechanisms, failed fix attempts, rejected approaches,
+  guardrails, and validation history before proposing a fix. Do not repeat a
+  fix path that already failed; update the bug with the new hypothesis and
+  mechanism-level learning instead.
 - Give every new bug record a stable `Bug ID` in the `CB-###` sequence and keep that ID unchanged when the title, status, or file location evolves.
 - Do not call `odylith bug capture` until you have the minimum grounded intake evidence in hand:
   `component`, `reproducibility`, `impact`, `environment`, `detected by`,

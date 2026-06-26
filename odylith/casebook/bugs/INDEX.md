@@ -1,11 +1,14 @@
 # Bug Index
 
-Last updated (UTC): 2026-06-09
+Last updated (UTC): 2026-06-26
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-208 | 2026-06-26 | Greenfield post confirm repair routing remains stringly typed instead of semanti | P1 | domain-intelligence | Open | [2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md](2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md) |
+| CB-207 | 2026-06-26 | Greenfield post confirm package repair repeats risk prose across surfaces | P1 | domain-intelligence | Open | [2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md](2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md) |
+| CB-206 | 2026-06-26 | Agent guidance did not require failed mechanism capture before repeated fixes | P1 | odylith-chatter | Open | [2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md](2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md) |
 | CB-205 | 2026-06-09 | Greenfield post-confirm create blocked by generated sentence fragments and question-impact repetition | P1 | domain-intelligence | FixedPendingRelease | [2026-06-09-greenfield-post-confirm-create-blocked-by-generated-sentence-fragments-and-quest.md](2026-06-09-greenfield-post-confirm-create-blocked-by-generated-sentence-fragments-and-quest.md) |
 | CB-204 | 2026-06-09 | Greenfield post confirm create blocked terminal reported results and deferred co | P1 | odylith | Open | [2026-06-09-greenfield-post-confirm-create-blocked-terminal-reported-results-and-deferred-co.md](2026-06-09-greenfield-post-confirm-create-blocked-terminal-reported-results-and-deferred-co.md) |
 | CB-203 | 2026-05-19 | Project tab chips bypass shared dashboard controls | P2 | dashboard | Open | [2026-05-19-project-tab-chips-bypass-shared-dashboard-controls.md](2026-05-19-project-tab-chips-bypass-shared-dashboard-controls.md) |

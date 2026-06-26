@@ -237,6 +237,146 @@ def test_human_visible_clarity_floor_travels_to_bundle_mirrors() -> None:
         assert live_text == mirror_text
 
 
+def test_governance_learning_rule_travels_to_guidance_skills_and_install_generators() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+    per_file_snippets = (
+        "governance-learning",
+        "failed mechanism",
+        "prior failed mechanisms",
+        "do not repeat a fix path",
+    )
+    aggregate_snippets = (
+        *per_file_snippets,
+        "casebook",
+        "radar",
+        "registry",
+        "atlas",
+        "compass",
+    )
+    fixed_mirrored_pairs = (
+        ("odylith/AGENTS.md", "src/odylith/bundle/assets/odylith/AGENTS.md"),
+        ("odylith/CLAUDE.md", "src/odylith/bundle/assets/odylith/CLAUDE.md"),
+        (
+            ".claude/CLAUDE.md",
+            "src/odylith/bundle/assets/project-root/.claude/CLAUDE.md",
+        ),
+        (
+            ".claude/rules/odylith-governance.md",
+            "src/odylith/bundle/assets/project-root/.claude/rules/odylith-governance.md",
+        ),
+        (
+            "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        ),
+        (
+            "odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/CODEX_HOST_CONTRACT.md",
+        ),
+        (
+            "odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/CLAUDE_HOST_CONTRACT.md",
+        ),
+        (
+            "odylith/agents-guidelines/CODING_STANDARDS.md",
+            "src/odylith/bundle/assets/odylith/agents-guidelines/CODING_STANDARDS.md",
+        ),
+    )
+    mirrored_skill_pairs = tuple(
+        (
+            str(path.relative_to(repo_root)),
+            str(
+                (
+                    repo_root
+                    / "src"
+                    / "odylith"
+                    / "bundle"
+                    / "assets"
+                    / path.relative_to(repo_root)
+                ).relative_to(repo_root)
+            ),
+        )
+        for path in sorted((repo_root / "odylith" / "skills").glob("*/SKILL.md"))
+    )
+    mirrored_governance_agent_pairs = tuple(
+        (
+            str(path.relative_to(repo_root)),
+            str(
+                (
+                    repo_root
+                    / "src"
+                    / "odylith"
+                    / "bundle"
+                    / "assets"
+                    / path.relative_to(repo_root)
+                ).relative_to(repo_root)
+            ),
+        )
+        for pattern in ("AGENTS.md", "CLAUDE.md")
+        for path in sorted((repo_root / "odylith").glob(f"**/{pattern}"))
+        if (
+            repo_root
+            / "src"
+            / "odylith"
+            / "bundle"
+            / "assets"
+            / path.relative_to(repo_root)
+        ).exists()
+    )
+    mirrored_pairs = (
+        *fixed_mirrored_pairs,
+        *mirrored_skill_pairs,
+        *mirrored_governance_agent_pairs,
+    )
+    mirrored_sources = {source_rel for source_rel, _ in mirrored_pairs}
+    unmirrored_governance_agent_paths = tuple(
+        str(path.relative_to(repo_root))
+        for pattern in ("AGENTS.md", "CLAUDE.md")
+        for path in sorted((repo_root / "odylith").glob(f"**/{pattern}"))
+        if str(path.relative_to(repo_root)) not in mirrored_sources
+    )
+    source_only_paths = (
+        "AGENTS.md",
+        "CLAUDE.md",
+        "odylith/maintainer/agents-guidelines/CODING_STANDARDS.md",
+        *unmirrored_governance_agent_paths,
+        *(
+            str(path.relative_to(repo_root))
+            for path in sorted(
+                (repo_root / "odylith" / "maintainer" / "skills").glob("*/SKILL.md")
+            )
+        ),
+    )
+
+    for source_rel, bundle_rel in mirrored_pairs:
+        source_text = (repo_root / source_rel).read_text(encoding="utf-8")
+        bundle_text = (repo_root / bundle_rel).read_text(encoding="utf-8")
+        assert source_text == bundle_text
+        normalized = " ".join(source_text.casefold().split())
+        for snippet in per_file_snippets:
+            assert snippet in normalized, source_rel
+
+    for source_rel in source_only_paths:
+        normalized = " ".join((repo_root / source_rel).read_text(encoding="utf-8").casefold().split())
+        for snippet in per_file_snippets:
+            assert snippet in normalized, source_rel
+
+    aggregate_text = " ".join(
+        (repo_root / source_rel).read_text(encoding="utf-8") for source_rel, _ in mirrored_pairs
+    ) + " ".join((repo_root / source_rel).read_text(encoding="utf-8") for source_rel in source_only_paths)
+    aggregate_normalized = " ".join(aggregate_text.casefold().split())
+    for snippet in aggregate_snippets:
+        assert snippet in aggregate_normalized
+
+    install_sources = (
+        repo_root / "src" / "odylith" / "install" / "agents.py",
+        repo_root / "src" / "odylith" / "install" / "bootstrap_assets.py",
+    )
+    for path in install_sources:
+        normalized = " ".join(path.read_text(encoding="utf-8").casefold().split())
+        for snippet in aggregate_snippets:
+            assert snippet in normalized, path.relative_to(repo_root)
+
+
 def test_migration_observer_agent_guidance_stays_maintainer_only() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     forbidden_tokens = (

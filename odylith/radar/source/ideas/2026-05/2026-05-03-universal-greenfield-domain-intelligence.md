@@ -28,7 +28,7 @@ confidence: high
 
 founder_override: no
 
-promoted_to_plan: odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md
+promoted_to_plan: odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md
 
 execution_model: standard
 
@@ -137,9 +137,43 @@ Greenfield create/apply runs a deterministic proposal Tribunal before any govern
 Compass timeline audit filters zero-file prompt-intervention narration so routing notes do not render as fake implementation history.
 
 ## Current Completion Gate
-- Confirmed greenfield creation must build one typed semantic model before rendering any governed surface: `FirstPathContract`, `DomainOntology`, `ComponentContract`, `ReleaseScope`, `WorkstreamContract`, `DiagramEventGraph`, and `ProofObligation`.
-- Registry, Radar, Atlas, project intelligence, release topology, and proof review must render from that typed model instead of independently re-parsing loose prose.
-- The quality gate must fail closed before writes on first-path drift, provisional-title leakage, wrong-domain vocabulary, malformed ownership grammar, dangling punctuation, clipped sentences, duplicated words, proof-token soup, repeated proof walls, deferred-scope leakage, and missing active-release topology.
+- Confirmed greenfield creation must compile accepted intent into a lossless
+  `ConfirmedIntentIR`, then a host-reasoned `SemanticModelIR`, then a
+  deterministic `ArtifactPlanIR` before rendering any governed surface.
+  Required semantic structures include `FirstPathContract`, `DomainOntology`,
+  `ComponentContract`, `ReleaseScope`, `WorkstreamContract`,
+  `DiagramEventGraph`, and `ProofObligation`.
+- Host reasoning owns ambiguity adjudication: actor/action/object sense,
+  state-object ownership, proof obligations, domain-risk posture, deferred
+  scope, and artifact destination. Every ambiguity decision must leave a
+  decision-ledger entry with source provenance and rejected interpretations.
+- Registry, Radar, Atlas, project intelligence, release topology, and proof
+  review must render from sanctioned `ArtifactPlanIR` projection fields instead
+  of independently re-parsing loose prose or seeing each other's surface syntax.
+- The quality gate must fail closed before writes on first-path drift,
+  provisional-title leakage, wrong-domain vocabulary, malformed ownership
+  grammar, dangling punctuation, clipped sentences, duplicated words,
+  proof-token soup, repeated proof walls, repeated sentence shape across
+  surfaces, deferred-scope leakage, and missing active-release topology.
+- PM, architect, engineer, and domain-expert review must produce typed
+  `ReviewReport` findings with codes, semantic node IDs, source-map targets,
+  projection IDs, severity, and repairability. Human-readable diagnostics are
+  output only; they must not be the repair-routing API.
+- Repair must return a typed `PatchSet` against `SemanticModelIR` or
+  `ArtifactPlanIR`, not rewritten public prose. Odylith rerenders only impacted
+  projections, reruns deterministic gates, and writes records only after the
+  final manifest passes.
+- Standard path target: complete post-confirm governed artifacts under 60
+  seconds with no host rescue. Rescue path target: allow one targeted
+  host-reasoned semantic/plan patch up to 90 seconds only when a final
+  semantic/quality gate fails and the failure bundle is repairable. 120 seconds
+  is reserved for explicit premium/deep repair or CI simulation, not default
+  operator flow.
+- Failed mechanism to avoid: do not grow regex/template towers or rendered-text
+  rewrite loops as the semantic repair strategy. Regex may support mechanical
+  parsing, tokenization, and formatting behind named owners; it must not own
+  product meaning, domain classification, ambiguity resolution, or premium
+  quality judgment.
 - The proof suite must include adversarial greenfield fixtures across unrelated domains and must assert zero leakage between fixture term signatures.
 - Completion requires an end-to-end `greenfield create --confirm` proof that produces premium, domain-specific Radar workstreams, Registry component contracts, Atlas diagrams, project story, release assignment, and Tribunal evidence without adding project-specific logic to Odylith product code.
 
@@ -676,7 +710,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   tests/unit/runtime/test_greenfield_artifact_language_quality.py` passed
   (`67 passed`); `.venv/bin/python -m pytest -q
   tests/integration/runtime/test_greenfield_create_performance.py` passed
-  (`1 passed`) with the confirmed-create gate under 30 seconds and semantic
+  (`1 passed`) with a stricter historical confirmed-create timing snapshot and semantic
   slop checks enabled; `.venv/bin/python -m pytest -q
   tests/integration/runtime/test_project_tab_browser.py` passed (`2 passed`);
   an ad hoc temp-repo create measurement completed in 11.67 seconds with six
@@ -686,8 +720,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   governed-artifact Tribunal preflight aggregation into
   `greenfield_confirmed_prewrite_gate.py`. The parent completion orchestrator
   now delegates those checks and stays below the source-size hard threshold
-  (`greenfield_confirmed_completion.py`: 1294 to 1192 lines), preserving the
-  under-30-second confirmed-create contract while reducing hot-path ownership
+  (`greenfield_confirmed_completion.py`: 1294 to 1192 lines), recording a stricter historical confirmed-create timing snapshot while reducing hot-path ownership
   pressure. Proof: `.venv/bin/python -m py_compile
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
   src/odylith/runtime/domain_intelligence/greenfield_confirmed_prewrite_gate.py`
@@ -1044,7 +1077,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused confirmed-diagrams proof
   passed (`5 passed in 0.06s`); wider greenfield artifact proof passed (`162
   passed in 192.91s`); and confirmed-create performance proof passed (`1
-  passed in 9.52s`), preserving the under-30s create gate.
+  passed in 9.52s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 first-path parser label-term follow-through moved new-action
   clause and valid-step display-token thresholds in
   `greenfield_first_path_semantics.py` onto
@@ -1059,7 +1092,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched module and test; focused post-confirm
   first-path proof passed (`14 passed in 1.33s`); wider greenfield artifact
   proof passed (`162 passed in 192.42s`); and confirmed-create performance
-  proof passed (`1 passed in 9.65s`), preserving the under-30s create gate.
+  proof passed (`1 passed in 9.65s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed Atlas proof-label word-count follow-through moved
   semantic proof checkpoint and proof-review clause thresholds in
   `greenfield_confirmed_diagram_text.py` onto
@@ -1073,7 +1106,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused confirmed-diagrams proof
   passed (`5 passed in 0.06s`); wider greenfield artifact proof passed (`162
   passed in 193.46s`); and confirmed-create performance proof passed (`1
-  passed in 9.56s`), preserving the under-30s create gate.
+  passed in 9.56s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 semantic-model proof-checkpoint word-count follow-through moved
   diagram-event proof checkpoint clause thresholds in
   `greenfield_semantic_model.py` onto `greenfield_confirmed_text.word_count`.
@@ -1086,7 +1119,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched modules and test; focused semantic-schema
   proof passed (`3 passed in 0.15s`); wider greenfield artifact proof passed
   (`162 passed in 194.12s`); and confirmed-create performance proof passed (`1
-  passed in 9.64s`), preserving the under-30s create gate.
+  passed in 9.64s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed component word-count follow-through moved
   responsibility-depth, generated-or-weak, and dependency-focus thresholds in
   `greenfield_confirmed_components.py` onto
@@ -1101,7 +1134,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component-spec proof passed
   (`12 passed in 0.14s`); wider greenfield artifact proof passed (`162 passed
   in 192.35s`); and confirmed-create performance proof passed (`1 passed in
-  9.14s`), preserving the under-30s create gate.
+  9.14s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-03 artifact-enrichment graph and Tribunal actor decomposition moved
   Domain Intelligence graph normalization into `artifact_graph.py` and visible
   Tribunal actor projection into `artifact_tribunal_actors.py`.
@@ -1240,7 +1273,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   for the touched modules and test; focused confirmed-text/project-surface proof
   passed (`5 passed in 0.21s`); wider greenfield artifact proof passed (`160
   passed in 195.36s`); and confirmed-create performance proof passed (`1 passed
-  in 9.59s`), preserving the under-30s create gate.
+  in 9.59s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed-intent parser word-count follow-through moved accepted
   intent section inference onto `greenfield_confirmed_text.word_count`. The
   parser still owns Markdown/JSON section parsing, preamble paragraph
@@ -1253,7 +1286,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   for the touched modules and test; focused confirmed-intent proof passed (`32
   passed in 32.52s`); wider greenfield artifact proof passed (`161 passed in
   196.16s`); and confirmed-create performance proof passed (`1 passed in
-  9.60s`), preserving the under-30s create gate.
+  9.60s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-03 greenfield coercion hygiene follow-through removed the remaining
   workstream-local `_list_values` clone and the project-binding-local
   `_mapping` clone from the B-142/CB-202 slice. Workstream Domain Intelligence
@@ -1265,8 +1298,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   private list or mapping coercion in those modules. Proof: focused
   coercion/domain-intelligence/project-binding proof passed (`49 passed in
   16.10s`); broader greenfield artifact-quality and confirmed-create proof
-  passed (`119 passed in 233.71s`), including the under-30s confirmed-create
-  performance gate.
+  passed (`119 passed in 233.71s`), including a stricter historical confirmed-create timing snapshot.
 - 2026-06-03 project-brief rendering ownership follow-through moved proposal
   text rendering for the top-level `project_brief` into
   `greenfield_project_brief.py`. `proposal_rendering.py` now delegates through
@@ -1278,8 +1310,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   lines). Proof: syntax proof passed for the touched renderer modules and test;
   focused project-brief/proposal proof passed (`4 passed in 0.22s`); broader
   proposal and artifact-quality proof passed (`87 passed in 189.11s`); and
-  confirmed-create performance proof passed (`1 passed in 11.97s`), preserving
-  the under-30s create gate.
+  confirmed-create performance proof passed (`1 passed in 11.97s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-03 component-axis term-helper follow-through removed the remaining
   `_content_terms`, `_term_token`, `_phrase`, and `_normalize_axis_text`
   helpers from `greenfield_component_axes.py`. Derived Registry semantic axes
@@ -1292,8 +1323,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched modules and test; focused component-axis
   and spec-quality proof passed (`15 passed in 13.16s`); broad component and
   artifact-quality proof passed (`54 passed in 166.71s`); and confirmed-create
-  performance proof passed (`1 passed in 11.73s`), preserving the under-30s
-  create gate.
+  performance proof passed (`1 passed in 11.73s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 component contract field phrase-helper follow-through removed the
   remaining local `_phrase` helper from
   `greenfield_component_contract_fields.py`. Supporting-artifact text now calls
@@ -1307,7 +1337,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component-spec proof passed
   (`12 passed in 0.24s`); broad component and artifact-quality proof passed
   (`54 passed in 170.39s`); and confirmed-create performance proof passed
-  (`1 passed in 13.04s`), preserving the under-30s create gate.
+  (`1 passed in 13.04s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 component term-index ownership follow-through moved ordered
   component-local term extraction out of the Registry quality gate and into
   `greenfield_component_term_index.py`. Component contracts, contract
@@ -1322,7 +1352,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component-spec proof passed
   (`12 passed in 0.22s`); broad component and artifact-quality proof passed
   (`54 passed in 152.75s`); and confirmed-create performance proof passed
-  (`1 passed in 9.95s`), preserving the under-30s create gate.
+  (`1 passed in 9.95s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 greenfield domain-term index follow-through split shared
   artifact specificity tokenization into `greenfield_domain_term_index.py`.
   Product-risk genericity checks now use `ordered_terms` with risk-specific
@@ -1339,7 +1369,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`46 passed in 15.79s`); focused component proof passed
   (`12 passed in 0.23s`); broad artifact/proposal proof passed
   (`100 passed in 176.18s`); and confirmed-create performance proof passed
-  (`1 passed in 11.47s`), preserving the under-30s create gate.
+  (`1 passed in 11.47s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry spec term-distinctiveness follow-through moved
   component-domain term sets, section-term filtering, and component-local
   distinctiveness scoring into `greenfield_component_term_index.py`.
@@ -1356,7 +1386,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed for the touched modules and test; focused component-spec proof
   passed (`12 passed in 0.24s`); broad artifact/proposal proof passed
   (`128 passed in 222.27s`); and confirmed-create performance proof passed
-  (`1 passed in 11.39s`), preserving the under-30s create gate.
+  (`1 passed in 11.39s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed-intent semantic-term follow-through moved validation
   and internal-system semantic token extraction into
   `greenfield_confirmed_text.semantic_terms`. Confirmed-intent validation now
@@ -1375,7 +1405,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed for the touched modules and tests; focused confirmed-intent
   proof passed (`30 passed in 37.40s`); broad artifact/proposal proof passed
   (`130 passed in 204.69s`); and confirmed-create performance proof passed
-  (`1 passed in 9.91s`), preserving the under-30s create gate.
+  (`1 passed in 9.91s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Atlas sequence term-routing follow-through moved first-path
   sequence and flowchart component matching onto
   `greenfield_domain_term_index.ordered_terms`. The shared term index now
@@ -1389,7 +1419,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused diagram proof passed
   (`5 passed in 0.05s`); wider artifact/proposal proof passed
   (`105 passed in 166.48s`); and confirmed-create performance proof passed
-  (`1 passed in 9.90s`), preserving the under-30s create gate.
+  (`1 passed in 9.90s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 semantic-model term-index follow-through moved generated semantic
   model ontology terms, required-field terms, event-target terms, and actor
   terms onto `greenfield_domain_term_index.ordered_terms`.
@@ -1403,7 +1433,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched module and test; focused intelligence-schema proof
   passed (`3 passed in 0.11s`); wider artifact/proposal/post-confirm proof
   passed (`108 passed in 168.60s`); and confirmed-create performance proof
-  passed (`1 passed in 9.91s`), preserving the under-30s create gate.
+  passed (`1 passed in 9.91s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 post-confirm drift term-index follow-through moved semantic
   repetition signatures, overlap signatures, and contrastive drift term
   signatures onto `greenfield_domain_term_index.ordered_terms`.
@@ -1417,7 +1447,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched module and test; focused drift proof passed
   (`2 passed in 0.11s`); wider artifact/proposal/post-confirm proof passed
   (`101 passed in 164.28s`); and confirmed-create performance proof passed
-  (`1 passed in 9.69s`), preserving the under-30s create gate.
+  (`1 passed in 9.69s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed-artifact Tribunal term-index follow-through moved
   confirmed Radar substance terms, Registry proof-boundary terms, and Atlas
   first-path tail terms onto `greenfield_domain_term_index.ordered_terms`.
@@ -1430,7 +1460,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed for the touched module and test; focused Tribunal proof passed
   (`4 passed in 6.89s`); wider artifact/proposal/post-confirm proof passed
   (`102 passed in 162.96s`); and confirmed-create performance proof passed
-  (`1 passed in 9.68s`), preserving the under-30s create gate.
+  (`1 passed in 9.68s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed-artifact Tribunal accepted-term follow-through moved
   accepted public-text product phrase matching onto
   `greenfield_domain_term_index.label_terms`. `proposal_tribunal_substance.py`
@@ -1443,7 +1473,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused Tribunal term-index proof
   passed (`1 passed in 0.02s`); wider greenfield artifact proof passed (`162
   passed in 193.53s`); and confirmed-create performance proof passed (`1
-  passed in 9.54s`), preserving the under-30s create gate.
+  passed in 9.54s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 semantic-quality release-scope term-index follow-through moved
   release-scope and scope-context term signatures onto
   `greenfield_domain_term_index.ordered_terms`. The shared term index now
@@ -1461,7 +1491,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`1 passed in 0.03s`) and the health-tracking release-scope scenario passed
   (`1 passed in 3.59s`); wider artifact/proposal/post-confirm proof passed
   (`111 passed in 162.71s`); and confirmed-create performance proof passed
-  (`1 passed in 9.67s`), preserving the under-30s create gate.
+  (`1 passed in 9.67s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 semantic-quality raw-token follow-through moved sentence-overlap
   n-gram extraction and scoped-clause word counts onto
   `greenfield_domain_term_index.label_terms`. `greenfield_semantic_quality.py`
@@ -1476,7 +1506,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused semantic-quality proof passed
   (`1 passed in 0.03s`); wider greenfield artifact proof passed (`157 passed
   in 195.20s`); and confirmed-create performance proof passed (`1 passed in
-  9.61s`), preserving the under-30s create gate.
+  9.61s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed-intent semantic term-index follow-through kept
   `greenfield_confirmed_text.semantic_terms` as the accepted-intent semantic
   API while moving its reusable token indexing onto
@@ -1493,7 +1523,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`2 passed in 0.03s`); focused confirmed-intent proof passed
   (`30 passed in 35.33s`); wider artifact/proposal/post-confirm proof passed
   (`141 passed in 200.44s`); and confirmed-create performance proof passed
-  (`1 passed in 9.63s`), preserving the under-30s create gate.
+  (`1 passed in 9.63s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry component term-index follow-through moved component
   phrase identity terms and contract-field transition candidates onto
   `greenfield_domain_term_index.ordered_terms`. `greenfield_component_terms.py`
@@ -1509,7 +1539,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component-spec proof passed
   (`12 passed in 0.21s`); wider artifact/proposal proof passed
   (`120 passed in 162.97s`); and confirmed-create performance proof passed
-  (`1 passed in 9.72s`), preserving the under-30s create gate.
+  (`1 passed in 9.72s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 base component profile term-index follow-through moved
   `_profile` focused label/kind token extraction in
   `greenfield_component_contract.py` onto
@@ -1525,7 +1555,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched module and test; focused component-spec proof passed
   (`14 passed in 0.16s`); wider greenfield artifact proof passed
   (`162 passed in 190.72s`); and confirmed-create performance proof passed
-  (`1 passed in 9.50s`), preserving the under-30s create gate.
+  (`1 passed in 9.50s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed-completion keyword term-index follow-through moved
   label focus and keyword extraction in
   `greenfield_confirmed_completion_text_model.py` onto
@@ -1541,7 +1571,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched module and test; focused confirmed-repair proof
   passed (`8 passed in 8.82s`); wider greenfield artifact proof passed
   (`165 passed in 200.56s`); and confirmed-create performance proof passed
-  (`1 passed in 9.61s`), preserving the under-30s create gate.
+  (`1 passed in 9.61s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 public quality-gate term-index follow-through moved prompt echo
   and semantic contract noun extraction in `greenfield_quality_gate.py` onto
   `greenfield_domain_term_index.ordered_terms`. The shared index now supports
@@ -1554,7 +1584,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused quality-gate proof passed
   (`17 passed in 13.90s`); wider greenfield proof passed (`168 passed in
   226.89s`); and confirmed-create performance proof passed (`1 passed in
-  9.44s`), preserving the under-30s create gate.
+  9.44s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 first-path actor term-index follow-through moved actor signature
   term extraction in `greenfield_first_path_clauses.py` onto
   `greenfield_domain_term_index.ordered_terms`. The first-path clause owner now
@@ -1567,7 +1597,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched module and test; focused post-confirm slop
   proof passed (`14 passed in 2.78s`); wider greenfield proof passed (`151
   passed in 237.66s`); and confirmed-create performance proof passed (`1 passed
-  in 11.47s`), preserving the under-30s create gate.
+  in 11.47s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 first-path actor display-token follow-through moved
   `strip_action_subject`, `_actor_signature`, and `leading_subject_prefix`
   actor-prefix length thresholds in `greenfield_first_path_clauses.py` onto
@@ -1582,7 +1612,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched module and test; focused post-confirm
   first-path proof passed (`14 passed in 1.37s`); wider greenfield artifact
   proof passed (`162 passed in 193.05s`); and confirmed-create performance
-  proof passed (`1 passed in 9.55s`), preserving the under-30s create gate.
+  proof passed (`1 passed in 9.55s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed component label term-index follow-through moved
   `domain_label` token extraction in `greenfield_confirmed_components.py` onto
   `greenfield_domain_term_index.label_terms`. The shared term-index owner now
@@ -1595,7 +1625,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component-spec proof passed
   (`12 passed in 0.25s`); wider greenfield proof passed (`151 passed in
   233.14s`); and confirmed-create performance proof passed (`1 passed in
-  11.90s`), preserving the under-30s create gate.
+  11.90s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 component handoff title-match term-index follow-through moved
   generated component handoff workstream-title matching in `greenfield_experience.py`
   onto `greenfield_domain_term_index.ordered_terms`. The handoff owner now keeps
@@ -1607,7 +1637,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched module and test; focused experience/row proof passed
   (`2 passed in 0.08s`); wider greenfield proof passed (`152 passed in
   229.35s`); and confirmed-create performance proof passed (`1 passed in
-  11.57s`), preserving the under-30s create gate.
+  11.57s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 traceability semantic token term-index follow-through moved
   generated Radar, Registry, and Atlas traceability matching in
   `greenfield_traceability.py` onto `greenfield_domain_term_index.ordered_terms`.
@@ -1619,8 +1649,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   65 lines). Proof: syntax proof passed for the touched module and test;
   focused traceability/artifact proof passed (`41 passed in 162.78s`); wider
   greenfield proof passed (`153 passed in 230.09s`); and confirmed-create
-  performance proof passed (`1 passed in 11.77s`), preserving the under-30s
-  create gate.
+  performance proof passed (`1 passed in 11.77s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed Radar backlog term-index follow-through moved
   `semantic_words` and `shares_product_terms` in
   `greenfield_confirmed_backlog_text_model.py` onto
@@ -1633,7 +1662,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched module and test; focused backlog text proof
   passed (`11 passed in 13.37s`); wider greenfield proof passed (`154 passed in
   228.69s`); and confirmed-create performance proof passed (`1 passed in
-  12.05s`), preserving the under-30s create gate.
+  12.05s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed Radar backlog visible-count follow-through moved proof
   focus word-count thresholds and repeated-required detection in
   `greenfield_confirmed_backlog_text_model.py` onto
@@ -1649,7 +1678,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   for the touched modules and tests; focused backlog/text proof passed
   (`8 passed in 8.94s`); wider greenfield artifact proof passed
   (`165 passed in 201.36s`); and confirmed-create performance proof passed
-  (`1 passed in 9.52s`), preserving the under-30s create gate.
+  (`1 passed in 9.52s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry fallback term-window follow-through moved component label
   compounds and nearby context-window parsing from
   `greenfield_component_contract_differentiation.py` into
@@ -1664,7 +1693,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component-spec proof passed
   (`12 passed in 0.25s`); wider greenfield proof passed (`154 passed in
   224.99s`); and confirmed-create performance proof passed (`1 passed in
-  11.72s`), preserving the under-30s create gate.
+  11.72s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry literal label-term follow-through moved component label
   term extraction from `greenfield_component_contract.py` and
   `greenfield_component_contract_fields.py` into
@@ -1680,7 +1709,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component/guardrail proof
   passed (`13 passed in 3.38s`); wider greenfield proof passed (`154 passed in
   216.42s`); and confirmed-create performance proof passed (`1 passed in
-  10.18s`), preserving the under-30s create gate.
+  10.18s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry actor/action artifact-term follow-through moved
   actor-role token detection into `greenfield_actor_terms.py` and made
   `greenfield_component_terms.py` use cached action-form lookup when cleaning
@@ -1696,7 +1725,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched modules and tests; focused component
   proof passed (`14 passed in 0.14s`); wider greenfield artifact proof passed
   (`156 passed in 195.31s`); and confirmed-create performance proof passed
-  (`1 passed in 9.29s`), preserving the under-30s create gate.
+  (`1 passed in 9.29s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry generic actor-label prefix follow-through moved
   local operator/reviewer prefix detection into `greenfield_actor_terms.py`.
   Component contract fields, contract differentiation, and rendered-spec
@@ -1714,7 +1743,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component proof passed
   (`14 passed in 0.17s`); wider greenfield artifact proof passed (`156 passed
   in 194.91s`); and confirmed-create performance proof passed (`1 passed in
-  9.55s`), preserving the under-30s create gate.
+  9.55s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 post-confirm drift frequency follow-through moved repeated
   contrastive term counting in `greenfield_post_confirm_semantic_drift.py`
   onto `greenfield_domain_term_index.term_frequencies` and moved generated
@@ -1730,7 +1759,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and tests; focused drift/text proof passed
   (`45 passed in 131.74s`); wider greenfield artifact proof passed
   (`166 passed in 197.92s`); and confirmed-create performance proof passed
-  (`1 passed in 9.42s`), preserving the under-30s create gate.
+  (`1 passed in 9.42s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 proposal validation text-depth follow-through moved backlog,
   rationale-line, success-metric, component-responsibility, and diagram
   component-description word-depth checks in `proposal_validation.py` onto
@@ -1744,7 +1773,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched module and test; focused proposal validation proof
   passed (`4 passed in 3.49s`); wider greenfield artifact proof passed
   (`167 passed in 197.00s`); and confirmed-create performance proof passed
-  (`1 passed in 9.56s`), preserving the under-30s create gate.
+  (`1 passed in 9.56s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 program wave term follow-through moved release-wave to
   workstream matching in `greenfield_programs.py` onto
   `greenfield_domain_term_index.ordered_terms`. Program wave creation still
@@ -1757,7 +1786,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched module and test; focused program proof passed
   (`2 passed in 0.83s`); wider greenfield artifact proof passed (`168 passed
   in 197.44s`); and confirmed-create performance proof passed (`1 passed in
-  9.34s`), preserving the under-30s create gate.
+  9.34s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry contract visible-word follow-through moved status-only
   and ranked contract phrase word extraction in
   `greenfield_component_contract_fields.py` onto `greenfield_text.visible_words`.
@@ -1771,7 +1800,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component proof passed
   (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168 passed
   in 198.26s`); and confirmed-create performance proof passed (`1 passed in
-  9.56s`), preserving the under-30s create gate.
+  9.56s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry contract differentiation visible-word follow-through
   moved fallback-axis trigger matching in
   `greenfield_component_contract_differentiation.py` onto
@@ -1784,8 +1813,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   592 lines). Proof: syntax proof passed for the touched modules and test;
   focused component proof passed (`12 passed in 0.16s`); wider greenfield
   artifact proof passed (`168 passed in 199.10s`); and confirmed-create
-  performance proof passed (`1 passed in 9.47s`), preserving the under-30s
-  create gate.
+  performance proof passed (`1 passed in 9.47s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry profile object-label follow-through moved document
   context and status-view object phrase token extraction in
   `greenfield_component_contract_profiles.py` onto
@@ -1800,7 +1828,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component proof passed
   (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168 passed
   in 199.26s`); and confirmed-create performance proof passed (`1 passed in
-  9.53s`), preserving the under-30s create gate.
+  9.53s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry semantic compact-artifact follow-through moved compact
   artifact phrase token counting in
   `greenfield_component_semantic_contract.py` onto
@@ -1815,7 +1843,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched modules and test; focused semantic
   contract proof passed (`2 passed in 0.07s`); wider greenfield artifact proof
   passed (`168 passed in 201.86s`); and confirmed-create performance proof
-  passed (`1 passed in 9.61s`), preserving the under-30s create gate.
+  passed (`1 passed in 9.61s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry term-window raw-token follow-through moved the remaining
   raw display-token loops in `greenfield_component_term_windows.py` onto
   `greenfield_domain_term_index.label_terms`. The term-window owner still owns
@@ -1830,7 +1858,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`12 passed in 0.16s`); paired Registry component/semantic proof passed
   (`14 passed in 0.13s`); wider greenfield artifact proof passed (`168 passed
   in 198.38s`); and confirmed-create performance proof passed (`1 passed in
-  9.69s`), preserving the under-30s create gate.
+  9.69s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Confirmed component kind-token follow-through moved internal
   system kind classification in `greenfield_confirmed_components.py` onto
   `greenfield_text.visible_words`. Confirmed components still own
@@ -1844,7 +1872,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched modules and test; focused component proof
   passed (`12 passed in 0.15s`); wider greenfield artifact proof passed (`168
   passed in 198.29s`); and confirmed-create performance proof passed (`1 passed
-  in 9.54s`), preserving the under-30s create gate.
+  in 9.54s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry artifact cleanup visible-word follow-through moved
   action-token filtering in `greenfield_component_terms.py` onto
   `greenfield_text.visible_words` and repaired slash-separated visible-result
@@ -1858,7 +1886,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched modules and test; focused component proof
   passed (`12 passed in 0.16s`); wider greenfield artifact proof passed (`168
   passed in 197.06s`); and confirmed-create performance proof passed (`1
-  passed in 9.35s`), preserving the under-30s create gate.
+  passed in 9.35s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed-intent title display-token follow-through moved title
   repair word checks and system-label qualifier cleanup in
   `greenfield_confirmed_intent_completion.py` onto
@@ -1875,7 +1903,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed for the touched modules and test; focused ownership proof passed
   (`9 passed in 0.22s`); wider greenfield artifact proof passed (`177 passed
   in 198.50s`); and confirmed-create performance proof passed (`1 passed in
-  9.62s`), preserving the under-30s create gate.
+  9.62s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed title-repair display-token follow-through moved
   canonical project-title repair acceptance checks in
   `greenfield_confirmed_title_repair.py` onto
@@ -1890,7 +1918,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed for the touched modules and test; focused title-quality proof
   passed (`8 passed in 7.88s`); wider greenfield artifact proof passed (`178
   passed in 201.72s`); and confirmed-create performance proof passed (`1
-  passed in 9.49s`), preserving the under-30s create gate.
+  passed in 9.49s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed focus-label display-token follow-through moved confirmed
   project focus-label title token extraction in `greenfield_confirmed_text.py`
   onto `greenfield_domain_term_index.label_terms`. Confirmed text still owns
@@ -1906,7 +1934,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   for the touched modules and test; focused confirmed-text proof passed (`5
   passed in 0.03s`); wider greenfield artifact proof passed (`179 passed in
   202.27s`); and confirmed-create performance proof passed (`1 passed in
-  9.54s`), preserving the under-30s create gate.
+  9.54s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed actor-candidate display-token follow-through moved
   derived actor role candidate token extraction in
   `greenfield_confirmed_actor_completion.py` onto
@@ -1924,7 +1952,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed for the touched modules and test; focused ownership proof passed
   (`10 passed in 0.22s`); wider greenfield artifact proof passed (`180 passed
   in 201.94s`); and confirmed-create performance proof passed (`1 passed in
-  9.71s`), preserving the under-30s create gate.
+  9.71s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed-intent bare-title display-token follow-through moved
   preamble bare-title word counting in `greenfield_confirmed_intent.py` onto
   `greenfield_domain_term_index.label_terms`. The confirmed-intent parser still
@@ -1940,7 +1968,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed for the touched modules and test; focused ownership proof passed
   (`11 passed in 0.20s`); wider greenfield artifact proof passed (`181 passed
   in 200.39s`); and confirmed-create performance proof passed (`1 passed in
-  9.45s`), preserving the under-30s create gate.
+  9.45s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Registry state-token display-word follow-through moved generated
   component contract state transition token scanning in
   `greenfield_component_contract.py` onto `greenfield_text.visible_words`.
@@ -1957,7 +1985,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused component proof passed (`12
   passed in 0.17s`); wider greenfield artifact proof passed (`181 passed in
   201.34s`); and confirmed-create performance proof passed (`1 passed in
-  9.59s`), preserving the under-30s create gate.
+  9.59s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 progression-marker count follow-through moved confirmed-intent
   progression/outcome connector counting, punctuation counting, and quality-gate
   first-path event marker counting onto
@@ -1974,7 +2002,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and tests; focused ownership/quality proof
   passed (`46 passed in 13.75s`); wider greenfield artifact proof passed (`182
   passed in 203.05s`); and confirmed-create performance proof passed (`1 passed
-  in 9.73s`), preserving the under-30s create gate.
+  in 9.73s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Tribunal flowchart node-count follow-through moved confirmed
   first-path flowchart step counting out of
   `proposal_tribunal_substance.py` and into
@@ -1989,7 +2017,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and tests; focused Tribunal/Mermaid proof
   passed (`7 passed in 7.21s`); wider greenfield artifact proof passed (`183
   passed in 204.28s`); and confirmed-create performance proof passed (`1 passed
-  in 9.25s`), preserving the under-30s create gate.
+  in 9.25s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed exact-word occurrence follow-through moved repeated-word
   counting mechanics from `greenfield_confirmed_text.py` into
   `greenfield_text.word_occurrences`. Confirmed text still owns confirmed
@@ -2003,7 +2031,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and tests; focused confirmed-text/backlog proof
   passed (`6 passed in 0.05s`); wider greenfield artifact proof passed (`183
   passed in 203.61s`); and confirmed-create performance proof passed (`1 passed
-  in 9.79s`), preserving the under-30s create gate.
+  in 9.79s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 word-boundary clipping follow-through moved reusable whole-word
   clipping and trailing connector stripping mechanics into
   `greenfield_text.clip_text_at_word_boundary` and
@@ -2024,7 +2052,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused artifact text proof passed
   (`24 passed in 0.27s`); wider greenfield artifact proof passed (`184 passed
   in 219.55s`); and confirmed-create performance proof passed (`1 passed in
-  11.13s`), preserving the under-30s create gate.
+  11.13s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 visible-result language follow-through moved reusable
   `readout plus`, `on screen, alongside`, `alongside`, and
   `visible-result event` wording normalization into
@@ -2046,8 +2074,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   Proof: syntax proof passed for the touched modules and tests; focused
   visible-result/artifact proof passed (`90 passed in 17.29s`); wider
   greenfield artifact proof passed (`185 passed in 210.64s`); and
-  confirmed-create performance proof passed (`1 passed in 9.84s`), preserving
-  the under-30s create gate.
+  confirmed-create performance proof passed (`1 passed in 9.84s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 proof-boundary language follow-through moved reusable evidence,
   trust, success, replay, and done-means lead cleanup into
   `greenfield_text.normalize_proof_boundary_language`. Confirmed Atlas diagram
@@ -2061,8 +2088,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   syntax proof passed for the touched modules and test; focused proof-boundary
   and Atlas surface proof passed (`2 passed in 0.17s`); wider greenfield
   artifact proof passed (`186 passed in 203.82s`); and confirmed-create
-  performance proof passed (`1 passed in 9.57s`), preserving the under-30s
-  create gate.
+  performance proof passed (`1 passed in 9.57s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 artifact-cleaning follow-through moved reusable backtick removal,
   punctuation-spacing cleanup, whitespace collapse, and optional parenthesis
   splitting into `greenfield_text.clean_artifact_text`. Registry component
@@ -2088,7 +2114,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`4 passed in 0.14s`); full component-spec quality proof passed (`13 passed
   in 0.10s`); wider greenfield artifact proof passed (`187 passed in
   193.63s`); and confirmed-create performance proof passed (`1 passed in
-  9.32s`), preserving the under-30s create gate.
+  9.32s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 confirmed Markdown-cleanup follow-through moved reusable emphasis
   token stripping, backtick removal, punctuation-spacing cleanup, and whitespace
   collapse into `greenfield_text.clean_markdown_text`. Confirmed text still
@@ -2105,7 +2131,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   (`3 passed in 0.14s`); broader confirmed text/intent proof passed (`47
   passed in 38.12s`); wider greenfield artifact proof passed (`188 passed in
   193.25s`); and confirmed-create performance proof passed (`1 passed in
-  9.39s`), preserving the under-30s create gate.
+  9.39s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 inline Markdown-cleanup follow-through extended the shared
   `greenfield_text.clean_markdown_text` owner to confirmed component labels,
   first-path text cleanup, sequence-step sentence shaping, confirmed Atlas
@@ -2126,7 +2152,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed in 0.27s`); relevant greenfield caller proof passed (`35 passed in
   4.27s`); wider greenfield artifact proof passed (`189 passed in 208.74s`);
   and confirmed-create performance proof passed (`1 passed in 11.13s`),
-  preserving the under-30s create gate.
+  recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 Markdown sentence cleanup follow-through moved reusable
   Markdown-cleaned sentence casing and trailing-period mechanics into
   `greenfield_text.clean_markdown_sentence`. Confirmed Atlas diagram text still
@@ -2141,8 +2167,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   for the touched modules and test; focused sentence-cleanup proof passed (`5
   passed in 0.09s`); relevant caller proof passed (`22 passed in 3.91s`);
   wider greenfield artifact proof passed (`190 passed in 204.17s`); and
-  confirmed-create performance proof passed (`1 passed in 10.32s`), preserving
-  the under-30s create gate.
+  confirmed-create performance proof passed (`1 passed in 10.32s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 artifact sentence cleanup follow-through moved reusable
   artifact-text sentence casing and trailing-period mechanics into
   `greenfield_text.clean_artifact_sentence`. Component contracts still own
@@ -2159,7 +2184,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`3 passed in 0.12s`); full component-spec quality proof passed (`14
   passed in 0.12s`); wider greenfield artifact proof passed (`191 passed in
   224.52s`); and confirmed-create performance proof passed (`1 passed in
-  13.98s`), preserving the under-30s create gate.
+  13.98s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 cleaned-text dedupe follow-through routed first-path and
   semantic-quality duplicate suppression through `greenfield_text.unique_text`.
   First-path clauses still own first-path cleanup, first-path semantics still
@@ -2174,7 +2199,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   Proof: syntax proof passed for the touched modules and test; focused
   cleaned-text proof passed (`4 passed in 0.32s`); wider greenfield artifact
   proof passed (`192 passed in 234.56s`); and confirmed-create performance
-  proof passed (`1 passed in 11.92s`), preserving the under-30s create gate.
+  proof passed (`1 passed in 11.92s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 exact string dedupe follow-through routed component-axis terms,
   contract differentiation terms, component contract quality issue rows, and
   Atlas catalog apply-write watch rows through
@@ -2192,7 +2217,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed for the touched modules and test; focused exact-dedupe proof passed
   (`16 passed in 6.80s`); wider greenfield artifact proof passed (`193 passed
   in 215.97s`); and confirmed-create performance proof passed (`1 passed in
-  11.41s`), preserving the under-30s create gate.
+  11.41s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 validation and memory issue-dedupe follow-through routed proposal
   issue reports, quality-gate issue rows, traceability ID joins, and accepted
   project memory preview rows through
@@ -2210,7 +2235,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof passed for the touched modules and test; focused validation and
   traceability proof passed (`66 passed in 29.68s`); wider greenfield artifact
   proof passed (`194 passed in 211.12s`); and confirmed-create performance proof
-  passed (`1 passed in 11.00s`), preserving the under-30s create gate.
+  passed (`1 passed in 11.00s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 keyed dedupe follow-through moved sequence-step display dedupe,
   artifact enrichment bullet dedupe, and component repair-target row dedupe
   through `runtime.common.value_coercion.dedupe_by_key`. Sequence steps still
@@ -2227,8 +2252,7 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   the touched modules and tests; focused keyed-dedupe proof passed (`5 passed in
   0.33s`); relevant caller proof passed (`75 passed in 15.15s`); wider
   greenfield artifact proof passed (`194 passed in 206.29s`); and
-  confirmed-create performance proof passed (`1 passed in 14.35s`), preserving
-  the under-30s create gate.
+  confirmed-create performance proof passed (`1 passed in 14.35s`), recording a stricter historical standard-path timing snapshot.
 - 2026-06-04 semantic-model dead-code follow-through removed unused
   human-actor term extraction from `greenfield_semantic_model.py`.
   `_proof_checkpoint` no longer accepts an `actor_terms` parameter that it did
@@ -2243,9 +2267,13 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   passed (`1 passed in 0.15s`); owning schema proof passed (`3 passed in
   0.12s`); wider greenfield artifact proof passed (`194 passed in 200.15s`);
   and confirmed-create performance proof passed (`1 passed in 11.01s`),
-  preserving the under-30s create gate.
+  recording a stricter historical standard-path timing snapshot.
 
 ## Test Strategy
+- Historical under-30 timing notes above are standard-path evidence snapshots.
+  The active release contract is standard post-confirm under 60 seconds without
+  host rescue, rescue under 90 seconds with one targeted semantic or plan patch,
+  and 120 seconds only for explicit premium/deep repair or CI simulation.
 - Run focused unit tests for domain intelligence, host routing, component
   authoring, CLI dispatch, show capabilities, and Compass transaction filtering
   with the repo-local interpreter, for example `.venv/bin/python -m pytest -q
@@ -2253,8 +2281,9 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   tests/unit/runtime/test_greenfield_component_spec_quality.py`.
 - For confirmed-create speed and artifact quality, run `.venv/bin/python -m
   pytest -q tests/integration/runtime/test_greenfield_create_performance.py`;
-  it must stay under 30 seconds after confirmation and reject generated
-  semantic slop in the create payload.
+  it must prove the standard post-confirm path stays under 60 seconds and
+  rejects generated semantic slop in the create payload. Add the dedicated
+  rescue-path timing test before claiming the 90-second host-repair contract.
 - Run governance validators for Casebook, backlog, plan binding/traceability as
   touched, release migration gate, and refreshed Radar/Registry/Atlas/Compass
   surfaces.

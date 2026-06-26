@@ -10,7 +10,7 @@ flowchart TB
         radar["Radar<br/>ranked workstreams + queues"]
         plans["Technical Plans<br/>implementation intent + gates"]
         compass["Compass<br/>execution timeline + proof"]
-        casebook["Casebook<br/>bugs + learning records"]
+        casebook["Casebook<br/>bugs, failed mechanisms,<br/>prior fix attempts"]
     end
 
     odylith --> dashboard
@@ -22,7 +22,7 @@ flowchart TB
     radar -- "selected slice" --> plans
     plans -- "planned change + proof obligations" --> compass
     compass -- "evidence, blockers, regressions" --> casebook
-    casebook -- "corrective learning" --> radar
+    casebook -- "do not repeat failed mechanisms" --> radar
     atlas -- "topology truth" --> registry
     registry -- "component dossiers explain diagrams" --> atlas
 

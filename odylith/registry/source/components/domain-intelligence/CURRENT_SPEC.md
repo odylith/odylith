@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-06-04
+Last updated: 2026-06-26
 
 
 ## Overview
@@ -169,6 +169,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Routed exact issue/string row dedupe for proposal validation, quality-gate issue rows, traceability ID joins, and accepted-project memory previews through `runtime.common.value_coercion.dedupe_strings`. Those callers keep remediation copy, generated artifact policy, ID normalization, and accepted-project Markdown cleanup while common value coercion owns reusable trimmed empty-filtering, limit handling, and exact-order dedupe. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Routed keyed dedupe for sequence event steps, artifact enrichment bullets, and component contract repair targets through `runtime.common.value_coercion.dedupe_by_key`. Those callers keep their step canonicalization, artifact-native bullet keys, and row-identity repair-target keys while common value coercion owns reusable first-seen keyed duplicate suppression. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-04: Removed unused actor-term extraction from the confirmed semantic model. `greenfield_semantic_model.py` no longer computes `_actor_terms(human_actors)` or passes an unread `actor_terms` parameter into proof-checkpoint rendering; domain terms stay in the shared term index, and proof checkpoints continue to render from accepted visible-result or proof-boundary text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
+- 2026-06-26: Captured the typed greenfield repair architecture boundary. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-207`, `CB-208`) Domain Intelligence must move rescue from English issue-string routing and rendered-prose mutation to typed `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`, typed `ReviewReport` findings, and semantic or plan `PatchSet` repair. Host reasoning owns ambiguity interpretation and minimal semantic patches; Odylith owns schema custody, projection isolation, validation, latency budgets, and fail-closed governed writes.
 
 ## Contract
 
@@ -302,6 +303,33 @@ This section captures synchronized requirement and contract signals derived from
   then reruns the greenfield Tribunal and governed artifact Tribunals. It may
   retry bounded deterministic omissions, but it must not invent source-backed
   implementation evidence or ask the host to hand-author proposal JSON.
+- Confirmed-create rescue must repair semantic or planning facts, not rendered
+  prose. The durable architecture is a typed pipeline:
+  `ConfirmedIntentIR -> SemanticModelIR -> ArtifactPlanIR -> ArtifactDraftSet ->
+  ReviewReport -> PatchSet`. Host reasoning may adjudicate ambiguous actor,
+  action, object, state, proof, domain-risk, and artifact-destination facts, but
+  it must return schema-constrained semantic or plan patches with source
+  provenance and rejected interpretations. Odylith then rerenders only impacted
+  projections and runs deterministic gates before any source-truth write.
+- Post-confirm findings must be typed and lens-owned, not mutable English
+  substrings. PM, architect, engineer, and domain-review checks may produce
+  readable diagnostics, but repair routing must depend on finding codes,
+  source-map targets, semantic node IDs, and affected projection IDs.
+- Standard confirmed create must complete under 60 seconds without host repair
+  on normal inputs. Rescue may extend to 90 seconds only when a final
+  semantic/quality gate fails and a targeted host-reasoned `PatchSet` is likely
+  to fix the semantic model or artifact plan. A 120-second budget is reserved
+  for explicit premium/deep repair or CI simulation, not the normal operator
+  path.
+- Renderers must be context-starved. Radar, Registry, Atlas, Compass, project
+  brief, release proof, and next-step renderers may receive only sanctioned
+  projection fields from `ArtifactPlanIR`; they must not inspect unrelated
+  artifact prose, raw validator text, or surface-specific syntax from another
+  renderer.
+- Regex and template logic may remain only as mechanical parsing, tokenization,
+  or formatting support behind a named owner. It must not become the semantic
+  repair mechanism, domain classifier, ambiguity resolver, or quality substitute
+  for the typed host-reasoned pipeline.
 - Confirmed-create semantic rendering must run after deterministic completion
   and before any source-truth write. It must compile first-path action,
   capability, and visible-result clauses once from the accepted semantic model,

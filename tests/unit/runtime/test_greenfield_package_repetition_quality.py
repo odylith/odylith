@@ -47,6 +47,27 @@ def test_repetition_gate_rejects_repeated_markdown_section_boilerplate() -> None
     assert "repeats noncanonical prose" in "\n".join(issues)
 
 
+def test_repetition_gate_rejects_repeated_risk_prose_across_child_artifacts() -> None:
+    repeated_risk = "Combining cart, payment, and order state would hide failure recovery."
+    package = SimpleNamespace(
+        proposal={},
+        backlog_result={
+            "idea_files": {
+                f"B-{index:03d}.md": f"## Risks\n- {repeated_risk}\n"
+                for index in range(1, 4)
+            }
+        },
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_preview={},
+        next_steps_preview={},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" in "\n".join(issues)
+
+
 def test_repetition_gate_allows_shared_customer_metadata() -> None:
     package = SimpleNamespace(
         proposal={},

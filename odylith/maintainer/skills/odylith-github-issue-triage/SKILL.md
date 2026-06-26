@@ -1,5 +1,8 @@
 # odylith-github-issue-triage
 
+## Governance-Learning Default
+Before acting on a durable error, escaped defect, failed mechanism, failed simulation, bad generated artifact, semantic drift, quality-gate miss, latency breach, architecture decision, validation result, or release-risk learning, search Casebook and related governance truth first. Read prior failed mechanisms, failed fix attempts, rejected approaches, guardrails, and validation history; do not repeat a fix path that already failed. Capture new mechanism-level learning in Casebook or Compass, and update Radar or plans, Registry, and Atlas when the learning changes planned work, component contracts, or flows.
+
 Use this maintainer-only skill when the operator gives a GitHub issue URL or
 number and wants Odylith to fetch it, classify it, map it to
 Casebook/Radar/Registry truth, and draft the public GitHub response.

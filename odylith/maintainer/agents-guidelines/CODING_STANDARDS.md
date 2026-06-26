@@ -27,6 +27,15 @@
   from a one-file skim when the real behavior lives across the slice.
 - Prefer extending shared helpers, shared contracts, and existing runtime
   primitives over copy-paste or near-duplicate logic.
+- Governance-learning is part of maintainer engineering, not
+  aftercare. Escaped defects and failed simulations belong in Casebook,
+  planned work in Radar or technical plans, component-contract changes in
+  Registry, changed flows or topology in Atlas, and durable decisions or
+  proof checkpoints in Compass before closeout, commit, build, or release
+  claims. Before fixing a bug, search Casebook and related governance truth,
+  read prior failed mechanisms, failed fix attempts, and guardrails, avoid
+  repeating a failed fix path, and record new mechanism-level learning. Do
+  not repeat a fix path that governance already shows failed.
 - Treat AI slop as a regression in this maintainer lane. Avoid placeholder
   abstractions, duplicated wrappers, speculative helper layers, generic
   filler comments, and names or structure that hide the real contract instead

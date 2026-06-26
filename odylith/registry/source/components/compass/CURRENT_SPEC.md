@@ -20,6 +20,9 @@ standup-level summary should be.
 ## Scope And Non-Goals
 ### Compass owns
 - The local host/Odylith timeline stream.
+- Durable execution memory for governance-learning decisions, proof
+  checkpoints, failed mechanism classes, validation results, release posture,
+  and stable checkpoints.
 - Runtime snapshot generation and history retention.
 - Timeline grouping and transaction shaping.
 - The standup brief pipeline, including provider narration, exact-cache replay,

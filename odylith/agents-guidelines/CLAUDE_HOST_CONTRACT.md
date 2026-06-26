@@ -3,6 +3,18 @@
 ## CLI-First Non-Negotiable
 - CLI-first is non-negotiable for both Codex and Claude Code. Remove all hand-authoring for places where Odylith CLI should be doing the heavy-lifting. When an Odylith CLI command exists for an operation, you must call the CLI command and you must not hand-edit governed files the CLI owns. Hand-authoring governed truth where a CLI exists is a hard policy violation, not a stylistic preference. The authoritative policy, CLI surface enumeration, allowed hand-edit surfaces, and failure-mode handling live in `odylith/agents-guidelines/CLI_FIRST_POLICY.md`, anchored by Casebook learning `CB-104`. The rule travels through routed `spawn_agent` leaves on Codex and Task-tool subagents on Claude Code, so delegated work inherits the same contract.
 
+## Shared Governance-Learning Contract
+- Governance-learning is part of the shared Codex/Claude lane. Claude must not
+  treat chat memory, auto-memory, hook context, or final-answer prose as
+  durable truth: escaped defects and failed simulations go to Casebook,
+  planned work to Radar or technical plans, component-contract changes to
+  Registry, flow/topology changes to Atlas, and decisions or proof
+  checkpoints to Compass before closeout, commit, build, or release claims.
+  Before Claude fixes a bug, it must search existing Casebook and related
+  governance artifacts, read prior failed mechanisms, failed fix attempts, and
+  guardrails, do not repeat a fix path that already failed, and record new
+  mechanism-level learning.
+
 ## Shared Discipline Contract
 - Odylith Discipline is host-semantic, not Claude-specific.
   Claude may surface `.claude/skills/odylith-discipline` and

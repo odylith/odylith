@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import collect_delimite
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
+from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import workstream_risk_lines
 from odylith.runtime.governance import backlog_authoring
 
 _REF_FIELDS = (
@@ -339,7 +340,14 @@ def _patch_sections(
         _section_items(row.get("non_goals", []))
         or _non_goal_fallback_lines(row=row, scope_ref=scope_ref)
     )
-    sections["Risks"] = _bullets(_risk_lines(row.get("risks", [])) or risks[:3])
+    sections["Risks"] = _bullets(
+        workstream_risk_lines(
+            row=row,
+            proposal=proposal,
+            proposal_risks=risks,
+            local_risks=_risk_lines(row.get("risks", [])),
+        )
+    )
     sections["Dependencies"] = _bullets(
         _section_items(row.get("dependencies", []))
         or _section_items(row.get("depends_on", []))

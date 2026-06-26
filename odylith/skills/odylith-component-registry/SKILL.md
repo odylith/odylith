@@ -5,6 +5,13 @@
 
 Use when refreshing, validating, or auditing the Registry surface and its linked component specs, or when execution reveals an untracked or under-specified system boundary that Odylith should start governing.
 
+Governance-learning applies here: any component-contract change discovered
+while fixing an escaped defect, failed mechanism, greenfield repair path,
+validator, renderer, host integration, or release installer must update the
+relevant Registry spec before closeout. Search related Casebook and
+governance truth first, read prior failed mechanisms, do not repeat a fix path
+that already failed, and capture new mechanism-level learning.
+
 ## Lane Boundary
 - In consumer repos, use `./.odylith/bin/odylith` for Registry/governance
   commands and use the consumer repo's own toolchain for repo-code validation.

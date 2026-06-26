@@ -10,6 +10,11 @@ from odylith.runtime.common.prose_grammar import looks_like_base_action_token, l
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import CONFIRMED_ACTOR_ROLE_TERMS as _ROLE_WORDS
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal as _word_has_role_signal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_descriptions import actor_head_contains_role
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_descriptions import actor_row_description
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_descriptions import (
+    readable_actor_description,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import capability_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
@@ -53,37 +58,6 @@ _DANGLING_ACTOR_LABEL_TAILS = frozenset(
 )
 
 
-_INLINE_ACTION_DESCRIPTION_VERBS = {
-    "acknowledging",
-    "asking",
-    "assigning",
-    "checking",
-    "classifying",
-    "configuring",
-    "coordinating",
-    "creating",
-    "drafting",
-    "entering",
-    "following",
-    "handling",
-    "helping",
-    "logging",
-    "managing",
-    "monitoring",
-    "owning",
-    "preparing",
-    "recording",
-    "receiving",
-    "requesting",
-    "responding",
-    "reviewing",
-    "running",
-    "sharing",
-    "tracking",
-    "using",
-    "watching",
-}
-
 _NON_ACTOR_SUBJECT_TAILS = frozenset(
     {"decision", "entry", "evidence", "note", "packet", "ready", "record", "report", "result", "summary", "view"}
 )
@@ -104,7 +78,7 @@ def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
         original = rows[index] if index < len(rows) else label
         description = actor_row_description(original)
         if description and _word_count(description) >= 4 and _actor_label(original, title=title).casefold() == label.casefold():
-            description = _readable_actor_description(description)
+            description = readable_actor_description(description)
             completed.append(_preserve_deferred_scope(f"{label}: {description}", original))
             continue
         completed.append(
@@ -145,89 +119,6 @@ def value_starts_with_generic_actor_label(value: Any) -> bool:
     if len(words) == 1:
         return True
     return words[1] in _GENERIC_ACTOR_VALUE_ACTIONS
-
-
-def actor_row_description(value: str) -> str:
-    text = _clean(value)
-    for separator in (":", " — ", " – ", " - "):
-        head, sep, body = text.partition(separator)
-        body = body.strip(" .")
-        if (
-            sep
-            and _word_count(head) <= 10
-            and _word_count(body) >= 4
-            and not re.search(r"\b(can act|supports the accepted path|additional accepted items)\b", body, re.IGNORECASE)
-        ):
-            return body
-    comma = re.match(
-        r"^(?P<head>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?),\s+"
-        r"(?P<body>(?:a|an|the|one)\s+[A-Za-z][A-Za-z0-9 /&'()-]{2,120})$",
-        text,
-        flags=re.IGNORECASE,
-    )
-    if comma and 1 <= _word_count(comma.group("head")) <= 5 and _word_count(comma.group("body")) >= 2:
-        return comma.group("body").strip(" .")
-    relative = re.match(
-        r"^(?P<head>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+(?:who|that)\s+(?P<body>.+)$",
-        text,
-        flags=re.IGNORECASE,
-    )
-    if relative and 1 <= _word_count(relative.group("head")) <= 6 and _word_count(relative.group("body")) >= 3:
-        return relative.group("body").strip(" .")
-    inline = _inline_action_description(text)
-    if inline:
-        return inline
-    return ""
-
-
-def _readable_actor_description(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return ""
-    first = text.split(maxsplit=1)[0].casefold().strip(".,;:")
-    if first.endswith("ing"):
-        if " or " in text.casefold() and "," not in text and " and " not in text.casefold().replace(" or ", " "):
-            return f"supports by {text}"
-        return text
-    return text
-
-
-def _inline_action_description(value: str) -> str:
-    """Return the activity tail from rows that combine actor and action."""
-
-    words = _clean(value).split()
-    if len(words) < 3:
-        return ""
-    for index, word in enumerate(words[1:], start=1):
-        token = word.casefold().strip(".,;:")
-        head = " ".join(words[:index]).strip(" .")
-        if token not in _INLINE_ACTION_DESCRIPTION_VERBS and not (
-            token.endswith("ing") and _actor_head_has_explicit_role_signal(head)
-        ):
-            continue
-        tail = " ".join(words[index:]).strip(" .")
-        if not tail or not _actor_head_contains_role(head):
-            continue
-        return tail
-    return ""
-
-
-def _actor_head_has_explicit_role_signal(value: str) -> bool:
-    words = [word.casefold().strip(".,;:()") for word in _clean(value).replace("/", " ").split()]
-    if not words:
-        return False
-    return _word_has_role_signal(words[-1]) or (len(words) >= 2 and " ".join(words[-2:]) in _ROLE_WORDS)
-
-
-def _actor_head_contains_role(value: str) -> bool:
-    words = [word.casefold().strip(".,;:()") for word in _clean(value).replace("/", " ").split()]
-    if not words:
-        return False
-    if _word_has_role_signal(words[-1]):
-        return True
-    if len(words) >= 2 and " ".join(words[-2:]) in _ROLE_WORDS:
-        return True
-    return 1 <= len(words) <= 4 and not all(word in {"a", "an", "the", "one"} for word in words)
 
 
 def _preserve_deferred_scope(row: str, source: str) -> str:
@@ -544,7 +435,7 @@ def _subject_candidate(sentence: str) -> str:
         _clean(sentence),
         flags=re.IGNORECASE,
     )
-    if relative and _actor_head_contains_role(relative.group("head")):
+    if relative and actor_head_contains_role(relative.group("head")):
         return _trim_non_actor_lead_words(relative.group("head"))
     subject = leading_subject_prefix(sentence)
     if not subject:

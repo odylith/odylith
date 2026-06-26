@@ -7,6 +7,7 @@ from collections.abc import Iterable, Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import has_terminal_deferral_predicate
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms, ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -893,6 +894,8 @@ def boundary_clause_item(value: str, *, limit: int = 180) -> str:
             if marker_index > 0:
                 subject = rest[:marker_index].strip(" .")
                 return f"{_lower_first(subject)} scope remains deferred"
+        if has_terminal_deferral_predicate(rest):
+            return f"whether {_lower_first(rest)}"
         return f"the question of whether {_lower_first(rest)} remains open"
     if text.endswith("?"):
         question = text.rstrip("?").strip()

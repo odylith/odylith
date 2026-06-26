@@ -23,6 +23,10 @@ only by workstream.
 - Component-to-workstream, component-to-diagram, and component-to-spec linkage.
 - Component-centric event mapping and forensic coverage.
 - Requirements-trace synchronization into living component specs.
+- Component-contract updates required by governance-learning, including
+  semantic compiler paths, repair loops, validators, renderers, host
+  integrations, release installers, and failed mechanisms that changed a
+  component boundary.
 - The Registry dashboard and component detail shards.
 - Registry contract validation.
 

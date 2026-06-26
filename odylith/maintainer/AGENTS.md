@@ -20,6 +20,29 @@ Scope: applies to maintainer-only paths under `odylith/maintainer/`.
   source for maintainer-side coding, testing, generated-artifact authoring,
   branch and write safety, refactor-first policy, release-surface source
   updates, benchmark harness changes, and coding validation expectations.
+- Keep Odylith governance artifacts current as part of maintainer work, not
+  as an optional closeout task. When a simulation, live consumer repro, broad
+  validation run, or architecture review exposes a new product learning,
+  update the appropriate governed surface before moving on: Casebook for
+  escaped defects and regressions, Radar or technical plans for planned
+  rearchitecture scope, Registry and Atlas for changed component or product
+  contracts, and Compass for execution decisions and proof posture. Use the
+  Odylith CLI first and do not hand-edit governed records where a CLI exists.
+- For recursive greenfield and post-confirm QA in maintainer mode, every
+  failed or materially weak generated artifact must either link to existing
+  Casebook/Radar truth or create/update that truth before the next simulation.
+  A stable checkpoint includes code state, test proof, governance updates, and
+  cleanup of temporary simulation repositories.
+- Carry this rule through pinned dogfood, detached `source-local`, Codex,
+  Claude Code, and shipped consumer guidance whenever maintainer work changes
+  default agent behavior. A governance-learning rule that only exists in the
+  maintainer lane is incomplete.
+- Before fixing a bug in maintainer mode, search existing Casebook plus
+  related Radar, technical-plan, Registry, Atlas, and Compass truth, read
+  prior failed mechanisms, failed fix attempts, and guardrails, avoid
+  repeating a fix path that governance already shows failed, and capture new
+  mechanism-level learning. Do not repeat a fix path that governance already
+  shows failed.
 - Treat AI slop as a regression. In this product lane, use
   `../agents-guidelines/ANTI_SLOP_AND_DECOMPOSITION.md` together with
   `agents-guidelines/CODING_STANDARDS.md` to keep fake modularization,

@@ -39,6 +39,11 @@ end-of-work outcomes instead of canned self-promotion.
   and runtime explanation templates.
 - Cross-surface mirror alignment across source, bundle, and generated Registry
   surfaces for this narration policy.
+- Governance-learning guidance across maintainer, dogfood, consumer, Codex,
+  Claude, and shipped bundle surfaces: durable errors, failed mechanisms,
+  failed fix attempts, and proof checkpoints must route into Casebook,
+  Radar/plans, Registry, Atlas, and Compass instead of remaining in chat
+  memory.
 - Structured `presentation_policy` carry-through from packets so task-first
   narration, routing-receipt suppression, and surface-fast-lane behavior stay
   driven by explicit runtime policy instead of prose heuristics.

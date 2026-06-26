@@ -193,7 +193,9 @@ def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tm
         sort_keys=True,
     )
     assert "provide what the product needs, leaves enough context" not in rendered_package
-    assert "the product keeps enough context for follow-up" in rendered_package
+    assert "provides what the product needs" not in rendered_package
+    assert "the product keeps enough context for follow-up" not in rendered_package
+    assert "the product preserves the saved context" in rendered_package
     assert build_greenfield_package_report(prewrite.package).issues == ()
 
 

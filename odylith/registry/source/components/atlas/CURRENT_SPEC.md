@@ -22,6 +22,9 @@ grounding.
 - The canonical diagram catalog.
 - Diagram metadata linking workstreams, components, docs, code, and change
   watch paths.
+- Governance-learning topology updates for changed flows, post-confirm paths,
+  repair loops, governance-write paths, host lanes, projection boundaries, and
+  failed mechanisms whose architecture shape must not be rediscovered.
 - Mermaid render/update tooling.
 - Shared workstream pill links in Atlas must use Dashboard's compact
   workstream-button contract rather than Atlas-local chip sizing.

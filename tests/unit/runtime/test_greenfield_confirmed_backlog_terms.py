@@ -44,14 +44,17 @@ from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence impo
 ROOT = Path(__file__).resolve().parents[3]
 DOMAIN_INTELLIGENCE = ROOT / "src/odylith/runtime/domain_intelligence"
 BACKLOG_TEXT_MODEL_PATH = DOMAIN_INTELLIGENCE / "greenfield_confirmed_backlog_text_model.py"
+BACKLOG_LANGUAGE_PATH = DOMAIN_INTELLIGENCE / "greenfield_confirmed_backlog_language.py"
 
 
 def test_confirmed_backlog_terms_use_shared_domain_index() -> None:
-    source = BACKLOG_TEXT_MODEL_PATH.read_text(encoding="utf-8")
+    source = BACKLOG_LANGUAGE_PATH.read_text(encoding="utf-8")
+    text_model_source = BACKLOG_TEXT_MODEL_PATH.read_text(encoding="utf-8")
 
     assert "greenfield_domain_term_index import ordered_terms" in source
     assert "greenfield_confirmed_text import word_count" in source
     assert "greenfield_confirmed_text import word_occurrences" in source
+    assert "greenfield_domain_term_index import ordered_terms" not in text_model_source
     assert 're.findall(r"[a-z0-9][a-z0-9-]+"' not in source
     assert 'len(re.findall(r"[A-Za-z0-9][A-Za-z0-9' not in source
     assert 'len(re.findall(r"\\brequired\\b"' not in source
@@ -293,6 +296,24 @@ def test_confirmed_backlog_rationale_does_not_splice_scope_question_into_wait_cl
     assert "? wait" not in text
     assert (
         "- deferred for now: Prove One Complete Cellar Path: Regulatory spray compliance scope remains deferred; separate owner, acceptance gate, and proof path required."
+        in text
+    )
+
+
+def test_confirmed_backlog_rationale_does_not_add_wait_after_deferral_predicate() -> None:
+    lines = rationale_lines(
+        label="Teaching Lab",
+        title="Prove One Complete Teaching Lab Path",
+        opportunity="Prove the first simulated lab workflow before optional scope expands.",
+        first_slice="Create one simulated experiment and review the evidence.",
+        proof_boundary="Release works when one simulated experiment can be reviewed.",
+        deferred_scope=("Grading automation and LMS sync remain deferred.",),
+    )
+    text = "\n".join(lines)
+
+    assert "remain deferred wait" not in text
+    assert (
+        "- deferred for now: Prove One Complete Teaching Lab Path: Grading automation and LMS sync remain deferred; separate owner, acceptance gate, and proof path required."
         in text
     )
 

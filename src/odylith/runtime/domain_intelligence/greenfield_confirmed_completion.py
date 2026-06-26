@@ -58,6 +58,8 @@ from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
+from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import workstream_risk_lines
 from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
 
 
@@ -232,12 +234,14 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
                 )
             )
             changed = True
+        projected_domain_risk = domain_risk_for_row(row, proposal)
         if (
             not _clean(row.get("domain_risk"))
             or _text_needs_repair(row.get("domain_risk"))
             or completion_text.has_connector_clipped_risk_subject(row.get("domain_risk", ""))
+            or (projected_domain_risk and projected_domain_risk != _clean(row.get("domain_risk")))
         ):
-            row["domain_risk"] = completion_text.workstream_risk(label=label, outcome=outcome, state=state)
+            row["domain_risk"] = projected_domain_risk or completion_text.workstream_risk(label=label, outcome=outcome, state=state)
             changed = True
         if (
             not _clean(row.get("security_posture"))
@@ -246,7 +250,17 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
         ):
             row["security_posture"] = _security_posture_text(label)
             changed = True
-        if (
+        risk_values = list(text_values(row.get("risks")))
+        projected_risks = workstream_risk_lines(
+            row=row,
+            proposal=proposal,
+            proposal_risks=text_values(proposal.get("risks")),
+            local_risks=risk_values,
+        )
+        if risk_values and projected_risks != risk_values:
+            row["risks"] = projected_risks
+            changed = True
+        elif (
             not text_values(row.get("risks"))
             or _sequence_has_text_repair(row.get("risks"))
             or any(completion_text.has_connector_clipped_risk_subject(value) for value in text_values(row.get("risks")))
@@ -328,12 +342,14 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
                 f"{row_title} hands off the {focus} result, correction state, and explanation with reviewable evidence.",
             ]
             changed = True
+        projected_domain_risk = domain_risk_for_row(row, proposal)
         if (
             _text_needs_repair(row.get("domain_risk"))
             or completion_text.has_connector_clipped_risk_subject(row.get("domain_risk", ""))
             or drifted
+            or (projected_domain_risk and projected_domain_risk != _clean(row.get("domain_risk")))
         ):
-            row["domain_risk"] = completion_text.workstream_risk(label=label, outcome=outcome, state=state_object)
+            row["domain_risk"] = projected_domain_risk or completion_text.workstream_risk(label=label, outcome=outcome, state=state_object)
             changed = True
         if (
             not _clean(row.get("security_posture"))
@@ -343,7 +359,17 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         ):
             row["security_posture"] = _security_posture_text(label)
             changed = True
-        if (
+        risk_values = list(text_values(row.get("risks")))
+        projected_risks = workstream_risk_lines(
+            row=row,
+            proposal=proposal,
+            proposal_risks=text_values(proposal.get("risks")),
+            local_risks=risk_values,
+        )
+        if risk_values and projected_risks != risk_values:
+            row["risks"] = projected_risks
+            changed = True
+        elif (
             not text_values(row.get("risks"))
             or _sequence_has_text_repair(row.get("risks"))
             or any(completion_text.has_connector_clipped_risk_subject(value) for value in text_values(row.get("risks")))

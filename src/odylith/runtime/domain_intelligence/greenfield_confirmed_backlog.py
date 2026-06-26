@@ -341,7 +341,6 @@ def confirmed_backlog_rows(
     follow_up_inline = backlog_text.inline_actor_subject(follow_up_subject)
     metric_actor_inline = backlog_text.inline_actor_subject(metric_actor)
     metric_actor_needs = backlog_actions.actor_verb(metric_actor, singular="needs", plural="need")
-    metric_actor_provides = backlog_actions.actor_verb(metric_actor_inline, singular="provides", plural="provide")
     follow_up_receives = backlog_actions.actor_verb(follow_up_subject, singular="receives", plural="receive")
     workflow_audience = backlog_actions.join_distinct_labels([workflow_actor_label, downstream_actor])
     boundary_audience = workflow_audience or f"{label} operators and reviewers"
@@ -486,8 +485,8 @@ def confirmed_backlog_rows(
         ),
         customer=workflow_actor_label,
         opportunity=(
-            f"Turn the first actor-owned action into a complete, reviewable outcome: {metric_actor_inline} {metric_actor_provides} what the product needs, "
-            f"the product keeps enough context for follow-up, and {workflow_followup_clause}."
+            f"Prove the first actor-owned action can complete with reviewable follow-up: {metric_actor_inline} can {workflow_action}, "
+            f"the product preserves the saved context, and {workflow_followup_clause}."
         ),
         product_view=(
             f"{metric_actor} can {workflow_action}. The product checks the details, explains missing information before it produces a result, "

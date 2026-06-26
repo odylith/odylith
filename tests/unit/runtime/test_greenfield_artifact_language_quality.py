@@ -21,20 +21,28 @@ CONFIRMED_BACKLOG_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfi
 CONFIRMED_BACKLOG_TEXT_MODEL_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py"
 )
+CONFIRMED_BACKLOG_LANGUAGE_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_language.py"
+)
 
 
 def test_confirmed_backlog_text_model_stays_in_dedicated_owner() -> None:
     parent_source = CONFIRMED_BACKLOG_PATH.read_text(encoding="utf-8")
     text_model_source = CONFIRMED_BACKLOG_TEXT_MODEL_PATH.read_text(encoding="utf-8")
+    language_source = CONFIRMED_BACKLOG_LANGUAGE_PATH.read_text(encoding="utf-8")
 
     assert len(parent_source.splitlines()) < 800
+    assert len(text_model_source.splitlines()) < 800
+    assert len(language_source.splitlines()) < 800
     assert "greenfield_confirmed_backlog_text_model as backlog_text" in parent_source
     assert "def _program_problem" not in parent_source
     assert "def _sentence_fragment" not in parent_source
     assert "def _first_action_clause" not in parent_source
     assert "def program_problem" in text_model_source
-    assert "def sentence_fragment" in text_model_source
     assert "def first_action_clause" in text_model_source
+    assert "def sentence_fragment" not in text_model_source
+    assert "def sentence_fragment" in language_source
+    assert "def rationale_lines" in language_source
 
 
 def test_release_basis_avoids_clipped_release_gate_wrapper() -> None:

@@ -9,8 +9,8 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "405609a1bd2c713efc2ad2d691f31f5e350a318798074f7558e610cc3adba7ef",
-    "file_count": 313,
+    "digest": "2555bbb41e5eabad8db3ecd2f4d9ece2e7bbd13156d171308e2ec8a453560008",
+    "file_count": 314,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
       "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
@@ -191,6 +191,7 @@
       "odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md",
       "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
       "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+      "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "odylith/technical-plans/done/.DS_Store",
       "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md",
       "odylith/technical-plans/done/2026-03/2026-03-27-compass-history-retention-compressed-archive-and-restore.md",
@@ -8515,7 +8516,7 @@
         "D-043"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
-      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+      "promoted_to_plan": "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "plan_traceability": {
         "runbooks": [],
         "developer_docs": [],
@@ -13575,12 +13576,12 @@
       ],
       "component_names": [
         "Domain Intelligence",
-        "Analysis Engine",
+        "Host reasoning",
         "Radar",
         "Registry",
         "Atlas",
         "Compass",
-        "Intervention Engine"
+        "Release proof"
       ],
       "related_component_ids": []
     },
@@ -14153,6 +14154,12 @@
       "type": "plan",
       "label": "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
       "file": "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md"
+    },
+    {
+      "id": "plan:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+      "type": "plan",
+      "label": "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+      "file": "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
     },
     {
       "id": "program:B-072",
@@ -20515,7 +20522,7 @@
     },
     {
       "source": "B-142",
-      "target": "plan:odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+      "target": "plan:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "edge_type": "promoted_to_plan"
     },
     {
@@ -24652,12 +24659,12 @@
     "active_release_assignment_count": 20,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 347,
+    "node_count": 348,
     "edge_count": 1804,
     "warning_count": 6,
     "warning_item_count": 6,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-06-12 06:08:04Z"
+  "generated_utc": "2026-06-26 05:03:29Z"
 }

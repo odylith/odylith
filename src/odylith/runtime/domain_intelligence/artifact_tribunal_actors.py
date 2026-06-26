@@ -236,7 +236,7 @@ def _actor_candidate_label(value: str) -> str:
         "proof reviewer",
     }:
         return ""
-    return text
+    return text if _looks_like_actor_label(text) else ""
 
 
 def _looks_like_actor_label(value: str) -> bool:
@@ -251,6 +251,10 @@ def _looks_like_actor_label(value: str) -> bool:
         r"\b(?:owns|must show|source of truth|proof evidence|validate|assemble|actors include|actors involved|review ownership follows)\b",
         lowered,
     ):
+        return False
+    if "evidence tier" in lowered or "invalidation trigger" in lowered:
+        return False
+    if " row " in f" {lowered} " and "names the owner" in lowered:
         return False
     if lowered.endswith((" proof record", " evidence record", " release gate")):
         return False
@@ -299,7 +303,7 @@ def _looks_like_actor_label(value: str) -> bool:
     if words & role_words:
         return True
     tokens = [word.strip(".,;:()") for word in lowered.split() if word.strip(".,;:()")]
-    if 1 <= len(tokens) <= 5 and any(re.search(r"(?:er|or|ist|ian|ant|ee)$", token) for token in tokens):
+    if 2 <= len(tokens) <= 5 and any(re.search(r"(?:er|or|ist|ian|ant|ee)$", token) for token in tokens):
         return True
     return False
 

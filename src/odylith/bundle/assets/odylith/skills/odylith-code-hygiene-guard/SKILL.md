@@ -37,6 +37,13 @@ ownership, not just file boundaries.
 - Inventory lane and host reach as well before editing: shared guidance,
   install-generated guidance, Codex assets, Claude assets, shared skills, and
   shipped mirrors that must stay aligned if the rule changes.
+- Governance-learning: inventory governance reach before editing. Escaped defects and failed
+  simulations need Casebook truth, planned rearchitecture needs Radar or
+  technical-plan truth, component-contract changes need Registry truth,
+  changed flows or topology need Atlas truth, and proof checkpoints need
+  Compass truth before closeout. Search prior Casebook/governance learning and
+  prior failed mechanisms, do not repeat a fix path that already failed, and
+  capture new mechanism-level learning.
 - Inventory project-surface reach too before editing: source files, hooks,
   prompts, templates, config, docs, generators, and installed assets that may
   be carrying the same slop class under different file extensions.

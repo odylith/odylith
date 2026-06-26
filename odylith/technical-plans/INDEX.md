@@ -1,6 +1,6 @@
 # Plan Index
 
-Last updated (UTC): 2026-05-01
+Last updated (UTC): 2026-06-26
 ## Active Plans
 
 | Plan | Status | Created | Updated | Backlog |
@@ -30,7 +30,7 @@ Last updated (UTC): 2026-05-01
 | `odylith/technical-plans/in-progress/2026-04/2026-04-15-casebook-bug-capture-fail-closed-evidence-contract-and-cross-host-guidance-hardening.md` | In progress | 2026-04-15 | 2026-04-15 | `B-097` |
 | `odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md` | In progress | 2026-04-18 | 2026-04-18 | `B-126` |
 | `odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md` | In progress | 2026-05-01 | 2026-05-01 | `B-141` |
-| `odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md` | In progress | 2026-05-01 | 2026-05-03 | `B-142` |
+| `odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md` | In progress | 2026-06-26 | 2026-06-26 | `B-142` |
 
 ## Parked Plans
 

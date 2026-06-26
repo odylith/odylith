@@ -15,15 +15,10 @@ dirty events and settles them at Stop, install reruns behave as upgrades, and
 Casebook/Radar/Atlas migration evidence stays captured when legacy records,
 generated surfaces, topology links, or launcher repair states break.
 
-B-142 Completion Goal: Confirmed greenfield creation must become semantic-model
-first, not prose-first. Odylith must derive typed `FirstPathContract`,
-`DomainOntology`, `ComponentContract`, `ReleaseScope`, `WorkstreamContract`,
-`DiagramEventGraph`, and `ProofObligation` structures from accepted intent
-before Radar, Registry, Atlas, project intelligence, release topology, or proof
-review render. Completion requires generic fail-closed gates and adversarial
-cross-domain fixtures proving no first-path drift, wrong-domain leakage,
-malformed grammar, clipped prose, proof-token soup, repeated proof walls,
-deferred-scope leakage, or topology mismatch reaches governed writes.
+B-142 Plan Split: The greenfield typed-semantic compiler and PatchSet repair
+work now has its own active plan at
+`odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md`.
+This B-141 plan remains the cross-host latency and migration-hardening record.
 
 Assumptions:
 - Claude and Codex have different native hook semantics, so performance wins

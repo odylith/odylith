@@ -135,6 +135,20 @@ def test_artifact_enrichment_dedupes_focus_detail_boundary_terms() -> None:
     assert evidence_line.endswith("Evidence — contents belong in Appeal Proof Record")
 
 
+def test_artifact_enrichment_preserves_complete_short_validation_predicates() -> None:
+    validation_line = artifact_enrichment._scoped_sentence(
+        "Validation gate",
+        "Show Why Permit Case Can Be Trusted",
+        "Proof review fails closed when success evidence, replay evidence, access proof, privacy proof, or review evidence is missing.",
+    )
+
+    assert validation_line == (
+        "Validation gate: Show Why Permit Case Can Be Trusted — Proof review fails closed when success evidence, "
+        "replay evidence, access proof, privacy proof, or review evidence is missing"
+    )
+    assert not validation_line.endswith("access proof")
+
+
 def test_artifact_enrichment_splits_long_first_path_action_chains() -> None:
     lines = artifact_enrichment._first_path_enrichment_lines(
         focus="Prove One Complete Municipal Permit Review Path",
@@ -544,6 +558,9 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     assert "Starting implementation without a named product spine" not in all_radar_text
     assert "under-modeled in broad greenfield prompts" not in all_radar_text
     assert "Combining cart, payment, and order state would hide failure recovery" in all_radar_text
+    assert all_radar_text.count("Combining cart, payment, and order state would hide failure recovery") == 1
+    assert "Storefront can accept incomplete input" in all_radar_text
+    assert "Catalog Boundary can accept incomplete input" in all_radar_text
     assert "owns Own" not in all_radar_text
     assert "owns owns" not in all_radar_text.casefold()
     assert "Which stack owns the storefront?" in all_radar_text
@@ -569,6 +586,31 @@ def test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate(
     assert "governed-artifact-tribunal" not in accepted_text
     assert "**Primary reviewer**" not in accepted_text
     assert "__Surface reviewer__" not in accepted_text
+
+
+def test_greenfield_apply_replaces_child_copies_of_parent_risk(tmp_path, monkeypatch) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    proposal = _governed_greenfield_fixture(tmp_path, "Build an ecommerce checkout recovery product")
+    parent_risk = proposal["risks"][0]
+    proposal["backlog"][1]["domain_risk"] = parent_risk
+    proposal["backlog"][1]["risks"] = [parent_risk]
+    proposal["backlog"][2]["risks"] = [{"statement": parent_risk}]
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    rendered = "\n".join(Path(row["idea_path"]).read_text(encoding="utf-8") for row in result["backlog"])
+
+    assert rendered.count("Combining cart, payment, and order state would hide failure recovery") == 1
+    assert "Storefront can accept incomplete input" in rendered
+    assert "Catalog Boundary can accept incomplete input" in rendered
 
 
 def test_greenfield_apply_feeds_project_tab_from_accepted_project_and_tribunal(tmp_path, monkeypatch) -> None:
@@ -1248,9 +1290,9 @@ def test_greenfield_apply_writes_host_authored_component_specs(tmp_path, monkeyp
     assert "Trace links for Storefront: workstreams B-002" in storefront_spec
     assert "Trace links for Checkout Orchestrator: workstreams B-002" in checkout_spec
     assert "Trace links for Catalog Boundary: workstreams B-003" in catalog_spec
-    assert "Use B-002 (Define Storefront boundary) as the implementation anchor for Storefront" in storefront_spec
-    assert "Use B-003 (Define Catalog boundary) as the implementation anchor for Catalog Boundary" in catalog_spec
-    assert "Use B-002 (Define Storefront boundary) as the implementation anchor for Catalog Boundary" not in catalog_spec
+    assert "Implementation anchor for Storefront: B-002 (Define Storefront boundary)" in storefront_spec
+    assert "Implementation anchor for Catalog Boundary: B-003 (Define Catalog boundary)" in catalog_spec
+    assert "Implementation anchor for Catalog Boundary: B-002 (Define Storefront boundary)" not in catalog_spec
     assert "## Component Brief" not in storefront_spec
     assert "## Boundary Narrative" not in storefront_spec
     assert "## First Release Proof" not in checkout_spec

@@ -380,6 +380,10 @@ def test_boundary_clause_questions_become_declarative_scope_text() -> None:
         == "regulatory spray compliance scope remains deferred"
     )
     assert (
+        boundary_clause_item("Whether applicants authenticate through an existing city identity provider remains deferred.")
+        == "whether applicants authenticate through an existing city identity provider remains deferred"
+    )
+    assert (
         boundary_clause_item("Does this need offline mobile logging?")
         == "scope question remains open: does this need offline mobile logging"
     )

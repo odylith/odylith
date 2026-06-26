@@ -3,6 +3,17 @@
 Use this skill when the operator asks Odylith to build, govern, plan, or
 architect a new project before source code exists.
 
+Governance-learning stays active during greenfield work. Every failed
+post-confirm create, failed mechanism, bad generated artifact, semantic drift,
+quality-gate miss, latency breach, or simulation defect must create or update Casebook
+truth before the next simulation or fix pass; planned rearchitecture belongs
+in Radar or technical plans, component-contract changes in Registry,
+flow/topology changes in Atlas, and proof checkpoints in Compass. Before
+fixing a greenfield bug, search existing Casebook and related governance
+artifacts, read prior failed mechanisms, failed fix attempts, and guardrails,
+do not repeat a fix path that already failed, and capture new
+mechanism-level learning.
+
 1. Do not refuse merely because the repo has no app source. Greenfield intent
    is valid proposal evidence, not source evidence.
 2. Run the Product Intent Confirmation path:

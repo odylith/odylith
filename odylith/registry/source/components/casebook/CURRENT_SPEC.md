@@ -22,6 +22,9 @@ and source evidence.
 - Bug-index regeneration from source markdown.
 - The read-only rendered Casebook dashboard.
 - Bug-centric linkage to workstreams, components, and diagrams.
+- Durable failure learning, including failed mechanisms, prior failed fix
+  attempts, rejected approaches, guardrails, and validation history that must
+  be read before another fix path is attempted.
 
 ### Casebook does not own
 - The live timeline stream. Compass owns that.

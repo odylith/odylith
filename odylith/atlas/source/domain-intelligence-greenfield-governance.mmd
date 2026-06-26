@@ -1,76 +1,79 @@
 flowchart LR
-    subgraph intent_lane["Intent + shallow evidence"]
+    subgraph confirmation_lane["Accepted intent"]
       direction TB
-      prompt["Greenfield prompt<br/>build, govern, plan, architect"]
-      host["Host model surfaces<br/>thin CLI routing only"]
-      source["Shallow repo evidence<br/>empty, thin, metadata,<br/>docs, app-ready"]
-      catalog["Domain archetype catalog<br/>product, infra, data,<br/>science/math lenses"]
+      visible_intent["Product Intent Confirmation<br/>visible story, first path,<br/>actors, systems, proof boundary"]
+      confirm["Operator confirm<br/>single post-confirm create"]
+      confirmed_ir["ConfirmedIntentIR<br/>section IDs, source spans,<br/>hash, provenance"]
     end
 
-    subgraph reasoning_lane["Domain intelligence compiler"]
+    subgraph reasoning_lane["Host reasoning"]
       direction TB
-      compiler["Greenfield proposal compiler<br/>greenfield_proposals.py"]
-      planning["Program/release/UX planner<br/>proposal_planning.py"]
-      rendering["Proposal rendering<br/>preview gate + apply commands"]
-      preview["Compact product preview<br/>interpretation, choices,<br/>first release, proof gate"]
-      fulljson["Full proposal JSON<br/>deep records for review/apply"]
-      proposal["Accepted proposal payload<br/>workstreams, waves, release,<br/>components, diagrams, risks, validation"]
+      semantic_compile["Semantic compiler call<br/>host resolves meaning"]
+      semantic_ir["SemanticModelIR<br/>actors, actions, state,<br/>events, proof, risks"]
+      decision_ledger["Decision ledger<br/>ambiguities and rejected<br/>interpretations"]
+      patchset["PatchSet<br/>semantic or plan patch<br/>with confidence"]
     end
 
-    subgraph confirmation_lane["Confirmation-gated apply"]
+    subgraph custody_lane["Deterministic Odylith custody"]
       direction TB
-      confirm{"Operator confirms<br/>after preview?"}
-      tribunal["Validation + Tribunal<br/>pre-write gate"]
-      lane_guard["Consumer repair guard<br/>product repo no-op"]
-      radar["Radar apply<br/>owned backlog authoring"]
-      registry["Registry apply<br/>planned user_intent components"]
-      atlas["Atlas apply<br/>draft topology diagrams"]
-      release["Release targeting<br/>next/current selector"]
+      plan_ir["ArtifactPlanIR<br/>surface-specific projections"]
+      draft_set["ArtifactDraftSet<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
+      validators["Schema, traceability,<br/>copy, repetition, grammar,<br/>and topology gates"]
+      review_report["ReviewReport<br/>typed PM, architect,<br/>engineer, domain findings"]
+      transaction{"Final manifest<br/>passes?"}
     end
 
-    subgraph memory_lane["Clean runtime memory"]
+    subgraph projection_lane["Context-starved renderers"]
       direction TB
-      intervention["Intervention Engine<br/>routes without raw<br/>Observation chatter"]
-      compass["Compass + memory<br/>accepted proposal context<br/>and clean timeline"]
+      radar["Radar projection<br/>product slices only"]
+      registry["Registry projection<br/>component contracts only"]
+      atlas["Atlas projection<br/>topology and event flow"]
+      compass["Compass projection<br/>decision and proof record"]
+      release["Release proof<br/>scope and validation"]
     end
 
-    prompt --> host
-    host --> compiler
-    source --> compiler
-    catalog --> compiler
-    compiler --> planning --> proposal
-    compiler --> rendering
-    rendering --> preview
-    rendering --> fulljson
-    fulljson --> proposal
-    preview --> confirm
-    proposal --> intervention
-    confirm -- "revise" --> preview
-    confirm -- "apply" --> tribunal
-    tribunal --> lane_guard
-    lane_guard --> radar
-    lane_guard --> registry
-    tribunal --> atlas
-    tribunal --> release
-    radar --> compass
-    registry --> compass
-    atlas --> compass
-    release --> compass
-    intervention -. "zero-file narration filtered" .-> compass
+    subgraph write_lane["Fail-closed governed writes"]
+      direction TB
+      writes["Source-truth writes<br/>only after final pass"]
+      rollback["Rollback snapshot<br/>for failed transactions"]
+      blockers["Exact blockers<br/>when repair is exhausted"]
+    end
 
-    classDef input fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1.2px;
-    classDef intelligence fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1.2px;
-    classDef decision fill:#FFF8E6,stroke:#F6D98B,color:#17233A,stroke-width:1.3px;
-    classDef apply fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1.2px;
-    classDef memory fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1.2px;
-    class prompt,host,source,catalog input;
-    class compiler,planning,rendering,preview,fulljson,proposal intelligence;
-    class confirm,tribunal decision;
-    class lane_guard,radar,registry,atlas,release apply;
-    class intervention,compass memory;
+    visible_intent --> confirm --> confirmed_ir
+    confirmed_ir --> semantic_compile --> semantic_ir
+    semantic_compile --> decision_ledger
+    semantic_ir --> plan_ir --> draft_set
+    plan_ir --> radar
+    plan_ir --> registry
+    plan_ir --> atlas
+    plan_ir --> compass
+    plan_ir --> release
+    radar --> draft_set
+    registry --> draft_set
+    atlas --> draft_set
+    compass --> draft_set
+    release --> draft_set
+    draft_set --> validators --> review_report --> transaction
+    transaction -- "pass under 60s standard path" --> writes
+    transaction -- "repairable final-gate failure" --> patchset
+    patchset -- "under 90s rescue path" --> semantic_ir
+    transaction -- "non-repairable or budget exhausted" --> rollback --> blockers
+    writes --> compass
 
-    style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
+    classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1.2px;
+    classDef reasoning fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1.2px;
+    classDef custody fill:#FFF8E6,stroke:#F6D98B,color:#17233A,stroke-width:1.3px;
+    classDef projection fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1.2px;
+    classDef write fill:#FDF2F8,stroke:#F9A8D4,color:#17233A,stroke-width:1.2px;
+    class visible_intent,confirm,confirmed_ir intent;
+    class semantic_compile,semantic_ir,decision_ledger,patchset reasoning;
+    class plan_ir,draft_set,validators,review_report,transaction custody;
+    class radar,registry,atlas,compass,release projection;
+    class writes,rollback,blockers write;
+
+    style confirmation_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
     style reasoning_lane fill:#FBFDFF,stroke:#DDD6FE,stroke-width:1px,color:#334155
-    style confirmation_lane fill:#FBFDFF,stroke:#F6D98B,stroke-width:1px,color:#334155
-    style memory_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155
+    style custody_lane fill:#FBFDFF,stroke:#F6D98B,stroke-width:1px,color:#334155
+    style projection_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155
+    style write_lane fill:#FBFDFF,stroke:#F9A8D4,stroke-width:1px,color:#334155
     linkStyle default stroke:#B9C7D8,stroke-width:1.25px

@@ -5,6 +5,12 @@
 
 Use when adding or updating Atlas Mermaid diagrams, or when a materially changed flow, boundary, or operator seam has no truthful Atlas coverage yet.
 
+Governance-learning applies here: changed flow, topology, post-confirm path,
+repair loop, governance-write path, host lane, projection boundary, or failed
+mechanism must update Atlas truth before closeout. Search related Casebook and
+governance truth first, read prior failed mechanisms, do not repeat a fix path
+that already failed, and capture new mechanism-level learning.
+
 ## Canonical Commands
 
 ```bash

@@ -36,8 +36,9 @@ from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence.artifact_enrichment import build_artifact_enrichment
 from odylith.runtime.domain_intelligence.greenfield_cli_output import print_apply_result
 from odylith.runtime.domain_intelligence.greenfield_backlog_impact import derive_greenfield_impacted_parts
-from odylith.runtime.domain_intelligence.greenfield_experience import proposal_posture_tuple
 from odylith.runtime.domain_intelligence.greenfield_experience import row_text_tuple
+from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
+from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_posture_text
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
@@ -70,6 +71,7 @@ from odylith.runtime.domain_intelligence.proposal_validation import validate_hos
 from odylith.runtime.common import display_text
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
 from odylith.runtime.project_intelligence.intent_confirmation import format_product_intent_confirmation_text
+
 
 def _prompt_text(prompt: str) -> str:
     text = " ".join(str(prompt or "").split()).strip()
@@ -306,28 +308,17 @@ def _load_confirmed_intent_args(args: argparse.Namespace, *, repo_root: Path) ->
     return intent
 
 
-def _proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
-    return " ".join(proposal_posture_tuple(proposal, *keys)).strip()
-
-
 def _row_posture_text(row: Mapping[str, Any], proposal: Mapping[str, Any], *keys: str) -> str:
     local = row_text_tuple(row, *keys)
     if local:
         return " ".join(local).strip()
-    return _proposal_posture_text(proposal, *keys)
-
-
-def _domain_risk_for_row(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> str:
-    return (
-        _row_posture_text(row, proposal, "domain_risk", "risk_posture", "risks")
-        or _proposal_posture_text(proposal, "risks", "security_compliance")
-    )
+    return proposal_posture_text(proposal, *keys)
 
 
 def _security_posture_for_row(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> str:
     return (
         _row_posture_text(row, proposal, "security_posture", "security_compliance", "compliance_posture")
-        or _proposal_posture_text(proposal, "security_compliance")
+        or proposal_posture_text(proposal, "security_compliance")
     )
 
 
@@ -353,7 +344,7 @@ def _backlog_section_overrides(proposal: Mapping[str, Any]) -> dict[str, dict[st
             "opportunity": str(row.get("opportunity", "")).strip(),
             "product_view": str(row.get("product_view", "")).strip(),
             "success_metrics": success_metrics,
-            "domain_risk": _domain_risk_for_row(row, proposal),
+            "domain_risk": domain_risk_for_row(row, proposal),
             "security_posture": _security_posture_for_row(row, proposal),
             "priority": str(row.get("priority", "P1")).strip() or "P1",
             "sizing": str(row.get("sizing", "M")).strip() or "M",
@@ -420,7 +411,7 @@ def _backlog_apply_args(proposal: Mapping[str, Any], *, release_selector: str) -
         opportunity=str(first.get("opportunity", "")).strip(),
         product_view=str(first.get("product_view", "")).strip(),
         success_metrics="\n".join(f"- {item}" for item in row_text_tuple(first, "success_metrics")),
-        domain_risk=_domain_risk_for_row(first, proposal),
+        domain_risk=domain_risk_for_row(first, proposal),
         security_posture=_security_posture_for_row(first, proposal),
         priority=str(first.get("priority", "P1")).strip() or "P1",
         commercial_value=3,

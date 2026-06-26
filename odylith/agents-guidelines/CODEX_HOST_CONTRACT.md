@@ -10,6 +10,15 @@
   mean the same thing on both hosts.
 - Routine backlog, plan, bug, spec, component, and diagram upkeep should stay
   on that shared lane first.
+- Governance-learning is part of the shared lane. Codex must not treat chat
+  memory, hook context, or final-answer prose as durable truth: escaped
+  defects and failed simulations go to Casebook, planned work to Radar or
+  technical plans, component-contract changes to Registry, flow/topology
+  changes to Atlas, and decisions or proof checkpoints to Compass before
+  closeout, commit, build, or release claims. Before Codex fixes a bug, it
+  must search existing Casebook and related governance artifacts, read prior
+  failed mechanisms, failed fix attempts, and guardrails, do not repeat a fix
+  path that already failed, and record new mechanism-level learning.
 - Host-specific guidance belongs only where a native host capability is real,
   locally supported, and materially reduces hops compared with the shared CLI
   path.
