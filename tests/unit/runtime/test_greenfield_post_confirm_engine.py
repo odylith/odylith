@@ -302,7 +302,12 @@ def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() 
     assert operation["target_layer"] == "semantic_model"
     assert operation["target_path"] == "quality_lenses.product_manager.decision_boundary"
     assert operation["semantic_node_id"] == "ReviewReport.quality_lenses"
-    assert operation["rejected_interpretation"] == "quality lens product_manager missing assumptions or ambiguity boundary"
+    assert operation["rejected_interpretation"] == (
+        "quality lens product_manager missing assumptions or ambiguity boundary"
+    )
+    assert operation["replacement_fact"] == ""
+    assert operation["decision_ledger_entry"] == ""
+    assert operation["proof_obligation_delta"] == ""
     assert operation["affected_projections"] == ("project_brief", "radar", "release")
 
 
@@ -962,6 +967,67 @@ def test_package_repair_only_mutates_patchset_affected_projection() -> None:
     assert repaired.next_steps_preview == {
         "implementation_prompt": "The next step stays attached to the accepted state."
     }
+
+
+def test_package_repair_preserves_structural_metadata_inside_repaired_projections() -> None:
+    registry_path = "/tmp/stays attached attached/odylith/registry/source/component_registry.v1.json"
+    spec_path = "/tmp/stays attached attached/odylith/registry/source/components/c-001/CURRENT_SPEC.md"
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        component_registry_preview=(
+            {
+                "component_id": "case-redaction",
+                "registry_path": registry_path,
+                "spec_path": spec_path,
+                "feature_history": [
+                    {"summary": "The record stays attached attached to the accepted state."},
+                ],
+            },
+        ),
+        accepted_project_preview={
+            "schema_version": "odylith.accepted_project.v1",
+            "created": {
+                "components": [
+                    {
+                        "component_id": "case-redaction",
+                        "registry_path": registry_path,
+                        "spec_path": spec_path,
+                        "feature_history": [
+                            {"summary": "The record stays attached attached to the accepted state."},
+                        ],
+                    }
+                ]
+            },
+        },
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                {
+                    "target_layer": "artifact_draft_set",
+                    "issue_code": "generated_copy_quality",
+                    "affected_projections": ["accepted_project", "registry"],
+                }
+            ],
+        },
+    )
+
+    assert repaired.component_registry_preview[0]["registry_path"] == registry_path
+    assert repaired.component_registry_preview[0]["spec_path"] == spec_path
+    repaired_components = repaired.accepted_project_preview["created"]["components"]
+    assert repaired_components[0]["registry_path"] == registry_path
+    assert repaired_components[0]["spec_path"] == spec_path
+    assert (
+        repaired.component_registry_preview[0]["feature_history"][0]["summary"]
+        == "The record stays attached to the accepted state."
+    )
+    assert (
+        repaired_components[0]["feature_history"][0]["summary"]
+        == "The record stays attached to the accepted state."
+    )
 
 
 def test_package_repair_preserves_markdown_plan_link_targets() -> None:

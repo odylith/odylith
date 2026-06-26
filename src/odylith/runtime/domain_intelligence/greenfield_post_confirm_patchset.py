@@ -27,6 +27,9 @@ class GreenfieldPatchOperation:
     source_finding: str
     affected_projections: tuple[str, ...]
     requested_action: str
+    replacement_fact: Any = ""
+    decision_ledger_entry: Any = ""
+    proof_obligation_delta: Any = ""
     rejected_interpretation: str = ""
     confidence: float = 0.0
 
@@ -98,6 +101,9 @@ def _operation_from_finding(
         source_finding=finding.source,
         affected_projections=_affected_projections(finding),
         requested_action=_requested_action(finding, target_layer=target_layer),
+        replacement_fact="",
+        decision_ledger_entry="",
+        proof_obligation_delta="",
         rejected_interpretation=_rejected_interpretation(finding, target_layer=target_layer),
         confidence=0.2 if target_layer in {"semantic_model", "artifact_plan"} else 0.0,
     )
@@ -167,7 +173,10 @@ def _projection_from_target_path(value: str) -> str:
 
 def _requested_action(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:
     if target_layer == "semantic_model":
-        return "Return a semantic patch that corrects the accepted intent interpretation and preserves rejected interpretations."
+        return (
+            "Return a semantic patch that corrects the accepted intent interpretation "
+            "and preserves rejected interpretations."
+        )
     if target_layer == "artifact_plan":
         return "Return an artifact-plan patch that changes only sanctioned projection fields before rerender."
     return "Apply only explicitly safe mechanical cleanup, then rerun the same typed review gates."

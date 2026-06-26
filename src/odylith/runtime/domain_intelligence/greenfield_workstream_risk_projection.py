@@ -72,7 +72,7 @@ def _compact_first_path_reference(value: str, proposal: Mapping[str, Any]) -> st
     first_sentence, sentence_separator, rest = tail.strip().partition(". ")
     if not first_sentence:
         return value
-    replacement = f"{marker} {visible_result}."
+    replacement = f"{marker} {completion_text.lower_first(visible_result)}."
     if sentence_separator and rest:
         replacement = f"{replacement} {rest.strip()}"
     return f"{head}{replacement}".strip()

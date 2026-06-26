@@ -13,6 +13,7 @@ import re
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -41,9 +42,19 @@ def _artifact_texts(package: Any) -> Iterable[tuple[str, str]]:
     for path, text in _mapping(getattr(package, "rendered_atlas_sources", None)).items():
         yield f"Atlas Mermaid `{path}`", normalize_string(text)
     for label in ("project_brief_preview", "next_steps_preview"):
-        text = normalize_string(getattr(package, label, None))
+        text = _preview_text(getattr(package, label, None))
         if text:
             yield f"Greenfield preview `{label}`", text
+
+
+def _preview_text(value: Any) -> str:
+    if isinstance(value, Mapping):
+        return "\n".join(
+            text
+            for item in text_values(value)
+            if (text := normalize_string(item))
+        )
+    return normalize_string(value)
 
 
 def _mapping(value: Any) -> dict[Any, Any]:
@@ -97,7 +108,11 @@ def _abstract_contract_noun_run(lowered: str) -> int:
     abstract = {"approval", "approvals", "gate", "gates", "name", "result", "status", "story"}
     best = 0
     current = 0
-    for token in re.findall(r"[a-z]+", lowered):
+    tokens = re.findall(r"[a-z]+", lowered)
+    for index, token in enumerate(tokens):
+        if token == "name" and (index + 1 >= len(tokens) or tokens[index + 1] not in abstract):
+            current = 0
+            continue
         if token in abstract:
             current += 1
             best = max(best, current)

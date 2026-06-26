@@ -11,9 +11,11 @@ from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
 from odylith.runtime.domain_intelligence.greenfield_component_axes import component_axis_key_for_label
 from odylith.runtime.domain_intelligence.greenfield_component_terms import object_clause_focus
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action
+from odylith.runtime.domain_intelligence.greenfield_component_terms import verb_forms_pattern
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import normalize_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
@@ -542,8 +544,49 @@ def _first_path_contract_claim(first_path_contract: FirstPathContract) -> str:
     capability = clean_text(first_path_contract.capability).strip(" .") or "complete the first path"
     action = _actor_led_base_action_phrase(capability) or base_gerund_clause(capability) or normalize_action_clause(capability)
     if action and looks_like_action_clause(action):
-        return f"{first_path_contract.actor} can {action}."
+        claim = f"{first_path_contract.actor} can {action}."
+        if not modal_base_form_drift_phrases(claim):
+            return claim
+        event_action = _first_path_event_action_chain(first_path_contract)
+        if event_action:
+            return f"{first_path_contract.actor} can {event_action}."
     return f"{first_path_contract.actor} can complete {capability}."
+
+
+def _first_path_event_action_chain(first_path_contract: FirstPathContract) -> str:
+    clauses: list[str] = []
+    for event in first_path_contract.events:
+        clause = _event_action_clause(event)
+        if clause and clause not in clauses:
+            clauses.append(clause)
+        if len(clauses) >= 5:
+            break
+    return _join_action_clauses(clauses)
+
+
+def _event_action_clause(event: FirstPathEvent) -> str:
+    action = clean_text(event.action).casefold().strip(" .")
+    text = clean_text(event.text or event.mutation).strip(" .")
+    if action and text:
+        match = re.search(rf"\b(?:{verb_forms_pattern(action)})\b(?P<tail>.*)$", text, flags=re.IGNORECASE)
+        if match:
+            tail = clean_text(match.group("tail")).strip(" ,.;:")
+            candidate = normalize_action_clause(f"{action} {tail}".strip())
+            if looks_like_action_clause(candidate):
+                return candidate
+    candidate = normalize_action_clause(text)
+    return candidate if looks_like_action_clause(candidate) else ""
+
+
+def _join_action_clauses(values: Sequence[str]) -> str:
+    rows = [clean_text(value).strip(" .") for value in values if clean_text(value).strip(" .")]
+    if not rows:
+        return ""
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) == 2:
+        return f"{rows[0]} and {rows[1]}"
+    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
 def _actor_led_base_action_phrase(value: str) -> str:

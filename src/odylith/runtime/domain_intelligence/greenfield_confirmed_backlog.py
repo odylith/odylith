@@ -118,6 +118,8 @@ def _proof_record_label(value: str) -> str:
         return base
     if lowered.endswith(" record") and " proof " in f" {lowered} ":
         return base
+    if lowered.endswith((" audit ledger", " evidence ledger", " history ledger", " proof ledger", " trace ledger", " ledger")):
+        return f"{base} Record"
     if lowered.endswith(" proof"):
         return f"{base} Record"
     return f"{base} Proof Record"
@@ -433,13 +435,29 @@ def confirmed_backlog_rows(
     workflow_followup_clause = (
         f"the product shows that {actor_owned_outcome_event}"
         if actor_owned_outcome_event
-        else f"lets {recipient_phrase} {outcome_action}"
+        else (
+            "keeps the saved result reviewable"
+            if _outcome_repeats_action(
+                action=workflow_action,
+                outcome=outcome_summary,
+                outcome_action=outcome_action,
+            )
+            else f"lets {recipient_phrase} {outcome_action}"
+        )
     )
     workflow_metric_sentence = (
         f"The first interaction proves this path: {metric_first_path_proof_capability}. "
         f"It also shows that {actor_owned_outcome_event}."
         if actor_owned_outcome_event
-        else f"The first interaction proves this path: {metric_first_path_proof_capability}. It also lets {recipient_phrase} {outcome_action}."
+        else (
+            f"The first interaction proves this path: {metric_first_path_proof_capability}. It also keeps the saved result reviewable."
+            if _outcome_repeats_action(
+                action=metric_first_path_proof_capability,
+                outcome=outcome_summary,
+                outcome_action=outcome_action,
+            )
+            else f"The first interaction proves this path: {metric_first_path_proof_capability}. It also lets {recipient_phrase} {outcome_action}."
+        )
     )
     parent = _backlog_row(
         label=label,
@@ -736,6 +754,15 @@ def _capability_clause_key(value: str) -> str:
             token = "proof"
         tokens.append(token)
     return " ".join(tokens)
+
+
+def _outcome_repeats_action(*, action: str, outcome: str, outcome_action: str) -> bool:
+    return bool(
+        (outcome and backlog_text.result_terms_covered(outcome, action))
+        or (outcome_action and backlog_text.result_terms_covered(outcome_action, action))
+        or (outcome and backlog_text.shares_product_terms(action, outcome))
+        or (outcome_action and backlog_text.shares_product_terms(action, outcome_action))
+    )
 
 
 __all__ = [

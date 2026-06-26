@@ -150,6 +150,26 @@ def test_brief_proof_boundary_does_not_clip_terminal_product_show_clause() -> No
     assert "records required information" in brief
 
 
+def test_component_boundary_wraps_long_deferred_component_identity() -> None:
+    rows = confirmed_diagrams(
+        label="Evidence Review Workspace",
+        diagram_slugs=_diagram_slugs(),
+        components=[
+            {"component_id": "intake", "label": "Evidence Intake Service", "release_scope": "first_path_required"},
+            {
+                "component_id": "archive",
+                "label": "Evidence Archive and Reviewer Signoff Ledger",
+                "release_scope": "deferred",
+            },
+        ],
+    )
+
+    boundary = next(row for row in rows if row["title"] == "Component Boundary View")
+
+    assert "Deferred scope<br/>Evidence Archive and Reviewer<br/>Signoff Ledger" in boundary["mermaid_source"]
+    assert "Evidence Archive and Reviewer Signoff Ledger" not in boundary["mermaid_source"]
+
+
 def test_sequence_event_steps_stay_in_dedicated_owner() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     diagram_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py"

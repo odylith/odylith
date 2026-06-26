@@ -95,6 +95,25 @@ vocabulary, or degraded packages.
   result objects before actor-led action stripping, and child workstream risk
   projection preserves governed risk posture even when parent risk posture is
   absent.
+- 2026-06-26 fresh source-local variance pass: neonatal transfer coordination,
+  offshore wind maintenance, court evidence redaction, and food relief routing
+  passed under 16.2 seconds with zero matrix quality issues, while quantum
+  chemistry initially failed before writes on repeated visible-result prose and
+  a project-brief artifact-judgment false positive. The repair stayed generic:
+  structural metadata is immutable to public-copy repair, semantic patch
+  routing uses explicit IR path/node tokens, result-term comparison canonicalizes
+  simple inflected result words against base action words, proof-ledger labels
+  no longer duplicate proof-record suffixes, and preview artifact judgment
+  reviews values rather than Python mapping syntax.
+- 2026-06-26 final source-local matrix proof for this checkpoint: all five
+  unrelated domains passed `greenfield propose` followed by confirmed
+  `greenfield create` with governed writes, zero quality issues, and temp repo
+  cleanup after every run: neonatal transfer coordination 15.062s, offshore
+  wind maintenance 14.327s, court evidence redaction 14.730s, quantum chemistry
+  runbook 14.545s, and food relief routing 14.650s. Each run produced four
+  Radar workstreams, three Registry specs, six Atlas Mermaid sources, five
+  rendered surfaces, release/program/project brief records, 18 trace nodes, and
+  four trace workstreams.
 
 ## Implementation Slices
 
@@ -141,20 +160,30 @@ vocabulary, or degraded packages.
       deterministic semantic first-path repair through the PatchSet seam. Full
       host-authored semantic patches and affected-projection-only rerender
       remain open.
-- [ ] Add a host-reasoned semantic patch executor with bounded schema:
+- [x] Add a host-reasoned semantic patch executor with bounded schema:
       `operation_id`, `semantic_node_id`, `target_path`, `affected_projections`,
       `replacement_fact`, `decision_ledger_entry`, `proof_obligation_delta`,
       `rejected_interpretation`, and confidence. Reject prose-only patches.
+      Current checkpoint applies host-authored `replacement_fact` operations to
+      accepted-intent semantic fields before semantic-model regeneration,
+      retains proof-obligation deltas in the decision ledger, and routes only by
+      explicit IR target tokens instead of incidental substrings. The actual
+      host-model semantic compiler call remains a separate open integration.
 - [ ] Add context-starved renderer contracts so Radar, Registry, Atlas,
       Compass, release proof, and next steps cannot cross-contaminate.
       Current checkpoint adds the first projection contract split:
       modal-safe actions, visible-result outcome actions, and child risk
       posture are resolved in shared projection owners before renderers compose
-      surface copy. A broader explicit `ProjectionLexicon` remains open.
-- [ ] Add high-variance simulation fixtures and artifact-quality scoring across
+      surface copy. Public-copy package repair now treats structural path,
+      identity, slug, schema, status, version, URL, and record-reference fields
+      as immutable custody metadata. A broader explicit `ProjectionLexicon`
+      remains open.
+- [x] Add high-variance simulation fixtures and artifact-quality scoring across
       PM, architect, engineer, and domain-expert lenses.
-- [ ] Add standard/rescue latency proof and temp-repo pruning proof for the
+- [x] Add standard latency proof and temp-repo pruning proof for the
       recursive simulation loop.
+      Rescue under 90s remains architecturally available, but this checkpoint's
+      proof stayed in the standard under-60s path without host repair.
 
 ## Risks & Mitigations
 
@@ -201,12 +230,22 @@ vocabulary, or degraded packages.
       `test_greenfield_package_repetition_quality.py`, and
       `test_greenfield_radar_projection_quality.py`: 130 tests in 60.09
       seconds.
-- [ ] Timing tests proving standard under 60 seconds and rescue under 90 seconds.
-- [ ] Recursive high-variance simulation runs across unrelated domains with
+- [x] Timing tests proving standard under 60 seconds.
+- [ ] Rescue-path timing proof under 90 seconds after host-authored semantic
+      repair is wired end to end.
+- [x] Recursive high-variance simulation runs across unrelated domains with
       temp repos deleted after each run.
-- [ ] Artifact QA reports for each simulation using PM, architect, engineer,
+- [x] Artifact QA reports for each simulation using PM, architect, engineer,
       and domain-expert gates.
 - [x] Checkpoint simulation proof: four faithful high-variance post-confirm
       creates passed under the standard 60-second path with temp cleanup and
       automated semantic/proposal/package QA at zero issues. This is a slice
       checkpoint, not final release-quality proof for arbitrary domains.
+- [x] Checkpoint simulation proof: five fresh unrelated domains passed under the
+      standard path with zero matrix quality issues and temp cleanup after every
+      scenario.
+- [x] Widened regression proof after the latest fixes: post-confirm engine,
+      semantic patch executor, and slop regressions passed 126 tests in
+      72.62s; full greenfield artifact quality passed 49 tests in 268.59s;
+      component/diagram/install-matrix unit proof passed 17 tests in 0.53s; and
+      prewrite transaction proof passed 52 tests in 339.63s.

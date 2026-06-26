@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from typing import Any
 
@@ -380,7 +381,8 @@ def _component_boundary_mermaid(
     lines = ["flowchart TB", f'  subgraph product["{_diagram_label(label, limit=96, fallback="Product")}<br/>release boundary"]']
     for index, component in enumerate(selected_components, start=1):
         node = _node_id("boundary", index)
-        lines.append(f'    {node}["{_diagram_label(str(component.get("label", "")) or f"Component {index}", limit=96, fallback=f"Component {index}")}"]')
+        component_label = str(component.get("label", "")) or f"Component {index}"
+        lines.append(f'    {node}["{_identity_label(component_label, fallback=f"Component {index}")}"]')
         if index > 1:
             lines.append(f"    {_node_id('boundary', index - 1)} --> {node}")
     lines.append("  end")
@@ -388,17 +390,23 @@ def _component_boundary_mermaid(
     for index, external in enumerate(external_systems[:3], start=1):
         node = _node_id("input", index)
         target = _boundary_node_for_text(external, selected_components=selected_components, fallback=first_node)
-        external_label = boundary_clause_item(external, limit=80) or external
+        external_label = _external_identity_label(external) or boundary_clause_item(external, limit=80) or external
         lines.append(f'  {node}["External input<br/>{_diagram_label(external_label, limit=96, fallback="External input")}"] --> {target}')
-    deferred_items = [
-        *(str(component.get("label", "")).strip() for component in deferred_components if str(component.get("label", "")).strip()),
-        *non_goals,
+    deferred_items: list[tuple[str, bool]] = [
+        (str(component.get("label", "")).strip(), True)
+        for component in deferred_components
+        if str(component.get("label", "")).strip()
     ]
-    for index, item in enumerate(deferred_items[:3], start=1):
+    deferred_items.extend((item, False) for item in non_goals)
+    for index, (item, item_is_component) in enumerate(deferred_items[:3], start=1):
         node = _node_id("deferred", index)
         target = _boundary_node_for_text(item, selected_components=selected_components, fallback=first_node)
         deferred_label = diagram_text.deferred_scope_label(item, label=label)
-        lines.append(f'  {node}["Deferred scope<br/>{_diagram_label(deferred_label, limit=112, fallback="Beyond accepted first path")}"] -. later .-> {target}')
+        if item_is_component:
+            deferred_text = _deferred_identity_label(deferred_label)
+        else:
+            deferred_text = _diagram_label(deferred_label, limit=112, fallback="Beyond accepted first path")
+        lines.append(f'  {node}["Deferred scope<br/>{deferred_text}"] -. later .-> {target}')
     lines.extend(
         [
             "  classDef product fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;",
@@ -411,7 +419,11 @@ def _component_boundary_mermaid(
     if external_systems:
         lines.append("  class " + ",".join(_node_id("input", index) for index in range(1, min(len(external_systems), 3) + 1)) + " external;")
     if deferred_items:
-        lines.append("  class " + ",".join(_node_id("deferred", index) for index in range(1, min(len(deferred_items), 3) + 1)) + " laterScopeStyle;")
+        lines.append(
+            "  class "
+            + ",".join(_node_id("deferred", index) for index in range(1, min(len(deferred_items), 3) + 1))
+            + " laterScopeStyle;"
+        )
     return "\n".join(lines) + "\n"
 
 
@@ -433,8 +445,8 @@ def _proof_review_mermaid(
         "flowchart LR",
         f'  outcome["Visible result<br/>{_diagram_label(outcome_label, limit=120, fallback="Promised outcome")}"] --> domain_state',
         f'  domain_state["Domain state<br/>{_diagram_label(state_object, limit=96, fallback="Domain state")}"] --> evidence_record',
-        f'  evidence_record["Evidence record<br/>{_diagram_label(evidence_label, limit=120, fallback="Evidence record")}"] --> proof_gate',
-        f'  proof_gate["Proof checkpoint<br/>{_diagram_label(proof_label, limit=128, fallback="Proof checkpoint")}"] --> release_decision',
+        f'  evidence_record["Evidence record<br/>{_diagram_label(evidence_label, limit=160, fallback="Evidence record", width=80, max_lines=2)}"] --> proof_gate',
+        f'  proof_gate["Proof checkpoint<br/>{_diagram_label(proof_label, limit=160, fallback="Proof checkpoint", width=80, max_lines=2)}"] --> release_decision',
         '  release_decision["Release decision<br/>accept, revise, or block"] --> release_claim',
         '  release_claim["Release claim<br/>matches the promised outcome"]',
         "  classDef outcomeClass fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
@@ -474,6 +486,20 @@ def _boundary_node_for_text(
     return fallback
 
 
+def _external_identity_label(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    text = text.split(":", 1)[0].strip()
+    text = re.split(
+        r"\s+\b(?:supplies|provides|stores|signs|sends|receives|imports|exports)\b\s+",
+        text,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0].strip()
+    return text if 2 <= len(text.split()) <= 7 else ""
+
+
 def _adapter_node(components: list[dict[str, Any]]) -> str:
     for index, row in enumerate(components[:7], start=1):
         if str(row.get("kind", "")).casefold() == "adapter":
@@ -495,6 +521,17 @@ def _diagram_label(
 ) -> str:
     text = str(value or "").strip() or fallback
     return wrapped_flow_label(text, width=width, max_lines=max_lines, limit=limit) or diagram_text.escape_label(fallback)
+
+
+def _identity_label(value: str, *, fallback: str) -> str:
+    text = str(value or "").strip() or fallback
+    if len(text) <= 60:
+        return _diagram_label(text, limit=128, fallback=fallback, width=80, max_lines=2)
+    return _diagram_label(text, limit=128, fallback=fallback, width=34, max_lines=4)
+
+
+def _deferred_identity_label(value: str) -> str:
+    return _diagram_label(value, limit=128, fallback="Deferred component", width=34, max_lines=4)
 
 
 __all__ = ["confirmed_diagrams"]

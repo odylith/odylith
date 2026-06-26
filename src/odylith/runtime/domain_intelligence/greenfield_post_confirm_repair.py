@@ -41,6 +41,49 @@ _SCALAR_CLAUSE_SPLIT_RE = re.compile(r"([,;.!?])\s*")
 _MARKDOWN_LINK_TARGET_RE = re.compile(r"\]\(([^)\s]+)\)")
 _VERSION_TOKEN_RE = re.compile(r"\b\d+(?:\.\d+){1,4}\b")
 _PROTECTED_INLINE_PREFIX = "__ODYLITH_INLINE_ROUTE_"
+_STRUCTURAL_COPY_KEYS = frozenset(
+    {
+        "category",
+        "component",
+        "components",
+        "created",
+        "date",
+        "diagrams",
+        "href",
+        "id",
+        "kind",
+        "origin",
+        "owner",
+        "path",
+        "paths",
+        "product_layer",
+        "qualification",
+        "release",
+        "schema_version",
+        "slug",
+        "slugs",
+        "source",
+        "sources",
+        "status",
+        "uri",
+        "url",
+        "version",
+        "workstreams",
+    }
+)
+_STRUCTURAL_COPY_KEY_SUFFIXES = (
+    "_id",
+    "_ids",
+    "_path",
+    "_paths",
+    "_slug",
+    "_slugs",
+    "_uri",
+    "_uris",
+    "_url",
+    "_urls",
+    "_version",
+)
 
 
 @dataclass(frozen=True)
@@ -157,16 +200,28 @@ def _repair_optional_mapping(value: Mapping[str, Any] | None) -> Mapping[str, An
     return repaired if isinstance(repaired, Mapping) else value
 
 
-def _repair_tree(value: Any) -> Any:
+def _repair_tree(value: Any, *, key: str = "") -> Any:
     if isinstance(value, str):
+        if _structural_copy_value(key=key, value=value):
+            return value
         return _repair_public_copy(value)
     if isinstance(value, Mapping):
-        return {key: _repair_tree(item) for key, item in value.items()}
+        return {item_key: _repair_tree(item, key=str(item_key)) for item_key, item in value.items()}
     if isinstance(value, tuple):
-        return tuple(_repair_tree(item) for item in value)
+        return tuple(_repair_tree(item, key=key) for item in value)
     if isinstance(value, list):
-        return [_repair_tree(item) for item in value]
+        return [_repair_tree(item, key=key) for item in value]
     return value
+
+
+def _structural_copy_value(*, key: str, value: str) -> bool:
+    field = str(key or "").strip().casefold()
+    if field in _STRUCTURAL_COPY_KEYS or field.endswith(_STRUCTURAL_COPY_KEY_SUFFIXES):
+        return True
+    text = str(value or "").strip()
+    if not text:
+        return False
+    return bool(("://" in text or "/" in text) and not any(char.isspace() for char in text))
 
 
 def _repair_public_copy(value: str) -> str:

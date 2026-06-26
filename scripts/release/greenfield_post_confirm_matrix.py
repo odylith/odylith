@@ -268,8 +268,9 @@ def _run_case(
 def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, Any]) -> Any:
     """Collect generated records in the shape understood by artifact quality gates."""
 
+    accepted_project = _read_json_mapping(repo_root / "odylith/runtime/source/accepted-project.v1.json")
     confirmed_intent = _read_json_mapping(repo_root / ".odylith/runtime/greenfield/confirmed-intent.json")
-    proposal = confirmed_intent or _as_mapping(create_payload.get("proposal"))
+    proposal = _as_mapping(accepted_project.get("proposal")) or _as_mapping(create_payload.get("proposal")) or confirmed_intent
     backlog_result = {
         "idea_files": _read_radar_workstreams(repo_root),
         "backlog_index_text": _read_text(repo_root / "odylith/radar/source/INDEX.md"),
@@ -282,7 +283,7 @@ def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, An
         rendered_atlas_sources=_read_atlas_sources(repo_root),
         component_registry_preview=tuple(_mapping_rows(create_payload.get("components"))),
         project_brief_preview=_as_mapping(proposal.get("project_brief")) if isinstance(proposal, Mapping) else {},
-        accepted_project_preview=_read_json_mapping(repo_root / "odylith/runtime/source/accepted-project.v1.json"),
+        accepted_project_preview=accepted_project,
         compass_memory_preview=_as_mapping(_as_mapping(create_payload.get("memory")).get("event")),
         next_steps_preview=_as_mapping(create_payload.get("next_steps")),
         backlog_result=backlog_result,

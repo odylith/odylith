@@ -3,9 +3,11 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenfield_artifact_judgment_issues
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence import greenfield_apply_write
@@ -19,9 +21,11 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     GreenfieldCompletionPackage,
-    _contrastive_domain_drift_issues,
     build_greenfield_completion_report,
     build_greenfield_package_report,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
+    contrastive_domain_drift_issues as _contrastive_domain_drift_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import semantic_overlap_ratio
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
@@ -43,6 +47,9 @@ ROOT = Path(__file__).resolve().parents[3]
 POST_CONFIRM_COMPLETION_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py"
 )
+POST_CONFIRM_FINDINGS_PATH = (
+    ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py"
+)
 POST_CONFIRM_SEMANTIC_DRIFT_PATH = (
     ROOT / "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_drift.py"
 )
@@ -57,6 +64,7 @@ PROPOSAL_TRIBUNAL_SUBSTANCE_PATH = (
 
 def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> None:
     parent_source = POST_CONFIRM_COMPLETION_PATH.read_text(encoding="utf-8")
+    findings_source = POST_CONFIRM_FINDINGS_PATH.read_text(encoding="utf-8")
     drift_source = POST_CONFIRM_SEMANTIC_DRIFT_PATH.read_text(encoding="utf-8")
     alignment_source = POST_CONFIRM_SEMANTIC_ALIGNMENT_PATH.read_text(encoding="utf-8")
 
@@ -67,10 +75,13 @@ def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> No
     assert "def _semantic_model_shape_issues" not in parent_source
     assert "def _mapping_rows" not in parent_source
     assert "def _mapping_rows" not in drift_source
-    assert "contrastive_domain_drift_issues as _contrastive_domain_drift_issues" in parent_source
-    assert "semantic_repetition_issues as _semantic_repetition_issues" in parent_source
+    assert "contrastive_domain_drift_issues as _contrastive_domain_drift_issues" not in parent_source
+    assert "semantic_repetition_issues as _semantic_repetition_issues" not in parent_source
+    assert "contrastive_domain_drift_issues as _contrastive_domain_drift_issues" in findings_source
+    assert "semantic_repetition_issues as _semantic_repetition_issues" in findings_source
     assert "semantic_overlap_ratio as _semantic_overlap_ratio" in parent_source
-    assert "semantic_model_shape_issues as _semantic_model_shape_issues" in parent_source
+    assert "semantic_model_shape_issues as _semantic_model_shape_issues" not in parent_source
+    assert "semantic_model_shape_issues as _semantic_model_shape_issues" in findings_source
     assert "def contrastive_domain_drift_issues" in drift_source
     assert "def semantic_repetition_issues" in drift_source
     assert "def semantic_overlap_ratio" in drift_source
@@ -79,6 +90,30 @@ def test_greenfield_post_confirm_semantic_drift_stays_in_dedicated_owner() -> No
     assert "def semantic_workstream_alignment_issues" in alignment_source
     assert "def semantic_diagram_alignment_issues" in alignment_source
     assert "def rendered_spec_alignment_issues" in alignment_source
+
+
+def test_artifact_judgment_reviews_preview_values_not_structural_mapping_keys() -> None:
+    package = SimpleNamespace(
+        project_brief_preview={
+            "purpose": "Research teams can review one evidence-backed result before release.",
+            "pre_coding_checkpoints": [
+                {
+                    "operator_question": (
+                        "Does the published reproducible result story name the user, problem, first path, and non-goals?"
+                    )
+                }
+            ],
+            "validation_gate": "",
+            "result_status": "",
+            "story_gate": "",
+        },
+        next_steps_preview={},
+    )
+
+    assert not any(
+        "adjacent abstract contract nouns" in issue
+        for issue in greenfield_artifact_judgment_issues(package)
+    )
 
 
 def test_semantic_overlap_normalizes_gerund_first_path_actions() -> None:
@@ -651,8 +686,8 @@ def test_greenfield_health_tracking_defers_later_scope_and_keeps_atlas_implement
     assert "Clinician" not in sequence
     assert ": capture" not in sequence.casefold()
 
-    assert "Deferred scope<br/>Medication and Relief Tracking with Reminders Service" in boundary
-    assert "Deferred scope<br/>Shareable Visit Summary Generation Service" in boundary
+    assert "Deferred scope<br/>Medication and Relief Tracking<br/>with Reminders Service" in boundary
+    assert "Deferred scope<br/>Shareable Visit Summary Generation<br/>Service" in boundary
     assert "Proof checkpoint<br/>A timeline and trend view" in proof
     assert "Proven when one person can create a pain entry" not in proof
     assert "done, path, mean, person" not in proof

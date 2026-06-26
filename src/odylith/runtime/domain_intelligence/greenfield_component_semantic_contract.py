@@ -29,11 +29,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_fields im
     status_only_artifact_fragment as _status_only_artifact_fragment,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
-from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS as _ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
     GENERIC_TERMS as _GENERIC_TERMS,
-    action_forms_pattern as _action_forms_pattern,
     action_object_artifact_phrases as _action_object_artifact_phrases,
     clean_artifact_phrase as _clean_artifact_phrase,
     clean_artifact_phrases as _clean_artifact_phrases,
@@ -47,7 +45,6 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     phrase as _phrase,
     strip_action as _strip_action,
     trim_phrase as _trim_phrase,
-    verb_forms_pattern as _verb_forms_pattern,
 )
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import (
     literal_label_terms as _literal_label_terms,
@@ -83,8 +80,9 @@ def derive_component_semantic_contract(
     proposal_context = _proposal_context(proposal)
     local_text = " ".join(text for text in (label, description) if text)
     clauses = semantic_context.clauses(description or label)
-    action_terms = _actions(" ".join(text for text in (label, description) if text)) or _actions(local_text)
-    relation_phrases = _relation_phrases(description)
+    action_terms = semantic_context.action_terms(" ".join(text for text in (label, description) if text)) or semantic_context.action_terms(local_text)
+    relation_phrases = semantic_context.relation_phrases(description)
+    protected_description_phrases = semantic_context.description_compound_phrases(description)
     description_phrases = _clean_artifact_phrases(
         [
             *_object_phrases(clauses, fallback=label),
@@ -92,7 +90,7 @@ def derive_component_semantic_contract(
             *_descriptor_anchor_phrases(label, description),
         ]
     )
-    description_phrases = unique_text([*relation_phrases, *description_phrases])
+    description_phrases = unique_text([*relation_phrases, *protected_description_phrases, *description_phrases])
     label_terms = _content_terms(label)
     description_terms = _content_terms(description)
     context_terms = _context_contract_terms(proposal_context, label_terms=label_terms, description_terms=description_terms)
@@ -110,6 +108,12 @@ def derive_component_semantic_contract(
         context_phrases,
         label_terms=label_terms,
         description_terms=description_terms,
+        limit=14,
+    )
+    context_identity_phrases = _context_identity_phrases(
+        context_required_phrases,
+        label_terms=label_terms,
+        description_terms=description_terms,
     )
     context_compound_phrases = semantic_context.context_anchor_compounds(
         proposal_context,
@@ -122,7 +126,7 @@ def derive_component_semantic_contract(
         context_required_phrases=context_required_phrases,
     )
     context_backfill = [*context_phrases[:5], *context_compound_phrases[:3]] if needs_context_backfill else []
-    object_phrases = _clean_artifact_phrases([*local_phrases, *context_backfill])
+    object_phrases = _clean_artifact_phrases([*local_phrases, *context_identity_phrases, *context_backfill])
     object_phrases = unique_text([*relation_phrases, *object_phrases])
     object_phrases = _dedupe_phrase_subsets(object_phrases)
     object_phrases = _prioritize_object_phrases(
@@ -133,10 +137,14 @@ def derive_component_semantic_contract(
     if description:
         required_seed = [
             *description_phrases[:10],
+            *protected_description_phrases[:8],
+            *context_identity_phrases[:4],
             *([] if not needs_context_backfill else context_phrases[:4]),
             *([] if not needs_context_backfill else context_required_phrases[:8]),
             *([] if not needs_context_backfill else context_phrases[:3]),
             *label_phrases[:3],
+            *protected_description_phrases[:6],
+            *context_identity_phrases[:4],
             *bridge_phrases[:2],
             *lifecycle_phrases,
             *role_phrases,
@@ -154,6 +162,13 @@ def derive_component_semantic_contract(
     summary_phrases = _summary_object_phrases(
         object_phrases,
         required_phrases=unique_text(required_seed),
+        label_terms=label_terms,
+        description_terms=description_terms,
+        limit=10,
+    )
+    summary_phrases = _preserve_summary_phrases(
+        summary_phrases,
+        [*protected_description_phrases, *context_identity_phrases],
         label_terms=label_terms,
         description_terms=description_terms,
         limit=10,
@@ -224,6 +239,8 @@ def derive_component_semantic_contract(
         (
             *title_identity_phrases,
             *description_owned_phrases[:5],
+            *protected_description_phrases[:6],
+            *context_identity_phrases[:4],
             *owned_summary_phrases,
             *preserved_material_phrases[:3],
             *role_phrases[:3],
@@ -459,57 +476,6 @@ def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
     return unique_text(rows)
 
 
-def _full_list_phrases(value: str) -> list[str]:
-    """Preserve compact ownership lists before comma splitting breaks meaning."""
-
-    rows: list[str] = []
-    text = _clean(value)
-    action_pattern = _action_forms_pattern()
-    for match in re.finditer(
-        rf"\b(?:{action_pattern})\s+(?P<body>[^.]+?,\s+[^.]+?,\s+(?:and\s+)?[^.]+)",
-        text,
-        flags=re.IGNORECASE,
-    ):
-        phrase = re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", match.group("body"), flags=re.IGNORECASE)
-        phrase = _trim_phrase(phrase)
-        words = phrase.split()
-        if 4 <= len(words) <= 18 and len(_content_terms(phrase)) >= 4:
-            rows.append(phrase.casefold())
-    return unique_text(rows)
-
-
-def _relation_phrases(value: str) -> list[str]:
-    """Preserve compact "thing to thing" phrases before clause splitting."""
-
-    rows: list[str] = []
-    text = _clean(value)
-    if not text:
-        return rows
-    action_pattern = _action_forms_pattern()
-    for clause in re.split(r"[.;]", text):
-        segment = _trim_phrase(re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", clause, flags=re.I))
-        if not segment:
-            continue
-        action_match = re.search(rf"\b(?:{action_pattern})\s+(?P<body>.+\bto\s+.+)$", segment, flags=re.I)
-        body = action_match.group("body") if action_match else segment
-        body = _trim_phrase(normalize_relative_clause_artifacts(body) or body)
-        if not re.search(r"\bto\s+(?:a|an|the)?\s*[A-Za-z0-9]", body, flags=re.I):
-            continue
-        words = body.split()
-        if 4 <= len(words) <= 18 and len(_content_terms(body)) >= 4:
-            rows.append(body.casefold())
-    return unique_text(rows)
-
-
-def _actions(value: str) -> list[str]:
-    text = _clean(value).casefold()
-    result: list[str] = []
-    for verb in _ACTION_VERBS:
-        if re.search(rf"\b(?:{_verb_forms_pattern(verb)})\b", text):
-            result.append(verb)
-    return result
-
-
 def _sibling_focus(row: Mapping[str, Any] | None) -> str:
     if not isinstance(row, Mapping):
         return ""
@@ -734,28 +700,64 @@ def _summary_object_phrases(
             break
         if phrase not in result:
             result.append(phrase)
-    result = _prefer_richer_relation_phrases(result, values)
+    result = semantic_context.prefer_richer_relation_phrases(result, values)
     return _drop_subsumed_singletons(result[:limit])
 
 
-def _prefer_richer_relation_phrases(result: Sequence[str], values: Sequence[str]) -> list[str]:
-    rows = list(result)
-    for phrase in values:
-        if not re.search(r"\b(?:related|linked|mapped)\b", phrase, flags=re.I):
+def _context_identity_phrases(
+    values: Sequence[str],
+    *,
+    label_terms: Sequence[str],
+    description_terms: Sequence[str],
+) -> tuple[str, ...]:
+    """Keep qualified context objects needed to understand component ownership."""
+
+    anchors = set(label_terms) | set(description_terms)
+    rows: list[str] = []
+    for value in values:
+        words = [word.casefold().strip(".,;:") for word in _clean(value).split() if word.strip(".,;:")]
+        for index, word in enumerate(words[:-1]):
+            if word not in {"active", "candidate", "current", "ranked", "selected"}:
+                continue
+            right = words[index + 1]
+            terms = set(_content_terms(right))
+            if not terms or (anchors and not terms & semantic_context.expanded_context_anchors(anchors)):
+                continue
+            rows.append(f"{word} {right}")
+    return tuple(unique_text(rows))
+
+
+def _preserve_summary_phrases(
+    summary_phrases: Sequence[str],
+    protected_phrases: Sequence[str],
+    *,
+    label_terms: Sequence[str],
+    description_terms: Sequence[str],
+    limit: int,
+) -> list[str]:
+    """Keep accepted description facts that cleaners should not reinterpret."""
+
+    protected: list[str] = []
+    material_terms = set(label_terms) | set(description_terms)
+    for phrase in protected_phrases:
+        text = _clean(phrase).casefold().strip(" .,;")
+        terms = set(_content_terms(text))
+        if len(terms) < 2 or not (terms & material_terms):
             continue
-        phrase_terms = _phrase_identity_terms(phrase)
-        if not phrase_terms:
+        if _component_shell_artifact(text) or _status_only_artifact_fragment(text):
             continue
-        subsets = [
-            existing
-            for existing in rows
-            if existing != phrase and _phrase_identity_terms(existing) < phrase_terms
-        ]
-        if not subsets:
-            continue
-        rows = [existing for existing in rows if existing not in subsets and existing != phrase]
-        rows.insert(0, phrase)
-    return unique_text(rows)
+        protected.append(text)
+    result = unique_text([*protected, *summary_phrases])
+    if len(result) <= limit:
+        return result
+    protected_set = set(protected)
+    kept = [phrase for phrase in result if phrase in protected_set]
+    for phrase in result:
+        if len(kept) >= limit:
+            break
+        if phrase not in kept:
+            kept.append(phrase)
+    return kept[:limit]
 
 
 def _drop_subsumed_singletons(values: Sequence[str]) -> list[str]:

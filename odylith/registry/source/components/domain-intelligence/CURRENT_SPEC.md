@@ -24,6 +24,12 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-26 · Implementation:** Greenfield post-confirm custody now preserves structural metadata during package repair, applies host-authored semantic PatchSet replacements through a bounded semantic patch executor, routes semantic targets by explicit IR path/node tokens, and keeps artifact judgment on rendered preview values instead of Python mapping syntax.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py, src/odylith/runtime/artifact_quality/greenfield_artifact_judgment.py
+- **2026-06-26 · Simulation:** Five fresh source-local propose-then-confirm simulations across neonatal transfer, offshore wind maintenance, court evidence redaction, quantum chemistry, and food relief all wrote governed records in 14.327-15.062s with zero matrix quality issues; every temp repo was deleted before the next run.
+  - Scope: B-142
+  - Evidence: odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md
 - **2026-06-26 · Implementation:** Greenfield post-confirm repair now routes first-path semantic coverage into a shared semantic first-path repair owner, keeps visible result objects out of actor-action stripping, and preserves child Radar workstream risk posture through the governed artifact Tribunal.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_first_path_repair.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py +3 more

@@ -147,7 +147,24 @@ def semantic_words(value: str) -> set[str]:
 def result_content_words(value: str) -> set[str]:
     """Return result terms without generic transition or perception verbs."""
 
-    return semantic_words(value) - _RESULT_ACTION_WORDS
+    return {_canonical_result_word(word) for word in semantic_words(value)} - _RESULT_ACTION_WORDS
+
+
+def _canonical_result_word(value: str) -> str:
+    token = str(value or "").casefold().strip(" .,:;")
+    if len(token) > 5 and token.endswith("ied"):
+        return f"{token[:-3]}y"
+    if len(token) > 5 and token.endswith("ed"):
+        stem = token[:-2]
+        if stem.endswith(("at", "it", "iz", "ag")):
+            return f"{stem}e"
+        return stem
+    if len(token) > 6 and token.endswith("ing"):
+        stem = token[:-3]
+        if stem.endswith(("at", "it", "iz", "ag")):
+            return f"{stem}e"
+        return stem
+    return token
 
 
 def result_terms_covered(needle: str, haystack: str) -> bool:

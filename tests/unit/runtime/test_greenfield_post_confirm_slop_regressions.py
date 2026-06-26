@@ -36,6 +36,7 @@ from odylith.runtime.domain_intelligence import greenfield_confirmed_diagram_tex
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_actions as backlog_actions
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_evidence_record_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_backlog_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
@@ -552,6 +553,54 @@ def test_confirmed_guidance_prompt_modal_objects_and_decisions_stay_coherent() -
     assert "submit can record requests" not in records_rendered
 
 
+def test_workflow_opportunity_does_not_repeat_visible_result_when_action_already_names_it() -> None:
+    rows = confirmed_backlog_rows(
+        label="Offshore Wind Maintenance Planning",
+        parent_title="Prove One Complete Offshore Wind Maintenance Planning Path",
+        workflow_title="Let Offshore Wind Maintenance Use a Daily Maintenance Plan",
+        boundary_title="Keep Published Daily Maintenance Plan Record Clear",
+        proof_title="Show Why Published Daily Maintenance Plan Record Can Be Trusted",
+        product_story=(
+            "Port operators need to compare work windows, resource readiness, and approval evidence before publishing a plan."
+        ),
+        state_object="A published daily maintenance plan record.",
+        evidence_record="Offshore Wind Maintenance Planning Proof Record",
+        first_path=(
+            "Offshore wind maintenance publishes a daily maintenance plan after comparing telemetry, weather, vessel, "
+            "technician, spare-part, and safety approval evidence."
+        ),
+        proof_boundary="Release succeeds when a daily maintenance plan can be published with reviewable evidence.",
+        components=[
+            {"component_id": "planner", "label": "Planning Service", "release_scope": "first_path_required"},
+            {"component_id": "review", "label": "Review Workspace", "release_scope": "first_path_required"},
+            {"component_id": "proof", "label": "Proof Ledger", "release_scope": "first_path_required"},
+        ],
+        internal_systems=["Planning service", "Review workspace", "Proof ledger"],
+        human_actors=["Offshore wind maintenance planner"],
+        external_systems=[],
+        non_goals=[],
+        success_metrics=[],
+        problem="Maintenance planners need one clear plan.",
+        customer="Maintenance planners",
+        opportunity="Publish a reviewable plan.",
+        product_view="Planner publishes the plan with evidence.",
+        diagram_slugs={
+            "context": "context",
+            "sequence": "sequence",
+            "state_evidence": "state-evidence",
+            "component_boundaries": "component-boundaries",
+            "ownership": "ownership",
+            "proof_review": "proof-review",
+        },
+    )
+    workflow = rows[1]
+    text = json.dumps(workflow)
+
+    assert "can review a daily maintenance plan" in text
+    assert "keeps the saved result reviewable" in text
+    assert "lets the offshore wind maintenance use a daily maintenance plan" not in text
+
+
 def test_agent_os_confirmed_path_repairs_internal_actions_and_reviewed_result_copy() -> None:
     intent = complete_confirmed_intent(
         parse_confirmed_intent_text(
@@ -765,6 +814,25 @@ def test_proof_record_labels_do_not_duplicate_existing_proof_record_names() -> N
             internal_systems=["Readiness Evidence Review"],
         )
         == "Readiness Evidence Review Proof Record"
+    )
+    assert (
+        confirmed_evidence_record_label(
+            label="Inspection Workspace",
+            proof_boundary="The release is proven when evidence is reviewed.",
+            internal_systems=["Release Proof Ledger"],
+        )
+        == "Release Proof Ledger Record"
+    )
+    assert diagram_text.proof_evidence_label(
+        components=[{"label": "Release Proof Ledger"}],
+        fallback="Release Evidence",
+    ) == "Release Proof Ledger Record"
+
+
+def test_result_term_coverage_matches_inflected_result_words_to_base_actions() -> None:
+    assert backlog_text.result_terms_covered(
+        "published reproducible result packets",
+        "research teams register molecular targets; review convergence failures; publish reproducible result packets",
     )
 
 

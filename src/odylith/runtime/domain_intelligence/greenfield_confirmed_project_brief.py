@@ -208,7 +208,7 @@ def confirmed_project_brief(
             ),
             _checkpoint(
                 "State ownership accepted",
-                f"Does one component own {state_ref} and its version history?",
+                f"Is one component accountable for {state_ref} and its version history?",
             ),
             _checkpoint(
                 "Evidence path accepted",
@@ -643,7 +643,10 @@ def _state_reference_text(state_object: str, *, state_label: str) -> str:
 def _checkpoint(name: str, question: str) -> dict[str, str]:
     done_when_by_name = {
         "product story accepted": "Done when the accepted brief names the user, problem, first path, and deferred scope in one readable story.",
-        "state ownership accepted": "Done when one named component owns the accepted state, version history, and review responsibility clearly enough to plan implementation.",
+        "state ownership accepted": (
+            "Done when one named component is accountable for accepted state, version history, "
+            "and review responsibility clearly enough to plan implementation."
+        ),
         "evidence path accepted": "Done when reviewers can tell which evidence proves the result without relying on implementation prose.",
         "release proof accepted": "Done when release gates block promotion unless the promised result, replay evidence, and review evidence are present.",
     }

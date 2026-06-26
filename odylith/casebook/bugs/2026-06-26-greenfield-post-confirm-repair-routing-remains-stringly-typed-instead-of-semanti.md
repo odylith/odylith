@@ -65,6 +65,17 @@
   visible result objects as result objects before considering actor-led action
   stripping, and child workstream risk projection preserves `Risk:` semantics
   even when no parent risk posture is available.
+  A later source-local high-variance matrix exposed three more general
+  post-confirm quality mechanisms before writes: package copy repair could walk
+  structural Registry and accepted-project path metadata as if it were prose, a
+  quantum-chemistry proposal repeated a visible result by comparing
+  `publish ...` action wording against `published ...` result wording without
+  morphological normalization, and the artifact-judgment lens rejected a valid
+  project-brief question because it treated `name` as an abstract noun instead
+  of the verb in `result story name the user`. The same pass also found proof
+  labels could become `Proof Ledger Proof Record`, a real readability failure
+  caused by composing proof-record suffixes onto labels that already carried
+  proof-ledger semantics.
 
 - Blast Radius: Any greenfield project domain or complexity where semantic ambiguity, repeated claims, domain-specific proof obligations, or artifact-specific wording requires repair before governed writes.
 
@@ -111,6 +122,16 @@
   six PNG renders, zero generated semantic-slop issues, zero proposal-quality
   issues, and zero rendered-package quality issues. Every temp repo was
   deleted immediately after capture.
+  Later source-local evidence after structural-copy, semantic-routing,
+  result-term, proof-label, and preview-judgment fixes: five fresh domains
+  passed propose-then-confirm create with governed records and zero quality
+  issues: neonatal transfer coordination in 15.062s, offshore wind maintenance
+  in 14.327s, court evidence redaction in 14.730s, quantum chemistry runbook in
+  14.545s, and food relief routing in 14.650s. Each run wrote four Radar
+  workstreams, three Registry specs, six Atlas Mermaid sources, five rendered
+  surfaces, release/program/project brief records, 18 trace nodes, four trace
+  workstreams, and four required domain-term hits. Every scenario repo and the
+  matrix parent temp directory were deleted immediately after the run.
 
 - Prevention: Before adding more regex or template rules, check Casebook and repair semantic ownership, projection boundaries, or typed review contracts first.
 
@@ -133,8 +154,20 @@
   first-path action chains. `tests/unit/runtime/test_greenfield_projection_contracts.py`
   proves visible result objects stay modal-safe in `user can` projections and
   child workstream risk projection preserves governed risk posture through the
-  same artifact Tribunal used before writes. Full host-authored semantic/plan
-  patch application proof remains open.
+  same artifact Tribunal used before writes.
+  `tests/unit/runtime/test_greenfield_semantic_patch_executor.py` proves
+  host-authored semantic patches preserve proof-obligation deltas and do not
+  route by incidental substrings such as `reactor` or `ecosystem`.
+  `tests/unit/runtime/test_greenfield_post_confirm_engine.py` proves package
+  repair preserves structural path metadata while still repairing public prose.
+  `tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py` also
+  proves proof-ledger labels do not duplicate proof-record wording and
+  result-term coverage matches simple inflected result words to base action
+  words. `tests/unit/runtime/test_greenfield_general_artifact_quality.py`
+  proves the artifact judgment lens reviews preview values rather than Python
+  mapping syntax and no longer treats `name` as an abstract noun when it is the
+  verb in a normal question. Full host-authored semantic/plan patch application
+  proof remains open.
 
 - Related Incidents/Bugs: CB-207
 

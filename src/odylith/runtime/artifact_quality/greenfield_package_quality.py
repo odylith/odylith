@@ -656,6 +656,11 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
     values = [
         intent.get("title"),
         _actor_label_summary(text_values(intent.get("human_actors"))),
+        *(
+            _accepted_intent_repetition_values(intent)
+            if _complete_semantic_repetition_source(semantic_model)
+            else []
+        ),
         *_semantic_label_repetition_values(first_path),
         *[
             f"{component.get('component_id', '')} {component.get('label', '')}"
@@ -675,6 +680,33 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
             if key:
                 keys.add(key)
     return keys
+
+
+def _accepted_intent_repetition_values(intent: Mapping[str, Any]) -> list[str]:
+    values: list[str] = []
+    for key in (
+        "product_story",
+        "summary",
+        "state_object",
+        "first_path",
+        "proof_boundary",
+        "critical_assumptions",
+        "assumptions",
+        "non_goals",
+        "ambiguities",
+    ):
+        values.extend(text_values(intent.get(key)))
+    return [value for value in values if value]
+
+
+def _complete_semantic_repetition_source(semantic_model: Mapping[str, Any]) -> bool:
+    """Allow accepted source prose only when full semantic custody is present."""
+
+    return bool(
+        semantic_model
+        and isinstance(semantic_model.get("first_path_contract"), Mapping)
+        and isinstance(semantic_model.get("domain_ontology"), Mapping)
+    )
 
 
 def _semantic_label_repetition_values(first_path: Mapping[str, Any]) -> list[str]:

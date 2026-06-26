@@ -72,6 +72,36 @@ def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_p
     assert counts.domain_term_hits == 4
 
 
+def test_collect_artifact_package_prefers_accepted_project_proposal_over_confirmed_intent(tmp_path: Path) -> None:
+    module = _module()
+    _write(
+        tmp_path / "odylith/runtime/source/accepted-project.v1.json",
+        json.dumps(
+            {
+                "proposal": {
+                    "intent": {"title": "Neonatal Transfer Coordination"},
+                    "components": [
+                        {
+                            "component_id": "neonatal-transfer-intake-register",
+                            "label": "Neonatal Transfer Intake Register Service",
+                        }
+                    ],
+                }
+            }
+        )
+        + "\n",
+    )
+    _write(
+        tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json",
+        json.dumps({"intent": {"title": "Confirmed intent only"}, "components": []}) + "\n",
+    )
+
+    package = module.collect_artifact_package(repo_root=tmp_path, create_payload={})
+
+    assert package.proposal["intent"]["title"] == "Neonatal Transfer Coordination"
+    assert package.proposal["components"][0]["label"] == "Neonatal Transfer Intake Register Service"
+
+
 def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -> None:
     module = _module()
     package = SimpleNamespace(

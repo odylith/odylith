@@ -138,7 +138,7 @@ def semantic_visible_result_label(semantic_model: Mapping[str, Any] | None) -> s
 def proof_evidence_label(*, components: list[dict[str, Any]], fallback: str) -> str:
     for component in components:
         label = str(component.get("label", "")).strip()
-        if re.search(r"\b(audit|trail|history|evidence|source-backed|version|provenance)\b", label, re.IGNORECASE):
+        if re.search(r"\b(audit|trail|history|evidence|source-backed|version|provenance|proof|ledger)\b", label, re.IGNORECASE):
             return _proof_record_label(label)
     for component in components:
         label = str(component.get("label", "")).strip()
@@ -154,6 +154,8 @@ def _proof_record_label(value: str) -> str:
         return text
     if lowered.endswith(" record") and " proof " in f" {lowered} ":
         return text
+    if lowered.endswith((" audit ledger", " evidence ledger", " history ledger", " proof ledger", " trace ledger", " ledger")):
+        return f"{text} Record"
     if lowered.endswith(" proof"):
         return f"{text} Record"
     return f"{text} Proof Record"

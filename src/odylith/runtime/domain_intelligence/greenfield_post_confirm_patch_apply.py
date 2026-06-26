@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import G
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair_context import repair_context_operations
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import repair_proposal_for_quality_lens_gaps
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_greenfield_semantic_projections
+from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import apply_semantic_patch_operations
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 
@@ -56,7 +57,10 @@ def _apply_operations(
     if not any(_target_layer(operation) in _MODEL_PATCH_LAYERS for operation in operations):
         return proposal
 
-    repaired = _complete_confirmed_semantic_proposal(proposal, release_selector=release_selector)
+    repaired = proposal
+    if apply_semantic_patch_operations(repaired, operations):
+        repaired = _normalized_proposal(repaired)
+    repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
     if any(_is_first_path_semantic_operation(operation) for operation in operations):
         if repair_proposal_first_path(repaired):
             repaired = _normalized_proposal(repaired)

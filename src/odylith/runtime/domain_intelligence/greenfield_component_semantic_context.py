@@ -7,23 +7,29 @@ from collections.abc import Sequence
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term as _looks_actor_term
+from odylith.runtime.domain_intelligence.greenfield_component_terms import ACTION_VERBS as _ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     ARTIFACT_CARRIER_TERMS as _ARTIFACT_CARRIER_TERMS,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_terms import action_forms_pattern as _action_forms_pattern
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase as _clean_artifact_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import looks_action_term as _looks_action_term
 from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     object_clause_focus as _object_clause_focus,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase_identity_terms as _phrase_identity_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import strip_action as _strip_action
 from odylith.runtime.domain_intelligence.greenfield_component_terms import trim_phrase as _trim_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import verb_forms_pattern as _verb_forms_pattern
+from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
 def clauses(value: str) -> list[str]:
     text = _clean(value)
+    text = normalize_relative_clause_artifacts(text) or text
     text = re.sub(r"\brationale\s*:\s*.+$", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^\s*owns\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\brelevant\s+behavior\s*:\s*", "", text, flags=re.IGNORECASE)
@@ -99,6 +105,38 @@ def context_object_phrases(
                 rows.append(" ".join((*carry_base, *detail_terms)))
         rows.append(" ".join(terms[:4]))
     return unique_text(rows)
+
+
+def relation_phrases(value: str) -> list[str]:
+    """Preserve compact "thing to thing" phrases before clause splitting."""
+
+    rows: list[str] = []
+    text = _clean(value)
+    if not text:
+        return rows
+    action_pattern = _action_forms_pattern()
+    for clause in re.split(r"[.;]", text):
+        segment = _trim_phrase(re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", clause, flags=re.I))
+        if not segment:
+            continue
+        action_match = re.search(rf"\b(?:{action_pattern})\s+(?P<body>.+\bto\s+.+)$", segment, flags=re.I)
+        body = action_match.group("body") if action_match else segment
+        body = _trim_phrase(normalize_relative_clause_artifacts(body) or body)
+        if not re.search(r"\bto\s+(?:a|an|the)?\s*[A-Za-z0-9]", body, flags=re.I):
+            continue
+        words = body.split()
+        if 4 <= len(words) <= 18 and len(_content_terms(body)) >= 4:
+            rows.append(body.casefold())
+    return unique_text(rows)
+
+
+def action_terms(value: str) -> list[str]:
+    text = _clean(value).casefold()
+    result: list[str] = []
+    for verb in _ACTION_VERBS:
+        if re.search(rf"\b(?:{_verb_forms_pattern(verb)})\b", text):
+            result.append(verb)
+    return result
 
 
 def context_required_phrases(
@@ -263,6 +301,113 @@ def description_owned_phrases(value: str) -> tuple[str, ...]:
             continue
         rows.append(phrase.casefold())
     return tuple(unique_text(rows))
+
+
+def description_compound_phrases(value: str) -> tuple[str, ...]:
+    """Preserve compact noun phrases from accepted component descriptions."""
+
+    rows: list[str] = []
+    for clause in clauses(value):
+        focused = _strip_action(_object_clause_focus(clause)) or clause
+        focused = re.sub(
+            r"\b(?:before|after|while|because|unless|without)\b.+$",
+            "",
+            focused,
+            flags=re.IGNORECASE,
+        )
+        relation_head = re.split(
+            r"\b(?:against|from|into|to|using|with)\b",
+            focused,
+            maxsplit=1,
+            flags=re.IGNORECASE,
+        )[0]
+        rows.extend(_qualified_noun_phrases(focused))
+        for candidate in unique_text([clause, focused, relation_head, *re.split(r"\s*,\s*|\s+\band\s+\s*", focused)]):
+            phrase = _preserved_compound_phrase(candidate)
+            if phrase:
+                rows.append(phrase)
+    return tuple(unique_text(rows))
+
+
+def _preserved_compound_phrase(value: str) -> str:
+    text = clean_artifact_text(value, split_parentheses=True).casefold().strip(" .,;:")
+    if not text:
+        return ""
+    text = re.sub(r"^(?:a|an|the|and|or)\s+", "", text, flags=re.IGNORECASE).strip(" .,;:")
+    text = re.sub(r"^(?:owns?|records?|keeps?|tracks?|stores?|captures?|validates?|verifies?)\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+", " ", text).strip(" .,;:")
+    if not text:
+        return ""
+    words = text.split()
+    while words and _looks_action_word(words[0]) and not _protected_modifier_lead(words):
+        words = words[1:]
+    text = " ".join(words).strip(" .,;:")
+    if not text:
+        return ""
+    terms = [term for term in _content_terms(text) if term]
+    if re.fullmatch(r"ranked\s+(?:alternatives?|candidates?|options?)", text, flags=re.IGNORECASE):
+        return text
+    if len(terms) < 2 or len(terms) > 6:
+        return ""
+    if len(words) > 8:
+        return ""
+    if _is_deferred_or_outside_clause(text):
+        return ""
+    if _looks_action_term(terms[0]) and not _protected_modifier_lead(words) and not set(terms) & _ARTIFACT_CARRIER_TERMS:
+        return ""
+    if terms[-1] in {"context", "detail", "details", "information"} and len(terms) <= 2:
+        return ""
+    return text
+
+
+def _looks_action_word(value: str) -> bool:
+    token = value.casefold().strip(".,;:")
+    if _looks_action_term(token):
+        return True
+    for suffix in ("ing", "ed", "es", "s"):
+        if token.endswith(suffix) and _looks_action_term(token[: -len(suffix)]):
+            return True
+    return False
+
+
+def _protected_modifier_lead(words: Sequence[str]) -> bool:
+    if len(words) < 2:
+        return False
+    lead = words[0].casefold().strip(".,;:")
+    return lead in {"active", "candidate", "current", "ranked", "selected"} and bool(_content_terms(words[1]))
+
+
+def _qualified_noun_phrases(value: str) -> list[str]:
+    words = [word.casefold().strip(".,;:") for word in clean_artifact_text(value).split() if word.strip(".,;:")]
+    rows: list[str] = []
+    for index, word in enumerate(words[:-1]):
+        if word not in {"active", "candidate", "current", "ranked", "selected"}:
+            continue
+        right = words[index + 1]
+        if not _content_terms(right):
+            continue
+        rows.append(f"{word} {right}")
+    return unique_text(rows)
+
+
+def prefer_richer_relation_phrases(result: Sequence[str], values: Sequence[str]) -> list[str]:
+    rows = list(result)
+    for phrase in values:
+        if not re.search(r"\b(?:related|linked|mapped)\b", phrase, flags=re.I):
+            continue
+        phrase_terms = _phrase_identity_terms(phrase)
+        if not phrase_terms:
+            continue
+        subsets = [
+            existing
+            for existing in rows
+            if existing != phrase and _phrase_identity_terms(existing) < phrase_terms
+        ]
+        if not subsets:
+            continue
+        rows = [existing for existing in rows if existing not in subsets and existing != phrase]
+        rows.insert(0, phrase)
+    return unique_text(rows)
 
 
 def generated_scaffold_subject(value: str, *, label: str) -> str:
@@ -527,16 +672,20 @@ def _clean(value: Any) -> str:
 
 __all__ = [
     "clauses",
+    "action_terms",
     "component_role_phrases",
     "context_anchor_compounds",
     "context_object_phrases",
     "context_required_phrases",
+    "description_compound_phrases",
     "description_owned_phrases",
     "expanded_context_anchors",
     "generated_scaffold_subject",
     "needs_context_backfill",
     "needs_source_evidence",
     "owned_context_detail_phrases",
+    "prefer_richer_relation_phrases",
     "preserved_scaffold_material",
+    "relation_phrases",
     "transition_context_text",
 ]

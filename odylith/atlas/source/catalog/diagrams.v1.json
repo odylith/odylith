@@ -8,7 +8,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-25",
+      "last_reviewed_utc": "2026-06-26",
       "source_mmd": "odylith/atlas/source/odylith-product-governance-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-governance-loop.svg",
       "source_png": "odylith/atlas/source/odylith-product-governance-loop.png",
@@ -90,7 +90,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "6e0a1422978fdef63436e0036da27adcdb80aba6bb7546142e805d9ce0548dc2",
-        "odylith/radar/source/INDEX.md": "4f2a3de19690194eabdab1137ea4b57af12900b4a271e842b518e221e9d23ab0",
+        "odylith/radar/source/INDEX.md": "39d2f000684111c400877e67f11103725553c6d3007d54c983d758674c989ca6",
         "odylith/technical-plans/INDEX.md": "6a7a4d6de0e4efad4bea49962ca4873b45a836c87eba1072d701cf44bd5a327d"
       }
     },
@@ -3360,7 +3360,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-04",
+      "last_reviewed_utc": "2026-06-26",
       "source_mmd": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.mmd",
       "source_svg": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.svg",
       "source_png": "odylith/atlas/source/odylith-claude-guidance-runtime-heuristic-integration.png",
@@ -4203,13 +4203,13 @@
         "src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence": "3c6204c68fcf53a52c9ff509b035bcd8991f7f314dc16e221e8de6ba4169bb32",
+        "src/odylith/runtime/domain_intelligence": "26e3cab692490af01c7c503cfbfc68d1bf49ee2420af779445ef2a240a44d89a",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "dd630c83c77f3bea964ede07a25849392e753456dc9167934da9c1629b9ce05b",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "9d4775db7acc546874e709036fe71472a26307e8844522da1512c30ba64fa79b",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "fd7aa4fc7a298e2d3674b52a315c1e06225eab964e58f6aaea095ef4e8dc703b"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "c9052d811777b249edcf93448af4ea2d27294123cb71d92a81bc306f70c92b25"
       },
-      "render_source_fingerprint": "b953d8a037383ae1f660111e2738c8cae2451c1b1ad0c7c4fae53a326c4a6abc"
+      "render_source_fingerprint": "11010258541e4e94dd084edf8933141c9f4887639619e9d54182b9f43b8f1bea"
     },
     {
       "diagram_id": "D-044",

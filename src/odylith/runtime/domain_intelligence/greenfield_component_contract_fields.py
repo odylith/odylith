@@ -68,6 +68,9 @@ def contract_focus(
             return f"{support}, goal or constraint context, prior state, and explanation context"
         return f"{recommendation}, {rationale}, blocked-state detail, and next-step context"
     if role == "input":
+        ranked_candidate = _ranked_candidate_input(focus)
+        if ranked_candidate:
+            return f"{ranked_candidate}, comparison criteria, tie-break rule, and prior selection state"
         if any(action in action_terms for action in ("calculate", "compute", "derive", "evaluate", "forecast", "optimize", "predict", "score")):
             input_focus = f"input facts for {focus}" if _ends_with_term(focus, "state") else f"{focus} inputs"
             return f"{input_focus}, rule context, prior result, and validation command"
@@ -292,7 +295,8 @@ def _contract_text_items(value: str) -> list[str]:
     for raw in re.split(r",\s+", _clean(value), flags=re.IGNORECASE):
         raw = re.sub(r"^(?:and|or)\s+", "", raw, flags=re.IGNORECASE)
         phrase = (
-            _preserved_relation_phrase(raw)
+            _preserved_contract_text_item(raw)
+            or _preserved_relation_phrase(raw)
             or _action_clause_artifact_noun(raw)
             or _dedupe_adjacent_words(_ranked_contract_phrase(raw) or clean_artifact_phrase(raw))
         )
@@ -303,6 +307,38 @@ def _contract_text_items(value: str) -> list[str]:
         if phrase and phrase not in rows:
             rows.append(phrase)
     return _drop_marked_detail_subsets(rows)
+
+
+def _preserved_contract_text_item(value: str) -> str:
+    text = _clean(value).casefold().strip(" .,;:")
+    if not text:
+        return ""
+    text = re.sub(r"^(?:required|authorized)\s+", "", text, flags=re.IGNORECASE).strip(" .,;:")
+    text = re.sub(r"\s+command$", "", text, flags=re.IGNORECASE).strip(" .,;:")
+    terms = content_terms(text)
+    if len(terms) < 2 or len(terms) > 7:
+        return ""
+    if re.fullmatch(r"candidate\s+ranked\s+(?:alternatives?|candidates?|options?)(?:\s+set)?", text):
+        return text
+    words = text.split()
+    if len(words) >= 2 and words[0] in {"active", "candidate", "current", "ranked", "selected"}:
+        return text
+    plural_material = {
+        "alternatives",
+        "attempts",
+        "blockers",
+        "candidates",
+        "facts",
+        "fields",
+        "measurements",
+        "metrics",
+        "notes",
+        "options",
+        "preferences",
+    }
+    if set(text.split()) & plural_material:
+        return text
+    return ""
 
 
 def _preserved_relation_phrase(value: str) -> str:
@@ -355,6 +391,17 @@ def _ranked_output_artifact(value: str) -> str:
         if entity and not status_only_artifact_fragment(entity):
             return f"ranked {entity}"
     return f"ranked {text} result"
+
+
+def _ranked_candidate_input(value: str) -> str:
+    text = _clean(value).casefold()
+    if re.search(r"\branked\s+options?\b", text):
+        return "candidate ranked options set"
+    if re.search(r"\branked\s+alternatives?\b", text):
+        return "candidate ranked alternatives set"
+    if re.search(r"\branked\s+candidates?\b", text):
+        return "candidate ranked candidates set"
+    return ""
 
 
 def _safe_artifact_focus(value: str) -> str:
