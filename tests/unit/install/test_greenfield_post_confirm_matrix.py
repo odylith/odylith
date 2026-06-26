@@ -1,0 +1,164 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import sys
+from pathlib import Path
+from types import SimpleNamespace
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
+
+
+def _load_module(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _module():
+    return _load_module(SCRIPTS_ROOT / "greenfield_post_confirm_matrix.py", "greenfield_post_confirm_matrix")
+
+
+def _write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_path: Path) -> None:
+    module = _module()
+    _write(tmp_path / "odylith/radar/source/AGENTS.md", "Guidance that is not a generated workstream and may end with of.\n")
+    _write(
+        tmp_path / "odylith/radar/source/ideas/B-001.md",
+        "# Flood shelter intake\n\nCity staff register residents and prepare placement readiness evidence.\n",
+    )
+    _write(tmp_path / "odylith/radar/source/INDEX.md", "# Backlog Index\n\nRelease 0.0.1 includes B-001.\n")
+    _write(
+        tmp_path / "odylith/registry/source/components/intake/CURRENT_SPEC.md",
+        "# Intake Service\n\nOwns resident intake, consent evidence, and placement readiness state.\n",
+    )
+    _write(tmp_path / "odylith/atlas/source/intake-flow.mmd", "flowchart TD\n  A[Resident intake] --> B[Placement readiness]\n")
+    _write(
+        tmp_path / "odylith/radar/traceability-graph.v1.json",
+        json.dumps({"nodes": [{"id": str(index)} for index in range(12)], "workstreams": ["B-001", "B-002", "B-003", "B-004"]}),
+    )
+    _write(tmp_path / "odylith/radar/source/releases/releases.v1.json", "{}\n")
+    _write(tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json", "{}\n")
+    _write(tmp_path / "odylith/runtime/source/accepted-project.v1.json", "{}\n")
+    _write(
+        tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json",
+        json.dumps({"project_brief": {"project_outcome": "Residents reach shelter placements with consent evidence."}}),
+    )
+    for surface in module.REQUIRED_RENDERED_SURFACES:
+        _write(tmp_path / surface, "<html>ready</html>\n")
+    _write(tmp_path / "odylith/compass/runtime/current.v1.json", "{}\n")
+
+    package = module.collect_artifact_package(repo_root=tmp_path, create_payload={})
+    counts = module.collect_artifact_counts(
+        repo_root=tmp_path,
+        package=package,
+        required_terms=("flood", "shelter", "resident", "placement"),
+    )
+
+    assert "odylith/radar/source/AGENTS.md" not in package.backlog_result["idea_files"]
+    assert counts.radar_workstreams == 1
+    assert counts.registry_component_specs == 1
+    assert counts.atlas_mermaid_sources == 1
+    assert counts.rendered_surfaces == len(module.REQUIRED_RENDERED_SURFACES)
+    assert counts.domain_term_hits == 4
+
+
+def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -> None:
+    module = _module()
+    package = SimpleNamespace(
+        proposal={},
+        backlog_result={"idea_files": {}, "backlog_index_text": ""},
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        component_registry_preview=(),
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        next_steps_preview={},
+        program_result={},
+        release_target_result={},
+        release_assignment_result={},
+        release_workstream_ids=(),
+    )
+
+    verdict = module.build_quality_verdict(
+        create_payload={},
+        package=package,
+        counts=module.GreenfieldArtifactCounts(),
+        create_returncode=0,
+        create_seconds=61.0,
+    )
+
+    assert not verdict.passed
+    assert "post-confirm quality manifest missing" in verdict.issues
+    assert "post-confirm create exceeded 60s: 61.000s" in verdict.issues
+    assert all(passed is False for passed in verdict.lenses.values())
+
+
+def test_quality_verdict_requires_committed_write_transaction() -> None:
+    module = _module()
+    manifest = {
+        "status": "passed",
+        "validation_status": "passed",
+        "issue_count": 0,
+        "whole_project_elapsed_seconds": 20.0,
+        "write_transaction": {"status": "not_started"},
+        "quality_lenses": {
+            "status": "passed",
+            "lenses": {
+                "product_manager": {"status": "passed"},
+                "architect": {"status": "passed"},
+                "engineer": {"status": "passed"},
+                "domain_expert": {"status": "passed"},
+            },
+        },
+    }
+    package = SimpleNamespace(
+        proposal={},
+        backlog_result={"idea_files": {}, "backlog_index_text": ""},
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        component_registry_preview=(),
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        next_steps_preview={},
+        program_result={},
+        release_target_result={},
+        release_assignment_result={},
+        release_workstream_ids=(),
+    )
+    counts = module.GreenfieldArtifactCounts(
+        radar_workstreams=4,
+        registry_component_specs=3,
+        atlas_mermaid_sources=4,
+        compass_records=1,
+        release_records=1,
+        program_records=1,
+        project_brief_records=1,
+        trace_nodes=12,
+        trace_workstreams=4,
+        rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
+        domain_term_hits=3,
+    )
+
+    verdict = module.build_quality_verdict(
+        create_payload={"post_confirm_quality_manifest": manifest},
+        package=package,
+        counts=counts,
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert "post-confirm write transaction was not committed" in verdict.issues
+    assert verdict.lenses["engineer"] is False

@@ -1401,6 +1401,22 @@ def test_local_release_assets_target_builds_maintainer_installable_assets() -> N
     assert "make local-release-assets" in help_text
 
 
+def test_greenfield_post_confirm_matrix_target_runs_installed_release_gate() -> None:
+    text = (REPO_ROOT / "bin" / "greenfield-post-confirm-matrix").read_text(encoding="utf-8")
+    makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
+    help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
+
+    assert "greenfield-post-confirm-matrix:" in makefile
+    assert './bin/greenfield-post-confirm-matrix "$(VERSION)" "$(DIST)"' in makefile
+    assert 'requested_version="${1:-${VERSION:-$(current_source_version)}}"' in text
+    assert 'temp_parent="${TEMP_PARENT:-/Users/freedom/mock}"' in text
+    assert 'scripts/release/greenfield_post_confirm_matrix.py \\' in text
+    assert '--dist-dir "$dist_dir"' in text
+    assert '--version "$requested_version"' in text
+    assert '--temp-parent "$temp_parent"' in text
+    assert "make greenfield-post-confirm-matrix" in help_text
+
+
 def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> None:
     text = (REPO_ROOT / "bin" / "release-candidate").read_text(encoding="utf-8")
     makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")

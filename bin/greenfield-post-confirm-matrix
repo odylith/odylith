@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+requested_version="${1:-${VERSION:-$(current_source_version)}}"
+dist_arg="${2:-${DIST:-}}"
+temp_parent="${TEMP_PARENT:-/Users/freedom/mock}"
+require_version "$requested_version"
+
+if [[ -z "$dist_arg" ]]; then
+  dist_dir="${TMPDIR:-/tmp}/odylith-local-release-${requested_version}"
+elif [[ "$dist_arg" == /* ]]; then
+  dist_dir="$dist_arg"
+else
+  dist_dir="$odylith_repo_root/$dist_arg"
+fi
+
+if [[ ! -f "$dist_dir/install.sh" ]]; then
+  die "local release dist is missing install.sh: $dist_dir"
+fi
+
+"$odylith_python" scripts/release/greenfield_post_confirm_matrix.py \
+  --dist-dir "$dist_dir" \
+  --version "$requested_version" \
+  --temp-parent "$temp_parent"
