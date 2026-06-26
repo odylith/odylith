@@ -24,8 +24,17 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.artifact_quality.greenfield_quality_lenses import (
     build_greenfield_quality_lens_report,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import (
+    patchset_request_from_findings,
+)
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import (
     repair_greenfield_package_until_clean,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
+    GreenfieldReviewFinding,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
+    review_report_from_findings,
 )
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     compile_greenfield_semantics,
@@ -57,6 +66,10 @@ class GreenfieldPostConfirmIssue:
     repairability: str
     owner: str
     message: str
+    projection_id: str = ""
+    semantic_node_id: str = ""
+    source: str = ""
+    lens: str = ""
 
     def to_dict(self) -> dict[str, str]:
         return asdict(self)
@@ -83,6 +96,8 @@ class GreenfieldPostConfirmRepairContext:
     budget_seconds: float
     report: GreenfieldCompletionReport
     issues: tuple[GreenfieldPostConfirmIssue, ...]
+    review_report: Mapping[str, Any]
+    patchset_request: Mapping[str, Any]
     quality_lenses: Mapping[str, Any]
     semantic_compiler: Mapping[str, Any]
     repair_tier: str = "standard"
@@ -232,6 +247,8 @@ def run_greenfield_post_confirm_engine(
                 budget_seconds=float(active_budget_seconds),
                 report=report,
                 issues=typed_issues,
+                review_report=review_report_from_findings(report.findings).to_dict(),
+                patchset_request=patchset_request_from_findings(report.findings).to_dict(),
                 quality_lenses=quality_lenses,
                 semantic_compiler=semantic_compiler,
                 repair_tier=active_tier,
@@ -284,8 +301,10 @@ def run_greenfield_post_confirm_engine(
 def classify_greenfield_post_confirm_issues(
     report: GreenfieldCompletionReport,
 ) -> tuple[GreenfieldPostConfirmIssue, ...]:
-    """Classify completion report strings into stable issue records."""
+    """Return typed issue records, using legacy string classification only as fallback."""
 
+    if report.findings:
+        return tuple(_issue_from_review_finding(finding) for finding in report.findings)
     return tuple(_classify_issue(issue) for issue in report.issues)
 
 
@@ -339,13 +358,15 @@ def _rescue_eligible(issues: Sequence[GreenfieldPostConfirmIssue]) -> bool:
         "generated_copy_quality",
         "missing_semantic_model",
         "post_confirm_contract",
+        "proposal_quality_gate",
         "quality_lens_gap",
         "release_package_drift",
         "semantic_alignment",
         "semantic_compiler",
         "semantic_drift",
     }
-    return any(issue.code in rescue_codes and issue.repairability in {"proposal_repair", "safe_package_repair"} for issue in issues)
+    repairable_types = {"proposal_repair", "semantic_patch", "plan_patch", "safe_package_repair"}
+    return any(issue.code in rescue_codes and issue.repairability in repairable_types for issue in issues)
 
 
 def build_greenfield_post_confirm_manifest(
@@ -396,6 +417,8 @@ def build_greenfield_post_confirm_manifest(
         "issue_count": len(typed_issues),
         "issue_codes": sorted({issue.code for issue in typed_issues}),
         "issues": [issue.to_dict() for issue in typed_issues],
+        "review_report": review_report_from_findings(report.findings).to_dict(),
+        "patchset_request": patchset_request_from_findings(report.findings).to_dict(),
         "repaired_issue_codes": sorted(repaired_issue_codes),
         "hard_blocker": hard_blocker,
         "pass_records": [record.to_dict() for record in pass_records],
@@ -478,6 +501,22 @@ def _classify_issue(message: str) -> GreenfieldPostConfirmIssue:
         repairability=_issue_repairability(code, text),
         owner=_issue_owner(code, text),
         message=text,
+    )
+
+
+def _issue_from_review_finding(finding: GreenfieldReviewFinding) -> GreenfieldPostConfirmIssue:
+    return GreenfieldPostConfirmIssue(
+        code=finding.code,
+        surface=finding.surface,
+        path=finding.target_path,
+        severity=finding.severity,
+        repairability=finding.repairability,
+        owner=finding.owner,
+        message=finding.message,
+        projection_id=finding.projection_id,
+        semantic_node_id=finding.semantic_node_id,
+        source=finding.source,
+        lens=finding.lens,
     )
 
 
@@ -607,9 +646,23 @@ def _issue_owner(code: str, message: str) -> str:
 
 
 def _failure_signature(report: GreenfieldCompletionReport) -> str:
+    finding_signature = [
+        {
+            "code": finding.code,
+            "surface": finding.surface,
+            "target_path": finding.target_path,
+            "projection_id": finding.projection_id,
+            "semantic_node_id": finding.semantic_node_id,
+            "repairability": finding.repairability,
+            "source": finding.source,
+            "message": finding.message,
+        }
+        for finding in report.findings
+    ]
     payload = {
         "status": report.status,
-        "issues": list(report.issues),
+        "findings": finding_signature,
+        "issues": [] if finding_signature else list(report.issues),
         "artifact_counts": dict(report.artifact_counts),
     }
     encoded = json.dumps(payload, sort_keys=True, default=str).encode("utf-8")

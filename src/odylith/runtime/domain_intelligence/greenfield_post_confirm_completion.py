@@ -18,49 +18,28 @@ from odylith.runtime.artifact_quality.generated_copy_quality import generated_pu
 from odylith.runtime.artifact_quality.greenfield_package_quality import (
     greenfield_rendered_package_quality_issues,
 )
-from odylith.runtime.artifact_quality.greenfield_quality_lenses import greenfield_quality_lens_issues
-from odylith.runtime.domain_intelligence.greenfield_component_contract import (
-    component_contract_issues,
-    rendered_component_spec_quality_issues,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
-    component_spec_preflight_issues,
-)
-from odylith.runtime.domain_intelligence.greenfield_component_contract_targets import (
-    operator_component_spec_issues,
-)
 from odylith.runtime.domain_intelligence.greenfield_project_brief import PROJECT_BRIEF_SCHEMA_VERSION
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
-from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_count
 from odylith.runtime.domain_intelligence.greenfield_rows import row_count
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
-    rendered_spec_alignment_issues as _rendered_spec_alignment_issues,
-)
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
-    semantic_component_alignment_issues as _semantic_component_alignment_issues,
-)
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
-    semantic_diagram_alignment_issues as _semantic_diagram_alignment_issues,
-)
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
-    semantic_model_shape_issues as _semantic_model_shape_issues,
-)
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_alignment import (
-    semantic_workstream_alignment_issues as _semantic_workstream_alignment_issues,
-)
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
-    contrastive_domain_drift_issues as _contrastive_domain_drift_issues,
-)
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
-    semantic_repetition_issues as _semantic_repetition_issues,
-)
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
     semantic_overlap_ratio as _semantic_overlap_ratio,
 )
-from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
-    semantic_compiler_issues as _semantic_compiler_issues,
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import (
+    completion_review_findings,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import (
+    package_review_findings,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
+    GreenfieldReviewFinding,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
+    dedupe_review_findings,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
+    review_report_from_findings,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -78,13 +57,16 @@ class GreenfieldCompletionReport:
     artifact_counts: dict[str, int]
     tribunal_status: str
     issues: tuple[str, ...]
+    findings: tuple[GreenfieldReviewFinding, ...] = ()
 
     @property
     def passed(self) -> bool:
         return self.status == "passed"
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        payload = asdict(self)
+        payload["review_report"] = review_report_from_findings(self.findings).to_dict()
+        return payload
 
 
 @dataclass(frozen=True)
@@ -125,19 +107,17 @@ def build_greenfield_completion_report(
         tribunal_issues = [str(issue) for issue in tribunal.issues]
     else:
         tribunal_status, tribunal_issues = cached_tribunal
-    issues: list[str] = []
-    issues.extend(_post_confirm_contract_issues(proposal, rendered_specs=rendered_specs))
-    issues.extend(greenfield_quality_issues(proposal))
-    issues.extend(component_contract_issues(proposal))
-    issues.extend(component_spec_preflight_issues(proposal))
-    if rendered_specs:
-        title = _project_title(proposal)
-        spec_issues = rendered_component_spec_quality_issues(rendered_specs, project_title=title)
-        issues.extend(operator_component_spec_issues(spec_issues))
-    issues.extend(tribunal_issues)
+    findings = list(
+        completion_review_findings(
+            proposal,
+            rendered_specs=rendered_specs,
+            tribunal_issues=tribunal_issues,
+        )
+    )
+    issues = unique_text([finding.message for finding in findings])
     issues = unique_text(issues)
     return GreenfieldCompletionReport(
-        status="failed" if issues else "passed",
+        status="failed" if issues or findings else "passed",
         version="greenfield-post-confirm-completion-v1",
         semantic_model=isinstance(proposal.get("semantic_model"), Mapping),
         artifact_counts={
@@ -148,6 +128,7 @@ def build_greenfield_completion_report(
         },
         tribunal_status=tribunal_status,
         issues=tuple(issues),
+        findings=tuple(findings),
     )
 
 
@@ -161,8 +142,10 @@ def build_greenfield_package_report(package: GreenfieldCompletionPackage) -> Gre
         tribunal_preview=package.tribunal_preview,
     )
     package_issues = _package_artifact_issues(package)
-    issues = unique_text([*report.issues, *package_issues])
-    status = "failed" if issues else "passed"
+    package_findings = package_review_findings(package, package_issues=package_issues)
+    findings = dedupe_review_findings([*report.findings, *package_findings])
+    issues = unique_text([*report.issues, *(finding.message for finding in package_findings)])
+    status = "failed" if issues or findings else "passed"
     return GreenfieldCompletionReport(
         status=status,
         version=report.version,
@@ -182,6 +165,7 @@ def build_greenfield_package_report(package: GreenfieldCompletionPackage) -> Gre
         },
         tribunal_status=report.tribunal_status,
         issues=tuple(issues),
+        findings=findings,
     )
 
 
@@ -231,32 +215,6 @@ def _cached_tribunal_result(preview: Mapping[str, Any] | None) -> tuple[str, lis
     if status and status != "passed" and not issues:
         issues.append(f"greenfield Tribunal returned {status}")
     return status or "unknown", issues
-
-
-def _project_title(proposal: Mapping[str, Any]) -> str:
-    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    return str(intent.get("title", "")).strip()
-
-
-def _post_confirm_contract_issues(proposal: Mapping[str, Any], *, rendered_specs: Mapping[str, str]) -> list[str]:
-    """Check the package contract that makes Confirm a complete write boundary."""
-
-    issues: list[str] = []
-    if int(proposal.get("provider_calls") or 0) != 0:
-        issues.append("post-confirm completion must be provider-free by default")
-    semantic = proposal.get("semantic_model")
-    if not isinstance(semantic, Mapping):
-        return ["post-confirm completion requires GreenfieldSemanticModel before rendering governed artifacts"]
-    issues.extend(_semantic_model_shape_issues(semantic))
-    issues.extend(_semantic_component_alignment_issues(proposal, semantic))
-    issues.extend(_semantic_workstream_alignment_issues(proposal, semantic))
-    issues.extend(_semantic_diagram_alignment_issues(proposal, semantic))
-    issues.extend(_semantic_compiler_issues(proposal))
-    issues.extend(_contrastive_domain_drift_issues(proposal, semantic))
-    issues.extend(_semantic_repetition_issues(proposal))
-    if rendered_specs:
-        issues.extend(_rendered_spec_alignment_issues(proposal, rendered_specs))
-    return issues
 
 
 def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
@@ -376,7 +334,6 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
             if clean_text(target_release.get("release_id")) and clean_text(assignment_release.get("release_id")):
                 if clean_text(target_release.get("release_id")) != clean_text(assignment_release.get("release_id")):
                     issues.append("prewrite release target preview drifted from release assignment preview")
-    issues.extend(greenfield_quality_lens_issues(package))
     issues.extend(greenfield_rendered_package_quality_issues(package))
     return issues
 

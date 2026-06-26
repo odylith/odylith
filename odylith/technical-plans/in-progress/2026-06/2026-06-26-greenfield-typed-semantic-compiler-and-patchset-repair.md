@@ -68,12 +68,24 @@ vocabulary, or degraded packages.
 
 - [ ] Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,
       `ArtifactDraftSet`, `ReviewReport`, and `PatchSet` schemas with source
-      provenance and stable IDs.
-- [ ] Convert final package validators to emit typed finding codes, source-map
+      provenance and stable IDs. Current checkpoint defines typed
+      `ReviewReport` findings and `PatchSet` request schemas; the remaining IR
+      contracts are still open.
+- [x] Convert final package validators to emit typed finding codes, source-map
       targets, semantic node IDs, projection IDs, severity, and repairability.
+      `greenfield_post_confirm_findings.py` now owns typed finding collection
+      for proposal, semantic, component, package, and quality-lens gates.
 - [ ] Replace post-confirm issue-substring routing with typed finding routing.
+      Internally generated reports now classify and build failure signatures
+      from typed findings first, and the repair callback consumes typed
+      `PatchSet` target layers and source findings for the current semantic and
+      quality-lens repair pass. The legacy English-message classifier remains
+      as a compatibility fallback for old report fixtures and external callers,
+      and full semantic/plan patch application remains open.
 - [ ] Replace rendered-prose package repair with semantic or plan patch
-      application and impacted-projection rerender.
+      application and impacted-projection rerender. Current checkpoint emits a
+      formal `PatchSet` request into the manifest and repair context, but patch
+      application and impacted-projection rerender are still open.
 - [ ] Add context-starved renderer contracts so Radar, Registry, Atlas,
       Compass, release proof, and next steps cannot cross-contaminate.
 - [ ] Add high-variance simulation fixtures and artifact-quality scoring across
@@ -104,11 +116,12 @@ vocabulary, or degraded packages.
 
 - [ ] Unit tests for semantic IR construction, ambiguity decision ledger,
       rejected interpretations, projection isolation, and source-map targets.
-- [ ] Unit tests proving typed findings route repair without validator-message
-      substring matching.
+- [x] Unit tests proving typed findings classify failures and feed repair
+      context without validator-message substring matching.
 - [ ] Unit tests proving `PatchSet` repair applies to `SemanticModelIR` or
       `ArtifactPlanIR`, rerenders only impacted projections, and never edits
-      rendered artifacts directly.
+      rendered artifacts directly. Current checkpoint tests `PatchSet` request
+      emission only; application proof remains open.
 - [ ] End-to-end confirmed-create tests proving governed records are written
       after final package quality passes.
 - [ ] Timing tests proving standard under 60 seconds and rescue under 90 seconds.

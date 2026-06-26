@@ -20,7 +20,7 @@
 
 - Detected By: Subagent architecture review after repeated greenfield post-confirm failures and CB-207 repeated-risk repair.
 
-- Failure Signature: Post-confirm issue classification and rescue routing depend on substring matching; package repair recursively rewrites rendered public copy instead of returning typed semantic patches.
+- Failure Signature: Post-confirm issue classification and rescue routing used to depend on substring matching; the current internal report path now emits typed findings first, but package repair still recursively rewrites rendered public copy instead of applying semantic or artifact-plan patches.
 
 - Trigger Path: Architecture review of src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py and greenfield_post_confirm_repair.py during greenfield post-confirm hardening.
 
@@ -30,7 +30,7 @@
 
 - Blast Radius: Any greenfield project domain or complexity where semantic ambiguity, repeated claims, domain-specific proof obligations, or artifact-specific wording requires repair before governed writes.
 
-- SLO/SLA Impact: Standard under-60s and rescue under-90s paths remain at risk because repeated string-level retries can consume repair passes without improving the semantic model.
+- SLO/SLA Impact: Standard under-60s and rescue under-90s paths remain at risk until rendered-prose mutation is replaced by targeted semantic or artifact-plan patch application and impacted-projection rerender.
 
 - Data Risk: No direct data loss; fail-closed writes protect governed records, but confirmed product intent may remain unmaterialized.
 
@@ -42,15 +42,15 @@
 
 - Solution: Adopt a typed host-reasoned architecture: one schema-constrained semantic compiler call, deterministic artifact planning/projection, typed deterministic and reviewer-lens findings, and targeted semantic/plan PatchSet repair before final fail-closed writes.
 
-- Verification: Current projection fix is verified separately; the architecture defect remains open until typed findings and semantic patch repair replace stringly issue routing and rendered-string package repair.
+- Verification: Typed `ReviewReport` findings, typed repair-context payloads, stable typed failure signatures, structured quality-lens findings, `PatchSet` request emission, and callback consumption of `PatchSet` target layers are now covered by focused post-confirm engine tests. The architecture defect remains open until rendered-string package repair is replaced by semantic or artifact-plan patch application plus impacted-projection rerender.
 
 - Prevention: Before adding more regex or template rules, check Casebook and repair semantic ownership, projection boundaries, or typed review contracts first.
 
-- Agent Guardrails: Do not claim premium real-world readiness from greenfield fixes while post-confirm rescue is still routed by issue-string substrings or rendered-prose mutation.
+- Agent Guardrails: Do not claim premium real-world readiness from greenfield fixes while post-confirm rescue can still mutate rendered prose or lacks fresh high-variance simulation proof.
 
 - Preflight Checks: Read CB-207 and this bug before changing post-confirm repair; verify whether the change patches SemanticModelIR or ArtifactPlanIR rather than rendered strings.
 
-- Regression Tests Added: Architecture record only; current slice tests cover child risk projection and repetition gates, not the full typed patch architecture.
+- Regression Tests Added: `tests/unit/runtime/test_greenfield_post_confirm_engine.py` now proves typed findings override unclassifiable message text, typed quality-lens checks do not become generic artifact drift, repair contexts carry typed `ReviewReport` and `PatchSet` request payloads, and manifests expose the patchset request. Full patch application proof remains open.
 
 - Related Incidents/Bugs: CB-207
 

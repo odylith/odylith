@@ -12,11 +12,15 @@ from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine a
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
+    build_greenfield_package_report,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     GreenfieldCompletionPackage,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     GreenfieldCompletionReport,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_once
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import (
     repair_proposal_for_quality_lens_gaps,
@@ -125,11 +129,184 @@ def test_post_confirm_issue_classifier_marks_quality_lens_gaps() -> None:
     assert issue.severity == "high"
 
 
+def test_post_confirm_issue_classifier_prefers_typed_findings_over_message_text() -> None:
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"workstreams": 1},
+        tribunal_status="passed",
+        issues=("This prose intentionally contains no classifiable keywords.",),
+        findings=(
+            review_finding(
+                code="semantic_alignment",
+                surface="radar",
+                target_path="proposal.backlog[0]",
+                projection_id="radar",
+                semantic_node_id="SemanticModelIR.workstream_contracts[0]",
+                severity="high",
+                repairability="semantic_patch",
+                owner="semantic_model_compiler",
+                source="semantic_workstream_alignment",
+                message="This prose intentionally contains no classifiable keywords.",
+            ),
+        ),
+    )
+
+    issue = engine.classify_greenfield_post_confirm_issues(report)[0]
+
+    assert issue.code == "semantic_alignment"
+    assert issue.surface == "radar"
+    assert issue.path == "proposal.backlog[0]"
+    assert issue.projection_id == "radar"
+    assert issue.semantic_node_id == "SemanticModelIR.workstream_contracts[0]"
+    assert issue.repairability == "semantic_patch"
+    assert issue.owner == "semantic_model_compiler"
+    assert issue.source == "semantic_workstream_alignment"
+
+
+def test_completion_report_serializes_typed_review_report() -> None:
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={},
+        tribunal_status="passed",
+        issues=("typed finding",),
+        findings=(
+            review_finding(
+                code="artifact_shape_drift",
+                surface="atlas",
+                target_path="rendered_atlas_sources",
+                projection_id="atlas",
+                severity="high",
+                repairability="plan_patch",
+                owner="atlas_renderer",
+                source="package_artifact_gate",
+                message="typed finding",
+            ),
+        ),
+    )
+
+    payload = report.to_dict()
+
+    assert payload["review_report"]["version"] == "odylith.greenfield.post_confirm.review_report.v1"
+    assert payload["review_report"]["status"] == "failed"
+    assert payload["review_report"]["findings"][0]["code"] == "artifact_shape_drift"
+    assert payload["review_report"]["findings"][0]["repairability"] == "plan_patch"
+
+
+def test_package_report_emits_structured_quality_lens_findings() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "intent": {"title": "Typed Lens Test"},
+            "semantic_model": {
+                "schema_version": "odylith.greenfield.semantic_model.v1",
+                "domain_ontology": {},
+                "first_path_contract": {},
+                "component_contracts": [],
+                "workstream_contracts": [],
+                "diagram_event_graph": {},
+            },
+        },
+        release_selector="0.0.1",
+    )
+
+    report = build_greenfield_package_report(package)
+    lens_findings = [finding for finding in report.findings if finding.code == "quality_lens_gap"]
+
+    assert lens_findings
+    assert any(finding.lens == "product_manager" for finding in lens_findings)
+    assert all(finding.source == "quality_lens" for finding in lens_findings)
+    assert all(finding.projection_id == "review_report" for finding in lens_findings)
+    assert any(finding.code == "release_package_drift" and finding.projection_id == "release" for finding in report.findings)
+    assert not any(
+        finding.code == "artifact_shape_drift" and finding.message.startswith("quality lens ")
+        for finding in report.findings
+    )
+
+
+def test_post_confirm_failure_signature_changes_when_typed_message_changes() -> None:
+    first = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"workstreams": 1},
+        tribunal_status="passed",
+        issues=("semantic alignment missing first contract",),
+        findings=(
+            review_finding(
+                code="semantic_alignment",
+                surface="radar",
+                target_path="proposal.backlog",
+                projection_id="radar",
+                semantic_node_id="SemanticModelIR.workstream_contracts",
+                severity="high",
+                repairability="semantic_patch",
+                owner="semantic_model_compiler",
+                source="semantic_workstream_alignment",
+                message="semantic alignment missing first contract",
+            ),
+        ),
+    )
+    second = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"workstreams": 1},
+        tribunal_status="passed",
+        issues=("semantic alignment missing second contract",),
+        findings=(
+            review_finding(
+                code="semantic_alignment",
+                surface="radar",
+                target_path="proposal.backlog",
+                projection_id="radar",
+                semantic_node_id="SemanticModelIR.workstream_contracts",
+                severity="high",
+                repairability="semantic_patch",
+                owner="semantic_model_compiler",
+                source="semantic_workstream_alignment",
+                message="semantic alignment missing second contract",
+            ),
+        ),
+    )
+
+    assert engine._failure_signature(first) != engine._failure_signature(second)
+
+
 def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: pytest.MonkeyPatch) -> None:
     package = GreenfieldCompletionPackage(proposal={}, release_selector="0.0.1")
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"workstreams": 1},
+        tribunal_status="passed",
+        issues=("semantic alignment still missing a workstream contract",),
+        findings=(
+            review_finding(
+                code="semantic_alignment",
+                surface="radar",
+                target_path="proposal.backlog",
+                projection_id="radar",
+                semantic_node_id="SemanticModelIR.workstream_contracts",
+                severity="high",
+                repairability="semantic_patch",
+                owner="semantic_model_compiler",
+                source="semantic_workstream_alignment",
+                message="semantic alignment still missing a workstream contract",
+            ),
+        ),
+    )
 
     monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
     monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        engine,
+        "repair_greenfield_package_until_clean",
+        lambda current: SimpleNamespace(package=current, initial_report=report, report=report, passes=0, changed=False),
+    )
 
     def build_prewrite(_proposal: dict[str, object], _tribunal: Any) -> SimpleNamespace:
         return SimpleNamespace(package=package, backlog_result={})
@@ -147,7 +324,7 @@ def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: py
     manifest = exc.value.manifest
     assert manifest["status"] == "failed"
     assert manifest["stop_reason"] == "no_progress"
-    assert "missing_semantic_model" in manifest["issue_codes"]
+    assert "semantic_alignment" in manifest["issue_codes"]
     assert manifest["hard_blocker"] is None
     assert len(manifest["pass_records"]) == 2
 
@@ -163,6 +340,21 @@ def test_post_confirm_engine_passes_quality_lens_context_to_proposal_repair(
             artifact_counts={"next_steps_previews": 1},
             tribunal_status="passed",
             issues=("quality lens product_manager missing assumptions or ambiguity boundary",),
+            findings=(
+                review_finding(
+                    code="quality_lens_gap",
+                    surface="product_manager",
+                    target_path="quality_lenses.product_manager.decision_boundary",
+                    projection_id="review_report",
+                    semantic_node_id="ReviewReport.quality_lenses",
+                    severity="high",
+                    repairability="semantic_patch",
+                    owner="quality_lens_contract",
+                    source="quality_lens",
+                    lens="product_manager",
+                    message="quality lens product_manager missing assumptions or ambiguity boundary",
+                ),
+            ),
         ),
         GreenfieldCompletionReport(
             status="passed",
@@ -221,6 +413,9 @@ def test_post_confirm_engine_passes_quality_lens_context_to_proposal_repair(
     assert context.repair_tier == "rescue"
     assert context.budget_seconds == 90.0
     assert context.rescue_activated is True
+    assert context.review_report["version"] == "odylith.greenfield.post_confirm.review_report.v1"
+    assert context.patchset_request["version"] == "odylith.greenfield.post_confirm.patchset_request.v1"
+    assert context.patchset_request["operations"][0]["target_layer"] == "semantic_model"
     assert context.quality_lenses["status"] == "failed"
     assert context.quality_lenses["lenses"]["product_manager"]["status"] == "failed"
     assert context.semantic_compiler["version"] == "odylith.greenfield.semantic_compiler.v1"
@@ -375,6 +570,65 @@ def test_quality_lens_repair_rehydrates_decision_scope_and_validation() -> None:
     assert any("assumption proof" in row.casefold() for row in proposal["validation_strategy"])
 
 
+def test_repair_payload_consumes_patchset_request_targets(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[str] = []
+
+    monkeypatch.setattr(greenfield_proposals, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
+    monkeypatch.setattr(greenfield_proposals, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_proposals,
+        "complete_confirmed_proposal",
+        lambda proposal, *, release_selector: {**proposal, "completed_for": release_selector},
+    )
+    monkeypatch.setattr(
+        greenfield_proposals,
+        "_complete_semantic_apply_payload",
+        lambda proposal, *, release_selector: {**proposal, "semantic_target_seen": release_selector},
+    )
+
+    def fake_lens_repair(proposal: dict[str, Any], **_kwargs: Any) -> bool:
+        calls.append("quality_lens")
+        proposal["quality_lens_target_seen"] = True
+        return True
+
+    monkeypatch.setattr(greenfield_proposals, "repair_proposal_for_quality_lens_gaps", fake_lens_repair)
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("quality lens product_manager missing assumptions or ambiguity boundary",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {"target_layer": "semantic_model", "source_finding": "quality_lens"},
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    repaired = greenfield_proposals._repair_confirmed_apply_payload(
+        {"intent": {"title": "Patchset Routed"}},
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert repaired["semantic_target_seen"] == "0.0.1"
+    assert repaired["quality_lens_target_seen"] is True
+    assert calls == ["quality_lens"]
+
+
 def test_package_repair_collapses_adjacent_duplicate_words() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
@@ -486,6 +740,7 @@ def test_greenfield_apply_result_carries_post_confirm_quality_manifest(
     assert manifest["write_transaction"]["status"] == "committed"
     assert manifest["write_transaction"]["rollback_guard"] == "enabled"
     assert manifest["write_transaction"]["prewrite_clean_before_commit"] is True
+    assert manifest["patchset_request"]["version"] == "odylith.greenfield.post_confirm.patchset_request.v1"
     assert manifest["artifact_counts"]["rendered_workstream_files"] == len(result["backlog"])
     assert manifest["artifact_counts"]["component_registry_previews"] == len(result["components"])
 

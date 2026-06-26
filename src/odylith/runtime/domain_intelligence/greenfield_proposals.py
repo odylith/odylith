@@ -61,6 +61,12 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     run_greenfield_post_confirm_engine,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair_context import (
+    repair_context_sources,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair_context import (
+    repair_context_target_layers,
+)
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import repair_proposal_for_quality_lens_gaps
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
@@ -475,12 +481,17 @@ def _repair_confirmed_apply_payload(
     release_selector: str,
     repair_context: GreenfieldPostConfirmRepairContext | None = None,
 ) -> Mapping[str, Any]:
+    target_layers = repair_context_target_layers(repair_context)
+    sources = repair_context_sources(repair_context)
     repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-    repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
-    repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
-    repaired = _complete_semantic_apply_payload(repaired, release_selector=release_selector)
+    if repair_context is None or not target_layers or target_layers.intersection(
+        {"semantic_model", "artifact_plan", "artifact_draft_set"}
+    ):
+        repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
+        repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
+        repaired = _complete_semantic_apply_payload(repaired, release_selector=release_selector)
     if repair_context is not None:
-        if repair_proposal_for_quality_lens_gaps(
+        if "quality_lens" in sources and repair_proposal_for_quality_lens_gaps(
             repaired,
             quality_lenses=repair_context.quality_lenses,
             release_selector=release_selector,
