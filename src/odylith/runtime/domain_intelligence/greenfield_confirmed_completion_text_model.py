@@ -464,7 +464,13 @@ def row_drifted_from_component(row: Mapping[str, Any], component: Mapping[str, A
 
 def row_is_release_proof(row: Mapping[str, Any]) -> bool:
     text = " ".join(text_values([row.get("title"), row.get("product_view"), row.get("recommended_first_slice")])).casefold()
-    return "proof" in text or "release evidence" in text or "release readiness" in text
+    return (
+        "proof" in text
+        or "release evidence" in text
+        or "release readiness" in text
+        or "can be trusted" in text
+        or ("trusted" in text and any(token in text for token in ("evidence", "release", "validation")))
+    )
 
 
 def keywords(values: Sequence[Any]) -> set[str]:

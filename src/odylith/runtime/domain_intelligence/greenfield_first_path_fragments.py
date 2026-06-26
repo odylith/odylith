@@ -77,7 +77,7 @@ def looks_like_visible_result(value: str) -> bool:
             re.IGNORECASE,
         )
         or re.search(
-            r"\b(?:available|card|dashboard|event|indicator|projection|readout|recommendation|result|saved|summary|timeline|trend|view|viewable)\b",
+            r"\b(?:available|card|dashboard|event|indicator|projection|proof|readout|recommendation|result|saved|summary|timeline|trend|view|viewable)\b",
             text,
             re.IGNORECASE,
         )
@@ -170,6 +170,8 @@ def action_chain_fragment(value: str) -> str:
             stripped,
             flags=re.IGNORECASE,
         ):
+            return base_action_clause(stripped).strip(" .")
+        if "," in stripped and MATERIAL_ACTION_RE.match(stripped):
             return base_action_clause(stripped).strip(" .")
         return f"review {lowercase_leading_article(outcome)}".strip(" .")
     click = re.search(r"\bclicks?\s+(?P<object>.+?)(?:\s+and\s+.+)?$", text, flags=re.IGNORECASE)
@@ -380,7 +382,7 @@ def outcome_capability_fragment(value: str) -> str:
     fragment = action_chain_fragment(text)
     if fragment and MATERIAL_ACTION_RE.match(fragment):
         return fragment
-    return f"see {lowercase_leading_article(text)}".strip(" .")
+    return f"see {_lower_initial_for_fragment(text)}".strip(" .")
 
 def strip_action_subject(value: str) -> str:
     text = clean_first_path_text(value)

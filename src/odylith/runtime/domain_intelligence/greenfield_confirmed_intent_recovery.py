@@ -22,7 +22,6 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
 
 _MODAL_MARKERS = frozenset({"can", "will", "must", "needs", "need"})
 _LEADING_ARTICLES = frozenset({"a", "an", "the"})
@@ -142,9 +141,10 @@ _PRODUCT_CONTAINER_TERMS = frozenset(
 def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title: bool = False) -> str:
     """Return a structured confirmation when the host passed guidance instead of the visible answer."""
 
-    source = _clean(intent_text).strip(" .")
-    recovered_first_path_source = prompt_first_path_source(source)
-    title_source = _recover_title_source(source) if prefer_product_title else ""
+    raw_source = str(intent_text or "")
+    source = _clean(raw_source).strip(" .")
+    recovered_first_path_source = prompt_first_path_source(raw_source)
+    title_source = _recover_title_source(raw_source) if prefer_product_title else ""
     title = _recovered_title(title_source or first_path_outcome_phrase(recovered_first_path_source, fallback=""))
     first_path_source = _usable_first_path_source(
         recovered_first_path_source,
@@ -287,11 +287,8 @@ def _recovered_story_text(
 
 
 def _recovered_proof_text(*, first_path_inline: str, outcome_object: str) -> str:
-    first_path = _sentence_start(first_path_inline)
     if "." in first_path_inline:
-        opening = normalize_confirmed_proof_boundary_sentence(
-            f"Release 0.0.1 succeeds when the accepted first path is complete: {first_path}."
-        )
+        opening = "Release 0.0.1 succeeds when the accepted first path is complete, reviewable, and blocked when required."
     else:
         opening = f"Release 0.0.1 succeeds when {first_path_inline}."
     return (

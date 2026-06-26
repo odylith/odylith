@@ -61,6 +61,15 @@ _REQUEST_PRODUCT_WORDS = frozenset(
 _REQUEST_HELPER_WORDS = frozenset({"allow", "allows", "enable", "enables", "help", "helps", "let", "lets"})
 _REQUEST_LEAD_CONNECTORS = ("where", "that", "so", "for", "to")
 _DIRECT_TITLE_BOUNDARY_CONNECTORS = frozenset({"where", "that", "so"})
+_ORIGINAL_INTENT_BOUNDARY_HEADINGS = frozenset(
+    {
+        "next step",
+        "confirmed cli after confirmation",
+        "visible format contract",
+        "write in chat",
+        "do not",
+    }
+)
 _RELEASE_PROOF_ACTION_WORDS = frozenset(
     {
         "complete",
@@ -102,7 +111,7 @@ def prompt_project_title_source(value: str) -> str:
 def prompt_intent_source(value: str) -> PromptIntentSource:
     """Return shared title and first-path sources for thin prompt recovery."""
 
-    text = clean_markdown_text(value).strip(" .")
+    text = clean_markdown_text(_operator_original_intent_block(value) or value).strip(" .")
     words = _request_words(text)
     start, command_led = _request_content_start(words)
     return PromptIntentSource(
@@ -114,6 +123,9 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
 
 def _first_path_source_from_text(value: str) -> str:
     text = _strip_operator_request_wrapper(clean_markdown_text(value).strip(" ."))
+    release_candidate = _release_action_sentence_source(text)
+    if word_count(release_candidate) >= 8 and _looks_like_recoverable_first_path(release_candidate):
+        return _strip_release_proof_tail(release_candidate)
     for marker in ("where", "that"):
         candidate = _tail_after_word(text, marker)
         if not candidate:
@@ -158,7 +170,53 @@ def _project_title_source_from_words(words: list[str], *, start: int, command_le
         lead = words[start:index]
         if _looks_like_product_title_phrase(lead):
             return " ".join(lead).strip(" .")
+    sentence_title = _project_title_before_sentence_boundary(words, start=start)
+    if sentence_title:
+        return sentence_title
     lead = words[start:]
+    if _looks_like_product_title_phrase(lead):
+        return " ".join(lead).strip(" .")
+    return ""
+
+
+def _operator_original_intent_block(value: str) -> str:
+    rows = str(value or "").splitlines()
+    collected: list[str] = []
+    collecting = False
+    for row in rows:
+        key = _heading_key(row)
+        if collecting and key in _ORIGINAL_INTENT_BOUNDARY_HEADINGS:
+            break
+        if collecting:
+            collected.append(row)
+            continue
+        if key == "original user intent":
+            collecting = True
+            if ":" in row:
+                tail = row.split(":", 1)[1].strip()
+                if tail:
+                    collected.append(tail)
+    return clean_markdown_text("\n".join(collected)).strip(" .")
+
+
+def _heading_key(value: str) -> str:
+    text = str(value or "").strip()
+    while text and text[0] in "#-* ":
+        text = text[1:].strip()
+    return text.rstrip(":").strip().casefold()
+
+
+def _project_title_before_sentence_boundary(words: list[str], *, start: int) -> str:
+    lead: list[str] = []
+    for raw in words[start:]:
+        token = raw.strip()
+        cleaned = token.strip(".,:;")
+        if cleaned.casefold() in _REQUEST_LEAD_CONNECTORS:
+            return ""
+        if cleaned:
+            lead.append(cleaned)
+        if token.endswith((".", "!", "?")):
+            break
     if _looks_like_product_title_phrase(lead):
         return " ".join(lead).strip(" .")
     return ""
@@ -195,6 +253,44 @@ def _strip_operator_request_wrapper(value: str) -> str:
         if word_count(smoothed) >= 4 and _looks_like_recoverable_first_path(smoothed):
             return smoothed
     return _smooth_request_first_path_clause(_strip_leading_helper_word(text))
+
+
+def _release_action_sentence_source(value: str) -> str:
+    for sentence in _sentence_fragments(value):
+        candidate = _strip_release_helper_prefix(sentence)
+        if candidate != clean_markdown_text(sentence).strip(" ."):
+            return candidate
+    return ""
+
+
+def _sentence_fragments(value: str) -> list[str]:
+    words = _request_words(value)
+    rows: list[str] = []
+    current: list[str] = []
+    for word in words:
+        current.append(word)
+        if word.endswith((".", "!", "?")):
+            rows.append(" ".join(current).strip(" ."))
+            current = []
+    if current:
+        rows.append(" ".join(current).strip(" ."))
+    return [row for row in rows if row]
+
+
+def _strip_release_helper_prefix(value: str) -> str:
+    words = _request_words(value)
+    lowered = [_word_key(word) for word in words]
+    for index, token in enumerate(lowered):
+        if token not in _REQUEST_HELPER_WORDS:
+            continue
+        prefix = set(lowered[:index])
+        if not (prefix & {"first", "product", "release", "should", "version"}):
+            continue
+        tail = words[index + 1 :]
+        if tail and tail[0].casefold() == "to":
+            tail = tail[1:]
+        return _smooth_request_first_path_clause(" ".join(tail))
+    return clean_markdown_text(value).strip(" .")
 
 
 def _operator_request_tail_candidates(value: str) -> tuple[str, ...]:

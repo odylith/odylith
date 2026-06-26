@@ -29,8 +29,10 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import fi
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_text import (
     clean_markdown_sentence,
@@ -372,6 +374,38 @@ def test_first_path_gerund_capability_includes_terminal_visible_result() -> None
     assert "recording first entry" in capability
     assert "logging again" in capability
     assert "reviewing a simple trend: status over time" in capability
+
+
+def test_first_path_capability_lowers_sentence_start_visible_result_objects() -> None:
+    first_path = (
+        "Trial coordinators record eligibility facts, consent versions, family questions. "
+        "Clinician review, adverse-event exclusions and ethics-board readiness proof "
+        "without making unsafe medical recommendations."
+    )
+
+    capability = first_path_capability_phrase(first_path, max_fragments=8, limit=340)
+    gerund = first_path_capability_phrase(first_path, gerund=True, max_fragments=8, limit=340)
+
+    assert "see clinician review" in capability
+    assert "see Clinician review" not in capability
+    assert "Clinician review" not in gerund
+    assert "reviewing Clinician review" not in gerund
+    assert generated_semantic_slop_issues({"capability": capability, "gerund": gerund}) == []
+
+
+def test_terminal_proof_noun_phrase_becomes_visible_outcome() -> None:
+    first_path = (
+        "Researchers record molecule setup, basis-set choices, solver settings, convergence warnings, "
+        "result comparisons, peer-review notes. Publication proof without running expensive compute jobs."
+    )
+
+    model = first_path_model(first_path)
+    capability = first_path_capability_phrase(first_path, gerund=True, max_fragments=8, limit=340)
+
+    assert model.visible_outcome == "Publication proof without running expensive compute jobs"
+    assert "publication proof without running expensive compute jobs" in capability
+    assert "reviewing notes" not in capability
+    assert generated_semantic_slop_issues({"capability": capability}) == []
 
 
 def test_boundary_clause_questions_become_declarative_scope_text() -> None:

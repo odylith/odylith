@@ -54,6 +54,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_se
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
+from odylith.runtime.domain_intelligence.greenfield_release_scope_limits import proof_boundary_limit_text
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -281,11 +282,9 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
     by_id = {_clean(component.get("component_id")): component for component in components if _clean(component.get("component_id"))}
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
     non_goal_rows = [row for row in text_values(proposal.get("non_goals") or intent.get("non_goals")) if _clean(row)]
-    if not non_goal_rows:
-        proof = completion_text.proof_boundary(proposal)
-        match = re.search(r"\bwithout\s+claiming\s+(?P<scope>[^.;]+)", proof, flags=re.IGNORECASE)
-        if match:
-            non_goal_rows = [f"No {match.group('scope').strip()}"]
+    proof_limit = proof_boundary_limit_text(completion_text.proof_boundary(proposal))
+    if proof_limit and proof_limit.casefold() not in {row.casefold() for row in non_goal_rows}:
+        non_goal_rows.append(proof_limit)
     changed = False
     for row in rows[1:]:
         component = completion_text.primary_component_for_backlog(row, components=components, by_id=by_id)
@@ -327,8 +326,9 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             ]
             if completion_text.row_is_release_proof(row):
                 if non_goal_rows:
+                    deferred_scope = proof_limit or non_goal_rows[0]
                     metrics.append(
-                        f"Deferred scope stays out of {label} validation evidence: {_clean(non_goal_rows[0]).rstrip('.')}."
+                        f"Deferred scope stays out of {label} validation evidence: {_clean(deferred_scope).rstrip('.')}."
                     )
                 metrics.append(
                     f"{label} validation evidence focuses on {completion_text.inline_result_phrase(outcome)}, "

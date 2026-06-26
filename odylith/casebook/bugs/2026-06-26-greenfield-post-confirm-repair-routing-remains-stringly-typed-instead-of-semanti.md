@@ -76,6 +76,50 @@
   labels could become `Proof Ledger Proof Record`, a real readability failure
   caused by composing proof-record suffixes onto labels that already carried
   proof-ledger semantics.
+  A subsequent high-variance pass exposed two more platform-level failures
+  before governed writes. First, multiple evidence-oriented Registry component
+  specs received the same generic opening sentence because component-spec
+  narrative rendered from the shared project evidence focus rather than the
+  component's local label, output, and ownership boundary. Second, a confirmed
+  first path whose visible result began with a title-cased role phrase produced
+  public copy such as `see Clinician review` and `reviewing Clinician review`,
+  which the final semantic gate correctly rejected as mixed actor-role casing
+  in the validation strategy and project brief. Both failures are projection
+  ownership defects, not consumer-project defects.
+  A wider component-quality suite then caught a related noun-slot hygiene
+  regression: `contract_list_text` preserved `ranked status windows` where the
+  component contract field should render the artifact noun `status windows`.
+  Existing Casebook history already pinned plural folding for `status windows`,
+  so repeating the old mistake by patching a renderer or adding a fixture
+  exception is forbidden; the fix belongs in the shared contract field or
+  artifact-term owner.
+  Two more inherited-environment source-local simulations failed before
+  governed writes: one Registry component spec used a repeated keeping summary,
+  and one Radar workstream clipped a modifier phrase ending in `the safety`.
+  These are again projection-owner defects. The repair must preserve component
+  responsibility and workstream grammar at the semantic/projection source,
+  rather than masking the final quality gate or adding prompt-specific terms.
+  The subsequent ten-domain matrix passed nine domains but failed a quantum
+  chemistry runbook case before writes because Radar, Atlas, and the project
+  brief all missed semantic coverage for the first path. This is the same
+  architectural class as the earlier shelter-capacity failure: projection
+  coverage can detect the missing first-path contract, but recovery still needs
+  to repair semantic/projection facts rather than rerun deterministic rendering
+  with the same missing coverage.
+  A later fresh matrix exposed a source-custody failure before post-confirm:
+  if the no-host `greenfield propose` guidance envelope was saved as the
+  confirmed intent file, recovery could consume `Next step` and confirmed CLI
+  instructions as product facts. The failing orbital-debris case produced a
+  thin recovered intent with no valid internal product systems. This was not a
+  project-domain defect; the prompt-source owner failed to isolate the
+  `Original user intent` block before title and first-path recovery.
+  The affected confirmed-intent suite also exposed a proof-projection custody
+  miss: a proof boundary that said the release must not claim a deferred
+  outcome was present in the accepted intent, but post-confirm backlog
+  completion rewrote the proof workstream metrics from component contracts and
+  dropped that negative proof constraint. The fix belongs in backlog
+  proof-boundary projection and completion reconciliation so repair cannot erase
+  release limits.
 
 - Blast Radius: Any greenfield project domain or complexity where semantic ambiguity, repeated claims, domain-specific proof obligations, or artifact-specific wording requires repair before governed writes.
 
@@ -132,10 +176,49 @@
   surfaces, release/program/project brief records, 18 trace nodes, four trace
   workstreams, and four required domain-term hits. Every scenario repo and the
   matrix parent temp directory were deleted immediately after the run.
+  Latest source-local evidence after projection-owner and first-path semantic
+  fixes: a ten-domain matrix passed in the standard path without rescue:
+  gene therapy consent 15.011s, asylum case preparation 14.475s, autonomous
+  drone incident review 15.271s, municipal bond covenant monitoring 13.742s,
+  marine microplastic custody 13.764s, museum restitution provenance 14.068s,
+  wastewater signal triage 13.671s, quantum chemistry runbook 14.226s,
+  mutual-aid logistics 14.432s, and language archive consent 14.301s. Every
+  run reported zero post-confirm manifest issues, passed the product-manager,
+  architect, engineer, and domain-expert lenses, wrote governed records, and
+  deleted the temp repo before the next scenario. Regression proof also passed:
+  160 tests in 47.14s for confirmed text, component spec quality, post-confirm
+  quality repairs, and slop regressions; 93 tests in 273.24s for post-confirm
+  engine, semantic patch executor, package repetition, Radar projection, and
+  general artifact quality.
+  Latest recovery proof: the failed orbital-debris guidance-envelope replay now
+  writes governed records in 14.465 seconds wall time, with a passed standard
+  manifest, no rescue, zero issues, four Radar workstreams, three Registry
+  component specs, six Atlas diagrams, and temp cleanup after the replay.
+  `tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py` passed 20
+  tests in 29.75 seconds after adding envelope-isolation and sentence-style
+  title/path recovery regressions. The proof-boundary deferred-scope regression
+  in `tests/unit/runtime/test_greenfield_confirmed_intent.py::test_confirmed_greenfield_create_completes_thin_intent_before_governed_records`
+  now passes in 6.12 seconds.
+  Final proof after the prompt-source and proof-boundary fixes, including the
+  shared release-scope helper extraction: affected confirmed-intent and CLI
+  paths passed 69 tests in 161.14 seconds; the broader greenfield quality pack
+  passed 160 tests in 50.09 seconds; the heavy post-confirm engine/artifact
+  suite passed 93 tests in 283.07 seconds. A fresh
+  ten-domain matrix using source-local `greenfield propose` output as the
+  confirmed intent file passed every scenario in the standard path without
+  rescue: volcano school reunification 15.413s, orbital debris conjunction
+  14.826s, newborn screening exception 14.241s, water-rights hearing evidence
+  14.761s, key rotation incident readiness 15.258s, archaeological dig context
+  custody 14.577s, cold-chain spoilage triage 13.970s, hiring audit response
+  15.504s, soil carbon verification 13.996s, and courtroom translation access
+  15.105s. Every run reported zero manifest issues, all product-manager,
+  architect, engineer, and domain-expert lenses passed, four Radar workstreams,
+  three Registry component specs, six Atlas diagrams, and temp repo deletion
+  before the next scenario.
 
 - Prevention: Before adding more regex or template rules, check Casebook and repair semantic ownership, projection boundaries, or typed review contracts first.
 
-- Agent Guardrails: Do not claim premium real-world readiness from greenfield fixes while post-confirm rescue can still mutate rendered prose or lacks fresh high-variance simulation proof.
+- Agent Guardrails: Do not claim premium real-world readiness from greenfield fixes while post-confirm rescue can still mutate rendered prose or lacks fresh high-variance simulation proof. Do not repeat earlier failed mechanisms: rendered-string cleanup, issue-substring routing, domain-term exceptions, or broad template rewrites. Fix the semantic owner, projection owner, or typed repair boundary that produced the bad artifact.
 
 - Preflight Checks: Read CB-207 and this bug before changing post-confirm repair; verify whether the change patches SemanticModelIR or ArtifactPlanIR rather than rendered strings.
 
@@ -166,8 +249,21 @@
   words. `tests/unit/runtime/test_greenfield_general_artifact_quality.py`
   proves the artifact judgment lens reviews preview values rather than Python
   mapping syntax and no longer treats `name` as an abstract noun when it is the
-  verb in a normal question. Full host-authored semantic/plan patch application
-  proof remains open.
+  verb in a normal question. `tests/unit/runtime/test_greenfield_component_spec_narrative_quality.py`
+  proves evidence-role Registry openings stay component-local instead of
+  repeating a generic sentence. `tests/unit/runtime/test_greenfield_confirmed_text.py`
+  proves sentence-start visible results lower safely and terminal proof noun
+  phrases become visible outcomes. `tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py`
+  proves abstract boundary actors become review roles and workstream titles
+  compact `while keeping` clauses before they reach governed anchors.
+  `tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py` proves
+  full propose guidance envelopes are reduced to their `Original user intent`
+  block before recovery, sentence-style prompts split product title from first
+  release action, and operational instructions stay out of recovered project
+  records. `tests/unit/runtime/test_greenfield_confirmed_intent.py` proves
+  proof-boundary release limits such as `without claiming ...` remain visible
+  after post-confirm backlog completion rewrites proof workstream metrics. Full
+  host-authored semantic/plan patch application proof remains open.
 
 - Related Incidents/Bugs: CB-207
 
@@ -178,4 +274,9 @@
 - src/odylith/runtime/domain_intelligence/greenfield_workstream_risk_projection.py
 - src/odylith/runtime/domain_intelligence/greenfield_first_path_repair.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
+- src/odylith/runtime/domain_intelligence/greenfield_release_scope_limits.py
 - src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py

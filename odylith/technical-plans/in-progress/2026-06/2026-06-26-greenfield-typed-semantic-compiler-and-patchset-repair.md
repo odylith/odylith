@@ -114,6 +114,61 @@ vocabulary, or degraded packages.
   Radar workstreams, three Registry specs, six Atlas Mermaid sources, five
   rendered surfaces, release/program/project brief records, 18 trace nodes, and
   four trace workstreams.
+- 2026-06-26 harder source-local variance found two additional generic quality
+  failures before the next checkpoint. Evidence-oriented Registry specs could
+  repeat the same opening sentence across components because the component-spec
+  narrative owner used shared project evidence focus without component-local
+  differentiation. A separate first-path case preserved title-case role wording
+  after `see` and `reviewing`, causing final semantic gates to reject the
+  validation strategy and project brief for mixed actor-role casing. The repair
+  direction remains projection ownership and shared semantic casing, not
+  rendered-string cleanup or domain-term exceptions.
+- 2026-06-26 final ten-domain source-local matrix after the latest fixes:
+  gene therapy consent 15.011s, asylum case preparation 14.475s, autonomous
+  drone incident review 15.271s, municipal bond covenant monitoring 13.742s,
+  marine microplastic custody 13.764s, museum restitution provenance 14.068s,
+  wastewater signal triage 13.671s, quantum chemistry runbook 14.226s,
+  mutual-aid logistics 14.432s, and language archive consent 14.301s. Every
+  run completed the standard path without rescue, wrote governed records,
+  reported zero post-confirm manifest issues, passed product-manager,
+  architect, engineer, and domain-expert lenses, produced four workstreams,
+  three Registry component previews/specs, six Atlas source diagrams, project
+  brief, Compass memory preview, next steps, release assignment preview, and
+  deleted its temp repo before the next run.
+- 2026-06-26 fresh matrix replay found and fixed a prompt-source custody
+  failure before post-confirm. When a source-local no-host `greenfield propose`
+  guidance envelope was saved as the confirmed intent file, recovery could
+  consume `Next step` and confirmed CLI instructions as product facts, leaving
+  the recovered intent without valid internal product systems. The fix isolates
+  the `Original user intent` block before prompt recovery, splits sentence-style
+  prompts into product title and first-release action, and keeps broad
+  noun-only prompts on the semantic fallback first-path owner. The exact
+  orbital-debris replay now passes confirmed create in 14.465s wall time with a
+  standard passed manifest, zero issues, governed records written, and temp
+  cleanup.
+- 2026-06-26 affected confirmed-intent validation exposed a proof-boundary
+  projection custody miss. A release limit expressed in the accepted proof
+  boundary with `without claiming ...` was dropped when post-confirm completion
+  rewrote proof workstream metrics from component contracts. The fix preserves
+  proof-boundary limits in both initial backlog proof metrics and the
+  completion reconciler, and broadens release-proof row detection to trust plus
+  evidence/release/validation semantics.
+- 2026-06-26 final checkpoint proof after prompt-source, proof-boundary, and
+  shared release-scope helper fixes: affected confirmed-intent and CLI paths
+  passed 69 tests in 161.14s, the broader greenfield quality pack passed 160
+  tests in 50.09s, and the heavy post-confirm engine/artifact suite passed 93
+  tests in 283.07s. A fresh
+  ten-domain source-local matrix using `greenfield propose` output as the
+  confirmed intent file passed every scenario in the standard path without
+  rescue: volcano school reunification 15.413s, orbital debris conjunction
+  14.826s, newborn screening exception 14.241s, water-rights hearing evidence
+  14.761s, key rotation incident readiness 15.258s, archaeological dig context
+  custody 14.577s, cold-chain spoilage triage 13.970s, hiring audit response
+  15.504s, soil carbon verification 13.996s, and courtroom translation access
+  15.105s. Every run wrote governed records, reported zero manifest issues,
+  passed PM/architect/engineer/domain-expert lenses, produced four Radar
+  workstreams, three Registry specs, six Atlas diagrams, and deleted its temp
+  repo before the next scenario.
 
 ## Implementation Slices
 
@@ -160,6 +215,18 @@ vocabulary, or degraded packages.
       deterministic semantic first-path repair through the PatchSet seam. Full
       host-authored semantic patches and affected-projection-only rerender
       remain open.
+- [x] Isolate host-guidance envelopes before confirmed-intent recovery.
+      `greenfield_confirmed_prompt_source.py` now recovers title and first-path
+      sources from the `Original user intent` block rather than operational
+      proposal instructions, and sentence-style prompts such as `Build a
+      proposal for X. The first release should let Y...` split title from
+      action before validation.
+- [x] Preserve negative proof-boundary release limits through backlog
+      completion. `greenfield_release_scope_limits.py` owns generic
+      proof-boundary limit extraction, `greenfield_confirmed_backlog.py`
+      projects those limits into proof workstream deferred-scope metrics, and
+      `greenfield_confirmed_completion.py` preserves them when
+      component-contract reconciliation rewrites success metrics.
 - [x] Add a host-reasoned semantic patch executor with bounded schema:
       `operation_id`, `semantic_node_id`, `target_path`, `affected_projections`,
       `replacement_fact`, `decision_ledger_entry`, `proof_obligation_delta`,
@@ -176,8 +243,10 @@ vocabulary, or degraded packages.
       posture are resolved in shared projection owners before renderers compose
       surface copy. Public-copy package repair now treats structural path,
       identity, slug, schema, status, version, URL, and record-reference fields
-      as immutable custody metadata. A broader explicit `ProjectionLexicon`
-      remains open.
+      as immutable custody metadata. Evidence-role Registry openings now must
+      render from component-local label, focus, and output facts rather than a
+      repeated project-level evidence sentence. A broader explicit
+      `ProjectionLexicon` remains open.
 - [x] Add high-variance simulation fixtures and artifact-quality scoring across
       PM, architect, engineer, and domain-expert lenses.
 - [x] Add standard latency proof and temp-repo pruning proof for the
@@ -244,8 +313,29 @@ vocabulary, or degraded packages.
 - [x] Checkpoint simulation proof: five fresh unrelated domains passed under the
       standard path with zero matrix quality issues and temp cleanup after every
       scenario.
+- [x] Final checkpoint simulation proof: ten fresh high-variance domains passed
+      under the standard path in 13.671-15.271 seconds with zero post-confirm
+      manifest issues, all PM/architect/engineer/domain-expert quality lenses
+      passing, governed records written, and temp cleanup after every scenario.
 - [x] Widened regression proof after the latest fixes: post-confirm engine,
       semantic patch executor, and slop regressions passed 126 tests in
       72.62s; full greenfield artifact quality passed 49 tests in 268.59s;
       component/diagram/install-matrix unit proof passed 17 tests in 0.53s; and
       prewrite transaction proof passed 52 tests in 339.63s.
+- [x] Latest regression proof: confirmed text, component spec narrative,
+      component spec quality, post-confirm quality repairs, and slop
+      regressions passed 160 tests in 47.14s; post-confirm engine, semantic
+      patch executor, package repetition, Radar projection, and general
+      artifact quality passed 93 tests in 273.24s.
+- [x] Prompt-source recovery proof: confirmed-intent recovery passed 20 tests
+      in 29.75s, including full propose-envelope isolation, sentence-style
+      title/path recovery, and broad noun-only semantic fallback behavior.
+- [x] Proof-boundary preservation proof:
+      `test_confirmed_greenfield_create_completes_thin_intent_before_governed_records`
+      passed in 6.12s after the completion reconciler retained the accepted
+      release limit in proof workstream success metrics.
+- [x] Final checkpoint proof: affected confirmed-intent/CLI paths passed 69
+      tests in 161.14s; greenfield quality pack passed 160 tests in 50.09s;
+      heavy post-confirm engine/artifact suite passed 93 tests in 283.07s; ten
+      fresh high-variance source-local simulations passed in 13.970-15.504s
+      with zero issues and temp cleanup after every scenario.

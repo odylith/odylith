@@ -6,6 +6,7 @@ from odylith.runtime.artifact_quality.generated_copy_quality import generated_pu
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import contrastive_domain_drift_issues
@@ -297,6 +298,50 @@ def test_product_risks_describe_noun_focus_as_information_for_activity() -> None
     assert "provides information for lab session" in rendered
     assert "wrong person. the learner" not in raw_rendered
     assert generated_semantic_slop_issues({"risks": risks}) == []
+
+
+def test_product_risks_turn_abstract_boundary_actor_into_review_role() -> None:
+    risks = build_product_risks(
+        title="Autonomous Incident Review Workspace",
+        product_story="A review team needs one workspace to explain incident evidence and release readiness.",
+        first_path=(
+            "Operators capture mission logs, statements, sensor anomalies, safety hold decisions, "
+            "corrective actions, and release-readiness proof."
+        ),
+        state_object="An incident review record with mission logs, safety hold decisions, corrective actions, and proof status.",
+        proof_boundary="Release 0.0.1 succeeds when the review path explains evidence and readiness without controlling hardware.",
+        human_actors=["Safety: needs the product to hold decisions and keep the result visible and reviewable"],
+        release="0.0.1",
+    )
+    rendered = json.dumps(risks, sort_keys=True)
+
+    assert "the safety may" not in rendered
+    assert "for the safety." not in rendered
+    assert "for the safety reviewer" in rendered
+    assert generated_semantic_slop_issues({"risks": risks}) == []
+
+
+def test_workstream_titles_compact_while_keeping_clauses() -> None:
+    workflow_title, _boundary_title, _proof_title = confirmed_workstream_titles(
+        label="Case Preparation Workspace",
+        components=[
+            {"label": "Case Preparation Workspace Intake Register Service"},
+            {"label": "Case Preparation Workspace Review Workspace"},
+            {"label": "Case Preparation Workspace Proof Ledger"},
+        ],
+        internal_systems=[],
+        first_path=(
+            "Legal aid teams organize client statements, country-condition evidence, deadline risk, "
+            "interpreter needs, affidavit review, and filing readiness while keeping legal signoff "
+            "separate from evidence collection."
+        ),
+        state_object="A case preparation record with statements, evidence, deadline risk, review notes, and filing readiness.",
+        proof_boundary="Release 0.0.1 succeeds when the case preparation record is reviewable and legal signoff stays separate.",
+        human_actors=["Case Preparation Workspace User: needs the product to hold decisions and keep the result visible"],
+    )
+
+    assert "While Keeping" not in workflow_title
+    assert "with Legal Signoff Separate" in workflow_title
 
 
 def test_component_specs_strip_coordinated_actions_from_owned_artifact_slots() -> None:

@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values as _
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
+from odylith.runtime.domain_intelligence.greenfield_release_scope_limits import proof_boundary_limit_text
 
 
 def confirmed_workstream_titles(
@@ -88,10 +89,32 @@ def confirmed_workstream_titles(
     proof_subject = state_label or backlog_text.proof_title_object(proof_boundary) or proof_label
     proof = f"Show why {proof_subject} can be trusted"
     return (
-        _title_label(workflow) or workflow,
+        _workstream_title_label(workflow),
         _title_label(boundary) or boundary,
         _title_label(proof) or proof,
     )
+
+
+def _workstream_title_label(value: str) -> str:
+    text = _compact_workstream_title_connector(str(value or ""))
+    return _title_label(text) or text
+
+
+def _compact_workstream_title_connector(value: str) -> str:
+    text = value.strip()
+    marker = "while keeping "
+    search_from = 0
+    while True:
+        index = text.casefold().find(marker, search_from)
+        if index < 0:
+            return text
+        if index > 0 and text[index - 1].isalnum():
+            search_from = index + len(marker)
+            continue
+        before = text[:index].rstrip()
+        after = text[index + len(marker) :].lstrip()
+        text = f"{before} with {after}".strip() if before else f"with {after}".strip()
+        search_from = max(len(before), 0)
 
 
 def _malformed_workflow_title_action(value: str) -> bool:
@@ -273,6 +296,8 @@ def confirmed_backlog_rows(
     )
     actors = backlog_text.join_actor_labels(first_release_human_actors) or _short_summary(customer, limit=260) or f"{label} users and reviewers"
     non_goal_text = _join_items(non_goals) or "broader automation, live integrations, and production-scale decisions"
+    proof_limit = proof_boundary_limit_text(proof_boundary)
+    proof_non_goal_text = _join_items([*non_goals, proof_limit]) or non_goal_text
     primary_component = backlog_text.workstream_subject(backlog_text.component_label_at(components, 0, fallback=f"{label} first path"))
     second_component = backlog_text.workstream_subject(backlog_text.component_label_at(components, 1, fallback=primary_component))
     proof_component = backlog_text.workstream_subject(
@@ -604,7 +629,7 @@ def confirmed_backlog_rows(
             f"{proof_record_label} links accepted input, {state_label}, and validation output to the outcome.",
             "Missing evidence blocks proof review instead of producing a release-ready claim.",
             "The proof view checks the promised result without expanding deferred scope.",
-            f"Deferred scope remains visible: {non_goal_text}.",
+            f"Deferred scope remains visible: {proof_non_goal_text}.",
         ],
         component_focus=[component_ids[-1]] if component_ids else [],
         diagram_focus=[diagram_slugs["ownership"], diagram_slugs["proof_review"], diagram_slugs["sequence"]],

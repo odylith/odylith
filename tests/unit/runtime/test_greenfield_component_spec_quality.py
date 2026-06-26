@@ -132,6 +132,8 @@ def test_greenfield_platform_helpers_do_not_hardcode_fixture_domains() -> None:
         "fifa",
         "football",
         "scoreline",
+        "museum",
+        "restitution",
         "student",
         "sunburn",
         "sunledger",

@@ -321,7 +321,7 @@ def _preserved_contract_text_item(value: str) -> str:
     if re.fullmatch(r"candidate\s+ranked\s+(?:alternatives?|candidates?|options?)(?:\s+set)?", text):
         return text
     words = text.split()
-    if len(words) >= 2 and words[0] in {"active", "candidate", "current", "ranked", "selected"}:
+    if len(words) >= 2 and words[0] in {"active", "candidate", "current", "selected"}:
         return text
     plural_material = {
         "alternatives",

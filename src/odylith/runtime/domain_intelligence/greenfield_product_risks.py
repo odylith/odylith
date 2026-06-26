@@ -98,6 +98,7 @@ _INPUT_MATERIAL_TERMS = frozenset(
         "values",
     }
 )
+_ABSTRACT_REVIEW_ACTOR_LABELS = frozenset({"compliance", "legal", "policy", "privacy", "risk", "safety"})
 
 
 @dataclass(frozen=True)
@@ -505,6 +506,9 @@ def _actor_label(value: str) -> str:
     words = text.split()
     if len(words) > 6:
         text = " ".join(words[:6])
+        words = text.split()
+    if len(words) == 1 and words[0].casefold() in _ABSTRACT_REVIEW_ACTOR_LABELS:
+        text = f"{text} reviewer"
     return text[:1].upper() + text[1:] if text else ""
 
 

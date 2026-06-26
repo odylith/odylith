@@ -27,6 +27,71 @@ Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prom
 """
 
 
+def test_prompt_source_recovers_sentence_style_title_and_release_path() -> None:
+    prompt = (
+        "Build a greenfield proposal for an orbital debris conjunction review workspace. "
+        "The first release should let mission analysts capture predicted close approaches, "
+        "sensor confidence, maneuver constraints, communications approvals, rejected interpretations, "
+        "and review proof without commanding satellites or changing flight plans."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.title == "orbital debris conjunction review workspace"
+    assert source.first_path.startswith("mission analysts capture predicted close approaches")
+    assert "The first release should let" not in source.first_path
+    assert "greenfield proposal" not in source.first_path
+
+
+def test_host_guidance_recovery_isolates_original_intent_from_full_propose_envelope() -> None:
+    prompt = (
+        "Build a greenfield proposal for an orbital debris conjunction review workspace. "
+        "The first release should let mission analysts capture predicted close approaches, "
+        "sensor confidence, maneuver constraints, communications approvals, rejected interpretations, "
+        "and review proof without commanding satellites or changing flight plans."
+    )
+    envelope = f"""Product Intent Confirmation needed
+No files changed. Source posture: empty_or_no_app_source.
+
+Host reasoning task: Infer the product shape live from the operator prompt and any observed repo source.
+
+Visible format contract
+- Render the visible confirmation as sectioned Markdown in this order: Product story; State object; First complete path; Human actors; External systems; Internal product systems; Critical assumptions; Ambiguities; Proof boundary; Next step.
+
+Write in chat
+- product title, Product story, State object, and First complete path
+- Human actors, External systems, and Internal product systems
+
+Do not
+- dump a generic template or domain catalog
+
+Original user intent
+{prompt}
+Next step
+- Confirm: write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md.
+Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+"""
+
+    intent = parse_confirmed_intent_text(envelope, prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Orbital Debris Conjunction Review Workspace"
+    assert "mission analysts capture predicted close approaches" in intent["first_path"].casefold()
+    assert len(intent["internal_systems"]) == 3
+    assert "Next step" not in rendered
+    assert "Confirmed CLI" not in rendered
+    assert "visible format contract" not in rendered.casefold()
+    assert "complete when" not in intent["proof_boundary"].casefold()
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_prompt_title_source_recognizes_generic_product_containers() -> None:
     assert (
         prompt_project_title_source(
@@ -239,12 +304,11 @@ def test_host_guidance_recovery_handles_broad_product_prompt_without_parser_debr
 
     assert intent["title"] == "Cooking Robot Controller"
     assert intent["first_path"] == (
-        "A cooking robot controller user starts a cooking robot controller request, "
-        "the product records required information, the product shows a reviewable result, "
-        "and the product marks the request ready or blocked."
+        "A representative user reviews cooking robot controller details, records the current status, "
+        "and sees a cooking robot controller result with blockers and evidence for review."
     )
     assert intent["human_actors"] == [
-        "Cooking Robot Controller User: needs the product to start a cooking robot controller request and keep the result visible and reviewable"
+        "Representative User: needs the product to review cooking robot controller details and keep the result visible and reviewable"
     ]
     assert intent["state_object"].startswith("A cooking robot controller result record tracks")
     assert "the cooking robot controller result" in rendered
@@ -275,11 +339,11 @@ def test_host_guidance_recovery_rejects_long_title_noun_as_first_path() -> None:
 
     assert intent["title"] == "Solar Energy Installation Planning Hub"
     assert intent["first_path"].startswith(
-        "A solar energy installation planning hub user starts a solar energy installation planning hub request"
+        "A representative user reviews solar energy installation planning details"
     )
     assert "when a solar energy installation planning hub." not in intent["proof_boundary"]
     assert intent["human_actors"] == [
-        "Solar Energy Installation Planning Hub User: needs the product to start a solar energy installation planning hub request and keep the result visible and reviewable"
+        "Representative User: needs the product to review solar energy installation planning details and keep the result visible and reviewable"
     ]
     assert "sequence/parser debris" not in rendered
     assert "First Participant" not in rendered
@@ -359,7 +423,7 @@ def test_host_guidance_recovery_rejects_hyphenated_title_noun_as_first_path() ->
 
     assert intent["title"] == "Clinic Follow Up Coordination Desk"
     assert intent["first_path"].startswith(
-        "A clinic follow up coordination desk user starts a clinic follow up coordination desk request"
+        "A representative user reviews clinic follow-up coordination details"
     )
     assert "when a clinic follow-up coordination desk." not in intent["proof_boundary"]
     assert "sequence/parser debris" not in rendered
@@ -382,7 +446,7 @@ def test_host_guidance_recovery_handles_bare_short_product_noun_phrase() -> None
 
     assert intent["title"] == "Warehouse Slotting Planner"
     assert intent["first_path"].startswith(
-        "A warehouse slotting planner user starts a warehouse slotting planner request"
+        "A representative user reviews warehouse slotting details"
     )
     assert len(intent["internal_systems"]) == 3
     assert intent["internal_systems"][0].startswith("Warehouse Slotting Planner Intake Register ")

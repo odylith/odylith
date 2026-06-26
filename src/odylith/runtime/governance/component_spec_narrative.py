@@ -286,9 +286,8 @@ def _opening_narrative(
         lead = f"{label} is the component that makes accepted product state understandable to a person."
         body = f"It should present {focus} from trusted inputs rather than becoming the owner of the source records it displays."
     elif role == "evidence":
-        evidence_focus = focus or "the first release"
         lead = f"{label} preserves the proof that makes the first release reviewable."
-        body = f"Its job is to keep {evidence_focus} tied to the result a reviewer needs to understand, without turning the evidence record into the decision owner."
+        body = _evidence_opening_body(label=label, focus=focus, output_focus=output_focus)
     elif role == "integration":
         lead = f"{label} is the seam between the product and an outside source or protocol."
         body = f"It should translate {input_focus} into {output_focus} without letting provider-specific behavior leak across the rest of the first release."
@@ -300,6 +299,20 @@ def _opening_narrative(
         body = f"It works with {input_focus} and returns {output_focus} only when the local state is ready for the next step."
     intent = f" {accepted_intent}" if accepted_intent else ""
     return _opening_sentences(lead, body, intent.strip())
+
+
+def _evidence_opening_body(*, label: str, focus: str, output_focus: str) -> str:
+    evidence_focus = focus or "the first release"
+    result_focus = output_focus or "the result a reviewer needs"
+    if phrases_too_similar(evidence_focus, result_focus):
+        return (
+            f"{label} keeps {evidence_focus} reviewable so the proof can be inspected "
+            "without making this component own the decision."
+        )
+    return (
+        f"{label} ties {evidence_focus} to {result_focus} so reviewers can inspect the proof "
+        "without making this component own the decision."
+    )
 
 
 def _compact_opening_focus(value: str, *, fallback_noun: str) -> str:
