@@ -10,22 +10,6 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
 )
 
 
-def repair_context_target_layers(repair_context: GreenfieldPostConfirmRepairContext | None) -> set[str]:
-    return {
-        str(operation.get("target_layer", "")).strip()
-        for operation in repair_context_operations(repair_context)
-        if str(operation.get("target_layer", "")).strip()
-    }
-
-
-def repair_context_sources(repair_context: GreenfieldPostConfirmRepairContext | None) -> set[str]:
-    return {
-        str(operation.get("source_finding", "")).strip()
-        for operation in repair_context_operations(repair_context)
-        if str(operation.get("source_finding", "")).strip()
-    }
-
-
 def repair_context_operations(repair_context: GreenfieldPostConfirmRepairContext | None) -> list[Mapping[str, Any]]:
     if repair_context is None:
         return []
@@ -38,4 +22,4 @@ def repair_context_operations(repair_context: GreenfieldPostConfirmRepairContext
     return [operation for operation in operations if isinstance(operation, Mapping)]
 
 
-__all__ = ["repair_context_operations", "repair_context_sources", "repair_context_target_layers"]
+__all__ = ["repair_context_operations"]

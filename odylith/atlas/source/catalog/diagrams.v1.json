@@ -4143,7 +4143,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-25",
+      "last_reviewed_utc": "2026-06-26",
       "source_mmd": "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
       "source_svg": "odylith/atlas/source/domain-intelligence-greenfield-governance.svg",
       "source_png": "odylith/atlas/source/domain-intelligence-greenfield-governance.png",
@@ -4203,13 +4203,13 @@
         "src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence": "567d1b36227693dee6151c32544dcdbbe767132fcd95184958525d68542902a5",
+        "src/odylith/runtime/domain_intelligence": "3c6204c68fcf53a52c9ff509b035bcd8991f7f314dc16e221e8de6ba4169bb32",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "29da131e9fa29394d73f0e4d5c3d593a34aaf0439478c44bef2e55f3aaede57b",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "dd630c83c77f3bea964ede07a25849392e753456dc9167934da9c1629b9ce05b",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "e2655c402c4a5820b72059351757f76c5adcc254006d750b34750cc1277ec178"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "fd7aa4fc7a298e2d3674b52a315c1e06225eab964e58f6aaea095ef4e8dc703b"
       },
-      "render_source_fingerprint": "425219b439a3de4db730f9b627fe9c6fe8afd1ab9f1e3aee716b9d0a1f728d92"
+      "render_source_fingerprint": "b953d8a037383ae1f660111e2738c8cae2451c1b1ad0c7c4fae53a326c4a6abc"
     },
     {
       "diagram_id": "D-044",

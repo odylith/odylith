@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine as engine
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
@@ -20,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     GreenfieldCompletionReport,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_once
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import (
@@ -194,6 +196,68 @@ def test_completion_report_serializes_typed_review_report() -> None:
     assert payload["review_report"]["status"] == "failed"
     assert payload["review_report"]["findings"][0]["code"] == "artifact_shape_drift"
     assert payload["review_report"]["findings"][0]["repairability"] == "plan_patch"
+
+
+def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() -> None:
+    patchset = patchset_request_from_findings(
+        (
+            review_finding(
+                code="generated_copy_quality",
+                surface="Operator next steps",
+                target_path="next_steps",
+                severity="medium",
+                repairability="safe_package_repair",
+                owner="artifact_draft_cleaner",
+                source="generated_copy_quality",
+                message="Operator next steps has modal/base-form grammar drift near can submits.",
+            ),
+            review_finding(
+                code="generated_copy_quality",
+                surface="registry",
+                target_path="rendered_component_specs",
+                severity="medium",
+                repairability="safe_package_repair",
+                owner="artifact_draft_cleaner",
+                source="rendered_component_spec_quality",
+                message="Rendered component specs repeat adjacent words.",
+            ),
+        )
+    ).to_dict()
+
+    by_path = {operation["target_path"]: operation for operation in patchset["operations"]}
+
+    assert by_path["next_steps"]["target_layer"] == "artifact_draft_set"
+    assert by_path["next_steps"]["affected_projections"] == ("next_steps",)
+    assert by_path["rendered_component_specs"]["target_layer"] == "artifact_draft_set"
+    assert by_path["rendered_component_specs"]["affected_projections"] == ("registry",)
+
+
+def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() -> None:
+    patchset = patchset_request_from_findings(
+        (
+            review_finding(
+                code="quality_lens_gap",
+                surface="product_manager",
+                target_path="quality_lenses.product_manager.decision_boundary",
+                projection_id="review_report",
+                semantic_node_id="ReviewReport.quality_lenses",
+                severity="high",
+                repairability="semantic_patch",
+                owner="quality_lens_contract",
+                source="quality_lens",
+                lens="product_manager",
+                message="quality lens product_manager missing assumptions or ambiguity boundary",
+            ),
+        )
+    ).to_dict()
+
+    operation = patchset["operations"][0]
+
+    assert operation["target_layer"] == "semantic_model"
+    assert operation["target_path"] == "quality_lenses.product_manager.decision_boundary"
+    assert operation["semantic_node_id"] == "ReviewReport.quality_lenses"
+    assert operation["rejected_interpretation"] == "quality lens product_manager missing assumptions or ambiguity boundary"
+    assert operation["affected_projections"] == ("project_brief", "radar", "release")
 
 
 def test_package_report_emits_structured_quality_lens_findings() -> None:
@@ -573,25 +637,26 @@ def test_quality_lens_repair_rehydrates_decision_scope_and_validation() -> None:
 def test_repair_payload_consumes_patchset_request_targets(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
 
-    monkeypatch.setattr(greenfield_proposals, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
-    monkeypatch.setattr(greenfield_proposals, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
-        greenfield_proposals,
+        greenfield_post_confirm_patch_apply,
         "complete_confirmed_proposal",
         lambda proposal, *, release_selector: {**proposal, "completed_for": release_selector},
     )
     monkeypatch.setattr(
-        greenfield_proposals,
-        "_complete_semantic_apply_payload",
-        lambda proposal, *, release_selector: {**proposal, "semantic_target_seen": release_selector},
+        greenfield_post_confirm_patch_apply,
+        "ensure_apply_semantic_model",
+        lambda proposal, **_kwargs: {**proposal, "semantic_target_seen": True},
     )
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "repair_greenfield_semantic_projections", lambda _proposal: False)
 
     def fake_lens_repair(proposal: dict[str, Any], **_kwargs: Any) -> bool:
         calls.append("quality_lens")
         proposal["quality_lens_target_seen"] = True
         return True
 
-    monkeypatch.setattr(greenfield_proposals, "repair_proposal_for_quality_lens_gaps", fake_lens_repair)
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "repair_proposal_for_quality_lens_gaps", fake_lens_repair)
     context = engine.GreenfieldPostConfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
@@ -624,9 +689,64 @@ def test_repair_payload_consumes_patchset_request_targets(monkeypatch: pytest.Mo
         repair_context=context,
     )
 
-    assert repaired["semantic_target_seen"] == "0.0.1"
+    assert repaired["semantic_target_seen"] is True
     assert repaired["quality_lens_target_seen"] is True
     assert calls == ["quality_lens"]
+
+
+def test_repair_payload_does_not_mutate_proposal_for_artifact_draft_only_patchset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+
+    def unexpected_completion(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        calls.append("completion")
+        return {}
+
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "repair_greenfield_semantic_projections", lambda _proposal: False)
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("Rendered artifact copy issue",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "target_layer": "artifact_draft_set",
+                    "issue_code": "generated_copy_quality",
+                    "affected_projections": ["registry"],
+                },
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    repaired = greenfield_proposals._repair_confirmed_apply_payload(
+        {"intent": {"title": "Artifact Draft Only"}},
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert repaired == {"intent": {"title": "Artifact Draft Only"}}
+    assert calls == []
 
 
 def test_package_repair_collapses_adjacent_duplicate_words() -> None:

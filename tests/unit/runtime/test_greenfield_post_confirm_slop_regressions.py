@@ -73,6 +73,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import build_workstream_domain_intelligence
+from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
 from odylith.runtime.domain_intelligence.proposal_tribunal_substance import (
     _check_atlas_source_preserves_first_path_tail,
     _check_first_path_flowchart,
@@ -2238,6 +2239,27 @@ def test_workstream_risk_uses_compact_state_label_instead_of_field_list() -> Non
     assert "permit application record is incomplete" in risk
     assert "applicant identity, parcel address" not in risk
     assert risk.count(",") <= 2
+
+
+def test_workstream_risk_projects_semantic_result_instead_of_raw_first_path_chain() -> None:
+    proposal = {
+        "semantic_model": {"first_path_contract": {"visible_result": "a finished safe state"}},
+        "backlog": [],
+    }
+    row = {
+        "title": "Coordinate first path",
+        "domain_risk": (
+            "Operational risk needs review. First path: The operator selects an input, the controller validates "
+            "the setup, shows progress, and reaches a finished safe state. Safety posture stays bounded."
+        ),
+    }
+    proposal["backlog"] = [row]
+
+    risk = domain_risk_for_row(row, proposal)
+
+    assert "First path: a finished safe state." in risk
+    assert "shows progress, and reaches" not in risk
+    assert "Safety posture stays bounded." in risk
 
 
 def test_actor_verb_treats_singular_actor_with_modifier_nouns_as_singular() -> None:

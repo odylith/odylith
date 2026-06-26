@@ -77,19 +77,27 @@ vocabulary, or degraded packages.
       for proposal, semantic, component, package, and quality-lens gates.
 - [ ] Replace post-confirm issue-substring routing with typed finding routing.
       Internally generated reports now classify and build failure signatures
-      from typed findings first, and the repair callback consumes typed
-      `PatchSet` target layers and source findings for the current semantic and
-      quality-lens repair pass. The legacy English-message classifier remains
-      as a compatibility fallback for old report fixtures and external callers,
-      and full semantic/plan patch application remains open.
+      from typed findings first. `greenfield_post_confirm_patch_apply.py` now
+      consumes operation-level `PatchSet` entries instead of target-layer/source
+      sets, preserves target path plus semantic node context, and leaves
+      artifact-draft-only operations out of proposal mutation. The legacy
+      English-message classifier remains as a compatibility fallback for old
+      report fixtures and external callers, and full host-authored
+      semantic/plan patch application remains open.
 - [ ] Replace rendered-prose package repair with semantic or plan patch
       application and impacted-projection rerender. Current checkpoint emits a
-      formal `PatchSet` request into the manifest and repair context. The Radar
-      handoff regression has also been moved upstream into projection owners:
+      formal `PatchSet` request into the manifest and repair context, applies
+      current deterministic semantic/quality-lens proposal repairs through an
+      executable PatchSet seam, and maps affected artifact projections from
+      typed projection IDs or target paths. The Radar handoff regression and
+      raw first-path risk-copy regression have been moved upstream into
+      projection owners instead of rendered-package cleanup:
       `greenfield_traceability.py` normalizes validation sentence shape before
-      Radar render, and `artifact_enrichment.py` preserves complete validation
-      predicates instead of clipping them into noun fragments. Full semantic or
-      plan patch application and impacted-projection rerender remain open.
+      Radar render, `artifact_enrichment.py` preserves complete validation
+      predicates, and `greenfield_workstream_risk_projection.py` projects
+      semantic visible-result evidence instead of raw comma-heavy first-path
+      chains. Full host-authored semantic or plan patch application plus
+      impacted-projection rerender remain open.
 - [ ] Add context-starved renderer contracts so Radar, Registry, Atlas,
       Compass, release proof, and next steps cannot cross-contaminate.
 - [ ] Add high-variance simulation fixtures and artifact-quality scoring across
@@ -124,8 +132,10 @@ vocabulary, or degraded packages.
       context without validator-message substring matching.
 - [ ] Unit tests proving `PatchSet` repair applies to `SemanticModelIR` or
       `ArtifactPlanIR`, rerenders only impacted projections, and never edits
-      rendered artifacts directly. Current checkpoint tests `PatchSet` request
-      emission only; application proof remains open.
+      rendered artifacts directly. Current checkpoint proves the operation-level
+      PatchSet seam routes existing deterministic proposal repair and refuses
+      proposal mutation for artifact-draft-only operations; full host-authored
+      semantic/plan patch application and impacted rerender proof remain open.
 - [x] End-to-end confirmed-create tests proving governed records are written
       after final package quality passes for the current prewrite transaction
       slice. The ecommerce handoff regression now passes, the widened
@@ -133,6 +143,13 @@ vocabulary, or degraded packages.
       `test_greenfield_post_confirm_engine.py` plus
       `test_greenfield_prewrite_transaction.py` passed with 75 tests in
       315.34 seconds.
+- [x] Focused seam validation passed with
+      `test_greenfield_post_confirm_engine.py`,
+      `test_greenfield_post_confirm_quality_repairs.py`,
+      `test_greenfield_post_confirm_slop_regressions.py`,
+      `test_greenfield_package_repetition_quality.py`, and
+      `test_greenfield_radar_projection_quality.py`: 130 tests in 60.09
+      seconds.
 - [ ] Timing tests proving standard under 60 seconds and rescue under 90 seconds.
 - [ ] Recursive high-variance simulation runs across unrelated domains with
       temp repos deleted after each run.

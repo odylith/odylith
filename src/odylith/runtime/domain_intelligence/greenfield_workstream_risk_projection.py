@@ -18,12 +18,12 @@ def domain_risk_for_row(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> 
     if local:
         if not is_parent_backlog_row(row, proposal) and _all_claims_repeat_parent(local, proposal):
             return derived_child_workstream_risk(row=row, proposal=proposal)
-        return " ".join(local).strip()
+        return _compact_first_path_reference(" ".join(local).strip(), proposal)
     proposal_risk = proposal_posture_text(proposal, "risks", "security_compliance")
     if not proposal_risk:
         return ""
     if is_parent_backlog_row(row, proposal):
-        return proposal_risk
+        return _compact_first_path_reference(proposal_risk, proposal)
     return derived_child_workstream_risk(row=row, proposal=proposal)
 
 
@@ -39,14 +39,14 @@ def workstream_risk_lines(
     local = [str(item).strip() for item in (local_risks if local_risks is not None else text_values(row.get("risks"))) if str(item).strip()]
     if local:
         if is_parent_backlog_row(row, proposal):
-            return local
+            return _compact_risk_rows(local, proposal)
         derived = derived_child_workstream_risk(row=row, proposal=proposal)
         filtered = [item for item in local if not _claim_repeats_any_parent(item, proposal_risks)]
         if len(filtered) != len(local):
-            return dedupe_strings([derived, *filtered])
-        return local
+            return dedupe_strings([derived, *_compact_risk_rows(filtered, proposal)])
+        return _compact_risk_rows(local, proposal)
     if is_parent_backlog_row(row, proposal):
-        return list(proposal_risks[:3])
+        return _compact_risk_rows(proposal_risks[:3], proposal)
     if proposal_risks:
         return [derived_child_workstream_risk(row=row, proposal=proposal)]
     return []
@@ -57,6 +57,33 @@ def proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
     for key in keys:
         rows.extend(text_values(proposal.get(key)))
     return " ".join(dedupe_strings(rows)).strip()
+
+
+def _compact_risk_rows(values: Sequence[str], proposal: Mapping[str, Any]) -> list[str]:
+    return [_compact_first_path_reference(value, proposal) for value in values]
+
+
+def _compact_first_path_reference(value: str, proposal: Mapping[str, Any]) -> str:
+    visible_result = _semantic_visible_result(proposal)
+    if not visible_result:
+        return value
+    marker = "First path:"
+    head, separator, tail = str(value or "").partition(marker)
+    if not separator:
+        return value
+    first_sentence, sentence_separator, rest = tail.strip().partition(". ")
+    if not first_sentence:
+        return value
+    replacement = f"{marker} {visible_result}."
+    if sentence_separator and rest:
+        replacement = f"{replacement} {rest.strip()}"
+    return f"{head}{replacement}".strip()
+
+
+def _semantic_visible_result(proposal: Mapping[str, Any]) -> str:
+    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    return str(first_path.get("visible_result") or "").strip()
 
 
 def _row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:

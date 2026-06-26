@@ -33,7 +33,15 @@
   post-confirm package gate before any governed records were written. The fix
   moved those repairs upstream into Radar validation projection and
   artifact-enrichment sentence preservation instead of re-enabling rendered
-  Markdown cleanup.
+  Markdown cleanup. A later checkpoint extracted
+  `greenfield_post_confirm_patch_apply.py` so the proposal repair callback
+  consumes operation-level `PatchSet` entries, preserves field target plus
+  semantic-node context, carries rejected-interpretation text into semantic
+  operations, and refuses proposal mutation for artifact-draft-only operations.
+  The same pass moved raw first-path risk copy into
+  `greenfield_workstream_risk_projection.py`, where risk posture now projects
+  semantic visible-result evidence instead of repeating a comma-heavy first
+  path.
 
 - Blast Radius: Any greenfield project domain or complexity where semantic ambiguity, repeated claims, domain-specific proof obligations, or artifact-specific wording requires repair before governed writes.
 
@@ -51,14 +59,20 @@
 
 - Verification: Typed `ReviewReport` findings, typed repair-context payloads,
   stable typed failure signatures, structured quality-lens findings, `PatchSet`
-  request emission, and callback consumption of `PatchSet` target layers are
-  now covered by focused post-confirm engine tests. The Radar projection fix is
-  covered by `test_greenfield_radar_projection_quality.py`, the previously
-  failing ecommerce apply path now passes, the widened greenfield slice passed
-  with 231 tests in 137.78 seconds, and the post-confirm/prewrite transaction
-  suite passed with 75 tests in 315.34 seconds. The architecture defect remains
-  open until rendered-string package repair is replaced by semantic or
-  artifact-plan patch application plus impacted-projection rerender.
+  request emission, operation-level PatchSet application, affected-projection
+  mapping from target paths, rejected-interpretation preservation, and
+  artifact-draft-only non-mutation are now covered by focused post-confirm
+  engine tests. The Radar projection fix is covered by
+  `test_greenfield_radar_projection_quality.py`, raw first-path risk-copy
+  projection is covered by
+  `test_workstream_risk_projects_semantic_result_instead_of_raw_first_path_chain`,
+  the widened post-confirm slice passed with 130 tests in 60.09 seconds, the
+  previously failing ecommerce apply path passes, the earlier widened
+  greenfield slice passed with 231 tests in 137.78 seconds, and the
+  post-confirm/prewrite transaction suite passed with 75 tests in 315.34
+  seconds. The architecture defect remains open until rendered-string package
+  repair is replaced by host-authored semantic or artifact-plan patch
+  application plus impacted-projection rerender.
 
 - Prevention: Before adding more regex or template rules, check Casebook and repair semantic ownership, projection boundaries, or typed review contracts first.
 
@@ -69,14 +83,23 @@
 - Regression Tests Added: `tests/unit/runtime/test_greenfield_post_confirm_engine.py`
   now proves typed findings override unclassifiable message text, typed
   quality-lens checks do not become generic artifact drift, repair contexts
-  carry typed `ReviewReport` and `PatchSet` request payloads, and manifests
-  expose the patchset request. `tests/unit/runtime/test_greenfield_radar_projection_quality.py`
+  carry typed `ReviewReport` and `PatchSet` request payloads, manifests
+  expose the patchset request, PatchSet target paths map to affected artifact
+  projections, semantic operations preserve target path plus semantic node, and
+  artifact-draft-only operations do not mutate proposal state.
+  `tests/unit/runtime/test_greenfield_radar_projection_quality.py`
   proves Radar validation rows use the shared article normalizer and
-  artifact-enrichment preserves complete `validate that` predicates. Full patch
-  application proof remains open.
+  artifact-enrichment preserves complete `validate that` predicates.
+  `tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py` proves
+  risk projection uses semantic visible-result evidence instead of raw
+  first-path action chains. Full host-authored semantic/plan patch application
+  proof remains open.
 
 - Related Incidents/Bugs: CB-207
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py
+- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py
+- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
+- src/odylith/runtime/domain_intelligence/greenfield_workstream_risk_projection.py
 - src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py

@@ -40,7 +40,6 @@ from odylith.runtime.domain_intelligence.greenfield_experience import row_text_t
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_posture_text
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
-from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_rendering import format_proposal_text
 from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_failed_greenfield_tribunal
@@ -61,18 +60,14 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     run_greenfield_post_confirm_engine,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair_context import (
-    repair_context_sources,
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_patch_apply import (
+    apply_greenfield_patchset_repairs,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair_context import (
-    repair_context_target_layers,
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_patch_apply import (
+    complete_greenfield_semantic_apply_payload,
 )
-from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import repair_proposal_for_quality_lens_gaps
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
-from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
-    repair_greenfield_semantic_projections,
-)
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 from odylith.runtime.common import display_text
 from odylith.runtime.project_intelligence.intent_confirmation import build_product_intent_confirmation
@@ -273,7 +268,7 @@ def build_greenfield_proposal(
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
     proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
     proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-    proposal = _complete_semantic_apply_payload(proposal, release_selector=release_selector)
+    proposal = complete_greenfield_semantic_apply_payload(proposal, release_selector=release_selector)
     validate_host_reasoned_proposal(proposal)
     selector = greenfield_programs.proposal_release_selector(proposal, release_selector)
     raise_for_failed_greenfield_tribunal(run_greenfield_tribunal(proposal, release_selector=selector))
@@ -481,36 +476,11 @@ def _repair_confirmed_apply_payload(
     release_selector: str,
     repair_context: GreenfieldPostConfirmRepairContext | None = None,
 ) -> Mapping[str, Any]:
-    target_layers = repair_context_target_layers(repair_context)
-    sources = repair_context_sources(repair_context)
-    repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-    if repair_context is None or not target_layers or target_layers.intersection(
-        {"semantic_model", "artifact_plan", "artifact_draft_set"}
-    ):
-        repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
-        repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
-        repaired = _complete_semantic_apply_payload(repaired, release_selector=release_selector)
-    if repair_context is not None:
-        if "quality_lens" in sources and repair_proposal_for_quality_lens_gaps(
-            repaired,
-            quality_lenses=repair_context.quality_lenses,
-            release_selector=release_selector,
-        ):
-            repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
-            repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
-            repaired = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(repaired))
-            repaired = _complete_semantic_apply_payload(repaired, release_selector=release_selector)
-    validate_host_reasoned_proposal(repaired)
-    return repaired
-
-
-def _complete_semantic_apply_payload(proposal: dict[str, Any], *, release_selector: str) -> dict[str, Any]:
-    proposal = ensure_apply_semantic_model(proposal, refresh=True)
-    if repair_greenfield_semantic_projections(proposal):
-        proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
-        proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-        proposal = ensure_apply_semantic_model(proposal, refresh=True)
-    return proposal
+    return apply_greenfield_patchset_repairs(
+        proposal,
+        release_selector=release_selector,
+        repair_context=repair_context,
+    )
 
 
 def apply_greenfield_proposal(
@@ -531,7 +501,7 @@ def apply_greenfield_proposal(
         proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
         proposal = complete_confirmed_proposal(proposal, release_selector=release_selector)
         proposal = display_text.strip_inline_markdown_emphasis_tree(normalize_host_reasoned_proposal(proposal))
-        proposal = _complete_semantic_apply_payload(proposal, release_selector=release_selector)
+        proposal = complete_greenfield_semantic_apply_payload(proposal, release_selector=release_selector)
         validate_host_reasoned_proposal(proposal)
     root = Path(repo_root).expanduser().resolve()
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]

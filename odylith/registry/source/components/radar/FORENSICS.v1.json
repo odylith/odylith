@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 244,
-    "mapped_workstream_evidence_count": 199,
+    "explicit_event_count": 247,
+    "mapped_workstream_evidence_count": 202,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 244
+    "timeline_event_count": 247
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,96 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 612,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Atlas scoped D-043 freshness passed after the greenfield governance diagram update; full Atlas freshness still reports unrelated D-035 Claude Guidance Runtime Heuristic Integration as 22 days old against the 15-day review limit.",
+      "ts_iso": "2026-06-26T00:14:36-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 611,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm PatchSet repair now has an operation-level application owner for deterministic semantic/quality-lens proposal repair; artifact-draft-only operations no longer mutate proposals, PatchSet target paths map affected projections, and risk projection uses semantic visible-result evidence instead of raw first-path chains.",
+      "ts_iso": "2026-06-26T00:08:00-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 610,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm architecture decision: host reasoning must own semantic interpretation and typed semantic/plan PatchSet repair; deterministic Odylith custody owns schemas, projection isolation, validators, budgets, and fail-closed writes. Avoid regex/template towers and rendered-string repair as durable mechanisms.",
+      "ts_iso": "2026-06-25T23:51:35-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/artifact_enrichment.py",

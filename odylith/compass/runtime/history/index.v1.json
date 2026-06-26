@@ -1,8 +1,9 @@
 {
   "version": "v1",
-  "generated_utc": "2026-06-26T06:51:36Z",
+  "generated_utc": "2026-06-26T07:14:57Z",
   "retention_days": 15,
   "dates": [
+    "2026-06-26",
     "2026-06-25",
     "2026-06-11"
   ],

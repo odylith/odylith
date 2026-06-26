@@ -22,6 +22,7 @@ class GreenfieldPatchOperation:
     operation_id: str
     target_layer: str
     target_path: str
+    semantic_node_id: str
     issue_code: str
     source_finding: str
     affected_projections: tuple[str, ...]
@@ -64,6 +65,7 @@ def patchset_request_from_findings(findings: Sequence[GreenfieldReviewFinding]) 
             key=lambda operation: (
                 operation.target_layer,
                 operation.target_path,
+                operation.semantic_node_id,
                 operation.issue_code,
                 operation.source_finding,
                 operation.affected_projections,
@@ -90,12 +92,14 @@ def _operation_from_finding(
     return GreenfieldPatchOperation(
         operation_id=f"GF-PATCH-{index:03d}",
         target_layer=target_layer,
-        target_path=normalize_string(finding.semantic_node_id or finding.target_path) or target_layer,
+        target_path=normalize_string(finding.target_path or finding.semantic_node_id) or target_layer,
+        semantic_node_id=normalize_string(finding.semantic_node_id),
         issue_code=finding.code,
         source_finding=finding.source,
         affected_projections=_affected_projections(finding),
         requested_action=_requested_action(finding, target_layer=target_layer),
-        confidence=0.0,
+        rejected_interpretation=_rejected_interpretation(finding, target_layer=target_layer),
+        confidence=0.2 if target_layer in {"semantic_model", "artifact_plan"} else 0.0,
     )
 
 
@@ -114,18 +118,51 @@ def _affected_projections(finding: GreenfieldReviewFinding) -> tuple[str, ...]:
     projection = normalize_token(finding.projection_id)
     if projection and projection not in {"review_report", "artifact_draft_set"}:
         return (projection,)
+    path_projection = _projection_from_target_path(finding.target_path)
+    if path_projection:
+        return (path_projection,)
     surface = normalize_token(finding.surface)
     by_surface = {
         "architect": ("atlas", "registry"),
         "atlas": ("atlas",),
         "domain_expert": ("project_brief", "radar", "atlas"),
         "engineer": ("registry", "next_steps"),
+        "operator_next_steps": ("next_steps",),
         "post_confirm_package": ("radar", "registry", "atlas", "project_brief", "next_steps"),
         "product_manager": ("project_brief", "radar", "release"),
+        "project_brief": ("project_brief",),
         "radar": ("radar",),
         "registry": ("registry",),
+        "release": ("release",),
     }
     return by_surface.get(surface, ("project_brief",))
+
+
+def _projection_from_target_path(value: str) -> str:
+    token = normalize_token(value)
+    known = (
+        "accepted_project",
+        "atlas",
+        "backlog",
+        "compass",
+        "next_steps",
+        "project_brief",
+        "radar",
+        "registry",
+        "release",
+        "rendered_atlas_sources",
+        "rendered_component_specs",
+    )
+    for item in known:
+        if token == item or token.startswith(f"{item}_") or f"_{item}_" in token:
+            if item == "backlog":
+                return "radar"
+            if item == "rendered_atlas_sources":
+                return "atlas"
+            if item == "rendered_component_specs":
+                return "registry"
+            return item
+    return ""
 
 
 def _requested_action(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:
@@ -134,6 +171,12 @@ def _requested_action(finding: GreenfieldReviewFinding, *, target_layer: str) ->
     if target_layer == "artifact_plan":
         return "Return an artifact-plan patch that changes only sanctioned projection fields before rerender."
     return "Apply only explicitly safe mechanical cleanup, then rerun the same typed review gates."
+
+
+def _rejected_interpretation(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:
+    if target_layer not in {"semantic_model", "artifact_plan"}:
+        return ""
+    return normalize_string(finding.message)
 
 
 __all__ = [
