@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-06-26
+Last updated: 2026-06-25
 
 
 ## Overview
@@ -24,24 +24,22 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-25 · Implementation:** Greenfield post-confirm Radar projection fix moved validation article repair and validate-that predicate preservation upstream; ecommerce apply, widened greenfield slice, and prewrite transaction suites passed.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/artifact_enrichment.py, src/odylith/runtime/domain_intelligence/greenfield_traceability.py +1 more
+- **2026-06-25 · Implementation:** Implemented typed greenfield post-confirm ReviewReport findings and PatchSet request emission for CB-208; rendered-prose patch application remains open.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py +3 more
+- **2026-06-25 · Decision:** Greenfield architecture direction updated: post-confirm rescue must use typed ConfirmedIntentIR, SemanticModelIR, ArtifactPlanIR, ReviewReport findings, and PatchSet repair; rendered-string and issue-substring repair are recorded failed mechanisms under CB-208.
+  - Evidence: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md
+- **2026-06-09 · Implementation:** Fixed generic greenfield post-confirm blockers for reported saved terminal results, Atlas tail preservation, and deferred Registry scope alignment.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-09-greenfield-post-confirm-create-blocked-terminal-reported-results-and-deferred-co.md, src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py +4 more
+- **2026-06-09 · Implementation:** Hardened confirmed greenfield artifact quality generically: deferred actors stay out of first-release scope, explanatory system clauses no longer become component identity, Radar enrichment avoids full-title repetition, and GLP-1 rich-intent create passes under 30s.
+  - Evidence: odylith/casebook/bugs/2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md, src/odylith/runtime/artifact_quality/greenfield_package_quality.py +2 more
 - **2026-06-04 · Implementation:** Removed unused semantic-model actor-term extraction and its local seen-loop dedupe from confirmed-create proof checkpoint construction, with focused, wide, and performance proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md +3 more
-- **2026-06-04 · Implementation:** Routed sequence-step, artifact-enrichment, and component repair-target keyed dedupe through common value coercion while preserving caller-owned equivalence keys, with focused, wide, and performance proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/common/value_coercion.py +7 more
-- **2026-06-04 · Implementation:** Routed proposal validation, quality-gate, traceability, and accepted-project memory exact issue/string dedupe through common value coercion while preserving caller-owned cleanup, ID, and limit policy, with focused, wide, and performance proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/common/value_coercion.py +5 more
-- **2026-06-04 · Implementation:** Routed component-axis, contract-quality, contract-differentiation, and apply-write exact string dedupe through common value coercion while preserving caller-owned cleanup and case policy, with focused, wide, and performance proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/common/value_coercion.py +5 more
-- **2026-06-04 · Implementation:** Routed first-path and semantic-quality cleaned-text dedupe through shared greenfield text while preserving caller-owned cleanup policy, with focused, wide, and performance proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py +4 more
-- **2026-06-04 · Implementation:** Routed component contract artifact sentence casing through shared greenfield text while preserving contract assembly and quality policy, with focused, wide, and performance proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -171,6 +169,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-04: Removed unused actor-term extraction from the confirmed semantic model. `greenfield_semantic_model.py` no longer computes `_actor_terms(human_actors)` or passes an unread `actor_terms` parameter into proof-checkpoint rendering; domain terms stay in the shared term index, and proof checkpoints continue to render from accepted visible-result or proof-boundary text. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`)
 - 2026-06-26: Captured the typed greenfield repair architecture boundary. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-207`, `CB-208`) Domain Intelligence must move rescue from English issue-string routing and rendered-prose mutation to typed `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`, typed `ReviewReport` findings, and semantic or plan `PatchSet` repair. Host reasoning owns ambiguity interpretation and minimal semantic patches; Odylith owns schema custody, projection isolation, validation, latency budgets, and fail-closed governed writes.
 - 2026-06-26: Implemented the first typed post-confirm repair seam. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_post_confirm_review.py` now owns typed `ReviewReport` findings, `greenfield_post_confirm_findings.py` maps deterministic validators and reviewer lenses into stable finding codes and targets, `greenfield_post_confirm_patchset.py` emits formal semantic or artifact-plan `PatchSet` requests into the post-confirm manifest and repair context, and `greenfield_post_confirm_repair_context.py` gives the repair callback typed target-layer/source accessors. Full semantic or artifact-plan patch application remains open.
+- 2026-06-26: Moved a failed Radar handoff quality regression upstream into projection owners instead of rendered-package cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_traceability.py` now normalizes validation copy before Radar sections are assembled, `artifact_enrichment.py` preserves complete validation predicates, and `test_greenfield_radar_projection_quality.py` pins both contracts. The ecommerce post-confirm apply path, the widened greenfield slice, and the post-confirm/prewrite transaction suite all pass after the change.
 
 ## Contract
 
@@ -810,6 +809,12 @@ This section captures synchronized requirement and contract signals derived from
 - Radar workstream authoring must preserve the `Domain Intelligence` section in
   source workstream files, and traceability repair must reapply that section if
   later greenfield topology patching rewrites the same file.
+- Radar validation and proof-gate projection must repair sentence shape before
+  render, not after Markdown exists. `greenfield_traceability.py` may normalize
+  validation rows with shared greenfield text helpers, and
+  `artifact_enrichment.py` may preserve complete validation predicates during
+  compaction. Neither owner may rely on post-render package cleanup to make
+  Radar workstreams grammatical.
 - `greenfield apply --json` and `greenfield create --json` must keep stdout
   machine-clean. Internal progress from refresh, scaffold, or renderer helpers
   may be captured into the JSON payload, but it must not precede or follow the

@@ -84,8 +84,12 @@ vocabulary, or degraded packages.
       and full semantic/plan patch application remains open.
 - [ ] Replace rendered-prose package repair with semantic or plan patch
       application and impacted-projection rerender. Current checkpoint emits a
-      formal `PatchSet` request into the manifest and repair context, but patch
-      application and impacted-projection rerender are still open.
+      formal `PatchSet` request into the manifest and repair context. The Radar
+      handoff regression has also been moved upstream into projection owners:
+      `greenfield_traceability.py` normalizes validation sentence shape before
+      Radar render, and `artifact_enrichment.py` preserves complete validation
+      predicates instead of clipping them into noun fragments. Full semantic or
+      plan patch application and impacted-projection rerender remain open.
 - [ ] Add context-starved renderer contracts so Radar, Registry, Atlas,
       Compass, release proof, and next steps cannot cross-contaminate.
 - [ ] Add high-variance simulation fixtures and artifact-quality scoring across
@@ -122,8 +126,13 @@ vocabulary, or degraded packages.
       `ArtifactPlanIR`, rerenders only impacted projections, and never edits
       rendered artifacts directly. Current checkpoint tests `PatchSet` request
       emission only; application proof remains open.
-- [ ] End-to-end confirmed-create tests proving governed records are written
-      after final package quality passes.
+- [x] End-to-end confirmed-create tests proving governed records are written
+      after final package quality passes for the current prewrite transaction
+      slice. The ecommerce handoff regression now passes, the widened
+      greenfield slice passed with 231 tests in 137.78 seconds, and
+      `test_greenfield_post_confirm_engine.py` plus
+      `test_greenfield_prewrite_transaction.py` passed with 75 tests in
+      315.34 seconds.
 - [ ] Timing tests proving standard under 60 seconds and rescue under 90 seconds.
 - [ ] Recursive high-variance simulation runs across unrelated domains with
       temp repos deleted after each run.

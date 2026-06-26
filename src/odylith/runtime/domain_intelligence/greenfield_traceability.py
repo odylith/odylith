@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_text import collect_delimited_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_values
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import workstream_risk_lines
@@ -354,9 +355,9 @@ def _patch_sections(
         or _topology_dependency_lines(metadata)
     )
     validation_items = (
-        _section_items(row.get("validation", []))
-        or _section_items(row.get("validation_gate", []))
-        or _section_items(row.get("success_metrics", []))
+        _validation_section_items(row.get("validation", []))
+        or _validation_section_items(row.get("validation_gate", []))
+        or _validation_section_items(row.get("success_metrics", []))
         or validation_strategy[:3]
     )
     sections["Validation"] = _bullets(validation_items)
@@ -487,6 +488,14 @@ def _section_items(value: Any) -> list[str]:
                 rows.extend(text_values(item, split_scalar=True, split_commas=False, strip_bullets=True))
         return _unique(rows)
     return list(text_values(value, split_scalar=True, split_commas=False, strip_bullets=True))
+
+
+def _validation_section_items(value: Any) -> list[str]:
+    return [
+        normalized
+        for item in _section_items(value)
+        if (normalized := normalize_cover_article_language(item))
+    ]
 
 
 def _scoped_trace_rows(focus: str, values: Sequence[str]) -> list[str]:

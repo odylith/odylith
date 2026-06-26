@@ -5,6 +5,9 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.artifact_quality.generated_copy_quality import (
+    generated_public_copy_findings,
+)
 from odylith.runtime.artifact_quality.greenfield_quality_lenses import build_greenfield_quality_lens_report
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     component_contract_issues,
@@ -102,9 +105,27 @@ def completion_review_findings(
     )
     if rendered_specs:
         spec_issues = rendered_component_spec_quality_issues(rendered_specs, project_title=_project_title(proposal))
+        operator_spec_issues = operator_component_spec_issues(spec_issues)
+        safe_spec_issues = [
+            issue for issue in operator_spec_issues if _safe_mechanical_copy_issue(clean_text(issue).casefold())
+        ]
+        contract_spec_issues = [issue for issue in operator_spec_issues if issue not in safe_spec_issues]
         _extend_review_findings(
             findings,
-            operator_component_spec_issues(spec_issues),
+            safe_spec_issues,
+            code="generated_copy_quality",
+            surface="registry",
+            target_path="rendered_component_specs",
+            projection_id="registry",
+            semantic_node_id="ArtifactDraftSet.registry",
+            severity="medium",
+            repairability="safe_package_repair",
+            owner="artifact_draft_cleaner",
+            source="rendered_component_spec_quality",
+        )
+        _extend_review_findings(
+            findings,
+            contract_spec_issues,
             code="component_contract_quality",
             surface="registry",
             target_path="rendered_component_specs",
@@ -135,9 +156,16 @@ def package_review_findings(
 ) -> tuple[GreenfieldReviewFinding, ...]:
     """Collect typed findings from the prewrite artifact package."""
 
+    copy_findings = _generated_copy_quality_findings(package)
+    copy_messages = {finding.message for finding in copy_findings}
     return dedupe_review_findings(
         [
-            *(_package_issue_finding(issue) for issue in package_issues if clean_text(issue)),
+            *(
+                _package_issue_finding(issue)
+                for issue in package_issues
+                if clean_text(issue) and clean_text(issue) not in copy_messages
+            ),
+            *copy_findings,
             *_quality_lens_findings(package),
         ]
     )
@@ -156,6 +184,16 @@ def _package_issue_finding(message: str) -> GreenfieldReviewFinding:
 def _package_issue_route(message: str) -> dict[str, str]:
     text = clean_text(message)
     lowered = text.casefold()
+    if _safe_mechanical_copy_issue(lowered):
+        route = _surface_route_for_message(lowered)
+        return _route(
+            "generated_copy_quality",
+            route["surface"],
+            route["target_path"],
+            route["projection_id"],
+            "artifact_draft_cleaner",
+            repairability="safe_package_repair",
+        )
     if lowered.startswith("prewrite radar"):
         return _route("artifact_shape_drift", "radar", "prewrite_package.radar", "radar", "radar_renderer")
     if "atlas" in lowered or "mermaid" in lowered or "diagram" in lowered:
@@ -247,6 +285,183 @@ def _route(
         "repairability": repairability,
         "owner": owner,
     }
+
+
+def _surface_route_for_message(lowered: str) -> dict[str, str]:
+    if "radar" in lowered:
+        return {"surface": "radar", "target_path": "prewrite_package.radar", "projection_id": "radar"}
+    if "registry" in lowered or "component spec" in lowered:
+        return {"surface": "registry", "target_path": "prewrite_package.registry", "projection_id": "registry"}
+    if "atlas" in lowered or "mermaid" in lowered:
+        return {"surface": "atlas", "target_path": "prewrite_package.atlas", "projection_id": "atlas"}
+    if "project brief" in lowered:
+        return {
+            "surface": "project_brief",
+            "target_path": "prewrite_package.project_brief",
+            "projection_id": "project_brief",
+        }
+    if "accepted-project" in lowered:
+        return {
+            "surface": "accepted_project",
+            "target_path": "prewrite_package.accepted_project",
+            "projection_id": "accepted_project",
+        }
+    if "compass" in lowered:
+        return {"surface": "compass", "target_path": "prewrite_package.compass", "projection_id": "compass"}
+    if "next step" in lowered:
+        return {"surface": "next_steps", "target_path": "prewrite_package.next_steps", "projection_id": "next_steps"}
+    return {
+        "surface": "post_confirm_package",
+        "target_path": "prewrite_package",
+        "projection_id": "artifact_draft_set",
+    }
+
+
+def _safe_mechanical_copy_issue(lowered: str) -> bool:
+    """Return true only for local draft-copy defects that do not change semantics."""
+
+    return any(
+        token in lowered
+        for token in (
+            "repeats adjacent word",
+            "modal/base-form grammar drift",
+            "mixed finite/base action prose",
+            "clipped or dangling phrase ending",
+            "clipped article phrase ending",
+            "malformed ownership verb pair",
+            "malformed component responsibility",
+        )
+    )
+
+
+def _generated_copy_quality_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
+    findings: list[GreenfieldReviewFinding] = []
+    for route in _generated_copy_routes(package):
+        for copy_finding in generated_public_copy_findings(route["scope"], route["value"]):
+            findings.append(
+                review_finding(
+                    code="generated_copy_quality",
+                    surface=route["surface"],
+                    target_path=f"{route['target_path']}.{copy_finding.category}",
+                    projection_id=route["projection_id"],
+                    semantic_node_id=route["semantic_node_id"],
+                    severity="medium",
+                    repairability=_generated_copy_repairability(copy_finding.category),
+                    owner=route["owner"],
+                    source="generated_copy_quality",
+                    message=copy_finding.message,
+                )
+            )
+    return dedupe_review_findings(findings)
+
+
+def _generated_copy_routes(package: Any) -> tuple[dict[str, Any], ...]:
+    backlog_result = package.backlog_result if isinstance(getattr(package, "backlog_result", None), Mapping) else {}
+    return (
+        _copy_route(
+            scope="prewrite Radar package",
+            value=backlog_result.get("idea_files") if isinstance(backlog_result.get("idea_files"), Mapping) else {},
+            surface="radar",
+            target_path="prewrite_package.radar.idea_files",
+            projection_id="radar",
+            owner="radar_renderer",
+        ),
+        _copy_route(
+            scope="Radar index `INDEX.md`",
+            value=backlog_result.get("backlog_index_text") if isinstance(backlog_result, Mapping) else "",
+            surface="radar",
+            target_path="prewrite_package.radar.index",
+            projection_id="radar",
+            owner="radar_renderer",
+        ),
+        _copy_route(
+            scope="prewrite Registry preview",
+            value=tuple(
+                row for row in getattr(package, "component_registry_preview", ()) if isinstance(row, Mapping)
+            ),
+            surface="registry",
+            target_path="prewrite_package.registry.preview",
+            projection_id="registry",
+            owner="registry_renderer",
+        ),
+        _copy_route(
+            scope="rendered Registry component specs",
+            value=getattr(package, "rendered_component_specs", None) or {},
+            surface="registry",
+            target_path="prewrite_package.registry.specs",
+            projection_id="registry",
+            owner="registry_renderer",
+        ),
+        _copy_route(
+            scope="rendered Atlas Mermaid sources",
+            value=getattr(package, "rendered_atlas_sources", None) or {},
+            surface="atlas",
+            target_path="prewrite_package.atlas.sources",
+            projection_id="atlas",
+            owner="atlas_renderer",
+        ),
+        _copy_route(
+            scope="project brief preview",
+            value=getattr(package, "project_brief_preview", None) or {},
+            surface="project_brief",
+            target_path="prewrite_package.project_brief",
+            projection_id="project_brief",
+            owner="project_brief_renderer",
+        ),
+        _copy_route(
+            scope="accepted-project memory preview",
+            value=getattr(package, "accepted_project_preview", None) or {},
+            surface="accepted_project",
+            target_path="prewrite_package.accepted_project",
+            projection_id="accepted_project",
+            owner="accepted_project_memory",
+        ),
+        _copy_route(
+            scope="Compass memory preview",
+            value=getattr(package, "compass_memory_preview", None) or {},
+            surface="compass",
+            target_path="prewrite_package.compass",
+            projection_id="compass",
+            owner="compass_memory",
+        ),
+        _copy_route(
+            scope="operator next-steps preview",
+            value=getattr(package, "next_steps_preview", None) or {},
+            surface="next_steps",
+            target_path="prewrite_package.next_steps",
+            projection_id="next_steps",
+            owner="operator_experience_renderer",
+        ),
+    )
+
+
+def _copy_route(
+    *,
+    scope: str,
+    value: Any,
+    surface: str,
+    target_path: str,
+    projection_id: str,
+    owner: str,
+) -> dict[str, Any]:
+    return {
+        "scope": scope,
+        "value": value,
+        "surface": surface,
+        "target_path": target_path,
+        "projection_id": projection_id,
+        "semantic_node_id": f"ArtifactDraftSet.{projection_id}",
+        "owner": owner,
+    }
+
+
+def _generated_copy_repairability(category: str) -> str:
+    safe_categories = {
+        "compact_action_inflection",
+        "malformed_component_responsibility",
+        "mixed_action_inflection",
+    }
+    return "safe_package_repair" if clean_text(category) in safe_categories else "plan_patch"
 
 
 def _extend_review_findings(

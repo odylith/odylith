@@ -8,7 +8,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-26",
+      "last_reviewed_utc": "2026-06-25",
       "source_mmd": "odylith/atlas/source/odylith-product-governance-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-governance-loop.svg",
       "source_png": "odylith/atlas/source/odylith-product-governance-loop.png",
@@ -90,8 +90,8 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "6e0a1422978fdef63436e0036da27adcdb80aba6bb7546142e805d9ce0548dc2",
-        "odylith/radar/source/INDEX.md": "6a8666ca4e9c704282813553bf089ed1fece6c96b38266d63216a7bd8457d43c",
-        "odylith/technical-plans/INDEX.md": "ebcdbe1e0bf3069a12aa20af5b1c91b72b6941325bfedb12f5b608d2d1139d25"
+        "odylith/radar/source/INDEX.md": "4f2a3de19690194eabdab1137ea4b57af12900b4a271e842b518e221e9d23ab0",
+        "odylith/technical-plans/INDEX.md": "6a7a4d6de0e4efad4bea49962ca4873b45a836c87eba1072d701cf44bd5a327d"
       }
     },
     {
@@ -1698,7 +1698,7 @@
         "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md": "c7af6e5fb7e985eba2f9701fb5eabb53acf008fc79f955c046c838227a24fa41",
         "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md": "f9af462ee0d3fc53eebf92252268f86c81add72def7135cbbd1d4cac0d526810",
         "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md": "17338502f6823edeb2c2107ca9200b4f5f20da054bbf5d2bbadeae237fa83b27",
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "1110b8c97cb51322f25b69266b4b11d9cf3d772390bd67a25a6c088b61336b6d",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "111d0e6ea1369a5a09ad11e22d9a9fdc57b705984766b9a8c821bf5c18b785b3",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md": "606decad2694952260a72b8e592d572a86df2485d2656b1d7e08dae5cf7b5ab5",
         "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md": "beaa67fbe39d4053131d24207de24bdd146a606d064b6f06801b665c83fd8e84",
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
@@ -2019,7 +2019,7 @@
         "odylith/registry/source/components/odylith-memory-backend/CURRENT_SPEC.md": "c7af6e5fb7e985eba2f9701fb5eabb53acf008fc79f955c046c838227a24fa41",
         "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md": "f9af462ee0d3fc53eebf92252268f86c81add72def7135cbbd1d4cac0d526810",
         "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md": "17338502f6823edeb2c2107ca9200b4f5f20da054bbf5d2bbadeae237fa83b27",
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "1110b8c97cb51322f25b69266b4b11d9cf3d772390bd67a25a6c088b61336b6d",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "111d0e6ea1369a5a09ad11e22d9a9fdc57b705984766b9a8c821bf5c18b785b3",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "bd55d9f8f61ca074997968d6f7665282158e0225cb4389cdf1a603e405a9f8fc",
         "odylith/registry/source/components/remediator/CURRENT_SPEC.md": "95265d419be6d405766999b0084f11dc53cdc8178369768042af4d79c2a1dcdb",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md": "606decad2694952260a72b8e592d572a86df2485d2656b1d7e08dae5cf7b5ab5",
@@ -2452,7 +2452,7 @@
         "docs/benchmarks/FAMILIES_AND_EVALS.md": "4c6a3993ac2a26e176974ed735f76bb4b92beb0e195de0c1e9b9e3eb7c19ffc5",
         "docs/benchmarks/METRICS_AND_PRIORITIES.md": "27064362a83ee4008bd3515b207c89f006e8c3280c0b6b41149c13629dd4a2ec",
         "odylith/maintainer/agents-guidelines/RELEASE_BENCHMARKS.md": "3b4e87506f8ad86ea3edef2d07afac02d85c38b6e9ae5460aee6890f0924b8d7",
-        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md": "f93a0135c8df0fbf71da7d3af9b9b15de5d176c7bf27ff7bd1a5af214b1f85b7",
+        "odylith/maintainer/skills/release-benchmark-publishing/SKILL.md": "83e4bd47baea2e2b32b52111bf8b17a39d900666fc811e9d50b5d1d8db521855",
         "docs/benchmarks/proof/odylith-benchmark-family-heatmap.svg": "e308a3a2a6b688c3cf4ebac6e6980924c1ee2f54b050f1d9861051fc46eca816",
         "docs/benchmarks/proof/odylith-benchmark-operating-posture.svg": "62adb8ad6dcf7d97e5cf30367a404dc5deb5ee4df77ebc8bcf388a89f6ca8ee1",
         "docs/benchmarks/proof/odylith-benchmark-frontier.svg": "512df975582e5da352be3c28e1546d5d47853eecaa2ab94b0a2b4bb32f1958da",
@@ -3669,7 +3669,7 @@
       ],
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md": "205eeb901c75fe765336e34487cdc6bcd1a8b56c0497f2526257fa6f36552476",
-        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "1110b8c97cb51322f25b69266b4b11d9cf3d772390bd67a25a6c088b61336b6d",
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "111d0e6ea1369a5a09ad11e22d9a9fdc57b705984766b9a8c821bf5c18b785b3",
         "odylith/registry/source/components/compass/CURRENT_SPEC.md": "431f54bc89151a8b6cb652d442e74199b80d3eeba08e918ffa1f721203e476a8",
         "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md": "668208763751ee13271549baa9c18d517074a2f2c59e72790b29d1b456e7e9b9",
         "odylith/technical-plans/done/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md": "f57500cf0b063ff9c8fbe61b8dae9c5d53dd2784f8c3f5bf42fa8d50d2779a50",
@@ -4203,13 +4203,13 @@
         "src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence": "4d7ca4f909f549c717605bd6f48d4b0775e0cb5f9916559885da7c673411fb90",
+        "src/odylith/runtime/domain_intelligence": "567d1b36227693dee6151c32544dcdbbe767132fcd95184958525d68542902a5",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "a534ad569c3b16c69c0ddad83877c55472c726837403a5df0a16f51454d7777e",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "29da131e9fa29394d73f0e4d5c3d593a34aaf0439478c44bef2e55f3aaede57b",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "f2ffce8b03db82648d3977c2a2da975cbf95b879c195b4e2ef246417e16ee3d0"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "e2655c402c4a5820b72059351757f76c5adcc254006d750b34750cc1277ec178"
       },
-      "render_source_fingerprint": "c244dd2ba483cf296d243127f8641ef259863b7c51bba770d27a2e7c7dc22144"
+      "render_source_fingerprint": "425219b439a3de4db730f9b627fe9c6fe8afd1ab9f1e3aee716b9d0a1f728d92"
     },
     {
       "diagram_id": "D-044",

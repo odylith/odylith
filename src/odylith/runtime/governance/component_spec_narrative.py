@@ -106,6 +106,7 @@ def build_narrative_component_spec(
         proofs=proofs,
     )
     role = view.role
+    transition_focus = _calculation_transition_focus(view.concrete_transition_items or view.transition_items)
 
     lines = [
         f"# {label}",
@@ -119,6 +120,7 @@ def build_narrative_component_spec(
             focus=focus,
             input_focus=input_focus,
             output_focus=output_focus,
+            transition_focus=transition_focus,
             accepted_intent=accepted_intent,
         ),
         "",
@@ -218,6 +220,7 @@ def _opening_narrative(
     focus: str,
     input_focus: str,
     output_focus: str,
+    transition_focus: str,
     accepted_intent: str,
 ) -> str:
     noun = _kind_noun(kind)
@@ -238,9 +241,15 @@ def _opening_narrative(
         )
     elif role == "calculation":
         lead = f"{label} carries the product logic that interprets accepted inputs before anyone treats the result as true."
-        calculation_focus = _calculation_focus(focus=raw_focus, output_focus=raw_output_focus, label=label)
+        calculation_focus = _calculation_focus(
+            focus=raw_focus,
+            output_focus=raw_output_focus,
+            transition_focus=transition_focus,
+            label=label,
+        )
         has_calculation_result = bool(
-            _preferred_calculation_result(_calculation_parts(raw_output_focus))
+            _preferred_calculation_result(_calculation_parts(transition_focus))
+            or _preferred_calculation_result(_calculation_parts(raw_output_focus))
             or _preferred_calculation_result(_calculation_parts(raw_focus))
         )
         if has_calculation_result or phrases_too_similar(raw_input_focus, raw_output_focus):
@@ -977,10 +986,15 @@ def _state_store_owned_text(values: Sequence[str]) -> str:
     return _human_join(rows)
 
 
-def _calculation_focus(*, focus: str, output_focus: str, label: str) -> str:
+def _calculation_focus(*, focus: str, output_focus: str, transition_focus: str, label: str) -> str:
+    transition_parts = _calculation_parts(transition_focus)
     output_parts = _calculation_parts(output_focus)
     focus_parts = _calculation_parts(focus)
-    preferred = _preferred_calculation_result(output_parts) or _preferred_calculation_result(focus_parts)
+    preferred = (
+        _preferred_calculation_result(transition_parts)
+        or _preferred_calculation_result(output_parts)
+        or _preferred_calculation_result(focus_parts)
+    )
     if preferred:
         return preferred
     noun_parts = [part for part in focus_parts if not contains_finite_action(part)]
@@ -989,6 +1003,23 @@ def _calculation_focus(*, focus: str, output_focus: str, label: str) -> str:
     if output_focus and not contains_finite_action(output_focus):
         return output_focus
     return re.sub(r"\b(?:adapter|component|engine|service|system|view)\b$", "", label, flags=re.I).strip(" .") or "the result"
+
+
+def _calculation_transition_focus(values: Sequence[str]) -> str:
+    candidates = [
+        _calculation_result_subject(
+            re.sub(
+                r"\s+(?:accepted|blocked|calculated|computed|converted|created|generated|logged|"
+                r"received|returned|shown|updated|validated)\b$",
+                "",
+                clean_text(value).strip(" ."),
+                flags=re.I,
+            )
+        )
+        for value in values
+        if clean_text(value)
+    ]
+    return _preferred_calculation_result(candidates)
 
 
 def _calculation_parts(value: str) -> list[str]:

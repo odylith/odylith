@@ -640,6 +640,70 @@ def test_package_repair_collapses_adjacent_duplicate_words() -> None:
     assert repaired.rendered_component_specs == {"spec.md": "The record stays attached to the accepted state."}
 
 
+def test_package_repair_requires_artifact_draft_patchset_permission() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={"status": "no_repairable_operations", "operations": []},
+    )
+
+    assert repaired == package
+
+
+def test_package_repair_does_not_mutate_rendered_copy_for_plan_patch() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                {
+                    "target_layer": "artifact_plan",
+                    "issue_code": "generated_copy_quality",
+                    "affected_projections": ["registry"],
+                }
+            ],
+        },
+    )
+
+    assert repaired == package
+
+
+def test_package_repair_only_mutates_patchset_affected_projection() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+        next_steps_preview={"implementation_prompt": "The next step stays attached attached to the accepted state."},
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                {
+                    "target_layer": "artifact_draft_set",
+                    "issue_code": "generated_copy_quality",
+                    "affected_projections": ["next_steps"],
+                }
+            ],
+        },
+    )
+
+    assert repaired.rendered_component_specs == package.rendered_component_specs
+    assert repaired.next_steps_preview == {
+        "implementation_prompt": "The next step stays attached to the accepted state."
+    }
+
+
 def test_package_repair_preserves_markdown_plan_link_targets() -> None:
     summary = (
         "2026-06-25: Registered Flood Shelter Intake System Intake Register Service as a planned service from user intent "

@@ -177,7 +177,6 @@ def derive_component_semantic_contract(
         role="output",
         contract_terms=contract_terms,
     )
-    critical = _component_kind_echo_safe_phrase(label=label, phrase=_result_like_phrase(output_focus) or critical)
     transition_context = semantic_context.transition_context_text(
         proposal_context,
         label_terms=label_terms,
@@ -188,6 +187,11 @@ def derive_component_semantic_contract(
         object_phrases=object_phrases,
         context_text=transition_context,
         anchor_terms=unique_text([*label_terms, *description_terms]),
+    )
+    transition_result = _result_like_transition_phrase(states)
+    critical = _component_kind_echo_safe_phrase(
+        label=label,
+        phrase=transition_result or _result_like_phrase(output_focus) or critical,
     )
     sibling_label = _label(sibling) if isinstance(sibling, Mapping) else ""
     handoff_label = next_label or "release review"
@@ -303,6 +307,15 @@ def _result_like_phrase(value: str) -> str:
             best_score = score
             best = text
     return best
+
+
+def _result_like_transition_phrase(value: str) -> str:
+    result = _result_like_phrase(value)
+    pattern = (
+        r"\s+(?:accepted|blocked|calculated|computed|converted|created|generated|logged|"
+        r"received|returned|shown|updated|validated)\b$"
+    )
+    return re.sub(pattern, "", result, flags=re.IGNORECASE).strip(" .") if result else ""
 
 
 def _dedupe_adjacent_words(value: str) -> str:

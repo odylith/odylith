@@ -1,4 +1,4 @@
-"""Fixpoint repair for rendered greenfield post-confirm packages."""
+"""Typed safe cleanup for greenfield post-confirm artifact drafts."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIRMED_DANGLING_WORDS
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
@@ -56,7 +57,7 @@ def repair_greenfield_package_until_clean(
     *,
     max_passes: int = _DEFAULT_PACKAGE_REPAIR_PASSES,
 ) -> GreenfieldPackageRepairResult:
-    """Repair fixable rendered-package defects until the report reaches a stable state."""
+    """Apply only typed safe artifact-draft repairs until the report stabilizes."""
 
     current = package
     report = build_greenfield_package_report(current)
@@ -67,7 +68,10 @@ def repair_greenfield_package_until_clean(
             return GreenfieldPackageRepairResult(current, initial_report, report, pass_index, changed)
         if pass_index >= max_passes:
             break
-        repaired = repair_greenfield_package_once(current)
+        repaired = repair_greenfield_package_once(
+            current,
+            patchset_request=patchset_request_from_findings(report.findings).to_dict(),
+        )
         if repaired == current:
             break
         changed = True
@@ -76,23 +80,74 @@ def repair_greenfield_package_until_clean(
     return GreenfieldPackageRepairResult(current, initial_report, report, min(max_passes, pass_index), changed)
 
 
-def repair_greenfield_package_once(package: GreenfieldCompletionPackage) -> GreenfieldCompletionPackage:
-    """Apply one deterministic repair pass to human-visible rendered package surfaces."""
+def repair_greenfield_package_once(
+    package: GreenfieldCompletionPackage,
+    *,
+    patchset_request: Mapping[str, Any] | None = None,
+) -> GreenfieldCompletionPackage:
+    """Apply one deterministic pass only to PatchSet-authorized draft projections."""
 
-    return replace(
-        package,
-        rendered_component_specs=_repair_optional_mapping(package.rendered_component_specs),
-        rendered_atlas_sources=_repair_optional_mapping(package.rendered_atlas_sources),
-        component_registry_preview=tuple(_repair_tree(row) for row in package.component_registry_preview),
-        project_brief_preview=_repair_optional_mapping(package.project_brief_preview),
-        accepted_project_preview=_repair_optional_mapping(package.accepted_project_preview),
-        compass_memory_preview=_repair_optional_mapping(package.compass_memory_preview),
-        next_steps_preview=_repair_optional_mapping(package.next_steps_preview),
-        backlog_result=_repair_optional_mapping(package.backlog_result),
-        program_result=_repair_optional_mapping(package.program_result),
-        release_target_result=_repair_optional_mapping(package.release_target_result),
-        release_assignment_result=_repair_optional_mapping(package.release_assignment_result),
-    )
+    request = patchset_request or patchset_request_from_findings(
+        build_greenfield_package_report(package).findings
+    ).to_dict()
+    projections = _safe_package_repair_projections(request)
+    if not projections:
+        return package
+
+    updates: dict[str, Any] = {}
+    if "registry" in projections:
+        updates["rendered_component_specs"] = _repair_optional_mapping(package.rendered_component_specs)
+        updates["component_registry_preview"] = tuple(_repair_tree(row) for row in package.component_registry_preview)
+    if "atlas" in projections:
+        updates["rendered_atlas_sources"] = _repair_optional_mapping(package.rendered_atlas_sources)
+    if "radar" in projections:
+        updates["backlog_result"] = _repair_optional_mapping(package.backlog_result)
+    if "project_brief" in projections:
+        updates["project_brief_preview"] = _repair_optional_mapping(package.project_brief_preview)
+    if "accepted_project" in projections:
+        updates["accepted_project_preview"] = _repair_optional_mapping(package.accepted_project_preview)
+    if "compass" in projections:
+        updates["compass_memory_preview"] = _repair_optional_mapping(package.compass_memory_preview)
+    if "next_steps" in projections:
+        updates["next_steps_preview"] = _repair_optional_mapping(package.next_steps_preview)
+    if "release" in projections:
+        updates["release_target_result"] = _repair_optional_mapping(package.release_target_result)
+        updates["release_assignment_result"] = _repair_optional_mapping(package.release_assignment_result)
+    if "artifact_draft_set" in projections:
+        updates.update(
+            {
+                "rendered_component_specs": _repair_optional_mapping(package.rendered_component_specs),
+                "rendered_atlas_sources": _repair_optional_mapping(package.rendered_atlas_sources),
+                "component_registry_preview": tuple(_repair_tree(row) for row in package.component_registry_preview),
+                "project_brief_preview": _repair_optional_mapping(package.project_brief_preview),
+                "accepted_project_preview": _repair_optional_mapping(package.accepted_project_preview),
+                "compass_memory_preview": _repair_optional_mapping(package.compass_memory_preview),
+                "next_steps_preview": _repair_optional_mapping(package.next_steps_preview),
+                "backlog_result": _repair_optional_mapping(package.backlog_result),
+                "release_target_result": _repair_optional_mapping(package.release_target_result),
+                "release_assignment_result": _repair_optional_mapping(package.release_assignment_result),
+            }
+        )
+    return replace(package, **updates) if updates else package
+
+
+def _safe_package_repair_projections(patchset_request: Mapping[str, Any]) -> frozenset[str]:
+    operations = patchset_request.get("operations") if isinstance(patchset_request, Mapping) else ()
+    if not isinstance(operations, Sequence) or isinstance(operations, (str, bytes, bytearray)):
+        return frozenset()
+    projections: set[str] = set()
+    for operation in operations:
+        if not isinstance(operation, Mapping):
+            continue
+        if str(operation.get("target_layer", "")).strip() != "artifact_draft_set":
+            continue
+        if str(operation.get("issue_code", "")).strip() != "generated_copy_quality":
+            continue
+        affected = operation.get("affected_projections")
+        if not isinstance(affected, Sequence) or isinstance(affected, (str, bytes, bytearray)):
+            continue
+        projections.update(str(item).strip() for item in affected if str(item).strip())
+    return frozenset(projections)
 
 
 def _repair_optional_mapping(value: Mapping[str, Any] | None) -> Mapping[str, Any] | None:

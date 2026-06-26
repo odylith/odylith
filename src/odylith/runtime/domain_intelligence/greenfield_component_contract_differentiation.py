@@ -550,7 +550,11 @@ def _sync_generated_component_fields(
     previous_contract: Mapping[str, Any],
 ) -> None:
     if _weak_text(row.get("responsibility")) or _reuses_contract_text(row.get("responsibility"), previous_contract):
-        row["responsibility"] = responsibility_from_contract(label, contract)
+        row["responsibility"] = responsibility_from_contract(
+            label,
+            contract,
+            source_action=str(row.get("source_system_description", "")),
+        )
     if _weak_text(row.get("boundary")) or _reuses_contract_text(row.get("boundary"), previous_contract):
         row["boundary"] = boundary_from_contract(label, contract)
     if _weak_sequence(row.get("interfaces")) or _sequence_reuses_contract_text(row.get("interfaces"), previous_contract):

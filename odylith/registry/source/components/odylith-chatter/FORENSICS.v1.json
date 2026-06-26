@@ -16,12 +16,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 134,
+    "explicit_event_count": 136,
     "mapped_workstream_evidence_count": 122,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 134
+    "timeline_event_count": 137
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -54,6 +54,84 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 612,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-25T23:33:51-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",
+        "odylith/casebook/bugs/2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md",
+        "tests/unit/runtime/test_source_bundle_mirror.py"
+      ],
+      "confidence": "high",
+      "event_index": 603,
+      "explicit_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "odylith-chatter",
+        "registry"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "briefs-voice-contract",
+        "casebook",
+        "compass",
+        "odylith-chatter",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "CB-206 captured the failed-mechanism governance gap; all maintainer, dogfood, consumer, Codex, Claude, bundle, and skill guidance must search prior Casebook/governance truth and record failed mechanisms before repeating fixes.",
+      "ts_iso": "2026-06-25T21:21:10-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/maintainer/AGENTS.md"
+      ],
+      "confidence": "high",
+      "event_index": 602,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "odylith",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "odylith",
+        "odylith-chatter",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Maintainer work must keep Casebook, Radar, Registry, Atlas, and Compass current when simulations, live repros, validation runs, or architecture reviews expose durable Odylith product learning.",
+      "ts_iso": "2026-06-25T21:09:45-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",

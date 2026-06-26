@@ -268,6 +268,7 @@ def _preserve_complete_validation_predicate(value: str) -> bool:
         marker in lowered
         for marker in (
             "fails closed when",
+            "validate that",
             "is missing",
             "are missing",
             "cannot explain",

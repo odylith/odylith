@@ -25,6 +25,7 @@ flowchart LR
 
     subgraph projection_lane["Context-starved renderers"]
       direction TB
+      radar_sentence["Radar sentence projection<br/>validation and proof predicates<br/>normalized before render"]
       radar["Radar projection<br/>product slices only"]
       registry["Registry projection<br/>component contracts only"]
       atlas["Atlas projection<br/>topology and event flow"]
@@ -43,7 +44,7 @@ flowchart LR
     confirmed_ir --> semantic_compile --> semantic_ir
     semantic_compile --> decision_ledger
     semantic_ir --> plan_ir --> draft_set
-    plan_ir --> radar
+    plan_ir --> radar_sentence --> radar
     plan_ir --> registry
     plan_ir --> atlas
     plan_ir --> compass
@@ -68,7 +69,7 @@ flowchart LR
     class visible_intent,confirm,confirmed_ir intent;
     class semantic_compile,semantic_ir,decision_ledger,patchset reasoning;
     class plan_ir,draft_set,validators,review_report,transaction custody;
-    class radar,registry,atlas,compass,release projection;
+    class radar_sentence,radar,registry,atlas,compass,release projection;
     class writes,rollback,blockers write;
 
     style confirmation_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155

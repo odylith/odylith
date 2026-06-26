@@ -26,7 +26,14 @@
 
 - Ownership: Greenfield semantic compiler, post-confirm repair engine, package quality gates, host reasoning integration, and artifact projection boundaries.
 
-- Timeline: Captured 2026-06-26 through `odylith bug capture`.
+- Timeline: Captured 2026-06-26 through `odylith bug capture`. Later on
+  2026-06-26, the ecommerce handoff regression showed that a Radar validation
+  line rendered as `covers happy path` and artifact enrichment clipped
+  `Validate that ...` proof text into a noun fragment. That failed the final
+  post-confirm package gate before any governed records were written. The fix
+  moved those repairs upstream into Radar validation projection and
+  artifact-enrichment sentence preservation instead of re-enabling rendered
+  Markdown cleanup.
 
 - Blast Radius: Any greenfield project domain or complexity where semantic ambiguity, repeated claims, domain-specific proof obligations, or artifact-specific wording requires repair before governed writes.
 
@@ -42,7 +49,16 @@
 
 - Solution: Adopt a typed host-reasoned architecture: one schema-constrained semantic compiler call, deterministic artifact planning/projection, typed deterministic and reviewer-lens findings, and targeted semantic/plan PatchSet repair before final fail-closed writes.
 
-- Verification: Typed `ReviewReport` findings, typed repair-context payloads, stable typed failure signatures, structured quality-lens findings, `PatchSet` request emission, and callback consumption of `PatchSet` target layers are now covered by focused post-confirm engine tests. The architecture defect remains open until rendered-string package repair is replaced by semantic or artifact-plan patch application plus impacted-projection rerender.
+- Verification: Typed `ReviewReport` findings, typed repair-context payloads,
+  stable typed failure signatures, structured quality-lens findings, `PatchSet`
+  request emission, and callback consumption of `PatchSet` target layers are
+  now covered by focused post-confirm engine tests. The Radar projection fix is
+  covered by `test_greenfield_radar_projection_quality.py`, the previously
+  failing ecommerce apply path now passes, the widened greenfield slice passed
+  with 231 tests in 137.78 seconds, and the post-confirm/prewrite transaction
+  suite passed with 75 tests in 315.34 seconds. The architecture defect remains
+  open until rendered-string package repair is replaced by semantic or
+  artifact-plan patch application plus impacted-projection rerender.
 
 - Prevention: Before adding more regex or template rules, check Casebook and repair semantic ownership, projection boundaries, or typed review contracts first.
 
@@ -50,7 +66,14 @@
 
 - Preflight Checks: Read CB-207 and this bug before changing post-confirm repair; verify whether the change patches SemanticModelIR or ArtifactPlanIR rather than rendered strings.
 
-- Regression Tests Added: `tests/unit/runtime/test_greenfield_post_confirm_engine.py` now proves typed findings override unclassifiable message text, typed quality-lens checks do not become generic artifact drift, repair contexts carry typed `ReviewReport` and `PatchSet` request payloads, and manifests expose the patchset request. Full patch application proof remains open.
+- Regression Tests Added: `tests/unit/runtime/test_greenfield_post_confirm_engine.py`
+  now proves typed findings override unclassifiable message text, typed
+  quality-lens checks do not become generic artifact drift, repair contexts
+  carry typed `ReviewReport` and `PatchSet` request payloads, and manifests
+  expose the patchset request. `tests/unit/runtime/test_greenfield_radar_projection_quality.py`
+  proves Radar validation rows use the shared article normalizer and
+  artifact-enrichment preserves complete `validate that` predicates. Full patch
+  application proof remains open.
 
 - Related Incidents/Bugs: CB-207
 

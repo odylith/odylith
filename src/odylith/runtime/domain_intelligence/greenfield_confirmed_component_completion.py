@@ -68,7 +68,11 @@ def complete_component_rows(proposal: dict[str, Any]) -> bool:
                 row["component_contract"] = contract
                 changed = True
         if _component_field_is_weak(row.get("responsibility")):
-            row["responsibility"] = responsibility_from_contract(label, contract)
+            row["responsibility"] = responsibility_from_contract(
+                label,
+                contract,
+                source_action=str(row.get("source_system_description", "")),
+            )
             changed = True
         if _component_field_is_weak(row.get("boundary")):
             row["boundary"] = boundary_from_contract(label, contract)
@@ -105,7 +109,15 @@ def repair_component_sentence_lists(proposal: Mapping[str, Any]) -> bool:
         contract = row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else {}
         label = completion_text.component_label(row, 0)
         if _text_needs_repair(row.get("responsibility")):
-            changed |= _set_text(row, "responsibility", responsibility_from_contract(label, contract))
+            changed |= _set_text(
+                row,
+                "responsibility",
+                responsibility_from_contract(
+                    label,
+                    contract,
+                    source_action=str(row.get("source_system_description", "")),
+                ),
+            )
         if _text_needs_repair(row.get("boundary")):
             changed |= _set_text(row, "boundary", boundary_from_contract(label, contract))
         if _sequence_has_text_repair(row.get("interfaces")):

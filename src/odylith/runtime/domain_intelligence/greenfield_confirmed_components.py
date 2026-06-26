@@ -188,6 +188,7 @@ def _confirmed_system_components(
     }
     for index, row in enumerate(rows):
         previous_label, next_label = _release_neighbor_labels(rows, index)
+        source_action = str(row.get("source_system_description", ""))
         contract = ensure_component_contract(
             row,
             proposal=proposal_context,
@@ -196,7 +197,7 @@ def _confirmed_system_components(
         )
         row["component_contract"] = contract
         if _generated_or_weak(row.get("responsibility")):
-            row["responsibility"] = responsibility_from_contract(str(row.get("label", "")), contract)
+            row["responsibility"] = responsibility_from_contract(str(row.get("label", "")), contract, source_action=source_action)
         if _generated_or_weak(row.get("boundary")):
             row["boundary"] = boundary_from_contract(str(row.get("label", "")), contract)
         row["interfaces"] = interfaces_from_contract(contract)
@@ -212,7 +213,7 @@ def _confirmed_system_components(
         preserve_first_path_signal_terms(contract, first_path=first_path)
         label_text = str(row.get("label", "")).strip()
         if _generated_or_weak(row.get("responsibility")):
-            row["responsibility"] = responsibility_from_contract(label_text, contract)
+            row["responsibility"] = responsibility_from_contract(label_text, contract, source_action=source_action)
         if _generated_or_weak(row.get("boundary")):
             row["boundary"] = boundary_from_contract(label_text, contract)
         row["interfaces"] = interfaces_from_contract(contract)

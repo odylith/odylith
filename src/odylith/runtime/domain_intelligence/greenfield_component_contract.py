@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence import greenfield_component_contract_profiles as contract_profiles
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
@@ -166,7 +167,7 @@ def _semantic_contract_is_ready(semantic_contract: Any) -> bool:
     return confidence >= 8 and len(local_terms) >= 3
 
 
-def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str:
+def responsibility_from_contract(label: str, contract: Mapping[str, Any], *, source_action: str = "") -> str:
     owned = _clause(contract.get("owned_state"))
     inputs = _clause(contract.get("accepted_inputs"))
     outputs = _clause(contract.get("produced_outputs"))
@@ -180,6 +181,9 @@ def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str
         return _sentence(
             f"Keeps {_component_subject(label)}, blocker context, and handoff evidence visible without rewriting source records"
         )
+    source = _source_action_clause(source_action)
+    if source and failure:
+        return _sentence(f"{source}, preserves reviewable evidence, and explains missing or stale inputs before handoff")
     subject = _component_subject(label)
     if primary and failure:
         if looks_like_finite_action(primary):
@@ -192,6 +196,16 @@ def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str
     if owned:
         return _sentence(f"Maintains {_lower_clause(primary or owned)} for {subject}")
     return _sentence(f"Maintains the {subject} state, recovery context, and local proof boundary")
+
+
+def _source_action_clause(value: str) -> str:
+    text = _clause(value)
+    if not text or not looks_like_action_clause(text):
+        return ""
+    first = re.split(r"[.;]", text, maxsplit=1)[0].strip(" .")
+    if not first:
+        return ""
+    return first[:1].upper() + first[1:]
 
 
 def boundary_from_contract(label: str, contract: Mapping[str, Any]) -> str:

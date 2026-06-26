@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 84,
+    "explicit_event_count": 85,
     "mapped_workstream_evidence_count": 57,
     "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 84
+    "timeline_event_count": 85
   },
   "name": "Release",
   "path_prefixes": [
@@ -44,6 +44,31 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md",
+        "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
+      ],
+      "confidence": "high",
+      "event_index": 597,
+      "explicit_components": [
+        "domain-intelligence",
+        "radar",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "domain-intelligence",
+        "radar",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Hardened confirmed greenfield artifact quality generically: deferred actors stay out of first-release scope, explanatory system clauses no longer become component identity, Radar enrichment avoids full-title repetition, and GLP-1 rich-intent create passes under 30s.",
+      "ts_iso": "2026-06-09T00:44:59-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",

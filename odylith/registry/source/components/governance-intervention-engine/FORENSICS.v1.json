@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 237,
-    "mapped_workstream_evidence_count": 207,
+    "explicit_event_count": 242,
+    "mapped_workstream_evidence_count": 212,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 237
+    "timeline_event_count": 242
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,178 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/artifact_enrichment.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
+        "tests/unit/runtime/test_greenfield_radar_projection_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 609,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm Radar projection fix moved validation article repair and validate-that predicate preservation upstream; ecommerce apply, widened greenfield slice, and prewrite transaction suites passed.",
+      "ts_iso": "2026-06-25T23:34:10-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_review.py",
+        "tests/unit/runtime/test_greenfield_post_confirm_engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 608,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implemented typed greenfield post-confirm ReviewReport findings and PatchSet request emission for CB-208; rendered-prose patch application remains open.",
+      "ts_iso": "2026-06-25T22:22:48-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 607,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "B-142 split to a dedicated typed greenfield semantic compiler plan and D-043 refreshed to show ConfirmedIntentIR, SemanticModelIR, ArtifactPlanIR, ReviewReport, PatchSet rescue, and fail-closed write custody.",
+      "ts_iso": "2026-06-25T22:03:38-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-09-greenfield-post-confirm-create-blocked-terminal-reported-results-and-deferred-co.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_semantic_alignment.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
+        "tests/integration/runtime/test_greenfield_create_performance.py",
+        "tests/unit/runtime/test_greenfield_general_artifact_quality.py"
+      ],
+      "confidence": "high",
+      "event_index": 599,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Fixed generic greenfield post-confirm blockers for reported saved terminal results, Atlas tail preservation, and deferred Registry scope alignment.",
+      "ts_iso": "2026-06-09T13:30:06-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "tests/integration/runtime/test_greenfield_create_performance.py"
+      ],
+      "confidence": "high",
+      "event_index": 598,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Added a subprocess-level post-confirm greenfield create guard proving the whole governed project package returns under 60 seconds.",
+      "ts_iso": "2026-06-09T09:47:37-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-15-confirmed-greenfield-create-must-fail-closed-without-accepted-product-narrative.md",
