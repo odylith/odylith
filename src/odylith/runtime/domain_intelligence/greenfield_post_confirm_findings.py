@@ -678,20 +678,23 @@ def _quality_lens_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
                 continue
             check_name = clean_text(check.get("name"))
             repair_owner = quality_lens_repair_owner(check_name)
-            repairability = "plan_patch" if repair_owner == "prewrite_gate" else "semantic_patch"
+            fallback_repairability = "plan_patch" if repair_owner == "prewrite_gate" else "semantic_patch"
+            fallback_target = (
+                f"quality_lenses.{lens_name}.{check_name}" if check_name else f"quality_lenses.{lens_name}"
+            )
             findings.extend(
                 review_findings_from_messages(
                     [clean_text(check.get("issue")) or f"quality lens {lens_name} failed {check_name}"],
                     code="quality_lens_gap",
-                    surface=str(lens_name),
-                    target_path=f"quality_lenses.{lens_name}.{check_name}" if check_name else f"quality_lenses.{lens_name}",
-                    projection_id="review_report",
-                    semantic_node_id="ReviewReport.quality_lenses",
-                    severity="high",
-                    repairability=repairability,
-                    owner="quality_lens_contract",
+                    surface=clean_text(check.get("surface")) or str(lens_name),
+                    target_path=clean_text(check.get("target_path")) or fallback_target,
+                    projection_id=clean_text(check.get("projection_id")) or "review_report",
+                    semantic_node_id=clean_text(check.get("semantic_node_id")) or "ReviewReport.quality_lenses",
+                    severity=clean_text(check.get("severity")) or "high",
+                    repairability=clean_text(check.get("repairability")) or fallback_repairability,
+                    owner=clean_text(check.get("owner")) or "quality_lens_contract",
                     source="quality_lens",
-                    lens=str(lens_name),
+                    lens=clean_text(check.get("lens")) or str(lens_name),
                 )
             )
     return dedupe_review_findings(findings)

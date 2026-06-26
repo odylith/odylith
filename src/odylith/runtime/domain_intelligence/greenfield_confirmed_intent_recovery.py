@@ -10,6 +10,7 @@ from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
@@ -103,6 +104,18 @@ _MATERIAL_FRAGMENT_ACTION_WORDS = frozenset(
         "summary",
     }
 )
+_ROLE_OBJECT_ACTION_NOUNS = _MATERIAL_FRAGMENT_ACTION_WORDS - {"review"}
+_STATE_REVIEW_PREDICATES = frozenset(
+    {
+        "auditable",
+        "available",
+        "blocked",
+        "inspectable",
+        "reviewable",
+        "trusted",
+        "visible",
+    }
+)
 _PRODUCT_CONTAINER_TERMS = frozenset(
     {
         "app",
@@ -152,6 +165,11 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
         title=title,
     ) or _generic_first_path_source(title, source=recovered_first_path_source)
     actor_rows = _human_actor_rows_from_first_path(first_path_source, title=title)
+    actor_rows = [
+        localized
+        for row in actor_rows
+        if (localized := project_specific_actor_row(row, project_focus=title))
+    ] or actor_rows
     lead_actor = _lead_actor_label(actor_rows) or _fallback_actor_label(title)
     lead_action = _lead_actor_action(actor_rows) or base_action_clause(first_path_source)
     outcome = _stable_outcome_phrase(
@@ -451,9 +469,14 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
         return ""
     marker_index = _first_word_index(words, _MODAL_MARKERS)
     if marker_index > 0 and marker_index + 1 < len(words):
-        actor = " ".join(words[:marker_index])
+        actor_words = list(words[:marker_index])
         action = " ".join(words[marker_index + 1 :])
-        return _human_actor_row(actor, action)
+        if _looks_like_state_review_predicate(action):
+            role_actor, role_action = _state_review_actor_action(actor_words)
+            if role_actor and role_action:
+                return _human_actor_row(role_actor, role_action)
+            return ""
+        return _human_actor_row(" ".join(actor_words), action)
     action_index = _action_start_index(words)
     if action_index > 0:
         actor = " ".join(words[:action_index])
@@ -522,6 +545,7 @@ def _first_word_index(words: Sequence[str], targets: set[str] | frozenset[str]) 
 
 def _human_actor_row(actor: str, action: str) -> str:
     actor_words = _strip_leading_articles(_words(actor))
+    actor_words, action = _repair_role_object_actor_split(actor_words, action)
     actor_label = title_case_text(" ".join(actor_words))
     action_text = base_action_clause(_primary_actor_action_segment(action))
     if _starts_with_relation_word(actor_label) or _starts_with_relation_word(action_text):
@@ -530,6 +554,52 @@ def _human_actor_row(actor: str, action: str) -> str:
         return ""
     need_verb = _actor_verb(actor_label, singular="needs", plural="need")
     return f"{actor_label}: {need_verb} the product to {action_text} and keep the result visible and reviewable"
+
+
+def _repair_role_object_actor_split(actor_words: list[str], action: str) -> tuple[list[str], str]:
+    """Keep object modifiers out of recovered actor labels."""
+
+    cleaned = [word for word in actor_words if str(word).strip()]
+    if len(cleaned) < 2:
+        return actor_words, action
+    role = cleaned[0].casefold().strip(".,:;")
+    modifier_words = cleaned[1:]
+    if role not in _HUMAN_ACTOR_TERMS:
+        return actor_words, action
+    if any(word.casefold().strip(".,:;") in _HUMAN_ACTOR_TERMS for word in modifier_words):
+        return actor_words, action
+    action_words = _words(action)
+    if len(action_words) < 2:
+        return actor_words, action
+    first_action = action_words[0].casefold().strip(".,:;")
+    singular = first_action[:-1] if first_action.endswith("s") else first_action
+    if singular not in _ROLE_OBJECT_ACTION_NOUNS:
+        return actor_words, action
+    repaired_action = " ".join([singular, *modifier_words, *action_words]).strip(" .")
+    return [cleaned[0]], repaired_action
+
+
+def _looks_like_state_review_predicate(action: str) -> bool:
+    words = _words(action)
+    if len(words) < 2 or words[0].casefold() != "be":
+        return False
+    return any(word.casefold().strip(".,:;") in _STATE_REVIEW_PREDICATES for word in words[1:4])
+
+
+def _state_review_actor_action(subject_words: Sequence[str]) -> tuple[str, str]:
+    cleaned = _strip_leading_articles(subject_words)
+    if len(cleaned) < 2:
+        return ("", "")
+    role = cleaned[0].casefold().strip(".,:;")
+    if role not in _HUMAN_ACTOR_TERMS:
+        return ("", "")
+    modifier_words = cleaned[1:]
+    if any(word.casefold().strip(".,:;") in _HUMAN_ACTOR_TERMS for word in modifier_words):
+        return ("", "")
+    object_text = " ".join(modifier_words).strip(" .")
+    if not object_text:
+        return ("", "")
+    return (cleaned[0], f"review {object_text}")
 
 
 def _starts_with_relation_word(value: str) -> bool:
@@ -745,7 +815,7 @@ def _actor_reference(value: str) -> str:
         return text
     if _looks_plural(text.split()[-1]):
         return text
-    return f"a {text}"
+    return _indefinite_phrase(text)
 
 
 def _actor_verb(value: str, *, singular: str, plural: str) -> str:

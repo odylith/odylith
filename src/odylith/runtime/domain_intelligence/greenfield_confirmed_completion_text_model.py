@@ -22,6 +22,8 @@ from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import look
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import is_system_generated_action
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import imperative_action_with_copula_words
@@ -151,6 +153,9 @@ def outcome_phrase(proposal: Mapping[str, Any]) -> str:
 
 def outcome_action_phrase(outcome: str) -> str:
     text = _reviewable_result_object(_clean(outcome).rstrip(" .") or "the product result")
+    system_action = _system_generated_outcome_action(text)
+    if system_action:
+        return system_action
     actor_review = _actor_led_outcome_review_action(text)
     if actor_review:
         return actor_review
@@ -178,6 +183,26 @@ def outcome_action_phrase(outcome: str) -> str:
     if actor_action:
         return actor_action
     return f"reach {object_text}"
+
+
+def _system_generated_outcome_action(value: str) -> str:
+    """Return a modal-safe user action for result text that describes system work."""
+
+    text = _clean(value).strip(" .")
+    if not text or not is_system_generated_action(text):
+        return ""
+    action = action_chain_fragment(text)
+    action_words = action.split()
+    if len(action_words) < 2:
+        return ""
+    result_object = " ".join(action_words[1:]).strip(" .,")
+    if not result_object:
+        return ""
+    normalized = _object_phrase(result_object)
+    words = {word.strip(".,:;").casefold() for word in result_object.replace("-", " ").split()}
+    if words & {"proof", "evidence", "audit", "report", "reports", "record", "records", "readiness", "state", "status"}:
+        return f"review {normalized}"
+    return f"see {normalized}"
 
 
 def _reviewable_result_object(value: str) -> str:

@@ -395,7 +395,7 @@ def _normalize_role_can_step(value: str) -> str:
         return text
     role = match.group("role").strip()
     role_words = {word.casefold().strip(".,:;") for word in role.split()}
-    if role_words & {"if", "that", "when", "where", "whether", "which", "while"}:
+    if role_words & {"how", "if", "that", "what", "when", "where", "whether", "which", "while", "who", "whom", "whose", "why"}:
         return text
     rest = _normalize_role_can_rest(match.group("rest"))
     return f"{role} {third_person_action_verb(match.group('verb'))}{rest}".strip(" .")

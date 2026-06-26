@@ -890,6 +890,12 @@ This section captures synchronized requirement and contract signals derived from
   Compass after backlog, program, release, Atlas, Registry, and Compass memory
   records are written. Do not insert per-artifact refreshes that slow the happy
   path or expose partial generated surfaces.
+- Expert quality lenses are Tribunal-style adjudication records, not free-form
+  diagnostics. Each PM, architect, engineer, and domain-expert check must carry
+  the stable role, check id, status, evidence, source-map target path,
+  semantic-node id, projection id, repairability, and repair owner at the point
+  of judgment so post-confirm repair can route by structured custody instead of
+  interpreting reviewer prose.
 - Apply failures after the pre-write Tribunal must restore the greenfield-owned
   source truth paths before returning an error. Operators must not be asked to
   hand-delete partial Radar ideas, Registry dossiers, Atlas catalog/source, or
@@ -929,6 +935,8 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/unit/runtime/test_greenfield_coercion_hygiene.py`
 - `tests/unit/runtime/test_greenfield_project_brief_rendering.py`
 - `tests/unit/runtime/test_greenfield_component_spec_quality.py`
+- `tests/unit/runtime/test_tribunal_lens.py`
+- `tests/unit/runtime/test_greenfield_quality_lens_repair.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
 - `tests/unit/runtime/test_greenfield_intelligence_schema.py`
 - `tests/unit/runtime/test_greenfield_atlas_contract.py`

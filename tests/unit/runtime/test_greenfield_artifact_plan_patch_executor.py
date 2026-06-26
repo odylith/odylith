@@ -112,6 +112,40 @@ def test_artifact_plan_patch_updates_only_sanctioned_projection_fields() -> None
     assert "components[0].responsibility" in ledger[0]["applied_paths"]
 
 
+def test_artifact_plan_patch_refuses_untargeted_row_mutation() -> None:
+    proposal: dict[str, Any] = {
+        "backlog": [
+            {
+                "workstream_id": "B-001",
+                "title": "Review case record",
+                "success_metrics": ["Old metric."],
+            }
+        ],
+    }
+    operations = [
+        {
+            "operation_id": "GF-PATCH-AMBIGUOUS",
+            "target_layer": "artifact_plan",
+            "semantic_node_id": "ArtifactPlanIR.backlog",
+            "replacement_fact": {
+                "backlog": [
+                    {
+                        "fields": {
+                            "success_metrics": ["Reviewer can inspect the corrected proof."],
+                        },
+                    }
+                ],
+            },
+        }
+    ]
+
+    changed = apply_artifact_plan_patch_operations(proposal, operations)
+
+    assert changed is False
+    assert proposal["backlog"][0]["success_metrics"] == ["Old metric."]
+    assert "artifact_plan_patch_ledger" not in proposal
+
+
 def test_patchset_repair_executes_artifact_plan_operations(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(greenfield_post_confirm_patch_apply, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
     monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)

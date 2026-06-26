@@ -181,7 +181,7 @@ def _select_row(
         matched = _find_matching_row(rows, _target_matcher(root, target))
         if matched is not None:
             return matched
-    return rows[0] if len(rows) == 1 else None
+    return None
 
 
 def _find_matching_row(rows: Sequence[dict[str, Any]], matcher: Mapping[str, Any]) -> dict[str, Any] | None:

@@ -9,7 +9,8 @@ from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
-from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.reasoning.tribunal_lens import tribunal_lens_check
+from odylith.runtime.reasoning.tribunal_lens import tribunal_lens_report
 
 
 QUALITY_LENS_VERSION = "greenfield-quality-lenses-v1"
@@ -39,6 +40,136 @@ _TERM_STOPWORDS = frozenset(
         "workstream",
     }
 )
+_CHECK_TARGETS = {
+    "complete_first_path": {
+        "role": "Product manager",
+        "surface": "product_manager",
+        "target_path": "semantic_model.first_path_contract",
+        "semantic_node_id": "SemanticModelIR.first_path_contract",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+    "measurable_success": {
+        "role": "Product manager",
+        "surface": "radar",
+        "target_path": "proposal.backlog.success_metrics",
+        "semantic_node_id": "ArtifactPlanIR.radar",
+        "repairability": "semantic_patch",
+        "owner": "radar_renderer",
+    },
+    "first_release_scope": {
+        "role": "Product manager",
+        "surface": "release",
+        "target_path": "proposal.release_plan",
+        "semantic_node_id": "ArtifactPlanIR.release_plan",
+        "repairability": "semantic_patch",
+        "owner": "release_planner",
+    },
+    "decision_boundary": {
+        "role": "Product manager",
+        "surface": "product_manager",
+        "target_path": "proposal.assumptions",
+        "semantic_node_id": "SemanticModelIR.decision_boundary",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+    "state_object": {
+        "role": "Architect",
+        "surface": "architect",
+        "target_path": "semantic_model.domain_ontology.state_object",
+        "semantic_node_id": "SemanticModelIR.domain_ontology.state_object",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+    "component_topology": {
+        "role": "Architect",
+        "surface": "registry",
+        "target_path": "proposal.components",
+        "semantic_node_id": "SemanticModelIR.component_contracts",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+    "atlas_topology": {
+        "role": "Architect",
+        "surface": "atlas",
+        "target_path": "proposal.diagrams",
+        "semantic_node_id": "SemanticModelIR.diagram_event_graph",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+    "system_boundary": {
+        "role": "Architect",
+        "surface": "architect",
+        "target_path": "semantic_model.domain_ontology.external_systems",
+        "semantic_node_id": "SemanticModelIR.domain_ontology.external_systems",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+    "component_specs": {
+        "role": "Engineer",
+        "surface": "registry",
+        "target_path": "prewrite_package.registry.specs",
+        "semantic_node_id": "ArtifactDraftSet.registry",
+        "repairability": "plan_patch",
+        "owner": "prewrite_gate",
+    },
+    "implementation_readiness": {
+        "role": "Engineer",
+        "surface": "engineer",
+        "target_path": "prewrite_package.next_steps",
+        "semantic_node_id": "ArtifactPlanIR.next_steps",
+        "repairability": "semantic_patch",
+        "owner": "operator_experience_renderer",
+    },
+    "validation_evidence": {
+        "role": "Engineer",
+        "surface": "engineer",
+        "target_path": "prewrite_package.validation",
+        "semantic_node_id": "ArtifactDraftSet.validation",
+        "repairability": "plan_patch",
+        "owner": "prewrite_gate",
+    },
+    "prewrite_safety": {
+        "role": "Engineer",
+        "surface": "engineer",
+        "target_path": "prewrite_package.program",
+        "semantic_node_id": "ArtifactDraftSet.program",
+        "repairability": "plan_patch",
+        "owner": "prewrite_gate",
+    },
+    "proof_boundary": {
+        "role": "Domain expert",
+        "surface": "domain_expert",
+        "target_path": "semantic_model.domain_ontology.proof_boundary",
+        "semantic_node_id": "SemanticModelIR.domain_ontology.proof_boundary",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+    "domain_term_coverage": {
+        "role": "Domain expert",
+        "surface": "domain_expert",
+        "target_path": "semantic_model.domain_ontology",
+        "semantic_node_id": "SemanticModelIR.domain_ontology",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+    "high_risk_assumptions": {
+        "role": "Domain expert",
+        "surface": "domain_expert",
+        "target_path": "proposal.assumptions",
+        "semantic_node_id": "SemanticModelIR.risk_assumptions",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+    "visible_result": {
+        "role": "Domain expert",
+        "surface": "domain_expert",
+        "target_path": "semantic_model.first_path_contract.visible_result",
+        "semantic_node_id": "SemanticModelIR.first_path_contract.visible_result",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    },
+}
 
 
 def build_greenfield_quality_lens_report(package: Any) -> dict[str, Any]:
@@ -53,24 +184,7 @@ def build_greenfield_quality_lens_report(package: Any) -> dict[str, Any]:
         "engineer": _engineer_checks(package, proposal),
         "domain_expert": _domain_expert_checks(package, proposal, semantic, rendered_text),
     }
-    lenses: dict[str, Any] = {}
-    issues: list[str] = []
-    for lens_name in QUALITY_LENS_NAMES:
-        checks = lens_checks[lens_name]
-        lens_issues = [check["issue"] for check in checks if check["status"] != "passed"]
-        issues.extend(lens_issues)
-        lenses[lens_name] = {
-            "status": "failed" if lens_issues else "passed",
-            "checks": checks,
-            "issues": lens_issues,
-        }
-    issues = unique_text(issues)
-    return {
-        "version": QUALITY_LENS_VERSION,
-        "status": "failed" if issues else "passed",
-        "lenses": lenses,
-        "issues": issues,
-    }
+    return tribunal_lens_report(lens_checks, version=QUALITY_LENS_VERSION)
 
 
 def greenfield_quality_lens_issues(package: Any) -> list[str]:
@@ -283,12 +397,32 @@ def _domain_expert_checks(
 
 
 def _check(condition: bool, name: str, evidence: str, issue: str) -> dict[str, str]:
-    return {
-        "name": name,
-        "status": "passed" if condition else "failed",
-        "evidence": evidence,
-        "issue": "" if condition else issue,
-    }
+    meta = _CHECK_TARGETS.get(name, {})
+    return tribunal_lens_check(
+        lens=_lens_for_check(name),
+        role=str(meta.get("role", "")),
+        name=name,
+        passed=condition,
+        evidence=evidence,
+        issue=issue,
+        surface=str(meta.get("surface", "review_report")),
+        target_path=str(meta.get("target_path", "")),
+        projection_id="review_report",
+        semantic_node_id=str(meta.get("semantic_node_id", "ReviewReport.quality_lenses")),
+        severity="high",
+        repairability=str(meta.get("repairability", "semantic_patch")),
+        owner=str(meta.get("owner", "quality_lens_contract")),
+    ).to_dict()
+
+
+def _lens_for_check(name: str) -> str:
+    if name in {"complete_first_path", "measurable_success", "first_release_scope", "decision_boundary"}:
+        return "product_manager"
+    if name in {"state_object", "component_topology", "atlas_topology", "system_boundary"}:
+        return "architect"
+    if name in {"component_specs", "implementation_readiness", "validation_evidence", "prewrite_safety"}:
+        return "engineer"
+    return "domain_expert"
 
 
 def _active_component_rows(proposal: Mapping[str, Any]) -> list[Mapping[str, Any]]:

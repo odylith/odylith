@@ -360,6 +360,13 @@ def test_package_report_emits_structured_quality_lens_findings() -> None:
     assert any(finding.lens == "product_manager" for finding in lens_findings)
     assert all(finding.source == "quality_lens" for finding in lens_findings)
     assert all(finding.projection_id == "review_report" for finding in lens_findings)
+    assert any(
+        finding.lens == "product_manager"
+        and finding.target_path == "semantic_model.first_path_contract"
+        and finding.semantic_node_id == "SemanticModelIR.first_path_contract"
+        and finding.owner == "semantic_model_compiler"
+        for finding in lens_findings
+    )
     assert any(finding.code == "release_package_drift" and finding.projection_id == "release" for finding in report.findings)
     assert not any(
         finding.code == "artifact_shape_drift" and finding.message.startswith("quality lens ")

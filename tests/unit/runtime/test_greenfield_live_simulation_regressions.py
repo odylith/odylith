@@ -199,6 +199,65 @@ def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tm
     assert build_greenfield_package_report(prewrite.package).issues == ()
 
 
+def test_autonomous_warehouse_state_review_terms_do_not_become_actors(tmp_path: Path) -> None:
+    prompt = (
+        "Draft a greenfield proposal for an autonomous warehouse safety state console. "
+        "The product monitor robot near-miss reports, sensor confidence, aisle lockdown decisions, "
+        "maintenance agent handoffs. Operator override records and release readiness must be reviewable "
+        "before any autonomous movement authority expands."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    actor_labels = [str(row).split(":", 1)[0] for row in proposal["intent"]["human_actors"]]
+    rendered = json.dumps(
+        {
+            "intent": proposal["intent"],
+            "backlog": proposal["backlog"],
+            "brief": prewrite.package.project_brief_preview,
+            "next_steps": prewrite.package.next_steps_preview,
+        },
+        sort_keys=True,
+        default=str,
+    )
+
+    assert actor_labels == ["Autonomous Warehouse Operator"]
+    assert "Release Readiness" not in actor_labels
+    assert "Operator Override Records" not in " ".join(actor_labels)
+    assert "a autonomous" not in rendered.casefold()
+    assert "can reports" not in rendered.casefold()
+    assert "operator override records and release readiness" in rendered.casefold()
+    assert generated_semantic_slop_issues(proposal, root="proposal") == []
+    assert build_greenfield_package_report(prewrite.package).issues == ()
+
+
+def test_federated_agent_release_clause_stays_modal_safe(tmp_path: Path) -> None:
+    prompt = (
+        "Draft a greenfield proposal for a federated agent incident command ledger. "
+        "Human operators assign investigation cases, review model-generated hypotheses, record state changes, "
+        "route cross-team claims, maintain audit evidence, and decide what can be released to partners "
+        "after legal approval."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    rendered = json.dumps(
+        {
+            "intent": proposal["intent"],
+            "backlog": proposal["backlog"],
+            "brief": prewrite.package.project_brief_preview,
+            "next_steps": prewrite.package.next_steps_preview,
+        },
+        sort_keys=True,
+        default=str,
+    )
+    actor_labels = [str(row).split(":", 1)[0] for row in proposal["intent"]["human_actors"]]
+
+    assert actor_labels == ["Human Operators"]
+    assert "what can be released to partners after legal approval" in rendered.casefold()
+    assert "what bes released" not in rendered.casefold()
+    assert generated_semantic_slop_issues(proposal, root="proposal") == []
+    assert build_greenfield_package_report(prewrite.package).issues == ()
+
+
 def test_scientific_lab_state_predicate_does_not_poison_post_confirm_artifacts(tmp_path: Path) -> None:
     intent = parse_confirmed_intent_text(
         """

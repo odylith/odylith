@@ -305,6 +305,9 @@ vocabulary, or degraded packages.
 - [ ] Risk: Artifact lenses produce readable diagnostics but cannot drive repair.
   - [ ] Mitigation: Every lens finding must carry a finding code, semantic node
         ID, source-map target, projection ID, severity, and repairability.
+        The first shared `tribunal_lens.py` contract now pins that custody
+        metadata at judgment time for greenfield PM, architect, engineer, and
+        domain-expert lenses instead of reconstructing it later from prose.
 - [ ] Risk: The architecture record passes while generated artifacts remain
       below the premium human bar.
   - [ ] Mitigation: Completion requires fresh high-variance end-to-end
@@ -389,3 +392,24 @@ vocabulary, or degraded packages.
       five high-variance source-local simulations passed with governed writes,
       zero quality issues, all PM/architect/engineer/domain-expert lenses
       passing, and temp cleanup after every case.
+- [x] Tribunal lens custody proof: `test_tribunal_lens.py`,
+      `test_greenfield_quality_lens_repair.py`, and focused post-confirm
+      bridge tests passed 8 tests in 0.52s. The widened focused set covering
+      Tribunal lenses, quality-lens repair, post-confirm engine, artifact-plan
+      PatchSet execution, live simulation regressions, and modal first-path
+      semantics passed 53 tests in 85.82s.
+- [x] Current broad greenfield proof: confirmed-intent recovery, confirmed
+      intent, post-confirm engine, semantic patch executor, quality repairs,
+      package repetition, slop regressions, general artifact quality, component
+      spec quality, artifact-plan PatchSet execution, and live simulation
+      regressions passed 299 tests in 474.86s.
+- [x] Current high-variance source-local CLI proof: six confirmed-create
+      simulations passed with temp cleanup after each case and no quality
+      issues. Timings: autonomous warehouse safety state 15.501s, federated
+      agent incident command 14.685s, deepfake provenance escrow 15.143s,
+      fusion plasma shot readiness 13.934s, indigenous data sovereignty review
+      15.344s, and spacecraft anomaly triage 15.333s. Each run wrote four
+      Radar workstreams, three Registry specs, six Atlas diagrams, five
+      rendered surfaces, release/program records, 18 trace nodes, at least
+      three required domain-term hits, and passed PM, architect, engineer, and
+      domain-expert lenses.

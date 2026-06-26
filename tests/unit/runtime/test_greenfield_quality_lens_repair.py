@@ -67,6 +67,41 @@ def test_quality_lens_repair_declares_every_reviewer_check() -> None:
     assert {quality_lens_repair_owner(check) for check in QUALITY_LENS_GATE_ONLY_CHECKS} == {"prewrite_gate"}
 
 
+def test_quality_lens_report_emits_typed_tribunal_repair_targets() -> None:
+    package = SimpleNamespace(
+        proposal={},
+        release_selector="0.0.1",
+        release_workstream_ids=(),
+        rendered_atlas_sources={},
+        rendered_component_specs={},
+        component_registry_preview=(),
+        next_steps_preview={},
+        backlog_result={},
+        program_result={},
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    product_checks = {
+        check["name"]: check
+        for check in report["lenses"]["product_manager"]["checks"]
+    }
+    architect_checks = {
+        check["name"]: check
+        for check in report["lenses"]["architect"]["checks"]
+    }
+
+    assert report["lenses"]["product_manager"]["role"] == "Product manager"
+    assert product_checks["complete_first_path"]["target_path"] == "semantic_model.first_path_contract"
+    assert product_checks["decision_boundary"]["semantic_node_id"] == "SemanticModelIR.decision_boundary"
+    assert architect_checks["component_topology"]["surface"] == "registry"
+    assert architect_checks["component_topology"]["owner"] == "semantic_model_compiler"
+
+
 def test_quality_lens_repair_rehydrates_proposal_owned_surface() -> None:
     proposal: dict[str, Any] = {
         "intent": {

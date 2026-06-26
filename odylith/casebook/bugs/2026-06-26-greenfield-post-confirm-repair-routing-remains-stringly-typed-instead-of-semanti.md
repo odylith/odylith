@@ -328,6 +328,29 @@
   Atlas diagrams, five rendered surfaces, 18 trace nodes, four trace
   workstreams, four required domain-term hits, zero quality issues, and passed
   product-manager, architect, engineer, and domain-expert lenses.
+  A subsequent high-variance installed-matrix failure class (CB-209) exposed
+  that expert-lens checks were still too local: they carried
+  `name/status/evidence/issue` and then post-confirm repair reconstructed
+  target paths and repair ownership from lens names. The new
+  `tribunal_lens.py` contract moves multi-actor quality judgment toward the
+  general Tribunal model by making each lens check emit the source-map target,
+  semantic-node ID, projection ID, repairability, and repair owner at the point
+  of judgment. Greenfield PM, architect, engineer, and domain-expert lenses now
+  use that contract, and package findings trust those typed fields before any
+  compatibility fallback. This reduces the failed mechanism where reviewer
+  prose had to be interpreted later, while keeping fail-closed gates and
+  provider-free custody intact.
+  The same pass fixed CB-209 source-local defects without domain-specific
+  exceptions: system-generated result text now projects into modal-safe review
+  actions, passive state-review clauses recover role/object ownership without
+  promoting result nouns into actors, interrogative modal clauses such as
+  `what can be released` stay intact, and artifact-plan row patches require an
+  explicit index, match, or path selector. Focused Tribunal/greenfield proof
+  passed 53 tests in 85.82s; the broad greenfield runtime pack passed 299
+  tests in 474.86s; six source-local CLI confirmed-create simulations passed
+  in 13.934-15.501s with governed writes, zero issues, and all PM/architect/
+  engineer/domain-expert lenses passing. Fresh installed-dist proof remains
+  required before this architecture class can be closed.
 
 - Related Incidents/Bugs: CB-207
 
@@ -347,3 +370,5 @@
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py
+- src/odylith/runtime/reasoning/tribunal_lens.py
+- src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
