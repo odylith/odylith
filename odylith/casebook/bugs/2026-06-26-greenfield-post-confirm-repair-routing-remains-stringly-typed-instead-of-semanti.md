@@ -42,6 +42,19 @@
   `greenfield_workstream_risk_projection.py`, where risk posture now projects
   semantic visible-result evidence instead of repeating a comma-heavy first
   path.
+  A later faithful propose-then-confirm shelter-capacity simulation completed
+  proposal generation but failed post-confirm create in 9.668 seconds with
+  four prewrite blockers: Radar missing semantic coverage for first path,
+  Atlas missing semantic coverage for `FirstPathContract`, project brief
+  preview missing semantic coverage for `FirstPathContract`, and Radar index
+  repeating the same visible result inside one sentence. The paired quantum
+  tunneling simulation passed create in 11.668 seconds with no simple red
+  flags, while an earlier malformed shortcut harness also showed that
+  incomplete confirmed-intent files can fail the internal-systems gate before
+  post-confirm repair is reached. This confirms the remaining failure is not
+  only copied prose: repairable semantic-coverage findings can still route as
+  artifact-plan/package shape and then rerun deterministic completion without
+  applying a meaning-changing semantic or plan patch.
 
 - Blast Radius: Any greenfield project domain or complexity where semantic ambiguity, repeated claims, domain-specific proof obligations, or artifact-specific wording requires repair before governed writes.
 
@@ -53,7 +66,7 @@
 
 - Invariant Violated: Greenfield repair must repair semantic interpretation or artifact-plan facts, not patch rendered strings or route by mutable English diagnostics.
 
-- Root Cause: Odylith evolved deterministic validators and rendered-package cleanup faster than it evolved a typed ConfirmedIntentIR, SemanticModelIR, ArtifactPlanIR, ReviewReport, and PatchSet boundary for host-model reasoning.
+- Root Cause: Odylith evolved deterministic validators and rendered-package cleanup faster than it evolved a typed ConfirmedIntentIR, SemanticModelIR, ArtifactPlanIR, ReviewReport, and PatchSet boundary for host-model reasoning. The current PatchSet seam can carry typed operations, but semantic-coverage failures can still be treated as artifact-plan shape and the apply side mostly replays deterministic completion instead of accepting a host-reasoned semantic or plan patch with a decision ledger.
 
 - Solution: Adopt a typed host-reasoned architecture: one schema-constrained semantic compiler call, deterministic artifact planning/projection, typed deterministic and reviewer-lens findings, and targeted semantic/plan PatchSet repair before final fail-closed writes.
 
@@ -71,8 +84,13 @@
   greenfield slice passed with 231 tests in 137.78 seconds, and the
   post-confirm/prewrite transaction suite passed with 75 tests in 315.34
   seconds. The architecture defect remains open until rendered-string package
-  repair is replaced by host-authored semantic or artifact-plan patch
-  application plus impacted-projection rerender.
+  repair and deterministic replay-only rescue are replaced by host-authored
+  semantic or artifact-plan patch application plus impacted-projection
+  rerender. New faithful simulation evidence on 2026-06-26: quantum
+  tunneling propose-then-confirm passed in 11.668 seconds with no simple red
+  flags; shelter capacity propose-then-confirm failed in 9.668 seconds on
+  semantic-coverage and repeated-visible-result blockers before any governed
+  records were written.
 
 - Prevention: Before adding more regex or template rules, check Casebook and repair semantic ownership, projection boundaries, or typed review contracts first.
 

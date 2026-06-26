@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-06-25
+Last updated: 2026-06-26
 
 
 ## Overview
@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-26 · Simulation:** Faithful propose-then-confirm proof exposed a remaining post-confirm rescue gap: a shelter-capacity project failed semantic-coverage gates for first-path projection while a quantum-tunneling project passed, proving the PatchSet seam still needs host-authored semantic or artifact-plan patch application before release claims.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md
 - **2026-06-25 · Implementation:** Greenfield post-confirm Radar projection fix moved validation article repair and validate-that predicate preservation upstream; ecommerce apply, widened greenfield slice, and prewrite transaction suites passed.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/artifact_enrichment.py, src/odylith/runtime/domain_intelligence/greenfield_traceability.py +1 more
@@ -171,6 +174,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-26: Implemented the first typed post-confirm repair seam. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_post_confirm_review.py` now owns typed `ReviewReport` findings, `greenfield_post_confirm_findings.py` maps deterministic validators and reviewer lenses into stable finding codes and targets, `greenfield_post_confirm_patchset.py` emits formal semantic or artifact-plan `PatchSet` requests into the post-confirm manifest and repair context, and `greenfield_post_confirm_patch_apply.py` executes operation-level PatchSet repair for current deterministic semantic/quality-lens proposal repair while refusing proposal mutation for artifact-draft-only operations. Full host-authored semantic or artifact-plan patch application remains open.
 - 2026-06-26: Moved a failed Radar handoff quality regression upstream into projection owners instead of rendered-package cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_traceability.py` now normalizes validation copy before Radar sections are assembled, `artifact_enrichment.py` preserves complete validation predicates, and `test_greenfield_radar_projection_quality.py` pins both contracts. The ecommerce post-confirm apply path, the widened greenfield slice, and the post-confirm/prewrite transaction suite all pass after the change.
 - 2026-06-26: Moved raw first-path risk-copy leakage upstream into the workstream risk projection owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_workstream_risk_projection.py` now replaces raw `First path:` action-chain copies with semantic visible-result evidence when the semantic model is available, preserving risk context without repeating comma-heavy workflow prose across Radar artifacts.
+- 2026-06-26: Captured a remaining faithful post-confirm rescue failure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) A quantum-tunneling education project completed propose-then-confirm create in 11.668 seconds with no simple red flags, but a shelter-capacity coordination project failed in 9.668 seconds because Radar, Atlas, and project brief projections missed first-path semantic coverage and the Radar index repeated the visible result. Domain Intelligence therefore requires host-authored semantic or artifact-plan patch application, decision-ledger capture, and impacted-projection rerender before release-quality claims.
 
 ## Contract
 

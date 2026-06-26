@@ -64,6 +64,25 @@ vocabulary, or degraded packages.
   and semantic or plan patches instead of English issue-substring routing and
   rendered-prose mutation.
 
+## Latest Simulation Evidence
+
+- 2026-06-26 faithful propose-then-confirm source-local proof:
+  quantum-tunneling education completed post-confirm create in 11.668 seconds
+  with no simple artifact red flags; shelter-capacity coordination failed in
+  9.668 seconds with Radar, Atlas, and project brief semantic-coverage
+  blockers for the first-path contract plus a repeated visible-result sentence
+  in the Radar index.
+- The failure shows the current PatchSet seam is necessary but insufficient:
+  repairable semantic-coverage findings can still be routed as artifact-plan or
+  package-shape problems, then the apply side replays deterministic completion
+  without a host-reasoned semantic or plan patch that changes the failed
+  meaning/projection facts.
+- The earlier five-scenario shortcut harness was not a faithful operator-path
+  proof for all cases because two temp repos supplied too-thin confirmed-intent
+  files and hit the internal-systems preflight gate before post-confirm repair.
+  It remains useful only for cleanup/timing discipline and simple copy red-flag
+  sampling.
+
 ## Implementation Slices
 
 - [ ] Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,
@@ -98,6 +117,16 @@ vocabulary, or degraded packages.
       semantic visible-result evidence instead of raw comma-heavy first-path
       chains. Full host-authored semantic or plan patch application plus
       impacted-projection rerender remain open.
+- [ ] Promote semantic-coverage failures to first-class semantic/projection
+      patch obligations before rerender. The shelter-capacity failure proves
+      overlap-based coverage checks can detect missing first-path projection but
+      cannot repair it unless the `PatchSet` names the `FirstPathContract`,
+      affected projection field, rejected interpretation, and sanctioned
+      replacement fact.
+- [ ] Add a host-reasoned semantic patch executor with bounded schema:
+      `operation_id`, `semantic_node_id`, `target_path`, `affected_projections`,
+      `replacement_fact`, `decision_ledger_entry`, `proof_obligation_delta`,
+      `rejected_interpretation`, and confidence. Reject prose-only patches.
 - [ ] Add context-starved renderer contracts so Radar, Registry, Atlas,
       Compass, release proof, and next steps cannot cross-contaminate.
 - [ ] Add high-variance simulation fixtures and artifact-quality scoring across
