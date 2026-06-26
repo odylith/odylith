@@ -535,7 +535,9 @@ def _contains_proof_control_claim(value: Any) -> bool:
         return True
     if re.search(r"\b(?:is\s+proven|proven\s+when|succeeds\s+when|trusted\s+when|proof\s+boundary)\b", lowered):
         return True
-    return bool(lowered.startswith(("release proof", "release readiness", "version proof")))
+    if lowered.startswith(("release proof", "version proof")):
+        return True
+    return bool(re.match(r"^release\s+readiness\s+(?:depends|fails|passes|requires?|when|is\s+blocked)\b", lowered))
 
 
 def _visible_result_counterexamples(

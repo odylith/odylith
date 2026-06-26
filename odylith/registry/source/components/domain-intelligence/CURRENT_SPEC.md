@@ -896,6 +896,13 @@ This section captures synchronized requirement and contract signals derived from
   semantic-node id, projection id, repairability, and repair owner at the point
   of judgment so post-confirm repair can route by structured custody instead of
   interpreting reviewer prose.
+- Confirmed greenfield semantic custody must distinguish product-result noun
+  phrases from proof-control text before final gates run. Phrases such as
+  `release readiness for ...` can be valid first-path result events, while
+  proof-control claims such as `release readiness requires ...` remain proof
+  facts. First-path action extraction must respect token boundaries inside
+  hyphenated noun compounds, and recovered actor extraction must reject passive
+  object-state tails as human actors.
 - Apply failures after the pre-write Tribunal must restore the greenfield-owned
   source truth paths before returning an error. Operators must not be asked to
   hand-delete partial Radar ideas, Registry dossiers, Atlas catalog/source, or

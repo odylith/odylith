@@ -192,6 +192,22 @@ vocabulary, or degraded packages.
   passed 283 tests in 491.56s, and a fresh five-domain source-local matrix
   passed in 13.649-14.379s with zero issues, all expert lenses passing,
   governed writes, and temp cleanup after every case.
+- 2026-06-26 installed-dist variance checkpoint: the cedafc79 standard
+  installed matrix passed five domains at 17.074-18.574s with zero issues and
+  all PM/architect/engineer/domain-expert lenses passing, but a harder custom
+  installed matrix exposed two more generic owner defects. Indigenous data
+  sovereignty failed before governed writes because the semantic compiler
+  rejected `release readiness for ...` as proof-control text instead of a
+  first-path result event. Spacecraft anomaly triage wrote records but failed
+  package quality because passive object-state text was promoted into a human
+  actor and leaked `State Before a` into Radar copy. The fix stays in semantic
+  custody: proof-control classification was narrowed, first-path extraction now
+  respects hyphenated noun-compound boundaries, and recovered actor extraction
+  rejects passive object-state subjects. Current source proof: focused
+  regressions passed 4 tests in 17.61s, the two failing source CLI simulations
+  passed in 12.708s and 12.328s with complete governed records and all expert
+  lenses, and the widened greenfield suite passed 162 tests in 148.37s. Fresh
+  installed proof from a rebuilt dist remains required before release closure.
 
 ## Implementation Slices
 

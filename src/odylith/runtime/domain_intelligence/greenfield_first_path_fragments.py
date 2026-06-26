@@ -251,9 +251,9 @@ def visible_result_object(value: str) -> str:
     patterns = (
         r":\s*(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
-        r"\b(?P<verb>sends?|publishes?|returns?|delivers?)\s+or\s+"
+        r"(?<![A-Za-z0-9_-])(?P<verb>sends?|publishes?|returns?|delivers?)\s+or\s+"
         r"(?:sends?|publishes?|returns?|delivers?)\s+(?P<object>.+)$",
-        r"\b(?P<verb>closes?|compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"(?<![A-Za-z0-9_-])(?P<verb>closes?|compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)

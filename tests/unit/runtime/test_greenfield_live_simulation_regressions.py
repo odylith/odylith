@@ -258,6 +258,34 @@ def test_federated_agent_release_clause_stays_modal_safe(tmp_path: Path) -> None
     assert build_greenfield_package_report(prewrite.package).issues == ()
 
 
+def test_spacecraft_recovery_state_tail_does_not_become_actor_or_clipped_copy(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield proposal for a spacecraft anomaly triage board that helps mission controllers "
+        "compare telemetry claims, fault hypotheses, simulation evidence, command risk, operator approvals, "
+        "and recovery state before a corrective procedure is released."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    actor_labels = [str(row).split(":", 1)[0] for row in proposal["intent"]["human_actors"]]
+    rendered = json.dumps(
+        {
+            "intent": proposal["intent"],
+            "backlog": proposal["backlog"],
+            "brief": prewrite.package.project_brief_preview,
+            "next_steps": prewrite.package.next_steps_preview,
+        },
+        sort_keys=True,
+        default=str,
+    )
+
+    assert actor_labels == ["Mission Controllers"]
+    assert "Recovery State Before a Corrective Procedure" not in rendered
+    assert "State Before a" not in rendered
+    assert "clipped article phrase" not in "\n".join(greenfield_rendered_package_quality_issues(prewrite.package))
+    assert generated_semantic_slop_issues(proposal, root="proposal") == []
+    assert build_greenfield_package_report(prewrite.package).issues == ()
+
+
 def test_scientific_lab_state_predicate_does_not_poison_post_confirm_artifacts(tmp_path: Path) -> None:
     intent = parse_confirmed_intent_text(
         """

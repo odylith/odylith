@@ -476,12 +476,16 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
             if role_actor and role_action:
                 return _human_actor_row(role_actor, role_action)
             return ""
+        if _looks_like_passive_object_subject(actor_words, _words(action)):
+            return ""
         return _human_actor_row(" ".join(actor_words), action)
     action_index = _action_start_index(words)
     if action_index > 0:
         actor = " ".join(words[:action_index])
         action = " ".join(words[action_index:])
         if _looks_like_material_actor_fragment(words[:action_index], words[action_index:]):
+            return ""
+        if _looks_like_passive_object_subject(words[:action_index], words[action_index:]):
             return ""
         return _human_actor_row(actor, action)
     fallback = _plural_subject_fallback(words, allow_single_subject=allow_subject_fallback)
@@ -505,6 +509,41 @@ def _looks_like_material_actor_fragment(actor_words: Sequence[str], action_words
     if _semantic_terms(actor_token) & _HUMAN_ACTOR_TERMS or _looks_like_human_actor_token(actor_token):
         return False
     return action_token in _MATERIAL_FRAGMENT_ACTION_WORDS
+
+
+_PASSIVE_OBJECT_AUXILIARIES = frozenset({"are", "be", "been", "being", "is", "was", "were"})
+_OBJECT_STATE_RELATIONS = frozenset({"after", "before", "during", "when", "where", "while"})
+_OBJECT_STATE_TERMS = frozenset(
+    {
+        "approval",
+        "claim",
+        "claims",
+        "decision",
+        "evidence",
+        "procedure",
+        "record",
+        "records",
+        "risk",
+        "state",
+        "status",
+    }
+)
+
+
+def _looks_like_passive_object_subject(actor_words: Sequence[str], action_words: Sequence[str]) -> bool:
+    """Reject object-state clauses that look grammatical but are not actors."""
+
+    subject = _strip_leading_articles(actor_words)
+    action = _strip_leading_articles(action_words)
+    if not subject or len(action) < 2:
+        return False
+    subject_terms = {word.casefold().strip(".,:;") for word in subject}
+    if subject_terms & _HUMAN_ACTOR_TERMS or any(_looks_like_human_actor_token(word) for word in subject):
+        return False
+    action_head = action[0].casefold().strip(".,:;")
+    if action_head not in _PASSIVE_OBJECT_AUXILIARIES:
+        return False
+    return bool(subject_terms & (_OBJECT_STATE_RELATIONS | _OBJECT_STATE_TERMS))
 
 
 def _looks_like_human_actor_token(value: str) -> bool:

@@ -29,6 +29,24 @@ def test_semantic_compiler_prefers_first_path_result_over_release_proof() -> Non
     assert "proven when" not in candidate.text.casefold()
 
 
+def test_semantic_compiler_accepts_release_readiness_as_first_path_result() -> None:
+    first_path = (
+        "Community stewards track dataset access requests, consent protocols, council decisions, "
+        "revocation evidence, research-use limits. Release readiness for shared cultural records."
+    )
+    proof = (
+        "Release 0.0.1 succeeds when the accepted first path is complete, reviewable, and blocked when required. "
+        "The product shows the review workspace result, handles missing or invalid input with a clear blocker, "
+        "and keeps replayable evidence for review."
+    )
+
+    candidate = select_visible_result_candidate(first_path, proof_boundary=proof)
+
+    assert candidate.source_kind == "first_path_event"
+    assert candidate.source_path == "first_path.visible_result"
+    assert candidate.text == "Release readiness for shared cultural records"
+
+
 def test_confirmed_intent_completion_rebuilds_proof_poisoned_product_fields() -> None:
     intent = _lifecycle_intent()
     poison = "the visible result produced by version 0.0.1 is proven when an event can be viewed across its full lifecycle"
