@@ -104,6 +104,7 @@ def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
         original = rows[index] if index < len(rows) else label
         description = actor_row_description(original)
         if description and _word_count(description) >= 4 and _actor_label(original, title=title).casefold() == label.casefold():
+            description = _readable_actor_description(description)
             completed.append(_preserve_deferred_scope(f"{label}: {description}", original))
             continue
         completed.append(
@@ -179,6 +180,18 @@ def actor_row_description(value: str) -> str:
     return ""
 
 
+def _readable_actor_description(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    first = text.split(maxsplit=1)[0].casefold().strip(".,;:")
+    if first.endswith("ing"):
+        if " or " in text.casefold() and "," not in text and " and " not in text.casefold().replace(" or ", " "):
+            return f"supports by {text}"
+        return text
+    return text
+
+
 def _inline_action_description(value: str) -> str:
     """Return the activity tail from rows that combine actor and action."""
 
@@ -187,14 +200,23 @@ def _inline_action_description(value: str) -> str:
         return ""
     for index, word in enumerate(words[1:], start=1):
         token = word.casefold().strip(".,;:")
-        if token not in _INLINE_ACTION_DESCRIPTION_VERBS:
-            continue
         head = " ".join(words[:index]).strip(" .")
+        if token not in _INLINE_ACTION_DESCRIPTION_VERBS and not (
+            token.endswith("ing") and _actor_head_has_explicit_role_signal(head)
+        ):
+            continue
         tail = " ".join(words[index:]).strip(" .")
         if not tail or not _actor_head_contains_role(head):
             continue
         return tail
     return ""
+
+
+def _actor_head_has_explicit_role_signal(value: str) -> bool:
+    words = [word.casefold().strip(".,;:()") for word in _clean(value).replace("/", " ").split()]
+    if not words:
+        return False
+    return _word_has_role_signal(words[-1]) or (len(words) >= 2 and " ".join(words[-2:]) in _ROLE_WORDS)
 
 
 def _actor_head_contains_role(value: str) -> bool:
@@ -377,6 +399,16 @@ def _strip_actor_subject_from_clause(value: str, *, label: str) -> str:
     text = _clean(value).strip(" .")
     if not text:
         return ""
+    label_surface = _clean(label).strip(" .")
+    if label_surface:
+        surface_pattern = r"\s+".join(re.escape(word) for word in label_surface.split())
+        text = re.sub(
+            rf"^(?:a|an|the|one)?\s*{surface_pattern}\s+",
+            "",
+            text,
+            count=1,
+            flags=re.IGNORECASE,
+        ).strip(" .")
     label_terms = sorted(_semantic_terms(label), key=len, reverse=True)
     if label_terms:
         lead = r"(?:a|an|the|one)?\s*(?:" + "|".join(re.escape(term) for term in label_terms) + r")"

@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence import artifact_tribunal_actors
 from odylith.runtime.domain_intelligence.artifact_graph import DomainIntelligenceGraph
 from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
 from odylith.runtime.domain_intelligence.artifact_graph import graph_layer as _layer
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import normalize_connector_sequence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -234,7 +235,7 @@ def _compact_focus_label(value: str) -> str:
     text = clean_text(value).strip(" .")
     parts = _readable_phrase_parts(text)
     if len(parts) >= 3:
-        return f"{parts[0]} and related scope"
+        return _join_compact_phrase_parts(parts[:2])
     return text
 
 
@@ -245,11 +246,18 @@ def _compact_detail_text(value: str) -> str:
     parts = _readable_phrase_parts(text)
     if len(parts) < 4:
         return text
-    first = parts[0]
-    second = parts[1]
-    proof_terms = {"evidence", "proof", "review", "trace", "validation"}
-    tail = "proof context" if proof_terms.intersection(_boundary_terms(text)) else "scope context"
-    return f"{first} and {second} with related {tail}"
+    return _join_compact_phrase_parts(parts[:3])
+
+
+def _join_compact_phrase_parts(parts: list[str]) -> str:
+    rows = [clean_text(part).strip(" .") for part in parts if clean_text(part).strip(" .")]
+    if len(rows) <= 1:
+        return rows[0] if rows else ""
+    if len(rows) == 2:
+        connector = "" if rows[1].casefold().startswith(("and ", "or ")) else "and "
+        return normalize_connector_sequence(f"{rows[0]} {connector}{rows[1]}")
+    connector = "" if rows[2].casefold().startswith(("and ", "or ")) else "and "
+    return normalize_connector_sequence(f"{rows[0]}, {rows[1]}, {connector}{rows[2]}")
 
 
 def _readable_phrase_parts(value: str) -> list[str]:

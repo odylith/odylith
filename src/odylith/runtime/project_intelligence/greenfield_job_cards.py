@@ -40,7 +40,7 @@ def _jobs(
         rows.append(
             (
                 short(_project_job_heading(title=title, project_title=project_title), limit=78),
-                short(body, limit=145),
+                _bounded_job_body(body=body, title=title),
                 status,
                 _workstream_reference(item=item, created=created_workstreams[index] if index < len(created_workstreams) else {}),
             )
@@ -148,6 +148,13 @@ def _job_first_path_body(first_path: str) -> str:
     if outcome:
         return f"Focuses the slice on producing {outcome} with enough context for review."
     return ""
+
+
+def _bounded_job_body(*, body: str, title: str) -> str:
+    text = short(body, limit=145)
+    if low_information_job_body(text) or _looks_clipped_job_body(text):
+        text = short(_job_fallback_body(title), limit=145)
+    return text
 
 
 def _looks_clipped_job_body(value: object) -> bool:

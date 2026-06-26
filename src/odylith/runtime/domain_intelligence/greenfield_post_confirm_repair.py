@@ -38,6 +38,7 @@ _BASE_ACTIONS = "|".join(re.escape(value) for value in sorted(set(_FINITE_TO_BAS
 _FINITE_ACTIONS = "|".join(re.escape(value) for value in sorted(_FINITE_TO_BASE, key=len, reverse=True))
 _SCALAR_CLAUSE_SPLIT_RE = re.compile(r"([,;.!?])\s*")
 _MARKDOWN_LINK_TARGET_RE = re.compile(r"\]\(([^)\s]+)\)")
+_VERSION_TOKEN_RE = re.compile(r"\b\d+(?:\.\d+){1,4}\b")
 _PROTECTED_INLINE_PREFIX = "__ODYLITH_INLINE_ROUTE_"
 
 
@@ -219,11 +220,17 @@ def _repair_dangling_clause_tails(value: str) -> str:
 def _protect_structured_inline_routes(value: str) -> tuple[str, tuple[str, ...]]:
     spans: list[str] = []
 
-    def replace(match: re.Match[str]) -> str:
+    def replace_markdown_target(match: re.Match[str]) -> str:
         spans.append(match.group(1))
         return f"]({_PROTECTED_INLINE_PREFIX}{len(spans) - 1}__)"
 
-    return _MARKDOWN_LINK_TARGET_RE.sub(replace, value), tuple(spans)
+    def replace_version_token(match: re.Match[str]) -> str:
+        spans.append(match.group(0))
+        return f"{_PROTECTED_INLINE_PREFIX}{len(spans) - 1}__"
+
+    protected = _MARKDOWN_LINK_TARGET_RE.sub(replace_markdown_target, value)
+    protected = _VERSION_TOKEN_RE.sub(replace_version_token, protected)
+    return protected, tuple(spans)
 
 
 def _restore_structured_inline_routes(value: str, spans: Sequence[str]) -> str:

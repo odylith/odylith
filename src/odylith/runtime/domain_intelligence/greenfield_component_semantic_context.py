@@ -265,6 +265,35 @@ def description_owned_phrases(value: str) -> tuple[str, ...]:
     return tuple(unique_text(rows))
 
 
+def generated_scaffold_subject(value: str, *, label: str) -> str:
+    text = _clean(value)
+    label_terms = set(_content_terms(label))
+    patterns = (
+        r"\bowns?\s+(?P<subject>.+?)\s+state,\s+required\s+inputs\b",
+        r"\b(?P<subject>.+?)\s+state,\s+required\s+inputs\b",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        subject = _clean_artifact_phrase(match.group("subject")) or _clean(match.group("subject")).casefold()
+        subject_terms = set(_content_terms(subject))
+        if len(subject_terms) >= 2 and (not label_terms or subject_terms & label_terms):
+            return f"owns {subject} state"
+    return ""
+
+
+def preserved_scaffold_material(value: str) -> tuple[str, ...]:
+    return tuple(
+        unique_text(
+            phrase
+            for clause in clauses(value)
+            if (phrase := _clean_artifact_phrase(clause))
+            and {"boundary", "boundaries"} & set(phrase.casefold().split())
+        )
+    )
+
+
 def _is_deferred_or_outside_clause(value: str) -> bool:
     text = _clean(value).casefold()
     return bool(
@@ -428,17 +457,86 @@ _CONTEXT_METADATA_LEADS = frozenset(
 )
 
 
+def component_role_phrases(*, label: str, description: str) -> tuple[str, ...]:
+    text = _clean(" ".join([label, description])).casefold()
+    phrases: list[str] = []
+    if re.search(r"\b(?:audit|evidence|ledger|log|proof|replay|reviewable|trace)\b", text):
+        phrases.extend(["audit trail", "replay evidence", "decision ledger"])
+    if re.search(r"\b(?:failure|blocked|invalid|missing|recovery)\b", text):
+        phrases.append("failure reason ledger")
+    if re.search(r"\b(?:guardrail|limit|rollout|release)\b", text):
+        phrases.extend(["known-limit checkpoint", "recovery-condition ledger"])
+    return tuple(unique_text(phrases))
+
+
+def needs_source_evidence(
+    *,
+    label: str,
+    description: str,
+    proposal_context: str,
+    action_terms: Sequence[str],
+) -> bool:
+    local_context = " ".join([label, description, proposal_context])
+    if not re.search(r"\b(?:source|evidence|provenance|attachment|audit)\b", _clean(local_context), re.IGNORECASE):
+        return False
+    if re.search(r"\b(?:source|evidence|provenance|attachment|audit)\b", _clean(description), re.IGNORECASE):
+        return True
+    local_terms = set(_content_terms(" ".join([label, description])))
+    record_actions = {"capture", "create", "edit", "import", "log", "record", "save", "store", "submit", "track"}
+    return bool(record_actions & set(action_terms) or local_terms & {"entry", "history", "ledger", "log", "record", "store"})
+
+
+_TRANSITION_CONTEXT_TERMS = frozenset(
+    {
+        "event",
+        "events",
+        "history",
+        "lifecycle",
+        "lifecycles",
+        "progress",
+        "stage",
+        "stages",
+        "status",
+        "timeline",
+        "timelines",
+        "transition",
+        "transitions",
+        "workflow",
+    }
+)
+
+
+def transition_context_text(
+    value: str,
+    *,
+    label_terms: Sequence[str],
+    description_terms: Sequence[str],
+) -> str:
+    local_terms = set(label_terms) | set(description_terms)
+    if not local_terms & _TRANSITION_CONTEXT_TERMS:
+        return ""
+    context_terms = set(_content_terms(value))
+    if context_terms and not context_terms & expanded_context_anchors(local_terms):
+        return ""
+    return _clean(value)
+
+
 def _clean(value: Any) -> str:
     return clean_artifact_text(value, split_parentheses=True)
 
 
 __all__ = [
     "clauses",
+    "component_role_phrases",
     "context_anchor_compounds",
     "context_object_phrases",
     "context_required_phrases",
     "description_owned_phrases",
     "expanded_context_anchors",
+    "generated_scaffold_subject",
     "needs_context_backfill",
+    "needs_source_evidence",
     "owned_context_detail_phrases",
+    "preserved_scaffold_material",
+    "transition_context_text",
 ]

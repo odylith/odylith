@@ -8,6 +8,7 @@ import re
 from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import generic_actor_label_prefix
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import looks_actor_term
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
@@ -491,6 +492,7 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
         head_candidate = " ".join(words[:index]).strip(" .")
         if token == "being":
             continue
+        head_has_role_signal = _actor_head_has_role_signal(head_candidate)
         gerund_boundary = token in {
             "acknowledging",
             "asking",
@@ -521,7 +523,7 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
             "tracking",
             "using",
             "watching",
-        } or (token.endswith("ing") and _generic_person_head(head_candidate))
+        } or (token.endswith("ing") and head_has_role_signal)
         finite_action_boundary = looks_like_finite_action_token(token)
         base_action_boundary = looks_like_base_action_token(token)
         clause_action_boundary = finite_action_boundary or base_action_boundary
@@ -531,7 +533,7 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
         head = re.sub(r"^(?:a|an|the)\s+", "", head, flags=re.IGNORECASE).strip(" .")
         tail = " ".join(words[index:]).strip(" .")
         role = _role_suffix(head)
-        if not role and _generic_person_head(head):
+        if not role and head_has_role_signal:
             role = "user"
         subject_head = bool(role) or (
             clause_action_boundary
@@ -540,6 +542,15 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
         if subject_head and 1 <= len(head.split()) <= 4 and tail and (gerund_boundary or len(tail.split()) >= 2):
             return _title_label(head), tail
     return "", ""
+
+
+def _actor_head_has_role_signal(value: str) -> bool:
+    words = [word.casefold().strip(".,;:()") for word in _clean(value).replace("/", " ").split()]
+    if not words:
+        return False
+    if _role_suffix(value) or _generic_person_head(value):
+        return True
+    return looks_actor_term(words[-1])
 
 
 def _looks_like_finite_actor_subject(value: str, *, allow_singular_compound: bool = False) -> bool:

@@ -31,6 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_index import 
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import section_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_terms import clean_artifact_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_terms import enrich_owned_state_from_io
 from odylith.runtime.domain_intelligence.greenfield_component_terms import looks_action_form
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase_identity_terms
@@ -287,6 +288,24 @@ def test_component_narrative_view_derives_roles_and_material_items_without_rende
     assert view.produced_items == ("planning recommendation result",)
     assert "ready-for-next-step" in view.transition_items
     assert view.material_transition_count >= 2
+
+    action_noise_view = component_narrative_view(
+        label="Experiment Workspace",
+        owns=(
+            "experiment workspace state",
+            "understand one-dimensional tunneling",
+            "deterministic sample experiment",
+            "scenario experiment workspace",
+        ),
+        accepts=("preset experiment",),
+        produces=("visible result",),
+        transitions=("accepted", "blocked", "corrected", "completed"),
+        outside=(),
+        proofs=("Replay evidence remains reviewable.",),
+    )
+    assert "understand one-dimensional tunneling" not in action_noise_view.owned_items
+    assert "scenario experiment workspace" not in action_noise_view.owned_items
+    assert action_noise_view.owned_items == ("experiment workspace state", "deterministic sample experiment")
 
     handoff_view = component_narrative_view(
         label="Coordinator Review Queue",
@@ -802,6 +821,37 @@ def test_greenfield_component_spec_renderer_normalizes_boundary_component_label_
     assert generated_public_copy_issues("Registry component spec `Decision Service`", spec) == ()
 
 
+def test_greenfield_component_spec_renderer_preserves_explicit_transition_terms() -> None:
+    spec = build_narrative_component_spec(
+        component_id="status-view-service",
+        label="Status View Service",
+        path="src/example/status_view_service.py",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-004",),
+        component_contract={
+            "owned_state": "status timeline, current owner, transition history, blocked indicators, and audit trail",
+            "accepted_inputs": "status timeline input, prior state, authorized actor, and validation context",
+            "produced_outputs": "role-appropriate status view, current owner, and transition-validation display",
+            "states_or_transitions": (
+                "Draft, sent, received, accepted, declined, more-info-requested, scheduled, "
+                "completed, blocked, stale, corrected, handed-off"
+            ),
+            "upstream_truth": "Lifecycle Tracking Service ownership",
+            "downstream_consumers": "Release review",
+            "outside_boundary": "adjacent component state, original input facts, and upstream source truth",
+            "local_proof": ["Replay one status view with actor, input facts, status, and explanation still aligned."],
+            "unique_failure": "Status View Service can mislead users if status history is stale or missing.",
+        },
+    )
+
+    lowered = spec.casefold()
+    for transition in ("sent", "received", "accepted", "declined", "scheduled", "completed"):
+        assert transition in lowered
+    assert "should make accepted, blocked, corrected, completed, and handed-off states explicit" not in spec
+
+
 def test_greenfield_component_spec_renderer_collapses_adjacent_duplicate_terms() -> None:
     spec = build_narrative_component_spec(
         component_id="quote-review-handoff",
@@ -960,6 +1010,29 @@ def test_greenfield_component_phrase_cleaner_keeps_status_modifiers_attached_to_
     assert generated_public_copy_issues("sample", "The catalog owns the entities records attach to.") == (
         "sample leaked malformed relation phrase",
     )
+
+
+def test_greenfield_owned_state_enrichment_cleans_io_clauses_before_lifting() -> None:
+    enriched = enrich_owned_state_from_io(
+        "parameter control state",
+        {
+            "accepted_inputs": (
+                "Barrier width and particle energy choices, enforces bounds, "
+                "and keeps unit conversions visible"
+            ),
+            "produced_outputs": (
+                "checks the learner explanation for required assumptions before producing an export, "
+                "misconception prompt result"
+            ),
+        },
+        noise_terms={"state"},
+    ).casefold()
+
+    assert "barrier width and particle energy choices" in enriched
+    assert "misconception prompt result" in enriched
+    assert "checks the learner explanation" not in enriched
+    assert "enforces bounds" not in enriched
+    assert "keeps unit conversions visible" not in enriched
 
 
 def test_greenfield_narrative_component_spec_avoids_relation_tail_and_status_clip() -> None:

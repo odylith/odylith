@@ -111,6 +111,30 @@ def readable_action_chain_phrase(
     return _clip_phrase(_readable_action_step_fragment(text), limit=limit).strip(" ,.") or fallback_text
 
 
+def readable_action_chain_sentence(
+    value: Any,
+    *,
+    fallback: str = "complete the accepted product path",
+    limit: int = 220,
+    max_steps: int = 4,
+    include_visible_results: bool = False,
+) -> str:
+    """Return a prose-safe action chain for fields that are later split as lists."""
+
+    text = clean_first_path_text(value).strip(" ,.")
+    fallback_text = clean_first_path_text(fallback).strip(" ,.")
+    if not text:
+        text = fallback_text
+    if not text:
+        return ""
+    model = _model_for(text)
+    rows = _readable_action_steps(model, max_steps=max_steps, include_visible_results=include_visible_results)
+    candidate = _join_fragments_within_limit(rows, limit=limit)
+    if candidate:
+        return candidate
+    return _clip_phrase(_readable_action_step_fragment(text), limit=limit).strip(" ,.") or fallback_text
+
+
 def first_path_outcome_phrase(
     value: Any,
     *,
@@ -414,4 +438,5 @@ __all__ = [
     "first_path_clauses",
     "first_path_outcome_phrase",
     "readable_action_chain_phrase",
+    "readable_action_chain_sentence",
 ]

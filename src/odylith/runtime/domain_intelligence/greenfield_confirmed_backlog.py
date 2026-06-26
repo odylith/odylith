@@ -13,6 +13,12 @@ from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_tex
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
     outcome_action_phrase as _outcome_action_phrase,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_row import (
+    build_backlog_row as _backlog_row,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_row import (
+    first_success_metric_rows as _first_success_metric_rows,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import system_component_name
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items as _join_items
@@ -21,14 +27,12 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text as _clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values as _text_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
-from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import (
-    build_workstream_domain_intelligence,
-)
 
 
 def confirmed_workstream_titles(
@@ -308,9 +312,20 @@ def confirmed_backlog_rows(
         limit=220,
         max_steps=4,
     )
-    metric_first_path_proof_capability = _metric_capability_summary(readable_first_path_proof_capability)
+    metric_first_path_proof_text = readable_action_chain_sentence(
+        first_path_for_clauses,
+        fallback=readable_first_path_proof_capability or first_path_proof_capability or first_path_action,
+        limit=220,
+        max_steps=5,
+        include_visible_results=True,
+    )
+    metric_first_path_proof_capability = _metric_capability_summary(metric_first_path_proof_text)
     path_entry_story = backlog_text.sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
     workflow_actor_label = backlog_text.lead_actor_label(first_release_human_actors) or f"{label} user"
+    metric_evidence_scope = _evidence_scope_phrase(
+        metric_first_path_proof_capability,
+        actor=workflow_actor_label,
+    )
     metric_actor = backlog_text.problem_actor_subject(workflow_actor_label, fallback=f"{label} user")
     downstream_candidate = backlog_text.supporting_actor_label(first_release_human_actors)
     downstream_actor = downstream_candidate if backlog_actions.actor_appears_in_path(first_path_for_clauses, downstream_candidate) else ""
@@ -436,7 +451,7 @@ def confirmed_backlog_rows(
         product_view=parent_view,
         first_slice=first_slice,
         metrics=[
-            *(success_metrics or [])[:1],
+            *_first_success_metric_rows(success_metrics),
             result_metric,
             f"{state_responsibility} remains understandable when input is accepted, blocked, corrected, or reviewed.",
             f"The proof ledger keeps {proof_component} success evidence replayable so a reviewer can see what happened and why.",
@@ -472,7 +487,7 @@ def confirmed_backlog_rows(
         customer=workflow_actor_label,
         opportunity=(
             f"Turn the first actor-owned action into a complete, reviewable outcome: {metric_actor_inline} {metric_actor_provides} what the product needs, "
-            f"leaves enough context for follow-up, and {workflow_followup_clause}."
+            f"the product keeps enough context for follow-up, and {workflow_followup_clause}."
         ),
         product_view=(
             f"{metric_actor} can {workflow_action}. The product checks the details, explains missing information before it produces a result, "
@@ -484,7 +499,7 @@ def confirmed_backlog_rows(
         ),
         metrics=[
             (
-                f"First interaction evidence covers {metric_first_path_proof_capability}. "
+                f"First interaction evidence covers {metric_evidence_scope}. "
                 "It includes success, blocked input, replay, and handoff checks."
                 if backlog_text.result_terms_covered(outcome_action, metric_first_path_proof_capability)
                 else workflow_metric_sentence
@@ -620,81 +635,6 @@ def _mentions_actor_label(value: str, labels: list[str]) -> bool:
     return False
 
 
-def _backlog_row(
-    *,
-    label: str,
-    title: str,
-    problem: str,
-    customer: str,
-    opportunity: str,
-    product_view: str,
-    first_slice: str,
-    metrics: list[str],
-    component_focus: list[str],
-    diagram_focus: list[str],
-    dependencies: list[str],
-    interfaces: list[str],
-    validation: list[str],
-    state_object: str,
-    evidence_record: str,
-    first_path: str,
-    proof_boundary: str,
-    human_actors: list[str],
-    internal_systems: list[str],
-    external_systems: list[str],
-    non_goals: list[str],
-    intelligence_actors: list[str] | None = None,
-    workstream_type: str = "implementation",
-) -> dict[str, Any]:
-    return {
-        "title": title,
-        "workstream_type": workstream_type,
-        "problem": problem,
-        "customer": customer,
-        "opportunity": opportunity,
-        "product_view": product_view,
-        "success_metrics": metrics,
-        "priority": "P1",
-        "sizing": "M",
-        "complexity": "Medium",
-        "recommended_first_slice": first_slice,
-        "component_focus": component_focus,
-        "related_diagram_slugs": diagram_focus,
-        "dependencies": dependencies,
-        "interfaces": interfaces,
-        "validation": validation,
-        "evidence_tier": "user_intent" if workstream_type == "program_parent" else "odylith_assumption",
-        "rationale_lines": backlog_text.rationale_lines(
-            label=label,
-            title=title,
-            opportunity=opportunity,
-            first_slice=first_slice,
-            proof_boundary=proof_boundary,
-            deferred_scope=non_goals,
-        ),
-        "domain_intelligence": build_workstream_domain_intelligence(
-            label=label,
-            row_title=title,
-            problem=problem,
-            opportunity=opportunity,
-            product_view=product_view,
-            first_slice=first_slice,
-            metrics=metrics,
-            dependencies=dependencies,
-            interfaces=interfaces,
-            validation=validation,
-            state_object=state_object,
-            evidence_record=evidence_record,
-            first_path=first_path,
-            proof_boundary=proof_boundary,
-            human_actors=intelligence_actors or human_actors,
-            internal_systems=internal_systems,
-            external_systems=external_systems,
-            non_goals=non_goals,
-        ),
-    }
-
-
 def _dedupe_capability_phrase(value: str) -> str:
     text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
     if not text:
@@ -744,6 +684,21 @@ def _metric_capability_summary(value: str) -> str:
     return parts[0] if parts else text
 
 
+def _evidence_scope_phrase(value: str, *, actor: str) -> str:
+    text = _strip_leading_connector(_clean_text(value).strip(" ."))
+    if not text:
+        return "the promised first-path result"
+    lowered = text.casefold()
+    if lowered.startswith(("a ", "an ", "one ", "the ", "this ", "that ")):
+        return text
+    actor_subject = backlog_text.problem_actor_subject(actor, fallback="the user").casefold()
+    if lowered.startswith("can "):
+        return f"the path where {actor_subject} {text}"
+    if looks_like_action_clause(text):
+        return f"the path where {actor_subject} can {text}"
+    return f"the first-path evidence for {text}"
+
+
 def _proof_focus_summary(value: str) -> str:
     text = _strip_leading_connector(_clean_text(value).strip(" ."))
     if not text:
@@ -756,7 +711,7 @@ def _proof_focus_summary(value: str) -> str:
             if (normalized := _strip_leading_connector(candidate.strip(" .")))
         )
     if len(parts) >= 3:
-        return f"{parts[0]} plus related proof context"
+        return f"{parts[0]}, {parts[1]}, and {parts[2]}"
     if len(parts) == 2:
         return f"{parts[0]} and {parts[1]}"
     return parts[0] if parts else text

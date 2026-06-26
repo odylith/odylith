@@ -321,6 +321,21 @@ def _accepted_intent_sentence(value: str, *, label: str) -> str:
     ):
         return ""
     text = re.sub(r"\bFailure\s+avoided\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip(" .")
+    action_text = re.sub(r"\s+[—-]\s+", ": ", text, count=1)
+    action_text = re.sub(r"\s+", " ", action_text).strip(" .")
+    action_needs_structured_cleanup = bool(
+        re.match(r"^keeps?\s+", action_text, flags=re.I)
+        or re.search(r"\bwhile\s+keeping\b", action_text, flags=re.I)
+    )
+    if (
+        not action_needs_structured_cleanup
+        and not _accepted_intent_is_low_signal(action_text)
+        and looks_like_finite_action(action_text)
+    ):
+        return _sentences(
+            f"Accepted intent says {label} {_lower_first(action_text)}",
+            _accepted_material_terms_sentence(action_text),
+        )
     cleaned_fragment = _clean_fragment(text)
     if cleaned_fragment:
         text = cleaned_fragment
@@ -331,10 +346,6 @@ def _accepted_intent_sentence(value: str, *, label: str) -> str:
     relation_sentence = _accepted_relation_sentence(text, label=label)
     if relation_sentence:
         return relation_sentence
-    keep_match = re.match(r"^keeps?\s+(?P<body>.+)$", text, flags=re.I)
-    if keep_match:
-        body = _clean_fragment(keep_match.group("body"))
-        return _sentence(f"Accepted intent assigns {label} to {_lower_first(body)}") if body else ""
     keeping_match = re.match(r"(?P<head>.+?)\s+while\s+keeping\s+(?P<tail>.+)$", text, flags=re.I)
     if keeping_match:
         head = _clean_fragment(keeping_match.group("head"))
@@ -349,6 +360,10 @@ def _accepted_intent_sentence(value: str, *, label: str) -> str:
                 head_sentence,
                 f"It keeps {_lower_first(tail)}",
             )
+    keep_match = re.match(r"^keeps?\s+(?P<body>.+)$", text, flags=re.I)
+    if keep_match:
+        body = _clean_fragment(keep_match.group("body"))
+        return _sentence(f"Accepted intent assigns {label} to {_lower_first(body)}") if body else ""
     if looks_like_finite_action(text):
         return _sentences(
             f"Accepted intent says {label} {_lower_first(text)}",
@@ -472,7 +487,7 @@ def _transition_sentence(*, label: str, view: ComponentNarrativeView, text: str)
             return f"The lifecycle for {label} includes {transition_summary}."
         return (
             f"The lifecycle for {label} should make accepted, blocked, corrected, completed, "
-            f"and handed-off states explicit before implementation expands. {label} keeps sent, received, declined, and scheduled handoffs visible."
+            "and handed-off states explicit before implementation expands."
         )
     if view.concrete_transition_items or view.material_transition_count >= 4:
         return f"The important lifecycle for {label} is {text}."
@@ -785,10 +800,16 @@ def _clean_proof_sentence(proof: str, *, label: str, index: int) -> str:
 def _contract_items(contract: Mapping[str, Any], key: str) -> tuple[str, ...]:
     values: list[str] = []
     for raw in text_values(contract.get(key), split_scalar=True, split_commas=True, strip_bullets=True):
-        cleaned = _clean_fragment(raw)
+        cleaned = _clean_transition_fragment(raw) if key == "states_or_transitions" else _clean_fragment(raw)
         if cleaned:
             values.append(cleaned)
     return unique_text(values)
+
+
+def _clean_transition_fragment(value: Any) -> str:
+    text = clean_text(display_text.strip_inline_markdown_emphasis_tokens(str(value or "")))
+    text = normalize_action_splice_phrase(re.sub(r"\s+", " ", text).strip(" .;:,"))
+    return _lower_first(text) if text else ""
 
 
 def _proof_items(value: Any) -> tuple[str, ...]:

@@ -15,6 +15,7 @@ _INFINITIVE_TO_FINITE = {
     "acknowledge": "acknowledges",
     "add": "adds",
     "advance": "advances",
+    "adjust": "adjusts",
     "allow": "allows",
     "allocate": "allocates",
     "answer": "answers",
@@ -46,6 +47,7 @@ _INFINITIVE_TO_FINITE = {
     "complete": "completes",
     "confirm": "confirms",
     "connect": "connects",
+    "contain": "contains",
     "control": "controls",
     "convert": "converts",
     "coordinate": "coordinates",
@@ -91,6 +93,7 @@ _INFINITIVE_TO_FINITE = {
     "hold": "holds",
     "identify": "identifies",
     "import": "imports",
+    "include": "includes",
     "ingest": "ingests",
     "inspect": "inspects",
     "intake": "intakes",
@@ -180,10 +183,12 @@ _INFINITIVE_TO_FINITE = {
     "transform": "transforms",
     "triage": "triages",
     "turn": "turns",
+    "understand": "understands",
     "update": "updates",
     "upload": "uploads",
     "use": "uses",
     "view": "views",
+    "visit": "visits",
     "validate": "validates",
     "verify": "verifies",
     "watch": "watches",
@@ -229,6 +234,19 @@ _MODAL_COORDINATED_PLURAL_OBJECT_TERMS = frozenset(
 )
 _MODAL_COORDINATED_OBJECT_BOUNDARIES = frozenset(
     {"", "after", "and", "because", "before", "for", "from", "if", "into", "or", "then", "through", "to", "until", "when", "where", "which", "while", "with", "without"}
+)
+_GERUND_NO_DOUBLE_FINAL_CONSONANT = frozenset(
+    {
+        "answer",
+        "deliver",
+        "edit",
+        "enter",
+        "filter",
+        "gather",
+        "monitor",
+        "open",
+        "visit",
+    }
 )
 DEFAULT_DANGLING_TAIL_WORDS = frozenset(
     {
@@ -684,6 +702,8 @@ def _regular_gerund_form(base: str) -> str:
 
 def _should_double_final_consonant_for_gerund(token: str) -> bool:
     if len(token) < 3 or token[-1] in "wxy":
+        return False
+    if token in _GERUND_NO_DOUBLE_FINAL_CONSONANT:
         return False
     vowels = set("aeiou")
     return token[-1] not in vowels and token[-2] in vowels and token[-3] not in vowels

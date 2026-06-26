@@ -280,6 +280,25 @@ def test_product_risks_strip_bare_actor_label_from_weak_input_clause() -> None:
     assert generated_semantic_slop_issues({"risks": risks}) == []
 
 
+def test_product_risks_describe_noun_focus_as_information_for_activity() -> None:
+    risks = build_product_risks(
+        title="Practice Session Workspace",
+        product_story="A learner needs one place to complete a practice session and leave usable evidence.",
+        first_path="A learner opens the lab session and sees a visible summary.",
+        state_object="A lab session with selected scenario, attempt history, visible result, and completion status.",
+        proof_boundary="Release 0.0.1 succeeds when one learner can complete a session and see a summary.",
+        human_actors=["Learner", "Coach"],
+        release="0.0.1",
+    )
+    raw_rendered = json.dumps(risks, sort_keys=True)
+    rendered = raw_rendered.casefold()
+
+    assert "provides lab session" not in rendered
+    assert "provides information for lab session" in rendered
+    assert "wrong person. the learner" not in raw_rendered
+    assert generated_semantic_slop_issues({"risks": risks}) == []
+
+
 def test_component_specs_strip_coordinated_actions_from_owned_artifact_slots() -> None:
     intent = complete_confirmed_intent(
         parse_confirmed_intent_text(

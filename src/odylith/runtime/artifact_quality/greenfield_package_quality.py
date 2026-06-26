@@ -188,6 +188,8 @@ def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
         issues.append(f"{artifact.identity} has inline actor casing drift")
     if _has_doubled_sentence_punctuation(artifact.text):
         issues.append(f"{artifact.identity} has doubled sentence punctuation")
+    if malformed := _malformed_connector_sequence(artifact.text):
+        issues.append(f"{artifact.identity} has malformed connector sequence near `{malformed}`")
     if _has_vague_missing_input_copy(artifact.text):
         issues.append(f"{artifact.identity} uses vague missing-input copy")
     if _has_comma_spliced_capitalized_clause(artifact.text):
@@ -406,6 +408,11 @@ def _adjacent_repeated_word_issues(
         if token == lowered[index + 1]:
             issues.append(f"{artifact.identity} repeats adjacent word `{tokens[index]} {tokens[index + 1]}`")
     return issues
+
+
+def _malformed_connector_sequence(value: str) -> str:
+    match = re.search(r"\b(?:and|or|then|but)\s+(?:and|or|then|but)\b", str(value or ""), flags=re.IGNORECASE)
+    return match.group(0) if match else ""
 
 
 def _looks_like_link_or_path_chunk(value: str) -> bool:

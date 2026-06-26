@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
 
 _MODAL_MARKERS = frozenset({"can", "will", "must", "needs", "need"})
 _LEADING_ARTICLES = frozenset({"a", "an", "the"})
@@ -286,7 +287,9 @@ def _recovered_story_text(
 def _recovered_proof_text(*, first_path_inline: str, outcome_object: str) -> str:
     first_path = _sentence_start(first_path_inline)
     if "." in first_path_inline:
-        opening = f"Release 0.0.1 succeeds when this first path is complete: {first_path}."
+        opening = normalize_confirmed_proof_boundary_sentence(
+            f"Release 0.0.1 succeeds when the accepted first path is complete: {first_path}."
+        )
     else:
         opening = f"Release 0.0.1 succeeds when {first_path_inline}."
     return (

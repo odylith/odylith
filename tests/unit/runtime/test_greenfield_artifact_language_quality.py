@@ -3,10 +3,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import state_transition_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import program_problem
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import rationale_release_basis
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_proof_boundary_language
 from odylith.runtime.governance.component_authoring import _public_what_it_is
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
 from odylith.runtime.project_intelligence.product_story_cards import build_greenfield_story_cards
@@ -31,6 +35,54 @@ def test_confirmed_backlog_text_model_stays_in_dedicated_owner() -> None:
     assert "def program_problem" in text_model_source
     assert "def sentence_fragment" in text_model_source
     assert "def first_action_clause" in text_model_source
+
+
+def test_release_basis_avoids_clipped_release_gate_wrapper() -> None:
+    release_basis = rationale_release_basis(
+        title="Prove One Complete Published Auditable Funding Path",
+        label="Published Auditable Funding",
+        first_slice=(
+            "One representative path where municipal resilience grant reviewers can intake flood mitigation project "
+            "applications, score risk and equity evidence, route missing documentation back to applicants, and see "
+            "the published auditable funding recommendation."
+        ),
+        proof_boundary=(
+            "Release 0.0.1 succeeds when this first path is complete: Municipal resilience grant reviewers who intake "
+            "flood mitigation project applications. Score risk and equity evidence. Route missing documentation back "
+            "to applicants. Publish an auditable funding recommendation."
+        ),
+    )
+
+    assert "succeeds when this first path is complete" not in release_basis.casefold()
+    assert "municipal resilience grant reviewers" in release_basis.casefold()
+    assert "before adjacent scope enters the release" in release_basis
+
+
+def test_component_transition_inflector_renders_handoff_as_handed_off() -> None:
+    transition = state_transition_text(
+        action_terms=("handoff", "publish"),
+        object_phrases=("review handoff",),
+    )
+
+    assert "handed-off" in transition
+    assert "handoffed" not in transition
+
+
+def test_proof_boundary_normalizes_first_path_complete_wrapper() -> None:
+    raw = (
+        "Release 0.0.1 succeeds when this first path is complete: Municipal resilience grant reviewers who intake "
+        "flood mitigation project applications. Score risk and equity evidence. Route missing documentation back "
+        "to applicants. Publish an auditable funding recommendation."
+    )
+    proof = normalize_proof_boundary_language(raw)
+    confirmed_proof = normalize_confirmed_proof_boundary_sentence(raw)
+
+    assert proof == (
+        "municipal resilience grant reviewers can intake flood mitigation project applications, "
+        "score risk and equity evidence, route missing documentation back to applicants, and publish an auditable funding recommendation"
+    )
+    assert "this first path is complete" not in proof
+    assert confirmed_proof == f"Release 0.0.1 succeeds when {proof}"
 
 
 def test_greenfield_story_cards_keep_action_grammar_and_visible_outcome() -> None:
@@ -68,6 +120,32 @@ def test_greenfield_story_cards_keep_action_grammar_and_visible_outcome() -> Non
     assert "adds one asset and manually logs a few usage entries" in cards["First Path"]
     assert "current health readout with one grounded suggestion" in cards["First Path"]
     assert "multi-asset automation" in cards["Product Boundary"].casefold()
+
+
+def test_greenfield_story_cards_normalize_clause_like_proof_outcomes() -> None:
+    cards = {
+        row["label"]: row["body"]
+        for row in build_greenfield_story_cards(
+            title="Learning Lab",
+            intent={
+                "product_story": "A learner needs a short practice session that leaves visible evidence for review.",
+                "state_object": "A lab session record with selected scenario, attempt history, result, and review status.",
+                "non_goals": ["Advanced simulations and live instructor grading are outside the first release."],
+            },
+            project={},
+            objective="",
+            outcome="The first proof is a working lab session with visible evidence and correction guidance.",
+            first_path="A learner opens one session, completes a guided attempt, and sees a visible result.",
+            actors=(("primary", "Learner", "Completes the session."), ("reviewer", "Instructor", "Reviews the result.")),
+            validation=(),
+        )
+    }
+
+    boundary = cards["Product Boundary"]
+    assert "stops at" not in boundary
+    assert "proof is" not in boundary.casefold()
+    assert "This release is limited to a working lab session" in boundary
+    assert "advanced simulations" in boundary.casefold()
 
 
 def test_state_store_specs_do_not_render_as_configuration_policy() -> None:
@@ -109,6 +187,34 @@ def test_state_store_specs_do_not_render_as_configuration_policy() -> None:
     assert "keeps the product record together" in spec
     assert "boundary for holds" not in summary
     assert "boundary for the asset profile" in summary
+
+
+def test_component_spec_preserves_finite_action_accepted_intent_sentence() -> None:
+    spec = build_narrative_component_spec(
+        component_id="parameter-control-surface",
+        label="Parameter Control Surface",
+        path="src/example/parameter_control_surface",
+        kind="surface",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-003",),
+        responsibility="captures barrier width and particle energy choices, enforces bounds, and keeps unit conversions visible",
+        component_contract={
+            "owned_state": "parameter control, particle energy choices, unit conversions, blocker state, and next-step context",
+            "accepted_inputs": "particle energy choices, unit conversions, prior state, and validation context",
+            "produced_outputs": "particle energy choices, unit conversions, and bounded parameter state",
+            "states_or_transitions": "captured, enforced, validated, blocked, revised, and ready-for-next-step",
+            "outside_boundary": "adjacent component state, original input facts, and upstream source truth",
+            "local_proof": ("Replay evidence for Parameter Control Surface: actor, input facts, status, and explanation.",),
+            "upstream_truth": "Scenario Preset Surface ownership",
+            "downstream_consumers": "Simulation Runner",
+            "unique_failure": "Parameter Control Surface can mislead users if particle energy choices are missing.",
+        },
+    )
+
+    assert "Accepted intent says Parameter Control Surface captures barrier width" in spec
+    assert "unit conversions visible state" not in spec
+    assert "centers Parameter Control Surface on barrier width" not in spec
 
 
 def test_component_spec_preserves_relative_clauses_in_accepted_intent() -> None:

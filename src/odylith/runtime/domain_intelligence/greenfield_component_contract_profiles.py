@@ -324,7 +324,7 @@ def _status_transitions(context: str) -> list[str]:
     for needle, label in rules:
         if needle in lowered:
             rows.append(label)
-    defaults = ["draft", "sent", "received", "accepted", "declined", "scheduled", "completed", "blocked"]
+    defaults = ["accepted", "blocked", "corrected", "completed", "handed-off"]
     if "status timeline" in lowered or "lifecycle" in lowered:
         rows.extend(defaults)
     return list(unique_text(rows or defaults))

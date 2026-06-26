@@ -517,7 +517,7 @@ def _surrounding_ecosystem_paragraph(
             return _ensure_period(f"{story_tail.rstrip('.')}. {extra[0].rstrip('.')}")
         return _ensure_period(story_tail)
     if clauses:
-        return _ensure_period(f"The result then moves through the surrounding work: {_join(clauses[:3])}")
+        return _ensure_period(f"After the first result is produced, {_join(clauses[:3])}")
     outcome_text = _story_sentence(outcome).rstrip(".")
     if outcome_text and not _is_meta_project_line(outcome_text):
         return _ensure_period(f"The outcome gives the surrounding participants something concrete to review, trust, or act on: {_lower_first(outcome_text)}")
@@ -557,6 +557,8 @@ def _participant_clauses(actors: Sequence[tuple[str, str, str]]) -> list[str]:
             clean_body = ""
         clean_body = re.sub(r"\bthe accepted[- ]path\b", "that workflow", clean_body, flags=re.IGNORECASE)
         clean_body = re.sub(r"\baccepted[- ]path\b", "reviewed", clean_body, flags=re.IGNORECASE)
+        if re.match(r"^[A-Za-z][A-Za-z-]*ing\b", clean_body):
+            clean_body = f"supports by {clean_body}"
         if clean_title and clean_body:
             clauses.append(f"{clean_title} {_lower_first(clean_body)}")
         elif clean_body:
@@ -574,6 +576,8 @@ def _actor_story_title(value: object) -> str:
     if not title:
         return ""
     title = re.split(r"\b(?:who|that|with|for|and)\b", title, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .,:;")
+    if re.search(r"\bproof\s+reviewer\b", title, flags=re.IGNORECASE):
+        return "Reviewer"
     tokens = title.split()
     for index, token in enumerate(tokens[1:], start=1):
         if token.strip("()[]{}.,:;").casefold().endswith("ing"):
@@ -909,9 +913,9 @@ def _capitalize_sentence_starts(value: str) -> str:
 
 def _story_actor_items(actors: Sequence[tuple[str, str, str]]) -> list[dict[str, str]]:
     return [
-        {"role": display_text(role), "title": display_text(title), "body": _actor_story_detail(body)}
+        {"role": display_text(role), "title": _actor_story_title(title), "body": _actor_story_detail(body)}
         for role, title, body in actors[:4]
-        if display_text(title)
+        if _actor_story_title(title)
     ]
 
 

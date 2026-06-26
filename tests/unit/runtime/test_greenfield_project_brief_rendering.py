@@ -106,7 +106,7 @@ def test_project_brief_rendering_uses_shared_row_coercion_and_keeps_plain_lines(
             {
                 "checkpoint": "Status evidence",
                 "operator_question": "Which status proves the request is reviewable?",
-                "done_when": "The first release names that status and its reviewer.",
+                "done_when": "Done when the first release names that status and its reviewer.",
             }
         ],
         "coding_readiness_gates": ["The first path has a blocked-input and recovery proof."],
@@ -130,8 +130,9 @@ def test_project_brief_rendering_uses_shared_row_coercion_and_keeps_plain_lines(
     assert "  - Proof depth: Require a status timeline before coding.\n    - Options: timeline, notification.\n    - Impact: Changes the first release gate." in lines
     assert (
         "  - Status evidence: Which status proves the request is reviewable; "
-        "done when The first release names that status and its reviewer."
+        "done when the first release names that status and its reviewer."
     ) in lines
+    assert "done when Done when" not in "\n".join(lines)
     assert "  - Confirmed create: `odylith greenfield create --confirm` (Codex and Claude Code)" in lines
     assert all("not a row" not in line for line in lines)
 

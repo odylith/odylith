@@ -65,3 +65,22 @@ def test_repetition_gate_allows_shared_customer_metadata() -> None:
     issues = greenfield_rendered_package_quality_issues(package)
 
     assert "repeats noncanonical prose" not in "\n".join(issues)
+
+
+def test_rendered_package_quality_rejects_malformed_connector_sequences() -> None:
+    package = SimpleNamespace(
+        proposal={},
+        backlog_result={
+            "idea_files": {
+                "B-001.md": "## Boundary\nKeep this slice bounded and or defer broader automation.\n",
+            }
+        },
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_preview={},
+        next_steps_preview={},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "malformed connector sequence" in "\n".join(issues)

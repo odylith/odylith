@@ -187,13 +187,15 @@ def _first_path_card(ctx: _StoryCardContext) -> str:
 
 
 def _product_boundary_card(ctx: _StoryCardContext) -> str:
-    outcome = _outcome_phrase(ctx)
+    outcome = _release_boundary_outcome(ctx)
     if ctx.non_goals:
         excluded = _clean_boundary_exclusion(ctx.non_goals)
         if excluded:
-            return _ensure_period(f"This release stops at {outcome}. It leaves {excluded} for a later release unless those outcomes can be shown just as clearly")
+            return _ensure_period(
+                f"This release is limited to {outcome}. It leaves {excluded} for a later release unless those outcomes can be shown just as clearly"
+            )
     return _ensure_period(
-        f"This release stops at {outcome}. It does not claim every variant, exception, external handoff, or scaled operating path until those outcomes can be explained from the same user-visible result"
+        f"This release is limited to {outcome}. It does not claim every variant, exception, external handoff, or scaled operating path until those outcomes can be explained from the same user-visible result"
     )
 
 
@@ -596,6 +598,20 @@ def _outcome_phrase(ctx: _StoryCardContext) -> str:
         if text:
             return _outcome_as_noun(_limit_card(text, limit=180).rstrip("."))
     return "a clear result that the next participant can understand"
+
+
+def _release_boundary_outcome(ctx: _StoryCardContext) -> str:
+    outcome = _outcome_phrase(ctx)
+    proof = re.match(
+        r"^(?:the\s+)?(?:first\s+)?proof\s+(?:is|shows|proves)\s+(?P<body>.+)$",
+        outcome,
+        flags=re.IGNORECASE,
+    )
+    if proof:
+        body = _clean(proof.group("body")).strip(" .")
+        if body:
+            return body
+    return outcome
 
 
 def _outcome_as_noun(value: str) -> str:

@@ -348,8 +348,9 @@ def _complete_terminal_status_modifier(words: Sequence[str], carriers: set[str],
         return list(words)
     if not any(word in carriers for word in lowered[:-1]):
         return list(words)
-    carrier = "status" if lowered[-1] == "final" else default_carrier
-    return [*words, carrier]
+    carrier = default_carrier if "lifecycle" in lowered[:-1] else "status" if lowered[-1] == "final" else default_carrier
+    completed = [*words, carrier]
+    return _normalize_lifecycle_status_state(completed, carriers | {carrier})
 
 
 def _strip_trailing_relation_action(words: Sequence[str]) -> list[str]:

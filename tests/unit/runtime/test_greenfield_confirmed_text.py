@@ -9,11 +9,14 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import bounda
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import inline_list_sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import strip_dangling_tail
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_occurrences
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_terms
@@ -136,6 +139,27 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
         )
         == "Learner Practice Record"
     )
+    assert (
+        domain_object_label(
+            (
+                "A lab session contains the selected experiment, particle properties, barrier shape, "
+                "energy settings, solver settings, visualization state, measured outputs, notes, and saved results."
+            ),
+            fallback="Lab state",
+        )
+        == "Lab Session"
+    )
+    lab_detail = state_detail_summary(
+        (
+            "A lab session contains the selected experiment, particle properties, barrier shape, "
+            "energy settings, solver settings, visualization state, measured outputs, notes, and saved results."
+        ),
+        state_label="Lab Session",
+    )
+    assert state_detail_restates_label_with_finite_action(
+        lab_detail,
+        state_label="Lab Session",
+    )
     assert state_detail_summary(
         (
             "The tutor stores a learner practice record, including prompt, selected answer, feedback, "
@@ -181,6 +205,31 @@ def test_readable_action_chain_compacts_list_heavy_first_path() -> None:
     )
     assert phrase.count(",") == 0
     assert not phrase.endswith(("and", "with", ","))
+
+
+def test_readable_action_chain_bases_comma_following_finite_verbs() -> None:
+    phrase = readable_action_chain_phrase(
+        "A physics learner opens a preset experiment, adjusts barrier height and width, runs the simulation.",
+        limit=220,
+        max_steps=3,
+    )
+
+    assert phrase == "open a preset experiment; adjust barrier height and width; run the simulation"
+    assert "opens" not in phrase
+    assert "adjusts" not in phrase
+
+
+def test_confirmed_text_collapses_connector_drift_and_inline_metric_lists() -> None:
+    assert (
+        boundary_clause_item(
+            "Do not expand into adjacent workflows, broader automation, and or operational scale until proof exists."
+        )
+        == "Do not expand into adjacent workflows, broader automation, or operational scale until proof exists"
+    )
+    assert "and and" not in sentence_text("Keep the slice bounded and and reviewable.")
+    assert inline_list_sentence(
+        "The first release proves the first path: open the lab; select one preset; adjust controls; run the experiment."
+    ) == "The first release proves the first path: open the lab, select one preset, adjust controls, and run the experiment"
 
 
 def test_confirmed_markdown_cleanup_stays_in_text_owner() -> None:
@@ -285,6 +334,9 @@ def test_first_path_gerunds_use_action_phrase_not_object_nouns() -> None:
         == "defining a block (variety, area, planting year)"
     )
     assert gerund_action_fragment("A user provides a report") == "providing a report"
+    assert gerund_action_fragment("opens a preset experiment") == "opening a preset experiment"
+    assert gerund_action_fragment("visits the workspace") == "visiting the workspace"
+    assert gerund_action_fragment("edits the record") == "editing the record"
     assert gerund_action_fragment("blocks invalid input") == "blocking invalid input"
 
 

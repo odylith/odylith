@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_confirmed_items
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
@@ -29,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_outcome_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
 
 
 def confirmed_project_brief(
@@ -76,10 +78,11 @@ def confirmed_project_brief(
         label=label,
         limit=300,
     )
-    proof_source = proof_boundary or (
+    raw_proof_source = proof_boundary or (
         f"Release {release} succeeds only when {state_ref} and "
         f"{evidence_ref} can be reviewed together."
     )
+    proof_source = normalize_confirmed_proof_boundary_sentence(raw_proof_source) or raw_proof_source
     proof = project_outcome_text(
         _brief_clause(proof_claim_summary(proof_source, limit=300), limit=300),
         intent={
@@ -277,7 +280,7 @@ def _sentence_text(value: str) -> str:
 def _actor_boundary_text(items: list[str] | None, *, project_focus: str = "", limit: int = 4) -> str:
     values = [_actor_boundary_item(item, project_focus=project_focus) for item in (items or []) if str(item or "").strip()]
     values = [value for value in values if value]
-    return "; ".join(values[:limit])
+    return join_confirmed_items(values[:limit])
 
 
 def _actor_boundary_item(value: str, *, project_focus: str = "") -> str:
@@ -288,11 +291,9 @@ def _actor_boundary_item(value: str, *, project_focus: str = "") -> str:
     if sep and label:
         label = actor_display_label(text, project_focus=project_focus) or label
         if is_deferred_actor(text):
-            return f"{label}: supplies context and support; deferred from the first path"
-        if body:
-            return f"{label}: {body}"
+            return f"{label} deferred from the first path"
         return label
-    return boundary_clause_text([text])
+    return actor_display_label(text, project_focus=project_focus) or boundary_clause_text([text])
 
 
 def _split_actor_boundary_item(value: str) -> tuple[str, str, str]:
@@ -642,7 +643,7 @@ def _state_reference_text(state_object: str, *, state_label: str) -> str:
 def _checkpoint(name: str, question: str) -> dict[str, str]:
     done_when_by_name = {
         "product story accepted": "Done when the accepted brief names the user, problem, first path, and deferred scope in one readable story.",
-        "state ownership accepted": "Done when the state owner, version history, and review responsibility are explicit enough to plan implementation.",
+        "state ownership accepted": "Done when one named component owns the accepted state, version history, and review responsibility clearly enough to plan implementation.",
         "evidence path accepted": "Done when reviewers can tell which evidence proves the result without relying on implementation prose.",
         "release proof accepted": "Done when release gates block promotion unless the promised result, replay evidence, and review evidence are present.",
     }

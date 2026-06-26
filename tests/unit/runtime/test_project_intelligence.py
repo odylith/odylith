@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter, product_story
+from odylith.runtime.project_intelligence.greenfield_job_cards import _jobs
 from odylith.runtime.project_intelligence.greenfield import _risk_classes
 from odylith.runtime.surfaces import dashboard_shell_links
 from tests.unit.runtime.greenfield_proposal_fixtures import _apply_ready_greenfield_fixture as _host_greenfield_fixture
@@ -917,6 +918,58 @@ def test_greenfield_product_story_cards_explain_outcome_not_labels_or_fragments(
     assert "Rules Engine" not in encoded
     assert "automatic approval" in cards["Product Boundary"]
     assert "accepted or needs-information result" in cards["Proof"]
+
+
+def test_greenfield_product_story_participants_do_not_narrate_synthetic_reviewer_fragments() -> None:
+    story = product_story.build_greenfield_product_story(
+        title="Technical Learning Lab",
+        intro="A learner needs one short session that makes a difficult concept reviewable.",
+        project={"intent": ["Project objective: A learner needs one short session that makes a difficult concept reviewable."]},
+        project_brief={},
+        first_path="A learner opens a preset lab, completes one attempt, and sees a visible result.",
+        release="0.0.1",
+        release_plan={},
+        validation=["A learner can complete the lab and a reviewer can inspect the result."],
+        accepted={"status": "accepted"},
+        backlog=[],
+        components=[{"label": "Lab Session Workspace"}],
+        diagrams=[],
+        actors=[
+            ("primary", "Learner", "starts the accepted path."),
+            ("support", "Instructor", "assigning or reviewing lab scenarios."),
+            ("reviewer", "Technical Learning Lab proof reviewer", "reviews product outcomes, decides what needs attention."),
+        ],
+    )
+    rendered = json.dumps(story, sort_keys=True)
+
+    assert "The result then moves through" not in rendered
+    assert "Instructor assigning" not in rendered
+    assert "Technical Learning Lab proof reviewer" not in rendered
+    assert "After the first result is produced" in rendered
+    assert "Instructor supports by assigning or reviewing lab scenarios" in rendered
+    assert "Reviewer reviews product outcomes" in rendered
+
+
+def test_greenfield_job_cards_repair_clipped_dashboard_body_after_shortening() -> None:
+    rows = _jobs(
+        backlog=[
+            {
+                "title": "Review Proof",
+                "product_view": "The product.",
+                "problem": "",
+                "recommended_first_slice": "",
+                "evidence_tier": "proposal",
+            }
+        ],
+        program={},
+        components=[],
+        first_path="",
+        project_title="Review Evidence Workspace",
+        accepted={},
+    )
+
+    assert rows[0][1] != "The product."
+    assert rows[0][1] == "Packages reviewer-visible proof for Review Proof before the release can move forward."
 
 
 def test_greenfield_product_story_strips_markdown_prefaces_and_generic_proof_fallback() -> None:

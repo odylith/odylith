@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import imperative_action_with_copula_words
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -508,7 +509,8 @@ def first_path(proposal: Mapping[str, Any]) -> str:
 
 def proof_boundary(proposal: Mapping[str, Any]) -> str:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    return _sentence(intent.get("proof_boundary") if isinstance(intent, Mapping) else "", fallback="the promised user-visible result")
+    raw = intent.get("proof_boundary") if isinstance(intent, Mapping) else ""
+    return _sentence(normalize_confirmed_proof_boundary_sentence(raw), fallback="the promised user-visible result")
 
 
 def state_object(proposal: Mapping[str, Any]) -> str:

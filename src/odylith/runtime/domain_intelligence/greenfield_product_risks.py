@@ -69,6 +69,36 @@ _RISK_TERM_STOPWORDS = {
     "without",
 }
 
+_INPUT_MATERIAL_TERMS = frozenset(
+    {
+        "answer",
+        "answers",
+        "attachment",
+        "attachments",
+        "data",
+        "detail",
+        "details",
+        "document",
+        "documents",
+        "evidence",
+        "field",
+        "fields",
+        "file",
+        "files",
+        "information",
+        "input",
+        "inputs",
+        "note",
+        "notes",
+        "record",
+        "records",
+        "response",
+        "responses",
+        "value",
+        "values",
+    }
+)
+
 
 @dataclass(frozen=True)
 class _RiskContext:
@@ -326,7 +356,7 @@ def _quality_gate(row: Mapping[str, str], *, ctx: _RiskContext) -> dict[str, str
     if _FRAMEWORK_RISK_RE.search(" ".join([title, statement, mitigation])) or _too_generic(statement, ctx):
         statement = _ensure_sentence(
             f"{ctx.outcome} can fail in the real world if the information behind it is wrong, missing, misunderstood, or used by the wrong person. "
-            f"{ctx.primary_actor} and {ctx.downstream_actor} need a result they can understand and act on."
+            f"{_upper_first(ctx.primary_actor)} and {ctx.downstream_actor} need a result they can understand and act on."
         )
         mitigation = _ensure_sentence(
             f"Validate the user-visible result, the information behind it, and the handoff to {ctx.downstream_actor} together."
@@ -374,15 +404,25 @@ def _input_activity(ctx: _RiskContext) -> str:
     if not focus:
         return f"{_lower_first(ctx.primary_actor)} provides the required information"
     if re.match(r"^(?:a|an|the|one)\s+", focus, flags=re.IGNORECASE):
-        return focus
+        return f"{_lower_first(ctx.primary_actor)} provides {_input_material_phrase(focus)}"
     if re.match(r"^(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\b", focus, flags=re.IGNORECASE):
         return f"{_lower_first(ctx.primary_actor)} {focus}"
     if re.match(r"^(?:their|his|her|its|our|my)\b", focus, flags=re.IGNORECASE):
         verb = "connects" if re.search(r"\bconnects?\b", ctx.first_path, flags=re.IGNORECASE) else "provides"
         return f"{_lower_first(ctx.primary_actor)} {verb} {focus}"
     if len(focus.split()) <= 6:
-        return f"{_lower_first(ctx.primary_actor)} provides {focus}"
+        return f"{_lower_first(ctx.primary_actor)} provides {_input_material_phrase(focus)}"
     return focus
+
+
+def _input_material_phrase(value: str) -> str:
+    focus = compact_text(value).strip(" .")
+    if not focus:
+        return "the required information"
+    terms = {token.casefold().strip(".,;:") for token in focus.replace("-", " ").split() if token.strip(".,;:")}
+    if terms & _INPUT_MATERIAL_TERMS:
+        return focus
+    return f"information for {focus}"
 
 
 def _outcome_focus(*, story: str, first_path: str, proof_boundary: str, state_object: str) -> str:
@@ -622,6 +662,17 @@ def _lower_first(value: str) -> str:
         return text
     index = len(match.group("prefix"))
     return f"{text[:index]}{text[index:index + 1].lower()}{text[index + 1:]}"
+
+
+def _upper_first(value: str) -> str:
+    text = compact_text(value)
+    if not text:
+        return ""
+    match = re.match(r"(?P<prefix>[^A-Za-z0-9]*)(?P<token>[A-Za-z0-9][A-Za-z0-9_/-]*)", text)
+    if not match:
+        return f"{text[:1].upper()}{text[1:]}"
+    index = len(match.group("prefix"))
+    return f"{text[:index]}{text[index:index + 1].upper()}{text[index + 1:]}"
 
 
 def _lower_label(value: str) -> str:

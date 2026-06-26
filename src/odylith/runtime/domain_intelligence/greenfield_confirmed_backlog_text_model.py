@@ -954,8 +954,15 @@ def rationale_release_basis(*, title: str, label: str, first_slice: str, proof_b
     shared = sorted((slice_terms & proof_terms) - {"can", "must", "release", "result", "state"})
     if shared:
         proof_focus = rationale_proof_focus(proof_boundary, fallback=first_slice)
-        return f"{title_text} ranks before optional expansion because {label} must prove {proof_focus} in the same release story"
+        if _release_gate_wrapper_focus(proof_focus):
+            proof_focus = rationale_scope_focus(first_slice, fallback=title_text)
+        return f"{title_text} ranks before optional expansion because {label} must prove {proof_focus} before adjacent scope enters the release"
     return f"{title_text} ranks before optional expansion because it ties the accepted path to reviewable {label} release evidence"
+
+
+def _release_gate_wrapper_focus(value: str) -> bool:
+    text = _compact_text(value).casefold()
+    return "succeeds when this first path is complete:" in text or "is proven when this first path is complete:" in text
 
 
 def _too_similar(left: str, right: str) -> bool:

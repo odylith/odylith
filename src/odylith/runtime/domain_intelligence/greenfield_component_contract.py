@@ -19,6 +19,9 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_quality i
 from odylith.runtime.domain_intelligence.greenfield_component_term_index import ordered_domain_terms
 from odylith.runtime.domain_intelligence.greenfield_component_term_windows import literal_label_compounds
 from odylith.runtime.domain_intelligence.greenfield_component_terms import natural_phrase
+from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
+    derive_component_semantic_contract,
+)
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_sentence
@@ -116,6 +119,18 @@ def build_component_contract(
     )
     state_label = _state_label(state_object, fallback=f"{_component_subject(label)} state")
     profile = _profile(label=label, kind=kind, context=context)
+    if profile == "generic":
+        semantic_contract = derive_component_semantic_contract(
+            row,
+            proposal=proposal,
+            sibling=None,
+            previous_label=previous_label,
+            next_label=next_label,
+            state_label=state_label,
+        )
+        semantic_fields = normalize_contract(semantic_contract.fields)
+        if _semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields):
+            return semantic_fields
     if profile == "document_context":
         contract = contract_profiles.document_context_contract(
             label=label,
@@ -143,6 +158,12 @@ def build_component_contract(
             next_label=next_label,
         )
     return normalize_contract(contract)
+
+
+def _semantic_contract_is_ready(semantic_contract: Any) -> bool:
+    local_terms = tuple(getattr(semantic_contract, "local_terms", ()) or ())
+    confidence = int(getattr(semantic_contract, "confidence", 0) or 0)
+    return confidence >= 8 and len(local_terms) >= 3
 
 
 def responsibility_from_contract(label: str, contract: Mapping[str, Any]) -> str:

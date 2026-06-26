@@ -252,6 +252,30 @@ Release 0.0.1 succeeds when one planner can enter a request, compare three optio
     assert "workspace status" not in encoded.casefold()
 
 
+def test_confirmed_intent_completion_polishes_gerund_actor_descriptions() -> None:
+    intent = normalize_confirmed_intent(
+        {
+            "title": "Learning Lab",
+            "product_story": "A learner completes one guided session and leaves evidence for review.",
+            "state_object": "A lab session records selected scenario, result, explanation, and review status.",
+            "first_path": "A learner opens a preset session, completes one attempt, saves it, and instructor reviews the result.",
+            "human_actors": [
+                "Learner: opens a preset session and saves the explanation",
+                "Instructor: assigning or reviewing lab scenarios",
+            ],
+            "internal_systems": [
+                "Session workspace renders the saved result, explanation, and review note.",
+                "Evidence log preserves the session inputs, result, explanation, and review timestamp.",
+            ],
+            "proof_boundary": "Release succeeds when one saved session can be reviewed with evidence.",
+        }
+    )
+    rendered = json.dumps(intent, sort_keys=True)
+
+    assert "Instructor: supports by assigning or reviewing lab scenarios" in intent["human_actors"]
+    assert "Instructor assigning or reviewing" not in rendered
+
+
 def test_confirmed_intent_parser_normalizes_terminal_loop_narration() -> None:
     intent = parse_confirmed_intent_text(
         """Practice Journal

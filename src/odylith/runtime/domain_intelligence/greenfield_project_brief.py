@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
@@ -427,9 +428,14 @@ def _project_checkpoint_lines(value: Any) -> list[str]:
         done_when = clean_text(row.get("done_when"))
         if checkpoint and question:
             question_text = question.rstrip(".?!")
-            done_text = done_when.rstrip(".?!")
+            done_text = _checkpoint_done_when_fragment(done_when)
             lines.append(f"{checkpoint}: {question_text}; done when {done_text}.")
     return lines
+
+
+def _checkpoint_done_when_fragment(value: str) -> str:
+    text = clean_text(value).strip(" .?!")
+    return re.sub(r"^done\s+when\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .?!")
 
 
 def _project_path_lines(value: Any) -> list[str]:

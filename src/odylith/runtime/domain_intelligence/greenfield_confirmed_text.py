@@ -123,11 +123,21 @@ _DOMAIN_LABEL_PREDICATE_WORDS = frozenset(
         "changes",
         "change",
         "changed",
+        "contain",
+        "contained",
+        "contains",
         "containing",
         "coordinates",
         "coordinate",
         "coordinated",
+        "hold",
+        "held",
+        "holds",
         "holding",
+        "include",
+        "included",
+        "includes",
+        "including",
         "is",
         "maintains",
         "maintain",
@@ -222,11 +232,33 @@ _TITLE_HYPHEN_MODIFIERS = {
 
 
 def compact_text(value: str) -> str:
-    return clean_markdown_text(value)
+    return normalize_connector_sequence(clean_markdown_text(value))
 
 
 def clean_confirmed_text(value: Any) -> str:
-    return clean_markdown_text(value)
+    return normalize_connector_sequence(clean_markdown_text(value))
+
+
+def normalize_connector_sequence(value: Any) -> str:
+    """Collapse adjacent generated conjunctions without changing domain words."""
+
+    text = clean_markdown_text(value)
+    previous = ""
+    while text and text != previous:
+        previous = text
+        text = re.sub(
+            r"\b(?P<first>and|or|then|but)\s+(?P<second>and|or|then|but)\b",
+            _connector_sequence_replacement,
+            text,
+            flags=re.IGNORECASE,
+        )
+    return text
+
+
+def _connector_sequence_replacement(match: re.Match[str]) -> str:
+    first = match.group("first")
+    second = match.group("second")
+    return first if first.casefold() == second.casefold() else second
 
 
 def confirmed_text_values(value: object) -> list[str]:
@@ -266,6 +298,19 @@ def join_confirmed_items(values: Sequence[str]) -> str:
     if len(cleaned) == 2:
         return f"{cleaned[0]} and {cleaned[1]}"
     return ", ".join(cleaned[:-1]) + f", and {cleaned[-1]}"
+
+
+def inline_list_sentence(value: Any) -> str:
+    """Render a semicolon-delimited generated list as one prose sentence."""
+
+    rows = [
+        clean_confirmed_text(part).strip(" .")
+        for part in re.split(r"\s*;\s*", str(value or ""))
+        if clean_confirmed_text(part).strip(" .")
+    ]
+    if not rows:
+        return ""
+    return normalize_connector_sequence(join_confirmed_items(rows))
 
 
 def semantic_terms(text: str, *, stopwords: Iterable[str] | None = None) -> set[str]:
@@ -358,11 +403,11 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
         r"(?:with|containing|that|for)\b",
         r"^(?:the|an|a|one)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
-        r"(?:holding|carrying|containing)\b",
+        r"(?:holding|carrying|containing|including)\b",
         r"^(?:the|an|a)\s+(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
-        r"(?:tracks|records|stores|captures|moves|starts|changes)\b",
+        r"(?:tracks|records|stores|captures|contains|keeps|holds|includes|moves|starts|changes)\b",
         r"^(?P<label>[A-Za-z][A-Za-z0-9 _'’/-]{1,80}?)\s+"
-        r"(?:tracks|records|stores|captures|keeps|holds|manages|maintains|coordinates|orchestrates)\b",
+        r"(?:tracks|records|stores|captures|contains|keeps|holds|includes|manages|maintains|coordinates|orchestrates)\b",
     )
     for pattern in patterns:
         match = re.search(pattern, dash_head, flags=re.IGNORECASE)

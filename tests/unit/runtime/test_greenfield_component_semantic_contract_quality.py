@@ -7,6 +7,7 @@ from odylith.runtime.domain_intelligence import greenfield_component_semantic_co
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
     derive_component_semantic_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_contract import build_component_contract
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_context import context_object_phrases
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 
@@ -92,3 +93,106 @@ def test_component_contract_preserves_relative_clause_objects_as_artifacts() -> 
     assert "checks are meant to address" not in rendered
     assert "checks are meant" not in rendered
     assert not generated_semantic_slop_issues(contract)
+
+
+def test_component_contract_does_not_promote_topic_terms_as_owned_state() -> None:
+    proposal = {
+        "intent": {
+            "title": "Technical Learning Lab",
+            "product_story": (
+                "A learner needs a guided lab that turns an abstract lecture topic into a visible experiment."
+            ),
+            "first_path": (
+                "A learner opens a preset experiment, adjusts parameters, runs the sample, "
+                "watches the result view update, writes an explanation, and saves the session."
+            ),
+            "state_object": (
+                "A lab session contains selected preset, parameter values, run status, probability result, "
+                "observation, explanation, review note, blocked reason, and evidence timestamp."
+            ),
+            "proof_boundary": "Release succeeds when the saved session and evidence timestamp can be reviewed.",
+        }
+    }
+
+    contract = derive_component_semantic_contract(
+        {
+            "label": "Technical Learning Lab Experience Guide Service",
+            "source_system_description": (
+                "presents the current state, missing-information guidance, user-facing confirmation, "
+                "and next useful action without owning source records"
+            ),
+        },
+        proposal=proposal,
+        sibling={"label": "Evidence Log Service"},
+        previous_label="Product Record Service",
+        next_label="Evidence Log Service",
+        state_label="Lab Session",
+    ).fields
+    rendered = json.dumps(contract, sort_keys=True).casefold()
+    owned = contract["owned_state"].casefold()
+
+    assert "turn abstract lecture topic" not in rendered
+    assert "topic reviewable" not in rendered
+    assert "learning lab," not in owned
+    assert "user-facing confirmation" in owned
+    assert "missing-information guidance" in owned
+    assert "useful action" in owned
+    assert not generated_semantic_slop_issues(contract)
+
+
+def test_generic_component_contract_builder_prefers_semantic_artifacts_over_raw_action_focus() -> None:
+    proposal = {
+        "intent": {
+            "title": "Learning Simulation Lab",
+            "product_story": (
+                "Learners need a bounded simulation workspace with traceable parameters, results, "
+                "explanations, and review evidence."
+            ),
+            "first_path": (
+                "A learner selects a scenario, adjusts width and energy, runs the deterministic experiment, "
+                "reviews the result, checks misconception prompts, and exports a reviewable summary."
+            ),
+            "state_object": (
+                "A learning experiment record tracks scenario, width, energy, units, result, explanation, "
+                "misconception checks, and export evidence."
+            ),
+            "proof_boundary": "Release succeeds when one run and one export remain traceable.",
+        }
+    }
+    parameter = build_component_contract(
+        {
+            "label": "Parameter Control Surface",
+            "kind": "surface",
+            "source_system_description": (
+                "captures barrier width and particle energy choices, enforces bounds, "
+                "and keeps unit conversions visible"
+            ),
+        },
+        proposal=proposal,
+        previous_label="Scenario Preset Surface",
+        next_label="Simulation Runner",
+    )
+    review = build_component_contract(
+        {
+            "label": "Misconception and Export Review Surface",
+            "kind": "surface",
+            "source_system_description": (
+                "checks the learner explanation for required assumptions, units, and misconception prompts "
+                "before producing a teacher-reviewable export"
+            ),
+        },
+        proposal=proposal,
+        previous_label="Attempt Comparison Workspace",
+        next_label="Release Review",
+    )
+    rendered = json.dumps({"parameter": parameter, "review": review}, sort_keys=True).casefold()
+
+    assert "barrier width and particle energy choices, enforces bounds" not in rendered
+    assert "checks the learner explanation" not in rendered
+    assert "surface owns" not in rendered
+    assert "parameter control bound" not in rendered
+    assert "blocked." not in rendered
+    assert "particle energy choices" in rendered
+    assert "misconception prompts" in rendered
+    assert not generated_semantic_slop_issues(parameter)
+    assert not generated_semantic_slop_issues(review)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -423,6 +424,28 @@ def test_final_next_steps_repair_matches_prewrite_copy_repair() -> None:
     rendered = "\n".join(repaired["validation_gates"])
     assert "intake intake" not in rendered.casefold()
     assert "flood shelter intake register evidence" in rendered.casefold()
+
+
+def test_final_next_steps_repair_preserves_release_selector_tokens() -> None:
+    repaired = greenfield_apply_write._repair_final_next_steps(
+        {
+            "release_selector": "0.0.1",
+            "customization_options": [
+                "External systems: Confirm whether release 0.0.1 needs these external systems: Browser runtime.",
+                "Release ambition: Keep 0.0.1 to the accepted first path.",
+            ],
+            "coding_readiness_gates": [
+                "Release 0.0.1 has proof checks for success, failure, replay, access, and review evidence."
+            ],
+            "operator_sequence": [
+                "Open the progress view and verify the active wave `first proof` plus release `0.0.1` match the accepted project shape."
+            ],
+        }
+    )
+
+    rendered = json.dumps(repaired, sort_keys=True)
+    assert "0.0.1" in rendered
+    assert "0. 0. 1" not in rendered
 
 
 def test_greenfield_apply_result_carries_post_confirm_quality_manifest(

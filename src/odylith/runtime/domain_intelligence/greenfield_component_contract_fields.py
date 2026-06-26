@@ -543,6 +543,7 @@ def _past_tense(value: str) -> str:
         "choose": "chosen",
         "find": "found",
         "flag": "flagged",
+        "handoff": "handed-off",
         "intake": "received",
         "keep": "kept",
         "leave": "left",

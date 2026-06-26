@@ -63,6 +63,7 @@ def clean_artifact_phrase(value: str) -> str:
     text = re.sub(r"\b(?:before|after|while|because|unless|without)\b.+$", "", text, flags=re.I)
     text = re.sub(r"^(?:release\s+)?good\s+enough\s+", "", text, flags=re.I)
     text = re.sub(r"\b(?:accepted|confirmed|needed|received|requested|trusted)\b", "", text, flags=re.I)
+    text = re.sub(r"\s+for\s+(?:the\s+)?first\s+path\b.*$", "", text, flags=re.I)
     text = re.sub(
         r"\bvisible\b(?!\s+(?:blockers?|evidence|outcomes?|results?|state|status|summaries|summary|timelines?|views?)\b)",
         "",
@@ -84,6 +85,10 @@ def clean_artifact_phrase(value: str) -> str:
         len(words) >= 2
         and words[0].casefold() in NOUN_MODIFIER_ACTION_TERMS
         and words[1].casefold() in ARTIFACT_CARRIER_TERMS
+    ) or bool(
+        len(words) >= 2
+        and words[0].casefold() == "handoff"
+        and words[-1].casefold() in {"boundary", "boundaries"}
     ) or bool(
         len(words) >= 4
         and words[1].casefold() == "or"
@@ -111,7 +116,8 @@ def clean_artifact_phrase(value: str) -> str:
     text = _drop_misplaced_action_modifier_before_carrier(text)
     text = _trim_relation_window(text)
     text = normalize_artifact_tail(text, carrier_terms=ARTIFACT_CARRIER_TERMS)
-    text = _strip_relation_tail(text)
+    if not _qualified_boundary_artifact(text):
+        text = _strip_relation_tail(text)
     text = re.sub(
         r"\b(?:accepted|confirmed|needed|received|requested|trusted|visible)\b$",
         "",
@@ -198,7 +204,7 @@ def clean_artifact_phrase(value: str) -> str:
         lowered = text.casefold()
         if not text or text in GENERIC_TERMS:
             return ""
-    if not content_terms(text):
+    if not content_terms(text) and not _qualified_boundary_artifact(text):
         return ""
     action_hits = [
         word
@@ -221,6 +227,11 @@ def _abstract_label_residue_fragment(value: str) -> bool:
     words = [word.casefold() for word in visible_words(value) if word[:1].isalpha()]
     abstract = {"approval", "approvals", "gate", "gates", "name", "result", "status", "story"}
     return len(words) >= 3 and all(word in abstract for word in words)
+
+
+def _qualified_boundary_artifact(value: str) -> bool:
+    words = [word.casefold().strip(".,;:") for word in visible_words(value) if word.strip(".,;:")]
+    return len(words) >= 2 and words[-1] in {"boundary", "boundaries"}
 
 
 def _looks_like_long_command_noun_pile(words: Sequence[str]) -> bool:
@@ -389,6 +400,8 @@ def descriptor_anchor_phrases(label: str, description: str) -> list[str]:
         terms = content_terms(phrase)
         if not terms or len(terms) > 3:
             continue
+        if len(terms) == 1 and terms[0] not in ARTIFACT_CARRIER_TERMS:
+            continue
         if set(terms) & base_terms:
             continue
         if set(terms) & ARTIFACT_CARRIER_TERMS:
@@ -495,7 +508,8 @@ def enrich_owned_state_from_io(
     additions: list[str] = []
     for key in ("accepted_inputs", "produced_outputs"):
         for clause in split_contract_clauses(fields.get(key)):
-            candidate = clean(re.sub(r"^(?:required|validated)\s+", "", clause, flags=re.IGNORECASE)).strip(" .")
+            raw_candidate = clean(re.sub(r"^(?:required|validated)\s+", "", clause, flags=re.IGNORECASE)).strip(" .")
+            candidate = clean_artifact_phrase(raw_candidate)
             if not candidate or _OWNED_ENRICHMENT_SKIP_RE.search(candidate):
                 continue
             terms = domain_terms(candidate, noise_terms=noise_terms)
@@ -550,7 +564,12 @@ def term_phrase(values: Sequence[str]) -> str:
 
 
 def content_terms(value: str) -> list[str]:
-    return unique_text(term for term in ordered_domain_terms(value) if term not in GENERIC_TERMS and not term.isdigit())
+    boundary_terms = {"boundary", "boundaries"}
+    return unique_text(
+        term
+        for term in ordered_domain_terms(value)
+        if (term not in GENERIC_TERMS or term in boundary_terms) and not term.isdigit()
+    )
 
 
 def phrase_identity_terms(value: str) -> set[str]:
@@ -597,6 +616,37 @@ def looks_action_term(value: str) -> bool:
 def looks_action_form(value: str) -> bool:
     token = str(value or "").casefold()
     return token in _action_form_set()
+
+
+def material_contract_phrase(value: str, *, label_terms: Sequence[str], description_terms: Sequence[str]) -> bool:
+    text = clean_artifact_text(value, split_parentheses=True)
+    terms = content_terms(text)
+    if not terms and not _qualified_boundary_artifact(text):
+        return False
+    if not terms:
+        terms = ["boundary"]
+    term_set = set(terms)
+    first = terms[0]
+    last = terms[-1]
+    visible = [word.casefold().strip(".,;:") for word in visible_words(text) if word.strip(".,;:")]
+    visible_set = set(visible)
+    visible_last = visible[-1] if visible else ""
+    carriers = (term_set | visible_set) & ARTIFACT_CARRIER_TERMS
+    if not carriers:
+        return False
+    if first == "scenario" and last not in ARTIFACT_CARRIER_TERMS:
+        return False
+    if looks_action_term(first) and last not in ARTIFACT_CARRIER_TERMS:
+        return False
+    if "reviewable" in term_set and last not in ARTIFACT_CARRIER_TERMS:
+        return False
+    if last in ARTIFACT_CARRIER_TERMS:
+        return True
+    if visible_last in ARTIFACT_CARRIER_TERMS and len(visible) >= 2:
+        return True
+    if carriers & {"evidence", "history", "ledger", "record", "result", "state", "status"}:
+        return True
+    return bool(carriers and term_set & set(description_terms))
 
 
 @lru_cache(maxsize=1)
@@ -717,7 +767,7 @@ __all__ = [
     "ACTION_VERBS", "ARTIFACT_CARRIER_TERMS", "GENERIC_TERMS",
     "action_forms_pattern", "action_object_artifact_phrases", "clean_artifact_phrase",
     "clean_artifact_phrases", "content_terms", "descriptor_anchor_phrases", "domain_terms",
-    "enrich_owned_state_from_io", "local_terms", "looks_action_form", "looks_action_term",
+    "enrich_owned_state_from_io", "local_terms", "looks_action_form", "looks_action_term", "material_contract_phrase",
     "looks_actor_term", "natural_phrase", "object_clause_focus", "phrase", "phrase_identity_terms",
     "split_contract_clauses", "strip_action", "term_phrase", "trim_phrase", "verb_forms_pattern",
 ]

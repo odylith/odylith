@@ -28,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import title as _title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import title_needs_repair as _title_needs_repair
@@ -40,6 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     repair_confirmed_intent_semantic_projections,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language as _normalize_visible_result_terms
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -163,7 +165,7 @@ def _normalize_proof_boundary(value: str) -> str:
         text = " ".join(sentences[1:]).strip()
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s*:\s*", "Release 0.0.1 succeeds when ", text, flags=re.I)
     text = re.sub(r"^(?:done\s+means?|proven\s+when|proof\s+means?)\s+", "Release 0.0.1 succeeds when ", text, flags=re.I)
-    summarized = proof_claim_summary(text, limit=420)
+    summarized = proof_claim_summary(normalize_confirmed_proof_boundary_sentence(text), limit=420)
     return (summarized or text).strip()
 
 
@@ -388,6 +390,13 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
         limit=240,
         max_steps=4,
     )
+    metric_proof_capability = readable_action_chain_sentence(
+        first_path,
+        fallback=proof_capability,
+        limit=240,
+        max_steps=5,
+        include_visible_results=True,
+    )
     needs_verb = _needs_verb(customer_text)
     decision_phrase = _decision_problem_phrase(outcome_text)
     outcome_inline = _inline_result_phrase(outcome_text)
@@ -420,7 +429,7 @@ def _complete_product_posture(intent: dict[str, Any], *, title: str) -> None:
     if len(metrics) < 3 or any(_metric_needs_repair(metric) for metric in metrics):
         metric_outcome_action = _outcome_action_phrase(outcome_text)
         intent["success_metrics"] = [
-            f"The first release proves the first path: {proof_capability}.",
+            f"The first release proves the first path: {metric_proof_capability or proof_capability}.",
             f"Users can {metric_outcome_action} without manual interpretation outside the product.",
             f"The product handles missing or incorrect input by explaining what must be fixed before {outcome_inline} is treated as real.",
             _proof_boundary_metric(proof, outcome=outcome_inline),

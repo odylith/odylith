@@ -41,6 +41,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import (
     descriptor_anchor_phrases as _descriptor_anchor_phrases,
     local_terms as _local_terms,
     looks_action_term as _looks_action_term,
+    material_contract_phrase as _material_contract_phrase,
     object_clause_focus as _object_clause_focus,
     phrase_identity_terms as _phrase_identity_terms,
     phrase as _phrase,
@@ -104,7 +105,7 @@ def derive_component_semantic_contract(
     label_phrases = _label_compound_phrases(label)
     bridge_phrases = _bridge_phrases(label, description)
     lifecycle_phrases = _lifecycle_phrases(label, description)
-    role_phrases = _component_role_phrases(label=label, description=description)
+    role_phrases = semantic_context.component_role_phrases(label=label, description=description)
     context_required_phrases = semantic_context.context_required_phrases(
         context_phrases,
         label_terms=label_terms,
@@ -153,6 +154,8 @@ def derive_component_semantic_contract(
     summary_phrases = _summary_object_phrases(
         object_phrases,
         required_phrases=unique_text(required_seed),
+        label_terms=label_terms,
+        description_terms=description_terms,
         limit=10,
     )
     local_terms = _local_terms(label, description, proposal_context, object_phrases)
@@ -175,9 +178,16 @@ def derive_component_semantic_contract(
         contract_terms=contract_terms,
     )
     critical = _component_kind_echo_safe_phrase(label=label, phrase=_result_like_phrase(output_focus) or critical)
+    transition_context = semantic_context.transition_context_text(
+        proposal_context,
+        label_terms=label_terms,
+        description_terms=description_terms,
+    )
     states = _state_transition_text(
         action_terms=action_terms,
         object_phrases=object_phrases,
+        context_text=transition_context,
+        anchor_terms=unique_text([*label_terms, *description_terms]),
     )
     sibling_label = _label(sibling) if isinstance(sibling, Mapping) else ""
     handoff_label = next_label or "release review"
@@ -191,7 +201,7 @@ def derive_component_semantic_contract(
         sibling_label=handoff_label,
         sibling_focus=handoff_focus,
     )
-    evidence_phrases = ("source evidence",) if _needs_source_evidence(
+    evidence_phrases = ("source evidence",) if semantic_context.needs_source_evidence(
         label=label,
         description=description,
         proposal_context=proposal_context,
@@ -203,6 +213,7 @@ def derive_component_semantic_contract(
         label_terms=label_terms,
     )
     description_owned_phrases = semantic_context.description_owned_phrases(description)
+    preserved_material_phrases = semantic_context.preserved_scaffold_material(description)
     owned_summary_phrases = summary_phrases[:7]
     title_identity_phrases = _title_identity_phrases(label_phrases, owned_summary_phrases)
     owned_seed = (
@@ -210,6 +221,7 @@ def derive_component_semantic_contract(
             *title_identity_phrases,
             *description_owned_phrases[:5],
             *owned_summary_phrases,
+            *preserved_material_phrases[:3],
             *role_phrases[:3],
             *owned_context_phrases[:2],
             *evidence_phrases,
@@ -293,18 +305,6 @@ def _result_like_phrase(value: str) -> str:
     return best
 
 
-def _component_role_phrases(*, label: str, description: str) -> tuple[str, ...]:
-    text = _clean(" ".join([label, description])).casefold()
-    phrases: list[str] = []
-    if re.search(r"\b(?:audit|evidence|ledger|log|proof|replay|reviewable|trace)\b", text):
-        phrases.extend(["audit trail", "replay evidence", "decision ledger"])
-    if re.search(r"\b(?:failure|blocked|invalid|missing|recovery)\b", text):
-        phrases.append("failure reason ledger")
-    if re.search(r"\b(?:guardrail|limit|rollout|release)\b", text):
-        phrases.extend(["known-limit checkpoint", "recovery-condition ledger"])
-    return tuple(unique_text(phrases))
-
-
 def _dedupe_adjacent_words(value: str) -> str:
     words = _clean(value).split()
     result: list[str] = []
@@ -315,25 +315,6 @@ def _dedupe_adjacent_words(value: str) -> str:
             continue
         result.append(word)
     return " ".join(result).strip(" .,;")
-
-
-def _needs_source_evidence(
-    *,
-    label: str,
-    description: str,
-    proposal_context: str,
-    action_terms: Sequence[str],
-) -> bool:
-    """Return whether the local record must retain source/evidence context."""
-
-    local_context = " ".join([label, description, proposal_context])
-    if not re.search(r"\b(?:source|evidence|provenance|attachment|audit)\b", _clean(local_context), re.IGNORECASE):
-        return False
-    if re.search(r"\b(?:source|evidence|provenance|attachment|audit)\b", _clean(description), re.IGNORECASE):
-        return True
-    local_terms = set(_content_terms(" ".join([label, description])))
-    record_actions = {"capture", "create", "edit", "import", "log", "record", "save", "store", "submit", "track"}
-    return bool(record_actions & set(action_terms) or local_terms & {"entry", "history", "ledger", "log", "record", "store"})
 
 
 def _label(row: Mapping[str, Any] | None) -> str:
@@ -349,9 +330,9 @@ def _description(row: Mapping[str, Any]) -> str:
         if not text:
             continue
         if _looks_generated_scaffold(text):
-            scaffold_subject = _generated_scaffold_subject(text, label=label)
+            scaffold_subject = semantic_context.generated_scaffold_subject(text, label=label)
             if scaffold_subject:
-                return scaffold_subject
+                return "; ".join(unique_text([scaffold_subject, *semantic_context.preserved_scaffold_material(text)]))
             continue
         return _scrub_description_scaffold(text)
     return ""
@@ -362,24 +343,6 @@ def _scrub_description_scaffold(value: str) -> str:
     text = re.sub(r"\bRelevant\s+behavior\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
     text = re.sub(r"\bRationale\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
     return text.rstrip(" .")
-
-
-def _generated_scaffold_subject(value: str, *, label: str) -> str:
-    text = _clean(value)
-    label_terms = set(_content_terms(label))
-    patterns = (
-        r"\bowns?\s+(?P<subject>.+?)\s+state,\s+required\s+inputs\b",
-        r"\b(?P<subject>.+?)\s+state,\s+required\s+inputs\b",
-    )
-    for pattern in patterns:
-        match = re.search(pattern, text, flags=re.IGNORECASE)
-        if not match:
-            continue
-        subject = _clean_artifact_phrase(match.group("subject")) or _clean(match.group("subject")).casefold()
-        subject_terms = set(_content_terms(subject))
-        if len(subject_terms) >= 2 and (not label_terms or subject_terms & label_terms):
-            return f"owns {subject} state"
-    return ""
 
 
 def _looks_generated_scaffold(value: str) -> bool:
@@ -435,6 +398,9 @@ def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
     rows: list[str] = []
     for clause in clauses:
         clause = normalize_relative_clause_artifacts(clause) or clause
+        cleaned_boundary = _clean_artifact_phrase(clause)
+        if cleaned_boundary and {"boundary", "boundaries"} & set(cleaned_boundary.casefold().split()):
+            rows.append(cleaned_boundary.casefold())
         align_match = re.search(
             r"\b(?P<action>aligns?|aligned|aligning)\s+(?P<body>[A-Za-z0-9][A-Za-z0-9 /&(),'-]{2,90}?)"
             r"(?:\s+against\s+(?P<target>[A-Za-z0-9][A-Za-z0-9 /&(),'-]{2,60}?))?(?:\s+[—-]\s+|[.;,]|$)",
@@ -715,11 +681,31 @@ def _prioritize_object_phrases(
     return [phrase for index, phrase in sorted(enumerate(values), key=lambda item: rank(item[0], item[1]))]
 
 
-def _summary_object_phrases(values: Sequence[str], *, required_phrases: Sequence[str], limit: int = 12) -> list[str]:
+def _summary_object_phrases(
+    values: Sequence[str],
+    *,
+    required_phrases: Sequence[str],
+    label_terms: Sequence[str],
+    description_terms: Sequence[str],
+    limit: int = 12,
+) -> list[str]:
     """Build the compact rendered object list without dropping stated responsibilities."""
 
-    required = _dedupe_phrase_subsets(_clean_artifact_phrases(required_phrases))
+    required = _dedupe_phrase_subsets(
+        [
+            phrase
+            for phrase in _clean_artifact_phrases(required_phrases)
+            if not _status_only_artifact_fragment(phrase)
+            and _material_contract_phrase(phrase, label_terms=label_terms, description_terms=description_terms)
+        ]
+    )
     required = _prioritize_object_phrases(required, label_terms=(), description_terms=())
+    values = [
+        phrase
+        for phrase in values
+        if not _status_only_artifact_fragment(phrase)
+        and _material_contract_phrase(phrase, label_terms=label_terms, description_terms=description_terms)
+    ]
     result: list[str] = list(required[:limit])
     priority_budget = max(len(result), limit - max(0, len(required) - len(result)))
     for phrase in values:
@@ -764,6 +750,9 @@ def _drop_subsumed_singletons(values: Sequence[str]) -> list[str]:
     identities = [(phrase, _phrase_identity_terms(phrase)) for phrase in values]
     for phrase, terms in identities:
         if phrase.casefold() in {"source evidence"}:
+            result.append(phrase)
+            continue
+        if terms == {"boundary"} and len(phrase.split()) >= 2:
             result.append(phrase)
             continue
         if len(terms) == 1 and any(terms < other_terms for other_phrase, other_terms in identities if other_phrase != phrase):

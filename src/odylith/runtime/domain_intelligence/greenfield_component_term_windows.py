@@ -35,6 +35,8 @@ _LABEL_COMPOUND_STOPWORDS = {
     "workspace",
 }
 
+_PRESERVED_PLURAL_LABEL_TERMS = frozenset({"guardrails"})
+
 
 def literal_label_terms(label: Any, *, noise_terms: set[str] | None = None) -> list[str]:
     """Return normalized component-label terms without shell words."""
@@ -80,7 +82,7 @@ def _preserved_label_terms(value: Any) -> tuple[str, ...]:
     return tuple(
         token
         for raw in label_terms(_clean(value))
-        if (token := raw.casefold()).endswith("s") and token in ARTIFACT_CARRIER_TERMS
+        if (token := raw.casefold()) in _PRESERVED_PLURAL_LABEL_TERMS and token in ARTIFACT_CARRIER_TERMS
     )
 
 

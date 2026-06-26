@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.common.prose_grammar import action_verb_pattern
+from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common import display_text
 
 _LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;)+")
@@ -289,8 +290,73 @@ def normalize_proof_boundary_language(value: Any) -> str:
     for pattern, replacement in replacements:
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
         text = clean_text(text).strip(" .:")
+    text = _normalize_first_path_complete_proof(text)
     text = re.split(r"\bwhat\s+must\s+not\s+be\s+claimed\s+yet\b", text, maxsplit=1, flags=re.IGNORECASE)[0]
     return clean_text(text).strip(" .:")
+
+
+def normalize_confirmed_proof_boundary_sentence(value: Any) -> str:
+    text = clean_text(value).strip(" .:")
+    if not text:
+        return ""
+    match = re.match(
+        r"^(?P<prefix>(?:release\s+[A-Za-z0-9_.-]+\s+|the\s+release\s+)?(?:is\s+)?(?:proven|trusted|succeeds|works)\s+when)\s+"
+        r"(?P<body>.+)$",
+        text,
+        flags=re.I,
+    )
+    if not match:
+        return _normalize_first_path_complete_proof(text)
+    body = _normalize_first_path_complete_proof(match.group("body"))
+    return f"{match.group('prefix')} {body}".strip(" .:")
+
+
+def _normalize_first_path_complete_proof(value: str) -> str:
+    text = clean_text(value).strip(" .:")
+    lowered = text.casefold()
+    prefixes = (
+        "this first path is complete:",
+        "the first path is complete:",
+        "the accepted first path is complete:",
+    )
+    prefix = next((candidate for candidate in prefixes if lowered.startswith(candidate)), "")
+    if not prefix:
+        return text
+    tail = text[len(prefix) :].strip(" .:")
+    if not tail:
+        return "the accepted first path is complete"
+    parts = [part.strip(" .:") for part in re.split(r"(?<=[.!?])\s+", tail) if part.strip(" .:")]
+    if not parts:
+        return "the accepted first path is complete"
+    first = parts[0]
+    match = re.match(r"(?P<actor>[A-Za-z0-9][A-Za-z0-9 /&()'-]{1,120}?)\s+who\s+(?P<action>.+)$", first, flags=re.I)
+    if match:
+        actor = _lower_initial_prose(match.group("actor"))
+        actions = [base_action_clause(match.group("action")), *(base_action_clause(part) for part in parts[1:])]
+        action_text = _join_proof_action_parts(actions)
+        return f"{actor} can {action_text}" if action_text else f"{actor} can complete the accepted first path"
+    action_text = _join_proof_action_parts(base_action_clause(part) for part in parts)
+    return f"the accepted first path is complete when {action_text}" if action_text else "the accepted first path is complete"
+
+
+def _join_proof_action_parts(values: Iterable[str]) -> str:
+    parts = [clean_text(value).strip(" .:") for value in values if clean_text(value).strip(" .:")]
+    parts = list(unique_text(parts))
+    if len(parts) <= 1:
+        return parts[0] if parts else ""
+    if len(parts) == 2:
+        return f"{parts[0]} and {parts[1]}"
+    return f"{', '.join(parts[:-1])}, and {parts[-1]}"
+
+
+def _lower_initial_prose(value: str) -> str:
+    text = clean_text(value).strip(" .:")
+    if not text:
+        return ""
+    first_word = text.split(maxsplit=1)[0]
+    if first_word.isupper() or any(char in first_word for char in ("/", "&")):
+        return text
+    return f"{text[:1].lower()}{text[1:]}"
 
 
 def clip_text_at_word_boundary(

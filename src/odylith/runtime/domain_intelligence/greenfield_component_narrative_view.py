@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_component_terms import phrase_identity_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text, visible_words
 
@@ -129,6 +130,12 @@ _LOW_SIGNAL_ITEMS = frozenset(
         "validation context",
     }
 )
+
+_NOUN_COMPATIBLE_ACTION_HEADS = frozenset(
+    {"audit", "evidence", "input", "output", "proof", "record", "result", "review", "source", "state", "trace"}
+)
+
+_CONTEXTUAL_DUPLICATE_PREFIXES = frozenset({"scenario"})
 
 _BOUNDARY_NOISE_TERMS = frozenset(
     {
@@ -330,6 +337,10 @@ def narrative_items(values: Sequence[str], *, limit: int, allow_status: bool = F
             continue
         if lowered in _LOW_SIGNAL_ITEMS:
             continue
+        if action_led_state_noise_item(text):
+            continue
+        if contextual_duplicate_item(text, alternatives=material_values, selected=rows):
+            continue
         if any(phrases_too_similar(text, existing) for existing in rows):
             continue
         rows.append(text)
@@ -348,6 +359,41 @@ def generated_boundary_state_item(value: str) -> bool:
 def boundary_noise_item(value: str) -> bool:
     terms = _word_set(value)
     return len(terms & _BOUNDARY_NOISE_TERMS) >= 2
+
+
+def action_led_state_noise_item(value: str) -> bool:
+    text = clean_text(value).strip(" .")
+    if not text or not looks_like_action_clause(text):
+        return False
+    first = text.split(maxsplit=1)[0].casefold().strip(".,;:")
+    return first not in _NOUN_COMPATIBLE_ACTION_HEADS
+
+
+def contextual_duplicate_item(value: str, *, alternatives: Sequence[str], selected: Sequence[str]) -> bool:
+    """Reject generated context-prefixed aliases when a real local item is present."""
+
+    suffix = _contextual_suffix(value)
+    if not suffix:
+        return False
+    candidates = [row for row in (*selected, *alternatives) if clean_text(row).casefold() != clean_text(value).casefold()]
+    return any(_suffix_too_similar(suffix, candidate) for candidate in candidates)
+
+
+def _contextual_suffix(value: str) -> str:
+    words = [word.strip(".,;:") for word in clean_text(value).split() if word.strip(".,;:")]
+    if len(words) < 3:
+        return ""
+    if words[0].casefold() not in _CONTEXTUAL_DUPLICATE_PREFIXES:
+        return ""
+    return " ".join(words[1:])
+
+
+def _suffix_too_similar(suffix: str, candidate: str) -> bool:
+    suffix_terms = phrase_identity_terms(clean_text(suffix).casefold())
+    candidate_terms = phrase_identity_terms(clean_text(candidate).casefold())
+    if len(suffix_terms) < 2 or not candidate_terms:
+        return False
+    return len(suffix_terms & candidate_terms) / max(1, len(suffix_terms)) >= 0.8
 
 
 def supplemental_state_items(values: Sequence[str], *, existing: Sequence[str], limit: int) -> tuple[str, ...]:
@@ -453,6 +499,7 @@ __all__ = [
     "ComponentNarrativeView",
     "boundary_noise_item",
     "component_narrative_view",
+    "contextual_duplicate_item",
     "generated_boundary_state_item",
     "narrative_items",
     "narrative_role",

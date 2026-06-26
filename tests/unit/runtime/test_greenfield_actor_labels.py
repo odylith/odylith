@@ -49,6 +49,14 @@ def test_actor_label_splits_inline_activity_from_role_head() -> None:
     assert project_specific_actor_row(row, project_focus="Personal tracker") == (
         "Discomfort Sufferer: logging and reviewing their own episodes"
     )
+    assert accepted_actor_label(
+        "Physics learner exploring tunneling behavior",
+        project_focus="Scientific Lab",
+    ) == "Physics Learner"
+    assert project_specific_actor_row(
+        "Physics learner exploring tunneling behavior",
+        project_focus="Scientific Lab",
+    ) == "Physics Learner: exploring tunneling behavior"
 
 
 def test_actor_label_keeps_deciding_whether_out_of_actor_title() -> None:

@@ -185,7 +185,120 @@ def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tm
     assert actor_labels == ["Digestive Health Patients"]
     assert len(system_rows) >= 3
     assert not any("Recovered Product" in row or "— keeps Safety" in row for row in system_rows)
+    rendered_package = json.dumps(
+        {
+            "backlog": prewrite.package.backlog_result.get("idea_files"),
+            "next_steps": prewrite.package.next_steps_preview,
+        },
+        sort_keys=True,
+    )
+    assert "provide what the product needs, leaves enough context" not in rendered_package
+    assert "the product keeps enough context for follow-up" in rendered_package
     assert build_greenfield_package_report(prewrite.package).issues == ()
+
+
+def test_scientific_lab_state_predicate_does_not_poison_post_confirm_artifacts(tmp_path: Path) -> None:
+    intent = parse_confirmed_intent_text(
+        """
+# Quantum Tunneling Lab
+
+## Product story
+A virtual physics lab helps learners run and understand one-dimensional quantum tunneling experiments without physical equipment.
+
+## State object
+A lab session contains the selected experiment, particle properties, barrier shape, energy settings, solver settings, visualization state, measured outputs, notes, and saved results.
+
+## First complete path
+A physics learner opens a preset electron tunneling experiment, adjusts barrier height and width, runs the simulation, watches the wave packet interact with the barrier, and saves a short lab result with the chosen parameters and observations.
+
+## Human actors
+- Physics learner exploring tunneling behavior.
+- Instructor assigning or reviewing lab scenarios.
+
+## Internal product systems
+- Experiment workspace.
+- Units and parameter validation.
+- Quantum solver for one-dimensional tunneling.
+- Visualization layer for wave function, potential barrier, and probability outputs.
+- Results and notes store.
+- Benchmark fixtures for known analytic cases.
+
+## External systems
+- Browser runtime for the first version.
+- Export target for saved lab reports.
+
+## Critical assumptions
+- This is a digital simulation lab, not control software for physical lab equipment.
+- The first version focuses on one-dimensional tunneling through rectangular barriers.
+- Outputs must be reproducible and checked against known formulas or trusted fixtures.
+
+## Ambiguities
+- Whether the target audience is high school, undergraduate physics, or research-oriented users.
+- Whether the first version should be web-only or also support local/offline use.
+
+## Proof boundary
+The first proof is a working one-dimensional quantum tunneling lab for a rectangular barrier. It should run deterministic sample experiments, show transmission and reflection behavior, preserve units clearly, and match expected analytic or benchmark results within stated tolerances.
+""",
+        prompt="Draft a greenfield proposal for a quantum tunneling lab.",
+    )
+
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a greenfield proposal for a quantum tunneling lab.",
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+    report = build_greenfield_package_report(prewrite.package)
+    rendered = json.dumps(
+        {
+            "proposal": proposal,
+            "project_brief": prewrite.package.project_brief_preview,
+            "next_steps": prewrite.package.next_steps_preview,
+            "registry": prewrite.package.rendered_component_specs,
+            "radar": prewrite.package.backlog_result,
+        },
+        default=str,
+        sort_keys=True,
+    )
+    registry_rendered = json.dumps(prewrite.package.rendered_component_specs, default=str, sort_keys=True)
+    actor_labels = [str(row).split(":", 1)[0] for row in proposal["intent"]["human_actors"]]
+
+    assert report.issues == ()
+    assert proposal["semantic_model"]["domain_ontology"]["state_object"] == "Lab Session"
+    assert "Lab Session Contains" not in rendered
+    assert "openning" not in rendered
+    assert "open a preset electron tunneling experiment, adjusts" not in rendered
+    assert "done when Done when" not in rendered
+    assert "related proof context" not in rendered
+    assert "related scope context" not in rendered
+    assert not re.search(r"\band\s+or\b", rendered)
+    assert not re.search(r"\band\s+and\b", rendered)
+    assert "sent, received, declined, and scheduled" not in rendered
+    assert "understand one-dimensional quantum tunneling" not in registry_rendered
+    assert "Run the simulation" not in actor_labels
+    assert "Watch the wave packet interact with the barrier" not in actor_labels
+    first_metrics = proposal["backlog"][0]["success_metrics"]
+    assert first_metrics[0] == (
+        "The first release proves the first path: open a preset electron tunneling experiment, "
+        "adjust barrier height and width, run the simulation, watch the wave packet interact with the barrier, "
+        "and review a short lab result with the chosen parameters and observations"
+    )
+    assert not any(metric == "adjust barrier height and width" for metric in first_metrics)
+    assert ";" not in first_metrics[0]
+    actor_section = proposal["project_brief"]["blueprint_sections"][4]["must_capture"]
+    first_user_option = proposal["project_brief"]["customization_options"][0]["recommended"]
+    assert actor_section.startswith("Actors include Physics Learner and Instructor.")
+    assert first_user_option == "Confirm the first people and teams: Physics Learner and Instructor."
 
 
 def test_review_and_adjustment_prompts_avoid_generic_handoff_and_recommendation_drift(tmp_path: Path) -> None:
