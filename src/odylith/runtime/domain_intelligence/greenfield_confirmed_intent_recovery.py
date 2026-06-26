@@ -15,6 +15,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
+from odylith.runtime.domain_intelligence.greenfield_first_path_repair import semantic_first_path_from_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import nominal_visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -144,7 +146,10 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     recovered_first_path_source = prompt_first_path_source(source)
     title_source = _recover_title_source(source) if prefer_product_title else ""
     title = _recovered_title(title_source or first_path_outcome_phrase(recovered_first_path_source, fallback=""))
-    first_path_source = _usable_first_path_source(recovered_first_path_source, title=title) or _generic_first_path_source(title)
+    first_path_source = _usable_first_path_source(
+        recovered_first_path_source,
+        title=title,
+    ) or _generic_first_path_source(title, source=recovered_first_path_source)
     actor_rows = _human_actor_rows_from_first_path(first_path_source, title=title)
     lead_actor = _lead_actor_label(actor_rows) or _fallback_actor_label(title)
     lead_action = _lead_actor_action(actor_rows) or base_action_clause(first_path_source)
@@ -211,6 +216,8 @@ def _usable_first_path_source(value: str, *, title: str) -> str:
     if not text or _path_source_restates_title(text, title=title):
         return ""
     model = first_path_model(text)
+    if not first_path_has_action_signal(text):
+        return ""
     if len(model.steps) >= 2:
         if _preserve_one_line_capability_source(text):
             return text
@@ -247,13 +254,8 @@ def _semantic_terms(value: str) -> set[str]:
     return terms
 
 
-def _generic_first_path_source(title: str) -> str:
-    request = _indefinite_phrase(f"{lower_plain_title_subject_fragment(title, action_offset=0)} request")
-    actor = _indefinite_phrase(f"{lower_plain_title_subject_fragment(title, action_offset=0)} user")
-    return (
-        f"{actor[:1].upper()}{actor[1:]} starts {request}, the product records required information, "
-        "the product shows a reviewable result, and the product marks the request ready or blocked"
-    )
+def _generic_first_path_source(title: str, *, source: str = "") -> str:
+    return semantic_first_path_from_context(title=title, source=source)
 
 
 def _embedded_first_path_clause(value: str) -> str:

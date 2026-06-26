@@ -12,6 +12,8 @@ from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_ap
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine as engine
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import confirmation_from_operator_intent
+from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     build_greenfield_package_report,
 )
@@ -22,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
     GreenfieldCompletionReport,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import package_review_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_once
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import (
@@ -73,6 +76,49 @@ def _proposal(tmp_path: Path) -> dict[str, object]:
             prompt="Draft a greenfield proposal for a municipal permit review workspace",
         ),
     )
+
+
+def test_recovered_confirmed_intent_turns_product_noun_phrase_into_action_path() -> None:
+    prompt = "Draft a greenfield proposal for a shelter capacity coordination workspace for municipal emergency operations teams."
+
+    recovered = confirmation_from_operator_intent(prompt, prefer_product_title=True)
+    intent = parse_confirmed_intent_text(recovered, prompt=prompt)
+
+    first_path = str(intent["first_path"])
+    assert first_path_has_action_signal(first_path)
+    assert "municipal emergency operations teams review shelter capacity coordination details" in first_path.casefold()
+    assert "teams review" in first_path.casefold()
+    assert "teams reviews" not in first_path.casefold()
+    assert "teams records" not in first_path.casefold()
+
+
+@pytest.mark.parametrize(
+    ("prompt", "expected_phrase", "forbidden_phrase"),
+    (
+        (
+            "Draft a greenfield proposal for an invoice anomaly review queue for finance operations analysts.",
+            "finance operations analysts review invoice anomaly review details",
+            "a invoice anomaly",
+        ),
+        (
+            "Draft a greenfield proposal for a sleep routine reflection journal that avoids medical advice and only helps users prepare discussion notes.",
+            "representative user reviews sleep routine reflection details",
+            "avoids medical advice",
+        ),
+    ),
+)
+def test_recovered_confirmed_intent_repairs_constraints_and_container_labels(
+    prompt: str,
+    expected_phrase: str,
+    forbidden_phrase: str,
+) -> None:
+    recovered = confirmation_from_operator_intent(prompt, prefer_product_title=True)
+    intent = parse_confirmed_intent_text(recovered, prompt=prompt)
+
+    first_path = str(intent["first_path"])
+    assert first_path_has_action_signal(first_path)
+    assert expected_phrase in first_path.casefold()
+    assert forbidden_phrase not in first_path.casefold()
 
 
 def test_post_confirm_issue_classifier_returns_typed_repair_owner() -> None:
@@ -258,6 +304,32 @@ def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() 
     assert operation["semantic_node_id"] == "ReviewReport.quality_lenses"
     assert operation["rejected_interpretation"] == "quality lens product_manager missing assumptions or ambiguity boundary"
     assert operation["affected_projections"] == ("project_brief", "radar", "release")
+
+
+def test_semantic_coverage_package_findings_route_to_first_path_semantic_patch() -> None:
+    findings = package_review_findings(
+        GreenfieldCompletionPackage(proposal={"intent": {"title": "Coverage Route"}}),
+        package_issues=(
+            "prewrite Radar package missing semantic coverage for first path",
+            "project brief preview missing semantic coverage for FirstPathContract",
+        ),
+    )
+
+    semantic_findings = [finding for finding in findings if finding.source == "package_artifact_gate"]
+    assert semantic_findings
+    assert {finding.code for finding in semantic_findings} == {"semantic_alignment"}
+    assert {finding.repairability for finding in semantic_findings} == {"semantic_patch"}
+    assert {finding.semantic_node_id for finding in semantic_findings} == {"SemanticModelIR.first_path_contract"}
+    assert {finding.owner for finding in semantic_findings} == {"semantic_model_compiler"}
+
+    patchset = patchset_request_from_findings(semantic_findings).to_dict()
+    operations = patchset["operations"]
+    assert {operation["target_layer"] for operation in operations} == {"semantic_model"}
+    assert {operation["target_path"] for operation in operations} == {"semantic_model.first_path_contract"}
+    assert sorted({projection for operation in operations for projection in operation["affected_projections"]}) == [
+        "project_brief",
+        "radar",
+    ]
 
 
 def test_package_report_emits_structured_quality_lens_findings() -> None:
@@ -692,6 +764,74 @@ def test_repair_payload_consumes_patchset_request_targets(monkeypatch: pytest.Mo
     assert repaired["semantic_target_seen"] is True
     assert repaired["quality_lens_target_seen"] is True
     assert calls == ["quality_lens"]
+
+
+def test_patchset_semantic_coverage_operation_repairs_first_path_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "complete_confirmed_proposal",
+        lambda proposal, *, release_selector: dict(proposal),
+    )
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "repair_greenfield_semantic_projections", lambda _proposal: False)
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("prewrite Radar package missing semantic coverage for first path",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.first_path_contract",
+                    "semantic_node_id": "SemanticModelIR.first_path_contract",
+                    "issue_code": "semantic_alignment",
+                    "affected_projections": ["radar"],
+                    "rejected_interpretation": "prewrite Radar package missing semantic coverage for first path",
+                },
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+    proposal = {
+        "intent": {
+            "title": "Shelter Capacity Coordination Workspace",
+            "state_object": "A shelter capacity coordination workspace result record.",
+            "first_path": "A shelter capacity coordination workspace for municipal emergency operations teams.",
+            "human_actors": [],
+        },
+        "components": [],
+        "backlog": [],
+    }
+
+    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+        proposal,
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    first_path = repaired["intent"]["first_path"]
+    first_path_contract = repaired["semantic_model"]["first_path_contract"]
+    assert first_path_has_action_signal(first_path)
+    assert "municipal emergency operations teams review shelter capacity coordination details" in first_path.casefold()
+    assert first_path_contract["raw_path"] == first_path
+    assert "shelter" in first_path_contract["capability"].casefold()
+    assert "capacity" in first_path_contract["capability"].casefold()
 
 
 def test_repair_payload_does_not_mutate_proposal_for_artifact_draft_only_patchset(

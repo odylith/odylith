@@ -82,6 +82,19 @@ vocabulary, or degraded packages.
   files and hit the internal-systems preflight gate before post-confirm repair.
   It remains useful only for cleanup/timing discipline and simple copy red-flag
   sampling.
+- 2026-06-26 faithful high-variance checkpoint: wellness/safety, finance/risk,
+  creative/media, and overloaded record/case/agent/model/release prompts all
+  completed `greenfield propose` followed by confirmed `greenfield create` in
+  13.1-13.5 seconds. Each run wrote four Radar records, three Registry specs,
+  six Atlas Mermaid sources, six SVG renders, six PNG renders, and had zero
+  semantic-slop, proposal-quality, or rendered-package quality issues in the
+  post-run QA harness. Temp repos were deleted after every run.
+- This checkpoint fixed three general projection defects without adding
+  domain-specific platform terms: non-action first paths now route through a
+  shared semantic first-path repair owner, visible result nouns are rendered as
+  result objects before actor-led action stripping, and child workstream risk
+  projection preserves governed risk posture even when parent risk posture is
+  absent.
 
 ## Implementation Slices
 
@@ -123,12 +136,21 @@ vocabulary, or degraded packages.
       cannot repair it unless the `PatchSet` names the `FirstPathContract`,
       affected projection field, rejected interpretation, and sanctioned
       replacement fact.
+      Current checkpoint routes first-path semantic-coverage findings to
+      `SemanticModelIR.first_path_contract` and applies the existing
+      deterministic semantic first-path repair through the PatchSet seam. Full
+      host-authored semantic patches and affected-projection-only rerender
+      remain open.
 - [ ] Add a host-reasoned semantic patch executor with bounded schema:
       `operation_id`, `semantic_node_id`, `target_path`, `affected_projections`,
       `replacement_fact`, `decision_ledger_entry`, `proof_obligation_delta`,
       `rejected_interpretation`, and confidence. Reject prose-only patches.
 - [ ] Add context-starved renderer contracts so Radar, Registry, Atlas,
       Compass, release proof, and next steps cannot cross-contaminate.
+      Current checkpoint adds the first projection contract split:
+      modal-safe actions, visible-result outcome actions, and child risk
+      posture are resolved in shared projection owners before renderers compose
+      surface copy. A broader explicit `ProjectionLexicon` remains open.
 - [ ] Add high-variance simulation fixtures and artifact-quality scoring across
       PM, architect, engineer, and domain-expert lenses.
 - [ ] Add standard/rescue latency proof and temp-repo pruning proof for the
@@ -184,3 +206,7 @@ vocabulary, or degraded packages.
       temp repos deleted after each run.
 - [ ] Artifact QA reports for each simulation using PM, architect, engineer,
       and domain-expert gates.
+- [x] Checkpoint simulation proof: four faithful high-variance post-confirm
+      creates passed under the standard 60-second path with temp cleanup and
+      automated semantic/proposal/package QA at zero issues. This is a slice
+      checkpoint, not final release-quality proof for arbitrary domains.

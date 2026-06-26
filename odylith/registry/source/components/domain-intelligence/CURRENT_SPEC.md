@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-26 · Implementation:** Greenfield post-confirm repair now routes first-path semantic coverage into a shared semantic first-path repair owner, keeps visible result objects out of actor-action stripping, and preserves child Radar workstream risk posture through the governed artifact Tribunal.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_first_path_repair.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py +3 more
 - **2026-06-26 · Simulation:** Faithful propose-then-confirm proof exposed a remaining post-confirm rescue gap: a shelter-capacity project failed semantic-coverage gates for first-path projection while a quantum-tunneling project passed, proving the PatchSet seam still needs host-authored semantic or artifact-plan patch application before release claims.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md
@@ -175,6 +178,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-26: Moved a failed Radar handoff quality regression upstream into projection owners instead of rendered-package cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_traceability.py` now normalizes validation copy before Radar sections are assembled, `artifact_enrichment.py` preserves complete validation predicates, and `test_greenfield_radar_projection_quality.py` pins both contracts. The ecommerce post-confirm apply path, the widened greenfield slice, and the post-confirm/prewrite transaction suite all pass after the change.
 - 2026-06-26: Moved raw first-path risk-copy leakage upstream into the workstream risk projection owner. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_workstream_risk_projection.py` now replaces raw `First path:` action-chain copies with semantic visible-result evidence when the semantic model is available, preserving risk context without repeating comma-heavy workflow prose across Radar artifacts.
 - 2026-06-26: Captured a remaining faithful post-confirm rescue failure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) A quantum-tunneling education project completed propose-then-confirm create in 11.668 seconds with no simple red flags, but a shelter-capacity coordination project failed in 9.668 seconds because Radar, Atlas, and project brief projections missed first-path semantic coverage and the Radar index repeated the visible result. Domain Intelligence therefore requires host-authored semantic or artifact-plan patch application, decision-ledger capture, and impacted-projection rerender before release-quality claims.
+- 2026-06-26: Added the next semantic projection checkpoint for confirmed create. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_first_path_repair.py` owns non-action first-path repair for confirmed-intent recovery and PatchSet semantic first-path operations, `greenfield_confirmed_completion_text_model.py` now treats visible result nouns as result objects before actor-led action stripping, and `greenfield_workstream_risk_projection.py` preserves child Radar risk posture even without parent risk posture. Four faithful high-variance propose-then-confirm simulations completed in 13.1-13.5 seconds with governed records written, six Atlas Mermaid/SVG/PNG artifacts per repo, zero semantic/proposal/package quality issues, and temp repos deleted after capture.
 
 ## Contract
 
@@ -199,6 +203,11 @@ This section captures synchronized requirement and contract signals derived from
   gate before any writes. After confirmation, `greenfield create --confirm`
   builds and applies the durable record; `propose --confirm-intent --format json`
   is the optional review artifact for the same apply-ready object.
+- First-path and projection repair must target semantic facts before rendered
+  artifacts. Non-action first paths are repaired through the shared first-path
+  semantic repair owner; modal-safe action phrases, visible result outcome
+  actions, and child workstream risk posture are projection fields, not
+  renderer-local string guesses.
 - Confirmed-intent parsing must accept both bullet-row and prose-row internal
   systems when the accepted narrative is concrete enough to infer owned product
   systems. Generic scaffold detection may reject exact fallback names together,

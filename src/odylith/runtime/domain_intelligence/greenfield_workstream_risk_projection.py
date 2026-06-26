@@ -21,7 +21,7 @@ def domain_risk_for_row(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> 
         return _compact_first_path_reference(" ".join(local).strip(), proposal)
     proposal_risk = proposal_posture_text(proposal, "risks", "security_compliance")
     if not proposal_risk:
-        return ""
+        return "" if is_parent_backlog_row(row, proposal) else derived_child_workstream_risk(row=row, proposal=proposal)
     if is_parent_backlog_row(row, proposal):
         return _compact_first_path_reference(proposal_risk, proposal)
     return derived_child_workstream_risk(row=row, proposal=proposal)
@@ -47,9 +47,7 @@ def workstream_risk_lines(
         return _compact_risk_rows(local, proposal)
     if is_parent_backlog_row(row, proposal):
         return _compact_risk_rows(proposal_risks[:3], proposal)
-    if proposal_risks:
-        return [derived_child_workstream_risk(row=row, proposal=proposal)]
-    return []
+    return [derived_child_workstream_risk(row=row, proposal=proposal)]
 
 
 def proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
@@ -115,8 +113,6 @@ def derived_child_workstream_risk(*, row: Mapping[str, Any], proposal: Mapping[s
         outcome=completion_text.outcome_phrase(proposal),
         state=completion_text.state_reference(proposal),
     ).strip()
-    if risk.casefold().startswith("risk: "):
-        return risk[6:].strip()
     return risk
 
 

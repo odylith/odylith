@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import project_specific_actor_labels
+from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -128,6 +129,8 @@ def _actor_led_base_action_phrase(value: str) -> str:
     words = text.split()
     for index in range(1, min(len(words), 6)):
         prefix = " ".join(words[:index]).strip(" .")
+        if not looks_like_actor_led_subject_prefix(prefix, text):
+            continue
         if re.search(r"\b(?:as|at|by|for|from|in|of|on|through|to|via|with|without)\b", prefix, flags=re.IGNORECASE):
             continue
         candidate = " ".join(words[index:]).strip(" .")
@@ -163,9 +166,6 @@ def outcome_action_phrase(outcome: str) -> str:
     object_text = _object_phrase(text)
     if "status" in words and "visible" in words:
         return f"see {object_text}"
-    actor_action = _actor_led_base_action_phrase(re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE))
-    if actor_action:
-        return actor_action
     if words & {"proof", "proven", "verified", "evidence", "audit"}:
         return f"review {object_text}"
     if "status" in words and words & {"tracking", "readiness", "lifecycle"}:
@@ -174,6 +174,9 @@ def outcome_action_phrase(outcome: str) -> str:
         return f"see {object_text}"
     if words & _VISIBLE_RESULT_OBJECT_HINTS:
         return f"use {object_text}"
+    actor_action = _actor_led_base_action_phrase(re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE))
+    if actor_action:
+        return actor_action
     return f"reach {object_text}"
 
 

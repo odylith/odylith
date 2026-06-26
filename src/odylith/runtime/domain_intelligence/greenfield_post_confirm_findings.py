@@ -194,6 +194,9 @@ def _package_issue_route(message: str) -> dict[str, str]:
             "artifact_draft_cleaner",
             repairability="safe_package_repair",
         )
+    semantic_route = _semantic_coverage_route(lowered)
+    if semantic_route:
+        return semantic_route
     if lowered.startswith("prewrite radar"):
         return _route("artifact_shape_drift", "radar", "prewrite_package.radar", "radar", "radar_renderer")
     if "atlas" in lowered or "mermaid" in lowered or "diagram" in lowered:
@@ -263,6 +266,28 @@ def _package_issue_route(message: str) -> dict[str, str]:
         "artifact_draft_set",
         "artifact_plan_projector",
     )
+
+
+def _semantic_coverage_route(lowered: str) -> dict[str, str]:
+    if "semantic coverage" not in lowered:
+        return {}
+    route = _surface_route_for_message(lowered)
+    if "proof boundary" in lowered or "proof checkpoint" in lowered:
+        node = "SemanticModelIR.domain_ontology.proof_boundary"
+        target = "semantic_model.domain_ontology.proof_boundary"
+    else:
+        node = "SemanticModelIR.first_path_contract"
+        target = "semantic_model.first_path_contract"
+    return {
+        "code": "semantic_alignment",
+        "surface": route["surface"],
+        "target_path": target,
+        "projection_id": route["projection_id"],
+        "semantic_node_id": node,
+        "severity": "high",
+        "repairability": "semantic_patch",
+        "owner": "semantic_model_compiler",
+    }
 
 
 def _route(

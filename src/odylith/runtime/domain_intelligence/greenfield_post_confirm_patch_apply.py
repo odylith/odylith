@@ -9,6 +9,7 @@ from odylith.runtime.common import display_text
 from odylith.runtime.common.value_coercion import normalize_token
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
+from odylith.runtime.domain_intelligence.greenfield_first_path_repair import repair_proposal_first_path
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmRepairContext
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair_context import repair_context_operations
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import repair_proposal_for_quality_lens_gaps
@@ -56,6 +57,10 @@ def _apply_operations(
         return proposal
 
     repaired = _complete_confirmed_semantic_proposal(proposal, release_selector=release_selector)
+    if any(_is_first_path_semantic_operation(operation) for operation in operations):
+        if repair_proposal_first_path(repaired):
+            repaired = _normalized_proposal(repaired)
+            repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
     if any(_is_quality_lens_operation(operation) for operation in operations):
         if repair_proposal_for_quality_lens_gaps(
             repaired,
@@ -97,6 +102,20 @@ def _is_quality_lens_operation(operation: Mapping[str, Any]) -> bool:
     return (
         normalize_token(operation.get("source_finding")) in _QUALITY_LENS_SOURCES
         or normalize_token(operation.get("issue_code")) in _QUALITY_LENS_CODES
+    )
+
+
+def _is_first_path_semantic_operation(operation: Mapping[str, Any]) -> bool:
+    if _target_layer(operation) not in _MODEL_PATCH_LAYERS:
+        return False
+    semantic_node = normalize_token(operation.get("semantic_node_id"))
+    target_path = normalize_token(operation.get("target_path"))
+    rejected = str(operation.get("rejected_interpretation", "")).casefold()
+    return bool(
+        "first_path_contract" in semantic_node
+        or "first_path_contract" in target_path
+        or "first path" in rejected
+        or "firstpathcontract" in rejected
     )
 
 

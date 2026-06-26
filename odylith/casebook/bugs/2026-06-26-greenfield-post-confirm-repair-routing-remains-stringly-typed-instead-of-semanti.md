@@ -55,6 +55,16 @@
   only copied prose: repairable semantic-coverage findings can still route as
   artifact-plan/package shape and then rerun deterministic completion without
   applying a meaning-changing semantic or plan patch.
+  A later checkpoint found two additional projection-boundary failures in the
+  faithful high-variance loop: visible result nouns could be reinterpreted as
+  actor-led actions when embedded in `user can` copy, and child Radar
+  workstream risk projection could strip or omit the explicit risk posture that
+  the governed artifact Tribunal requires. The fix kept both repairs upstream:
+  first-path semantic repair now rewrites the confirmed proposal's semantic
+  first path before downstream completion, outcome-action rendering treats
+  visible result objects as result objects before considering actor-led action
+  stripping, and child workstream risk projection preserves `Risk:` semantics
+  even when no parent risk posture is available.
 
 - Blast Radius: Any greenfield project domain or complexity where semantic ambiguity, repeated claims, domain-specific proof obligations, or artifact-specific wording requires repair before governed writes.
 
@@ -91,6 +101,16 @@
   flags; shelter capacity propose-then-confirm failed in 9.668 seconds on
   semantic-coverage and repeated-visible-result blockers before any governed
   records were written.
+  Later checkpoint evidence: focused projection/post-confirm tests passed with
+  33 tests in 19.81 seconds; the widened greenfield runtime slice passed with
+  168 tests in 142.44 seconds; four fresh faithful propose-then-confirm
+  simulations across wellness/safety, finance/risk, creative/media, and
+  overloaded record/case/agent/model/release terminology all wrote governed
+  records in 13.1-13.5 seconds. Each simulation produced four Radar records,
+  three Registry component specs, six Atlas Mermaid sources, six SVG renders,
+  six PNG renders, zero generated semantic-slop issues, zero proposal-quality
+  issues, and zero rendered-package quality issues. Every temp repo was
+  deleted immediately after capture.
 
 - Prevention: Before adding more regex or template rules, check Casebook and repair semantic ownership, projection boundaries, or typed review contracts first.
 
@@ -110,8 +130,11 @@
   artifact-enrichment preserves complete `validate that` predicates.
   `tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py` proves
   risk projection uses semantic visible-result evidence instead of raw
-  first-path action chains. Full host-authored semantic/plan patch application
-  proof remains open.
+  first-path action chains. `tests/unit/runtime/test_greenfield_projection_contracts.py`
+  proves visible result objects stay modal-safe in `user can` projections and
+  child workstream risk projection preserves governed risk posture through the
+  same artifact Tribunal used before writes. Full host-authored semantic/plan
+  patch application proof remains open.
 
 - Related Incidents/Bugs: CB-207
 
@@ -120,4 +143,6 @@
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
 - src/odylith/runtime/domain_intelligence/greenfield_workstream_risk_projection.py
+- src/odylith/runtime/domain_intelligence/greenfield_first_path_repair.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
 - src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py
