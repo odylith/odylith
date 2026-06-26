@@ -16,6 +16,12 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import (
+    confirmed_system_description,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import (
+    confirmed_system_name,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -79,6 +85,16 @@ def _system_row(row: str, *, context: str, title: str, explicit: bool = False) -
     raw = _clean(row)
     if not raw:
         return ""
+    if " - " in raw and "—" not in raw and ":" not in raw:
+        canonical_name = _flatten_parenthetical_label(confirmed_system_name(raw))
+        canonical_description = _clean_system_description(confirmed_system_description(raw))
+        if (
+            canonical_name
+            and canonical_description
+            and canonical_name != canonical_description
+            and _system_description_is_enough(canonical_description)
+        ):
+            return f"{_title_case_system_name(canonical_name)} — {canonical_description.rstrip('.')}"
     if "—" in raw or ":" in raw:
         name, description = re.split(r"\s+—\s+|:\s*", raw, maxsplit=1)
         name = _flatten_parenthetical_label(name)

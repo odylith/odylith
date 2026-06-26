@@ -7,6 +7,9 @@ from typing import Any
 
 from odylith.runtime.common import display_text
 from odylith.runtime.common.value_coercion import normalize_token
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan_patch_executor import (
+    apply_artifact_plan_patch_operations,
+)
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import repair_proposal_first_path
@@ -58,7 +61,9 @@ def _apply_operations(
         return proposal
 
     repaired = proposal
-    if apply_semantic_patch_operations(repaired, operations):
+    semantic_changed = apply_semantic_patch_operations(repaired, operations)
+    plan_changed = apply_artifact_plan_patch_operations(repaired, operations)
+    if semantic_changed or plan_changed:
         repaired = _normalized_proposal(repaired)
     repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
     if any(_is_first_path_semantic_operation(operation) for operation in operations):

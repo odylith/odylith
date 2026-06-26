@@ -233,6 +233,37 @@ Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prom
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_host_guidance_recovery_preserves_explicit_system_rows_through_completion() -> None:
+    prompt = (
+        "Create a greenfield proposal for a clinical trial consent and adverse-event triage workspace that lets "
+        "research nurses verify participant consent, capture symptom evidence, route investigator safety review, "
+        "preserve audit-ready decisions, and release a first-slice monitoring report without automating medical diagnosis."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Clinical Trial Consent and Adverse Event Triage Workspace"
+    assert intent["human_actors"] == [
+        "Research Nurses: need the product to verify participant consent and keep the result visible and reviewable"
+    ]
+    assert len(intent["internal_systems"]) == 3
+    assert any("Intake Register" in row for row in intent["internal_systems"])
+    assert any("Review Workspace" in row for row in intent["internal_systems"])
+    assert any("Proof Ledger" in row for row in intent["internal_systems"])
+    assert "component responsibility named by the accepted intent" not in rendered
+    assert "Release a First-slice Monitoring" not in rendered
+    assert "medical diagnosis" in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_host_guidance_recovery_builds_clean_confirmed_proposal_from_controller_prompt() -> None:
     prompt = (
         "Draft a greenfield proposal for a cooking robot controller where a home cook chooses a recipe, "

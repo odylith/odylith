@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 85,
-    "mapped_workstream_evidence_count": 57,
+    "explicit_event_count": 91,
+    "mapped_workstream_evidence_count": 63,
     "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 85
+    "timeline_event_count": 91
   },
   "name": "Release",
   "path_prefixes": [
@@ -44,6 +44,210 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
+      ],
+      "confidence": "high",
+      "event_index": 622,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield source-local recovery now preserves explicit internal-system rows through completion and rejects actorless release steps as fake human actors.",
+      "ts_iso": "2026-06-26T15:01:18-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 620,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Built local release assets for 0.1.15 from commit 2bf681ee into /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2bf681ee and passed local_release_smoke fresh-install verification with temporary repo cleanup.",
+      "ts_iso": "2026-06-26T13:47:56-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 619,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield final checkpoint after shared release-scope helper extraction: affected confirmed-intent/CLI paths passed 69 tests in 161.14s, greenfield quality pack passed 160 tests in 50.09s, heavy post-confirm suite passed 93 tests in 283.07s, and ten fresh source-local simulations passed in 13.970-15.504s with standard-tier manifests, zero issues, expert lenses passing, governed records written, and temp repos deleted after every scenario.",
+      "ts_iso": "2026-06-26T13:32:37-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 618,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield final checkpoint: prompt-source guidance-envelope recovery and proof-boundary release-limit preservation passed affected confirmed-intent/CLI paths (69 tests), greenfield quality pack (160 tests), heavy post-confirm suite (93 tests), and ten fresh source-local simulations in 13.617-14.499s with standard-tier manifests, zero issues, expert lenses passing, governed records written, and temp repos deleted after every scenario.",
+      "ts_iso": "2026-06-26T13:15:06-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 614,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh faithful high-variance greenfield simulation after first-path repair: science, civic, developer-infra, and IoT passed create in 11.6-12.7s with validators and no simple red flags; wellness and finance failed on Radar index repeated visible-result copy; creative-media failed on missing backlog row risk; ambiguous record/case/model/release failed semantic slop actor-led action leakage. All temp repos were deleted after each scenario.",
+      "ts_iso": "2026-06-26T00:44:49-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 613,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Faithful greenfield propose-then-confirm simulation sharpened CB-208: quantum tunneling passed in 11.668s, shelter capacity failed in 9.668s on first-path semantic coverage and repeated visible-result copy. Release architecture now requires host-authored semantic or artifact-plan PatchSet application, decision-ledger capture, and impacted-projection rerender before premium readiness claims.",
+      "ts_iso": "2026-06-26T00:26:06-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md",

@@ -215,6 +215,50 @@
   architect, engineer, and domain-expert lenses passed, four Radar workstreams,
   three Registry component specs, six Atlas diagrams, and temp repo deletion
   before the next scenario.
+  A later architecture review found that `ArtifactPlanIR` was still mostly a
+  contract: `greenfield_post_confirm_patchset.py` could emit
+  `target_layer: artifact_plan` operations, but
+  `greenfield_post_confirm_patch_apply.py` executed only semantic operations.
+  That left plan-level rescue unable to change project brief, Radar, Registry,
+  Atlas, release, program, assumption, risk, question, or validation projection
+  facts through a typed operation. The new
+  `greenfield_artifact_plan_patch_executor.py` applies only formal
+  `artifact_plan` replacement facts to sanctioned proposal projection roots,
+  rejects prose-only replacements, preserves immutable ids, slugs, schema
+  versions, source paths, and timestamps, and records an
+  `artifact_plan_patch_ledger` entry with operation id, target path, semantic
+  node, rejected interpretation, issue code, confidence, and applied paths.
+  This is not the final host compiler or impacted-projection rerender, so
+  CB-208 remains open; it does prevent repeating the failed mechanism where
+  plan patches were generated but never executed.
+  A subsequent five-domain source-local simulation exposed a fresh prompt
+  recovery/completion failure. Tribal wildfire evacuation grants, neutrino
+  observatory calibration, film archive rights clearance, and municipal bond
+  covenant climate disclosure passed in 13.931-14.742 seconds with governed
+  records, zero issues, and all expert lenses passing, but clinical trial
+  consent/adverse-event triage failed before writes with
+  `missing or too thin: internal_systems`. Reproduction showed the recovered
+  guidance-envelope confirmation had three meaningful internal system rows and
+  validated before completion; `complete_confirmed_intent` then collapsed those
+  rows into one broad `component responsibility named by the accepted intent`
+  row because internal-system completion did not reuse the canonical spaced
+  hyphen row parser. The repair must preserve explicit recovered system rows
+  through completion, not weaken the internal-systems gate or add a
+  clinical-domain exception.
+  The same clinical repro also exposed a human-readability miss after the
+  internal-system collapse was fixed: the first path step `release a
+  first-slice monitoring report without automating medical diagnosis` became a
+  fake actor row, `Release a First-slice Monitoring`, because shared prose
+  grammar did not classify `release` as a base action token and actor
+  extraction had no local way to reject that imperative step. The repair belongs
+  at recovered actor extraction, where imperative release steps can be treated
+  as actions without changing global modal/base-form grammar.
+  The final repair kept the global prose grammar unchanged to avoid breaking
+  existing modal/base-form checks. Instead, confirmed-intent recovery treats
+  actorless imperative `release ...` clauses as non-actor action steps only
+  inside recovered actor extraction, and internal-system completion reuses the
+  canonical system-row parser only for spaced-hyphen recovered rows while
+  leaving existing em-dash enrichment behavior intact.
 
 - Prevention: Before adding more regex or template rules, check Casebook and repair semantic ownership, projection boundaries, or typed review contracts first.
 
@@ -264,6 +308,26 @@
   proof-boundary release limits such as `without claiming ...` remain visible
   after post-confirm backlog completion rewrites proof workstream metrics. Full
   host-authored semantic/plan patch application proof remains open.
+  `tests/unit/runtime/test_greenfield_artifact_plan_patch_executor.py` proves
+  artifact-plan PatchSet operations update only sanctioned projection fields,
+  refuse immutable structural metadata changes, record the plan-patch ledger,
+  and run through `apply_greenfield_patchset_repairs`; the focused executor
+  test passed 2 tests in 0.14 seconds and the widened post-confirm repair and
+  artifact-quality set passed 229 tests in 321.33 seconds.
+  `tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py` now proves
+  source-local guidance-envelope recovery preserves explicit internal-system
+  rows through completion and does not infer the fake actor `Release a
+  First-slice Monitoring`. Targeted recovery and prior-regression proof passed
+  24 tests in 39.63 seconds. The widened greenfield pack then passed 283 tests
+  in 491.56 seconds. A five-domain source-local simulation passed after the
+  fix with temp cleanup after every case: tribal wildfire evacuation grants
+  13.649s, neutrino observatory calibration 14.012s, clinical trial
+  consent/adverse-event triage 14.379s, film archive rights clearance 14.002s,
+  and municipal bond covenant climate disclosure 14.244s. Every run wrote
+  governed records, produced four Radar workstreams, three Registry specs, six
+  Atlas diagrams, five rendered surfaces, 18 trace nodes, four trace
+  workstreams, four required domain-term hits, zero quality issues, and passed
+  product-manager, architect, engineer, and domain-expert lenses.
 
 - Related Incidents/Bugs: CB-207
 
@@ -280,3 +344,6 @@
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
 - src/odylith/runtime/domain_intelligence/greenfield_release_scope_limits.py
 - src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py
+- src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py

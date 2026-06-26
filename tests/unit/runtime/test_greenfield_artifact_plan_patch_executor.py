@@ -1,0 +1,171 @@
+from __future__ import annotations
+
+from typing import Any
+
+import pytest
+
+from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan_patch_executor import (
+    apply_artifact_plan_patch_operations,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
+    GreenfieldCompletionReport,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
+    GreenfieldPostConfirmRepairContext,
+)
+
+
+def test_artifact_plan_patch_updates_only_sanctioned_projection_fields() -> None:
+    proposal: dict[str, Any] = {
+        "project_brief": {
+            "schema_version": "odylith.greenfield.project_brief.v1",
+            "project_outcome": "Old outcome.",
+        },
+        "backlog": [
+            {
+                "workstream_id": "B-001",
+                "title": "Review case record",
+                "success_metrics": ["Old metric."],
+            }
+        ],
+        "components": [
+            {
+                "component_id": "case-ledger",
+                "label": "Case Ledger",
+                "responsibility": "Old responsibility.",
+            }
+        ],
+        "diagrams": [
+            {
+                "slug": "case-flow",
+                "title": "Case Flow",
+                "summary": "Old summary.",
+            }
+        ],
+        "release_plan": {"strategy": "Old strategy."},
+        "validation_strategy": ["Old validation."],
+    }
+    operations = [
+        {
+            "operation_id": "GF-PATCH-101",
+            "target_layer": "artifact_plan",
+            "target_path": "project_brief.project_outcome",
+            "semantic_node_id": "ArtifactPlanIR.project_brief",
+            "issue_code": "artifact_shape_drift",
+            "rejected_interpretation": "project brief lacked the approved release proof.",
+            "confidence": 0.91,
+            "replacement_fact": {
+                "project_brief": {
+                    "schema_version": "must-not-change",
+                    "project_outcome": "Release 0.0.1 proves the accepted case record path with review evidence.",
+                },
+                "backlog": [
+                    {
+                        "match": {"title": "Review case record"},
+                        "fields": {
+                            "workstream_id": "B-999",
+                            "success_metrics": ["Reviewer can inspect the case record with evidence."],
+                        },
+                    }
+                ],
+                "components": [
+                    {
+                        "match": {"component_id": "case-ledger"},
+                        "fields": {
+                            "component_id": "changed",
+                            "responsibility": "Owns case record state and review evidence.",
+                        },
+                    }
+                ],
+                "diagrams": [
+                    {
+                        "index": 0,
+                        "fields": {
+                            "slug": "changed",
+                            "summary": "Shows the accepted case record handoff and evidence boundary.",
+                        },
+                    }
+                ],
+                "release_plan": {"strategy": "Promote only after case record proof passes."},
+                "validation_strategy": ["Validate the case record proof before release."],
+            },
+        }
+    ]
+
+    changed = apply_artifact_plan_patch_operations(proposal, operations)
+
+    assert changed is True
+    assert proposal["project_brief"]["schema_version"] == "odylith.greenfield.project_brief.v1"
+    assert "accepted case record path" in proposal["project_brief"]["project_outcome"]
+    assert proposal["backlog"][0]["workstream_id"] == "B-001"
+    assert proposal["backlog"][0]["success_metrics"] == ["Reviewer can inspect the case record with evidence."]
+    assert proposal["components"][0]["component_id"] == "case-ledger"
+    assert proposal["components"][0]["responsibility"] == "Owns case record state and review evidence."
+    assert proposal["diagrams"][0]["slug"] == "case-flow"
+    assert proposal["diagrams"][0]["summary"] == "Shows the accepted case record handoff and evidence boundary."
+    assert proposal["release_plan"]["strategy"] == "Promote only after case record proof passes."
+    assert proposal["validation_strategy"] == ["Validate the case record proof before release."]
+    ledger = proposal["artifact_plan_patch_ledger"]
+    assert ledger[0]["operation_id"] == "GF-PATCH-101"
+    assert "project_brief.project_outcome" in ledger[0]["applied_paths"]
+    assert "components[0].responsibility" in ledger[0]["applied_paths"]
+
+
+def test_patchset_repair_executes_artifact_plan_operations(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "complete_confirmed_proposal",
+        lambda proposal, *, release_selector: dict(proposal),
+    )
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "ensure_apply_semantic_model", lambda proposal, **_kwargs: proposal)
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "repair_greenfield_semantic_projections", lambda _proposal: False)
+    context = GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("project brief preview missing release proof",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-102",
+                    "target_layer": "artifact_plan",
+                    "target_path": "project_brief.project_outcome",
+                    "semantic_node_id": "ArtifactPlanIR.project_brief",
+                    "issue_code": "artifact_shape_drift",
+                    "affected_projections": ["project_brief"],
+                    "replacement_fact": {
+                        "path": "project_brief.project_outcome",
+                        "value": "Release 0.0.1 proves the accepted path with review evidence.",
+                    },
+                }
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+        {"project_brief": {"project_outcome": "Old outcome."}},
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert repaired["project_brief"]["project_outcome"] == (
+        "Release 0.0.1 proves the accepted path with review evidence."
+    )
+    assert repaired["artifact_plan_patch_ledger"][0]["operation_id"] == "GF-PATCH-102"

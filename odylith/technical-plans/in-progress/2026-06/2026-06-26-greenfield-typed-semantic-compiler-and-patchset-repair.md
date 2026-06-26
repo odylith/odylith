@@ -169,6 +169,29 @@ vocabulary, or degraded packages.
   passed PM/architect/engineer/domain-expert lenses, produced four Radar
   workstreams, three Registry specs, six Atlas diagrams, and deleted its temp
   repo before the next scenario.
+- 2026-06-26 artifact-plan PatchSet execution checkpoint: architecture review
+  found that `ArtifactPlanIR` operations were emitted but not executable.
+  `greenfield_artifact_plan_patch_executor.py` now applies formal
+  `target_layer: artifact_plan` replacement facts to sanctioned proposal
+  projection roots, refuses prose-only replacements, preserves structural
+  custody fields such as ids, slugs, schema versions, paths, and timestamps,
+  and records an `artifact_plan_patch_ledger` for every applied operation. The
+  focused executor test passed 2 tests in 0.14s, compile proof passed, and the
+  widened post-confirm repair/artifact-quality suite passed 229 tests in
+  321.33s. Full host-authored semantic compiler integration and
+  affected-projection-only rerender remain open.
+- 2026-06-26 recovery/completion checkpoint: a five-domain source-local
+  simulation initially passed four domains but failed clinical trial
+  consent/adverse-event triage before writes because valid recovered internal
+  systems were collapsed during completion. The same repro then surfaced a fake
+  actor candidate from the imperative step `release a first-slice monitoring
+  report`. The fix preserves explicit spaced-hyphen recovered system rows
+  through completion and treats actorless imperative `release ...` clauses as
+  action steps inside recovered actor extraction without changing global prose
+  grammar. Targeted proof passed 24 tests in 39.63s, the broad greenfield pack
+  passed 283 tests in 491.56s, and a fresh five-domain source-local matrix
+  passed in 13.649-14.379s with zero issues, all expert lenses passing,
+  governed writes, and temp cleanup after every case.
 
 ## Implementation Slices
 
@@ -204,6 +227,14 @@ vocabulary, or degraded packages.
       semantic visible-result evidence instead of raw comma-heavy first-path
       chains. Full host-authored semantic or plan patch application plus
       impacted-projection rerender remain open.
+- [x] Execute artifact-plan PatchSet operations for sanctioned projection
+      facts. `greenfield_artifact_plan_patch_executor.py` applies only formal
+      `artifact_plan` replacement facts against approved proposal roots for
+      project brief, Radar backlog, Registry components, Atlas diagrams,
+      release plan, program, assumptions, questions, risks, and validation
+      strategy. It rejects prose-only patches, protects ids, slugs, schema
+      versions, source paths, and timestamps, and records the plan-patch
+      decision ledger before proposal normalization and completion rerun.
 - [ ] Promote semantic-coverage failures to first-class semantic/projection
       patch obligations before rerender. The shelter-capacity failure proves
       overlap-based coverage checks can detect missing first-path projection but
@@ -221,6 +252,13 @@ vocabulary, or degraded packages.
       proposal instructions, and sentence-style prompts such as `Build a
       proposal for X. The first release should let Y...` split title from
       action before validation.
+- [x] Preserve source-local recovered intent facts through completion.
+      `greenfield_confirmed_system_completion.py` now keeps explicit
+      spaced-hyphen recovered internal-system rows as canonical system
+      name/description facts instead of collapsing them into one generic
+      component-responsibility row, and
+      `greenfield_confirmed_intent_recovery.py` rejects actorless imperative
+      `release ...` steps as fake human actors during recovery.
 - [x] Preserve negative proof-boundary release limits through backlog
       completion. `greenfield_release_scope_limits.py` owns generic
       proof-boundary limit extraction, `greenfield_confirmed_backlog.py`
@@ -285,6 +323,10 @@ vocabulary, or degraded packages.
       PatchSet seam routes existing deterministic proposal repair and refuses
       proposal mutation for artifact-draft-only operations; full host-authored
       semantic/plan patch application and impacted rerender proof remain open.
+      Artifact-plan execution is now covered by
+      `test_greenfield_artifact_plan_patch_executor.py`, which proves
+      sanctioned projection-field updates, immutable metadata refusal, ledger
+      capture, and integration through `apply_greenfield_patchset_repairs`.
 - [x] End-to-end confirmed-create tests proving governed records are written
       after final package quality passes for the current prewrite transaction
       slice. The ecommerce handoff regression now passes, the widened
@@ -339,3 +381,11 @@ vocabulary, or degraded packages.
       heavy post-confirm engine/artifact suite passed 93 tests in 283.07s; ten
       fresh high-variance source-local simulations passed in 13.970-15.504s
       with zero issues and temp cleanup after every scenario.
+- [x] Artifact-plan PatchSet executor proof: focused tests passed 2 tests in
+      0.14s, compile proof passed for the changed modules, and the widened
+      post-confirm repair/artifact-quality pack passed 229 tests in 321.33s.
+- [x] Recovery/completion proof: targeted recovery regressions passed 24 tests
+      in 39.63s; the broad greenfield pack passed 283 tests in 491.56s; and
+      five high-variance source-local simulations passed with governed writes,
+      zero quality issues, all PM/architect/engineer/domain-expert lenses
+      passing, and temp cleanup after every case.

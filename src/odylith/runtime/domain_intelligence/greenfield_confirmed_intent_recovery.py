@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_t
 from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
 
 _MODAL_MARKERS = frozenset({"can", "will", "must", "needs", "need"})
+_ACTORLESS_IMPERATIVE_ACTION_WORDS = frozenset({"release"})
 _LEADING_ARTICLES = frozenset({"a", "an", "the"})
 _LEADING_CONNECTORS = frozenset({"and", "or", "then"})
 _NON_HUMAN_ACTOR_TERMS = frozenset(
@@ -490,10 +491,10 @@ def _looks_like_human_actor_token(value: str) -> bool:
 
 def _starts_with_action_without_actor(clause: str) -> bool:
     text = re.sub(r"^(?:and|or|then)\s+", "", _clean(clause), flags=re.IGNORECASE)
-    if not looks_like_action_clause(text):
-        return False
     words = _strip_leading_articles(_words(text))
     if len(words) < 2:
+        return False
+    if not looks_like_action_clause(text) and words[0].casefold() not in _ACTORLESS_IMPERATIVE_ACTION_WORDS:
         return False
     if _first_word_index(words, _MODAL_MARKERS) > 0:
         return False

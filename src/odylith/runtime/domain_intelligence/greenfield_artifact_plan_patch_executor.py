@@ -1,0 +1,335 @@
+"""Apply formal artifact-plan PatchSet operations to sanctioned projections."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from copy import deepcopy
+from typing import Any
+
+from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.common.value_coercion import normalize_token
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
+
+_ARTIFACT_PLAN_LAYER = "artifact_plan"
+_LEDGER_KEY = "artifact_plan_patch_ledger"
+_DICT_ROOTS = frozenset({"project_brief", "release_plan", "program"})
+_LIST_ROOTS = frozenset({"assumptions", "open_questions", "risks", "validation_strategy"})
+_ROW_ROOTS = frozenset({"backlog", "components", "diagrams"})
+_ROOT_ALIASES = {
+    "radar": "backlog",
+    "registry": "components",
+    "atlas": "diagrams",
+    "release": "release_plan",
+}
+_IMMUTABLE_FIELDS = frozenset(
+    {
+        "component_id",
+        "created_at",
+        "id",
+        "provisional_release_id",
+        "registry_path",
+        "schema_version",
+        "slug",
+        "spec_path",
+        "updated_at",
+        "workstream_id",
+    }
+)
+
+
+def apply_artifact_plan_patch_operations(
+    proposal: dict[str, Any],
+    operations: Sequence[Mapping[str, Any]],
+) -> bool:
+    """Apply host-authored plan replacement facts before artifact rerender."""
+
+    changed = False
+    ledger_entries: list[dict[str, Any]] = []
+    for operation in operations:
+        if normalize_token(operation.get("target_layer")) != _ARTIFACT_PLAN_LAYER:
+            continue
+        applied_paths = _apply_artifact_plan_operation(proposal, operation)
+        if not applied_paths:
+            continue
+        changed = True
+        ledger_entries.append(_ledger_entry(operation, applied_paths=applied_paths))
+    if ledger_entries:
+        ledger = proposal.setdefault(_LEDGER_KEY, [])
+        if isinstance(ledger, list):
+            ledger.extend(ledger_entries)
+        else:
+            proposal[_LEDGER_KEY] = ledger_entries
+    return changed
+
+
+def _apply_artifact_plan_operation(proposal: dict[str, Any], operation: Mapping[str, Any]) -> tuple[str, ...]:
+    replacement = operation.get("replacement_fact")
+    if not isinstance(replacement, Mapping):
+        return ()
+    paths: list[str] = []
+    paths.extend(_apply_path_value_patch(proposal, replacement))
+    for raw_root, patch_value in replacement.items():
+        root = _canonical_root(raw_root)
+        if root in _DICT_ROOTS and isinstance(patch_value, Mapping):
+            paths.extend(_apply_dict_root_patch(proposal, root, patch_value))
+        elif root in _LIST_ROOTS:
+            paths.extend(_apply_list_root_patch(proposal, root, patch_value))
+        elif root in _ROW_ROOTS:
+            paths.extend(_apply_row_root_patch(proposal, root, patch_value, operation))
+    return tuple(dict.fromkeys(paths))
+
+
+def _apply_path_value_patch(proposal: dict[str, Any], replacement: Mapping[str, Any]) -> tuple[str, ...]:
+    path = normalize_string(replacement.get("path") or replacement.get("target_path"))
+    if not path or "value" not in replacement:
+        return ()
+    root, tail = _split_root_path(path)
+    if not root or not tail:
+        return ()
+    if root in _DICT_ROOTS:
+        return _set_dict_path(_ensure_dict_root(proposal, root), tail, replacement.get("value"), prefix=root)
+    if root in _ROW_ROOTS:
+        row_patch = {
+            "index": _row_index_from_path(path),
+            "fields": {_tail_without_row_index(tail): replacement.get("value")},
+        }
+        return _apply_row_root_patch(proposal, root, row_patch, {})
+    if root in _LIST_ROOTS and len(tail) == 1:
+        return _apply_list_root_patch(proposal, root, replacement.get("value"))
+    return ()
+
+
+def _apply_dict_root_patch(proposal: dict[str, Any], root: str, patch: Mapping[str, Any]) -> tuple[str, ...]:
+    target = _ensure_dict_root(proposal, root)
+    paths: list[str] = []
+    for raw_field, value in patch.items():
+        field = normalize_string(raw_field)
+        if not field or field in {"path", "target_path", "value"} or _immutable_field(field):
+            continue
+        if isinstance(value, Mapping) and isinstance(target.get(field), dict):
+            paths.extend(_merge_mapping(target[field], value, prefix=f"{root}.{field}"))
+            continue
+        if _set_if_changed(target, field, value):
+            paths.append(f"{root}.{field}")
+    return tuple(paths)
+
+
+def _apply_list_root_patch(proposal: dict[str, Any], root: str, value: Any) -> tuple[str, ...]:
+    rows = [normalize_string(item) for item in text_values(value) if normalize_string(item)]
+    if not rows:
+        return ()
+    if proposal.get(root) == rows:
+        return ()
+    proposal[root] = rows
+    return (root,)
+
+
+def _apply_row_root_patch(
+    proposal: dict[str, Any],
+    root: str,
+    patch_value: Any,
+    operation: Mapping[str, Any],
+) -> tuple[str, ...]:
+    rows = _ensure_row_root(proposal, root)
+    patches = _row_patches(patch_value)
+    paths: list[str] = []
+    for patch in patches:
+        row = _select_row(rows, root=root, patch=patch, operation=operation)
+        if row is None:
+            continue
+        fields = patch.get("fields") if isinstance(patch.get("fields"), Mapping) else patch
+        row_index = rows.index(row)
+        for raw_field, value in fields.items():
+            field = normalize_string(raw_field)
+            if not field or field in {"fields", "index", "match", "selector"} or _immutable_field(field):
+                continue
+            if _set_if_changed(row, field, value):
+                paths.append(f"{root}[{row_index}].{field}")
+    return tuple(paths)
+
+
+def _row_patches(value: Any) -> tuple[Mapping[str, Any], ...]:
+    if isinstance(value, Mapping):
+        rows = value.get("rows")
+        if isinstance(rows, Sequence) and not isinstance(rows, (str, bytes)):
+            return tuple(row for row in rows if isinstance(row, Mapping))
+        return (value,)
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        return tuple(row for row in value if isinstance(row, Mapping))
+    return ()
+
+
+def _select_row(
+    rows: list[dict[str, Any]],
+    *,
+    root: str,
+    patch: Mapping[str, Any],
+    operation: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    index = _int_or_none(patch.get("index"))
+    if index is None:
+        index = _row_index_from_path(normalize_string(operation.get("target_path")))
+    if index is not None and 0 <= index < len(rows):
+        return rows[index]
+    matcher = patch.get("match") if isinstance(patch.get("match"), Mapping) else patch.get("selector")
+    if isinstance(matcher, Mapping):
+        matched = _find_matching_row(rows, matcher)
+        if matched is not None:
+            return matched
+    target = normalize_string(operation.get("target_path"))
+    if target:
+        matched = _find_matching_row(rows, _target_matcher(root, target))
+        if matched is not None:
+            return matched
+    return rows[0] if len(rows) == 1 else None
+
+
+def _find_matching_row(rows: Sequence[dict[str, Any]], matcher: Mapping[str, Any]) -> dict[str, Any] | None:
+    for row in rows:
+        if all(
+            normalize_string(row.get(key)) == normalize_string(value)
+            for key, value in matcher.items()
+            if normalize_string(key) and normalize_string(value)
+        ):
+            return row
+    return None
+
+
+def _target_matcher(root: str, target_path: str) -> dict[str, str]:
+    token = normalize_token(target_path)
+    keys = {
+        "backlog": ("workstream_id", "title"),
+        "components": ("component_id", "label"),
+        "diagrams": ("slug", "title"),
+    }.get(root, ())
+    for key in keys:
+        prefix = f"{key}_"
+        if prefix in token:
+            return {key: token.split(prefix, 1)[1]}
+    return {}
+
+
+def _merge_mapping(target: dict[str, Any], patch: Mapping[str, Any], *, prefix: str) -> tuple[str, ...]:
+    paths: list[str] = []
+    for raw_field, value in patch.items():
+        field = normalize_string(raw_field)
+        if not field or _immutable_field(field):
+            continue
+        if isinstance(value, Mapping) and isinstance(target.get(field), dict):
+            paths.extend(_merge_mapping(target[field], value, prefix=f"{prefix}.{field}"))
+            continue
+        if _set_if_changed(target, field, value):
+            paths.append(f"{prefix}.{field}")
+    return tuple(paths)
+
+
+def _set_dict_path(target: dict[str, Any], path: Sequence[str], value: Any, *, prefix: str) -> tuple[str, ...]:
+    if not path:
+        return ()
+    current = target
+    for field in path[:-1]:
+        if _immutable_field(field):
+            return ()
+        child = current.get(field)
+        if not isinstance(child, dict):
+            child = {}
+            current[field] = child
+        current = child
+    field = path[-1]
+    if _immutable_field(field):
+        return ()
+    return (f"{prefix}.{'.'.join(path)}",) if _set_if_changed(current, field, value) else ()
+
+
+def _set_if_changed(target: dict[str, Any], field: str, value: Any) -> bool:
+    next_value = deepcopy(value)
+    if target.get(field) == next_value:
+        return False
+    target[field] = next_value
+    return True
+
+
+def _ensure_dict_root(proposal: dict[str, Any], root: str) -> dict[str, Any]:
+    value = proposal.get(root)
+    if not isinstance(value, dict):
+        value = {}
+        proposal[root] = value
+    return value
+
+
+def _ensure_row_root(proposal: dict[str, Any], root: str) -> list[dict[str, Any]]:
+    value = proposal.get(root)
+    if not isinstance(value, list):
+        value = []
+        proposal[root] = value
+    rows: list[dict[str, Any]] = []
+    for item in value:
+        if isinstance(item, dict):
+            rows.append(item)
+    if len(rows) != len(value):
+        proposal[root] = rows
+    return rows
+
+
+def _canonical_root(value: Any) -> str:
+    token = normalize_token(value)
+    return _ROOT_ALIASES.get(token, token)
+
+
+def _split_root_path(path: str) -> tuple[str, tuple[str, ...]]:
+    cleaned = normalize_string(path).replace("[", ".").replace("]", "")
+    parts = tuple(part for part in cleaned.split(".") if part)
+    if not parts:
+        return "", ()
+    root = _canonical_root(parts[0])
+    return root, tuple(part for part in parts[1:] if not part.isdigit())
+
+
+def _tail_without_row_index(path: Sequence[str]) -> str:
+    return ".".join(part for part in path if not part.isdigit())
+
+
+def _row_index_from_path(path: str) -> int | None:
+    marker = "["
+    if marker not in path:
+        return None
+    tail = path.split(marker, 1)[1].split("]", 1)[0]
+    return _int_or_none(tail)
+
+
+def _int_or_none(value: Any) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _immutable_field(field: str) -> bool:
+    return normalize_token(field) in _IMMUTABLE_FIELDS
+
+
+def _ledger_entry(operation: Mapping[str, Any], *, applied_paths: Sequence[str]) -> dict[str, Any]:
+    entry = operation.get("decision_ledger_entry")
+    base = dict(entry) if isinstance(entry, Mapping) else {}
+    base.update(
+        {
+            "applied_paths": tuple(applied_paths),
+            "operation_id": normalize_string(operation.get("operation_id")),
+            "target_path": normalize_string(operation.get("target_path")),
+            "semantic_node_id": normalize_string(operation.get("semantic_node_id")),
+            "issue_code": normalize_token(operation.get("issue_code")),
+            "rejected_interpretation": normalize_string(operation.get("rejected_interpretation")),
+            "confidence": _confidence(operation.get("confidence")),
+        }
+    )
+    return {key: value for key, value in base.items() if value not in ("", (), [], None)}
+
+
+def _confidence(value: Any) -> float:
+    try:
+        return round(float(value), 3)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+__all__ = ["apply_artifact_plan_patch_operations"]
