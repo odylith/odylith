@@ -4233,10 +4233,10 @@
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py": "8dab3646b8a071c447a8a8e35cad1de1cdac7dd9b38e15965d7be4a3f2064bb9",
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "a3c447abc7d01f3a18ee4f55b99f6c3a4e0455e3602be5e50b99efd1115043ce",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "c42d7b86a2a74907fa59d4802a716988fc75af20f524d62e4750faa45ec0eab8",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "b129d0adde83c9fea6d538fe2f63cff5f6ece4b662c12c8069ce2a14a3a895ef",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "67bd8cbdee4d57b28e3fd0d02158b6c4343a43d9fdf9ba1c066a354b7bc3d18a",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "2013df15392347d34bcca3475b97e1b7a961f0621febd227c0fb654a91efe771"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "77f544f78e7303980835fb3cfa035909e5bd4e8072e7bf03efba07bfbe963b3e"
       },
       "render_source_fingerprint": "487419366c83b486608650b7703f1c8a04c4acaa8dd495d9bef290bef11520c5"
     },

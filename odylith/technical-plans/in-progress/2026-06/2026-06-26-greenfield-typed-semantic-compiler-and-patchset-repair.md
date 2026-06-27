@@ -223,8 +223,11 @@ vocabulary, or degraded packages.
   `SemanticModelIR` first and mirrors accepted-intent fields only for current
   compatibility. D-043 was replaced with the current architecture topology and
   Atlas refreshed to 44 fresh diagrams / zero stale diagrams. Initial focused
-  proof: semantic patch executor passed 5 tests in 0.28s. Widened post-confirm
-  and governance validation are still required before release closure.
+  proof: semantic patch executor passed 5 tests in 0.28s. The widened
+  post-confirm suite passed 152 tests in 669.31s, governance validation passed,
+  and installed-dist proof from commit d42f127c passed five high-variance
+  consumer-lane creates in 20.107-23.147s with zero final quality issues and
+  temp cleanup after every scenario.
 
 ## Implementation Slices
 
@@ -473,6 +476,13 @@ vocabulary, or degraded packages.
       workstream-binding, risk-mitigation, and traceability validators passed;
       Atlas render check stayed at 44 fresh / zero stale; and `git diff
       --check` passed.
+- [x] Fresh installed-dist proof from commit d42f127c:
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-d42f127c`
+      passed the packaged consumer-lane post-confirm matrix. Five unrelated
+      scenarios completed in 20.107-23.147s with zero final quality issues,
+      five Radar records, three Registry records, six Atlas diagrams, 18 trace
+      nodes, governed records written, and temp repos deleted before the next
+      run.
 - [ ] Rescue-path end-to-end timing proof under 90 seconds with a real
       configured host repair remains required before release closure.
 - [x] Current broad greenfield proof: confirmed-intent recovery, confirmed
