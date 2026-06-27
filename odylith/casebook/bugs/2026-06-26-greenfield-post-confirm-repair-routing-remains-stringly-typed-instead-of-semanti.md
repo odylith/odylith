@@ -446,6 +446,33 @@
   installed consumer-lane matrix reported zero quality issues, governed writes,
   at least five Radar records, three Registry records, six Atlas diagrams, 18
   trace nodes, and temp cleanup by the harness.
+  The next typed-dispatch cleanup removed two more failed mechanisms from the
+  rescue path. First, quality-lens findings without a structured replacement
+  fact no longer rehydrate proposal fields from failed check names; they remain
+  typed findings until a semantic or artifact-plan patch supplies the missing
+  fact. Second, PatchSet operations now carry `operation_kind`, `repair_owner`,
+  and `projection_kind`, and the apply side no longer routes first-path repair
+  because `rejected_interpretation` happens to mention first-path words. A
+  source-local six-case matrix then found one remaining projection-owner
+  failure: a museum loan prompt produced Radar titles with clipped actor
+  context such as `Let Curator Signoff Before an ...`. That was not a package
+  cleanup problem; recovered actor labels had carried a temporal/proof clause
+  into the role head and clipped it at the title limit. The repair now trims
+  actor context tails before workstream title projection and drops event nouns
+  introduced by that context boundary, producing `Let Curator Coordinate
+  Artifact Loan Requests` instead of a dangling article phrase. The failed
+  mechanism remains banned: do not patch rendered Radar titles after the fact;
+  fix the actor/title projection owner or the typed semantic fact that feeds it.
+  Proof for this checkpoint: focused post-confirm repair, semantic patch,
+  quality-lens, and Tribunal patch-planner tests passed 58 tests in 24.85s;
+  the widened post-confirm quality/slop/text suite passed 181 tests in
+  71.68s; the initial six-case source-local matrix passed five domains but
+  failed museum loan provenance on two clipped article title issues while
+  deleting the temp root; after the actor-title projection repair, a replay
+  plus five fresh domains passed in 14.005-15.737s with zero quality issues,
+  governed writes, four Radar workstreams, three Registry specs, six Atlas
+  sources, five rendered surfaces, 18 trace nodes, all PM/architect/engineer/
+  domain-expert lenses passing, and temp-root cleanup confirmed.
 
 - Related Incidents/Bugs: CB-207
 
@@ -475,6 +502,7 @@
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py
 - src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py
 - src/odylith/runtime/reasoning/tribunal_engine.py
 - src/odylith/runtime/reasoning/tribunal_patch_planner.py
 - odylith/atlas/source/domain-intelligence-greenfield-governance.mmd

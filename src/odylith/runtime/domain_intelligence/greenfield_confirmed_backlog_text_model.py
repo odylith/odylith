@@ -62,6 +62,27 @@ _SHORT_ACTOR_ROLE_WORDS = frozenset(
         "user",
     }
 )
+_ACTOR_LABEL_CLAUSE_BOUNDARIES = frozenset({"after", "before", "once", "until", "when", "while", "without"})
+_ACTOR_LABEL_EVENT_TAILS = frozenset(
+    {
+        "approval",
+        "approvals",
+        "decision",
+        "decisions",
+        "evidence",
+        "handoff",
+        "handoffs",
+        "proof",
+        "readiness",
+        "report",
+        "reports",
+        "review",
+        "reviews",
+        "signoff",
+        "signoffs",
+        "status",
+    }
+)
 
 
 def join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
@@ -156,8 +177,11 @@ def supporting_actor_label(values: list[str]) -> str:
 
 def _actor_title_head(value: str) -> str:
     text = _label_head(value)
+    text, clipped_by_boundary = _trim_actor_context_tail(text)
     text = re.sub(r"\s*\([^)]*\)\s*", " ", text).strip(" .")
     words = text.split()
+    if clipped_by_boundary:
+        words = _drop_contextual_event_tail(words)
     for index, word in enumerate(words[1:], start=1):
         token = word.casefold().strip(".,;:")
         next_token = words[index + 1].casefold().strip(".,;:") if index + 1 < len(words) else ""
@@ -171,6 +195,22 @@ def _actor_title_head(value: str) -> str:
     if len(words) > 4:
         words = words[:_actor_title_word_limit(words)]
     return " ".join(words).strip(" .")
+
+
+def _trim_actor_context_tail(value: str) -> tuple[str, bool]:
+    words = _compact_text(value).split()
+    for index, word in enumerate(words[1:], start=1):
+        token = word.casefold().strip(".,;:")
+        if token in _ACTOR_LABEL_CLAUSE_BOUNDARIES:
+            return " ".join(words[:index]).strip(" ."), True
+    return " ".join(words).strip(" ."), False
+
+
+def _drop_contextual_event_tail(words: Sequence[str]) -> list[str]:
+    cleaned = list(words)
+    while len(cleaned) > 1 and cleaned[-1].casefold().strip(".,;:") in _ACTOR_LABEL_EVENT_TAILS:
+        cleaned.pop()
+    return cleaned
 
 
 def _actor_title_word_limit(words: Sequence[str]) -> int:

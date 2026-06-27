@@ -20,6 +20,29 @@ from odylith.runtime.reasoning import odylith_reasoning
 TRIBUNAL_PATCH_PLAN_VERSION = "odylith.tribunal.structured_patch_plan.v1"
 
 _PATCHABLE_LAYERS = frozenset({"semantic_model", "artifact_plan"})
+_REPLACEMENT_FACT_KEYS_BY_OPERATION_KIND = {
+    "semantic_first_path": "first_path",
+    "semantic_proof_boundary": "proof_boundary",
+    "semantic_state_object": "state_object",
+    "semantic_human_actors": "human_actors",
+    "semantic_external_systems": "external_systems",
+    "semantic_internal_systems": "internal_systems",
+}
+_REPLACEMENT_FACT_KEYS_BY_TARGET = {
+    "semantic_model.first_path_contract": "first_path",
+    "semantic_model.first_path_contract.raw_path": "first_path",
+    "proposal.semantic_model.first_path_contract": "first_path",
+    "semantic_model.domain_ontology.proof_boundary": "proof_boundary",
+    "proposal.semantic_model.domain_ontology.proof_boundary": "proof_boundary",
+    "semantic_model.domain_ontology.state_object": "state_object",
+    "proposal.semantic_model.domain_ontology.state_object": "state_object",
+    "semantic_model.domain_ontology.human_actors": "human_actors",
+    "proposal.semantic_model.domain_ontology.human_actors": "human_actors",
+    "semantic_model.domain_ontology.external_systems": "external_systems",
+    "proposal.semantic_model.domain_ontology.external_systems": "external_systems",
+    "semantic_model.domain_ontology.internal_systems": "internal_systems",
+    "proposal.semantic_model.domain_ontology.internal_systems": "internal_systems",
+}
 _REPLACEMENT_FACT_ENTRY_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
@@ -269,6 +292,9 @@ def _validated_operation(raw_operation: Mapping[str, Any], requested: Mapping[st
             "semantic_node_id": normalize_string(requested.get("semantic_node_id")),
             "issue_code": normalize_token(requested.get("issue_code")),
             "source_finding": normalize_token(requested.get("source_finding")),
+            "operation_kind": normalize_token(requested.get("operation_kind")),
+            "repair_owner": normalize_token(requested.get("repair_owner")),
+            "projection_kind": normalize_token(requested.get("projection_kind")),
             "affected_projections": requested_projections,
             "requested_action": normalize_string(requested.get("requested_action")),
             "replacement_fact": replacement,
@@ -343,14 +369,14 @@ def _is_replacement_fact_envelope(value: Any) -> bool:
 
 
 def _replacement_fact_leaf_key(requested: Mapping[str, Any]) -> str:
-    node_id = normalize_string(requested.get("semantic_node_id"))
-    if node_id.endswith("first_path_contract"):
-        return "first_path"
+    operation_key = _REPLACEMENT_FACT_KEYS_BY_OPERATION_KIND.get(normalize_token(requested.get("operation_kind")))
+    if operation_key:
+        return operation_key
     target_path = normalize_string(requested.get("target_path"))
-    for separator in (".", "/"):
-        if separator in target_path:
-            target_path = target_path.rsplit(separator, 1)[-1]
-    return normalize_token(target_path)
+    target_key = _REPLACEMENT_FACT_KEYS_BY_TARGET.get(target_path)
+    if target_key:
+        return target_key
+    return normalize_token(target_path.rsplit(".", 1)[-1]) if target_path else ""
 
 
 def _mapping_or_empty(value: Any) -> dict[str, Any]:

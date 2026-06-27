@@ -25,7 +25,7 @@ flowchart LR
     subgraph rescue_lane["Bounded rescue path up to 90s"]
       direction TB
       repairable["Repairable typed findings"]
-      patchset["PatchSet request<br/>operation ID, target layer,<br/>target path, affected projections"]
+      patchset["PatchSet request<br/>operation ID, kind, owner,<br/>target path, projection kind"]
       rescue_budget{"Rescue budget remains?"}
       tribunal_planner["Structured Tribunal patch planner<br/>host fills replacement facts only"]
       provider_adapter["Reasoning provider adapter<br/>explicit model,<br/>ignored unsafe user config"]

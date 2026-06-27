@@ -258,6 +258,28 @@ vocabulary, or degraded packages.
   proves the normal path remains provider-free and under 60 seconds across a
   fresh, higher-variance sample after the structured rescue changes. Fresh
   installed-dist proof after this source-local checkpoint remains required
+- 2026-06-27 typed PatchSet dispatch cleanup: PatchSet operations now carry
+  `operation_kind`, `repair_owner`, and `projection_kind`; Tribunal structured
+  patch validation preserves those caller-owned fields; post-confirm apply no
+  longer routes first-path repair from `rejected_interpretation` prose; and
+  quality-lens findings without structured replacement facts no longer
+  rehydrate proposal fields from failed check names. Focused post-confirm,
+  semantic patch, quality-lens, and Tribunal patch-planner proof passed 58
+  tests in 24.85 seconds.
+- 2026-06-27 actor-title projection failure and fix: a six-case
+  source-local matrix initially passed legal evidence disclosure, battery
+  warranty telemetry, student nutrition exception, satellite imagery claim,
+  and agent memory release tribunal, but failed museum loan provenance in
+  16.491s because Radar workstream titles clipped actor context to dangling
+  article phrases such as `before an`. The fix trims temporal/proof context
+  tails in recovered actor labels before workstream title projection and drops
+  event nouns introduced by that context boundary. The widened
+  post-confirm quality/slop/text suite passed 181 tests in 71.68s. A replay of
+  the failing museum case plus five fresh domains then passed in
+  14.005-15.737s with zero quality issues, governed writes, four Radar
+  workstreams, three Registry specs, six Atlas Mermaid sources, five rendered
+  surfaces, 18 trace nodes, all PM/architect/engineer/domain-expert lenses
+  passing, and temp-root cleanup confirmed.
   before release closure.
 - 2026-06-26 fresh installed-dist proof for commit 58a9b7c5: local release
   dist `odylith-local-release-0.1.15-58a9b7c5` passed the installed

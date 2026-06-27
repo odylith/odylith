@@ -344,6 +344,35 @@ def test_workstream_titles_compact_while_keeping_clauses() -> None:
     assert "with Legal Signoff Separate" in workflow_title
 
 
+def test_workstream_titles_drop_actor_context_clause_before_title_clipping() -> None:
+    workflow_title, _boundary_title, _proof_title = confirmed_workstream_titles(
+        label="Museum Loan Provenance Exchange",
+        components=[
+            {"label": "Artifact Loan Request Service"},
+            {"label": "Condition Report Review Service"},
+            {"label": "Provenance Proof Ledger"},
+        ],
+        internal_systems=[],
+        first_path=(
+            "Curators coordinate artifact loan requests, condition reports, insurer evidence, courier handoff plans, "
+            "conservation constraints, and curator signoff before an inter-museum transfer is accepted."
+        ),
+        state_object=(
+            "An artifact loan record with provenance evidence, condition report, insurer evidence, "
+            "courier handoff plan, conservation constraints, and curator signoff."
+        ),
+        proof_boundary=(
+            "Release 0.0.1 succeeds when an inter-museum transfer is accepted with provenance, "
+            "condition, insurer, courier, conservation, and curator signoff evidence."
+        ),
+        human_actors=["curator signoff before an inter-museum transfer is accepted"],
+    )
+
+    assert workflow_title == "Let Curator Coordinate Artifact Loan Requests"
+    assert "Before an" not in workflow_title
+    assert not workflow_title.endswith(" an")
+
+
 def test_component_specs_strip_coordinated_actions_from_owned_artifact_slots() -> None:
     intent = complete_confirmed_intent(
         parse_confirmed_intent_text(

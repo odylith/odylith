@@ -26,6 +26,9 @@ class GreenfieldPatchOperation:
     semantic_node_id: str
     issue_code: str
     source_finding: str
+    operation_kind: str
+    repair_owner: str
+    projection_kind: str
     affected_projections: tuple[str, ...]
     requested_action: str
     replacement_fact: Any = ""
@@ -100,6 +103,9 @@ def _operation_from_finding(
         semantic_node_id=normalize_string(finding.semantic_node_id),
         issue_code=finding.code,
         source_finding=finding.source,
+        operation_kind=_operation_kind(finding, target_layer=target_layer),
+        repair_owner=finding.owner,
+        projection_kind=_projection_kind(finding),
         affected_projections=_affected_projections(finding),
         requested_action=_requested_action(finding, target_layer=target_layer),
         replacement_fact="",
@@ -127,6 +133,57 @@ def _affected_projections(finding: GreenfieldReviewFinding) -> tuple[str, ...]:
         target_path=finding.target_path,
         surface=finding.surface,
     )
+
+
+def _projection_kind(finding: GreenfieldReviewFinding) -> str:
+    projections = _affected_projections(finding)
+    return projections[0] if len(projections) == 1 else "multi_projection" if projections else ""
+
+
+def _operation_kind(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:
+    if target_layer == "artifact_plan":
+        return "artifact_plan_projection"
+    if target_layer == "artifact_draft_set":
+        return "artifact_draft_mechanical_copy"
+    if target_layer != "semantic_model":
+        return ""
+    target_path = normalize_string(finding.target_path)
+    semantic_node = normalize_string(finding.semantic_node_id)
+    if target_path in {
+        "semantic_model.first_path_contract",
+        "semantic_model.first_path_contract.raw_path",
+        "proposal.semantic_model.first_path_contract",
+    } or semantic_node in {
+        "SemanticModelIR.first_path_contract",
+        "SemanticModelIR.first_path_contract.raw_path",
+    }:
+        return "semantic_first_path"
+    if target_path in {
+        "semantic_model.domain_ontology.proof_boundary",
+        "proposal.semantic_model.domain_ontology.proof_boundary",
+    } or semantic_node == "SemanticModelIR.domain_ontology.proof_boundary":
+        return "semantic_proof_boundary"
+    if target_path in {
+        "semantic_model.domain_ontology.state_object",
+        "proposal.semantic_model.domain_ontology.state_object",
+    } or semantic_node == "SemanticModelIR.domain_ontology.state_object":
+        return "semantic_state_object"
+    if target_path in {
+        "semantic_model.domain_ontology.human_actors",
+        "proposal.semantic_model.domain_ontology.human_actors",
+    } or semantic_node == "SemanticModelIR.domain_ontology.human_actors":
+        return "semantic_human_actors"
+    if target_path in {
+        "semantic_model.domain_ontology.external_systems",
+        "proposal.semantic_model.domain_ontology.external_systems",
+    } or semantic_node == "SemanticModelIR.domain_ontology.external_systems":
+        return "semantic_external_systems"
+    if target_path in {
+        "semantic_model.domain_ontology.internal_systems",
+        "proposal.semantic_model.domain_ontology.internal_systems",
+    } or semantic_node == "SemanticModelIR.domain_ontology.internal_systems":
+        return "semantic_internal_systems"
+    return "semantic_fact"
 
 
 def _requested_action(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:

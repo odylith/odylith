@@ -23,6 +23,9 @@ def _patchset_request() -> dict[str, Any]:
                 "semantic_node_id": "SemanticModelIR.first_path_contract",
                 "issue_code": "semantic_alignment",
                 "source_finding": "semantic_workstream_alignment",
+                "operation_kind": "semantic_first_path",
+                "repair_owner": "semantic_model_compiler",
+                "projection_kind": "radar",
                 "affected_projections": ["radar", "project_brief"],
                 "requested_action": "Return a semantic patch that corrects the accepted intent interpretation.",
                 "replacement_fact": "",
@@ -95,6 +98,9 @@ def test_structured_patch_plan_preserves_request_custody_fields() -> None:
     assert operation["target_layer"] == "semantic_model"
     assert operation["target_path"] == "semantic_model.first_path_contract"
     assert operation["semantic_node_id"] == "SemanticModelIR.first_path_contract"
+    assert operation["operation_kind"] == "semantic_first_path"
+    assert operation["repair_owner"] == "semantic_model_compiler"
+    assert operation["projection_kind"] == "radar"
     assert operation["affected_projections"] == ("radar", "project_brief")
     assert operation["replacement_fact"]["visible_result"] == "accepted result is shown and saved"
     assert not patch_plan["rejections"]
@@ -129,6 +135,7 @@ def test_structured_patch_plan_materializes_strict_replacement_fact_envelope() -
                     **_patchset_request()["operations"][0],
                     "target_path": "project_brief.project_outcome",
                     "semantic_node_id": "project_outcome",
+                    "operation_kind": "",
                 }
             ],
         },
@@ -140,6 +147,44 @@ def test_structured_patch_plan_materializes_strict_replacement_fact_envelope() -
             "Field coordinators capture site evidence, route review, "
             "and see readiness proof before work continues."
         )
+    }
+
+
+def test_replacement_fact_envelope_uses_operation_kind_for_leaf_key() -> None:
+    patch_plan = validate_structured_patch_plan(
+        {
+            "version": TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "planned",
+            "decision_summary": "Repair the typed first-path semantic fact.",
+            "operations": [
+                _valid_plan_operation(
+                    target_path="semantic_model.accepted_path",
+                    semantic_node_id="SemanticModelIR.accepted_path",
+                    replacement_fact={
+                        "value_kind": "text",
+                        "text_value": "A coordinator reviews the accepted evidence and sees the saved outcome.",
+                        "list_values": [],
+                        "mapping_entries": [],
+                    },
+                )
+            ],
+        },
+        patchset_request={
+            **_patchset_request(),
+            "operations": [
+                {
+                    **_patchset_request()["operations"][0],
+                    "target_path": "semantic_model.accepted_path",
+                    "semantic_node_id": "SemanticModelIR.accepted_path",
+                    "operation_kind": "semantic_first_path",
+                }
+            ],
+        },
+    )
+
+    assert patch_plan["status"] == "planned"
+    assert patch_plan["operations"][0]["replacement_fact"] == {
+        "first_path": "A coordinator reviews the accepted evidence and sees the saved outcome."
     }
 
 

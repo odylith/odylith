@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 151,
-    "mapped_workstream_evidence_count": 136,
+    "explicit_event_count": 152,
+    "mapped_workstream_evidence_count": 137,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 142,
+    "spec_history_event_count": 143,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 152
+    "timeline_event_count": 153
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -20,18 +20,57 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
       ],
       "confidence": "high",
       "event_index": 635,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield typed patch dispatch and actor-title projection checkpoint passed 58 focused tests, 181 widened quality tests, and six source-local confirmed-create simulations after fixing the museum clipped-title failure.",
+      "ts_iso": "2026-06-26T22:21:46-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py"
+      ],
+      "confidence": "high",
+      "event_index": 636,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-26T21:53:22-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py +2 more",
+      "ts_iso": "2026-06-26T22:21:29-07:00",
       "workstreams": []
     },
     {

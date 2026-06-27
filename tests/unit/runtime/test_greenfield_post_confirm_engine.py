@@ -401,6 +401,9 @@ def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() 
     assert operation["target_layer"] == "semantic_model"
     assert operation["target_path"] == "quality_lenses.product_manager.decision_boundary"
     assert operation["semantic_node_id"] == "ReviewReport.quality_lenses"
+    assert operation["operation_kind"] == "semantic_fact"
+    assert operation["repair_owner"] == "quality_lens_contract"
+    assert operation["projection_kind"] == ""
     assert operation["rejected_interpretation"] == (
         "quality lens product_manager missing assumptions or ambiguity boundary"
     )
@@ -1182,9 +1185,7 @@ def test_repair_payload_skips_structured_planner_on_standard_tier(
     assert captured["repair_context"] is context
 
 
-def test_repair_payload_consumes_patchset_request_targets(monkeypatch: pytest.MonkeyPatch) -> None:
-    calls: list[str] = []
-
+def test_repair_payload_consumes_structured_semantic_patch_targets(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(greenfield_post_confirm_patch_apply, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
     monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
     monkeypatch.setattr(
@@ -1198,13 +1199,6 @@ def test_repair_payload_consumes_patchset_request_targets(monkeypatch: pytest.Mo
         lambda proposal, **_kwargs: {**proposal, "semantic_target_seen": True},
     )
     monkeypatch.setattr(greenfield_post_confirm_patch_apply, "repair_greenfield_semantic_projections", lambda _proposal: False)
-
-    def fake_lens_repair(proposal: dict[str, Any], **_kwargs: Any) -> bool:
-        calls.append("quality_lens")
-        proposal["quality_lens_target_seen"] = True
-        return True
-
-    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "repair_proposal_for_quality_lens_gaps", fake_lens_repair)
     context = engine.GreenfieldPostConfirmRepairContext(
         pass_index=0,
         elapsed_seconds=1.0,
@@ -1222,7 +1216,13 @@ def test_repair_payload_consumes_patchset_request_targets(monkeypatch: pytest.Mo
         patchset_request={
             "version": "odylith.greenfield.post_confirm.patchset_request.v1",
             "operations": [
-                {"target_layer": "semantic_model", "source_finding": "quality_lens"},
+                {
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.domain_ontology.state_object",
+                    "semantic_node_id": "SemanticModelIR.domain_ontology.state_object",
+                    "source_finding": "quality_lens",
+                    "replacement_fact": {"state_object": "patchset routed state"},
+                },
             ],
         },
         quality_lenses={"lenses": {}},
@@ -1238,8 +1238,73 @@ def test_repair_payload_consumes_patchset_request_targets(monkeypatch: pytest.Mo
     )
 
     assert repaired["semantic_target_seen"] is True
-    assert repaired["quality_lens_target_seen"] is True
-    assert calls == ["quality_lens"]
+    assert repaired["intent"]["state_object"] == "patchset routed state"
+
+
+def test_quality_lens_operation_without_structured_fact_does_not_rehydrate_proposal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "complete_confirmed_proposal",
+        lambda proposal, *, release_selector: dict(proposal),
+    )
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "ensure_apply_semantic_model",
+        lambda proposal, **_kwargs: dict(proposal),
+    )
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "repair_greenfield_semantic_projections", lambda _proposal: False)
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("quality lens product_manager missing assumptions or ambiguity boundary",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "target_layer": "semantic_model",
+                    "source_finding": "quality_lens",
+                    "issue_code": "quality_lens_gap",
+                    "replacement_fact": "",
+                },
+            ],
+        },
+        quality_lenses={
+            "lenses": {
+                "product_manager": {
+                    "checks": [
+                        {"name": "decision_boundary", "status": "failed"},
+                    ]
+                }
+            }
+        },
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    repaired = greenfield_proposals._repair_confirmed_apply_payload(
+        {"intent": {"title": "Quality Lens Empty Patch"}, "backlog": [{"title": "First path"}]},
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert "assumptions" not in repaired
+    assert "open_questions" not in repaired
+    assert "validation_strategy" not in repaired
 
 
 def test_patchset_semantic_coverage_operation_repairs_first_path_contract(
@@ -1273,6 +1338,7 @@ def test_patchset_semantic_coverage_operation_repairs_first_path_contract(
                     "target_layer": "semantic_model",
                     "target_path": "semantic_model.first_path_contract",
                     "semantic_node_id": "SemanticModelIR.first_path_contract",
+                    "operation_kind": "semantic_first_path",
                     "issue_code": "semantic_alignment",
                     "affected_projections": ["radar"],
                     "rejected_interpretation": "prewrite Radar package missing semantic coverage for first path",
@@ -1308,6 +1374,72 @@ def test_patchset_semantic_coverage_operation_repairs_first_path_contract(
     assert first_path_contract["raw_path"] == first_path
     assert "shelter" in first_path_contract["capability"].casefold()
     assert "capacity" in first_path_contract["capability"].casefold()
+
+
+def test_patch_apply_does_not_route_first_path_repair_from_rejected_interpretation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "complete_confirmed_proposal",
+        lambda proposal, *, release_selector: dict(proposal),
+    )
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "ensure_apply_semantic_model",
+        lambda proposal, **_kwargs: dict(proposal),
+    )
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "repair_greenfield_semantic_projections", lambda _proposal: False)
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("semantic repair message mentions first path but targets another node",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.domain_ontology.state_object",
+                    "semantic_node_id": "SemanticModelIR.domain_ontology.state_object",
+                    "operation_kind": "semantic_state_object",
+                    "issue_code": "semantic_alignment",
+                    "replacement_fact": {"state_object": "Decision evidence state"},
+                    "rejected_interpretation": "first path was interpreted as a title-only noun phrase",
+                },
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+    proposal = {
+        "intent": {
+            "title": "Decision Workspace",
+            "first_path": "A decision workspace for reviewers.",
+        },
+        "semantic_model": {},
+    }
+
+    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+        proposal,
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert repaired["intent"]["state_object"] == "Decision evidence state"
+    assert repaired["intent"]["first_path"] == "A decision workspace for reviewers."
 
 
 def test_repair_payload_does_not_mutate_proposal_for_artifact_draft_only_patchset(

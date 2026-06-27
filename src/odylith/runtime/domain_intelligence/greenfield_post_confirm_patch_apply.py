@@ -15,7 +15,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import repair_proposal_first_path
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmRepairContext
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair_context import repair_context_operations
-from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import repair_proposal_for_quality_lens_gaps
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_greenfield_semantic_projections
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import apply_semantic_patch_operations
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
@@ -23,8 +22,6 @@ from odylith.runtime.domain_intelligence.proposal_validation import validate_hos
 
 
 _MODEL_PATCH_LAYERS = frozenset({"semantic_model", "artifact_plan"})
-_QUALITY_LENS_SOURCES = frozenset({"quality_lens", "quality_lens_contract"})
-_QUALITY_LENS_CODES = frozenset({"quality_lens_gap"})
 
 
 def apply_greenfield_patchset_repairs(
@@ -70,14 +67,6 @@ def _apply_operations(
         if repair_proposal_first_path(repaired):
             repaired = _normalized_proposal(repaired)
             repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
-    if any(_is_quality_lens_operation(operation) for operation in operations):
-        if repair_proposal_for_quality_lens_gaps(
-            repaired,
-            quality_lenses=repair_context.quality_lenses,
-            release_selector=release_selector,
-        ):
-            repaired = _normalized_proposal(repaired)
-            repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
     return repaired
 
 
@@ -107,25 +96,25 @@ def _target_layer(operation: Mapping[str, Any]) -> str:
     return normalize_token(operation.get("target_layer"))
 
 
-def _is_quality_lens_operation(operation: Mapping[str, Any]) -> bool:
-    return (
-        normalize_token(operation.get("source_finding")) in _QUALITY_LENS_SOURCES
-        or normalize_token(operation.get("issue_code")) in _QUALITY_LENS_CODES
-    )
-
-
 def _is_first_path_semantic_operation(operation: Mapping[str, Any]) -> bool:
     if _target_layer(operation) not in _MODEL_PATCH_LAYERS:
         return False
-    semantic_node = normalize_token(operation.get("semantic_node_id"))
-    target_path = normalize_token(operation.get("target_path"))
-    rejected = str(operation.get("rejected_interpretation", "")).casefold()
-    return bool(
-        "first_path_contract" in semantic_node
-        or "first_path_contract" in target_path
-        or "first path" in rejected
-        or "firstpathcontract" in rejected
-    )
+    if normalize_token(operation.get("operation_kind")) == "semantic_first_path":
+        return True
+    return _has_legacy_structured_first_path_target(operation)
+
+
+def _has_legacy_structured_first_path_target(operation: Mapping[str, Any]) -> bool:
+    target_path = str(operation.get("target_path") or "").strip()
+    semantic_node = str(operation.get("semantic_node_id") or "").strip()
+    return target_path in {
+        "semantic_model.first_path_contract",
+        "semantic_model.first_path_contract.raw_path",
+        "proposal.semantic_model.first_path_contract",
+    } or semantic_node in {
+        "SemanticModelIR.first_path_contract",
+        "SemanticModelIR.first_path_contract.raw_path",
+    }
 
 
 __all__ = ["apply_greenfield_patchset_repairs", "complete_greenfield_semantic_apply_payload"]
