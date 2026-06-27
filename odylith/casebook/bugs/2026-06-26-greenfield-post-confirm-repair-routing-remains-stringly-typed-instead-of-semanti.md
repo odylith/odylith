@@ -425,9 +425,21 @@
   with a semantic-compiler visible-result candidate check. Focused proof passed
   60 tests in 26.47 seconds, compile proof passed for the changed modules,
   Registry validation passed, and component-spec requirement sync converged
-  for `domain-intelligence`. This is still not final release closure: live
-  rescue proof under 90 seconds with a real configured host repair remains
-  required.
+  for `domain-intelligence`. Subsequent rescue proof with the configured Codex
+  structured provider activated the 90-second rescue path after injected typed
+  semantic-coverage misses, repaired the package, reran gates, and committed
+  governed records in 39.768 seconds; CB-209 carries the dedicated provider and
+  rescue-custody evidence. A fresh eight-domain source-local variance run after
+  the rescue/provider hardening then passed the normal standard path without
+  rescue: tribal clinic referral consent 14.434s, satellite anomaly readiness
+  15.514s, court interpreter access 15.362s, museum restitution provenance
+  14.948s, wildfire mutual aid logistics 14.549s, battery recycling audit
+  14.910s, cross-border aid disbursement 15.361s, and industrial water reuse
+  permits 14.749s. Every run committed governed records, reported zero final
+  quality issues, passed PM/architect/engineer/domain-expert lenses, produced
+  expected Radar/Registry/Atlas/Compass/project/release records, and deleted
+  its temp repo before the next case. Fresh installed-dist proof after this
+  source-local checkpoint remains required before release closure.
 
 - Related Incidents/Bugs: CB-207
 

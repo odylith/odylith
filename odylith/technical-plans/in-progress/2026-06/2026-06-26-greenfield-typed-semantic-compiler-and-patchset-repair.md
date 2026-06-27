@@ -243,6 +243,22 @@ vocabulary, or degraded packages.
   and installed-dist proof from commit d42f127c passed five high-variance
   consumer-lane creates in 20.107-23.147s with zero final quality issues and
   temp cleanup after every scenario.
+- 2026-06-26 source-local variance proof after rescue/provider hardening:
+  eight new domains passed real `greenfield propose` followed by confirmed
+  `greenfield create --repair-tier auto` in the standard path without rescue:
+  tribal clinic referral consent 14.434s, satellite anomaly readiness 15.514s,
+  court interpreter access 15.362s, museum restitution provenance 14.948s,
+  wildfire mutual aid logistics 14.549s, battery recycling audit 14.910s,
+  cross-border aid disbursement 15.361s, and industrial water reuse permits
+  14.749s. Every run committed governed records, reported zero final quality
+  issues, passed product-manager, architect, engineer, and domain-expert
+  lenses, produced four Radar workstreams, three Registry specs, six Atlas
+  Mermaid sources, five rendered surfaces, 18 trace nodes, release/program/
+  project brief records, and deleted its temp repo before the next case. This
+  proves the normal path remains provider-free and under 60 seconds across a
+  fresh, higher-variance sample after the structured rescue changes. Fresh
+  installed-dist proof after this source-local checkpoint remains required
+  before release closure.
 
 ## Implementation Slices
 

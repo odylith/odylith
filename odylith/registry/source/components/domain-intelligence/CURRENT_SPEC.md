@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-26 · Implementation:** Greenfield source-local variance proof passed eight new domains in the standard post-confirm path under 16s with governed records committed, all expert lenses passing, and temp repos removed after each case.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
 - **2026-06-26 · Implementation:** Greenfield post-confirm cleanup proof passed: focused typed finding/rescue tests 17 passed, widened post-confirm suite 152 passed in 669.31s, Casebook/Registry/Radar/Atlas/plan/topology validators passed, and D-043 Atlas topology is fresh.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +3 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-26 · Implementation:** Greenfield source-local recovery now preserves explicit internal-system rows through completion and rejects actorless release steps as fake human actors.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py +1 more
-- **2026-06-26 · Implementation:** Greenfield post-confirm repair now executes artifact-plan PatchSet replacement facts through a bounded projection-fact executor with immutable metadata custody.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -186,6 +186,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-26: Moved semantic PatchSet application to IR-first custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_semantic_patch_executor.py` now patches `SemanticModelIR` nodes such as `first_path_contract.raw_path` and `domain_ontology.*` before mirroring accepted-intent compatibility fields, preserves `semantic_model` instead of deleting it for replay, and records `semantic_model.*` applied fields in the semantic patch ledger.
 - 2026-06-26: Proved the cleanup checkpoint through the packaged consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Local release dist `odylith-local-release-0.1.15-d42f127c` passed the installed greenfield post-confirm matrix across five unrelated scenarios in 20.107-23.147 seconds with zero final quality issues, five Radar records, three Registry records, six Atlas diagrams, 18 trace nodes, governed records written, and temp repos deleted before the next run.
 - 2026-06-26: Centralized the greenfield `ArtifactPlanIR` projection contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan.py` now owns sanctioned artifact-plan roots, projection aliases, immutable metadata fields, affected projection calculation, and artifact-draft repair projection normalization for PatchSet repair. `greenfield_artifact_plan_patch_executor.py`, `greenfield_post_confirm_patchset.py`, and `greenfield_post_confirm_repair.py` consume that shared contract instead of carrying private projection maps or role-surface guesses; role names such as product-manager or architect no longer imply affected projections without a typed projection ID or artifact path. `greenfield_apply_semantic.py` now builds and persists a typed apply-semantic input with source-path provenance, and routes first-path visible-result fallback through the semantic compiler rather than a local visibility regex.
+- 2026-06-26: Proved the standard path after structured rescue/provider hardening. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Eight fresh source-local propose-then-confirm simulations across clinical referral consent, satellite anomaly readiness, court interpreter coordination, museum restitution, wildfire logistics, battery recycling, humanitarian disbursement, and water-reuse permitting passed in 14.434-15.514 seconds. Every run stayed on `repair-tier: standard`, did not activate rescue, committed governed writes, reported zero manifest/package quality issues, passed PM/architect/engineer/domain-expert lenses, produced the expected Radar/Registry/Atlas/Compass/project/release records, and deleted its temp repo before the next case.
 
 ## Contract
 
