@@ -136,7 +136,7 @@ def test_post_confirm_issue_classifier_returns_typed_repair_owner() -> None:
                 projection_id="next_steps",
                 semantic_node_id="ArtifactDraftSet.next_steps",
                 severity="medium",
-                repairability="safe_package_repair",
+                repairability="plan_patch",
                 owner="operator_experience_renderer",
                 source="generated_copy_quality",
                 message="Operator next steps `next_steps` has modal/base-form grammar drift near `can submits`",
@@ -149,7 +149,7 @@ def test_post_confirm_issue_classifier_returns_typed_repair_owner() -> None:
     assert issue.code == "generated_copy_quality"
     assert issue.surface == "Operator next steps"
     assert issue.path == "next_steps"
-    assert issue.repairability == "safe_package_repair"
+    assert issue.repairability == "plan_patch"
     assert issue.owner == "operator_experience_renderer"
     assert issue.severity == "medium"
 
@@ -194,7 +194,7 @@ def test_post_confirm_issue_classifier_preserves_unmatched_legacy_blockers_with_
                 projection_id="next_steps",
                 semantic_node_id="ArtifactDraftSet.next_steps",
                 severity="medium",
-                repairability="safe_package_repair",
+                repairability="plan_patch",
                 owner="operator_experience_renderer",
                 source="generated_copy_quality",
                 message="Operator next steps `next_steps` has modal/base-form grammar drift near `can submits`",
@@ -209,7 +209,7 @@ def test_post_confirm_issue_classifier_preserves_unmatched_legacy_blockers_with_
     assert issues[1].repairability == "unrepairable"
 
 
-def test_post_confirm_issue_classifier_marks_malformed_copy_as_package_repair() -> None:
+def test_post_confirm_issue_classifier_marks_malformed_copy_as_plan_repair() -> None:
     report = GreenfieldCompletionReport(
         status="failed",
         version="greenfield-post-confirm-completion-v1",
@@ -225,8 +225,8 @@ def test_post_confirm_issue_classifier_marks_malformed_copy_as_package_repair() 
                 projection_id="registry",
                 semantic_node_id="ArtifactDraftSet.registry",
                 severity="medium",
-                repairability="safe_package_repair",
-                owner="generated_copy_quality_kernel",
+                repairability="plan_patch",
+                owner="registry_renderer",
                 source="generated_copy_quality",
                 message="`Episode Capture` generated prose uses malformed ownership verb pair at root",
             ),
@@ -236,8 +236,8 @@ def test_post_confirm_issue_classifier_marks_malformed_copy_as_package_repair() 
     issue = engine.classify_greenfield_post_confirm_issues(report)[0]
 
     assert issue.code == "generated_copy_quality"
-    assert issue.repairability == "safe_package_repair"
-    assert issue.owner == "generated_copy_quality_kernel"
+    assert issue.repairability == "plan_patch"
+    assert issue.owner == "registry_renderer"
     assert issue.severity == "medium"
 
 
@@ -349,8 +349,8 @@ def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() ->
                 surface="Operator next steps",
                 target_path="next_steps",
                 severity="medium",
-                repairability="safe_package_repair",
-                owner="artifact_draft_cleaner",
+                repairability="plan_patch",
+                owner="operator_experience_renderer",
                 source="generated_copy_quality",
                 message="Operator next steps has modal/base-form grammar drift near can submits.",
             ),
@@ -369,7 +369,7 @@ def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() ->
 
     by_path = {operation["target_path"]: operation for operation in patchset["operations"]}
 
-    assert by_path["next_steps"]["target_layer"] == "artifact_draft_set"
+    assert by_path["next_steps"]["target_layer"] == "artifact_plan"
     assert by_path["next_steps"]["affected_projections"] == ("next_steps",)
     assert by_path["rendered_component_specs"]["target_layer"] == "artifact_draft_set"
     assert by_path["rendered_component_specs"]["affected_projections"] == ("registry",)
@@ -1705,6 +1705,20 @@ def test_package_repair_does_not_mutate_rendered_copy_for_plan_patch() -> None:
     assert repaired == package
 
 
+def _mechanical_copy_operation(*affected_projections: str) -> dict[str, object]:
+    return {
+        "target_layer": "artifact_draft_set",
+        "issue_code": "generated_copy_quality",
+        "operation_kind": "artifact_draft_mechanical_copy",
+        "repair_owner": "artifact_draft_cleaner",
+        "requested_action": "Apply only explicitly safe mechanical cleanup, then rerun the same typed review gates.",
+        "replacement_fact": "",
+        "decision_ledger_entry": "",
+        "proof_obligation_delta": "",
+        "affected_projections": list(affected_projections),
+    }
+
+
 def test_package_repair_only_mutates_patchset_affected_projection() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
@@ -1716,13 +1730,7 @@ def test_package_repair_only_mutates_patchset_affected_projection() -> None:
         package,
         patchset_request={
             "status": "repairable",
-            "operations": [
-                {
-                    "target_layer": "artifact_draft_set",
-                    "issue_code": "generated_copy_quality",
-                    "affected_projections": ["next_steps"],
-                }
-            ],
+            "operations": [_mechanical_copy_operation("next_steps")],
         },
     )
 
@@ -1744,13 +1752,7 @@ def test_package_repair_accepts_raw_rendered_projection_targets() -> None:
         package,
         patchset_request={
             "status": "repairable",
-            "operations": [
-                {
-                    "target_layer": "artifact_draft_set",
-                    "issue_code": "generated_copy_quality",
-                    "affected_projections": ["rendered_component_specs", "rendered_atlas_sources"],
-                }
-            ],
+            "operations": [_mechanical_copy_operation("rendered_component_specs", "rendered_atlas_sources")],
         },
     )
 
@@ -1799,13 +1801,7 @@ def test_package_repair_preserves_structural_metadata_inside_repaired_projection
         package,
         patchset_request={
             "status": "repairable",
-            "operations": [
-                {
-                    "target_layer": "artifact_draft_set",
-                    "issue_code": "generated_copy_quality",
-                    "affected_projections": ["accepted_project", "registry"],
-                }
-            ],
+            "operations": [_mechanical_copy_operation("accepted_project", "registry")],
         },
     )
 

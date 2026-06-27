@@ -333,6 +333,13 @@ vocabulary, or degraded packages.
       chains. Full host-authored semantic or plan patch application plus
       impacted-projection rerender remain open for semantic patches. The
       artifact-plan-only path now has a scoped package rerender seam:
+      the artifact-draft cleanup path is now metadata-gated mechanical-only.
+      Mixed action inflection, modal/base-form drift, malformed ownership
+      pairs, and malformed component responsibility route to typed plan repair
+      or fail closed; the draft cleaner may only collapse adjacent duplicate
+      words or trim dangling tails when an `artifact_draft_mechanical_copy`
+      PatchSet operation from `artifact_draft_cleaner` carries no semantic
+      replacement facts.
       `greenfield_artifact_plan.py` expands affected projection dependencies
       and marks Radar/program scopes as full-prewrite, `greenfield_post_confirm_patch_apply.py`
       records a patch application ledger, `greenfield_post_confirm_engine.py`
@@ -451,6 +458,14 @@ vocabulary, or degraded packages.
       `test_greenfield_artifact_plan_patch_executor.py`, which proves
       sanctioned projection-field updates, immutable metadata refusal, ledger
       capture, and integration through `apply_greenfield_patchset_repairs`.
+      The artifact-draft executor now has focused tests proving that semantic
+      grammar is not rewritten even with draft permission, non-mechanical
+      artifact-draft operations are rejected, and the remaining cleanup surface
+      stays limited to duplicate-word and dangling-tail mechanics.
+      Installed consumer-lane proof from a temporary local release passed five
+      high-variance post-confirm creates in 18.489-20.286 seconds with governed
+      writes, zero quality issues, all PM/architect/engineer/domain-expert
+      lenses passing, and temp cleanup verified.
 - [x] End-to-end confirmed-create tests proving governed records are written
       after final package quality passes for the current prewrite transaction
       slice. The ecommerce handoff regression now passes, the widened

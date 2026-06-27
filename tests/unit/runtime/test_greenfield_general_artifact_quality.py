@@ -24,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
     build_greenfield_completion_report,
     build_greenfield_package_report,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmEngineError
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
     contrastive_domain_drift_issues as _contrastive_domain_drift_issues,
 )
@@ -1281,7 +1282,7 @@ def test_greenfield_post_confirm_completion_fails_near_duplicate_generated_sente
     assert "semantic repetition" in "\n".join(report.issues)
 
 
-def test_greenfield_apply_repairs_post_confirm_copy_failure_before_commit(tmp_path: Path, monkeypatch) -> None:
+def test_greenfield_apply_fails_closed_when_renderer_keeps_emitting_malformed_copy(tmp_path: Path, monkeypatch) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _trip_comparison_proposal(tmp_path)
     original = greenfield_apply_components.render_prewrite_component_specs
@@ -1303,22 +1304,21 @@ def test_greenfield_apply_repairs_post_confirm_copy_failure_before_commit(tmp_pa
         },
     )
 
-    result = greenfield_proposals.apply_greenfield_proposal(
-        repo_root=tmp_path,
-        proposal=proposal,
-        confirm=True,
-        release_selector="0.0.1",
-    )
+    with pytest.raises(GreenfieldPostConfirmEngineError) as exc_info:
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
 
-    manifest = result["post_confirm_quality_manifest"]
-    assert manifest["status"] == "passed"
-    assert manifest["validation_status"] == "passed"
-    assert manifest["write_transaction"]["status"] == "committed"
-    assert manifest["write_transaction"]["prewrite_clean_before_commit"] is True
-    assert "generated_copy_quality" in manifest["repaired_issue_codes"]
-    assert "degraded" not in json.dumps(manifest, sort_keys=True).casefold()
-    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
-    assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
+    manifest = exc_info.value.manifest
+    assert manifest["status"] == "failed"
+    assert manifest["write_transaction"]["status"] == "not_started"
+    assert "component_contract_quality" in manifest["issue_codes"]
+    assert "safe_package_repair" not in json.dumps(manifest, sort_keys=True)
+    assert not list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert not list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
 
 
 def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:

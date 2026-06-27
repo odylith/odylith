@@ -10,12 +10,30 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import con
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import contrastive_domain_drift_issues
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_once
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 from odylith.runtime.governance.component_spec_narrative import build_narrative_component_spec
+
+
+def _mechanical_copy_operation(*affected_projections: str, **overrides: object) -> dict[str, object]:
+    operation: dict[str, object] = {
+        "target_layer": "artifact_draft_set",
+        "issue_code": "generated_copy_quality",
+        "operation_kind": "artifact_draft_mechanical_copy",
+        "repair_owner": "artifact_draft_cleaner",
+        "requested_action": "Apply only explicitly safe mechanical cleanup, then rerun the same typed review gates.",
+        "replacement_fact": "",
+        "decision_ledger_entry": "",
+        "proof_obligation_delta": "",
+        "affected_projections": list(affected_projections),
+    }
+    operation.update(overrides)
+    return operation
 
 
 def test_plain_title_actor_subjects_lower_coherently_before_finite_actions() -> None:
@@ -27,6 +45,71 @@ def test_plain_title_actor_subjects_lower_coherently_before_finite_actions() -> 
     assert base_action_clause("Station Lead Review") == "station lead review"
     assert action_chain_fragment("Station Lead Review") == "station lead review"
     assert generated_semantic_slop_issues({"fragment": action_chain_fragment("Station Lead Review")}) == []
+
+
+def test_package_repair_does_not_rewrite_semantic_grammar_even_with_draft_permission() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The component owns maintains state."},
+        next_steps_preview={"gate": "The operator can submits a request."},
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                {
+                    "target_layer": "artifact_draft_set",
+                    "issue_code": "generated_copy_quality",
+                    "affected_projections": ["registry", "next_steps"],
+                }
+            ],
+        },
+    )
+
+    assert repaired == package
+
+
+def test_package_repair_rejects_non_mechanical_artifact_draft_operations() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+    )
+
+    for operation in (
+        _mechanical_copy_operation("registry", operation_kind="semantic_fact"),
+        _mechanical_copy_operation("registry", repair_owner="semantic_model_compiler"),
+        _mechanical_copy_operation("registry", replacement_fact="rewrite the rendered copy"),
+    ):
+        repaired = repair_greenfield_package_once(
+            package,
+            patchset_request={"status": "repairable", "operations": [operation]},
+        )
+
+        assert repaired == package
+
+
+def test_package_repair_surface_stays_limited_to_duplicate_and_dangling_cleanup() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={
+            "spec.md": "The component owns maintains state and keeps evidence evidence visible until."
+        },
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [_mechanical_copy_operation("registry")],
+        },
+    )
+
+    rendered = repaired.rendered_component_specs["spec.md"]
+    assert "evidence evidence" not in rendered
+    assert rendered.endswith("visible.")
+    assert "owns maintains state" in rendered
 
 
 def test_robotic_safety_parent_workstream_uses_proof_subject_and_visible_status() -> None:

@@ -42,6 +42,7 @@ def package_artifact_findings(package: Any) -> tuple[GreenfieldReviewFinding, ..
     if clean_text(getattr(package, "release_selector", "")):
         findings.extend(_release_package_findings(package))
     findings.extend(_mechanical_package_quality_findings(package))
+    findings.extend(_plan_package_quality_findings(package))
     findings.extend(_registry_package_findings(package))
     findings.extend(_memory_projection_findings(package))
     return dedupe_review_findings(findings)
@@ -251,6 +252,34 @@ def _mechanical_package_quality_findings(package: Any) -> tuple[GreenfieldReview
     return tuple(findings)
 
 
+def _plan_package_quality_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
+    findings: list[GreenfieldReviewFinding] = []
+    for message in greenfield_rendered_package_quality_issues(package):
+        if _mechanical_package_quality_issue(message):
+            continue
+        text = clean_text(message).casefold()
+        if text.startswith("registry component spec"):
+            continue
+        projection = _package_quality_projection(message, package=package)
+        if projection == "artifact_draft_set":
+            continue
+        findings.append(
+            review_finding(
+                code=_plan_package_quality_code(message),
+                surface=projection,
+                target_path=f"prewrite_package.{projection}.copy_quality",
+                projection_id=projection,
+                semantic_node_id=f"ArtifactPlanIR.{projection}",
+                severity="medium",
+                repairability="plan_patch",
+                owner=_plan_package_quality_owner(projection),
+                source="package_quality",
+                message=message,
+            )
+        )
+    return tuple(findings)
+
+
 def _registry_package_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
     findings: list[GreenfieldReviewFinding] = []
     component_preview = tuple(
@@ -397,13 +426,27 @@ def _mechanical_package_quality_issue(message: str) -> bool:
         marker in text
         for marker in (
             "repeats adjacent word",
-            "modal/base-form grammar drift",
-            "mixed finite/base action prose",
             "clipped or dangling phrase ending",
             "clipped article phrase ending",
-            "greenfield scope boundary truncates the accepted first-path tail",
         )
     )
+
+
+def _plan_package_quality_code(message: str) -> str:
+    text = clean_text(message).casefold()
+    if "scope boundary truncates" in text:
+        return "artifact_shape_drift"
+    return "generated_copy_quality"
+
+
+def _plan_package_quality_owner(projection: str) -> str:
+    return {
+        "atlas": "atlas_renderer",
+        "next_steps": "operator_experience_renderer",
+        "project_brief": "project_brief_renderer",
+        "radar": "radar_renderer",
+        "release": "release_planner",
+    }.get(projection, "artifact_plan_projector")
 
 
 def _package_quality_projection(message: str, *, package: Any) -> str:

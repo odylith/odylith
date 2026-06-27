@@ -1,4 +1,4 @@
-"""Typed safe cleanup for greenfield post-confirm artifact drafts."""
+"""Mechanical cleanup for greenfield post-confirm artifact drafts."""
 
 from __future__ import annotations
 
@@ -13,31 +13,12 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIRMED_DANGLING_WORDS
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import strip_dangling_word_tail
 
 
 _DEFAULT_PACKAGE_REPAIR_PASSES = 4
-_FINITE_TO_BASE = {
-    "adds": "add",
-    "captures": "capture",
-    "chooses": "choose",
-    "creates": "create",
-    "enters": "enter",
-    "logs": "log",
-    "marks": "mark",
-    "notes": "note",
-    "opens": "open",
-    "records": "record",
-    "reviews": "review",
-    "saves": "save",
-    "selects": "select",
-    "submits": "submit",
-    "updates": "update",
-}
-_BASE_ACTIONS = "|".join(re.escape(value) for value in sorted(set(_FINITE_TO_BASE.values()), key=len, reverse=True))
-_FINITE_ACTIONS = "|".join(re.escape(value) for value in sorted(_FINITE_TO_BASE, key=len, reverse=True))
+_MECHANICAL_COPY_ACTION = "Apply only explicitly safe mechanical cleanup, then rerun the same typed review gates."
+_SEMANTIC_PAYLOAD_FIELDS = ("replacement_fact", "decision_ledger_entry", "proof_obligation_delta")
 _SCALAR_CLAUSE_SPLIT_RE = re.compile(r"([,;.!?])\s*")
 _MARKDOWN_LINK_TARGET_RE = re.compile(r"\]\(([^)\s]+)\)")
 _VERSION_TOKEN_RE = re.compile(r"\b\d+(?:\.\d+){1,4}\b")
@@ -187,6 +168,14 @@ def _safe_package_repair_projections(patchset_request: Mapping[str, Any]) -> fro
             continue
         if str(operation.get("issue_code", "")).strip() != "generated_copy_quality":
             continue
+        if str(operation.get("operation_kind", "")).strip() != "artifact_draft_mechanical_copy":
+            continue
+        if str(operation.get("repair_owner", "")).strip() != "artifact_draft_cleaner":
+            continue
+        if str(operation.get("requested_action", "")).strip() != _MECHANICAL_COPY_ACTION:
+            continue
+        if any(str(operation.get(field, "")).strip() for field in _SEMANTIC_PAYLOAD_FIELDS):
+            continue
         affected = operation.get("affected_projections")
         if not isinstance(affected, Sequence) or isinstance(affected, (str, bytes, bytearray)):
             continue
@@ -254,23 +243,8 @@ def _repair_public_copy_line(value: str) -> str:
 
 
 def _repair_public_copy_scalar(value: str) -> str:
-    text = normalize_visible_result_language(str(value))
-    text = normalize_cover_article_language(text)
+    text = str(value)
     text = re.sub(r"\b(?P<word>[A-Za-z][A-Za-z0-9'-]*)\s+(?P=word)\b", r"\g<word>", text, flags=re.IGNORECASE)
-    text = _repair_responsibility_verb_pairs(text)
-    text = re.sub(
-        rf"\b(?P<modifier>[a-z]+ly)\s+(?P<verb>{_FINITE_ACTIONS})\b"
-        rf"(?P<body>[^.!?;]{{0,160}}\b(?:and|or)\s+(?:{_BASE_ACTIONS})\b)",
-        lambda match: f"{match.group('modifier')} {_FINITE_TO_BASE[match.group('verb').casefold()]}{match.group('body')}",
-        text,
-        flags=re.IGNORECASE,
-    )
-    text = re.sub(
-        rf"\b(?P<context>can|could|may|might|must|shall|should|to|will|would)\s+(?P<verb>{_FINITE_ACTIONS})\b",
-        lambda match: f"{match.group('context')} {_FINITE_TO_BASE[match.group('verb').casefold()]}",
-        text,
-        flags=re.IGNORECASE,
-    )
     return _repair_dangling_tail(text)
 
 
@@ -368,29 +342,6 @@ def _strip_terminal_dangling_tail(value: str) -> str:
     if repaired and terminal and repaired[-1] not in ".!?":
         return f"{repaired}{terminal}"
     return repaired
-
-
-def _repair_responsibility_verb_pairs(value: str) -> str:
-    text = value
-    text = re.sub(
-        r"\b(?P<head>owns?)\s+(?:continues?|keeps?|maintains?|sustains?)\b\s*",
-        lambda match: f"{match.group('head')} ",
-        text,
-        flags=re.IGNORECASE,
-    )
-    text = re.sub(
-        r"\b(?P<head>maintains?)\s+(?:continues?|defines?|keeps?|maintains?|sustains?)\b\s*",
-        lambda match: f"{match.group('head')} ",
-        text,
-        flags=re.IGNORECASE,
-    )
-    text = re.sub(
-        r"\b(?P<head>preserves?)\s+handles?\b\s*",
-        lambda match: f"{match.group('head')} ",
-        text,
-        flags=re.IGNORECASE,
-    )
-    return re.sub(r"[^\S\r\n]{2,}", " ", text)
 
 
 __all__ = [

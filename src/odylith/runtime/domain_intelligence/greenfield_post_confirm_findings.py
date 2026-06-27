@@ -204,12 +204,8 @@ def _safe_mechanical_copy_issue(lowered: str) -> bool:
         token in lowered
         for token in (
             "repeats adjacent word",
-            "modal/base-form grammar drift",
-            "mixed finite/base action prose",
             "clipped or dangling phrase ending",
             "clipped article phrase ending",
-            "malformed ownership verb pair",
-            "malformed component responsibility",
         )
     )
 
@@ -336,12 +332,9 @@ def _copy_route(
 
 
 def _generated_copy_repairability(category: str) -> str:
-    safe_categories = {
-        "compact_action_inflection",
-        "malformed_component_responsibility",
-        "mixed_action_inflection",
-    }
-    return "safe_package_repair" if clean_text(category) in safe_categories else "plan_patch"
+    if clean_text(category):
+        return "plan_patch"
+    return "unrepairable"
 
 
 def _extend_review_findings(

@@ -700,7 +700,7 @@ def test_greenfield_package_gate_rejects_mechanical_operator_next_steps(tmp_path
     assert "operator next-steps preview leaked Registry contract tuple prose" in "\n".join(report.issues)
 
 
-def test_greenfield_package_repair_rechecks_until_copy_defects_are_clean(tmp_path: Path) -> None:
+def test_greenfield_package_repair_does_not_rewrite_mixed_action_inflection(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     next_steps = _next_steps_preview()
     next_steps["coding_readiness_gates"] = [
@@ -716,14 +716,18 @@ def test_greenfield_package_repair_rechecks_until_copy_defects_are_clean(tmp_pat
 
     assert not initial.passed
     assert any("mixed finite/base action prose" in issue for issue in initial.issues)
-    assert result.changed
-    assert result.passes >= 1
-    assert result.report.passed
-    assert "optionally notes" not in rendered
-    assert "optionally note context and save" in rendered
+    assert not result.changed
+    assert not result.report.passed
+    assert any(
+        finding.code == "generated_copy_quality"
+        and finding.repairability == "plan_patch"
+        and finding.projection_id == "next_steps"
+        for finding in result.report.findings
+    )
+    assert "optionally notes context and save" in rendered
 
 
-def test_greenfield_package_repair_cleans_malformed_responsibility_copy(tmp_path: Path) -> None:
+def test_greenfield_package_repair_does_not_rewrite_malformed_responsibility_copy(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     backlog_result = _prewrite_backlog_result(proposal)
     program_result = {"created": True, "dry_run": True}
@@ -749,11 +753,16 @@ def test_greenfield_package_repair_cleans_malformed_responsibility_copy(tmp_path
 
     assert not initial.passed
     assert any("malformed ownership verb pair" in issue for issue in initial.issues)
-    assert result.changed
+    assert not result.changed
     assert result.initial_report == initial
-    assert result.report.passed, "\n".join(result.report.issues)
-    assert "owns maintains" not in rendered
-    assert "owns state" in rendered
+    assert not result.report.passed
+    assert any(
+        finding.code == "component_contract_quality"
+        and finding.repairability == "plan_patch"
+        and finding.projection_id == "registry"
+        for finding in result.report.findings
+    )
+    assert "owns maintains" in rendered
 
 
 def test_greenfield_package_gate_rejects_structural_contract_tuple_variants(tmp_path: Path) -> None:

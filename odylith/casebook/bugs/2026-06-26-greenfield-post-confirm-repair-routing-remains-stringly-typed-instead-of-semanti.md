@@ -563,6 +563,39 @@
   security disclosure council 18.702s with governed writes, zero quality
   issues, all product-manager/architect/engineer/domain-expert lenses passing,
   and temp repos plus the temporary release directory pruned.
+  The next artifact-draft cleanup checkpoint removed the remaining semantic
+  authority from the package repair loop. Generated-copy categories such as
+  mixed action inflection, compact action inflection, and malformed component
+  responsibility now route to `plan_patch`, while non-mechanical package
+  quality findings become source-owned artifact-plan findings instead of raw
+  legacy blockers. `greenfield_post_confirm_repair.py` no longer calls the
+  visible-result normalizer, article normalizer, modal/base-form fixer, or
+  ownership-verb fixer over rendered drafts. Its repair executor now admits
+  only PatchSet operations with the full mechanical contract:
+  `target_layer=artifact_draft_set`, `issue_code=generated_copy_quality`,
+  `operation_kind=artifact_draft_mechanical_copy`,
+  `repair_owner=artifact_draft_cleaner`, the exact mechanical cleanup action,
+  and no replacement fact, decision-ledger entry, or proof-obligation delta.
+  A reviewer caught that `artifact_draft_set` alone was still too broad; the
+  metadata gate now prevents semantic or artifact-plan operations from
+  mutating rendered copy even when they name a draft projection. The banned
+  failed mechanisms are explicit: do not repair semantic grammar after
+  rendering, do not let a rendered package cleaner own modal/action or
+  responsibility semantics, and do not accept artifact-draft mutation without
+  the full typed mechanical-copy contract. Proof so far: focused mechanical
+  executor tests passed 7 tests in 0.29s; the post-confirm repair/prewrite
+  pack passed 113 tests in 397.10s; the widened semantic, artifact-plan,
+  quality-lens, Tribunal, slop, general artifact-quality, confirmed-text, and
+  ArtifactPlanIR pack passed 194 tests in 327.84s. Fresh installed-matrix
+  proof from temporary local release
+  `/tmp/odylith-local-release-0.1.15-mechanical-custody` then passed flood
+  shelter intake 20.286s, pediatric agency practice 19.247s, semiconductor lab
+  custody 18.812s, port berth carbon tariff 18.489s, and security disclosure
+  council 18.981s. Every installed run wrote governed records, reported zero
+  final quality issues, passed product-manager, architect, engineer, and
+  domain-expert lenses, produced five Radar workstreams, three Registry specs,
+  six Atlas Mermaid sources, 18 trace nodes, five rendered surfaces, and the
+  temporary repos plus local release directory were pruned after proof.
 
 - Related Incidents/Bugs: CB-207
 
