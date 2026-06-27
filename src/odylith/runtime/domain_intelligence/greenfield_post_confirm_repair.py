@@ -77,6 +77,12 @@ class GreenfieldPackageRepairResult:
     changed: bool
 
 
+@dataclass(frozen=True)
+class _ArtifactDraftRepairOperation:
+    projection: str
+    target_path: str
+
+
 def repair_greenfield_package_until_clean(
     package: GreenfieldCompletionPackage,
     *,
@@ -115,52 +121,21 @@ def repair_greenfield_package_once(
     request = patchset_request or patchset_request_from_findings(
         build_greenfield_package_report(package).findings
     ).to_dict()
-    projections = _safe_package_repair_projections(request)
-    if not projections:
+    operations = _safe_package_repair_operations(request)
+    if not operations:
         return package
 
     updates: dict[str, Any] = {}
-    if "registry" in projections:
-        updates["rendered_component_specs"] = _repair_optional_mapping(package.rendered_component_specs)
-        updates["component_registry_preview"] = tuple(_repair_tree(row) for row in package.component_registry_preview)
-    if "atlas" in projections:
-        updates["rendered_atlas_sources"] = _repair_optional_mapping(package.rendered_atlas_sources)
-    if "radar" in projections:
-        updates["backlog_result"] = _repair_optional_mapping(package.backlog_result)
-    if "project_brief" in projections:
-        updates["project_brief_preview"] = _repair_optional_mapping(package.project_brief_preview)
-    if "accepted_project" in projections:
-        updates["accepted_project_preview"] = _repair_optional_mapping(package.accepted_project_preview)
-    if "compass" in projections:
-        updates["compass_memory_preview"] = _repair_optional_mapping(package.compass_memory_preview)
-    if "next_steps" in projections:
-        updates["next_steps_preview"] = _repair_optional_mapping(package.next_steps_preview)
-    if "release" in projections:
-        updates["release_target_result"] = _repair_optional_mapping(package.release_target_result)
-        updates["release_assignment_result"] = _repair_optional_mapping(package.release_assignment_result)
-    if "artifact_draft_set" in projections:
-        updates.update(
-            {
-                "rendered_component_specs": _repair_optional_mapping(package.rendered_component_specs),
-                "rendered_atlas_sources": _repair_optional_mapping(package.rendered_atlas_sources),
-                "component_registry_preview": tuple(_repair_tree(row) for row in package.component_registry_preview),
-                "project_brief_preview": _repair_optional_mapping(package.project_brief_preview),
-                "accepted_project_preview": _repair_optional_mapping(package.accepted_project_preview),
-                "compass_memory_preview": _repair_optional_mapping(package.compass_memory_preview),
-                "next_steps_preview": _repair_optional_mapping(package.next_steps_preview),
-                "backlog_result": _repair_optional_mapping(package.backlog_result),
-                "release_target_result": _repair_optional_mapping(package.release_target_result),
-                "release_assignment_result": _repair_optional_mapping(package.release_assignment_result),
-            }
-        )
+    for operation in operations:
+        _apply_artifact_draft_repair(package, updates=updates, operation=operation)
     return replace(package, **updates) if updates else package
 
 
-def _safe_package_repair_projections(patchset_request: Mapping[str, Any]) -> frozenset[str]:
+def _safe_package_repair_operations(patchset_request: Mapping[str, Any]) -> tuple[_ArtifactDraftRepairOperation, ...]:
     operations = patchset_request.get("operations") if isinstance(patchset_request, Mapping) else ()
     if not isinstance(operations, Sequence) or isinstance(operations, (str, bytes, bytearray)):
-        return frozenset()
-    projections: set[str] = set()
+        return ()
+    repair_operations: list[_ArtifactDraftRepairOperation] = []
     for operation in operations:
         if not isinstance(operation, Mapping):
             continue
@@ -176,15 +151,94 @@ def _safe_package_repair_projections(patchset_request: Mapping[str, Any]) -> fro
             continue
         if any(str(operation.get(field, "")).strip() for field in _SEMANTIC_PAYLOAD_FIELDS):
             continue
+        target_path = str(operation.get("target_path", "")).strip()
+        if not _exact_artifact_draft_target_path(target_path):
+            continue
         affected = operation.get("affected_projections")
         if not isinstance(affected, Sequence) or isinstance(affected, (str, bytes, bytearray)):
             continue
-        projections.update(
-            projection
-            for projection in (artifact_draft_repair_projection(item) for item in affected)
-            if projection
+        for projection in (artifact_draft_repair_projection(item) for item in affected):
+            if projection:
+                repair_operations.append(_ArtifactDraftRepairOperation(projection=projection, target_path=target_path))
+    return tuple(dict.fromkeys(repair_operations))
+
+
+def _exact_artifact_draft_target_path(value: str) -> bool:
+    if value in {
+        "prewrite_package.backlog_result.backlog_index_text",
+        "prewrite_package.project_brief_preview",
+        "prewrite_package.next_steps_preview",
+    }:
+        return True
+    return value.startswith(
+        (
+            "prewrite_package.rendered_component_specs::",
+            "prewrite_package.rendered_atlas_sources::",
+            "prewrite_package.backlog_result.idea_files::",
         )
-    return frozenset(projections)
+    )
+
+
+def _apply_artifact_draft_repair(
+    package: GreenfieldCompletionPackage,
+    *,
+    updates: dict[str, Any],
+    operation: _ArtifactDraftRepairOperation,
+) -> None:
+    target_path = operation.target_path
+    if operation.projection == "registry" and target_path.startswith("prewrite_package.rendered_component_specs::"):
+        key = target_path.split("::", 1)[1]
+        current = updates.get("rendered_component_specs", package.rendered_component_specs)
+        updates["rendered_component_specs"] = _repair_mapping_entry(current, key)
+        return
+    if operation.projection == "atlas" and target_path.startswith("prewrite_package.rendered_atlas_sources::"):
+        key = target_path.split("::", 1)[1]
+        current = updates.get("rendered_atlas_sources", package.rendered_atlas_sources)
+        updates["rendered_atlas_sources"] = _repair_mapping_entry(current, key)
+        return
+    if operation.projection == "radar" and target_path.startswith("prewrite_package.backlog_result.idea_files::"):
+        key = target_path.split("::", 1)[1]
+        current = updates.get("backlog_result", package.backlog_result)
+        updates["backlog_result"] = _repair_nested_mapping_entry(current, "idea_files", key)
+        return
+    if operation.projection == "radar" and target_path == "prewrite_package.backlog_result.backlog_index_text":
+        current = updates.get("backlog_result", package.backlog_result)
+        updates["backlog_result"] = _repair_mapping_entry(current, "backlog_index_text")
+        return
+    if operation.projection == "project_brief" and target_path == "prewrite_package.project_brief_preview":
+        updates["project_brief_preview"] = _repair_optional_mapping(
+            updates.get("project_brief_preview", package.project_brief_preview)
+        )
+        return
+    if operation.projection == "next_steps" and target_path == "prewrite_package.next_steps_preview":
+        updates["next_steps_preview"] = _repair_optional_mapping(
+            updates.get("next_steps_preview", package.next_steps_preview)
+        )
+
+
+def _repair_mapping_entry(value: Mapping[str, Any] | None, key: str) -> Mapping[str, Any] | None:
+    if value is None or key not in value:
+        return value
+    repaired = dict(value)
+    repaired[key] = _repair_tree(value[key], key=key)
+    return repaired
+
+
+def _repair_nested_mapping_entry(
+    value: Mapping[str, Any] | None,
+    mapping_key: str,
+    key: str,
+) -> Mapping[str, Any] | None:
+    if value is None:
+        return value
+    child = value.get(mapping_key)
+    if not isinstance(child, Mapping) or key not in child:
+        return value
+    repaired = dict(value)
+    child_repaired = dict(child)
+    child_repaired[key] = _repair_tree(child[key], key=key)
+    repaired[mapping_key] = child_repaired
+    return repaired
 
 
 def _repair_optional_mapping(value: Mapping[str, Any] | None) -> Mapping[str, Any] | None:

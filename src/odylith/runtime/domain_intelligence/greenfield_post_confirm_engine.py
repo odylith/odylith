@@ -29,12 +29,15 @@ from odylith.runtime.artifact_quality.greenfield_quality_lenses import (
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import (
     patchset_request_from_findings,
 )
+from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_expand_projection_scope
+from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_scope_requires_full_prewrite
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import (
     repair_greenfield_package_until_clean,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
     GreenfieldReviewFinding,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
     review_report_from_findings,
 )
@@ -242,6 +245,19 @@ def run_greenfield_post_confirm_engine(
             stop_reason = "no_progress"
             break
         seen_failures.add(failure_signature)
+        direct_rerender_projections = _direct_rerender_projections(typed_issues)
+        if direct_rerender_projections:
+            if rerender_prewrite is None:
+                last_report = _projection_rerender_contract_report(
+                    report,
+                    projections=direct_rerender_projections,
+                )
+                stop_reason = "missing_projection_rerender_callback"
+                break
+            pending_rerender_projections = direct_rerender_projections
+            pending_prewrite_build = prewrite_build
+            pass_index += 1
+            continue
         if active_tier == "standard" and requested_tier == "auto":
             if not _rescue_eligible(typed_issues):
                 stop_reason = "not_rescue_eligible"
@@ -392,6 +408,52 @@ def _rescue_eligible(issues: Sequence[GreenfieldPostConfirmIssue]) -> bool:
     }
     repairable_types = {"semantic_patch", "plan_patch", "safe_package_repair"}
     return any(issue.code in rescue_codes and issue.repairability in repairable_types for issue in issues)
+
+
+def _direct_rerender_projections(issues: Sequence[GreenfieldPostConfirmIssue]) -> tuple[str, ...]:
+    projections = tuple(
+        dict.fromkeys(
+            issue.projection_id
+            for issue in issues
+            if issue.repairability == "projection_rerender" and issue.projection_id
+        )
+    )
+    if not projections:
+        return ()
+    expanded = patch_expand_projection_scope(projections)
+    if patch_scope_requires_full_prewrite(expanded):
+        return ()
+    return expanded
+
+
+def _projection_rerender_contract_report(
+    report: GreenfieldCompletionReport,
+    *,
+    projections: Sequence[str],
+) -> GreenfieldCompletionReport:
+    scope = ", ".join(projections) or "unknown projection"
+    message = (
+        "post-confirm projection rerender required for "
+        f"{scope}, but no rerender_prewrite callback was configured"
+    )
+    finding = review_finding(
+        code="post_confirm_contract",
+        surface="post_confirm",
+        target_path="rerender_prewrite",
+        projection_id="review_report",
+        semantic_node_id="PostConfirmEngine.rerender_prewrite",
+        severity="critical",
+        repairability="unrepairable",
+        owner="post_confirm_engine",
+        source="projection_rerender_contract",
+        message=message,
+    )
+    return replace(
+        report,
+        status="failed",
+        issues=(message, *tuple(report.issues)),
+        findings=(finding, *tuple(report.findings)),
+    )
 
 
 def build_greenfield_post_confirm_manifest(

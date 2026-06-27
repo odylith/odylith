@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
 import re
 from typing import Any
 
@@ -11,23 +10,18 @@ from odylith.runtime.artifact_quality.generated_copy_quality import generated_pu
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
 from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenfield_artifact_judgment_issues
 from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfield_project_judgment_issues
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedPackageQualityFinding
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import artifact_quality_finding
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import collect_rendered_package_artifacts
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_mapping as _as_mapping
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_quality_finding
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import unique_package_quality_findings
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
-
-
-@dataclass(frozen=True)
-class RenderedArtifact:
-    surface: str
-    name: str
-    text: str
-    kind: str = "prose"
-
-    @property
-    def identity(self) -> str:
-        return f"{self.surface} `{self.name}`"
 
 
 _BASE_FORM_CONTEXTS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "to", "will", "would"})
@@ -128,43 +122,34 @@ _CONNECTOR_CONTINUATION_OPENERS = frozenset(
 def greenfield_rendered_package_quality_issues(package: Any) -> list[str]:
     """Return readability and graph-quality failures across a rendered package."""
 
-    artifacts = _collect_rendered_artifacts(package)
-    issues: list[str] = []
+    return unique_text(finding.message for finding in greenfield_rendered_package_quality_findings(package))
+
+
+def greenfield_rendered_package_quality_findings(package: Any) -> list[RenderedPackageQualityFinding]:
+    """Return typed readability failures across a rendered package."""
+
+    artifacts = collect_rendered_package_artifacts(package)
+    findings: list[RenderedPackageQualityFinding] = []
     for artifact in artifacts:
-        issues.extend(_artifact_language_issues(artifact))
+        findings.extend(
+            artifact_quality_finding(artifact, issue)
+            for issue in _artifact_language_issues(artifact)
+        )
         if artifact.kind == "mermaid":
-            issues.extend(_mermaid_connectivity_issues(artifact))
-    issues.extend(_package_component_identity_issues(package))
-    issues.extend(_package_repetition_issues(package, artifacts))
-    issues.extend(greenfield_artifact_judgment_issues(package))
-    issues.extend(greenfield_project_judgment_issues(package))
-    return unique_text(issues)
-
-
-def _collect_rendered_artifacts(package: Any) -> list[RenderedArtifact]:
-    artifacts: list[RenderedArtifact] = []
-    backlog_result = _as_mapping(getattr(package, "backlog_result", None))
-    for path, text in _as_mapping(backlog_result.get("idea_files")).items():
-        artifacts.append(RenderedArtifact("Radar workstream", _artifact_name(path), str(text or "")))
-    index_text = normalize_string(backlog_result.get("backlog_index_text"))
-    if index_text:
-        artifacts.append(RenderedArtifact("Radar index", "INDEX.md", index_text))
-
-    for name, text in _as_mapping(getattr(package, "rendered_component_specs", None)).items():
-        artifacts.append(RenderedArtifact("Registry component spec", _artifact_name(name), str(text or "")))
-
-    for path, source in _as_mapping(getattr(package, "rendered_atlas_sources", None)).items():
-        artifacts.append(RenderedArtifact("Atlas Mermaid", _artifact_name(path), str(source or ""), kind="mermaid"))
-
-    project_brief = _preview_text(getattr(package, "project_brief_preview", None))
-    if project_brief:
-        artifacts.append(RenderedArtifact("Project brief preview", "project_brief", project_brief))
-
-    next_steps = _preview_text(getattr(package, "next_steps_preview", None))
-    if next_steps:
-        artifacts.append(RenderedArtifact("Operator next steps", "next_steps", next_steps))
-
-    return artifacts
+            findings.extend(
+                artifact_quality_finding(artifact, issue)
+                for issue in _mermaid_connectivity_issues(artifact)
+            )
+    findings.extend(
+        package_quality_finding(issue)
+        for issue in (
+            *tuple(_package_component_identity_issues(package)),
+            *tuple(_package_repetition_issues(package, artifacts)),
+            *tuple(greenfield_artifact_judgment_issues(package)),
+            *tuple(greenfield_project_judgment_issues(package)),
+        )
+    )
+    return unique_package_quality_findings(findings)
 
 
 def _artifact_language_issues(artifact: RenderedArtifact) -> list[str]:
@@ -1037,23 +1022,6 @@ def _node_id_from_tail(segment: str) -> str:
     return token if token and not token[0].isdigit() else ""
 
 
-def _preview_text(value: Any) -> str:
-    if not isinstance(value, Mapping):
-        return ""
-    rows = [normalize_string(row).strip() for row in text_values(value)]
-    bounded = [row if not row or row[-1] in ".!?" else f"{row}." for row in rows if row]
-    return "\n".join(bounded)
-
-
-def _as_mapping(value: Any) -> Mapping[Any, Any]:
-    return value if isinstance(value, Mapping) else {}
-
-
-def _artifact_name(value: Any) -> str:
-    text = normalize_string(value)
-    return text or "artifact"
-
-
 def _word_tokens(value: str) -> list[str]:
     tokens: list[str] = []
     current: list[str] = []
@@ -1185,4 +1153,8 @@ def _clip(value: str, limit: int) -> str:
     return clipped.rstrip(" ,;:.") + "..."
 
 
-__all__ = ["greenfield_rendered_package_quality_issues"]
+__all__ = [
+    "RenderedPackageQualityFinding",
+    "greenfield_rendered_package_quality_findings",
+    "greenfield_rendered_package_quality_issues",
+]

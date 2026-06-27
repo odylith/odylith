@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
@@ -11,6 +12,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import bu
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import contrastive_domain_drift_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_package_findings import package_artifact_findings
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_once
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks
@@ -23,6 +26,7 @@ from odylith.runtime.governance.component_spec_narrative import build_narrative_
 def _mechanical_copy_operation(*affected_projections: str, **overrides: object) -> dict[str, object]:
     operation: dict[str, object] = {
         "target_layer": "artifact_draft_set",
+        "target_path": "prewrite_package.rendered_component_specs::spec.md",
         "issue_code": "generated_copy_quality",
         "operation_kind": "artifact_draft_mechanical_copy",
         "repair_owner": "artifact_draft_cleaner",
@@ -110,6 +114,270 @@ def test_package_repair_surface_stays_limited_to_duplicate_and_dangling_cleanup(
     assert "evidence evidence" not in rendered
     assert rendered.endswith("visible.")
     assert "owns maintains state" in rendered
+
+
+def test_package_repair_mutates_only_addressed_artifact_leaf() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={
+            "spec.md": "The record stays attached attached to the accepted state.",
+            "other.md": "The other record stays attached attached to the accepted state.",
+        },
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                _mechanical_copy_operation(
+                    "registry",
+                    target_path="prewrite_package.rendered_component_specs::spec.md",
+                )
+            ],
+        },
+    )
+
+    assert repaired.rendered_component_specs["spec.md"] == "The record stays attached to the accepted state."
+    assert repaired.rendered_component_specs["other.md"] == package.rendered_component_specs["other.md"]
+
+
+def test_package_quality_findings_emit_exact_artifact_draft_target_path() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={
+            "spec.md": "The record stays attached attached to the accepted state.",
+        },
+    )
+
+    findings = package_artifact_findings(package)
+    finding = next(item for item in findings if item.repairability == "safe_package_repair")
+    patchset = patchset_request_from_findings((finding,)).to_dict()
+    operation = patchset["operations"][0]
+
+    assert finding.projection_id == "registry"
+    assert finding.target_path == "prewrite_package.rendered_component_specs::spec.md"
+    assert operation["target_path"] == "prewrite_package.rendered_component_specs::spec.md"
+    assert operation["affected_projections"] == ("registry",)
+
+
+def test_package_repair_accepts_exact_rendered_artifact_targets() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+        rendered_atlas_sources={"flow.mmd": "flow stays attached attached to the accepted state."},
+        next_steps_preview={"implementation_prompt": "The next step stays attached attached to the accepted state."},
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                _mechanical_copy_operation(
+                    "rendered_component_specs",
+                    target_path="prewrite_package.rendered_component_specs::spec.md",
+                ),
+                _mechanical_copy_operation(
+                    "rendered_atlas_sources",
+                    target_path="prewrite_package.rendered_atlas_sources::flow.mmd",
+                ),
+            ],
+        },
+    )
+
+    assert repaired.rendered_component_specs == {
+        "spec.md": "The record stays attached to the accepted state."
+    }
+    assert repaired.rendered_atlas_sources == {
+        "flow.mmd": "flow stays attached to the accepted state."
+    }
+    assert repaired.next_steps_preview == package.next_steps_preview
+
+
+def test_package_repair_ignores_unsupported_preview_tree_targets() -> None:
+    registry_path = "/tmp/stays attached attached/odylith/registry/source/component_registry.v1.json"
+    spec_path = "/tmp/stays attached attached/odylith/registry/source/components/c-001/CURRENT_SPEC.md"
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        component_registry_preview=(
+            {
+                "component_id": "case-redaction",
+                "registry_path": registry_path,
+                "spec_path": spec_path,
+                "feature_history": [
+                    {"summary": "The record stays attached attached to the accepted state."},
+                ],
+            },
+        ),
+        accepted_project_preview={
+            "schema_version": "odylith.accepted_project.v1",
+            "created": {
+                "components": [
+                    {
+                        "component_id": "case-redaction",
+                        "registry_path": registry_path,
+                        "spec_path": spec_path,
+                        "feature_history": [
+                            {"summary": "The record stays attached attached to the accepted state."},
+                        ],
+                    }
+                ]
+            },
+        },
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                _mechanical_copy_operation(
+                    "accepted_project",
+                    "registry",
+                    target_path="prewrite_package.accepted_project_preview",
+                )
+            ],
+        },
+    )
+
+    assert repaired == package
+
+
+def test_package_repair_collapses_adjacent_duplicate_words() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+    )
+
+    repaired = repair_greenfield_package_once(package)
+
+    assert repaired.rendered_component_specs == {"spec.md": "The record stays attached to the accepted state."}
+
+
+def test_package_repair_requires_artifact_draft_patchset_permission() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={"status": "no_repairable_operations", "operations": []},
+    )
+
+    assert repaired == package
+
+
+def test_package_repair_does_not_mutate_rendered_copy_for_plan_patch() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                {
+                    "target_layer": "artifact_plan",
+                    "issue_code": "generated_copy_quality",
+                    "affected_projections": ["registry"],
+                }
+            ],
+        },
+    )
+
+    assert repaired == package
+
+
+def test_package_repair_only_mutates_patchset_affected_projection() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+        next_steps_preview={"implementation_prompt": "The next step stays attached attached to the accepted state."},
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                _mechanical_copy_operation(
+                    "next_steps",
+                    target_path="prewrite_package.next_steps_preview",
+                )
+            ],
+        },
+    )
+
+    assert repaired.rendered_component_specs == package.rendered_component_specs
+    assert repaired.next_steps_preview == {
+        "implementation_prompt": "The next step stays attached to the accepted state."
+    }
+
+
+def test_package_repair_preserves_markdown_plan_link_targets() -> None:
+    summary = (
+        "2026-06-25: Registered Flood Shelter Intake System Intake Register Service as a planned service from user intent "
+        "(Plan: [B-002](odylith/radar/radar.html?view=plan&workstream=B-002))."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        component_registry_preview=(
+            {
+                "component_id": "intake-register",
+                "feature_history": [{"date": "2026-06-25", "summary": summary}],
+            },
+        ),
+        rendered_component_specs={"spec.md": f"## Feature History\n- {summary}\n"},
+    )
+
+    repaired = repair_greenfield_package_once(package)
+
+    repaired_summary = repaired.component_registry_preview[0]["feature_history"][0]["summary"]
+    assert "odylith/radar/radar.html?view=plan&workstream=B-002" in repaired_summary
+    assert "radar. html? view=plan" not in repaired_summary
+    assert "odylith/radar/radar.html?view=plan&workstream=B-002" in repaired.rendered_component_specs["spec.md"]
+
+
+def test_final_next_steps_repair_matches_prewrite_copy_repair() -> None:
+    repaired = greenfield_apply_write._repair_final_next_steps(
+        {
+            "start_workstream_id": "B-002",
+            "validation_gates": [
+                "Flood Shelter Intake System Intake Register Service owns flood shelter intake intake register evidence, review rules, and result visibility",
+                "Flood Shelter Intake System Intake Register Service blocks incomplete evidence before presenting a result, then explains what has to change for flood shelter intake intake register",
+            ],
+        }
+    )
+
+    rendered = "\n".join(repaired["validation_gates"])
+    assert "intake intake" not in rendered.casefold()
+    assert "flood shelter intake register evidence" in rendered.casefold()
+
+
+def test_final_next_steps_repair_preserves_release_selector_tokens() -> None:
+    repaired = greenfield_apply_write._repair_final_next_steps(
+        {
+            "release_selector": "0.0.1",
+            "customization_options": [
+                "External systems: Confirm whether release 0.0.1 needs these external systems: Browser runtime.",
+                "Release ambition: Keep 0.0.1 to the accepted first path.",
+            ],
+            "coding_readiness_gates": [
+                "Release 0.0.1 has proof checks for success, failure, replay, access, and review evidence."
+            ],
+            "operator_sequence": [
+                "Open the progress view and verify the active wave `first proof` plus release `0.0.1` match the accepted project shape."
+            ],
+        }
+    )
+
+    rendered = json.dumps(repaired, sort_keys=True)
+    assert "0.0.1" in rendered
+    assert "0. 0. 1" not in rendered
 
 
 def test_robotic_safety_parent_workstream_uses_proof_subject_and_visible_status() -> None:

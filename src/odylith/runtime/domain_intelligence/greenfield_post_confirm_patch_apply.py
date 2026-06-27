@@ -15,7 +15,6 @@ from odylith.runtime.domain_intelligence.greenfield_artifact_plan_patch_executor
 )
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
-from odylith.runtime.domain_intelligence.greenfield_first_path_repair import repair_proposal_first_path
 from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_expand_projection_scope
 from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_scope_requires_full_prewrite
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmRepairContext
@@ -67,19 +66,14 @@ def _apply_operations(
         return proposal
 
     repaired = proposal
-    first_path_semantic = any(_is_first_path_semantic_operation(operation) for operation in operations)
     semantic_application = apply_semantic_patch_operations_detailed(repaired, operations)
     semantic_changed = semantic_application.changed
     plan_changed = apply_artifact_plan_patch_operations(repaired, operations)
     if semantic_changed or plan_changed:
         repaired = _normalized_proposal(repaired)
-    completion_required = semantic_application.completion_required or first_path_semantic
+    completion_required = semantic_application.completion_required
     if completion_required:
         repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
-    if first_path_semantic:
-        if repair_proposal_first_path(repaired):
-            repaired = _normalized_proposal(repaired)
-            repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
     if semantic_changed or plan_changed or completion_required:
         _append_patch_application_ledger(
             repaired,

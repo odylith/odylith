@@ -196,3 +196,61 @@ def test_generic_component_contract_builder_prefers_semantic_artifacts_over_raw_
     assert "misconception prompts" in rendered
     assert not generated_semantic_slop_issues(parameter)
     assert not generated_semantic_slop_issues(review)
+
+
+def test_profile_triggered_component_contracts_still_use_semantic_basis() -> None:
+    proposal = {
+        "intent": {
+            "title": "Vendor Onboarding Review",
+            "first_path": (
+                "A vendor submits onboarding documents, the product validates required files, runs compliance "
+                "checks, routes risk review to procurement, records approval or blocked reason, notifies the vendor, "
+                "marks spend readiness, and preserves audit history."
+            ),
+            "state_object": (
+                "A vendor onboarding file tracks vendor identity, submitted documents, compliance checklist, risk "
+                "review, approval decision, blocked reason, spend-readiness status, notification status, and audit "
+                "history."
+            ),
+            "proof_boundary": (
+                "Release 0.0.1 succeeds when one vendor can submit documents, missing files block review, required "
+                "checks are recorded, procurement can approve or block readiness with a reason, the vendor "
+                "notification is recorded, and audit history can replay the decision."
+            ),
+        }
+    }
+
+    packet = build_component_contract(
+        {
+            "label": "Packet Intake Service",
+            "kind": "service",
+            "source_system_description": (
+                "captures vendor identity, submitted documents, required files, and missing-document blockers"
+            ),
+        },
+        proposal=proposal,
+        previous_label="Vendor Intake",
+        next_label="Review Workspace",
+    )
+    status = build_component_contract(
+        {
+            "label": "Status History View Service",
+            "kind": "service",
+            "source_system_description": (
+                "shows approval status, blocked reason, vendor notification state, and audit history for reviewers"
+            ),
+        },
+        proposal=proposal,
+        previous_label="Decision Service",
+        next_label="Release Review",
+    )
+    rendered = json.dumps({"packet": packet, "status": status}, sort_keys=True).casefold()
+
+    assert "vendor identity" in rendered
+    assert "missing-document blockers" in rendered
+    assert "vendor notification state" in rendered
+    assert "audit history" in rendered
+    assert "context bundle creation" not in rendered
+    assert "current next-action owner" not in rendered
+    assert not generated_semantic_slop_issues(packet)
+    assert not generated_semantic_slop_issues(status)

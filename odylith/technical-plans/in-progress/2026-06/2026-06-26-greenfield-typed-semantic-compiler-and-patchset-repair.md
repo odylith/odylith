@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-06-26
+Updated: 2026-06-27
 
 Backlog: B-142
 
@@ -680,3 +680,37 @@ vocabulary, or degraded packages.
       `/tmp/odylith-local-release-0.1.15-quality-lens-custody` passed five
       domains in 18.244-19.934s with governed writes, zero quality issues, all
       expert lenses passing, and temp cleanup plus release-dir pruning.
+- [x] Exact-path artifact-draft and projection-rerender custody checkpoint:
+      first-path semantic PatchSet operations no longer synthesize accepted
+      intent from metadata-only or rejected replacement facts; profile-triggered
+      component contracts derive semantic contracts before profile fallback;
+      gate-only quality-lens checks remain unrepairable; rendered-package
+      quality now emits exact artifact paths through
+      `greenfield_rendered_artifacts.py`; and the mechanical cleaner mutates
+      only the addressed artifact leaf. Corrupted rendered Registry scope now
+      uses a distinct `projection_rerender` finding and deterministic scoped
+      prewrite rerender instead of semantic rescue or draft cleanup, with a
+      hard `missing_projection_rerender_callback` contract blocker for direct
+      engine callers that omit rerender custody. Focused projection-rerender,
+      quality-lens, and exact-path repair tests passed 27 tests in 4.15s; the
+      flaky rendered-Registry rerender apply repro plus semantic profile and
+      first-path no-synthesis guards passed 4 tests in 18.00s; the widened
+      post-confirm/semantic repair pack passed 185 tests in 79.09s; and the
+      prewrite/general artifact pack passed 101 tests in 692.79s before this
+      checkpoint's final test decomposition.
+- [x] Installed consumer-lane proof for exact-path/projection custody: a
+      temporary local release built from the current source passed the installed
+      greenfield post-confirm matrix across flood shelter intake 19.745s,
+      pediatric agency practice 19.003s, semiconductor lab custody 18.524s,
+      port berth carbon tariff 18.522s, and security disclosure council
+      18.383s. Every run exited 0, wrote governed records, reported zero
+      quality issues, passed product-manager, architect, engineer, and
+      domain-expert lenses, produced the expected Radar, Registry, Atlas,
+      release, project-brief, rendered-surface, and traceability counts, and
+      temp repos plus the temporary release directory were pruned after proof.
+- [x] Code-hygiene checkpoint: the oversized post-confirm engine test owner was
+      split into focused patch-payload and package-quality owners. The engine
+      test file is now 1409 lines, the new patch-payload owner is 333 lines,
+      the package-quality owner is 779 lines, and the moved focused tests
+      passed 66 tests in 29.12 seconds. The widened post-confirm repair pack
+      passed 185 tests in 77.48 seconds after the split.

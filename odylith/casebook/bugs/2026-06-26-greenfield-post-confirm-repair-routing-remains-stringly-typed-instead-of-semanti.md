@@ -596,6 +596,57 @@
   domain-expert lenses, produced five Radar workstreams, three Registry specs,
   six Atlas Mermaid sources, 18 trace nodes, five rendered surfaces, and the
   temporary repos plus local release directory were pruned after proof.
+  The next cleanup checkpoint tightened the remaining repair-custody seams
+  instead of adding more rendered-prose fixes. First-path PatchSet operations
+  no longer synthesize an accepted first path from proposal title or prompt
+  metadata when the structured semantic executor rejects the replacement fact;
+  unsupported or empty semantic operations now leave the proposal unchanged and
+  fail closed. Profile-triggered Registry component contracts now derive the
+  semantic contract first, then allow profile renderers only as fallback, so
+  labels such as document, packet, status, or history cannot bypass the
+  semantic basis. Gate-only expert-lens checks are now unrepairable even when a
+  malformed payload claims `plan_patch`; prewrite proof gaps must be satisfied
+  by rerendered package evidence, not by a model patch against rendered text.
+  The package-quality path now emits typed rendered-artifact findings with
+  exact repair paths through `greenfield_rendered_artifacts.py`, and the
+  artifact-draft cleaner applies mechanical duplicate/tail cleanup only to the
+  addressed leaf path. The old projection-wide draft cleanup mechanism is
+  banned because it could mutate sibling Registry, Atlas, Radar, project brief,
+  or next-step strings that did not own the finding. A pre-commit review also
+  caught that corrupted rendered Registry scope is not semantic repair and not
+  mechanical copy repair; it now routes through a distinct
+  `projection_rerender` finding that schedules deterministic scoped prewrite
+  rerender. If a direct engine caller omits the rerender callback, the engine
+  fails with `missing_projection_rerender_callback` and a contract-level
+  blocker instead of falling through as not rescue eligible. The banned failed
+  mechanisms are explicit: do not synthesize semantic facts from metadata-only
+  operations, do not let component profile keyword matches bypass semantic
+  contracts, do not classify gate-only quality checks as patchable, do not
+  mutate whole preview trees for one draft-copy finding, and do not send
+  corrupted rendered projection scope through host semantic repair. Proof:
+  moved/decomposed focused tests for projection rerender, quality-lens routing,
+  exact-path draft repair, and rendered-artifact metadata passed 27 tests in
+  4.15s; the original flaky rendered-Registry rerender apply path plus
+  component semantic profile and first-path no-synthesis guards passed 4 tests
+  in 18.00s; and the widened post-confirm/semantic repair pack passed 185
+  tests in 79.09s. The earlier prewrite/general artifact pack also passed 101
+  tests in 692.79s after the projection-rerender defect was fixed. Fresh
+  installed proof from temporary local release
+  `/tmp/odylith-local-release-0.1.15-custody-proof` then passed flood shelter
+  intake 19.745s, pediatric agency practice 19.003s, semiconductor lab custody
+  18.524s, port berth carbon tariff 18.522s, and security disclosure council
+  18.383s. Every installed run wrote governed records, reported zero quality
+  issues, passed product-manager, architect, engineer, and domain-expert
+  lenses, produced five Radar workstreams, three Registry specs, six Atlas
+  Mermaid sources, five rendered surfaces, 18 trace nodes, release/program/
+  project-brief records, and the matrix plus temporary local release directory
+  were pruned after proof. Final code-hygiene proof split the oversized
+  post-confirm engine test owner into focused patch-payload and package-repair
+  owners, bringing `test_greenfield_post_confirm_engine.py` down to 1409 lines
+  while preserving behavior coverage; the moved projection, patch-payload,
+  package-repair, and post-confirm engine tests passed 66 tests in 29.12s,
+  and the widened post-confirm repair pack passed 185 tests in 77.48s after
+  the split.
 
 - Related Incidents/Bugs: CB-207
 
@@ -629,4 +680,7 @@
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py
 - src/odylith/runtime/reasoning/tribunal_engine.py
 - src/odylith/runtime/reasoning/tribunal_patch_planner.py
+- src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py
+- tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py
+- tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py
 - odylith/atlas/source/domain-intelligence-greenfield-governance.mmd

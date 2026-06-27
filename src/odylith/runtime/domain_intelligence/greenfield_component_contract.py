@@ -120,18 +120,17 @@ def build_component_contract(
     )
     state_label = _state_label(state_object, fallback=f"{_component_subject(label)} state")
     profile = _profile(label=label, kind=kind, context=context)
-    if profile == "generic":
-        semantic_contract = derive_component_semantic_contract(
-            row,
-            proposal=proposal,
-            sibling=None,
-            previous_label=previous_label,
-            next_label=next_label,
-            state_label=state_label,
-        )
-        semantic_fields = normalize_contract(semantic_contract.fields)
-        if _semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields):
-            return semantic_fields
+    semantic_contract = derive_component_semantic_contract(
+        row,
+        proposal=proposal,
+        sibling=None,
+        previous_label=previous_label,
+        next_label=next_label,
+        state_label=state_label,
+    )
+    semantic_fields = normalize_contract(semantic_contract.fields)
+    if _semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields):
+        return semantic_fields
     if profile == "document_context":
         contract = contract_profiles.document_context_contract(
             label=label,

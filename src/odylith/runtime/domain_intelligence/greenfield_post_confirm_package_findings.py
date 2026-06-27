@@ -6,7 +6,7 @@ from collections.abc import Mapping
 import re
 from typing import Any
 
-from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import dedupe_review_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
@@ -231,15 +231,18 @@ def _release_package_findings(package: Any) -> tuple[GreenfieldReviewFinding, ..
 
 def _mechanical_package_quality_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
     findings: list[GreenfieldReviewFinding] = []
-    for message in greenfield_rendered_package_quality_issues(package):
+    for quality_finding in greenfield_rendered_package_quality_findings(package):
+        message = quality_finding.message
         if not _mechanical_package_quality_issue(message):
             continue
-        projection = _package_quality_projection(message, package=package)
+        projection = quality_finding.projection_id
+        if projection == "artifact_draft_set":
+            continue
         findings.append(
             review_finding(
                 code="generated_copy_quality",
                 surface=projection,
-                target_path=f"prewrite_package.{projection}.copy_quality",
+                target_path=quality_finding.target_path,
                 projection_id=projection,
                 semantic_node_id=f"ArtifactDraftSet.{projection}",
                 severity="medium",
@@ -254,20 +257,20 @@ def _mechanical_package_quality_findings(package: Any) -> tuple[GreenfieldReview
 
 def _plan_package_quality_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
     findings: list[GreenfieldReviewFinding] = []
-    for message in greenfield_rendered_package_quality_issues(package):
+    for quality_finding in greenfield_rendered_package_quality_findings(package):
+        message = quality_finding.message
         if _mechanical_package_quality_issue(message):
             continue
-        text = clean_text(message).casefold()
-        if text.startswith("registry component spec"):
+        if quality_finding.projection_id == "registry":
             continue
-        projection = _package_quality_projection(message, package=package)
+        projection = quality_finding.projection_id
         if projection == "artifact_draft_set":
             continue
         findings.append(
             review_finding(
                 code=_plan_package_quality_code(message),
                 surface=projection,
-                target_path=f"prewrite_package.{projection}.copy_quality",
+                target_path=quality_finding.target_path,
                 projection_id=projection,
                 semantic_node_id=f"ArtifactPlanIR.{projection}",
                 severity="medium",
@@ -294,10 +297,9 @@ def _registry_package_findings(package: Any) -> tuple[GreenfieldReviewFinding, .
     )
     if rendered_specs and not component_preview:
         findings.append(_registry_plan_finding("prewrite Registry package must include component authoring previews"))
-    for message in greenfield_rendered_package_quality_issues(package):
-        text = clean_text(message).casefold()
-        if text.startswith("registry component spec") and not _mechanical_package_quality_issue(message):
-            findings.append(_registry_plan_finding(message))
+    for quality_finding in greenfield_rendered_package_quality_findings(package):
+        if quality_finding.projection_id == "registry" and not _mechanical_package_quality_issue(quality_finding.message):
+            findings.append(_registry_plan_finding(quality_finding.message))
     return tuple(findings)
 
 
@@ -447,23 +449,6 @@ def _plan_package_quality_owner(projection: str) -> str:
         "radar": "radar_renderer",
         "release": "release_planner",
     }.get(projection, "artifact_plan_projector")
-
-
-def _package_quality_projection(message: str, *, package: Any) -> str:
-    text = clean_text(message).casefold()
-    if text.startswith("radar workstream") or text.startswith("radar index"):
-        return "radar"
-    if text.startswith("registry component spec"):
-        return "registry"
-    if text.startswith("atlas mermaid"):
-        return "atlas"
-    if text.startswith("project brief preview"):
-        return "project_brief"
-    if text.startswith("operator next steps"):
-        return "next_steps"
-    if "scope boundary truncates" in text and isinstance(getattr(package, "next_steps_preview", None), Mapping):
-        return "next_steps"
-    return "artifact_draft_set"
 
 
 def _confirmed_greenfield_package(package: Any) -> bool:

@@ -555,3 +555,78 @@ def test_patchset_repair_keeps_first_path_semantic_patch_completion_required(
     assert application["completion_required"] is True
     assert application["full_prewrite_required"] is True
     assert application["rerender_scope"] == "full_prewrite"
+
+
+def test_patchset_repair_does_not_synthesize_first_path_when_structured_fact_is_rejected(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "normalize_host_reasoned_proposal",
+        lambda proposal: dict(proposal),
+    )
+
+    def unexpected_completion(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        calls.append("completion")
+        return {}
+
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "repair_greenfield_semantic_projections",
+        lambda _proposal: False,
+    )
+    context = GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("first path needs semantic repair",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-FIRST-PATH",
+                    "target_layer": "semantic_model",
+                    "operation_kind": "semantic_first_path",
+                    "target_path": "semantic_model.first_path_contract",
+                    "semantic_node_id": "SemanticModelIR.first_path_contract",
+                    "affected_projections": ["project_brief"],
+                    "replacement_fact": {"first_path": "A decision workspace for review."},
+                }
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+    proposal = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "first_path": "A decision workspace for review.",
+        },
+        "semantic_model": {},
+    }
+
+    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+        proposal,
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert calls == []
+    assert repaired["intent"]["first_path"] == "A decision workspace for review."
+    assert repaired["semantic_model"] == {}
+    assert "post_confirm_patch_application_ledger" not in repaired

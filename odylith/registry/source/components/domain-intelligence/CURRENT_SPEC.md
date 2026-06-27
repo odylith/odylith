@@ -24,6 +24,15 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-27 · Implementation:** Greenfield post-confirm repair custody now separates semantic patch, artifact-plan patch, projection rerender, and exact-path mechanical draft cleanup; focused and widened post-confirm tests are green.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
+- **2026-06-27 · Implementation:** Installed local-release greenfield matrix passed five consumer-lane domains in 18.489-20.286 seconds with zero quality issues, governed writes, all expert lenses passing, and temp cleanup verified.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
+- **2026-06-27 · Implementation:** Greenfield post-confirm artifact-draft repair is now metadata-gated mechanical-only; semantic grammar defects route to typed plan repair or fail closed.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +3 more
 - **2026-06-26 · Implementation:** Greenfield typed patch dispatch and actor-title projection checkpoint passed 58 focused tests, 181 widened quality tests, and six source-local confirmed-create simulations after fixing the museum clipped-title failure.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md +3 more
@@ -33,19 +42,11 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-26 · Implementation:** Greenfield source-local variance proof passed eight new domains in the standard post-confirm path under 16s with governed records committed, all expert lenses passing, and temp repos removed after each case.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
-- **2026-06-26 · Implementation:** Greenfield post-confirm cleanup proof passed: focused typed finding/rescue tests 17 passed, widened post-confirm suite 152 passed in 669.31s, Casebook/Registry/Radar/Atlas/plan/topology validators passed, and D-043 Atlas topology is fresh.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +3 more
-- **2026-06-26 · Implementation:** Greenfield post-confirm repair cleanup demoted untyped issue strings to blockers, wired rescue through structured Tribunal patch planning, patched SemanticModelIR before intent mirrors, refreshed Registry, and replaced stale D-043 Atlas topology.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py +4 more
-- **2026-06-26 · Implementation:** Greenfield installed variance exposed release-readiness proof-control and passive object-tail actor defects; source fix narrows semantic custody and passes focused regressions, two source CLI repros, and 162 widened tests.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
 
+- 2026-06-27: Tightened greenfield post-confirm repair custody so semantic PatchSet operations cannot synthesize first-path facts from metadata-only requests, profile-triggered component contracts use the semantic basis before profile fallback, gate-only expert-lens checks stay non-patchable, rendered-package findings carry exact artifact repair paths, mechanical artifact-draft cleanup mutates only the addressed leaf, and corrupted rendered Registry scope uses deterministic `projection_rerender` instead of semantic rescue or rendered-prose repair. Focused projection-rerender, quality-lens, and exact-path tests passed; the widened post-confirm repair pack passed; and a fresh installed consumer-lane matrix passed five unrelated domains in 18.383-19.745 seconds with governed writes, zero quality issues, all expert lenses passing, and temp cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
 - 2026-05-03: Replaced the v0.1.13 in-code project-taxonomy path with a host-reasoning evidence/schema contract because a small checked-in catalog cannot cover open-world user intent. The CLI now supplies repo evidence and guardrails; the host model authors the concrete proposal; Odylith validates and applies after confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Added `proposal_validation.py` so greenfield apply requires host-authored Mermaid topology per diagram and rejects missing or duplicated diagram source before any Radar, Registry, Atlas, release, or Compass write. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Registered `domain-intelligence` through `odylith component register` and linked it to B-142/D-043 as the first-class owner for universal greenfield proposal intelligence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
@@ -991,10 +992,25 @@ This section captures synchronized requirement and contract signals derived from
   dangling tails only when the PatchSet operation is explicitly
   `artifact_draft_mechanical_copy`, owned by `artifact_draft_cleaner`, carries
   the mechanical cleanup action, and has no replacement fact, decision-ledger
-  entry, or proof-obligation delta. Modal/base-form drift, mixed action
-  inflection, malformed ownership pairs, malformed component responsibility,
-  semantic drift, and projection ownership errors must route to
-  `SemanticModelIR` or `ArtifactPlanIR` repair, or fail closed.
+  entry, or proof-obligation delta. The operation must also carry an exact
+  supported artifact repair path; projection-wide preview-tree cleanup is not a
+  valid repair authority. Modal/base-form drift, mixed action inflection,
+  malformed ownership pairs, malformed component responsibility, semantic
+  drift, and projection ownership errors must route to `SemanticModelIR`,
+  `ArtifactPlanIR`, deterministic `projection_rerender`, or fail closed.
+- Rendered package scope drift is a projection custody failure. If the
+  rendered Registry, Radar, Atlas, project-brief, or next-step package no
+  longer matches the accepted semantic/artifact plan but the proposal facts are
+  otherwise valid, the post-confirm engine may schedule deterministic scoped
+  prewrite rerender through `projection_rerender`. The engine must not turn
+  that finding into a host semantic patch or artifact-draft cleanup. Direct
+  engine callers that omit rerender custody must fail with an explicit
+  `missing_projection_rerender_callback` blocker.
+- Registry component contract profile selection must never bypass the semantic
+  contract basis. Profile-specific renderers may consume or fallback after
+  `derive_component_semantic_contract`, but labels containing words such as
+  packet, document, status, timeline, or history must not force template
+  language when semantic fields are available.
 - Confirmed greenfield semantic custody must distinguish product-result noun
   phrases from proof-control text before final gates run. Phrases such as
   `release readiness for ...` can be valid first-path result events, while
@@ -1043,6 +1059,9 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/unit/runtime/test_greenfield_component_spec_quality.py`
 - `tests/unit/runtime/test_tribunal_lens.py`
 - `tests/unit/runtime/test_greenfield_quality_lens_repair.py`
+- `tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py`
+- `tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py`
+- `tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py`
 - `tests/unit/runtime/test_greenfield_host_routing.py`
 - `tests/unit/runtime/test_greenfield_intelligence_schema.py`
 - `tests/unit/runtime/test_greenfield_atlas_contract.py`

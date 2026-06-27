@@ -14,7 +14,13 @@ from odylith.runtime.common.value_coercion import normalize_token
 POST_CONFIRM_REVIEW_REPORT_VERSION = "odylith.greenfield.post_confirm.review_report.v1"
 
 _SEVERITIES = {"critical", "high", "medium", "low"}
-_REPAIRABILITIES = {"unrepairable", "semantic_patch", "plan_patch", "safe_package_repair"}
+_REPAIRABILITIES = {
+    "unrepairable",
+    "semantic_patch",
+    "plan_patch",
+    "safe_package_repair",
+    "projection_rerender",
+}
 
 
 @dataclass(frozen=True)

@@ -34,7 +34,8 @@ flowchart LR
       semantic_apply["SemanticModelIR patch executor<br/>operation-kind targets,<br/>exact paths, scoped posture"]
       plan_apply["ArtifactPlanIR patch executor<br/>proposal-target reroute,<br/>projection facts only"]
       scope_ledger["Patch application ledger<br/>explicit affected projections,<br/>full-prewrite posture"]
-      copy_repair["Metadata-gated draft cleanup<br/>artifact_draft_mechanical_copy only<br/>duplicate words, dangling tails"]
+      projection_rerender["Projection rerender finding<br/>corrupted rendered scope only<br/>no host semantic patch"]
+      copy_repair["Exact-path draft cleanup<br/>artifact_draft_mechanical_copy only<br/>one artifact leaf, duplicate/tail cleanup"]
       rerender["Scoped prewrite rerender<br/>named package previews,<br/>same gates, no lowered bar"]
     end
 
@@ -51,6 +52,7 @@ flowchart LR
     draft_set --> validators --> expert_lenses --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log
+    final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> patchset --> rescue_budget
     rescue_budget -- "yes" --> tribunal_planner --> provider_adapter --> strict_schema --> custody_check
     custody_check --> semantic_apply
@@ -72,7 +74,7 @@ flowchart LR
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirm,confirmed_ir intent;
     class apply_input,compiler,semantic_ir,artifact_plan,projection_contract,projections,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
-    class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,copy_repair,rerender rescue;
+    class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
     class writes,rollback,blockers,proof_log write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155

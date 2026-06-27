@@ -2,8 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
+
+import pytest
 
 from odylith.runtime.artifact_quality.greenfield_quality_lenses import build_greenfield_quality_lens_report
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import package_review_findings
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import (
     QUALITY_LENS_GATE_ONLY_CHECKS,
 )
@@ -104,11 +109,55 @@ def test_quality_lens_report_emits_typed_tribunal_repair_targets() -> None:
     assert architect_checks["component_topology"]["surface"] == "registry"
     assert architect_checks["component_topology"]["owner"] == "artifact_plan_projector"
     assert architect_checks["component_topology"]["repairability"] == "plan_patch"
+    assert all_checks["component_specs"]["owner"] == "prewrite_gate"
+    assert all_checks["component_specs"]["repairability"] == "unrepairable"
+    assert all_checks["validation_evidence"]["owner"] == "prewrite_gate"
+    assert all_checks["validation_evidence"]["repairability"] == "unrepairable"
+    assert all_checks["prewrite_safety"]["owner"] == "prewrite_gate"
+    assert all_checks["prewrite_safety"]["repairability"] == "unrepairable"
     assert {
         name: check["owner"]
         for name, check in all_checks.items()
         if name in QUALITY_LENS_REPAIR_OWNER_BY_CHECK
     } == QUALITY_LENS_REPAIR_OWNER_BY_CHECK
+
+
+def test_gate_only_quality_lens_check_stays_non_patchable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proposal: dict[str, Any] = {"intent": {"title": "Gate Only Lens"}}
+    package = GreenfieldCompletionPackage(proposal=proposal, release_selector="0.0.1")
+
+    monkeypatch.setattr(
+        "odylith.runtime.domain_intelligence.greenfield_post_confirm_findings.build_greenfield_quality_lens_report",
+        lambda _package: {
+            "lenses": {
+                "engineer": {
+                    "checks": [
+                        {
+                            "name": "validation_evidence",
+                            "status": "failed",
+                            "issue": "quality lens engineer missing passed validation evidence",
+                            "target_path": "prewrite_package.validation",
+                            "semantic_node_id": "ArtifactDraftSet.validation",
+                            "repairability": "plan_patch",
+                            "owner": "prewrite_gate",
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    finding = next(
+        finding
+        for finding in package_review_findings(package, package_issues=())
+        if finding.code == "quality_lens_gap"
+    )
+
+    assert finding.owner == "prewrite_gate"
+    assert finding.target_path == "prewrite_package.validation"
+    assert finding.repairability == "unrepairable"
 
 
 def test_quality_lens_repair_contract_has_no_proposal_mutation_engine() -> None:

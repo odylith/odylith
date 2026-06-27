@@ -406,11 +406,11 @@ def _post_confirm_contract_findings(
             _rendered_spec_alignment_issues(proposal, rendered_specs),
             code="component_contract_quality",
             surface="registry",
-            target_path="rendered_component_specs",
+            target_path="prewrite_package.rendered_component_specs",
             projection_id="registry",
             semantic_node_id="ArtifactPlanIR.registry",
             severity="medium",
-            repairability="plan_patch",
+            repairability="projection_rerender",
             owner="registry_renderer",
             source="rendered_spec_alignment",
         )
@@ -526,13 +526,6 @@ def _quality_lens_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
                 continue
             check_name = clean_text(check.get("name"))
             repair_owner = quality_lens_repair_owner(check_name)
-            fallback_repairability = (
-                "plan_patch"
-                if repair_owner in {"artifact_plan_projector", "prewrite_gate"}
-                else "semantic_patch"
-                if repair_owner == "semantic_model_compiler"
-                else "unrepairable"
-            )
             fallback_target = (
                 f"quality_lenses.{lens_name}.{check_name}" if check_name else f"quality_lenses.{lens_name}"
             )
@@ -545,13 +538,26 @@ def _quality_lens_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
                     projection_id=clean_text(check.get("projection_id")) or "review_report",
                     semantic_node_id=clean_text(check.get("semantic_node_id")) or "ReviewReport.quality_lenses",
                     severity=clean_text(check.get("severity")) or "high",
-                    repairability=fallback_repairability,
+                    repairability=_quality_lens_repairability(check, repair_owner=repair_owner),
                     owner=repair_owner or "quality_lens_contract",
                     source="quality_lens",
                     lens=clean_text(check.get("lens")) or str(lens_name),
                 )
             )
     return dedupe_review_findings(findings)
+
+
+def _quality_lens_repairability(check: Mapping[str, Any], *, repair_owner: str) -> str:
+    if not repair_owner or repair_owner == "prewrite_gate":
+        return "unrepairable"
+    declared = clean_text(check.get("repairability"))
+    if declared in {"semantic_patch", "plan_patch"}:
+        return declared
+    if repair_owner == "artifact_plan_projector":
+        return "plan_patch"
+    if repair_owner == "semantic_model_compiler":
+        return "semantic_patch"
+    return "unrepairable"
 
 
 __all__ = ["completion_review_findings", "package_review_findings"]

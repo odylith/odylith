@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 152,
-    "mapped_workstream_evidence_count": 137,
+    "explicit_event_count": 158,
+    "mapped_workstream_evidence_count": 143,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 146,
+    "spec_history_event_count": 148,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 153
+    "timeline_event_count": 159
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -19,25 +19,224 @@
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 646,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Post-split greenfield post-confirm repair pack passed 185 tests in 77.48s, preserving repair custody coverage after test-owner decomposition.",
+      "ts_iso": "2026-06-27T03:45:33-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 645,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm test ownership split kept the engine test owner under the 1500-line ceiling while patch-payload, package-repair, projection-rerender, and engine tests passed 66 tests in 29.12s.",
+      "ts_iso": "2026-06-27T03:41:29-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_review.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_review.py"
       ],
       "confidence": "high",
-      "event_index": 640,
+      "event_index": 647,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py +4 more",
-      "ts_iso": "2026-06-27T00:56:07-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_contract.py +6 more",
+      "ts_iso": "2026-06-27T03:41:18-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 644,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield exact-path/projection custody passed installed consumer-lane matrix from temporary local release in 18.383-19.745s across five domains with governed writes, zero quality issues, all expert lenses passing, and temp cleanup.",
+      "ts_iso": "2026-06-27T03:32:42-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 643,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm repair custody now separates semantic patch, artifact-plan patch, projection rerender, and exact-path mechanical draft cleanup; focused and widened post-confirm tests are green.",
+      "ts_iso": "2026-06-27T03:20:10-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 642,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Installed local-release greenfield matrix passed five consumer-lane domains in 18.489-20.286 seconds with zero quality issues, governed writes, all expert lenses passing, and temp cleanup verified.",
+      "ts_iso": "2026-06-27T02:01:41-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py"
+      ],
+      "confidence": "high",
+      "event_index": 641,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm artifact-draft repair is now metadata-gated mechanical-only; semantic grammar defects route to typed plan repair or fail closed.",
+      "ts_iso": "2026-06-27T01:49:16-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

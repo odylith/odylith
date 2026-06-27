@@ -111,7 +111,7 @@ _CHECK_TARGETS = {
         "surface": "registry",
         "target_path": "prewrite_package.registry.specs",
         "semantic_node_id": "ArtifactDraftSet.registry",
-        "repairability": "plan_patch",
+        "repairability": "unrepairable",
         "owner": "prewrite_gate",
     },
     "implementation_readiness": {
@@ -127,7 +127,7 @@ _CHECK_TARGETS = {
         "surface": "engineer",
         "target_path": "prewrite_package.validation",
         "semantic_node_id": "ArtifactDraftSet.validation",
-        "repairability": "plan_patch",
+        "repairability": "unrepairable",
         "owner": "prewrite_gate",
     },
     "prewrite_safety": {
@@ -135,7 +135,7 @@ _CHECK_TARGETS = {
         "surface": "engineer",
         "target_path": "prewrite_package.program",
         "semantic_node_id": "ArtifactDraftSet.program",
-        "repairability": "plan_patch",
+        "repairability": "unrepairable",
         "owner": "prewrite_gate",
     },
     "proof_boundary": {
