@@ -937,8 +937,12 @@ This section captures synchronized requirement and contract signals derived from
 - Rescue-tier repair must treat Tribunal as the typed adjudication and patch
   planning boundary. Greenfield may adapt its `ReviewReport` and `PatchSet`
   request into a Tribunal structured-reasoning dossier, but it must accept only
-  schema-valid semantic or artifact-plan replacement facts with decision-ledger
-  and proof-obligation metadata. It must not ask the provider to rewrite
+  schema-valid semantic or artifact-plan replacement facts with closed-schema
+  decision-ledger and proof-obligation metadata. Codex CLI rescue calls must not
+  inherit an unsafe blank model from ignored user config; the reasoning adapter
+  supplies an explicit structured-repair model unless config names one. Provider
+  replacement facts arrive as a typed envelope and are materialized only after
+  Tribunal custody validation. Greenfield must not ask the provider to rewrite
   rendered Radar, Registry, Atlas, project-brief, release, Compass, or next-step
   prose.
 - Confirmed greenfield semantic custody must distinguish product-result noun
@@ -992,6 +996,8 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/unit/runtime/test_greenfield_host_routing.py`
 - `tests/unit/runtime/test_greenfield_intelligence_schema.py`
 - `tests/unit/runtime/test_greenfield_atlas_contract.py`
+- `tests/unit/runtime/test_tribunal_patch_planner.py`
+- `tests/unit/runtime/test_odylith_reasoning.py`
 - `tests/unit/runtime/test_tribunal_engine.py`
 - `tests/unit/test_cli.py`
 - `tests/unit/runtime/test_component_authoring.py`

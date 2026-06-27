@@ -81,11 +81,12 @@ _LEGACY_CODEX_MODEL_ALIASES: frozenset[str] = frozenset(
         "codex spark 5.3",
     }
 )
+_CODEX_CLI_STRUCTURED_DEFAULT_MODEL = "gpt-5.4"
 _CHEAP_STRUCTURED_CODEX_MODEL = "gpt-5.3-codex-spark"
 _CHEAP_STRUCTURED_CODEX_MODEL_LADDER: tuple[str, ...] = (
     "gpt-5.3-codex-spark",
-    "gpt-5.3-codex",
     "gpt-5.4-mini",
+    "gpt-5.4",
 )
 _CHEAP_STRUCTURED_CLAUDE_MODEL_LADDER: tuple[str, ...] = (
     "haiku",
@@ -314,7 +315,7 @@ def _normalize_local_provider_model(provider: str, value: Any) -> str:
     token = _normalize_string(value)
     normalized_provider = _normalize_provider(provider)
     if normalized_provider == "codex-cli" and token.strip().lower() in _LEGACY_CODEX_MODEL_ALIASES:
-        return ""
+        return _CHEAP_STRUCTURED_CODEX_MODEL
     return token
 
 
@@ -861,7 +862,7 @@ class CodexCliReasoningProvider(_ProviderRequestStateMixin):
     ) -> None:
         self._repo_root = Path(repo_root).resolve()
         self._codex_bin = str(codex_bin or "").strip() or "codex"
-        self._model = str(model or "").strip()
+        self._model = str(model or "").strip() or _CODEX_CLI_STRUCTURED_DEFAULT_MODEL
         self._timeout_seconds = float(timeout_seconds)
         self._reasoning_effort = str(reasoning_effort or "").strip().lower() or "high"
         self._initialize_request_state()
@@ -901,6 +902,7 @@ class CodexCliReasoningProvider(_ProviderRequestStateMixin):
                 "read-only",
                 "--skip-git-repo-check",
                 "--ephemeral",
+                "--ignore-user-config",
                 "--color",
                 "never",
                 "-c",

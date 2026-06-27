@@ -450,7 +450,7 @@ def test_reasoning_config_from_repo_local_file(tmp_path: Path) -> None:
     config = odylith_reasoning.reasoning_config_from_env(repo_root=tmp_path, environ={})
 
     assert config.provider == "codex-cli"
-    assert config.model == ""
+    assert config.model == "gpt-5.3-codex-spark"
     assert config.scope_cap == 7
     assert config.timeout_seconds == 9.0
     assert config.codex_reasoning_effort == "medium"
@@ -696,7 +696,7 @@ def test_cheap_structured_reasoning_profile_advances_codex_ladder_after_budget_f
     )
 
     assert profile.provider == "codex-cli"
-    assert profile.model == "gpt-5.3-codex"
+    assert profile.model == "gpt-5.4-mini"
     assert profile.reasoning_effort == "medium"
 
 
@@ -709,7 +709,7 @@ def test_cheap_structured_reasoning_failure_can_advance_until_last_rung() -> Non
     )
     assert not odylith_reasoning.cheap_structured_reasoning_failure_can_advance(
         provider="codex-cli",
-        previous_model="gpt-5.4-mini",
+        previous_model="gpt-5.4",
         failure_code="credits_exhausted",
         failure_detail="Switch to another model now.",
     )
@@ -733,7 +733,7 @@ def test_cheap_structured_reasoning_profile_respects_advanced_codex_model(
         odylith_reasoning.ReasoningConfig(
             mode="auto",
             provider="codex-cli",
-            model="gpt-5.3-codex",
+            model="gpt-5.4",
             base_url="",
             api_key="",
             scope_cap=5,
@@ -745,7 +745,7 @@ def test_cheap_structured_reasoning_profile_respects_advanced_codex_model(
     )
 
     assert profile.provider == "codex-cli"
-    assert profile.model == "gpt-5.3-codex"
+    assert profile.model == "gpt-5.4"
     assert profile.reasoning_effort == "medium"
 
 
@@ -907,7 +907,7 @@ def test_persisted_reasoning_config_payload_resolves_codex_cli_path(
     )
 
     assert payload["codex_bin"] == str(codex_bin.resolve())
-    assert payload["model"] == ""
+    assert payload["model"] == "gpt-5.3-codex-spark"
 
 
 def test_provider_from_config_requires_supported_auto_provider() -> None:
@@ -995,7 +995,7 @@ def test_provider_from_config_supports_codex_cli(monkeypatch: pytest.MonkeyPatch
     assert isinstance(provider, odylith_reasoning.CodexCliReasoningProvider)
 
 
-def test_provider_from_config_strips_legacy_codex_model_alias(
+def test_provider_from_config_maps_legacy_codex_model_alias(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -1025,7 +1025,7 @@ def test_provider_from_config_strips_legacy_codex_model_alias(
     )
 
     assert isinstance(provider, odylith_reasoning.CodexCliReasoningProvider)
-    assert provider._model == ""
+    assert provider._model == "gpt-5.3-codex-spark"
 
 
 def test_provider_from_config_supports_claude_cli(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -1498,6 +1498,7 @@ def test_codex_cli_provider_generate_finding_parses_schema_output(
 
     def _fake_run(command, **kwargs):  # noqa: ANN001
         assert '-c' in command
+        assert "--ignore-user-config" in command
         assert 'model_reasoning_effort="high"' in command
         output_path = Path(command[command.index("--output-last-message") + 1])
         schema_path = Path(command[command.index("--output-schema") + 1])
@@ -1555,6 +1556,7 @@ def test_codex_cli_provider_generate_structured_writes_custom_schema(
         output_path = Path(command[command.index("--output-last-message") + 1])
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         assert schema["required"] == ["ok"]
+        assert "--ignore-user-config" in command
         assert 'model_reasoning_effort="medium"' in command
         assert command[command.index("--model") + 1] == "gpt-5.3-codex-spark"
         assert kwargs["timeout"] == 17.0
@@ -1581,6 +1583,47 @@ def test_codex_cli_provider_generate_structured_writes_custom_schema(
     )
 
     assert result == {"ok": True}
+
+
+def test_codex_cli_provider_empty_model_uses_portable_default(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    provider = odylith_reasoning.CodexCliReasoningProvider(
+        repo_root=tmp_path,
+        codex_bin="codex",
+        model="",
+        timeout_seconds=2.0,
+        reasoning_effort="high",
+    )
+    monkeypatch.setattr(odylith_reasoning.shutil, "which", lambda token: "/usr/bin/codex" if token == "codex" else None)
+
+    def _fake_run(command, **kwargs):  # noqa: ANN001
+        output_path = Path(command[command.index("--output-last-message") + 1])
+        assert "--ignore-user-config" in command
+        assert command[command.index("--model") + 1] == "gpt-5.4"
+        assert kwargs["input"]
+        output_path.write_text(json.dumps({"ok": True}), encoding="utf-8")
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(odylith_reasoning.subprocess, "run", _fake_run)
+
+    result = provider.generate_structured(
+        request=odylith_reasoning.StructuredReasoningRequest(
+            system_prompt="custom prompt",
+            schema_name="compass_brief",
+            output_schema={
+                "type": "object",
+                "required": ["ok"],
+                "additionalProperties": False,
+                "properties": {"ok": {"type": "boolean"}},
+            },
+            prompt_payload={"scope": "B-101"},
+        )
+    )
+
+    assert result == {"ok": True}
+    assert provider.last_request_model == "gpt-5.4"
 
 
 def test_codex_cli_provider_generate_structured_falls_back_to_stdout_when_output_file_is_missing(

@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 147,
-    "mapped_workstream_evidence_count": 132,
+    "explicit_event_count": 148,
+    "mapped_workstream_evidence_count": 133,
     "recent_path_match_count": 1,
     "spec_history_event_count": 140,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 148
+    "timeline_event_count": 149
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -18,6 +18,59 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/reasoning/odylith_reasoning.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
+      ],
+      "confidence": "high",
+      "event_index": 631,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield rescue structured-provider proof hardened Codex model selection and Tribunal strict patch-plan schemas; focused reasoning/planner tests passed and live Codex gpt-5.4 patch planning returned a validated operation.",
+      "ts_iso": "2026-06-26T21:17:10-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 632,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-26T21:16:24-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -47,27 +100,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py"
-      ],
-      "confidence": "high",
-      "event_index": 631,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py +4 more",
-      "ts_iso": "2026-06-26T20:52:16-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [

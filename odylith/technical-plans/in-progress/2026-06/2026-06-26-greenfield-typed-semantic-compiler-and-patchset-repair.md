@@ -482,6 +482,18 @@ vocabulary, or degraded packages.
       into existing PatchSet operations. Focused planner and rescue seam tests
       cover custody-field preservation, invented-target rejection,
       standard-tier no-op behavior, and rescue-tier planner integration.
+- [x] Live structured-patch provider proof: the Codex CLI reasoning adapter now
+      ignores unsafe user config, supplies an explicit `gpt-5.4` model for
+      general structured repair when config is blank, maps the legacy Spark
+      alias to the live CLI token, and removes the unsupported `gpt-5.3-codex`
+      rung from automatic cheap structured fallback. Tribunal patch planning
+      now exposes a strict structured-output schema for decision ledger,
+      proof-obligation delta, and replacement facts, with a typed replacement
+      envelope materialized back into caller-owned semantic or artifact-plan
+      facts after custody validation. Focused reasoning/planner tests passed
+      57 tests in 0.36s, compile proof passed, and a real Codex CLI `gpt-5.4`
+      planner call returned one validated `project_outcome` patch operation in
+      24.895s.
 - [x] IR-first semantic patch proof: `greenfield_semantic_patch_executor.py`
       now records applied `semantic_model.*` fields and leaves
       `semantic_model` alive while mirroring accepted-intent compatibility

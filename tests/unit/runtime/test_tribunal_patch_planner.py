@@ -100,6 +100,49 @@ def test_structured_patch_plan_preserves_request_custody_fields() -> None:
     assert not patch_plan["rejections"]
 
 
+def test_structured_patch_plan_materializes_strict_replacement_fact_envelope() -> None:
+    patch_plan = validate_structured_patch_plan(
+        {
+            "version": TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "planned",
+            "decision_summary": "Repair the project outcome semantic fact.",
+            "operations": [
+                _valid_plan_operation(
+                    target_path="project_brief.project_outcome",
+                    semantic_node_id="project_outcome",
+                    replacement_fact={
+                        "value_kind": "text",
+                        "text_value": (
+                            "Field coordinators capture site evidence, route review, "
+                            "and see readiness proof before work continues."
+                        ),
+                        "list_values": [],
+                        "mapping_entries": [],
+                    },
+                )
+            ],
+        },
+        patchset_request={
+            **_patchset_request(),
+            "operations": [
+                {
+                    **_patchset_request()["operations"][0],
+                    "target_path": "project_brief.project_outcome",
+                    "semantic_node_id": "project_outcome",
+                }
+            ],
+        },
+    )
+
+    assert patch_plan["status"] == "planned"
+    assert patch_plan["operations"][0]["replacement_fact"] == {
+        "project_outcome": (
+            "Field coordinators capture site evidence, route review, "
+            "and see readiness proof before work continues."
+        )
+    }
+
+
 def test_structured_patch_plan_rejects_invented_or_moved_targets() -> None:
     patch_plan = validate_structured_patch_plan(
         {
@@ -152,6 +195,27 @@ def test_plan_structured_patch_uses_schema_constrained_provider_request() -> Non
     assert provider.request.timeout_seconds == 12.0
 
 
+def test_plan_structured_patch_schema_closes_nested_object_fields() -> None:
+    provider = _FakeProvider(
+        {
+            "version": TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "planned",
+            "decision_summary": "Repair the first path semantic fact.",
+            "operations": [_valid_plan_operation()],
+        }
+    )
+
+    plan_structured_patch(
+        provider=provider,
+        patchset_request=_patchset_request(),
+        review_report={"status": "failed"},
+        evidence={"accepted_intent": {"title": "Accepted Project"}},
+    )
+
+    assert provider.request is not None
+    _assert_object_schemas_are_closed(provider.request.output_schema)
+
+
 def test_merge_patch_plan_only_fills_planner_owned_fields() -> None:
     patch_plan = validate_structured_patch_plan(
         {
@@ -171,3 +235,14 @@ def test_merge_patch_plan_only_fills_planner_owned_fields() -> None:
     assert operation["replacement_fact"]["visible_result"] == "accepted result is shown and saved"
     assert operation["decision_ledger_entry"]["chosen_interpretation"].startswith("The first path")
     assert merged["tribunal_patch_plan"]["status"] == "planned"
+
+
+def _assert_object_schemas_are_closed(schema: Any) -> None:
+    if isinstance(schema, dict):
+        if schema.get("type") == "object":
+            assert schema.get("additionalProperties") is False
+        for value in schema.values():
+            _assert_object_schemas_are_closed(value)
+    elif isinstance(schema, list):
+        for item in schema:
+            _assert_object_schemas_are_closed(item)

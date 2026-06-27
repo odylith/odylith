@@ -20,6 +20,48 @@ from odylith.runtime.reasoning import odylith_reasoning
 TRIBUNAL_PATCH_PLAN_VERSION = "odylith.tribunal.structured_patch_plan.v1"
 
 _PATCHABLE_LAYERS = frozenset({"semantic_model", "artifact_plan"})
+_REPLACEMENT_FACT_ENTRY_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["key", "value"],
+    "properties": {
+        "key": {"type": "string"},
+        "value": {"type": "string"},
+    },
+}
+_REPLACEMENT_FACT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["value_kind", "text_value", "list_values", "mapping_entries"],
+    "properties": {
+        "value_kind": {"type": "string", "enum": ["text", "list", "mapping"]},
+        "text_value": {"type": "string"},
+        "list_values": {"type": "array", "items": {"type": "string"}},
+        "mapping_entries": {"type": "array", "items": _REPLACEMENT_FACT_ENTRY_SCHEMA},
+    },
+}
+_DECISION_LEDGER_ENTRY_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["chosen_interpretation", "rationale", "rejected_interpretations", "evidence_ids"],
+    "properties": {
+        "chosen_interpretation": {"type": "string"},
+        "rationale": {"type": "string"},
+        "rejected_interpretations": {"type": "array", "items": {"type": "string"}},
+        "evidence_ids": {"type": "array", "items": {"type": "string"}},
+    },
+}
+_PROOF_OBLIGATION_DELTA_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["summary", "added_obligations", "removed_obligations", "unchanged_obligations"],
+    "properties": {
+        "summary": {"type": "string"},
+        "added_obligations": {"type": "array", "items": {"type": "string"}},
+        "removed_obligations": {"type": "array", "items": {"type": "string"}},
+        "unchanged_obligations": {"type": "array", "items": {"type": "string"}},
+    },
+}
 _PATCH_PLAN_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
@@ -49,9 +91,9 @@ _PATCH_PLAN_SCHEMA: dict[str, Any] = {
                     "target_layer": {"type": "string"},
                     "target_path": {"type": "string"},
                     "semantic_node_id": {"type": "string"},
-                    "replacement_fact": {},
-                    "decision_ledger_entry": {"type": "object"},
-                    "proof_obligation_delta": {"type": "object"},
+                    "replacement_fact": _REPLACEMENT_FACT_SCHEMA,
+                    "decision_ledger_entry": _DECISION_LEDGER_ENTRY_SCHEMA,
+                    "proof_obligation_delta": _PROOF_OBLIGATION_DELTA_SCHEMA,
                     "rejected_interpretation": {"type": "string"},
                     "confidence": {"type": "number", "minimum": 0, "maximum": 1},
                 },
@@ -100,8 +142,12 @@ def plan_structured_patch(
             "instructions": [
                 "Preserve operation_id, target_layer, target_path, and semantic_node_id from the request.",
                 "Fill replacement_fact with the smallest semantic or artifact-plan fact that fixes the finding.",
-                "Use decision_ledger_entry to record the chosen interpretation and why rejected interpretations were rejected.",
-                "Use proof_obligation_delta only for proof obligations that change because of the patch.",
+                "Use replacement_fact.value_kind=text for one text fact, list for a list of text facts, or mapping for named field facts.",
+                "For mapping replacement facts, use keys already implied by the target path, semantic node, or requested action.",
+                "Use decision_ledger_entry.chosen_interpretation for the selected meaning.",
+                "Use decision_ledger_entry.rationale for the evidence-backed reason.",
+                "Use decision_ledger_entry.rejected_interpretations for unsafe meanings rejected during repair.",
+                "Use proof_obligation_delta only for proof obligations that change because of the patch; otherwise keep arrays empty and summarize no change.",
                 "Return no_safe_patch when the evidence does not support a bounded repair.",
             ],
         },
@@ -208,7 +254,7 @@ def _validated_operation(raw_operation: Mapping[str, Any], requested: Mapping[st
         return {}, "target_path does not match the PatchSet request"
     if normalize_string(raw_operation.get("semantic_node_id")) != normalize_string(requested.get("semantic_node_id")):
         return {}, "semantic_node_id does not match the PatchSet request"
-    replacement = raw_operation.get("replacement_fact")
+    replacement = _materialize_replacement_fact(raw_operation.get("replacement_fact"), requested)
     if _empty_patch_value(replacement):
         return {}, "replacement_fact is empty"
     confidence = _confidence(raw_operation.get("confidence"))
@@ -254,6 +300,57 @@ def _raw_plan_operations(plan: Mapping[str, Any]) -> list[Mapping[str, Any]]:
 
 def _projection_rows(value: Any) -> tuple[str, ...]:
     return tuple(normalize_string_list(value, limit=16))
+
+
+def _materialize_replacement_fact(value: Any, requested: Mapping[str, Any]) -> Any:
+    if not _is_replacement_fact_envelope(value):
+        return value
+    assert isinstance(value, Mapping)
+    value_kind = normalize_token(value.get("value_kind"))
+    if value_kind == "mapping":
+        entries: dict[str, str] = {}
+        raw_entries = value.get("mapping_entries")
+        for raw_entry in raw_entries if isinstance(raw_entries, list) else []:
+            if not isinstance(raw_entry, Mapping):
+                continue
+            key = normalize_string(raw_entry.get("key"))
+            item_value = normalize_string(raw_entry.get("value"))
+            if key and item_value:
+                entries[key] = item_value
+        return entries
+    if value_kind == "list":
+        items = normalize_string_list(value.get("list_values"))
+        if not items:
+            return []
+        key = _replacement_fact_leaf_key(requested)
+        return {key: items} if key else items
+    text_value = normalize_string(value.get("text_value"))
+    if not text_value:
+        return ""
+    key = _replacement_fact_leaf_key(requested)
+    return {key: text_value} if key else text_value
+
+
+def _is_replacement_fact_envelope(value: Any) -> bool:
+    if not isinstance(value, Mapping):
+        return False
+    return {
+        "value_kind",
+        "text_value",
+        "list_values",
+        "mapping_entries",
+    }.issubset(set(value.keys()))
+
+
+def _replacement_fact_leaf_key(requested: Mapping[str, Any]) -> str:
+    node_id = normalize_string(requested.get("semantic_node_id"))
+    if node_id.endswith("first_path_contract"):
+        return "first_path"
+    target_path = normalize_string(requested.get("target_path"))
+    for separator in (".", "/"):
+        if separator in target_path:
+            target_path = target_path.rsplit(separator, 1)[-1]
+    return normalize_token(target_path)
 
 
 def _mapping_or_empty(value: Any) -> dict[str, Any]:
