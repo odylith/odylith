@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 139,
-    "mapped_workstream_evidence_count": 124,
+    "explicit_event_count": 147,
+    "mapped_workstream_evidence_count": 132,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 135,
+    "spec_history_event_count": 140,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 140
+    "timeline_event_count": 148
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -19,24 +19,308 @@
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 630,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Typed ArtifactPlanIR projection contract checkpoint passed 60 focused tests, removed role-surface projection fallback, persisted apply-semantic provenance, refreshed D-043 Atlas, and synced domain-intelligence Registry forensics.",
+      "ts_iso": "2026-06-26T20:55:00-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py"
       ],
       "confidence": "high",
-      "event_index": 623,
+      "event_index": 631,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py +3 more",
-      "ts_iso": "2026-06-26T15:01:37-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py +4 more",
+      "ts_iso": "2026-06-26T20:52:16-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith-local-release-0.1.15-d42f127c"
+      ],
+      "confidence": "high",
+      "event_index": 629,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm installed matrix proof from local release dist odylith-local-release-0.1.15-d42f127c: five high-variance consumer-lane creates passed in 20.107-23.147s with zero final quality issues, five Radar records, three Registry records, six Atlas diagrams, 18 trace nodes, governed records written, and temp repos deleted before the next scenario.",
+      "ts_iso": "2026-06-26T20:14:53-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 628,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm cleanup proof passed: focused typed finding/rescue tests 17 passed, widened post-confirm suite 152 passed in 669.31s, Casebook/Registry/Radar/Atlas/plan/topology validators passed, and D-043 Atlas topology is fresh.",
+      "ts_iso": "2026-06-26T20:00:11-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
+      ],
+      "confidence": "high",
+      "event_index": 627,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm repair cleanup demoted untyped issue strings to blockers, wired rescue through structured Tribunal patch planning, patched SemanticModelIR before intent mirrors, refreshed Registry, and replaced stale D-043 Atlas topology.",
+      "ts_iso": "2026-06-26T19:43:22-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
+      ],
+      "confidence": "high",
+      "event_index": 626,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "b0713a0a local release dist passed release smoke, standard installed greenfield matrix, and six-case high-variance installed matrix with every create under 19s and all expert lenses green.",
+      "ts_iso": "2026-06-26T17:21:44-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 625,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield installed variance exposed release-readiness proof-control and passive object-tail actor defects; source fix narrows semantic custody and passes focused regressions, two source CLI repros, and 162 widened tests.",
+      "ts_iso": "2026-06-26T16:54:08-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 624,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Current-tree broad greenfield proof passed 299 tests in 474.86s after typed Tribunal lens custody and high-variance semantic recovery fixes; temp Odylith simulation dirs were deleted.",
+      "ts_iso": "2026-06-26T16:17:06-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
+        "src/odylith/runtime/reasoning/tribunal_lens.py"
+      ],
+      "confidence": "high",
+      "event_index": 623,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield high-variance repair now separates actor/action/object/state predicates, refuses untargeted artifact-plan row patches, and adds typed Tribunal lens custody; source-local six-case matrix passed under 16s with all expert lenses.",
+      "ts_iso": "2026-06-26T16:05:46-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

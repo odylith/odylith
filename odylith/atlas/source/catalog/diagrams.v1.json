@@ -4148,6 +4148,8 @@
       "source_svg": "odylith/atlas/source/domain-intelligence-greenfield-governance.svg",
       "source_png": "odylith/atlas/source/domain-intelligence-greenfield-governance.png",
       "change_watch_paths": [
+        "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
@@ -4162,12 +4164,16 @@
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
-      "summary": "Shows the current confirmed greenfield post-confirm architecture: accepted intent takes a deterministic provider-free standard path, only source-owned typed findings can drive bounded rescue, legacy raw issue strings fail closed, and governed records write only after the final manifest passes.",
-      "read_guide": "Start with Product Intent Confirmation and follow it through ConfirmedIntentIR into the deterministic SemanticModelIR and ArtifactPlanIR compiler path. Read the validation lane as the custody boundary: typed findings carry repair authority, while legacy raw strings become blockers. The rescue lane is optional and budgeted; a structured Tribunal planner may fill only replacement facts, custody validation rejects moved targets, and semantic or artifact-plan executors patch IR facts before rerendering the impacted projections through the same final gates.",
+      "summary": "Shows the current confirmed greenfield post-confirm architecture: accepted intent becomes a typed source-mapped semantic input, ArtifactPlanIR routing uses a shared projection-contract owner, only source-owned typed findings can drive bounded rescue, legacy raw issue strings fail closed, and governed records write only after the final manifest passes.",
+      "read_guide": "Start with Product Intent Confirmation and follow it through ConfirmedIntentIR into the typed apply-semantic input, deterministic SemanticModelIR compiler, and shared ArtifactPlanIR projection contract. Read the validation lane as the custody boundary: typed findings carry repair authority, while legacy raw strings become blockers. The rescue lane is optional and budgeted; a structured Tribunal planner may fill only replacement facts, custody validation rejects moved targets, and semantic or artifact-plan executors patch IR facts before rerendering impacted projections through the same final gates.",
       "components": [
         {
           "name": "Domain Intelligence",
-          "description": "Owns confirmed greenfield semantic compilation, artifact planning, source-typed review findings, IR-first patch execution, and fail-closed create orchestration."
+          "description": "Owns confirmed greenfield semantic compilation, source-mapped apply inputs, artifact planning, source-typed review findings, IR-first patch execution, and fail-closed create orchestration."
+        },
+        {
+          "name": "ArtifactPlanIR projection contract",
+          "description": "Owns sanctioned roots, projection aliases, immutable metadata fields, affected projection derivation, and draft repair projection normalization."
         },
         {
           "name": "Typed findings",
@@ -4214,6 +4220,8 @@
         "odylith/skills/odylith-greenfield-governance/SKILL.md"
       ],
       "related_code": [
+        "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
@@ -4224,21 +4232,23 @@
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
       ],
       "reviewed_watch_fingerprints": {
+        "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py": "c8603d643ca783f5636e8c7cae2a306db1989fd699aa3d3b7a6e91884334b699",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py": "67d0fd8492caf5bd0e424adf5c7b2c53e12868cf7e454bc98885dbc818a7ca15",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py": "0b281e4ecdbe4eaa4a80198974c4829710a0fbaa5da5aac68a66e111b6fc64ef",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py": "4b51d265d22ec378a9c9bc69fc1bf6b7a918481d145598d6f346d74d2c21afd3",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py": "d71e55c91afd55ad4c3c362a23667597342146887785f1c492dc7947ab035636",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py": "726be4e82a60bda7907a4e9aa4c9b59543b5086d93c98a8b6baedf660de44090",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py": "acf150cea38bc936b8779fdf688bd3b484466534520acb6a73933b642340a69c",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py": "6d87e8d3a7681a7e5aa7f02b182be6eb3438168be3d5705c70e7a15bcc748a34",
-        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py": "8dab3646b8a071c447a8a8e35cad1de1cdac7dd9b38e15965d7be4a3f2064bb9",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py": "5cef3256b2540eb2e7f8481a48208f9ea507e7cf0c0707ceefb3683b6ad183a5",
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "a3c447abc7d01f3a18ee4f55b99f6c3a4e0455e3602be5e50b99efd1115043ce",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "b129d0adde83c9fea6d538fe2f63cff5f6ece4b662c12c8069ce2a14a3a895ef",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "d3a0bb94ce36f1ca032316feb5775875848e69ffea0dcd550bf23700ed77219c",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "67bd8cbdee4d57b28e3fd0d02158b6c4343a43d9fdf9ba1c066a354b7bc3d18a",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "77f544f78e7303980835fb3cfa035909e5bd4e8072e7bf03efba07bfbe963b3e"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "a9a4bf84e9f05bf3b5646e45f60661cb72808f0877881fc2295f4f6d5ec2d924"
       },
-      "render_source_fingerprint": "487419366c83b486608650b7703f1c8a04c4acaa8dd495d9bef290bef11520c5"
+      "render_source_fingerprint": "53bb4542a790b7e676f3e7759121c5e99ec9fb868b6c1f036f13bd5385a6218f"
     },
     {
       "diagram_id": "D-044",

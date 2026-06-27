@@ -9,6 +9,7 @@ from typing import Any
 from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_affected_projections
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
 
 
@@ -121,54 +122,11 @@ def _target_layer(finding: GreenfieldReviewFinding) -> str:
 
 
 def _affected_projections(finding: GreenfieldReviewFinding) -> tuple[str, ...]:
-    projection = normalize_token(finding.projection_id)
-    if projection and projection not in {"review_report", "artifact_draft_set"}:
-        return (projection,)
-    path_projection = _projection_from_target_path(finding.target_path)
-    if path_projection:
-        return (path_projection,)
-    surface = normalize_token(finding.surface)
-    by_surface = {
-        "architect": ("atlas", "registry"),
-        "atlas": ("atlas",),
-        "domain_expert": ("project_brief", "radar", "atlas"),
-        "engineer": ("registry", "next_steps"),
-        "operator_next_steps": ("next_steps",),
-        "post_confirm_package": ("radar", "registry", "atlas", "project_brief", "next_steps"),
-        "product_manager": ("project_brief", "radar", "release"),
-        "project_brief": ("project_brief",),
-        "radar": ("radar",),
-        "registry": ("registry",),
-        "release": ("release",),
-    }
-    return by_surface.get(surface, ("project_brief",))
-
-
-def _projection_from_target_path(value: str) -> str:
-    token = normalize_token(value)
-    known = (
-        "accepted_project",
-        "atlas",
-        "backlog",
-        "compass",
-        "next_steps",
-        "project_brief",
-        "radar",
-        "registry",
-        "release",
-        "rendered_atlas_sources",
-        "rendered_component_specs",
+    return artifact_plan_affected_projections(
+        projection_id=finding.projection_id,
+        target_path=finding.target_path,
+        surface=finding.surface,
     )
-    for item in known:
-        if token == item or token.startswith(f"{item}_") or f"_{item}_" in token:
-            if item == "backlog":
-                return "radar"
-            if item == "rendered_atlas_sources":
-                return "atlas"
-            if item == "rendered_component_specs":
-                return "registry"
-            return item
-    return ""
 
 
 def _requested_action(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:

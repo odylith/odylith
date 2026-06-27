@@ -24,24 +24,24 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-26 · Implementation:** Greenfield post-confirm cleanup proof passed: focused typed finding/rescue tests 17 passed, widened post-confirm suite 152 passed in 669.31s, Casebook/Registry/Radar/Atlas/plan/topology validators passed, and D-043 Atlas topology is fresh.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +3 more
+- **2026-06-26 · Implementation:** Greenfield post-confirm repair cleanup demoted untyped issue strings to blockers, wired rescue through structured Tribunal patch planning, patched SemanticModelIR before intent mirrors, refreshed Registry, and replaced stale D-043 Atlas topology.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py +4 more
+- **2026-06-26 · Implementation:** Greenfield installed variance exposed release-readiness proof-control and passive object-tail actor defects; source fix narrows semantic custody and passes focused regressions, two source CLI repros, and 162 widened tests.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
+- **2026-06-26 · Implementation:** Greenfield high-variance repair now separates actor/action/object/state predicates, refuses untargeted artifact-plan row patches, and adds typed Tribunal lens custody; source-local six-case matrix passed under 16s with all expert lenses.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py, src/odylith/runtime/reasoning/tribunal_lens.py
 - **2026-06-26 · Implementation:** Greenfield source-local recovery now preserves explicit internal-system rows through completion and rejects actorless release steps as fake human actors.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py +1 more
 - **2026-06-26 · Implementation:** Greenfield post-confirm repair now executes artifact-plan PatchSet replacement facts through a bounded projection-fact executor with immutable metadata custody.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py +1 more
-- **2026-06-26 · Implementation:** Greenfield final checkpoint after shared release-scope helper extraction: affected confirmed-intent/CLI paths passed 69 tests in 161.14s, greenfield quality pack passed 160 tests in 50.09s, heavy post-confirm suite passed 93 tests in 283.07s, and ten fresh source-local simulations passed in 13.970-15.504s with standard-tier manifests, zero issues, expert lenses passing, governed records written, and temp repos deleted after every scenario.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
-- **2026-06-26 · Implementation:** Greenfield final checkpoint: prompt-source guidance-envelope recovery and proof-boundary release-limit preservation passed affected confirmed-intent/CLI paths (69 tests), greenfield quality pack (160 tests), heavy post-confirm suite (93 tests), and ten fresh source-local simulations in 13.617-14.499s with standard-tier manifests, zero issues, expert lenses passing, governed records written, and temp repos deleted after every scenario.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
-- **2026-06-26 · Implementation:** Greenfield post-confirm projection-owner and first-path semantic fixes passed a ten-domain standard-path matrix in 13.671-15.271s with zero manifest issues, all expert lenses passing, governed records written, and temp repos deleted after each run.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
-- **2026-06-26 · Implementation:** Greenfield post-confirm projection checkpoint: first-path semantic repair now applies through the PatchSet seam, visible-result outcome actions stay modal-safe, child Radar risk posture preserves governed risk semantics, four faithful high-variance simulations wrote records in 13.1-13.5s with zero semantic/proposal/package QA issues, and the widened runtime slice passed 168 tests.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py, src/odylith/runtime/domain_intelligence/greenfield_first_path_repair.py +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -185,6 +185,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-26: Wired the bounded host-reasoned rescue seam through general Tribunal structured patch planning. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_post_confirm_rescue_planner.py` calls `runtime/reasoning/tribunal_patch_planner.py` only in rescue/deep tiers when time remains; the provider can fill replacement facts, decision-ledger entries, proof-obligation deltas, rejected interpretations, and confidence for existing PatchSet operations, while Odylith rejects moved targets, invented operation IDs, and empty facts before semantic or artifact-plan executors run.
 - 2026-06-26: Moved semantic PatchSet application to IR-first custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_semantic_patch_executor.py` now patches `SemanticModelIR` nodes such as `first_path_contract.raw_path` and `domain_ontology.*` before mirroring accepted-intent compatibility fields, preserves `semantic_model` instead of deleting it for replay, and records `semantic_model.*` applied fields in the semantic patch ledger.
 - 2026-06-26: Proved the cleanup checkpoint through the packaged consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Local release dist `odylith-local-release-0.1.15-d42f127c` passed the installed greenfield post-confirm matrix across five unrelated scenarios in 20.107-23.147 seconds with zero final quality issues, five Radar records, three Registry records, six Atlas diagrams, 18 trace nodes, governed records written, and temp repos deleted before the next run.
+- 2026-06-26: Centralized the greenfield `ArtifactPlanIR` projection contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan.py` now owns sanctioned artifact-plan roots, projection aliases, immutable metadata fields, affected projection calculation, and artifact-draft repair projection normalization for PatchSet repair. `greenfield_artifact_plan_patch_executor.py`, `greenfield_post_confirm_patchset.py`, and `greenfield_post_confirm_repair.py` consume that shared contract instead of carrying private projection maps or role-surface guesses; role names such as product-manager or architect no longer imply affected projections without a typed projection ID or artifact path. `greenfield_apply_semantic.py` now builds and persists a typed apply-semantic input with source-path provenance, and routes first-path visible-result fallback through the semantic compiler rather than a local visibility regex.
 
 ## Contract
 
@@ -354,6 +355,19 @@ This section captures synchronized requirement and contract signals derived from
   target-layer sets, or source-name sets. Artifact-plan operations may update
   only sanctioned projection roots and must preserve structural metadata such
   as ids, slugs, schema versions, source paths, and timestamps.
+- `greenfield_artifact_plan.py` owns the shared `ArtifactPlanIR` projection
+  contract. It is the only Domain Intelligence owner for artifact-plan root
+  canonicalization, projection aliases, immutable artifact metadata policy,
+  affected-projection derivation, and artifact-draft repair projection
+  normalization. PatchSet emission, artifact-plan execution, and package repair
+  may call this owner, but they must not reintroduce private projection maps,
+  surface-name fallback tables, or renderer-specific routing rules.
+- `greenfield_apply_semantic.py` may bridge legacy proposal dictionaries into
+  semantic model construction, but that bridge must be typed and source-mapped.
+  It must produce a durable apply-semantic input shape with provenance for
+  accepted-intent fields, and first-path visible-result fallback must ask the
+  semantic compiler for high-confidence visible-result candidates instead of
+  owning local visibility regexes or outcome word lists.
 - Post-confirm package findings must be source typed before repair. Raw package
   issue strings are diagnostic blockers only; they must not be classified by
   message shape into semantic or plan repair. `greenfield_post_confirm_package_findings.py`

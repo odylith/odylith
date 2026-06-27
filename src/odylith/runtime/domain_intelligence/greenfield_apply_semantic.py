@@ -3,63 +3,163 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-import re
+from dataclasses import dataclass
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 
+APPLY_SEMANTIC_INPUT_VERSION = "odylith.greenfield.apply_semantic_input.v1"
+_VISIBLE_RESULT_CONFIDENCE_FLOOR = 0.9
+
+
+@dataclass(frozen=True)
+class GreenfieldApplySemanticInput:
+    """Source-owned inputs for compiling legacy proposal payloads into SemanticModelIR."""
+
+    schema_version: str
+    title: str
+    state_object: str
+    first_path: str
+    proof_boundary: str
+    components: tuple[Mapping[str, Any], ...]
+    human_actors: tuple[str, ...]
+    internal_systems: tuple[str, ...]
+    external_systems: tuple[str, ...]
+    non_goals: tuple[str, ...]
+    workstreams: tuple[Mapping[str, Any], ...]
+    source_paths: tuple[tuple[str, str], ...]
+
+
 def ensure_apply_semantic_model(proposal: dict[str, Any], *, refresh: bool = False) -> dict[str, Any]:
     """Compile legacy confirmed apply payloads into the post-confirm semantic model."""
 
-    if not refresh and isinstance(proposal.get("semantic_model"), Mapping):
+    existing_model = isinstance(proposal.get("semantic_model"), Mapping)
+    existing_input = _has_current_apply_semantic_input(proposal)
+    if not refresh and existing_model and existing_input:
         return proposal
-    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
-    brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
-    release_plan = proposal.get("release_plan") if isinstance(proposal.get("release_plan"), Mapping) else {}
-    backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
-    title = clean_text(intent.get("title")) or clean_text(proposal.get("title")) or "Greenfield Project"
-    state_object = clean_text(intent.get("state_object")) or clean_text(brief.get("state_object")) or f"{title} state"
-    first_path = _first_path_text(title=title, intent=intent, brief=brief, backlog_rows=backlog_rows)
-    proof_boundary = (
-        clean_text(intent.get("proof_boundary"))
-        or clean_text(brief.get("proof"))
-        or clean_text(release_plan.get("promotion_criteria"))
-        or " ".join(clean_text(value) for value in text_values(proposal.get("validation_strategy")) if clean_text(value))
-        or f"{title} proof links state, visible result, validation, and release evidence"
-    )
+    compiler_input = greenfield_apply_semantic_input(proposal)
+    proposal["apply_semantic_input"] = apply_semantic_input_mapping(compiler_input)
+    if not refresh and existing_model:
+        return proposal
     proposal["semantic_model"] = semantic_model_mapping(
         build_greenfield_semantic_model(
-            title=title,
-            state_object=state_object,
-            first_path=first_path,
-            proof_boundary=proof_boundary,
-            components=[row for row in proposal.get("components", []) if isinstance(row, Mapping)],
-            human_actors=text_values(intent.get("human_actors")),
-            internal_systems=text_values(intent.get("internal_systems")),
-            external_systems=text_values(intent.get("external_systems")),
-            non_goals=text_values(proposal.get("non_goals") or intent.get("non_goals")),
-            workstreams=backlog_rows,
+            title=compiler_input.title,
+            state_object=compiler_input.state_object,
+            first_path=compiler_input.first_path,
+            proof_boundary=compiler_input.proof_boundary,
+            components=compiler_input.components,
+            human_actors=compiler_input.human_actors,
+            internal_systems=compiler_input.internal_systems,
+            external_systems=compiler_input.external_systems,
+            non_goals=compiler_input.non_goals,
+            workstreams=compiler_input.workstreams,
         )
     )
     return proposal
 
 
-def _first_path_text(*, title: str, intent: Mapping[str, Any], brief: Mapping[str, Any], backlog_rows: list[Mapping[str, Any]]) -> str:
-    first_path = (
-        clean_text(intent.get("first_path"))
-        or clean_text(brief.get("first_path"))
-        or _first_nonempty_backlog_value(backlog_rows, "recommended_first_slice")
-        or _first_nonempty_backlog_value(backlog_rows, "product_view")
-        or clean_text(intent.get("summary"))
-        or f"{title} creates, preserves, and reviews the accepted first-path result"
+def apply_semantic_input_mapping(compiler_input: GreenfieldApplySemanticInput) -> dict[str, Any]:
+    """Serialize the source-mapped compiler input for downstream repair/audit."""
+
+    return {
+        "schema_version": compiler_input.schema_version,
+        "title": compiler_input.title,
+        "state_object": compiler_input.state_object,
+        "first_path": compiler_input.first_path,
+        "proof_boundary": compiler_input.proof_boundary,
+        "human_actors": list(compiler_input.human_actors),
+        "internal_systems": list(compiler_input.internal_systems),
+        "external_systems": list(compiler_input.external_systems),
+        "non_goals": list(compiler_input.non_goals),
+        "components": [dict(row) for row in compiler_input.components],
+        "workstreams": [dict(row) for row in compiler_input.workstreams],
+        "source_paths": dict(compiler_input.source_paths),
+    }
+
+
+def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldApplySemanticInput:
+    """Return the typed compiler input used to build the greenfield semantic model."""
+
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
+    release_plan = proposal.get("release_plan") if isinstance(proposal.get("release_plan"), Mapping) else {}
+    backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
+    title, title_source = _first_text_with_source(
+        ("intent.title", intent.get("title")),
+        ("proposal.title", proposal.get("title")),
+        fallback=("default.title", "Greenfield Project"),
     )
-    if not _VISIBLE_RESULT_RE.search(first_path):
+    state_object, state_source = _first_text_with_source(
+        ("intent.state_object", intent.get("state_object")),
+        ("project_brief.state_object", brief.get("state_object")),
+        fallback=("default.state_object", f"{title} state"),
+    )
+    proof_boundary, proof_source = _proof_boundary_text(
+        title=title,
+        intent=intent,
+        brief=brief,
+        release_plan=release_plan,
+        proposal=proposal,
+    )
+    first_path, first_path_source = _first_path_text(
+        title=title,
+        intent=intent,
+        brief=brief,
+        backlog_rows=backlog_rows,
+        proof_boundary=proof_boundary,
+    )
+    return GreenfieldApplySemanticInput(
+        schema_version=APPLY_SEMANTIC_INPUT_VERSION,
+        title=title,
+        state_object=state_object,
+        first_path=first_path,
+        proof_boundary=proof_boundary,
+        components=tuple(row for row in proposal.get("components", []) if isinstance(row, Mapping)),
+        human_actors=tuple(text_values(intent.get("human_actors"))),
+        internal_systems=tuple(text_values(intent.get("internal_systems"))),
+        external_systems=tuple(text_values(intent.get("external_systems"))),
+        non_goals=tuple(text_values(proposal.get("non_goals") or intent.get("non_goals"))),
+        workstreams=tuple(backlog_rows),
+        source_paths=(
+            ("title", title_source),
+            ("state_object", state_source),
+            ("first_path", first_path_source),
+            ("proof_boundary", proof_source),
+            ("components", "proposal.components"),
+            ("human_actors", "intent.human_actors"),
+            ("internal_systems", "intent.internal_systems"),
+            ("external_systems", "intent.external_systems"),
+            ("non_goals", "proposal.non_goals|intent.non_goals"),
+            ("workstreams", "proposal.backlog"),
+        ),
+    )
+
+
+def _first_path_text(
+    *,
+    title: str,
+    intent: Mapping[str, Any],
+    brief: Mapping[str, Any],
+    backlog_rows: list[Mapping[str, Any]],
+    proof_boundary: str,
+) -> tuple[str, str]:
+    first_path, source = _first_text_with_source(
+        ("intent.first_path", intent.get("first_path")),
+        ("project_brief.first_path", brief.get("first_path")),
+        ("backlog.recommended_first_slice", _first_nonempty_backlog_value(backlog_rows, "recommended_first_slice")),
+        ("backlog.product_view", _first_nonempty_backlog_value(backlog_rows, "product_view")),
+        ("intent.summary", intent.get("summary")),
+        fallback=("default.first_path", f"{title} creates, preserves, and reviews the accepted first-path result"),
+    )
+    if not _first_path_has_visible_result(first_path, proof_boundary=proof_boundary):
         first_path = f"{first_path.rstrip(' .,;:!?')}, then shows the accepted result for review."
-    return first_path
+        source = f"{source}+semantic_visible_result_fallback"
+    return first_path, source
 
 
 def _first_nonempty_backlog_value(rows: list[Mapping[str, Any]], key: str) -> str:
@@ -70,10 +170,60 @@ def _first_nonempty_backlog_value(rows: list[Mapping[str, Any]], key: str) -> st
     return ""
 
 
-_VISIBLE_RESULT_RE = re.compile(
-    r"\b(?:available|choose|chooses|compare|compares|find|finds|highlight|highlights|inspect|inspects|proof|prove|proves|ready|report|reports|save|saves|saved|see|sees|select|selects|show|shows|verified|view|views|viewable|review|reviews|receive|receives|publish|publishes|restored)\b",
-    re.IGNORECASE,
-)
+def _proof_boundary_text(
+    *,
+    title: str,
+    intent: Mapping[str, Any],
+    brief: Mapping[str, Any],
+    release_plan: Mapping[str, Any],
+    proposal: Mapping[str, Any],
+) -> tuple[str, str]:
+    validation_text = " ".join(
+        clean_text(value)
+        for value in text_values(proposal.get("validation_strategy"))
+        if clean_text(value)
+    )
+    return _first_text_with_source(
+        ("intent.proof_boundary", intent.get("proof_boundary")),
+        ("project_brief.proof", brief.get("proof")),
+        ("release_plan.promotion_criteria", release_plan.get("promotion_criteria")),
+        ("validation_strategy", validation_text),
+        fallback=(
+            "default.proof_boundary",
+            f"{title} proof links state, visible result, validation, and release evidence",
+        ),
+    )
 
 
-__all__ = ["ensure_apply_semantic_model"]
+def _first_text_with_source(
+    *candidates: tuple[str, Any],
+    fallback: tuple[str, str],
+) -> tuple[str, str]:
+    for source, value in candidates:
+        text = clean_text(value)
+        if text:
+            return text, source
+    return fallback[1], fallback[0]
+
+
+def _first_path_has_visible_result(value: str, *, proof_boundary: str) -> bool:
+    candidate = select_visible_result_candidate(value, proof_boundary=proof_boundary)
+    return candidate.source_path.startswith("first_path.") and candidate.confidence >= _VISIBLE_RESULT_CONFIDENCE_FLOOR
+
+
+def _has_current_apply_semantic_input(proposal: Mapping[str, Any]) -> bool:
+    compiler_input = proposal.get("apply_semantic_input")
+    return (
+        isinstance(compiler_input, Mapping)
+        and clean_text(compiler_input.get("schema_version")) == APPLY_SEMANTIC_INPUT_VERSION
+        and isinstance(compiler_input.get("source_paths"), Mapping)
+    )
+
+
+__all__ = [
+    "APPLY_SEMANTIC_INPUT_VERSION",
+    "GreenfieldApplySemanticInput",
+    "apply_semantic_input_mapping",
+    "ensure_apply_semantic_model",
+    "greenfield_apply_semantic_input",
+]

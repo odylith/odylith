@@ -208,6 +208,21 @@ vocabulary, or degraded packages.
   passed in 12.708s and 12.328s with complete governed records and all expert
   lenses, and the widened greenfield suite passed 162 tests in 148.37s. Fresh
   installed proof from a rebuilt dist remains required before release closure.
+- 2026-06-26 typed projection-contract checkpoint: architecture review found
+  `ArtifactPlanIR` projection policy duplicated between PatchSet emission,
+  artifact-plan execution, and safe artifact-draft repair. The cleanup adds
+  `greenfield_artifact_plan.py` as the shared owner for sanctioned roots,
+  projection aliases, immutable fields, affected projection calculation, and
+  artifact-draft repair projection normalization. Role-surface names such as
+  product-manager or architect no longer imply affected projections without a
+  typed projection ID or artifact path. `greenfield_apply_semantic.py` now
+  persists a typed apply-semantic input with source-path provenance and asks
+  the semantic compiler for high-confidence visible-result candidates instead
+  of carrying a local visibility regex. Focused proof passed 60 tests in
+  26.47s, compile proof passed for the changed modules, Registry validation
+  passed, and `domain-intelligence` component-spec requirement sync converged.
+  This is a structural checkpoint only; fresh high-variance create simulations
+  and live rescue proof remain required before release closure.
 - 2026-06-26 architectural cleanup checkpoint: post-confirm repair no longer
   lets untyped English gate strings drive semantic routing. Raw completion
   report issues now become `legacy_untyped_report` blockers, raw package issue
@@ -234,8 +249,11 @@ vocabulary, or degraded packages.
 - [ ] Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,
       `ArtifactDraftSet`, `ReviewReport`, and `PatchSet` schemas with source
       provenance and stable IDs. Current checkpoint defines typed
-      `ReviewReport` findings and `PatchSet` request schemas; the remaining IR
-      contracts are still open.
+      `ReviewReport` findings, `PatchSet` request schemas, a source-mapped
+      apply-semantic input bridge, and the first shared `ArtifactPlanIR`
+      projection contract owner. A lossless `ConfirmedIntentIR`, full
+      `ArtifactPlanIR` schema, `ArtifactDraftSet` schema, and stable source-span
+      IDs remain open.
 - [x] Convert final package validators to emit typed finding codes, source-map
       targets, semantic node IDs, projection IDs, severity, and repairability.
       `greenfield_post_confirm_findings.py` now owns typed finding collection
@@ -325,7 +343,11 @@ vocabulary, or degraded packages.
       as immutable custody metadata. Evidence-role Registry openings now must
       render from component-local label, focus, and output facts rather than a
       repeated project-level evidence sentence. A broader explicit
-      `ProjectionLexicon` remains open.
+      `ProjectionLexicon` remains open. The current checkpoint centralizes
+      artifact-plan projection routing in `greenfield_artifact_plan.py` so
+      PatchSet emission, artifact-plan execution, and safe draft repair share
+      sanctioned roots, projection aliases, immutable metadata policy, and
+      affected-projection calculation instead of carrying private maps.
 - [x] Add high-variance simulation fixtures and artifact-quality scoring across
       PM, architect, engineer, and domain-expert lenses.
 - [x] Add standard latency proof and temp-repo pruning proof for the
@@ -428,6 +450,14 @@ vocabulary, or degraded packages.
 - [x] Artifact-plan PatchSet executor proof: focused tests passed 2 tests in
       0.14s, compile proof passed for the changed modules, and the widened
       post-confirm repair/artifact-quality pack passed 229 tests in 321.33s.
+- [x] Typed projection-contract proof: `test_greenfield_artifact_plan_ir.py`,
+      `test_greenfield_artifact_plan_patch_executor.py`,
+      `test_greenfield_semantic_compiler.py`,
+      `test_greenfield_post_confirm_engine.py`, and
+      `test_greenfield_semantic_patch_executor.py` passed 60 tests in 26.47s;
+      compile proof passed for the changed modules; `git diff --check` passed;
+      Registry validation passed under `enforce-critical`; and
+      `domain-intelligence` component requirement sync converged.
 - [x] Recovery/completion proof: targeted recovery regressions passed 24 tests
       in 39.63s; the broad greenfield pack passed 283 tests in 491.56s; and
       five high-variance source-local simulations passed with governed writes,

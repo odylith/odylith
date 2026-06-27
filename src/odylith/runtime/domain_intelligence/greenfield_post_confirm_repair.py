@@ -7,6 +7,7 @@ from dataclasses import dataclass, replace
 import re
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_repair_projection
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
@@ -189,7 +190,11 @@ def _safe_package_repair_projections(patchset_request: Mapping[str, Any]) -> fro
         affected = operation.get("affected_projections")
         if not isinstance(affected, Sequence) or isinstance(affected, (str, bytes, bytearray)):
             continue
-        projections.update(str(item).strip() for item in affected if str(item).strip())
+        projections.update(
+            projection
+            for projection in (artifact_draft_repair_projection(item) for item in affected)
+            if projection
+        )
     return frozenset(projections)
 
 

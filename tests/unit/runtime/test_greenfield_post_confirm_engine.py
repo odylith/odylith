@@ -407,7 +407,7 @@ def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() 
     assert operation["replacement_fact"] == ""
     assert operation["decision_ledger_entry"] == ""
     assert operation["proof_obligation_delta"] == ""
-    assert operation["affected_projections"] == ("project_brief", "radar", "release")
+    assert operation["affected_projections"] == ()
 
 
 def test_string_only_package_issues_fail_closed_instead_of_routing_semantics() -> None:
@@ -1438,6 +1438,37 @@ def test_package_repair_only_mutates_patchset_affected_projection() -> None:
     assert repaired.next_steps_preview == {
         "implementation_prompt": "The next step stays attached to the accepted state."
     }
+
+
+def test_package_repair_accepts_raw_rendered_projection_targets() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
+        rendered_atlas_sources={"flow.mmd": "flow stays attached attached to the accepted state."},
+        next_steps_preview={"implementation_prompt": "The next step stays attached attached to the accepted state."},
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                {
+                    "target_layer": "artifact_draft_set",
+                    "issue_code": "generated_copy_quality",
+                    "affected_projections": ["rendered_component_specs", "rendered_atlas_sources"],
+                }
+            ],
+        },
+    )
+
+    assert repaired.rendered_component_specs == {
+        "spec.md": "The record stays attached to the accepted state."
+    }
+    assert repaired.rendered_atlas_sources == {
+        "flow.mmd": "flow stays attached to the accepted state."
+    }
+    assert repaired.next_steps_preview == package.next_steps_preview
 
 
 def test_package_repair_preserves_structural_metadata_inside_repaired_projections() -> None:

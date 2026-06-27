@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_apply_semantic import APPLY_SEMANTIC_INPUT_VERSION
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_apply_semantic import greenfield_apply_semantic_input
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     compile_greenfield_semantics,
@@ -14,6 +17,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     select_visible_result_candidate,
 )
+
+DOMAIN_INTELLIGENCE = Path(__file__).resolve().parents[3] / "src/odylith/runtime/domain_intelligence"
 
 
 def test_semantic_compiler_prefers_first_path_result_over_release_proof() -> None:
@@ -138,6 +143,59 @@ def test_confirmed_intent_completion_does_not_wrap_visible_outcome_as_produced_b
 
     assert "visible result produced by" not in rendered
     assert "saved session" in rendered
+
+
+def test_apply_semantic_input_records_source_paths_and_semantic_visibility_fallback() -> None:
+    proposal = {
+        "intent": {
+            "title": "Claims Desk",
+            "state_object": "Claim packet",
+            "first_path": "An analyst enters claim details and links evidence",
+            "proof_boundary": "Release 0.0.1 is proven when the assigned claim packet is reviewable.",
+        },
+        "project_brief": {"first_path": "This fallback should not win."},
+        "backlog": [{"recommended_first_slice": "This fallback should also not win."}],
+    }
+    compiler_input = greenfield_apply_semantic_input(proposal)
+    source_paths = dict(compiler_input.source_paths)
+
+    assert compiler_input.schema_version == APPLY_SEMANTIC_INPUT_VERSION
+    assert compiler_input.first_path.endswith("then shows the accepted result for review.")
+    assert source_paths["first_path"] == "intent.first_path+semantic_visible_result_fallback"
+    assert source_paths["proof_boundary"] == "intent.proof_boundary"
+
+    ensured = ensure_apply_semantic_model(proposal)
+    persisted_input = ensured["apply_semantic_input"]
+
+    assert persisted_input["schema_version"] == APPLY_SEMANTIC_INPUT_VERSION
+    assert persisted_input["first_path"].endswith("then shows the accepted result for review.")
+    assert persisted_input["source_paths"]["first_path"] == "intent.first_path+semantic_visible_result_fallback"
+
+
+def test_apply_semantic_input_is_persisted_when_semantic_model_already_exists() -> None:
+    proposal = {
+        "intent": {
+            "title": "Claims Desk",
+            "state_object": "Claim packet",
+            "first_path": "An analyst reviews claim evidence and sees an accepted packet.",
+            "proof_boundary": "Release proof shows the accepted packet is reviewable.",
+        },
+        "semantic_model": {"schema_version": "odylith.greenfield.semantic_model.v1"},
+    }
+
+    ensured = ensure_apply_semantic_model(proposal)
+
+    assert ensured["semantic_model"] == {"schema_version": "odylith.greenfield.semantic_model.v1"}
+    assert ensured["apply_semantic_input"]["schema_version"] == APPLY_SEMANTIC_INPUT_VERSION
+    assert ensured["apply_semantic_input"]["source_paths"]["first_path"] == "intent.first_path"
+
+
+def test_apply_semantic_bridge_uses_first_path_semantics_instead_of_local_visibility_regex() -> None:
+    source = (DOMAIN_INTELLIGENCE / "greenfield_apply_semantic.py").read_text(encoding="utf-8")
+
+    assert "import re" not in source
+    assert "_VISIBLE_RESULT_RE" not in source
+    assert "select_visible_result_candidate(" in source
 
 
 def _minimal_lifecycle_proposal() -> dict[str, Any]:

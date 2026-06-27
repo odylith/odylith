@@ -408,6 +408,26 @@
   package in 20.107-23.147 seconds with zero final quality issues, five Radar
   records, three Registry records, six Atlas diagrams, 18 trace nodes, governed
   records written, and temp repos deleted after each scenario.
+  The latest typed-IR cleanup found one more architecture debt in the same
+  failure class: `ArtifactPlanIR` projection policy was duplicated across
+  PatchSet emission, artifact-plan execution, and safe artifact-draft repair.
+  That made future host-authored plan patches vulnerable to drift between
+  target-path routing, immutable metadata policy, and impacted-projection
+  selection. `greenfield_artifact_plan.py` now owns sanctioned roots,
+  projection aliases, immutable fields, affected-projection calculation, and
+  artifact-draft repair projection normalization. PatchSet emission,
+  artifact-plan execution, and package repair consume that shared contract, and
+  role-surface names such as product-manager or architect no longer imply
+  affected projections without a typed projection ID or artifact path.
+  The same checkpoint made `greenfield_apply_semantic.py` compile legacy
+  proposal dictionaries through a persisted typed apply-semantic input with
+  source-path provenance, and replaced the local first-path visibility regex
+  with a semantic-compiler visible-result candidate check. Focused proof passed
+  60 tests in 26.47 seconds, compile proof passed for the changed modules,
+  Registry validation passed, and component-spec requirement sync converged
+  for `domain-intelligence`. This is still not final release closure: live
+  rescue proof under 90 seconds with a real configured host repair remains
+  required.
 
 - Related Incidents/Bugs: CB-207
 
@@ -433,6 +453,8 @@
 - src/odylith/runtime/reasoning/tribunal_lens.py
 - src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
+- src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
+- src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py
 - src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py
 - src/odylith/runtime/reasoning/tribunal_engine.py

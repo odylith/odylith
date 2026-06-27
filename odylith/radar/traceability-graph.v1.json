@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "72f3214c62eba92e32b1f87f42e01b1ab7f65673a52581fde8ba371e420f598b",
+    "digest": "fe586d2dd6d9440887964413ea5e62421ebcb459755dfe61f838cebf11b87bc2",
     "file_count": 314,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -13576,6 +13576,7 @@
       ],
       "component_names": [
         "Domain Intelligence",
+        "ArtifactPlanIR projection contract",
         "Typed findings",
         "Tribunal patch planner",
         "Radar",
@@ -24668,5 +24669,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-06-27 03:15:30Z"
+  "generated_utc": "2026-06-27 03:57:32Z"
 }

@@ -8,33 +8,15 @@ from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import ARTIFACT_PLAN_DICT_ROOTS
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import ARTIFACT_PLAN_LIST_ROOTS
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import ARTIFACT_PLAN_ROW_ROOTS
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_canonical_root
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_is_immutable_field
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _ARTIFACT_PLAN_LAYER = "artifact_plan"
 _LEDGER_KEY = "artifact_plan_patch_ledger"
-_DICT_ROOTS = frozenset({"project_brief", "release_plan", "program"})
-_LIST_ROOTS = frozenset({"assumptions", "open_questions", "risks", "validation_strategy"})
-_ROW_ROOTS = frozenset({"backlog", "components", "diagrams"})
-_ROOT_ALIASES = {
-    "radar": "backlog",
-    "registry": "components",
-    "atlas": "diagrams",
-    "release": "release_plan",
-}
-_IMMUTABLE_FIELDS = frozenset(
-    {
-        "component_id",
-        "created_at",
-        "id",
-        "provisional_release_id",
-        "registry_path",
-        "schema_version",
-        "slug",
-        "spec_path",
-        "updated_at",
-        "workstream_id",
-    }
-)
 
 
 def apply_artifact_plan_patch_operations(
@@ -69,12 +51,12 @@ def _apply_artifact_plan_operation(proposal: dict[str, Any], operation: Mapping[
     paths: list[str] = []
     paths.extend(_apply_path_value_patch(proposal, replacement))
     for raw_root, patch_value in replacement.items():
-        root = _canonical_root(raw_root)
-        if root in _DICT_ROOTS and isinstance(patch_value, Mapping):
+        root = artifact_plan_canonical_root(raw_root)
+        if root in ARTIFACT_PLAN_DICT_ROOTS and isinstance(patch_value, Mapping):
             paths.extend(_apply_dict_root_patch(proposal, root, patch_value))
-        elif root in _LIST_ROOTS:
+        elif root in ARTIFACT_PLAN_LIST_ROOTS:
             paths.extend(_apply_list_root_patch(proposal, root, patch_value))
-        elif root in _ROW_ROOTS:
+        elif root in ARTIFACT_PLAN_ROW_ROOTS:
             paths.extend(_apply_row_root_patch(proposal, root, patch_value, operation))
     return tuple(dict.fromkeys(paths))
 
@@ -86,15 +68,15 @@ def _apply_path_value_patch(proposal: dict[str, Any], replacement: Mapping[str, 
     root, tail = _split_root_path(path)
     if not root or not tail:
         return ()
-    if root in _DICT_ROOTS:
+    if root in ARTIFACT_PLAN_DICT_ROOTS:
         return _set_dict_path(_ensure_dict_root(proposal, root), tail, replacement.get("value"), prefix=root)
-    if root in _ROW_ROOTS:
+    if root in ARTIFACT_PLAN_ROW_ROOTS:
         row_patch = {
             "index": _row_index_from_path(path),
             "fields": {_tail_without_row_index(tail): replacement.get("value")},
         }
         return _apply_row_root_patch(proposal, root, row_patch, {})
-    if root in _LIST_ROOTS and len(tail) == 1:
+    if root in ARTIFACT_PLAN_LIST_ROOTS and len(tail) == 1:
         return _apply_list_root_patch(proposal, root, replacement.get("value"))
     return ()
 
@@ -104,7 +86,7 @@ def _apply_dict_root_patch(proposal: dict[str, Any], root: str, patch: Mapping[s
     paths: list[str] = []
     for raw_field, value in patch.items():
         field = normalize_string(raw_field)
-        if not field or field in {"path", "target_path", "value"} or _immutable_field(field):
+        if not field or field in {"path", "target_path", "value"} or artifact_plan_is_immutable_field(field):
             continue
         if isinstance(value, Mapping) and isinstance(target.get(field), dict):
             paths.extend(_merge_mapping(target[field], value, prefix=f"{root}.{field}"))
@@ -141,7 +123,11 @@ def _apply_row_root_patch(
         row_index = rows.index(row)
         for raw_field, value in fields.items():
             field = normalize_string(raw_field)
-            if not field or field in {"fields", "index", "match", "selector"} or _immutable_field(field):
+            if (
+                not field
+                or field in {"fields", "index", "match", "selector"}
+                or artifact_plan_is_immutable_field(field)
+            ):
                 continue
             if _set_if_changed(row, field, value):
                 paths.append(f"{root}[{row_index}].{field}")
@@ -213,7 +199,7 @@ def _merge_mapping(target: dict[str, Any], patch: Mapping[str, Any], *, prefix: 
     paths: list[str] = []
     for raw_field, value in patch.items():
         field = normalize_string(raw_field)
-        if not field or _immutable_field(field):
+        if not field or artifact_plan_is_immutable_field(field):
             continue
         if isinstance(value, Mapping) and isinstance(target.get(field), dict):
             paths.extend(_merge_mapping(target[field], value, prefix=f"{prefix}.{field}"))
@@ -228,7 +214,7 @@ def _set_dict_path(target: dict[str, Any], path: Sequence[str], value: Any, *, p
         return ()
     current = target
     for field in path[:-1]:
-        if _immutable_field(field):
+        if artifact_plan_is_immutable_field(field):
             return ()
         child = current.get(field)
         if not isinstance(child, dict):
@@ -236,7 +222,7 @@ def _set_dict_path(target: dict[str, Any], path: Sequence[str], value: Any, *, p
             current[field] = child
         current = child
     field = path[-1]
-    if _immutable_field(field):
+    if artifact_plan_is_immutable_field(field):
         return ()
     return (f"{prefix}.{'.'.join(path)}",) if _set_if_changed(current, field, value) else ()
 
@@ -271,17 +257,12 @@ def _ensure_row_root(proposal: dict[str, Any], root: str) -> list[dict[str, Any]
     return rows
 
 
-def _canonical_root(value: Any) -> str:
-    token = normalize_token(value)
-    return _ROOT_ALIASES.get(token, token)
-
-
 def _split_root_path(path: str) -> tuple[str, tuple[str, ...]]:
     cleaned = normalize_string(path).replace("[", ".").replace("]", "")
     parts = tuple(part for part in cleaned.split(".") if part)
     if not parts:
         return "", ()
-    root = _canonical_root(parts[0])
+    root = artifact_plan_canonical_root(parts[0])
     return root, tuple(part for part in parts[1:] if not part.isdigit())
 
 
@@ -302,10 +283,6 @@ def _int_or_none(value: Any) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
-
-
-def _immutable_field(field: str) -> bool:
-    return normalize_token(field) in _IMMUTABLE_FIELDS
 
 
 def _ledger_entry(operation: Mapping[str, Any], *, applied_paths: Sequence[str]) -> dict[str, Any]:
