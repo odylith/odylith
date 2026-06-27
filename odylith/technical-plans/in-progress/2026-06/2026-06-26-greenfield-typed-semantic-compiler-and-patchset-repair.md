@@ -259,6 +259,15 @@ vocabulary, or degraded packages.
   fresh, higher-variance sample after the structured rescue changes. Fresh
   installed-dist proof after this source-local checkpoint remains required
   before release closure.
+- 2026-06-26 fresh installed-dist proof for commit 58a9b7c5: local release
+  dist `odylith-local-release-0.1.15-58a9b7c5` passed the installed
+  greenfield post-confirm matrix across flood shelter intake 20.393s,
+  pediatric agency practice 18.368s, semiconductor lab custody 18.393s, port
+  berth carbon tariff 18.450s, and security disclosure council 19.048s. Every
+  installed consumer-lane run reported zero matrix quality issues, wrote
+  governed records, produced at least five Radar records, three Registry
+  records, six Atlas diagrams, 18 trace nodes, and the harness deleted
+  temporary repos after the cases.
 
 ## Implementation Slices
 

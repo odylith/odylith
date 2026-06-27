@@ -439,7 +439,13 @@
   quality issues, passed PM/architect/engineer/domain-expert lenses, produced
   expected Radar/Registry/Atlas/Compass/project/release records, and deleted
   its temp repo before the next case. Fresh installed-dist proof after this
-  source-local checkpoint remains required before release closure.
+  source-local checkpoint then passed from local release dist
+  `odylith-local-release-0.1.15-58a9b7c5`: flood shelter intake 20.393s,
+  pediatric agency practice 18.368s, semiconductor lab custody 18.393s, port
+  berth carbon tariff 18.450s, and security disclosure council 19.048s. The
+  installed consumer-lane matrix reported zero quality issues, governed writes,
+  at least five Radar records, three Registry records, six Atlas diagrams, 18
+  trace nodes, and temp cleanup by the harness.
 
 - Related Incidents/Bugs: CB-207
 

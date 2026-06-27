@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 150,
-    "mapped_workstream_evidence_count": 135,
+    "explicit_event_count": 151,
+    "mapped_workstream_evidence_count": 136,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 141,
+    "spec_history_event_count": 142,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 151
+    "timeline_event_count": 152
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -23,7 +23,7 @@
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 634,
+      "event_index": 635,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -31,8 +31,45 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-26T21:41:56-07:00",
+      "ts_iso": "2026-06-26T21:53:22-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-58a9b7c5",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 634,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh local dist 0.1.15-58a9b7c5 passed the installed greenfield post-confirm matrix across five consumer-lane domains in 18.368-20.393s with zero quality issues and governed records written.",
+      "ts_iso": "2026-06-26T21:52:35-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
