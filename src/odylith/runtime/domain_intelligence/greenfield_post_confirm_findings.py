@@ -448,10 +448,10 @@ def _extend_semantic_findings(
         code="semantic_alignment",
         surface="registry",
         target_path="proposal.components",
-        semantic_node_id="SemanticModelIR.component_contracts",
+        semantic_node_id="ArtifactPlanIR.registry",
         severity="high",
-        repairability="semantic_patch",
-        owner="semantic_model_compiler",
+        repairability="plan_patch",
+        owner="artifact_plan_projector",
         source="semantic_component_alignment",
     )
     _extend_review_findings(
@@ -460,10 +460,10 @@ def _extend_semantic_findings(
         code="semantic_alignment",
         surface="radar",
         target_path="proposal.backlog",
-        semantic_node_id="SemanticModelIR.workstream_contracts",
+        semantic_node_id="ArtifactPlanIR.radar",
         severity="high",
-        repairability="semantic_patch",
-        owner="semantic_model_compiler",
+        repairability="plan_patch",
+        owner="artifact_plan_projector",
         source="semantic_workstream_alignment",
     )
     _extend_review_findings(
@@ -472,10 +472,10 @@ def _extend_semantic_findings(
         code="semantic_alignment",
         surface="atlas",
         target_path="proposal.diagrams",
-        semantic_node_id="SemanticModelIR.diagram_event_graph",
+        semantic_node_id="ArtifactPlanIR.atlas",
         severity="high",
-        repairability="semantic_patch",
-        owner="semantic_model_compiler",
+        repairability="plan_patch",
+        owner="artifact_plan_projector",
         source="semantic_diagram_alignment",
     )
     _extend_review_findings(

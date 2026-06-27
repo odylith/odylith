@@ -638,3 +638,18 @@ vocabulary, or degraded packages.
       engineer/domain-expert lenses passing, four Radar workstreams, three
       Registry specs, six Atlas Mermaid sources, 18 trace nodes, governed
       writes, and temp cleanup.
+- [x] Scoped semantic repair routing checkpoint: semantic PatchSet application
+      now reports applied fields, operation ids, explicit affected projections,
+      and whether completion is required. Semantic target routing uses
+      operation-kind allowlists and exact compatibility paths rather than loose
+      token splitting. Proposal-owned projection defects from package findings
+      and quality lenses now route to `ArtifactPlanIR` / `plan_patch` instead
+      of unsupported semantic proposal targets, and `greenfield_artifact_plan.py`
+      recognizes `proposal.*`, `prewrite_package.*`, and `ArtifactPlanIR.*`
+      envelope paths for projection scope. Focused ArtifactPlanIR and semantic
+      patch tests passed 17 tests in 0.26s; the post-confirm repair pack passed
+      74 tests in 24.54s; the widened greenfield post-confirm quality pack
+      passed 250 tests in 362.79s; a temporary installed release matrix passed
+      five consumer-lane domains at 18.227-19.788s with governed writes, zero
+      quality issues, all PM/architect/engineer/domain-expert lenses passing,
+      and temp cleanup between cases.

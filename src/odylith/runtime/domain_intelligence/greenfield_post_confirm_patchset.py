@@ -10,6 +10,7 @@ from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_affected_projections
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_projection_for_path
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
 
 
@@ -118,6 +119,8 @@ def _operation_from_finding(
 
 def _target_layer(finding: GreenfieldReviewFinding) -> str:
     repairability = normalize_token(finding.repairability)
+    if repairability in {"semantic_patch", "proposal_repair"} and _artifact_plan_projection_target(finding):
+        return "artifact_plan"
     if repairability in {"semantic_patch", "proposal_repair"}:
         return "semantic_model"
     if repairability == "plan_patch":
@@ -125,6 +128,18 @@ def _target_layer(finding: GreenfieldReviewFinding) -> str:
     if repairability == "safe_package_repair":
         return "artifact_draft_set"
     return ""
+
+
+def _artifact_plan_projection_target(finding: GreenfieldReviewFinding) -> bool:
+    semantic_node = normalize_string(finding.semantic_node_id)
+    if semantic_node.startswith("ArtifactPlanIR."):
+        return True
+    target_path = normalize_string(finding.target_path)
+    if target_path.startswith(("semantic_model.", "proposal.semantic_model.")):
+        return False
+    if target_path.startswith(("proposal.", "prewrite_package.")) and _affected_projections(finding):
+        return True
+    return bool(artifact_plan_projection_for_path(target_path))
 
 
 def _affected_projections(finding: GreenfieldReviewFinding) -> tuple[str, ...]:

@@ -9,21 +9,22 @@ from typing import Any
 from odylith.runtime.common import display_text
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
-from odylith.runtime.domain_intelligence.greenfield_artifact_plan import (
-    artifact_plan_expand_projection_scope,
-    artifact_plan_operation_affected_projections,
-)
-from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_scope_requires_full_prewrite
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_operation_affected_projections
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan_patch_executor import (
     apply_artifact_plan_patch_operations,
 )
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import repair_proposal_first_path
+from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_expand_projection_scope
+from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_scope_requires_full_prewrite
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmRepairContext
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair_context import repair_context_operations
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_greenfield_semantic_projections
-from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import apply_semantic_patch_operations
+from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import SemanticPatchApplication
+from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import (
+    apply_semantic_patch_operations_detailed,
+)
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
 
@@ -67,11 +68,12 @@ def _apply_operations(
 
     repaired = proposal
     first_path_semantic = any(_is_first_path_semantic_operation(operation) for operation in operations)
-    semantic_changed = apply_semantic_patch_operations(repaired, operations)
+    semantic_application = apply_semantic_patch_operations_detailed(repaired, operations)
+    semantic_changed = semantic_application.changed
     plan_changed = apply_artifact_plan_patch_operations(repaired, operations)
     if semantic_changed or plan_changed:
         repaired = _normalized_proposal(repaired)
-    completion_required = semantic_changed or first_path_semantic
+    completion_required = semantic_application.completion_required or first_path_semantic
     if completion_required:
         repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
     if first_path_semantic:
@@ -82,6 +84,7 @@ def _apply_operations(
         _append_patch_application_ledger(
             repaired,
             operations=operations,
+            semantic_application=semantic_application,
             semantic_changed=semantic_changed,
             plan_changed=plan_changed,
             completion_required=completion_required,
@@ -140,19 +143,25 @@ def _append_patch_application_ledger(
     proposal: dict[str, Any],
     *,
     operations: Sequence[Mapping[str, Any]],
+    semantic_application: SemanticPatchApplication,
     semantic_changed: bool,
     plan_changed: bool,
     completion_required: bool,
 ) -> None:
     affected_projections = tuple(
         dict.fromkeys(
-            projection
-            for operation in operations
-            for projection in artifact_plan_operation_affected_projections(operation)
+            (
+                *semantic_application.affected_projections,
+                *(
+                    projection
+                    for operation in operations
+                    for projection in _artifact_plan_operation_scope(operation)
+                ),
+            )
         )
     )
-    rerender_projections = artifact_plan_expand_projection_scope(affected_projections)
-    full_prewrite_required = completion_required or artifact_plan_scope_requires_full_prewrite(affected_projections)
+    rerender_projections = patch_expand_projection_scope(affected_projections)
+    full_prewrite_required = completion_required or patch_scope_requires_full_prewrite(affected_projections)
     operation_ids = tuple(
         operation_id
         for operation_id in (normalize_string(operation.get("operation_id")) for operation in operations)
@@ -177,6 +186,12 @@ def _append_patch_application_ledger(
         ledger.append(entry)
     else:
         proposal[_PATCH_APPLICATION_LEDGER_KEY] = [entry]
+
+
+def _artifact_plan_operation_scope(operation: Mapping[str, Any]) -> tuple[str, ...]:
+    if _target_layer(operation) != "artifact_plan":
+        return ()
+    return artifact_plan_operation_affected_projections(operation)
 
 
 __all__ = ["apply_greenfield_patchset_repairs", "complete_greenfield_semantic_apply_payload"]

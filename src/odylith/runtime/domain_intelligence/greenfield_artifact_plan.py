@@ -37,6 +37,7 @@ ARTIFACT_PLAN_IMMUTABLE_FIELDS = frozenset(
 
 _PROJECTION_ALIASES = {
     "accepted_project": "accepted_project",
+    "assumptions": "project_brief",
     "artifact_draft_set": "artifact_draft_set",
     "atlas": "atlas",
     "backlog": "radar",
@@ -45,6 +46,7 @@ _PROJECTION_ALIASES = {
     "diagrams": "atlas",
     "next_steps": "next_steps",
     "operator_next_steps": "next_steps",
+    "open_questions": "project_brief",
     "program": "program",
     "project_brief": "project_brief",
     "radar": "radar",
@@ -53,7 +55,10 @@ _PROJECTION_ALIASES = {
     "release_plan": "release",
     "rendered_atlas_sources": "atlas",
     "rendered_component_specs": "registry",
+    "risks": "project_brief",
+    "validation_strategy": "project_brief",
 }
+_ARTIFACT_PLAN_ENVELOPE_PREFIXES = ("proposal_", "prewrite_package_", "artifactplanir_")
 _IGNORED_DIRECT_PROJECTIONS = frozenset({"review_report"})
 _PROJECTION_DEPENDENCIES = {
     "project_brief": ("accepted_project", "compass", "next_steps"),
@@ -103,11 +108,23 @@ def artifact_plan_projection_for_path(value: Any) -> str:
     if direct:
         return direct
     route_token = token.replace("[", "_").replace("]", "").replace(".", "_")
-    for alias, projection in _PROJECTION_ALIASES.items():
-        if route_token == alias or route_token.startswith(f"{alias}_") or f"_{alias}_" in route_token:
+    for candidate in _artifact_plan_route_candidates(route_token):
+        for alias, projection in _PROJECTION_ALIASES.items():
+            if candidate == alias or candidate.startswith(f"{alias}_") or f"_{alias}_" in candidate:
+                return projection
+        root = artifact_plan_canonical_root(candidate.split("_", 1)[0])
+        projection = artifact_projection_id(root)
+        if projection:
             return projection
-    root = artifact_plan_canonical_root(route_token.split("_", 1)[0])
-    return artifact_projection_id(root)
+    return ""
+
+
+def _artifact_plan_route_candidates(route_token: str) -> tuple[str, ...]:
+    candidates = [route_token]
+    for prefix in _ARTIFACT_PLAN_ENVELOPE_PREFIXES:
+        if route_token.startswith(prefix):
+            candidates.append(route_token[len(prefix) :])
+    return tuple(dict.fromkeys(candidate for candidate in candidates if candidate))
 
 
 def artifact_plan_affected_projections(

@@ -1,11 +1,11 @@
 {
   "version": "v1",
-  "generated_utc": "2026-06-27T06:17:42Z",
+  "generated_utc": "2026-06-27T07:15:09Z",
   "retention_days": 15,
   "dates": [
+    "2026-06-27",
     "2026-06-26",
-    "2026-06-25",
-    "2026-06-11"
+    "2026-06-25"
   ],
   "restored_dates": [],
   "archive": {

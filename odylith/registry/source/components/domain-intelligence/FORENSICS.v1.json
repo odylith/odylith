@@ -8,7 +8,7 @@
     "explicit_event_count": 152,
     "mapped_workstream_evidence_count": 137,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 144,
+    "spec_history_event_count": 145,
     "status": "forensic_coverage_present",
     "timeline_event_count": 153
   },
@@ -21,23 +21,23 @@
     {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_proposals.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_patch_projection_scope.py"
       ],
       "confidence": "high",
-      "event_index": 638,
+      "event_index": 639,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py +5 more",
-      "ts_iso": "2026-06-26T23:16:51-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py +5 more",
+      "ts_iso": "2026-06-27T00:13:56-07:00",
       "workstreams": []
     },
     {

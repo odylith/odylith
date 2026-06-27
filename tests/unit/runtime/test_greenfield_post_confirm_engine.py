@@ -414,6 +414,37 @@ def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() 
     assert operation["affected_projections"] == ()
 
 
+def test_patchset_routes_proposal_projection_targets_to_artifact_plan() -> None:
+    patchset = patchset_request_from_findings(
+        (
+            review_finding(
+                code="semantic_alignment",
+                surface="radar",
+                target_path="proposal.backlog",
+                projection_id="radar",
+                semantic_node_id="SemanticModelIR.workstream_contracts",
+                severity="high",
+                repairability="semantic_patch",
+                owner="semantic_model_compiler",
+                source="semantic_workstream_alignment",
+                message="workstream contract missing from proposal backlog",
+            ),
+        )
+    ).to_dict()
+
+    operation = patchset["operations"][0]
+
+    assert operation["target_layer"] == "artifact_plan"
+    assert operation["target_path"] == "proposal.backlog"
+    assert operation["semantic_node_id"] == "SemanticModelIR.workstream_contracts"
+    assert operation["operation_kind"] == "artifact_plan_projection"
+    assert operation["projection_kind"] == "radar"
+    assert operation["affected_projections"] == ("radar",)
+    assert operation["requested_action"] == (
+        "Return an artifact-plan patch that changes only sanctioned projection fields before rerender."
+    )
+
+
 def test_string_only_package_issues_fail_closed_instead_of_routing_semantics() -> None:
     findings = package_review_findings(
         GreenfieldCompletionPackage(proposal={"intent": {"title": "Coverage Route"}}),

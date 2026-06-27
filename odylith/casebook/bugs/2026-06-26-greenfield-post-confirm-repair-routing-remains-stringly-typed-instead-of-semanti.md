@@ -504,6 +504,38 @@
   engineer/domain-expert lenses passing, four Radar workstreams, three
   Registry specs, six Atlas diagrams, 18 trace nodes, and temp cleanup after
   every case.
+  The next semantic-scope cleanup removed three more failed mechanisms from the
+  repair architecture. First, `greenfield_semantic_patch_executor.py` no longer
+  collapses semantic application to a boolean that forces broad completion for
+  every semantic change; it returns a `SemanticPatchApplication` with applied
+  fields, operation ids, explicit affected projections, and whether semantic
+  completion is truly required. Second, semantic target routing now uses
+  operation-kind allowlists and exact compatibility paths only; the old loose
+  token-splitting path is gone so a target string cannot accidentally become a
+  semantic field. Third, proposal-owned plan targets such as backlog,
+  Registry, Atlas, release-plan, assumptions, and validation strategy no longer
+  masquerade as `semantic_patch` work. Source findings and quality lenses route
+  those targets to `ArtifactPlanIR` / `plan_patch`, while the shared
+  `ArtifactPlanIR` projection mapper recognizes structural envelopes such as
+  `proposal.*`, `prewrite_package.*`, and `ArtifactPlanIR.*` before deriving
+  scoped rerender custody. First-path semantic patches and semantic patches
+  without explicit scope still require completion; scoped non-first-path
+  semantic patches can now rerender only their affected projections. The banned
+  mechanisms are explicit: do not recover by tokenizing semantic target names,
+  do not label proposal projection defects as semantic patches, and do not
+  force full completion merely because a scoped semantic fact changed. Proof:
+  focused ArtifactPlanIR and semantic patch tests passed 17 tests in 0.26s;
+  the post-confirm repair pack passed 74 tests in 24.54s; the widened
+  greenfield post-confirm quality pack passed 250 tests in 362.79s; and a fresh
+  installed consumer-lane matrix from temporary local release
+  `/tmp/odylith-local-release-0.1.15-semantic-scope` passed flood shelter
+  intake 19.769s, pediatric agency practice 19.788s, semiconductor lab custody
+  18.903s, port berth carbon tariff 18.395s, and security disclosure council
+  18.227s. Every installed run returned zero quality issues, wrote governed
+  records, passed product-manager, architect, engineer, and domain-expert
+  lenses, produced five Radar workstreams, three Registry specs, six Atlas
+  sources, 18 trace nodes, five rendered surfaces, and the harness deleted temp
+  repos between cases.
 
 - Related Incidents/Bugs: CB-207
 

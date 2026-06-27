@@ -97,9 +97,11 @@ def test_quality_lens_report_emits_typed_tribunal_repair_targets() -> None:
 
     assert report["lenses"]["product_manager"]["role"] == "Product manager"
     assert product_checks["complete_first_path"]["target_path"] == "semantic_model.first_path_contract"
-    assert product_checks["decision_boundary"]["semantic_node_id"] == "SemanticModelIR.decision_boundary"
+    assert product_checks["decision_boundary"]["semantic_node_id"] == "ArtifactPlanIR.assumptions"
+    assert product_checks["decision_boundary"]["repairability"] == "plan_patch"
     assert architect_checks["component_topology"]["surface"] == "registry"
-    assert architect_checks["component_topology"]["owner"] == "semantic_model_compiler"
+    assert architect_checks["component_topology"]["owner"] == "artifact_plan_projector"
+    assert architect_checks["component_topology"]["repairability"] == "plan_patch"
 
 
 def test_quality_lens_repair_rehydrates_proposal_owned_surface() -> None:

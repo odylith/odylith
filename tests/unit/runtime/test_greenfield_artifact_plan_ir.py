@@ -38,6 +38,10 @@ def test_artifact_plan_ir_maps_paths_to_projection_ids_without_surface_guessing(
     assert artifact_plan_projection_for_path("diagrams[0].summary") == "atlas"
     assert artifact_plan_projection_for_path("rendered_component_specs") == "registry"
     assert artifact_plan_projection_for_path("rendered_atlas_sources") == "atlas"
+    assert artifact_plan_projection_for_path("proposal.backlog") == "radar"
+    assert artifact_plan_projection_for_path("proposal.assumptions") == "project_brief"
+    assert artifact_plan_projection_for_path("ArtifactPlanIR.assumptions") == "project_brief"
+    assert artifact_plan_projection_for_path("prewrite_package.next_steps") == "next_steps"
 
     assert (
         artifact_plan_affected_projections(
@@ -47,6 +51,7 @@ def test_artifact_plan_ir_maps_paths_to_projection_ids_without_surface_guessing(
         )
         == ("registry",)
     )
+    assert artifact_plan_affected_projections(target_path="proposal.assumptions") == ("project_brief",)
     assert artifact_plan_affected_projections(surface="product_manager") == ()
 
 
@@ -85,6 +90,9 @@ def test_artifact_plan_ir_expands_projection_dependencies_without_prose_routing(
         "next_steps",
     )
     assert artifact_plan_operation_affected_projections({"projection_kind": "program"}) == ("program",)
+    assert artifact_plan_operation_affected_projections({"target_path": "prewrite_package.next_steps"}) == (
+        "next_steps",
+    )
     assert artifact_plan_expand_projection_scope(("program",)) == (
         "program",
         "accepted_project",

@@ -190,6 +190,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-26: Proved the same checkpoint through the fresh installed consumer-lane package. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Local release dist `odylith-local-release-0.1.15-58a9b7c5` passed the installed greenfield post-confirm matrix across flood shelter intake, pediatric agency practice, semiconductor lab custody, port berth carbon tariff, and security disclosure council in 18.368-20.393 seconds with zero quality issues, governed writes, at least five Radar records, three Registry records, six Atlas diagrams, 18 trace nodes, and temp cleanup by the harness.
 - 2026-06-27: Hardened typed PatchSet dispatch and actor-title projection custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) PatchSet operations now carry operation kind, repair owner, and projection kind into Tribunal structured patch validation and post-confirm apply; first-path repair no longer routes from rejected-prose wording; quality-lens findings without structured facts no longer rehydrate proposal fields; and recovered actor labels trim temporal/proof context before Radar title projection. Focused repair proof passed 58 tests, the widened post-confirm quality/slop/text suite passed 181 tests, and a failed museum loan provenance replay plus five fresh domains passed source-local confirmed create in 14.005-15.737 seconds with zero quality issues and all expert lenses passing.
 - 2026-06-27: Added scoped prewrite rerender custody for artifact-plan-only PatchSet repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan.py` now expands affected projection dependencies and declares which scopes still require full staged prewrite, `greenfield_post_confirm_patch_apply.py` records an auditable patch application ledger, `greenfield_post_confirm_engine.py` consumes that ledger on the next pass, and `greenfield_prewrite_projection_rerender.py` refreshes only the named package previews when the patch does not require semantic completion or Radar/program restaging. A pre-commit review caught and fixed two custody escapes: `program` must remain a first-class full-prewrite projection, and release-scope rerender must include Compass because release assignment feeds Compass acceptance preview state. Focused scoped-rerender tests passed 66 tests, the wider post-confirm quality pack passed 242 tests, and an eight-domain source-local standard-path matrix passed with zero issues, all expert lenses passing, governed writes, and temp cleanup after every case.
+- 2026-06-27: Tightened scoped semantic PatchSet custody and proposal-target routing. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_semantic_patch_executor.py` now returns a structured semantic application summary with operation ids, applied fields, affected projections, and completion posture; target routing depends on operation-kind allowlists and exact compatibility paths instead of token splitting; proposal-owned projection defects from package findings and quality lenses route to `ArtifactPlanIR` / `plan_patch`; and `greenfield_artifact_plan.py` maps structural envelopes such as `proposal.*`, `prewrite_package.*`, and `ArtifactPlanIR.*` to sanctioned projection scope. Focused ArtifactPlanIR/semantic tests passed 17 tests, the post-confirm repair pack passed 74 tests, the widened quality pack passed 250 tests, and a temporary installed release matrix passed five consumer-lane domains in 18.227-19.788 seconds with zero quality issues, governed writes, and all expert lenses passing.
 
 ## Contract
 
@@ -359,6 +360,14 @@ This section captures synchronized requirement and contract signals derived from
   target-layer sets, or source-name sets. Artifact-plan operations may update
   only sanctioned projection roots and must preserve structural metadata such
   as ids, slugs, schema versions, source paths, and timestamps.
+- `greenfield_post_confirm_patchset.py` must route proposal-owned projection
+  findings to `ArtifactPlanIR`, not `SemanticModelIR`. Findings that target
+  `proposal.backlog`, `proposal.components`, `proposal.diagrams`,
+  `proposal.release_plan`, `proposal.assumptions`,
+  `proposal.validation_strategy`, or equivalent prewrite package paths are
+  plan-patch candidates when they carry a sanctioned projection scope. Semantic
+  patches are reserved for accepted-intent meaning such as first-path contract,
+  state object, human actors, systems, and proof boundary.
 - `greenfield_prewrite_projection_rerender.py` owns scoped package-preview
   refresh after artifact-plan-only PatchSet repair. It may refresh project
   brief, Registry, Atlas, accepted-project, Compass, next-step, and release
@@ -375,8 +384,11 @@ This section captures synchronized requirement and contract signals derived from
   repair may call this owner, but they must not reintroduce private projection
   maps, surface-name fallback tables, or renderer-specific routing rules.
   Projection canonicalization must not collapse `program` into `release` before
-  full-prewrite policy runs, and release-scope dependencies must include Compass
-  because release assignment feeds the Compass acceptance preview.
+  full-prewrite policy runs, release-scope dependencies must include Compass
+  because release assignment feeds the Compass acceptance preview, and envelope
+  paths such as `proposal.*`, `prewrite_package.*`, and `ArtifactPlanIR.*` must
+  be normalized structurally before projection lookup rather than by prose
+  matching.
 - `greenfield_apply_semantic.py` may bridge legacy proposal dictionaries into
   semantic model construction, but that bridge must be typed and source-mapped.
   It must produce a durable apply-semantic input shape with provenance for
@@ -398,7 +410,12 @@ This section captures synchronized requirement and contract signals derived from
 - Semantic PatchSet execution must patch `SemanticModelIR` first. Accepted
   intent fields may be mirrored only as compatibility input for current
   deterministic completion; executors must not delete `semantic_model` and rely
-  on replay as the sole repair authority.
+  on replay as the sole repair authority. Semantic target selection must use
+  operation-kind allowlists or exact compatibility paths only; loose token
+  splitting of target names is not a valid semantic repair route. Non-first-path
+  semantic patches with explicit affected projections may use scoped rerender,
+  while first-path changes or scope-less semantic patches must require semantic
+  completion before final gates.
 - Standard confirmed create must complete under 60 seconds without host repair
   on normal inputs. Rescue may extend to 90 seconds only when a final
   semantic/quality gate fails and a targeted host-reasoned `PatchSet` is likely

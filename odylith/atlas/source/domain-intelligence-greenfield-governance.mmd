@@ -12,7 +12,7 @@ flowchart LR
       compiler["Deterministic semantic compiler<br/>provider-free common path"]
       semantic_ir["SemanticModelIR<br/>first-path contract,<br/>ontology, event graph,<br/>proof obligations"]
       artifact_plan["ArtifactPlanIR<br/>sanctioned projection fields"]
-      projection_contract["Projection contract owner<br/>roots, aliases,<br/>immutable fields,<br/>affected projections"]
+      projection_contract["Projection contract owner<br/>roots, aliases,<br/>envelope paths,<br/>affected projections"]
       projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
       validators["Deterministic validators<br/>schema, traceability,<br/>grammar, repetition, topology"]
@@ -31,9 +31,9 @@ flowchart LR
       provider_adapter["Reasoning provider adapter<br/>explicit model,<br/>ignored unsafe user config"]
       strict_schema["Strict patch-plan schema<br/>fact envelope, ledger,<br/>proof delta"]
       custody_check["Patch-plan custody validator<br/>reject moved targets,<br/>invented paths, empty facts"]
-      semantic_apply["SemanticModelIR patch executor<br/>IR first, intent mirror"]
-      plan_apply["ArtifactPlanIR patch executor<br/>shared projection contract,<br/>projection facts only"]
-      scope_ledger["Patch application ledger<br/>expanded dependencies,<br/>full-prewrite posture"]
+      semantic_apply["SemanticModelIR patch executor<br/>operation-kind targets,<br/>exact paths, scoped posture"]
+      plan_apply["ArtifactPlanIR patch executor<br/>proposal-target reroute,<br/>projection facts only"]
+      scope_ledger["Patch application ledger<br/>explicit affected projections,<br/>full-prewrite posture"]
       copy_repair["Safe mechanical draft cleanup<br/>duplicate words and dangling tails only"]
       rerender["Scoped prewrite rerender<br/>named package previews,<br/>same gates, no lowered bar"]
     end
@@ -56,7 +56,7 @@ flowchart LR
     custody_check --> semantic_apply
     custody_check --> plan_apply
     custody_check --> copy_repair
-    projection_contract -. "sanctioned roots" .-> plan_apply
+    projection_contract -. "sanctioned roots + envelopes" .-> plan_apply
     projection_contract -. "dependency scope" .-> scope_ledger
     semantic_apply --> rerender
     plan_apply --> scope_ledger --> rerender

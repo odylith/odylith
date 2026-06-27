@@ -3,16 +3,31 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
+from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import (
+    patch_operation_explicit_affected_projections,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _SEMANTIC_LAYER = "semantic_model"
 _LEDGER_KEY = "semantic_patch_ledger"
+
+
+@dataclass(frozen=True)
+class SemanticPatchApplication:
+    """Application summary for semantic PatchSet operations."""
+
+    changed: bool
+    operation_ids: tuple[str, ...]
+    applied_fields: tuple[str, ...]
+    affected_projections: tuple[str, ...]
+    completion_required: bool
 
 
 def apply_semantic_patch_operations(
@@ -21,15 +36,36 @@ def apply_semantic_patch_operations(
 ) -> bool:
     """Apply host-authored semantic replacement facts before projection rerender."""
 
+    return apply_semantic_patch_operations_detailed(proposal, operations).changed
+
+
+def apply_semantic_patch_operations_detailed(
+    proposal: dict[str, Any],
+    operations: Sequence[Mapping[str, Any]],
+) -> SemanticPatchApplication:
+    """Apply semantic repairs and return structured rerender custody details."""
+
     changed = False
     applied_entries: list[dict[str, Any]] = []
+    applied_fields: list[str] = []
+    operation_ids: list[str] = []
+    affected_projections: list[str] = []
+    completion_required = False
     for operation in operations:
         if normalize_token(operation.get("target_layer")) != _SEMANTIC_LAYER:
             continue
-        applied_field = _apply_semantic_operation(proposal, operation)
+        target = _semantic_target(operation)
+        applied_field = _apply_semantic_operation(proposal, operation, target=target)
         if not applied_field:
             continue
+        operation_id = normalize_string(operation.get("operation_id"))
+        explicit_scope = patch_operation_explicit_affected_projections(operation)
         changed = True
+        applied_fields.append(applied_field)
+        if operation_id:
+            operation_ids.append(operation_id)
+        affected_projections.extend(explicit_scope)
+        completion_required = completion_required or target == "first_path" or not explicit_scope
         applied_entries.append(_ledger_entry(operation, applied_field=applied_field))
     if applied_entries:
         ledger = proposal.setdefault(_LEDGER_KEY, [])
@@ -37,11 +73,17 @@ def apply_semantic_patch_operations(
             ledger.extend(applied_entries)
         else:
             proposal[_LEDGER_KEY] = applied_entries
-    return changed
+    return SemanticPatchApplication(
+        changed=changed,
+        operation_ids=tuple(dict.fromkeys(operation_ids)),
+        applied_fields=tuple(dict.fromkeys(applied_fields)),
+        affected_projections=tuple(dict.fromkeys(affected_projections)),
+        completion_required=bool(completion_required),
+    )
 
 
-def _apply_semantic_operation(proposal: dict[str, Any], operation: Mapping[str, Any]) -> str:
-    target = _semantic_target(operation)
+def _apply_semantic_operation(proposal: dict[str, Any], operation: Mapping[str, Any], *, target: str = "") -> str:
+    target = target or _semantic_target(operation)
     replacement = operation.get("replacement_fact")
     if target == "first_path":
         return _set_first_path_contract(
@@ -64,38 +106,30 @@ def _apply_semantic_operation(proposal: dict[str, Any], operation: Mapping[str, 
     if target == "human_actors":
         return _set_domain_ontology_list(proposal, "human_actors", _replacement_list(replacement, _ACTOR_KEYS))
     if target == "external_systems":
-        return _set_domain_ontology_list(proposal, "external_systems", _replacement_list(replacement, _EXTERNAL_SYSTEM_KEYS))
+        return _set_domain_ontology_list(
+            proposal,
+            "external_systems",
+            _replacement_list(replacement, _EXTERNAL_SYSTEM_KEYS),
+        )
     if target == "internal_systems":
-        return _set_domain_ontology_list(proposal, "internal_systems", _replacement_list(replacement, _INTERNAL_SYSTEM_KEYS))
+        return _set_domain_ontology_list(
+            proposal,
+            "internal_systems",
+            _replacement_list(replacement, _INTERNAL_SYSTEM_KEYS),
+        )
     return ""
 
 
 def _semantic_target(operation: Mapping[str, Any]) -> str:
-    tokens = _semantic_route_tokens(operation)
-    if tokens & {"first_path_contract", "first_path"}:
-        return "first_path"
-    if tokens & {"proof_boundary", "release_boundary"}:
-        return "proof_boundary"
-    if tokens & {"state_object", "domain_ontology_state"}:
-        return "state_object"
-    if tokens & {"external_systems", "external_system"}:
-        return "external_systems"
-    if tokens & {"internal_systems", "internal_system"}:
-        return "internal_systems"
-    if tokens & {"human_actors", "human_actor", "actors", "actor"}:
-        return "human_actors"
-    return ""
-
-
-def _semantic_route_tokens(operation: Mapping[str, Any]) -> set[str]:
-    tokens: set[str] = set()
+    operation_kind = normalize_token(operation.get("operation_kind"))
+    target = _TARGET_BY_OPERATION_KIND.get(operation_kind)
+    if target:
+        return target
     for key in ("target_path", "semantic_node_id"):
-        value = normalize_token(operation.get(key))
-        if not value:
-            continue
-        tokens.add(value)
-        tokens.update(part for part in value.replace("[", ".").replace("]", ".").split(".") if part)
-    return tokens
+        target = _TARGET_BY_EXACT_PATH.get(normalize_token(operation.get(key)))
+        if target:
+            return target
+    return ""
 
 
 def _set_first_path_contract(
@@ -254,6 +288,46 @@ _STATE_OBJECT_KEYS = ("state_object", "state", "corrected_interpretation", "repl
 _ACTOR_KEYS = ("human_actors", "actors", "actor", "corrected_interpretation", "replacement")
 _INTERNAL_SYSTEM_KEYS = ("internal_systems", "systems", "system", "corrected_interpretation", "replacement")
 _EXTERNAL_SYSTEM_KEYS = ("external_systems", "systems", "system", "corrected_interpretation", "replacement")
+_TARGET_BY_OPERATION_KIND = {
+    "semantic_external_systems": "external_systems",
+    "semantic_first_path": "first_path",
+    "semantic_human_actors": "human_actors",
+    "semantic_internal_systems": "internal_systems",
+    "semantic_proof_boundary": "proof_boundary",
+    "semantic_state_object": "state_object",
+}
+_TARGET_BY_EXACT_PATH = {
+    "proposal.semantic_model.domain_ontology.external_systems": "external_systems",
+    "proposal.semantic_model.domain_ontology.human_actors": "human_actors",
+    "proposal.semantic_model.domain_ontology.internal_systems": "internal_systems",
+    "proposal.semantic_model.domain_ontology.proof_boundary": "proof_boundary",
+    "proposal.semantic_model.domain_ontology.state_object": "state_object",
+    "proposal.semantic_model.first_path_contract": "first_path",
+    "semantic_model.domain_ontology.external_systems": "external_systems",
+    "semantic_model.domain_ontology.human_actors": "human_actors",
+    "semantic_model.domain_ontology.internal_systems": "internal_systems",
+    "semantic_model.domain_ontology.proof_boundary": "proof_boundary",
+    "semantic_model.domain_ontology.state_object": "state_object",
+    "semantic_model.external_systems": "external_systems",
+    "semantic_model.first_path_contract": "first_path",
+    "semantic_model.first_path_contract.raw_path": "first_path",
+    "semantic_model.human_actors": "human_actors",
+    "semantic_model.internal_systems": "internal_systems",
+    "semantic_model.proof_boundary": "proof_boundary",
+    "semantic_model.state_object": "state_object",
+    "semanticmodelir.domain_ontology.external_systems": "external_systems",
+    "semanticmodelir.domain_ontology.human_actors": "human_actors",
+    "semanticmodelir.domain_ontology.internal_systems": "internal_systems",
+    "semanticmodelir.domain_ontology.proof_boundary": "proof_boundary",
+    "semanticmodelir.domain_ontology.state_object": "state_object",
+    "semanticmodelir.external_systems": "external_systems",
+    "semanticmodelir.first_path_contract": "first_path",
+    "semanticmodelir.first_path_contract.raw_path": "first_path",
+    "semanticmodelir.human_actors": "human_actors",
+    "semanticmodelir.internal_systems": "internal_systems",
+    "semanticmodelir.proof_boundary": "proof_boundary",
+    "semanticmodelir.state_object": "state_object",
+}
 
 
-__all__ = ["apply_semantic_patch_operations"]
+__all__ = ["SemanticPatchApplication", "apply_semantic_patch_operations", "apply_semantic_patch_operations_detailed"]

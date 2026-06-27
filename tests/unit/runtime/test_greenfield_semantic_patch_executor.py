@@ -8,6 +8,9 @@ from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_ap
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmRepairContext
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import apply_semantic_patch_operations
+from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import (
+    apply_semantic_patch_operations_detailed,
+)
 
 
 def test_semantic_patch_executor_applies_replacement_fact_and_records_ledger() -> None:
@@ -129,6 +132,39 @@ def test_semantic_patch_executor_routes_external_systems_without_rewriting_inter
     }
 
 
+def test_semantic_patch_executor_uses_operation_kind_as_primary_target() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "state_object": "Old state.",
+        },
+        "semantic_model": {"stable": True},
+    }
+
+    changed = apply_semantic_patch_operations(
+        proposal,
+        [
+            {
+                "operation_id": "state-object-repair",
+                "target_layer": "semantic_model",
+                "operation_kind": "semantic_state_object",
+                "target_path": "semantic_model.generic_fact",
+                "semantic_node_id": "SemanticModelIR.generic_fact",
+                "replacement_fact": {"state_object": "A decision record with evidence, owner, status, and result."},
+            }
+        ],
+    )
+
+    assert changed is True
+    assert proposal["intent"]["state_object"] == "A decision record with evidence, owner, status, and result."
+    assert proposal["semantic_model"]["domain_ontology"]["state_object"] == (
+        "A decision record with evidence, owner, status, and result."
+    )
+    assert proposal["semantic_patch_ledger"][0]["applied_field"] == (
+        "semantic_model.domain_ontology.state_object"
+    )
+
+
 def test_semantic_patch_executor_does_not_route_by_incidental_substrings() -> None:
     proposal: dict[str, Any] = {
         "intent": {
@@ -160,6 +196,119 @@ def test_semantic_patch_executor_does_not_route_by_incidental_substrings() -> No
     assert proposal["intent"]["internal_systems"] == ["Decision Ledger"]
     assert proposal["semantic_model"] == {"stable": True}
     assert "semantic_patch_ledger" not in proposal
+
+
+def test_semantic_patch_executor_rejects_partial_exact_path_matches() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "state_object": "Original state object.",
+        },
+        "semantic_model": {"stable": True},
+    }
+
+    changed = apply_semantic_patch_operations(
+        proposal,
+        [
+            {
+                "operation_id": "partial-path",
+                "target_layer": "semantic_model",
+                "operation_kind": "semantic_fact",
+                "target_path": "semantic_model.domain_ontology.state_object_notes",
+                "semantic_node_id": "SemanticModelIR.domain_ontology.state_object_notes",
+                "replacement_fact": {"state_object": "Incorrectly routed state object."},
+            }
+        ],
+    )
+
+    assert changed is False
+    assert proposal["intent"]["state_object"] == "Original state object."
+    assert proposal["semantic_model"] == {"stable": True}
+    assert "semantic_patch_ledger" not in proposal
+
+
+def test_semantic_patch_executor_uses_exact_compatibility_paths_without_token_splitting() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "proof_boundary": "Old proof.",
+        },
+        "semantic_model": {"stable": True},
+    }
+
+    changed = apply_semantic_patch_operations(
+        proposal,
+        [
+            {
+                "operation_id": "proof-boundary-repair",
+                "target_layer": "semantic_model",
+                "target_path": "semantic_model.domain_ontology.proof_boundary",
+                "semantic_node_id": "SemanticModelIR.unknown",
+                "replacement_fact": {"proof_boundary": "Proof links one decision to evidence and review history."},
+            }
+        ],
+    )
+
+    assert changed is True
+    assert proposal["intent"]["proof_boundary"] == "Proof links one decision to evidence and review history."
+    assert proposal["semantic_model"]["domain_ontology"]["proof_boundary"] == (
+        "Proof links one decision to evidence and review history."
+    )
+
+
+def test_semantic_patch_executor_reports_scoped_non_first_path_application() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "state_object": "Old state.",
+        },
+        "semantic_model": {"stable": True},
+    }
+
+    application = apply_semantic_patch_operations_detailed(
+        proposal,
+        [
+            {
+                "operation_id": "state-object-repair",
+                "target_layer": "semantic_model",
+                "operation_kind": "semantic_state_object",
+                "affected_projections": ["project_brief"],
+                "replacement_fact": {"state_object": "A decision record with evidence, owner, status, and result."},
+            }
+        ],
+    )
+
+    assert application.changed is True
+    assert application.operation_ids == ("state-object-repair",)
+    assert application.applied_fields == ("semantic_model.domain_ontology.state_object",)
+    assert application.affected_projections == ("project_brief",)
+    assert application.completion_required is False
+
+
+def test_semantic_patch_executor_requires_completion_without_explicit_scope() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "state_object": "Old state.",
+        },
+        "semantic_model": {"stable": True},
+    }
+
+    application = apply_semantic_patch_operations_detailed(
+        proposal,
+        [
+            {
+                "operation_id": "state-object-repair",
+                "target_layer": "semantic_model",
+                "operation_kind": "semantic_state_object",
+                "replacement_fact": {"state_object": "A decision record with evidence, owner, status, and result."},
+            }
+        ],
+    )
+
+    assert application.changed is True
+    assert application.affected_projections == ()
+    assert application.completion_required is True
 
 
 def test_patchset_repair_applies_host_replacement_before_semantic_model_regeneration(
@@ -246,3 +395,163 @@ def test_patchset_repair_applies_host_replacement_before_semantic_model_regenera
     assert repaired["semantic_patch_ledger"][0]["ambiguity"] == (
         "incoming evidence was chosen as the state-changing object."
     )
+
+
+def test_patchset_repair_skips_completion_for_scoped_non_first_path_semantic_patch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "normalize_host_reasoned_proposal",
+        lambda proposal: dict(proposal),
+    )
+
+    def unexpected_completion(*_args: Any, **_kwargs: Any) -> dict[str, Any]:
+        calls.append("completion")
+        return {}
+
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", unexpected_completion)
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "ensure_apply_semantic_model", unexpected_completion)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "repair_greenfield_semantic_projections",
+        lambda _proposal: False,
+    )
+    context = GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("project brief preview state object needs repair",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-STATE",
+                    "target_layer": "semantic_model",
+                    "operation_kind": "semantic_state_object",
+                    "target_path": "semantic_model.domain_ontology.state_object",
+                    "semantic_node_id": "SemanticModelIR.domain_ontology.state_object",
+                    "affected_projections": ["project_brief"],
+                    "replacement_fact": {"state_object": "A decision record with owner, status, and result."},
+                }
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+        {"intent": {"title": "Evidence Decision Workspace", "state_object": "Old state."}, "semantic_model": {}},
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert calls == []
+    assert repaired["intent"]["state_object"] == "A decision record with owner, status, and result."
+    application = repaired["post_confirm_patch_application_ledger"][-1]
+    assert application["affected_projections"] == ("project_brief",)
+    assert application["rerender_projections"] == (
+        "project_brief",
+        "accepted_project",
+        "compass",
+        "next_steps",
+    )
+    assert application["semantic_changed"] is True
+    assert application["completion_required"] is False
+    assert application["full_prewrite_required"] is False
+    assert application["rerender_scope"] == "affected_projections"
+
+
+def test_patchset_repair_keeps_first_path_semantic_patch_completion_required(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "normalize_host_reasoned_proposal",
+        lambda proposal: dict(proposal),
+    )
+
+    def complete(proposal: dict[str, Any], *, release_selector: str) -> dict[str, Any]:
+        calls.append(f"complete:{release_selector}")
+        return dict(proposal)
+
+    monkeypatch.setattr(greenfield_post_confirm_patch_apply, "complete_confirmed_proposal", complete)
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "ensure_apply_semantic_model",
+        lambda proposal, **_kwargs: dict(proposal),
+    )
+    monkeypatch.setattr(
+        greenfield_post_confirm_patch_apply,
+        "repair_greenfield_semantic_projections",
+        lambda _proposal: False,
+    )
+    context = GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("first path needs semantic repair",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-FIRST-PATH",
+                    "target_layer": "semantic_model",
+                    "operation_kind": "semantic_first_path",
+                    "target_path": "semantic_model.first_path_contract",
+                    "semantic_node_id": "SemanticModelIR.first_path_contract",
+                    "affected_projections": ["project_brief"],
+                    "replacement_fact": {
+                        "first_path": "A reviewer records evidence and sees the governed decision."
+                    },
+                }
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    repaired = greenfield_post_confirm_patch_apply.apply_greenfield_patchset_repairs(
+        {
+            "intent": {
+                "title": "Evidence Decision Workspace",
+                "first_path": "A decision workspace for review.",
+            },
+            "semantic_model": {},
+        },
+        release_selector="0.0.1",
+        repair_context=context,
+    )
+
+    assert calls == ["complete:0.0.1"]
+    application = repaired["post_confirm_patch_application_ledger"][-1]
+    assert application["affected_projections"] == ("project_brief",)
+    assert application["completion_required"] is True
+    assert application["full_prewrite_required"] is True
+    assert application["rerender_scope"] == "full_prewrite"
