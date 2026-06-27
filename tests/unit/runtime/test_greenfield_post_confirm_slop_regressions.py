@@ -16,7 +16,7 @@ from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
-from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import _proposal_with_component_brief_gate
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import proposal_with_component_brief_gate
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_component_contract import responsibility_from_contract
 from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract import (
@@ -1372,7 +1372,7 @@ Release 0.0.1 succeeds when a home cook can load a structured recipe, run its co
     rendered = json.dumps(proposal, sort_keys=True)
     backlog_copy = json.dumps(proposal["backlog"], sort_keys=True)
     readiness_copy = json.dumps(proposal["project_brief"]["coding_readiness_gates"], sort_keys=True)
-    prewrite_proposal = _proposal_with_component_brief_gate(proposal)
+    prewrite_proposal = proposal_with_component_brief_gate(proposal)
     prewrite_readiness_copy = json.dumps(prewrite_proposal["project_brief"]["coding_readiness_gates"], sort_keys=True)
     release_contract_copy = json.dumps(active_release_components(proposal["components"]), sort_keys=True)
     package = GreenfieldCompletionPackage(proposal=proposal)

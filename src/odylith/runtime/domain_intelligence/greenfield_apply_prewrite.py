@@ -179,7 +179,7 @@ def build_prewrite_completion_package(
                 allow_existing=True,
                 dry_run=True,
             )
-        package_proposal = _proposal_with_component_brief_gate(proposal)
+        package_proposal = proposal_with_component_brief_gate(proposal)
         accepted_project_preview = preview_accepted_project_memory(
             root=prewrite_root,
             proposal=package_proposal,
@@ -229,7 +229,7 @@ def build_prewrite_completion_package(
         )
 
 
-def _proposal_with_component_brief_gate(proposal: Mapping[str, Any]) -> dict[str, Any]:
+def proposal_with_component_brief_gate(proposal: Mapping[str, Any]) -> dict[str, Any]:
     result = dict(proposal)
     labels = [
         str(row.get("label", "")).strip()

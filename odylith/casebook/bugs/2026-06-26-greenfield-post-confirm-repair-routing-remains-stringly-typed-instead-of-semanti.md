@@ -473,6 +473,37 @@
   governed writes, four Radar workstreams, three Registry specs, six Atlas
   sources, five rendered surfaces, 18 trace nodes, all PM/architect/engineer/
   domain-expert lenses passing, and temp-root cleanup confirmed.
+  The next scoped-rerender checkpoint addressed the remaining broad replay
+  mechanism for artifact-plan-only rescue. `greenfield_artifact_plan.py` now
+  owns explicit projection dependency expansion and full-prewrite triggers, so
+  project-brief, Registry, Atlas, accepted-project, Compass, next-step, and
+  release-preview updates can carry an auditable rerender scope while Radar and
+  program changes still require staged prewrite recomputation. `greenfield_post_confirm_patch_apply.py`
+  records a post-confirm patch application ledger with operation ids, affected
+  projections, expanded rerender projections, completion requirements, and
+  full-prewrite posture. `greenfield_post_confirm_engine.py` now consumes that
+  ledger on the next pass and calls `greenfield_prewrite_projection_rerender.py`
+  to refresh only the named package previews against the current package. This
+  does not claim full generic SemanticModelIR scoped rerender; semantic patches
+  still require semantic completion until their owned projection substrate is
+  broader. A pre-commit reviewer then caught two projection-custody escapes in
+  that checkpoint: `program` was normalized to `release` before the
+  full-prewrite guard could see it, and `release` scoped rerender did not pull
+  Compass along even though release assignment feeds the Compass acceptance
+  preview. The failed mechanism is now explicit: do not let canonicalization
+  erase a control-plane projection before full-prewrite policy runs, and do not
+  treat a preview dependency as local when downstream package previews consume
+  it. The fix keeps `program` as a first-class full-prewrite scope, adds Compass
+  to the release dependency expansion, and adds regression coverage for both
+  cases. Proof for this checkpoint: scoped rerender and typed PatchSet tests
+  passed 66 tests in 24.12s; the wider greenfield post-confirm quality pack
+  passed 242 tests in 360.05s; and eight fresh source-local confirmed-create
+  simulations across biobank custody, archive consent, neonatal handoff,
+  orbital debris, soil carbon, repatriation, grid fairness, and model-incident
+  evidence all passed in the standard path with zero issues, all PM/architect/
+  engineer/domain-expert lenses passing, four Radar workstreams, three
+  Registry specs, six Atlas diagrams, 18 trace nodes, and temp cleanup after
+  every case.
 
 - Related Incidents/Bugs: CB-207
 
@@ -500,6 +531,7 @@
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
 - src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py
+- src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py
 - src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py

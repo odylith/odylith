@@ -3,10 +3,17 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from collections.abc import Sequence
 from typing import Any
 
 from odylith.runtime.common import display_text
+from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import (
+    artifact_plan_expand_projection_scope,
+    artifact_plan_operation_affected_projections,
+)
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_scope_requires_full_prewrite
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan_patch_executor import (
     apply_artifact_plan_patch_operations,
 )
@@ -22,6 +29,7 @@ from odylith.runtime.domain_intelligence.proposal_validation import validate_hos
 
 
 _MODEL_PATCH_LAYERS = frozenset({"semantic_model", "artifact_plan"})
+_PATCH_APPLICATION_LEDGER_KEY = "post_confirm_patch_application_ledger"
 
 
 def apply_greenfield_patchset_repairs(
@@ -58,15 +66,26 @@ def _apply_operations(
         return proposal
 
     repaired = proposal
+    first_path_semantic = any(_is_first_path_semantic_operation(operation) for operation in operations)
     semantic_changed = apply_semantic_patch_operations(repaired, operations)
     plan_changed = apply_artifact_plan_patch_operations(repaired, operations)
     if semantic_changed or plan_changed:
         repaired = _normalized_proposal(repaired)
-    repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
-    if any(_is_first_path_semantic_operation(operation) for operation in operations):
+    completion_required = semantic_changed or first_path_semantic
+    if completion_required:
+        repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
+    if first_path_semantic:
         if repair_proposal_first_path(repaired):
             repaired = _normalized_proposal(repaired)
             repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
+    if semantic_changed or plan_changed or completion_required:
+        _append_patch_application_ledger(
+            repaired,
+            operations=operations,
+            semantic_changed=semantic_changed,
+            plan_changed=plan_changed,
+            completion_required=completion_required,
+        )
     return repaired
 
 
@@ -115,6 +134,49 @@ def _has_legacy_structured_first_path_target(operation: Mapping[str, Any]) -> bo
         "SemanticModelIR.first_path_contract",
         "SemanticModelIR.first_path_contract.raw_path",
     }
+
+
+def _append_patch_application_ledger(
+    proposal: dict[str, Any],
+    *,
+    operations: Sequence[Mapping[str, Any]],
+    semantic_changed: bool,
+    plan_changed: bool,
+    completion_required: bool,
+) -> None:
+    affected_projections = tuple(
+        dict.fromkeys(
+            projection
+            for operation in operations
+            for projection in artifact_plan_operation_affected_projections(operation)
+        )
+    )
+    rerender_projections = artifact_plan_expand_projection_scope(affected_projections)
+    full_prewrite_required = completion_required or artifact_plan_scope_requires_full_prewrite(affected_projections)
+    operation_ids = tuple(
+        operation_id
+        for operation_id in (normalize_string(operation.get("operation_id")) for operation in operations)
+        if operation_id
+    )
+    target_layers = tuple(
+        dict.fromkeys(layer for layer in (_target_layer(operation) for operation in operations) if layer)
+    )
+    ledger = proposal.setdefault(_PATCH_APPLICATION_LEDGER_KEY, [])
+    entry = {
+        "operation_ids": operation_ids,
+        "target_layers": target_layers,
+        "affected_projections": affected_projections,
+        "rerender_projections": rerender_projections,
+        "semantic_changed": bool(semantic_changed),
+        "artifact_plan_changed": bool(plan_changed),
+        "completion_required": bool(completion_required),
+        "full_prewrite_required": bool(full_prewrite_required),
+        "rerender_scope": "full_prewrite" if full_prewrite_required else "affected_projections",
+    }
+    if isinstance(ledger, list):
+        ledger.append(entry)
+    else:
+        proposal[_PATCH_APPLICATION_LEDGER_KEY] = [entry]
 
 
 __all__ = ["apply_greenfield_patchset_repairs", "complete_greenfield_semantic_apply_payload"]

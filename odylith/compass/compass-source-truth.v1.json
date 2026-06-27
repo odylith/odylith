@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-06-27T05:22:40Z",
+  "generated_utc": "2026-06-27T06:17:42Z",
   "release_summary": {
     "catalog": [
       {
@@ -296,17 +296,17 @@
         "plan": {
           "created": "2026-06-26",
           "updated": "2026-06-26",
-          "all_total_tasks": 55,
-          "all_done_tasks": 41,
-          "total_tasks": 47,
-          "done_tasks": 41,
-          "progress_ratio": 0.8723,
+          "all_total_tasks": 56,
+          "all_done_tasks": 42,
+          "total_tasks": 48,
+          "done_tasks": 42,
+          "progress_ratio": 0.875,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.8723,
-          "display_progress_label": "87% progress",
+          "display_progress_ratio": 0.875,
+          "display_progress_label": "88% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 41/47",
+          "checklist_label": "Checklist 42/48",
           "next_tasks": [
             "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
             "Replace rendered-prose package repair with semantic or plan patch",
@@ -319,18 +319,18 @@
         "activity": {
           "24h": {
             "commit_count": 18,
-            "local_change_count": 5,
-            "file_touch_count": 144
+            "local_change_count": 6,
+            "file_touch_count": 143
           },
           "48h": {
-            "commit_count": 19,
-            "local_change_count": 5,
+            "commit_count": 20,
+            "local_change_count": 6,
             "file_touch_count": 352
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-26T22:22:00-07:00",
+          "last_activity_iso": "2026-06-26T23:16:51-07:00",
           "age_days": 0,
           "eta_days": null,
           "eta_confidence": "low"
@@ -382,7 +382,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 290,
+            "meaningful_change_count": 293,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -614,7 +614,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 295,
+            "meaningful_change_count": 298,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -1849,7 +1849,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -8757,7 +8757,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -23802,7 +23802,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24027,7 +24027,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24252,7 +24252,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24477,7 +24477,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -24889,7 +24889,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29402,7 +29402,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -29609,7 +29609,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 283,
+            "meaningful_change_count": 286,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -29738,17 +29738,17 @@
         "plan": {
           "created": "2026-06-26",
           "updated": "2026-06-26",
-          "all_total_tasks": 55,
-          "all_done_tasks": 41,
-          "total_tasks": 47,
-          "done_tasks": 41,
-          "progress_ratio": 0.8723,
+          "all_total_tasks": 56,
+          "all_done_tasks": 42,
+          "total_tasks": 48,
+          "done_tasks": 42,
+          "progress_ratio": 0.875,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.8723,
-          "display_progress_label": "87% progress",
+          "display_progress_ratio": 0.875,
+          "display_progress_label": "88% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 41/47",
+          "checklist_label": "Checklist 42/48",
           "next_tasks": [
             "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
             "Replace rendered-prose package repair with semantic or plan patch",
@@ -29761,18 +29761,18 @@
         "activity": {
           "24h": {
             "commit_count": 18,
-            "local_change_count": 5,
-            "file_touch_count": 144
+            "local_change_count": 6,
+            "file_touch_count": 143
           },
           "48h": {
-            "commit_count": 19,
-            "local_change_count": 5,
+            "commit_count": 20,
+            "local_change_count": 6,
             "file_touch_count": 352
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-26T22:22:00-07:00",
+          "last_activity_iso": "2026-06-26T23:16:51-07:00",
           "age_days": 0,
           "eta_days": null,
           "eta_confidence": "low"
@@ -29824,7 +29824,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 290,
+            "meaningful_change_count": 293,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -30056,7 +30056,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 295,
+            "meaningful_change_count": 298,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -32426,7 +32426,7 @@
           ],
           "linked_bug_id": "CB-077",
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -40273,7 +40273,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -53618,7 +53618,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -53843,7 +53843,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54068,7 +54068,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54293,7 +54293,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -54518,7 +54518,7 @@
             "broader hardening"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -58844,7 +58844,7 @@
             "docs"
           ],
           "deployment_truth": {
-            "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+            "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
             "pushed_head": "unknown",
             "published_source_commit": "unknown",
             "runner_fingerprint": "unknown",
@@ -59051,7 +59051,7 @@
             "implementation_evidence": true,
             "linked_child_count": 0,
             "linked_surface_count": 5,
-            "meaningful_change_count": 283,
+            "meaningful_change_count": 286,
             "meaningful_scope_activity": true,
             "narrow_verified_signal": true,
             "open_warning": false,
@@ -59181,17 +59181,17 @@
       "plan": {
         "created": "2026-06-26",
         "updated": "2026-06-26",
-        "all_total_tasks": 55,
-        "all_done_tasks": 41,
-        "total_tasks": 47,
-        "done_tasks": 41,
-        "progress_ratio": 0.8723,
+        "all_total_tasks": 56,
+        "all_done_tasks": 42,
+        "total_tasks": 48,
+        "done_tasks": 42,
+        "progress_ratio": 0.875,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.8723,
-        "display_progress_label": "87% progress",
+        "display_progress_ratio": 0.875,
+        "display_progress_label": "88% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 41/47",
+        "checklist_label": "Checklist 42/48",
         "next_tasks": [
           "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
           "Replace rendered-prose package repair with semantic or plan patch",
@@ -59204,18 +59204,18 @@
       "activity": {
         "24h": {
           "commit_count": 18,
-          "local_change_count": 5,
-          "file_touch_count": 144
+          "local_change_count": 6,
+          "file_touch_count": 143
         },
         "48h": {
-          "commit_count": 19,
-          "local_change_count": 5,
+          "commit_count": 20,
+          "local_change_count": 6,
           "file_touch_count": 352
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-26T22:22:00-07:00",
+        "last_activity_iso": "2026-06-26T23:16:51-07:00",
         "age_days": 0,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59267,7 +59267,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 290,
+          "meaningful_change_count": 293,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -59499,7 +59499,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 295,
+          "meaningful_change_count": 298,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -61869,7 +61869,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -69716,7 +69716,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83061,7 +83061,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83286,7 +83286,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83511,7 +83511,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83736,7 +83736,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -83961,7 +83961,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -88287,7 +88287,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -88494,7 +88494,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 283,
+          "meaningful_change_count": 286,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -90862,7 +90862,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -93184,7 +93184,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 295,
+          "meaningful_change_count": 298,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -93311,17 +93311,17 @@
       "plan": {
         "created": "2026-06-26",
         "updated": "2026-06-26",
-        "all_total_tasks": 55,
-        "all_done_tasks": 41,
-        "total_tasks": 47,
-        "done_tasks": 41,
-        "progress_ratio": 0.8723,
+        "all_total_tasks": 56,
+        "all_done_tasks": 42,
+        "total_tasks": 48,
+        "done_tasks": 42,
+        "progress_ratio": 0.875,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.8723,
-        "display_progress_label": "87% progress",
+        "display_progress_ratio": 0.875,
+        "display_progress_label": "88% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 41/47",
+        "checklist_label": "Checklist 42/48",
         "next_tasks": [
           "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
           "Replace rendered-prose package repair with semantic or plan patch",
@@ -93334,18 +93334,18 @@
       "activity": {
         "24h": {
           "commit_count": 18,
-          "local_change_count": 5,
-          "file_touch_count": 144
+          "local_change_count": 6,
+          "file_touch_count": 143
         },
         "48h": {
-          "commit_count": 19,
-          "local_change_count": 5,
+          "commit_count": 20,
+          "local_change_count": 6,
           "file_touch_count": 352
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-26T22:22:00-07:00",
+        "last_activity_iso": "2026-06-26T23:16:51-07:00",
         "age_days": 0,
         "eta_days": null,
         "eta_confidence": "low"
@@ -93397,7 +93397,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 290,
+          "meaningful_change_count": 293,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,
@@ -102308,7 +102308,7 @@
         ],
         "linked_bug_id": "CB-077",
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112129,7 +112129,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112354,7 +112354,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112579,7 +112579,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -112804,7 +112804,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -113216,7 +113216,7 @@
           "broader hardening"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -117729,7 +117729,7 @@
           "docs"
         ],
         "deployment_truth": {
-          "local_head": "4caef6f35589346b59213c2c1590e2d71db17d6f",
+          "local_head": "5f8553e4019efaa2d10125c04b848d64d1169fef",
           "pushed_head": "unknown",
           "published_source_commit": "unknown",
           "runner_fingerprint": "unknown",
@@ -117936,7 +117936,7 @@
           "implementation_evidence": true,
           "linked_child_count": 0,
           "linked_surface_count": 5,
-          "meaningful_change_count": 283,
+          "meaningful_change_count": 286,
           "meaningful_scope_activity": true,
           "narrow_verified_signal": true,
           "open_warning": false,

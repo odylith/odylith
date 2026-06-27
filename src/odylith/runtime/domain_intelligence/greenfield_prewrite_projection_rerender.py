@@ -1,0 +1,139 @@
+"""Scoped prewrite package refresh for typed greenfield projection repair."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from collections.abc import Sequence
+from dataclasses import replace
+from pathlib import Path
+from typing import Any
+
+from odylith.runtime.domain_intelligence import greenfield_apply_components
+from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
+from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
+from odylith.runtime.domain_intelligence import greenfield_experience
+from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.governance import release_planning_authoring
+
+
+def rerender_prewrite_package_projections(
+    *,
+    root: Path,
+    previous_prewrite_build: greenfield_apply_prewrite.GreenfieldPrewriteBuild,
+    proposal: Mapping[str, Any],
+    release_selector: str,
+    validation_gate: Mapping[str, Any],
+    projections: Sequence[str],
+    release_assignment_note: str,
+) -> greenfield_apply_prewrite.GreenfieldPrewriteBuild:
+    """Refresh package previews for an explicit projection scope."""
+
+    scope = {str(projection).strip() for projection in projections if str(projection).strip()}
+    if not scope:
+        return previous_prewrite_build
+    target_root = Path(root).expanduser().resolve()
+    package = previous_prewrite_build.package
+    backlog_result = package.backlog_result or previous_prewrite_build.backlog_result
+    program_result = package.program_result or {}
+    package_proposal = greenfield_apply_prewrite.proposal_with_component_brief_gate(proposal)
+    component_preview: Sequence[Mapping[str, Any]] = package.component_registry_preview
+    release_target_result = package.release_target_result
+    release_assignment_result = package.release_assignment_result
+    release_workstream_ids = package.release_workstream_ids
+    updates: dict[str, Any] = {
+        "proposal": package_proposal,
+        "tribunal_preview": validation_gate,
+    }
+
+    if "atlas" in scope:
+        updates["rendered_atlas_sources"] = greenfield_apply_diagrams.render_prewrite_atlas_sources(package_proposal)
+
+    if "release" in scope and release_selector:
+        release_workstream_ids = tuple(
+            greenfield_programs.first_release_workstream_ids(
+                proposal=package_proposal,
+                created_backlog=backlog_result.get("created", ()),
+                program_result=program_result,
+            )
+        )
+        release_target_result = greenfield_apply_prewrite.ensure_release_target(
+            repo_root=target_root,
+            proposal=package_proposal,
+            selector=release_selector,
+            dry_run=True,
+        )
+        release_assignment_result = release_planning_authoring.add_workstreams_to_release(
+            repo_root=target_root,
+            workstream_ids=release_workstream_ids,
+            selector=release_selector,
+            note=release_assignment_note,
+            idea_specs=backlog_result.get("_candidate_idea_specs", {}),
+            allow_existing=True,
+            dry_run=True,
+        )
+        updates["release_target_result"] = release_target_result
+        updates["release_assignment_result"] = release_assignment_result
+        updates["release_workstream_ids"] = release_workstream_ids
+
+    if "registry" in scope:
+        component_preview = greenfield_apply_components.preview_prewrite_components(
+            root=target_root,
+            proposal=package_proposal,
+            release_selector=release_selector,
+            backlog_result=backlog_result,
+            program_result=program_result,
+        )
+        updates["rendered_component_specs"] = greenfield_apply_components.render_prewrite_component_specs(
+            root=target_root,
+            proposal=package_proposal,
+            release_selector=release_selector,
+            backlog_result=backlog_result,
+            program_result=program_result,
+        )
+        updates["component_registry_preview"] = tuple(component_preview)
+
+    if "project_brief" in scope or "registry" in scope:
+        updates["project_brief_preview"] = (
+            package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
+        )
+
+    if "accepted_project" in scope:
+        updates["accepted_project_preview"] = greenfield_apply_prewrite.preview_accepted_project_memory(
+            root=target_root,
+            proposal=package_proposal,
+            backlog_result=backlog_result,
+            component_items=component_preview,
+            release_selector=release_selector,
+            release_target_result=release_target_result,
+            release_assignment_result=release_assignment_result,
+            validation_gate=validation_gate,
+        )
+
+    if "compass" in scope:
+        updates["compass_memory_preview"] = greenfield_apply_prewrite.preview_compass_acceptance_event(
+            root=target_root,
+            proposal=package_proposal,
+            backlog_result=backlog_result,
+            component_items=component_preview,
+            release_selector=release_selector,
+            release_target_result=release_target_result,
+            release_assignment_result=release_assignment_result,
+        )
+
+    if "next_steps" in scope:
+        updates["next_steps_preview"] = greenfield_experience.build_next_steps(
+            proposal=package_proposal,
+            backlog_result=backlog_result,
+            first_release_workstreams=release_workstream_ids,
+            program_result=program_result,
+            release_selector=release_selector,
+        )
+
+    return replace(
+        previous_prewrite_build,
+        package=replace(package, **updates),
+        backlog_result=backlog_result,
+    )
+
+
+__all__ = ["rerender_prewrite_package_projections"]

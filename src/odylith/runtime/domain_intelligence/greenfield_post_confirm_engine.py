@@ -13,6 +13,7 @@ import time
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.common.value_coercion import normalize_string_list
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     GreenfieldCompletionReport,
 )
@@ -128,6 +129,7 @@ def run_greenfield_post_confirm_engine(
     release_selector: str,
     build_prewrite: Callable[[Mapping[str, Any], Any], Any],
     repair_proposal: Callable[..., Mapping[str, Any]],
+    rerender_prewrite: Callable[..., Any] | None = None,
     proposal_ready: bool = False,
     max_passes: int = POST_CONFIRM_MAX_PASSES,
     budget_seconds: float = POST_CONFIRM_BUDGET_SECONDS,
@@ -147,6 +149,8 @@ def run_greenfield_post_confirm_engine(
     repaired_issue_codes: set[str] = set()
     last_report: GreenfieldCompletionReport | None = None
     last_prewrite_build: Any = None
+    pending_prewrite_build: Any = None
+    pending_rerender_projections: tuple[str, ...] = ()
     current = proposal
     bounded_passes = max(1, int(max_passes))
     if active_tier == "rescue":
@@ -168,7 +172,17 @@ def run_greenfield_post_confirm_engine(
         if not (proposal_ready and pass_index == 0):
             assert_greenfield_completion_ready(current, release_selector=release_selector)
 
-        prewrite_build = build_prewrite(current, tribunal)
+        if pending_rerender_projections and pending_prewrite_build is not None and rerender_prewrite is not None:
+            prewrite_build = rerender_prewrite(
+                current_proposal=current,
+                tribunal=tribunal,
+                previous_prewrite_build=pending_prewrite_build,
+                projections=pending_rerender_projections,
+            )
+        else:
+            prewrite_build = build_prewrite(current, tribunal)
+        pending_prewrite_build = None
+        pending_rerender_projections = ()
         package_repair = repair_greenfield_package_until_clean(prewrite_build.package)
         initial_typed_issues = classify_greenfield_post_confirm_issues(package_repair.initial_report)
         if package_repair.changed:
@@ -254,6 +268,9 @@ def run_greenfield_post_confirm_engine(
                 rescue_activated=rescue_activated,
             ),
         )
+        pending_rerender_projections = _scoped_rerender_projections(current)
+        if pending_rerender_projections:
+            pending_prewrite_build = prewrite_build
         proposal_ready = False
         pass_index += 1
 
@@ -496,6 +513,20 @@ def _accepts_repair_context(callback: Callable[..., Any]) -> bool:
         }:
             positional_capacity += 1
     return positional_capacity >= 2
+
+
+def _scoped_rerender_projections(proposal: Mapping[str, Any]) -> tuple[str, ...]:
+    ledger = proposal.get("post_confirm_patch_application_ledger")
+    if not isinstance(ledger, list) or not ledger:
+        return ()
+    latest = ledger[-1]
+    if not isinstance(latest, Mapping):
+        return ()
+    if latest.get("rerender_scope") != "affected_projections":
+        return ()
+    if latest.get("full_prewrite_required"):
+        return ()
+    return tuple(normalize_string_list(latest.get("rerender_projections"), limit=16))
 
 
 def _legacy_untyped_issue(message: str) -> GreenfieldPostConfirmIssue:

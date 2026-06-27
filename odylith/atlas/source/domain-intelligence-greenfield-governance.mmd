@@ -25,7 +25,7 @@ flowchart LR
     subgraph rescue_lane["Bounded rescue path up to 90s"]
       direction TB
       repairable["Repairable typed findings"]
-      patchset["PatchSet request<br/>operation ID, kind, owner,<br/>target path, projection kind"]
+      patchset["PatchSet request<br/>operation ID, kind, owner,<br/>target path, affected projections"]
       rescue_budget{"Rescue budget remains?"}
       tribunal_planner["Structured Tribunal patch planner<br/>host fills replacement facts only"]
       provider_adapter["Reasoning provider adapter<br/>explicit model,<br/>ignored unsafe user config"]
@@ -33,8 +33,9 @@ flowchart LR
       custody_check["Patch-plan custody validator<br/>reject moved targets,<br/>invented paths, empty facts"]
       semantic_apply["SemanticModelIR patch executor<br/>IR first, intent mirror"]
       plan_apply["ArtifactPlanIR patch executor<br/>shared projection contract,<br/>projection facts only"]
+      scope_ledger["Patch application ledger<br/>expanded dependencies,<br/>full-prewrite posture"]
       copy_repair["Safe mechanical draft cleanup<br/>duplicate words and dangling tails only"]
-      rerender["Rerender impacted projections<br/>same gates, no lowered bar"]
+      rerender["Scoped prewrite rerender<br/>named package previews,<br/>same gates, no lowered bar"]
     end
 
     subgraph write_lane["Fail-closed governed writes"]
@@ -56,8 +57,9 @@ flowchart LR
     custody_check --> plan_apply
     custody_check --> copy_repair
     projection_contract -. "sanctioned roots" .-> plan_apply
+    projection_contract -. "dependency scope" .-> scope_ledger
     semantic_apply --> rerender
-    plan_apply --> rerender
+    plan_apply --> scope_ledger --> rerender
     copy_repair --> rerender
     rerender --> validators
     rescue_budget -- "no" --> rollback --> blockers
@@ -70,7 +72,7 @@ flowchart LR
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirm,confirmed_ir intent;
     class apply_input,compiler,semantic_ir,artifact_plan,projection_contract,projections,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
-    class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,copy_repair,rerender rescue;
+    class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,copy_repair,rerender rescue;
     class writes,rollback,blockers,proof_log write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155

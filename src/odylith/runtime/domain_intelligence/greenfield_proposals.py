@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import load
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import write_structured_confirmed_intent_file
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import greenfield_prewrite_projection_rerender
 from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import ensure_greenfield_create_baseline
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
@@ -461,6 +462,17 @@ def _build_repaired_prewrite_package(
         proposal=proposal,
         release_selector=release_selector,
         build_prewrite=build_prewrite,
+        rerender_prewrite=lambda current_proposal, tribunal, previous_prewrite_build, projections: (
+            greenfield_prewrite_projection_rerender.rerender_prewrite_package_projections(
+                root=root,
+                previous_prewrite_build=previous_prewrite_build,
+                proposal=current_proposal,
+                release_selector=release_selector,
+                validation_gate=tribunal.to_dict(),
+                projections=projections,
+                release_assignment_note=greenfield_apply_write.release_assignment_note(selector=release_selector),
+            )
+        ),
         repair_proposal=lambda current, context: _repair_confirmed_apply_payload(
             current,
             release_selector=release_selector,

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
+from typing import Mapping
 
 import pytest
 
@@ -1495,6 +1496,120 @@ def test_repair_payload_does_not_mutate_proposal_for_artifact_draft_only_patchse
 
     assert repaired == {"intent": {"title": "Artifact Draft Only"}}
     assert calls == []
+
+
+def test_post_confirm_engine_uses_scoped_prewrite_rerender_after_patch_ledger(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    finding = review_finding(
+        code="artifact_shape_drift",
+        surface="Project brief",
+        target_path="project_brief.project_outcome",
+        projection_id="project_brief",
+        semantic_node_id="ArtifactPlanIR.project_brief",
+        severity="medium",
+        repairability="plan_patch",
+        owner="artifact_plan",
+        message="project brief preview missing release proof",
+        source="package_review",
+    )
+    failed_report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={},
+        tribunal_status="passed",
+        issues=(finding.message,),
+        findings=(finding,),
+    )
+    passed_report = GreenfieldCompletionReport(
+        status="passed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={},
+        tribunal_status="passed",
+        issues=(),
+        findings=(),
+    )
+    reports = iter((failed_report, passed_report))
+    build_calls: list[Mapping[str, Any]] = []
+    rerender_calls: list[tuple[str, ...]] = []
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: passed_report)
+    monkeypatch.setattr(engine, "build_greenfield_quality_lens_report", lambda _package: {"status": "passed"})
+    monkeypatch.setattr(
+        engine,
+        "compile_greenfield_semantics",
+        lambda _proposal: SimpleNamespace(to_dict=lambda: {"status": "passed"}),
+    )
+
+    def fake_build_prewrite(current: Mapping[str, Any], _tribunal: Any) -> SimpleNamespace:
+        build_calls.append(current)
+        return SimpleNamespace(
+            package=GreenfieldCompletionPackage(proposal=current, release_selector="0.0.1"),
+            backlog_result={"created": []},
+        )
+
+    def fake_package_repair(package: GreenfieldCompletionPackage) -> SimpleNamespace:
+        report = next(reports)
+        return SimpleNamespace(
+            package=package,
+            initial_report=report,
+            report=report,
+            passes=0,
+            changed=False,
+        )
+
+    monkeypatch.setattr(engine, "repair_greenfield_package_until_clean", fake_package_repair)
+
+    def fake_repair_proposal(
+        current: Mapping[str, Any],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> Mapping[str, Any]:
+        assert context.repair_tier == "rescue"
+        repaired = dict(current)
+        repaired["project_brief"] = {"project_outcome": "Release proof is now explicit."}
+        repaired["post_confirm_patch_application_ledger"] = [
+            {
+                "rerender_scope": "affected_projections",
+                "full_prewrite_required": False,
+                "rerender_projections": ("project_brief", "accepted_project", "compass", "next_steps"),
+            }
+        ]
+        return repaired
+
+    def fake_rerender_prewrite(
+        *,
+        current_proposal: Mapping[str, Any],
+        tribunal: Any,
+        previous_prewrite_build: Any,
+        projections: tuple[str, ...],
+    ) -> SimpleNamespace:
+        assert tribunal.passed is True
+        rerender_calls.append(tuple(projections))
+        return SimpleNamespace(
+            package=GreenfieldCompletionPackage(
+                proposal=current_proposal,
+                release_selector="0.0.1",
+                project_brief_preview=current_proposal.get("project_brief"),
+            ),
+            backlog_result=previous_prewrite_build.backlog_result,
+        )
+
+    result = engine.run_greenfield_post_confirm_engine(
+        proposal={"intent": {"title": "Scoped Repair"}},
+        release_selector="0.0.1",
+        build_prewrite=fake_build_prewrite,
+        repair_proposal=fake_repair_proposal,
+        rerender_prewrite=fake_rerender_prewrite,
+        repair_tier="auto",
+        max_passes=3,
+    )
+
+    assert result.manifest["status"] == "passed"
+    assert len(build_calls) == 1
+    assert rerender_calls == [("project_brief", "accepted_project", "compass", "next_steps")]
 
 
 def test_package_repair_collapses_adjacent_duplicate_words() -> None:

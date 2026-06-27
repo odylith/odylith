@@ -6,9 +6,12 @@ from odylith.runtime.domain_intelligence.greenfield_artifact_plan import ARTIFAC
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_repair_projection
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_affected_projections
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_canonical_root
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_expand_projection_scope
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_is_immutable_field
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_operation_affected_projections
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_projection_for_path
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_root_kind
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_scope_requires_full_prewrite
 
 
 DOMAIN_INTELLIGENCE = Path(__file__).resolve().parents[3] / "src/odylith/runtime/domain_intelligence"
@@ -52,6 +55,48 @@ def test_artifact_plan_ir_normalizes_artifact_draft_repair_projection_ids() -> N
     assert artifact_draft_repair_projection("rendered_atlas_sources") == "atlas"
     assert artifact_draft_repair_projection("artifact_draft_set") == "artifact_draft_set"
     assert artifact_draft_repair_projection("unknown_projection") == ""
+
+
+def test_artifact_plan_ir_expands_projection_dependencies_without_prose_routing() -> None:
+    operation = {
+        "affected_projections": ["project_brief"],
+        "target_path": "product_manager.note",
+        "projection_kind": "product_manager",
+    }
+
+    assert artifact_plan_operation_affected_projections(operation) == ("project_brief",)
+    assert artifact_plan_expand_projection_scope(("project_brief",)) == (
+        "project_brief",
+        "accepted_project",
+        "compass",
+        "next_steps",
+    )
+    assert artifact_plan_expand_projection_scope(("registry",)) == (
+        "registry",
+        "project_brief",
+        "accepted_project",
+        "compass",
+        "next_steps",
+    )
+    assert artifact_plan_expand_projection_scope(("release",)) == (
+        "release",
+        "accepted_project",
+        "compass",
+        "next_steps",
+    )
+    assert artifact_plan_operation_affected_projections({"projection_kind": "program"}) == ("program",)
+    assert artifact_plan_expand_projection_scope(("program",)) == (
+        "program",
+        "accepted_project",
+        "compass",
+        "next_steps",
+        "release",
+    )
+    assert artifact_plan_scope_requires_full_prewrite(("project_brief",)) is False
+    assert artifact_plan_scope_requires_full_prewrite(("release",)) is False
+    assert artifact_plan_scope_requires_full_prewrite(("radar",)) is True
+    assert artifact_plan_scope_requires_full_prewrite(("program",)) is True
+    assert artifact_plan_operation_affected_projections({"projection_kind": "product_manager"}) == ()
 
 
 def test_artifact_plan_ir_contract_replaces_private_projection_maps_in_callers() -> None:

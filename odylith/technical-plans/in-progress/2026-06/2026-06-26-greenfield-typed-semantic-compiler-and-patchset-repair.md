@@ -331,7 +331,18 @@ vocabulary, or degraded packages.
       predicates, and `greenfield_workstream_risk_projection.py` projects
       semantic visible-result evidence instead of raw comma-heavy first-path
       chains. Full host-authored semantic or plan patch application plus
-      impacted-projection rerender remain open.
+      impacted-projection rerender remain open for semantic patches. The
+      artifact-plan-only path now has a scoped package rerender seam:
+      `greenfield_artifact_plan.py` expands affected projection dependencies
+      and marks Radar/program scopes as full-prewrite, `greenfield_post_confirm_patch_apply.py`
+      records a patch application ledger, `greenfield_post_confirm_engine.py`
+      consumes that ledger on the next pass, and
+      `greenfield_prewrite_projection_rerender.py` refreshes only the named
+      prewrite package previews when staged recomputation is not required.
+      A pre-commit review caught and fixed two custody escapes in this seam:
+      `program` must remain a first-class projection until the full-prewrite
+      guard runs, and release-scope rerender must include Compass because
+      release assignment feeds Compass acceptance preview state.
 - [x] Execute artifact-plan PatchSet operations for sanctioned projection
       facts. `greenfield_artifact_plan_patch_executor.py` applies only formal
       `artifact_plan` replacement facts against approved proposal roots for
@@ -613,3 +624,17 @@ vocabulary, or degraded packages.
       Atlas diagrams, five rendered surfaces, release/program records, 18
       trace nodes, zero package-quality issues, and passed PM, architect,
       engineer, and domain-expert lenses.
+- [x] Scoped artifact-plan rerender proof: focused ArtifactPlanIR,
+      artifact-plan PatchSet, post-confirm engine, semantic patch, and
+      Tribunal patch-planner tests passed 66 tests in 24.12s. The wider
+      greenfield post-confirm quality pack passed 242 tests in 360.05s. A fresh
+      eight-domain source-local matrix passed the standard path without rescue
+      across cryogenic biobank custody 15.170s, Indigenous archive consent
+      14.285s, neonatal medication handoff 15.298s, orbital debris dispute
+      15.177s, soil carbon verification 15.084s, museum repatriation covenant
+      14.841s, grid demand fairness 15.304s, and model incident evidence room
+      15.186s. Every run reported `issue_count: 0`, `repair_tier: standard`,
+      `rescue_activated: false`, one post-confirm pass, all PM/architect/
+      engineer/domain-expert lenses passing, four Radar workstreams, three
+      Registry specs, six Atlas Mermaid sources, 18 trace nodes, governed
+      writes, and temp cleanup.
