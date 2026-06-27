@@ -408,7 +408,7 @@ vocabulary, or degraded packages.
       `test_greenfield_radar_projection_quality.py`: 130 tests in 60.09
       seconds.
 - [x] Timing tests proving standard under 60 seconds.
-- [ ] Rescue-path timing proof under 90 seconds after host-authored semantic
+- [x] Rescue-path timing proof under 90 seconds after host-authored semantic
       repair is wired end to end.
 - [x] Recursive high-variance simulation runs across unrelated domains with
       temp repos deleted after each run.
@@ -494,6 +494,16 @@ vocabulary, or degraded packages.
       57 tests in 0.36s, compile proof passed, and a real Codex CLI `gpt-5.4`
       planner call returned one validated `project_outcome` patch operation in
       24.895s.
+- [x] Controlled rescue-write proof: a source-local temp repo used a normal
+      accepted Product Intent Confirmation and valid proposal, then injected
+      unique first-pass Radar semantic-coverage misses at the prewrite package
+      boundary. Auto tier activated rescue, the real Codex CLI structured
+      planner repaired typed semantic findings, the second pass rendered clean,
+      and the normal write transaction committed governed records in 39.768s
+      against the 90s rescue budget. The manifest passed with `repair_tier:
+      rescue`, `rescue_activated: true`, two passes, zero final issues, four
+      workstreams, three Registry component specs, six Atlas sources, and temp
+      repo cleanup after the run.
 - [x] IR-first semantic patch proof: `greenfield_semantic_patch_executor.py`
       now records applied `semantic_model.*` fields and leaves
       `semantic_model` alive while mirroring accepted-intent compatibility
@@ -525,7 +535,7 @@ vocabulary, or degraded packages.
       five Radar records, three Registry records, six Atlas diagrams, 18 trace
       nodes, governed records written, and temp repos deleted before the next
       run.
-- [ ] Rescue-path end-to-end timing proof under 90 seconds with a real
+- [x] Rescue-path end-to-end timing proof under 90 seconds with a real
       configured host repair remains required before release closure.
 - [x] Current broad greenfield proof: confirmed-intent recovery, confirmed
       intent, post-confirm engine, semantic patch executor, quality repairs,

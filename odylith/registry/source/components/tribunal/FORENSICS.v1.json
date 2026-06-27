@@ -30,9 +30,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 128,
-    "mapped_workstream_evidence_count": 115,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 129,
+    "mapped_workstream_evidence_count": 116,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 9,
     "status": "forensic_coverage_present",
     "timeline_event_count": 129
@@ -46,19 +46,38 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
-      "event_index": 633,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 632,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "implementation",
       "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-26T21:18:05-07:00",
-      "workstreams": []
+      "summary": "Controlled greenfield rescue-write proof passed: auto tier activated rescue after first-pass Radar semantic misses, real Codex gpt-5.4 structured planner repaired typed findings, second pass passed, and governed records committed in 39.768s under the 90s budget.",
+      "ts_iso": "2026-06-26T21:30:17-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
