@@ -12,7 +12,7 @@ from odylith.runtime.common.value_coercion import normalize_token
 TRIBUNAL_LENS_REPORT_VERSION = "odylith.tribunal.lens_report.v1"
 
 _SEVERITIES = {"critical", "high", "medium", "low"}
-_REPAIRABILITIES = {"unrepairable", "proposal_repair", "semantic_patch", "plan_patch", "safe_package_repair"}
+_REPAIRABILITIES = {"unrepairable", "semantic_patch", "plan_patch", "safe_package_repair"}
 
 
 @dataclass(frozen=True)

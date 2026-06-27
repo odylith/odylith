@@ -9,6 +9,7 @@ from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import quality_lens_repair_owner
 from odylith.runtime.reasoning.tribunal_lens import tribunal_lens_check
 from odylith.runtime.reasoning.tribunal_lens import tribunal_lens_report
 
@@ -55,7 +56,7 @@ _CHECK_TARGETS = {
         "target_path": "proposal.backlog.success_metrics",
         "semantic_node_id": "ArtifactPlanIR.radar",
         "repairability": "plan_patch",
-        "owner": "radar_renderer",
+        "owner": "artifact_plan_projector",
     },
     "first_release_scope": {
         "role": "Product manager",
@@ -63,7 +64,7 @@ _CHECK_TARGETS = {
         "target_path": "proposal.release_plan",
         "semantic_node_id": "ArtifactPlanIR.release_plan",
         "repairability": "plan_patch",
-        "owner": "release_planner",
+        "owner": "artifact_plan_projector",
     },
     "decision_boundary": {
         "role": "Product manager",
@@ -119,7 +120,7 @@ _CHECK_TARGETS = {
         "target_path": "prewrite_package.next_steps",
         "semantic_node_id": "ArtifactPlanIR.next_steps",
         "repairability": "plan_patch",
-        "owner": "operator_experience_renderer",
+        "owner": "artifact_plan_projector",
     },
     "validation_evidence": {
         "role": "Engineer",
@@ -411,7 +412,7 @@ def _check(condition: bool, name: str, evidence: str, issue: str) -> dict[str, s
         semantic_node_id=str(meta.get("semantic_node_id", "ReviewReport.quality_lenses")),
         severity="high",
         repairability=str(meta.get("repairability", "semantic_patch")),
-        owner=str(meta.get("owner", "quality_lens_contract")),
+        owner=quality_lens_repair_owner(name) or str(meta.get("owner", "quality_lens_contract")),
     ).to_dict()
 
 

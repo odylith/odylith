@@ -390,7 +390,7 @@ def _rescue_eligible(issues: Sequence[GreenfieldPostConfirmIssue]) -> bool:
         "semantic_compiler",
         "semantic_drift",
     }
-    repairable_types = {"proposal_repair", "semantic_patch", "plan_patch", "safe_package_repair"}
+    repairable_types = {"semantic_patch", "plan_patch", "safe_package_repair"}
     return any(issue.code in rescue_codes and issue.repairability in repairable_types for issue in issues)
 
 

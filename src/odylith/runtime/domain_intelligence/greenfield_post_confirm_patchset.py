@@ -119,9 +119,9 @@ def _operation_from_finding(
 
 def _target_layer(finding: GreenfieldReviewFinding) -> str:
     repairability = normalize_token(finding.repairability)
-    if repairability in {"semantic_patch", "proposal_repair"} and _artifact_plan_projection_target(finding):
+    if repairability == "semantic_patch" and _artifact_plan_projection_target(finding):
         return "artifact_plan"
-    if repairability in {"semantic_patch", "proposal_repair"}:
+    if repairability == "semantic_patch":
         return "semantic_model"
     if repairability == "plan_patch":
         return "artifact_plan"

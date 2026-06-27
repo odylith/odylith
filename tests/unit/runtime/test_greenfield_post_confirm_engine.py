@@ -29,9 +29,6 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import package_review_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_once
-from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import (
-    repair_proposal_for_quality_lens_gaps,
-)
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
@@ -260,8 +257,8 @@ def test_post_confirm_issue_classifier_marks_quality_lens_gaps() -> None:
                 projection_id="review_report",
                 semantic_node_id="ReviewReport.quality_lenses",
                 severity="high",
-                repairability="proposal_repair",
-                owner="quality_lens_contract",
+                repairability="plan_patch",
+                owner="artifact_plan_projector",
                 source="quality_lens",
                 lens="engineer",
                 message="quality lens engineer missing rendered component specs",
@@ -272,8 +269,8 @@ def test_post_confirm_issue_classifier_marks_quality_lens_gaps() -> None:
     issue = engine.classify_greenfield_post_confirm_issues(report)[0]
 
     assert issue.code == "quality_lens_gap"
-    assert issue.repairability == "proposal_repair"
-    assert issue.owner == "quality_lens_contract"
+    assert issue.repairability == "plan_patch"
+    assert issue.owner == "artifact_plan_projector"
     assert issue.severity == "high"
 
 
@@ -651,7 +648,7 @@ def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: py
     assert len(manifest["pass_records"]) == 2
 
 
-def test_post_confirm_engine_passes_quality_lens_context_to_proposal_repair(
+def test_post_confirm_engine_passes_quality_lens_context_to_semantic_repair(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     reports = [
@@ -969,7 +966,7 @@ def test_post_confirm_classifier_preserves_semantic_compiler_counterexamples() -
     assert issue.owner == "semantic_model_compiler"
 
 
-def test_quality_lens_repair_rehydrates_decision_scope_and_validation() -> None:
+def test_quality_lens_gaps_emit_typed_findings_without_proposal_mutation() -> None:
     proposal: dict[str, Any] = {
         "intent": {
             "title": "Permit Desk",
@@ -981,45 +978,62 @@ def test_quality_lens_repair_rehydrates_decision_scope_and_validation() -> None:
         "release_plan": {},
         "validation_strategy": [],
     }
-    quality_lenses = {
-        "lenses": {
-            "product_manager": {
-                "checks": [
-                    {"name": "decision_boundary", "status": "failed"},
-                    {"name": "first_release_scope", "status": "failed"},
-                ],
-            },
-            "architect": {
-                "checks": [
-                    {"name": "system_boundary", "status": "failed"},
-                    {"name": "component_topology", "status": "failed"},
-                ],
-            },
-            "domain_expert": {
-                "checks": [
-                    {"name": "proof_boundary", "status": "failed"},
-                    {"name": "high_risk_assumptions", "status": "failed"},
-                ],
-            },
-        }
-    }
+    original = json.loads(json.dumps(proposal))
 
-    changed = repair_proposal_for_quality_lens_gaps(
-        proposal,
-        quality_lenses=quality_lenses,
-        release_selector="0.0.1",
+    findings = package_review_findings(
+        GreenfieldCompletionPackage(proposal=proposal, release_selector="0.0.1"),
+        package_issues=(),
+    )
+    lens_findings = [finding for finding in findings if finding.code == "quality_lens_gap"]
+
+    assert proposal == original
+    assert any(
+        finding.target_path == "proposal.assumptions"
+        and finding.repairability == "plan_patch"
+        and finding.owner == "artifact_plan_projector"
+        for finding in lens_findings
+    )
+    assert any(
+        finding.target_path == "semantic_model.first_path_contract"
+        and finding.repairability == "semantic_patch"
+        and finding.owner == "semantic_model_compiler"
+        for finding in lens_findings
     )
 
-    assert changed is True
-    assert len(proposal["assumptions"]) >= 2
-    assert len(proposal["open_questions"]) == 1
-    assert len(proposal["intent"]["internal_systems"]) == 2
-    assert proposal["intent"]["external_systems"] == []
-    assert proposal["release_plan"]["selector"] == "0.0.1"
-    assert proposal["release_plan"]["target_workstream_titles"] == ["Review submitted permit"]
-    assert proposal["components"][0]["release_scope"] == "first_release"
-    assert "proof" in proposal["intent"]["proof_boundary"].casefold()
-    assert any("assumption proof" in row.casefold() for row in proposal["validation_strategy"])
+
+def test_unknown_quality_lens_check_fails_closed_without_owner_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proposal: dict[str, Any] = {"intent": {"title": "Unknown Lens Check"}}
+    package = GreenfieldCompletionPackage(proposal=proposal, release_selector="0.0.1")
+
+    monkeypatch.setattr(
+        "odylith.runtime.domain_intelligence.greenfield_post_confirm_findings.build_greenfield_quality_lens_report",
+        lambda _package: {
+            "lenses": {
+                "architect": {
+                    "checks": [
+                        {
+                            "name": "future_check_without_contract",
+                            "status": "failed",
+                            "issue": "quality lens architect failed an undeclared future check",
+                            "repairability": "plan_patch",
+                            "owner": "artifact_plan_projector",
+                        }
+                    ]
+                }
+            }
+        },
+    )
+
+    finding = next(
+        finding
+        for finding in package_review_findings(package, package_issues=())
+        if finding.code == "quality_lens_gap"
+    )
+
+    assert finding.repairability == "unrepairable"
+    assert finding.owner == "quality_lens_contract"
 
 
 def test_repair_payload_enriches_rescue_patchset_with_structured_planner(

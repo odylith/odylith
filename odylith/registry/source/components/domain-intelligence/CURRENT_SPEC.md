@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-06-26
+Last updated: 2026-06-27
 
 
 ## Overview
@@ -191,6 +191,7 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-27: Hardened typed PatchSet dispatch and actor-title projection custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) PatchSet operations now carry operation kind, repair owner, and projection kind into Tribunal structured patch validation and post-confirm apply; first-path repair no longer routes from rejected-prose wording; quality-lens findings without structured facts no longer rehydrate proposal fields; and recovered actor labels trim temporal/proof context before Radar title projection. Focused repair proof passed 58 tests, the widened post-confirm quality/slop/text suite passed 181 tests, and a failed museum loan provenance replay plus five fresh domains passed source-local confirmed create in 14.005-15.737 seconds with zero quality issues and all expert lenses passing.
 - 2026-06-27: Added scoped prewrite rerender custody for artifact-plan-only PatchSet repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan.py` now expands affected projection dependencies and declares which scopes still require full staged prewrite, `greenfield_post_confirm_patch_apply.py` records an auditable patch application ledger, `greenfield_post_confirm_engine.py` consumes that ledger on the next pass, and `greenfield_prewrite_projection_rerender.py` refreshes only the named package previews when the patch does not require semantic completion or Radar/program restaging. A pre-commit review caught and fixed two custody escapes: `program` must remain a first-class full-prewrite projection, and release-scope rerender must include Compass because release assignment feeds Compass acceptance preview state. Focused scoped-rerender tests passed 66 tests, the wider post-confirm quality pack passed 242 tests, and an eight-domain source-local standard-path matrix passed with zero issues, all expert lenses passing, governed writes, and temp cleanup after every case.
 - 2026-06-27: Tightened scoped semantic PatchSet custody and proposal-target routing. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_semantic_patch_executor.py` now returns a structured semantic application summary with operation ids, applied fields, affected projections, and completion posture; target routing depends on operation-kind allowlists and exact compatibility paths instead of token splitting; proposal-owned projection defects from package findings and quality lenses route to `ArtifactPlanIR` / `plan_patch`; and `greenfield_artifact_plan.py` maps structural envelopes such as `proposal.*`, `prewrite_package.*`, and `ArtifactPlanIR.*` to sanctioned projection scope. Focused ArtifactPlanIR/semantic tests passed 17 tests, the post-confirm repair pack passed 74 tests, the widened quality pack passed 250 tests, and a temporary installed release matrix passed five consumer-lane domains in 18.227-19.788 seconds with zero quality issues, governed writes, and all expert lenses passing.
+- 2026-06-27: Made quality-lens repair ownership authoritative and removed the legacy proposal-repair lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_quality_lens_repair.py` is now a metadata-only owner contract, `greenfield_quality_lenses.py` emits that canonical owner for each reviewer check, `greenfield_post_confirm_findings.py` ignores per-check owner drift for known checks and fails unknown checks closed, and greenfield review/rescue/PatchSet custody no longer accepts `proposal_repair`. Focused proof passed 9 tests in 0.34s, the widened greenfield repair pack passed 252 tests in 354.43s, and a fresh installed consumer-lane matrix passed five domains in 18.244-19.934 seconds with zero quality issues, governed writes, and all expert lenses passing.
 
 ## Contract
 
@@ -962,6 +963,13 @@ This section captures synchronized requirement and contract signals derived from
   semantic-node id, projection id, repairability, and repair owner at the point
   of judgment so post-confirm repair can route by structured custody instead of
   interpreting reviewer prose.
+- Quality-lens repair ownership must be declared in
+  `greenfield_quality_lens_repair.py` and treated as authoritative by both the
+  lens producer and the package-finding collector. Known checks may route only
+  to `semantic_model_compiler`, `artifact_plan_projector`, or `prewrite_gate`
+  according to that contract. Unknown future lens checks must fail closed as
+  unrepairable until their owner, target layer, and repairability are added to
+  the contract. `proposal_repair` is not a valid greenfield repairability.
 - Auto-tier post-confirm repair must start on the standard 60-second budget.
   The engine may extend to the 90-second rescue budget only after a repairable
   final semantic or quality gate failure activates rescue. Deep 120-second

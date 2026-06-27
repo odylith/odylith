@@ -536,6 +536,33 @@
   lenses, produced five Radar workstreams, three Registry specs, six Atlas
   sources, 18 trace nodes, five rendered surfaces, and the harness deleted temp
   repos between cases.
+  The next quality-lens cleanup removed a dormant 768-line proposal
+  rehydration engine from `greenfield_quality_lens_repair.py` and collapsed
+  that owner into a metadata-only repair contract. A pre-commit review then
+  caught two important escapes before commit. First, the live quality-lens
+  report still emitted legacy repair owners such as Radar, release, and
+  operator-experience renderers for plan-owned checks, so the new owner
+  contract was not authoritative on the live path. Second, the old
+  `proposal_repair` repairability alias still remained valid in review
+  findings, rescue eligibility, and PatchSet target routing, meaning hidden
+  proposal-level repair authority had not actually been fail-closed. The fix
+  made the quality-lens report emit the same canonical owner contract consumed
+  by PatchSet routing, made the package-finding collector ignore per-check
+  owner/repairability drift for known checks, made unknown future lens checks
+  unrepairable until their owner is declared, and removed `proposal_repair`
+  from greenfield review, rescue, PatchSet, and Tribunal-lens custody. The
+  banned failed mechanisms are explicit: do not leave an old repairability
+  bucket accepted after moving to typed semantic/plan patches, and do not let a
+  producer-provided owner override the declared quality-lens ownership
+  contract. Proof: focused quality-lens, post-confirm engine, and Tribunal lens
+  tests passed 9 tests in 0.34s; the widened greenfield repair pack passed 252
+  tests in 354.43s; and a fresh installed consumer-lane matrix from temporary
+  local release `/tmp/odylith-local-release-0.1.15-quality-lens-custody`
+  passed flood shelter intake 19.934s, pediatric agency practice 18.244s,
+  semiconductor lab custody 18.733s, port berth carbon tariff 18.381s, and
+  security disclosure council 18.702s with governed writes, zero quality
+  issues, all product-manager/architect/engineer/domain-expert lenses passing,
+  and temp repos plus the temporary release directory pruned.
 
 - Related Incidents/Bugs: CB-207
 

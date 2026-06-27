@@ -14,7 +14,7 @@ from odylith.runtime.common.value_coercion import normalize_token
 POST_CONFIRM_REVIEW_REPORT_VERSION = "odylith.greenfield.post_confirm.review_report.v1"
 
 _SEVERITIES = {"critical", "high", "medium", "low"}
-_REPAIRABILITIES = {"unrepairable", "proposal_repair", "semantic_patch", "plan_patch", "safe_package_repair"}
+_REPAIRABILITIES = {"unrepairable", "semantic_patch", "plan_patch", "safe_package_repair"}
 
 
 @dataclass(frozen=True)
@@ -67,7 +67,7 @@ def review_finding(
     projection_id: str = "",
     semantic_node_id: str = "",
     severity: str = "medium",
-    repairability: str = "proposal_repair",
+    repairability: str = "unrepairable",
     owner: str = "post_confirm_engine",
     source: str = "post_confirm",
     lens: str = "",
@@ -83,9 +83,7 @@ def review_finding(
         projection_id=normalize_string(projection_id),
         semantic_node_id=normalize_string(semantic_node_id),
         severity=normalized_severity if normalized_severity in _SEVERITIES else "medium",
-        repairability=(
-            normalized_repairability if normalized_repairability in _REPAIRABILITIES else "proposal_repair"
-        ),
+        repairability=normalized_repairability if normalized_repairability in _REPAIRABILITIES else "unrepairable",
         owner=normalize_token(owner) or "post_confirm_engine",
         source=normalize_token(source) or "post_confirm",
         message=normalize_string(message),
@@ -102,7 +100,7 @@ def review_findings_from_messages(
     projection_id: str = "",
     semantic_node_id: str = "",
     severity: str = "medium",
-    repairability: str = "proposal_repair",
+    repairability: str = "unrepairable",
     owner: str = "post_confirm_engine",
     source: str = "post_confirm",
     lens: str = "",

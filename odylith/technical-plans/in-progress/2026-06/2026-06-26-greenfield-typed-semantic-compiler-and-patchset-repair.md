@@ -653,3 +653,15 @@ vocabulary, or degraded packages.
       five consumer-lane domains at 18.227-19.788s with governed writes, zero
       quality issues, all PM/architect/engineer/domain-expert lenses passing,
       and temp cleanup between cases.
+- [x] Quality-lens ownership contract checkpoint: the old quality-lens proposal
+      rehydration engine is gone, the live quality-lens report now emits the
+      canonical semantic-model/compiler, artifact-plan/projector, or prewrite
+      gate owner for every known check, unknown future checks fail closed until
+      their owner is declared, and `proposal_repair` is no longer an accepted
+      greenfield review/rescue/PatchSet repairability. Focused quality-lens,
+      post-confirm engine, and Tribunal lens tests passed 9 tests in 0.34s;
+      the widened greenfield repair pack passed 252 tests in 354.43s; and a
+      fresh installed consumer-lane matrix from temporary local release
+      `/tmp/odylith-local-release-0.1.15-quality-lens-custody` passed five
+      domains in 18.244-19.934s with governed writes, zero quality issues, all
+      expert lenses passing, and temp cleanup plus release-dir pruning.
