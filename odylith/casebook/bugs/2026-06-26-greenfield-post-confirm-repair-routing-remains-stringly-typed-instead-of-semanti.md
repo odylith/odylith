@@ -259,6 +259,16 @@
   inside recovered actor extraction, and internal-system completion reuses the
   canonical system-row parser only for spaced-hyphen recovered rows while
   leaving existing em-dash enrichment behavior intact.
+  Latest installed-dist proof after the brutal scoring and prompt-source
+  checkpoints: local release dist `odylith-local-release-0.1.15-ddecaf5e`
+  passed the installed greenfield post-confirm matrix across flood shelter
+  intake 22.842s, pediatric agency practice 19.780s, semiconductor lab custody
+  22.419s, port berth carbon tariff 22.001s, and security disclosure council
+  23.035s. Every installed consumer-lane run scored 10/10 under the hard-min
+  model, wrote governed records, reported zero issues, passed product-manager,
+  architect, engineer, and domain-expert lenses, produced five Radar records,
+  three Registry records, six Atlas diagrams, 18 trace nodes, and the harness
+  deleted the temporary matrix repos.
 
 - Prevention: Before adding more regex or template rules, check Casebook and repair semantic ownership, projection boundaries, or typed review contracts first.
 

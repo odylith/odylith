@@ -741,3 +741,13 @@ vocabulary, or degraded packages.
       without adding regex or domain templates. Focused proof passed the two
       CRM wrapper failures, the kitchen-robot `use to choose` guard, the
       water-rights actor-chain guard, and the hard-score matrix unit tests.
+- [x] Fresh installed-dist brutal-score proof: local release dist
+      `odylith-local-release-0.1.15-ddecaf5e` passed the installed greenfield
+      post-confirm matrix across flood shelter intake 22.842s, pediatric
+      agency practice 19.780s, semiconductor lab custody 22.419s, port berth
+      carbon tariff 22.001s, and security disclosure council 23.035s. Every
+      installed consumer-lane run scored 10/10, wrote governed records,
+      reported zero issues, passed product-manager, architect, engineer, and
+      domain-expert lenses, produced five Radar records, three Registry
+      records, six Atlas diagrams, 18 trace nodes, and the harness deleted the
+      temporary matrix repos.
