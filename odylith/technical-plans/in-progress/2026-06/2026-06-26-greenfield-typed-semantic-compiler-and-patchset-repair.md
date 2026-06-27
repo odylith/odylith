@@ -429,3 +429,17 @@ vocabulary, or degraded packages.
       rendered surfaces, release/program records, 18 trace nodes, at least
       three required domain-term hits, and passed PM, architect, engineer, and
       domain-expert lenses.
+- [x] Final installed-dist proof from commit b0713a0a: local release smoke
+      exited 0 against
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a`.
+      The standard installed matrix passed five unrelated domains at
+      16.523-18.483 seconds, with governed records written and all PM,
+      architect, engineer, and domain-expert lenses passing. The harder
+      six-case installed matrix passed autonomous warehouse safety state
+      17.356s, federated agent incident command 17.020s, deepfake provenance
+      escrow 16.602s, fusion plasma shot readiness 17.302s, indigenous data
+      sovereignty review 17.649s, and spacecraft anomaly triage 17.107s. Each
+      installed run wrote five Radar workstreams, three Registry specs, six
+      Atlas diagrams, five rendered surfaces, release/program records, 18
+      trace nodes, zero package-quality issues, and passed PM, architect,
+      engineer, and domain-expert lenses.

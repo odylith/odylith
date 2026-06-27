@@ -1,6 +1,6 @@
 - Bug ID: CB-209
 
-- Status: InProgress
+- Status: FixedPendingRelease
 
 - Created: 2026-06-26
 
@@ -16,7 +16,7 @@
 
 - Components Affected: domain-intelligence
 
-- Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6 and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79
+- Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a
 
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
@@ -26,11 +26,11 @@
 
 - Ownership: Domain Intelligence greenfield post-confirm semantic compiler and final quality gate
 
-- Timeline: 2026-06-26: standard installed five-domain matrix passed at 17.404-18.353s with zero quality issues; custom high-variance installed matrix then failed autonomous warehouse safety state at 17.855s and federated agent incident command at 10.728s before governed writes. After semantic-custody and typed Tribunal-lens fixes, the cedafc79 standard installed matrix passed five cases at 17.074-18.574s with zero issues and all expert lenses passing. A harder cedafc79 custom installed matrix then passed autonomous warehouse safety state, federated agent incident command, deepfake provenance escrow, and fusion plasma shot readiness at 16.851-17.347s, but indigenous data sovereignty review failed before governed writes in 8.999s and spacecraft anomaly triage failed the package/domain-expert gate after writing records in 18.454s due clipped Radar article phrases.
+- Timeline: 2026-06-26: standard installed five-domain matrix passed at 17.404-18.353s with zero quality issues; custom high-variance installed matrix then failed autonomous warehouse safety state at 17.855s and federated agent incident command at 10.728s before governed writes. After semantic-custody and typed Tribunal-lens fixes, the cedafc79 standard installed matrix passed five cases at 17.074-18.574s with zero issues and all expert lenses passing. A harder cedafc79 custom installed matrix then passed autonomous warehouse safety state, federated agent incident command, deepfake provenance escrow, and fusion plasma shot readiness at 16.851-17.347s, but indigenous data sovereignty review failed before governed writes in 8.999s and spacecraft anomaly triage failed the package/domain-expert gate after writing records in 18.454s due clipped Radar article phrases. After the second semantic-custody fix, the b0713a0a dist passed release smoke, the standard installed matrix, and the harder six-case installed matrix with every create under 19s and every PM, architect, engineer, and domain-expert lens passing.
 
 - Blast Radius: Any consumer greenfield prompt with overloaded safety/state/agent/model/release language that deterministic completion cannot safely normalize before final writes
 
-- SLO/SLA Impact: Post-confirm create remains under 60s but fails closed instead of recovering; release-quality objective not met
+- SLO/SLA Impact: Fixed in the b0713a0a local release dist: post-confirm create stayed under the 60s standard budget in the standard and high-variance installed matrices.
 
 - Data Risk: Low: governed records are not written after failed create; product intent can remain in runtime files
 
@@ -46,7 +46,7 @@
 
 - Rollback/Forward Fix: Forward fix only
 
-- Verification: Run source-local and installed high-variance matrices including autonomous warehouse safety state, federated agent incident command, indigenous data sovereignty review, and spacecraft anomaly triage; require create_returncode 0, committed quality manifest, complete Radar/Registry/Atlas/release/trace records, zero package quality issues, all expert lenses passing, and create latency under 60s unless documented rescue path is active. Source-local proof on 2026-06-26 is green: focused Tribunal/greenfield proof passed 53 tests in 85.82s; the broad greenfield runtime pack passed 299 tests in 474.86s; six source-local CLI confirmed-create simulations passed with temp cleanup after every case. Timings were autonomous warehouse safety state 15.501s, federated agent incident command 14.685s, deepfake provenance escrow 15.143s, fusion plasma shot readiness 13.934s, indigenous data sovereignty review 15.344s, and spacecraft anomaly triage 15.333s. Every source-local run wrote four Radar workstreams, three Registry specs, six Atlas diagrams, five rendered surfaces, release/program records, 18 trace nodes, at least three required domain-term hits, zero issues, and all PM/architect/engineer/domain-expert lenses passed. Installed cedafc79 standard matrix passed five cases, but custom installed proof still failed two cases; release closure remains blocked until a fresh dist built after this fix passes installed proof. Current source-local proof after the second fix: focused regressions passed 4 tests in 17.61s; indigenous data sovereignty review and spacecraft anomaly triage source CLI simulations both wrote governed records, produced complete Radar/Registry/Atlas/release/trace artifacts, reported zero quality issues, passed all expert lenses, and finished in 12.708s and 12.328s; the widened greenfield suite passed 162 tests in 148.37s.
+- Verification: Run source-local and installed high-variance matrices including autonomous warehouse safety state, federated agent incident command, indigenous data sovereignty review, and spacecraft anomaly triage; require create_returncode 0, committed quality manifest, complete Radar/Registry/Atlas/release/trace records, zero package quality issues, all expert lenses passing, and create latency under 60s unless documented rescue path is active. Source-local proof on 2026-06-26 is green: focused Tribunal/greenfield proof passed 53 tests in 85.82s; the broad greenfield runtime pack passed 299 tests in 474.86s; six source-local CLI confirmed-create simulations passed with temp cleanup after every case. Timings were autonomous warehouse safety state 15.501s, federated agent incident command 14.685s, deepfake provenance escrow 15.143s, fusion plasma shot readiness 13.934s, indigenous data sovereignty review 15.344s, and spacecraft anomaly triage 15.333s. Every source-local run wrote four Radar workstreams, three Registry specs, six Atlas diagrams, five rendered surfaces, release/program records, 18 trace nodes, at least three required domain-term hits, zero issues, and all PM/architect/engineer/domain-expert lenses passed. Installed cedafc79 standard matrix passed five cases, but custom installed proof still failed two cases. Current source-local proof after the second fix: focused regressions passed 4 tests in 17.61s; indigenous data sovereignty review and spacecraft anomaly triage source CLI simulations both wrote governed records, produced complete Radar/Registry/Atlas/release/trace artifacts, reported zero quality issues, passed all expert lenses, and finished in 12.708s and 12.328s; the widened greenfield suite passed 162 tests in 148.37s. Final installed proof from b0713a0a is green: local release smoke exited 0; the standard installed five-domain matrix passed at 16.523-18.483s; the harder six-case installed matrix passed autonomous warehouse safety state 17.356s, federated agent incident command 17.020s, deepfake provenance escrow 16.602s, fusion plasma shot readiness 17.302s, indigenous data sovereignty review 17.649s, and spacecraft anomaly triage 17.107s. Every installed case wrote five Radar workstreams, three Registry specs, six Atlas diagrams, five rendered surfaces, release/program records, 18 trace nodes, zero package-quality issues, and passed PM, architect, engineer, and domain-expert lenses.
 
 - Prevention: Keep high-variance installed simulations in release proof; require failure stderr/blocker retention for any matrix failure before cleanup; do not rely on standard-domain passes alone. Expert-lens failures must carry typed Tribunal lens evidence at the point of judgment: source-map target, semantic node, projection, repairability, and owner. Failed mechanisms recorded here must not be repeated: broad proof-control rejection of product-result noun phrases, action extraction inside hyphenated noun compounds, passive object-state tails promoted to actors, and rendered-string cleanup after Radar files are already written.
 
@@ -54,7 +54,7 @@
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: 0.1.15 local release dist built from commit 17e8a6f6
+- Version/Build: 0.1.15 local release dist built from commit b0713a0a
 
 - Related Incidents/Bugs: CB-208
 
