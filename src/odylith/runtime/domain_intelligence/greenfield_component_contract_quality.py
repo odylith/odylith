@@ -8,6 +8,7 @@ from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.common.prose_grammar import contains_finite_action
+from odylith.runtime.common.mermaid_text import visible_mermaid_label_texts
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import localize_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
@@ -376,6 +377,12 @@ def _text_leaves(value: Any, *, path: tuple[str, ...] = ()) -> tuple[tuple[str, 
         for index, nested in enumerate(value):
             rows.extend(_text_leaves(nested, path=(*path, str(index))))
         return tuple(rows)
+    if path and path[-1].casefold() == "mermaid_source":
+        return tuple(
+            (f"{'.'.join(path)}.label.{index}", text)
+            for index, text in enumerate(visible_mermaid_label_texts(value))
+            if text
+        )
     text = _clean(value)
     return ((".".join(path) or "<root>", text),) if text else ()
 

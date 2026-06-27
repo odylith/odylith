@@ -375,7 +375,9 @@ def clip_text_at_word_boundary(
     clipped = text[: max(0, limit)].rstrip(rstrip_chars)
     if " " in clipped:
         clipped = clipped.rsplit(" ", 1)[0].rstrip(rstrip_chars)
-    return strip_dangling_word_tail(clipped, dangling_words=dangling_words, rstrip_chars=rstrip_chars)
+    return _strip_unbalanced_quote_tail(
+        strip_dangling_word_tail(clipped, dangling_words=dangling_words, rstrip_chars=rstrip_chars)
+    )
 
 
 def strip_dangling_word_tail(
@@ -390,6 +392,15 @@ def strip_dangling_word_tail(
     while words and words[-1].casefold().strip(".,;:") in dangling:
         words.pop()
     return " ".join(words).rstrip(rstrip_chars)
+
+
+def _strip_unbalanced_quote_tail(value: Any) -> str:
+    text = clean_text(value).rstrip(" ,;:.")
+    if text.count('"') % 2:
+        return text.rsplit('"', 1)[0].rstrip(" ,;:.")
+    if re.search(r"(?:^|\s)'[A-Za-z][^']*$", text):
+        return text.rsplit("'", 1)[0].rstrip(" ,;:.")
+    return text
 
 
 _PLAIN_TITLE_CONNECTORS = frozenset({"and", "for", "in", "of", "on", "or", "to", "with"})

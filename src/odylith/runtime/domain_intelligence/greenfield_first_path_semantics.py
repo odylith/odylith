@@ -345,7 +345,7 @@ def _recovery_action(steps: Sequence[str]) -> str:
 
 
 def _clean_step(value: str) -> str:
-    text = _clean(value).strip(" .")
+    text = _clean(value).strip(" .,;:")
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(
         r"^(?:(?:release\s+\S+|the\s+first\s+release|first\s+release)\s+)?"
@@ -364,12 +364,12 @@ def _clean_step(value: str) -> str:
         "",
         text,
         flags=re.IGNORECASE,
-    ).strip(" .")
+    ).strip(" .,;:")
     text = _normalize_role_can_step(text)
     text = _normalize_subjectless_action_step(text)
     text = repair_modal_base_form_drift(text)
     text = _strip_dangling_step_tail(text)
-    return _sentence_case(text)
+    return _sentence_case(text.strip(" .,;:"))
 
 
 def _strip_dangling_step_tail(value: str) -> str:
@@ -444,13 +444,13 @@ def _normalize_subjectless_action_step(value: str) -> str:
 def _split_action_pieces(value: str) -> list[str]:
     pieces: list[str] = []
     subject_prefix = ""
-    for raw_segment in [part.strip(" .") for part in _ACTION_SPLIT_RE.split(value) if part.strip(" .")]:
+    for raw_segment in [part.strip(" .,;:") for part in _ACTION_SPLIT_RE.split(value) if part.strip(" .,;:")]:
         for purpose_segment in _split_purpose_action_tail(raw_segment):
             for segment in _split_temporal_action_tail(purpose_segment):
                 current = ""
-                for part in [piece.strip(" .") for piece in re.split(r",\s+", segment) if piece.strip(" .")]:
+                for part in [piece.strip(" .,;:") for piece in re.split(r",\s+", segment) if piece.strip(" .,;:")]:
                     if current and _starts_new_action_clause(part) and not _continues_subject_object_list(part, current):
-                        pieces.append(current.strip(" ."))
+                        pieces.append(current.strip(" .,;:"))
                         current = _with_carried_subject(part, subject_prefix)
                     else:
                         current = f"{current}, {part}" if current else _with_carried_subject(part, subject_prefix)
@@ -458,7 +458,7 @@ def _split_action_pieces(value: str) -> list[str]:
                     if explicit_subject:
                         subject_prefix = explicit_subject
                 if current:
-                    pieces.append(current.strip(" ."))
+                    pieces.append(current.strip(" .,;:"))
     return pieces
 
 

@@ -59,8 +59,10 @@ _REQUEST_PRODUCT_WORDS = frozenset(
     }
 )
 _REQUEST_HELPER_WORDS = frozenset({"allow", "allows", "enable", "enables", "help", "helps", "let", "lets"})
-_REQUEST_LEAD_CONNECTORS = ("where", "that", "so", "for", "to")
-_DIRECT_TITLE_BOUNDARY_CONNECTORS = frozenset({"where", "that", "so"})
+_REQUEST_ACTOR_PURPOSE_TOKENS = frozenset({"people", "person", "rep", "reps", "staff", "team", "teams", "user", "users"})
+_REQUEST_ACTOR_ROLE_SUFFIXES = ("ant", "ants", "ent", "ents", "er", "ers", "ian", "ians", "ist", "ists", "or", "ors", "owner", "owners")
+_REQUEST_LEAD_CONNECTORS = ("where", "that", "who", "so", "for", "to")
+_DIRECT_TITLE_BOUNDARY_CONNECTORS = frozenset({"where", "that", "who", "so"})
 _ORIGINAL_INTENT_BOUNDARY_HEADINGS = frozenset(
     {
         "next step",
@@ -122,12 +124,13 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
 
 
 def _first_path_source_from_text(value: str) -> str:
-    text = _strip_operator_request_wrapper(clean_markdown_text(value).strip(" ."))
-    release_candidate = _release_action_sentence_source(text)
+    raw_text = clean_markdown_text(value).strip(" .")
+    text = _strip_operator_request_wrapper(raw_text)
+    release_candidate = _release_action_sentence_source(raw_text) or _release_action_sentence_source(text)
     if word_count(release_candidate) >= 8 and _looks_like_recoverable_first_path(release_candidate):
         return _strip_release_proof_tail(release_candidate)
-    for marker in ("where", "that"):
-        candidate = _tail_after_word(text, marker)
+    for marker in ("where", "that", "for", "who"):
+        candidate = _tail_after_word(raw_text, marker)
         if not candidate:
             continue
         candidate = _strip_operator_request_wrapper(candidate)
@@ -136,7 +139,7 @@ def _first_path_source_from_text(value: str) -> str:
     if _looks_like_recoverable_first_path(text):
         return _strip_release_proof_tail(text)
     for marker in ("so",):
-        candidate = _tail_after_word(text, marker)
+        candidate = _tail_after_word(raw_text, marker)
         if not candidate:
             continue
         candidate = _strip_operator_request_wrapper(candidate)
@@ -169,6 +172,9 @@ def _project_title_source_from_words(words: list[str], *, start: int, command_le
                 continue
         lead = words[start:index]
         if _looks_like_product_title_phrase(lead):
+            return " ".join(lead).strip(" .")
+        tail = " ".join(words[index + 1 :]).strip(" .")
+        if command_led and _looks_like_target_focus_phrase(lead, tail=tail):
             return " ".join(lead).strip(" .")
     sentence_title = _project_title_before_sentence_boundary(words, start=start)
     if sentence_title:
@@ -230,6 +236,12 @@ def _skip_proposal_wrapper(words: list[str], start: int) -> int:
         index += 1
     if index < len(words) and words[index].casefold().strip(",:;") == "for":
         index += 1
+    if (
+        index + 1 < len(words)
+        and words[index].casefold().strip(",:;") == "product"
+        and words[index + 1].casefold().strip(",:;") == "for"
+    ):
+        index += 2
     if index < len(words) and words[index].casefold().strip(",:;") in {"a", "an", "the"}:
         index += 1
     return index
@@ -339,17 +351,69 @@ def _smooth_request_first_path_clause(value: str) -> str:
         return ""
     while words and words[0].casefold() == "to":
         words = words[1:]
+    words = _drop_relative_use_to_action(words)
     if len(words) < 3:
         return " ".join(words).strip(" .")
     smoothed: list[str] = []
     for index, word in enumerate(words):
         token = word.casefold().strip(".,:;")
         next_word = words[index + 1] if index + 1 < len(words) else ""
-        if token == "to" and smoothed and next_word and looks_like_action_clause(f"{next_word} result"):
+        previous = smoothed[-1].casefold().strip(".,:;") if smoothed else ""
+        if (
+            token == "to"
+            and previous in _REQUEST_HELPER_WORDS
+            and next_word
+            and looks_like_action_clause(f"{next_word} result")
+        ):
+            smoothed.append("can")
+            continue
+        if (
+            token == "to"
+            and next_word
+            and looks_like_action_clause(f"{next_word} result")
+            and _looks_like_actor_purpose_left(smoothed)
+        ):
             smoothed.append("can")
             continue
         smoothed.append(word)
     return " ".join(smoothed).strip(" .")
+
+
+def _drop_relative_use_to_action(words: list[str]) -> list[str]:
+    for index, word in enumerate(words[:-2]):
+        token = word.casefold().strip(".,:;")
+        next_token = words[index + 1].casefold().strip(".,:;")
+        if token not in {"use", "uses", "used"} or next_token != "to":
+            continue
+        actor_words = words[:index]
+        action_words = words[index + 2 :]
+        if not actor_words or not action_words:
+            continue
+        if looks_like_action_clause(" ".join(action_words)):
+            return [*actor_words, *action_words]
+    return words
+
+
+def _looks_like_actor_purpose_left(words: list[str]) -> bool:
+    tail = _actor_purpose_tail(words)
+    if not tail:
+        return False
+    last = tail[-1].casefold().strip(".,:;")
+    singular = last[:-1] if last.endswith("s") else last
+    return (
+        last in _REQUEST_ACTOR_PURPOSE_TOKENS
+        or singular in _REQUEST_ACTOR_PURPOSE_TOKENS
+        or any(last.endswith(suffix) or singular.endswith(suffix) for suffix in _REQUEST_ACTOR_ROLE_SUFFIXES)
+    )
+
+
+def _actor_purpose_tail(words: list[str]) -> list[str]:
+    start = 0
+    for index, word in enumerate(words):
+        token = word.casefold().strip(".,:;")
+        if token in {"and", "or", "then"}:
+            start = index + 1
+    return [word for word in words[start:] if word.strip(".,:;")]
 
 
 def _strip_release_proof_tail(value: str) -> str:
@@ -402,6 +466,22 @@ def _looks_like_product_title_phrase(words: list[str]) -> bool:
     if set(lowered) <= {"new", "simple", "small", "greenfield"} | _REQUEST_PRODUCT_WORDS:
         return False
     return bool(set(lowered) & _REQUEST_PRODUCT_WORDS) or any(word.isupper() and len(word) <= 6 for word in words)
+
+
+def _looks_like_target_focus_phrase(words: list[str], *, tail: str) -> bool:
+    if len(words) < 2 or len(words) > 7:
+        return False
+    lowered = [word.casefold().strip(".,:;") for word in words]
+    if set(lowered) <= {"new", "simple", "small", "greenfield"}:
+        return False
+    if set(lowered) & _REQUEST_COMMAND_WORDS:
+        return False
+    if set(lowered) & set(_REQUEST_LEAD_CONNECTORS):
+        return False
+    text = " ".join(words).strip(" .")
+    if looks_like_action_clause(text):
+        return False
+    return _looks_like_recoverable_first_path(tail)
 
 
 def _looks_like_recoverable_first_path(value: str) -> bool:

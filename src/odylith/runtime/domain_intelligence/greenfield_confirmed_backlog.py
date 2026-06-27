@@ -623,10 +623,10 @@ def confirmed_backlog_rows(
             f"It connects {state_label}, validation output, and {_proof_focus_summary(proof_focus)} to the promised result: {outcome_summary}."
         ),
         first_slice=(
-            f"Produce one {proof_record_label} that links the first path, {state_label}, and validation result to release scope."
+            f"Produce one {proof_record_label} that links the first path, {_sentence_label(state_label)}, and validation result to release scope."
         ),
         metrics=[
-            f"{proof_record_label} links accepted input, {state_label}, and validation output to the outcome.",
+            f"{proof_record_label} links accepted input, {_sentence_label(state_label)}, and validation output to the outcome.",
             "Missing evidence blocks proof review instead of producing a release-ready claim.",
             "The proof view checks the promised result without expanding deferred scope.",
             f"Deferred scope remains visible: {proof_non_goal_text}.",

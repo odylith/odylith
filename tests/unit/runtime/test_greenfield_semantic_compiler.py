@@ -172,6 +172,29 @@ def test_apply_semantic_input_records_source_paths_and_semantic_visibility_fallb
     assert persisted_input["source_paths"]["first_path"] == "intent.first_path+semantic_visible_result_fallback"
 
 
+def test_apply_semantic_visibility_fallback_does_not_leave_trailing_comma_step() -> None:
+    proposal = {
+        "intent": {
+            "title": "Checkout Recovery",
+            "state_object": "Checkout recovery record",
+            "proof_boundary": "Release 0.0.1 is proven when recovery evidence is reviewable.",
+        },
+        "backlog": [
+            {
+                "recommended_first_slice": "Start with checkout spine proof and failed-payment recovery.",
+            }
+        ],
+    }
+
+    ensured = ensure_apply_semantic_model(proposal)
+    first_path = ensured["semantic_model"]["first_path_contract"]["events"][0]["text"]
+    persisted_input = ensured["apply_semantic_input"]["first_path"]
+
+    assert "recovery," not in first_path
+    assert ",. Show" not in persisted_input
+    assert "Start with checkout spine proof and failed-payment recovery" in persisted_input
+
+
 def test_apply_semantic_input_is_persisted_when_semantic_model_already_exists() -> None:
     proposal = {
         "intent": {

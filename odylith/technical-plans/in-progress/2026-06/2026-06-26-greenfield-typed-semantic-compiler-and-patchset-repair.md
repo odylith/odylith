@@ -714,3 +714,30 @@ vocabulary, or degraded packages.
       the package-quality owner is 779 lines, and the moved focused tests
       passed 66 tests in 29.12 seconds. The widened post-confirm repair pack
       passed 185 tests in 77.48 seconds after the split.
+- [x] Brutal-score source-local checkpoint: the release matrix scoring model
+      now reports hard-min 10/10 dimensions for completion, latency, semantic
+      manifest, copy/semantic clarity, governance depth, traceability, operator
+      usefulness, and PM/architect/engineer/domain-expert lenses. A false
+      raw-file audit that treated serialized JSON quotes as public copy was
+      replaced by structured package inspection. The real failing case was
+      water-rights hearing evidence: recovered actor extraction turned the
+      action chain into `Legal Aides Organize Diversion` because the common
+      grammar did not recognize `organize` as a base action. The generic fix
+      added `organize` to the shared prose grammar owner and made confirmed
+      intent recovery reject actor prefixes that already contain an embedded
+      action clause. Focused score/recovery proof passed 10 tests in 13.58s.
+      The failed water-rights replay then passed real source-local
+      post-confirm create in 17.5s with governed records and hard score 10/10.
+      A final ten-domain cleanup-proof matrix passed with min score 10/10, max
+      post-confirm 16.935s, and `all_cleaned=true` across neonatal handoff,
+      municipal bond covenant, water-rights hearing, quantum lab, kitchen
+      robot, vaccine cold-chain, film rights, distributed-agent incident
+      command, wildfire grants, and museum accessibility.
+- [x] Prompt-source regression checkpoint: the widened pack found that the
+      earlier `use to` infinitive safeguard overcorrected role-purpose clauses
+      and left `sales reps to qualify leads and managers to see pipeline
+      health` unmodalized. Prompt-source now preserves `use to` first, then
+      converts human-role purpose tails before action words from `to` to `can`
+      without adding regex or domain templates. Focused proof passed the two
+      CRM wrapper failures, the kitchen-robot `use to choose` guard, the
+      water-rights actor-chain guard, and the hard-score matrix unit tests.

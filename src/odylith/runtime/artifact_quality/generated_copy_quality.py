@@ -5,8 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from collections.abc import Mapping, Sequence
 import re
+import shlex
 from typing import Any
 
+from odylith.runtime.common.mermaid_text import visible_mermaid_label_quality_texts
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -77,6 +79,9 @@ def generated_public_copy_findings(scope: str, value: Any) -> tuple[GeneratedCop
     """Return public-copy failures classified by generated-prose shape."""
 
     findings: list[GeneratedCopyFinding] = []
+    for text in _raw_text_values(value):
+        if _has_malformed_punctuation_sequence(text):
+            findings.append(GeneratedCopyFinding("malformed_punctuation", f"{scope} leaked malformed punctuation"))
     for text in _text_quality_units(value):
         tokens = _word_tokens(text)
         lowered = tuple(token.casefold() for token in tokens)
@@ -118,6 +123,10 @@ def generated_public_copy_findings(scope: str, value: Any) -> tuple[GeneratedCop
             findings.append(GeneratedCopyFinding("malformed_relative_clause_split", f"{scope} leaked malformed relative-clause split prose"))
         if _has_malformed_relation_phrase(text):
             findings.append(GeneratedCopyFinding("malformed_relation_phrase", f"{scope} leaked malformed relation phrase"))
+        if _has_malformed_punctuation_sequence(text):
+            findings.append(GeneratedCopyFinding("malformed_punctuation", f"{scope} leaked malformed punctuation"))
+        if _has_unbalanced_quote_span(text):
+            findings.append(GeneratedCopyFinding("unbalanced_quote", f"{scope} leaked unbalanced quoted text"))
         if _has_mixed_lower_title_role_fragment(text):
             findings.append(GeneratedCopyFinding("mixed_role_case", f"{scope} leaked mixed actor-role casing"))
         if _has_prepositional_visible_result_splice(text):
@@ -129,6 +138,18 @@ def generated_public_copy_issues(scope: str, value: Any) -> tuple[str, ...]:
     """Return public-copy failure messages for generated prose."""
 
     return unique_text(finding.message for finding in generated_public_copy_findings(scope, value))
+
+
+def _has_malformed_punctuation_sequence(value: str) -> bool:
+    text = str(value or "")
+    if _looks_like_key_value_context(text):
+        return False
+    return bool(re.search(r"[,;:]\s*[.!?]|\.\s*,", text))
+
+
+def _looks_like_key_value_context(value: str) -> bool:
+    text = clean_text(value)
+    return bool(";" in text and re.search(r"\b[a-z][a-z0-9_]{1,40}=", text))
 
 
 def _unique_findings(findings: Sequence[GeneratedCopyFinding]) -> tuple[GeneratedCopyFinding, ...]:
@@ -184,6 +205,15 @@ def _has_prepositional_visible_result_splice(value: str) -> bool:
     return bool(
         re.search(r"\b(?:reach|reaches|reaching|see|sees|seeing)\s+With\b", text)
         or re.search(r"\b(?:reach|reaches|reaching)\s+with\s+(?:a|an|the)\b", text, flags=re.IGNORECASE)
+    )
+
+
+def _has_unbalanced_quote_span(value: str) -> bool:
+    text = str(value or "")
+    return (
+        text.count('"') % 2 == 1
+        or text.count("“") != text.count("”")
+        or bool(re.search(r"(?:^|\s)'[A-Za-z][^']*$", text))
     )
 
 
@@ -566,6 +596,28 @@ def _text_quality_units(value: Any) -> tuple[str, ...]:
     return unique_text(units)
 
 
+def _raw_text_values(value: Any) -> tuple[str, ...]:
+    units: list[str] = []
+    _append_raw_text_values(units, value)
+    return unique_text(units)
+
+
+def _append_raw_text_values(units: list[str], value: Any) -> None:
+    if value is None:
+        return
+    if isinstance(value, Mapping):
+        for nested in value.values():
+            _append_raw_text_values(units, nested)
+        return
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        for nested in value:
+            _append_raw_text_values(units, nested)
+        return
+    text = clean_text(value)
+    if text:
+        units.append(text)
+
+
 def _append_text_quality_units(units: list[str], value: Any) -> None:
     if value is None:
         return
@@ -576,6 +628,14 @@ def _append_text_quality_units(units: list[str], value: Any) -> None:
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         for nested in value:
             _append_text_quality_units(units, nested)
+        return
+    mermaid_units = visible_mermaid_label_quality_texts(value)
+    if mermaid_units:
+        for unit in mermaid_units:
+            _append_text_quality_units(units, unit)
+        return
+    if _looks_like_shell_command(str(value or "")):
+        units.append(clean_text(value))
         return
     current: list[str] = []
     for char in str(value or ""):
@@ -591,6 +651,22 @@ def _append_quality_chunk(units: list[str], chars: list[str]) -> None:
     text = clean_text("".join(chars)).strip(" -#*_`|")
     if text:
         units.append(text)
+
+
+def _looks_like_shell_command(value: str) -> bool:
+    text = clean_text(value)
+    if not text:
+        return False
+    try:
+        tokens = shlex.split(text)
+    except ValueError:
+        return False
+    if len(tokens) < 2:
+        return False
+    executable = tokens[0]
+    if executable in {"odylith", "bash", "curl", "git", "node", "npm", "pnpm", "python", "python3", "pytest", "yarn"}:
+        return True
+    return executable.startswith(("./", "../", "/", ".venv/")) or any(token.startswith("--") for token in tokens[1:])
 
 
 _ABSTRACT_INPUT_CONCEPTS = (

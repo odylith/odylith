@@ -181,8 +181,9 @@ def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tm
     actor_labels = [str(row).split(":", 1)[0] for row in proposal["intent"]["human_actors"]]
     system_rows = [str(row) for row in intent["internal_systems"]]
 
-    assert intent["title"] == "Clinician Ready Follow Up Summary Workspace"
+    assert intent["title"] == "Digestive Health Patients Workspace"
     assert actor_labels == ["Digestive Health Patients"]
+    assert "Clinician Ready Follow Up Summary" not in actor_labels
     assert len(system_rows) >= 3
     assert not any("Recovered Product" in row or "— keeps Safety" in row for row in system_rows)
     rendered_package = json.dumps(
@@ -197,6 +198,106 @@ def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tm
     assert "the product keeps enough context for follow-up" not in rendered_package
     assert "the product preserves the saved context" in rendered_package
     assert build_greenfield_package_report(prewrite.package).issues == ()
+
+
+def test_wearable_health_visible_result_quotes_survive_post_confirm_package(tmp_path: Path) -> None:
+    prompt = (
+        "captures exhaustive metrics from a wearable and shows insight about metabolic age, chronic illness, "
+        "athletic capabilities, biological age, and related health signals"
+    )
+    confirmed_intent = parse_confirmed_intent_text(
+        """
+Metabolic Health Companion — Product Intent Confirmation
+
+Product story
+A health insight app connects to a wearable, gathers biometric, activity, sleep, recovery, and lifestyle signals, and turns them into understandable longitudinal insight. The product helps a person see how their body appears to be aging, recovering, training, and adapting over time, while clearly separating wellness insight from medical diagnosis.
+
+State object
+A personal health profile contains raw wearable readings, device provenance, user context, baselines, trends, derived estimates, confidence levels, consent settings, and safety flags.
+
+First complete path
+A user connects a wearable, completes basic health and goal context, grants consent for selected data streams, and sees an initial dashboard after enough data is available. The first useful experience should show baseline trends, recovery and exertion patterns, estimated metabolic and biological age indicators, athletic capability markers, and clear "what changed" insights without making diagnosis claims.
+
+Human actors
+- Wearable User — tracks personal health, longevity, recovery, or performance.
+- Athlete or Highly Active User Optimizing Training Load and Capability — optimizes training load and capability.
+- Person Managing Chronic Illness Risk — wants early signals and trend awareness.
+
+External systems
+- Wearable devices and health platforms such as Apple Health, Garmin, Oura, WHOOP, Fitbit, or similar sources.
+- Lab, nutrition, medication, symptom, and training-log data sources.
+- Clinical and scientific reference material used to explain metric meaning and limits.
+- Identity, consent, notification, and secure storage providers.
+
+Internal product systems
+- Data Ingestion and Normalization Across Wearable Vendors and Metric Units — receives wearable data and preserves provenance.
+- Personal Baseline and Trend Engine — computes stable baselines and trend changes.
+- Derived Health Insight Engine — produces explainable metabolic, biological-age, recovery, and capability estimates.
+- Explainability Layer Showing Inputs, Confidence, Missing Data, and Trend Drivers — explains why a result changed.
+- Consent, Privacy, Retention, Audit, and Export System — manages consent, retention, sharing, export, and audit evidence.
+- Safety Review Layer — prevents unsupported diagnosis, urgent-risk ambiguity, or overconfident recommendations.
+
+Critical assumptions
+- The app is a wellness and insight product first, not a standalone diagnostic medical device.
+- Derived scores must show confidence, source data, and limitations.
+- Users control which data is collected, retained, shared, and deleted.
+
+Ambiguities
+- Initial wearable platform priority.
+- Whether lab tests, nutrition, medications, and symptoms are required in the first path.
+- Regulatory posture if chronic illness insights become diagnostic, treatment-guiding, or clinician-facing.
+
+Proof boundary
+The first proof should demonstrate that the app can ingest real wearable data, preserve provenance and consent, compute stable personal baselines, show derived estimates with uncertainty, and produce clear trend explanations. It should not claim to diagnose chronic illness, determine biological age as fact, or prescribe treatment without a separate clinical validation and regulatory plan.
+""",
+        prompt=prompt,
+    )
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=confirmed_intent,
+    )
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+    public_payload = json.dumps(
+        {
+            "proposal": proposal,
+            "backlog": prewrite.package.backlog_result.get("idea_files"),
+            "registry": prewrite.package.rendered_component_specs,
+            "atlas": prewrite.package.rendered_atlas_sources,
+            "brief": prewrite.package.project_brief_preview,
+            "next_steps": prewrite.package.next_steps_preview,
+        },
+        sort_keys=True,
+        default=str,
+    )
+    first_path = proposal["semantic_model"]["first_path_contract"]
+    report = build_greenfield_package_report(prewrite.package)
+
+    assert tribunal.passed, tribunal.issues
+    assert first_path["visible_result"] == 'Clear "what changed" insights without making diagnosis claims'
+    assert "baseline trends" not in first_path["visible_result"].casefold()
+    assert "athletic capability markers" not in first_path["visible_result"].casefold()
+    assert re.search(r"\bgrant(?:ing)? consent\b", first_path["capability"])
+    assert "grants consent" not in first_path["capability"]
+    assert 'clear "what.' not in public_payload
+    assert "clear 'what<br" not in public_payload
+    assert "clear 'what.\"" not in public_payload
+    assert "Launches launches" not in public_payload
+    assert "high Check" not in public_payload
+    assert "assumptions={" not in public_payload
+    assert "open_questions={" not in public_payload
+    assert report.issues == ()
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+    assert generated_semantic_slop_issues(proposal, root="proposal") == []
 
 
 def test_autonomous_warehouse_state_review_terms_do_not_become_actors(tmp_path: Path) -> None:
@@ -419,3 +520,52 @@ def test_review_and_adjustment_prompts_avoid_generic_handoff_and_recommendation_
     assert "recommendation" not in warehouse_payload
     assert build_greenfield_package_report(tenant_prewrite.package).issues == ()
     assert build_greenfield_package_report(warehouse_prewrite.package).issues == ()
+
+
+def test_wearable_quote_prompt_keeps_radar_inline_labels_sentence_safe(tmp_path: Path) -> None:
+    prompt = (
+        'Create a greenfield product for wearable-informed lab recovery teams that can ingest motion sensor recovery entries, '
+        'therapist consent notes, and adverse symptom check-ins, then show clear "what changed" insights, access-safe escalation tasks, '
+        "and a release evidence report without making medical diagnosis or personalized treatment claims."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path / "wearable", prompt)
+    report = build_greenfield_package_report(prewrite.package)
+    rendered = json.dumps(
+        {
+            "proposal": proposal,
+            "radar": prewrite.package.backlog_result,
+            "project_brief": prewrite.package.project_brief_preview,
+        },
+        default=str,
+        sort_keys=True,
+    )
+
+    assert report.issues == ()
+    assert "first path, What Changed" not in rendered
+    assert "can can ingest" not in rendered
+    assert "clear what changed insights" in rendered.casefold()
+
+
+def test_use_to_relative_prompt_does_not_leak_compact_mixed_action_memory(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield product for kitchen robot controllers that home cooks use to choose recipes, "
+        "adjust portions, and start cooking runs."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path / "kitchen", prompt)
+    report = build_greenfield_package_report(prewrite.package)
+    rendered = json.dumps(
+        {
+            "proposal": proposal,
+            "radar": prewrite.package.backlog_result,
+            "accepted_project": prewrite.package.accepted_project_preview,
+        },
+        default=str,
+        sort_keys=True,
+    ).casefold()
+
+    assert proposal["intent"]["first_path"].startswith("Home cooks choose recipes")
+    assert "use to choose" not in rendered
+    assert "review to choose" not in rendered
+    assert report.issues == ()

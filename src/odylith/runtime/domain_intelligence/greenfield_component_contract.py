@@ -69,6 +69,18 @@ def ensure_component_contract(
     if isinstance(existing, Mapping):
         normalized = normalize_contract(existing)
         if contract_is_complete(normalized):
+            if proposal and _requires_profile_preserving_rebuild(
+                row,
+                proposal=proposal,
+                workstream_title=workstream_title,
+            ):
+                return build_component_contract(
+                    row,
+                    proposal=proposal,
+                    previous_label=previous_label,
+                    next_label=next_label,
+                    workstream_title=workstream_title,
+                )
             return normalized
     return build_component_contract(
         row,
@@ -129,8 +141,6 @@ def build_component_contract(
         state_label=state_label,
     )
     semantic_fields = normalize_contract(semantic_contract.fields)
-    if _semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields):
-        return semantic_fields
     if profile == "document_context":
         contract = contract_profiles.document_context_contract(
             label=label,
@@ -139,6 +149,7 @@ def build_component_contract(
             previous_label=previous_label,
             next_label=next_label,
         )
+        return _specialized_contract_with_semantic_proof(contract, semantic_contract=semantic_contract, semantic_fields=semantic_fields)
     elif profile == "status_view":
         contract = contract_profiles.status_view_contract(
             label=label,
@@ -147,17 +158,58 @@ def build_component_contract(
             previous_label=previous_label,
             next_label=next_label,
         )
-    else:
-        contract = _generic_contract(
-            label=label,
-            kind=kind,
-            state_label=state_label,
-            description=description,
-            context=context,
-            previous_label=previous_label,
-            next_label=next_label,
-        )
+        return _specialized_contract_with_semantic_proof(contract, semantic_contract=semantic_contract, semantic_fields=semantic_fields)
+    if _semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields):
+        return semantic_fields
+    contract = _generic_contract(
+        label=label,
+        kind=kind,
+        state_label=state_label,
+        description=description,
+        context=context,
+        previous_label=previous_label,
+        next_label=next_label,
+    )
     return normalize_contract(contract)
+
+
+def _specialized_contract_with_semantic_proof(
+    contract: Mapping[str, Any],
+    *,
+    semantic_contract: Any,
+    semantic_fields: Mapping[str, Any],
+) -> dict[str, Any]:
+    normalized = normalize_contract(contract)
+    if not (_semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields)):
+        return normalized
+    normalized["local_proof"] = list(unique_text([*text_values(normalized.get("local_proof")), *text_values(semantic_fields.get("local_proof"))]))
+    return normalized
+
+
+def _requires_profile_preserving_rebuild(
+    row: Mapping[str, Any],
+    *,
+    proposal: Mapping[str, Any],
+    workstream_title: str,
+) -> bool:
+    state_object = _proposal_text(proposal, "state_object", "intent.state_object") or _clean(row.get("state_object"))
+    first_path = _proposal_text(proposal, "first_path", "intent.first_path")
+    proof_boundary = _proposal_text(proposal, "proof_boundary", "intent.proof_boundary")
+    description = _component_description(row)
+    context = _context_text(
+        [
+            _proposal_title(proposal),
+            state_object,
+            first_path,
+            proof_boundary,
+            description,
+            _clean(row.get("boundary")),
+            " ".join(text_values(row.get("interfaces"))),
+            " ".join(text_values(row.get("validation"))),
+            workstream_title,
+        ]
+    )
+    return _profile(label=_label(row), kind=_clean(row.get("kind")), context=context) in {"document_context", "status_view"}
 
 
 def _semantic_contract_is_ready(semantic_contract: Any) -> bool:

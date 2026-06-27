@@ -284,7 +284,7 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
         issues.extend(
             finding.message
             for finding in generated_public_copy_findings(location, text)
-            if finding.category in {"mixed_role_case", "prepositional_visible_result"}
+            if finding.category in {"mixed_role_case", "prepositional_visible_result", "unbalanced_quote"}
         )
         if modal_base_form_drift_phrases(text):
             issues.append(f"modal/base-form grammar drift leaked at {location}")

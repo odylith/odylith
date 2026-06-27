@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_intelligence import 
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
+from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_risk_lines
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import _role_suffixed_label
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
 from odylith.runtime.governance import backlog_authoring
@@ -595,9 +596,11 @@ def test_greenfield_apply_replaces_child_copies_of_parent_risk(tmp_path, monkeyp
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     proposal = _governed_greenfield_fixture(tmp_path, "Build an ecommerce checkout recovery product")
     parent_risk = proposal["risks"][0]
+    parent_risk_line = proposal_risk_lines(proposal)[0]
     proposal["backlog"][1]["domain_risk"] = parent_risk
     proposal["backlog"][1]["risks"] = [parent_risk]
-    proposal["backlog"][2]["risks"] = [{"statement": parent_risk}]
+    proposal["backlog"][2]["domain_risk"] = parent_risk_line
+    proposal["backlog"][2]["risks"] = [parent_risk_line]
 
     result = greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,

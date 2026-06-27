@@ -5,6 +5,7 @@ import json
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import confirmation_from_operator_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
@@ -41,6 +42,65 @@ def test_prompt_source_recovers_sentence_style_title_and_release_path() -> None:
     assert source.first_path.startswith("mission analysts capture predicted close approaches")
     assert "The first release should let" not in source.first_path
     assert "greenfield proposal" not in source.first_path
+
+
+def test_prompt_source_preserves_for_who_actor_role() -> None:
+    prompt = (
+        "Create a quantum tunneling lab planning workspace for experimental physicists who coordinate "
+        "wafer batches, cryostat windows, calibration drift, and publication-ready anomaly evidence."
+    )
+
+    source = prompt_intent_source(prompt)
+
+    assert source.title == "quantum tunneling lab planning workspace"
+    assert source.first_path.startswith("experimental physicists who coordinate")
+    assert "workspace user" not in source.first_path.casefold()
+
+
+def test_host_guidance_recovery_keeps_for_who_actor_role_out_of_workspace_user_fallback(tmp_path) -> None:
+    prompt = (
+        "Create a quantum tunneling lab planning workspace for experimental physicists who coordinate "
+        "wafer batches, cryostat windows, calibration drift, and publication-ready anomaly evidence."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    completed = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert intent["human_actors"][0].startswith("Experimental Physicists:")
+    assert "Experimental physicists can coordinate wafer batches" in rendered
+    assert "Quantum Tunneling Lab Planning Workspace User" not in rendered
+    assert "workspace user" not in rendered.casefold()
+    assert greenfield_quality_issues(completed) == []
+
+
+def test_host_guidance_recovery_rejects_action_chain_prefix_as_actor(tmp_path) -> None:
+    prompt = (
+        "Create a greenfield proposal for water-rights hearing evidence preparation where legal aides organize "
+        "diversion records, tribal consultation notes, drought restrictions, expert exhibits, and filing deadlines "
+        "into a reviewable hearing packet."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    completed = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert intent["human_actors"] == [
+        "Legal Aides: need the product to organize diversion records and keep the result visible and reviewable"
+    ]
+    assert "Legal Aides Organize Diversion" not in rendered
+    assert "can organizes" not in rendered
+    assert greenfield_quality_issues(completed) == []
 
 
 def test_host_guidance_recovery_isolates_original_intent_from_full_propose_envelope() -> None:
@@ -92,7 +152,83 @@ Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prom
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_host_guidance_recovery_uses_user_actor_for_action_only_first_path() -> None:
+    prompt = (
+        "Create a greenfield product for wearable-informed lab recovery teams that ingest device data, "
+        "lab measurements, training context, consent posture, and safety limits, then show a clear change "
+        "explanation without making diagnosis claims."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert prompt_project_title_source(prompt) == "wearable-informed lab recovery teams"
+    assert intent["title"] == "Wearable-informed Lab Recovery Teams Workspace"
+    assert "The product ingest" not in intent["first_path"]
+    assert "The product ingest" not in rendered
+    assert "Product for Wearable-informed" not in rendered
+    assert "can ingest device data" in intent["first_path"]
+    assert "clear change explanation without making diagnosis claims" in rendered
+
+
+def test_host_guidance_recovery_does_not_invent_modal_actor_from_can_path() -> None:
+    prompt = (
+        "Create a greenfield product for wearable-informed lab recovery teams that can ingest motion sensor recovery entries, "
+        "therapist consent notes, and adverse symptom check-ins, then show clear what changed insights, access-safe escalation tasks, "
+        "and a release evidence report without making medical diagnosis or personalized treatment claims."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Wearable-informed Lab Recovery Teams Workspace"
+    assert intent["human_actors"][0].startswith("Wearable-informed Lab Recovery Teams:")
+    assert "needs the product to ingest motion sensor recovery entries" in intent["human_actors"][0]
+    assert "Can:" not in rendered
+    assert "a can can" not in rendered.casefold()
+    assert "Can needs" not in rendered
+    assert "where can ingest" not in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_operator_intent_recovery_visible_confirmation_keeps_sequence_and_actor_readable() -> None:
+    prompt = (
+        "Create a greenfield product for wearable-informed lab recovery teams that ingest device data, "
+        "lab measurements, training context, consent posture, and safety limits, then show a clear change "
+        "explanation without making diagnosis claims."
+    )
+
+    text = confirmation_from_operator_intent(prompt, prefer_product_title=True)
+
+    assert "# Wearable-informed Lab Recovery Teams Workspace - Product Intent Confirmation" in text
+    assert "Wearable-informed Lab Recovery Teams Workspace User" not in text
+    assert "workspace user" not in text.casefold()
+    assert ",. show" not in text
+    assert "lab recovery teams can ingest device data" in text.casefold()
+    assert "then show a clear change explanation without making diagnosis claims" in text
+
+
 def test_prompt_title_source_recognizes_generic_product_containers() -> None:
+    assert (
+        prompt_project_title_source(
+            "Create a greenfield product for field evidence coordinators that collect photos, notes, and review proof."
+        )
+        == "field evidence coordinators"
+    )
     assert (
         prompt_project_title_source(
             "Draft a greenfield proposal for a cooking robot controller where a home cook chooses a recipe."
@@ -139,6 +275,39 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         )
         == "digestive health tracking notebook"
     )
+    assert (
+        prompt_project_title_source(
+            "Create a greenfield product for tenant aid coordinators who intake housing requests and prepare approval packets."
+        )
+        == "tenant aid coordinators"
+    )
+
+
+def test_prompt_source_preserves_infinitive_after_use_to_instead_of_can_rewrite() -> None:
+    prompt = (
+        "Create a greenfield product for kitchen robot controllers that home cooks use to choose recipes, "
+        "adjust portions, and start cooking runs."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert source.title == "kitchen robot controllers"
+    assert "home cooks choose recipes" in source.first_path
+    assert "use to choose" not in source.first_path
+    assert "use can choose" not in source.first_path
+    assert "home cooks choose recipes" in rendered
+    assert "home cooks use can choose" not in rendered
+    assert "home cooks use:" not in rendered
+    assert greenfield_quality_issues(proposal) == []
 
 
 def test_prompt_intent_source_splits_direct_product_title_from_first_path() -> None:
@@ -434,7 +603,7 @@ def test_host_guidance_recovery_does_not_promote_verb_led_path_to_actor() -> Non
     assert "With needs" not in rendered
     assert "where turns" not in rendered
     assert "when turns" not in rendered
-    assert "the product turns roof" in rendered
+    assert "can turn roof" in rendered
     assert "Turn Roof Utility Incentive and Installer Constraints Into a Homeowner Ready Installation Plan with" not in rendered
     assert greenfield_quality_issues(proposal) == []
 

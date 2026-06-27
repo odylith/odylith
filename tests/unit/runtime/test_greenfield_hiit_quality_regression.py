@@ -50,6 +50,8 @@ def test_generated_copy_quality_blocks_hiit_regression_shapes() -> None:
         "bad_possessive": "The product shows history with its date, workout, and total time.",
         "bad_actions": "The first path must prove choose a workout, starts it, and saves a result.",
         "bad_label": 'external1["Optional"] --> P',
+        "bad_quote": 'The product shows clear "what',
+        "bad_punctuation": "A user can collect input,. show a result.",
     }
 
     issues = generated_public_copy_issues("sample", bad_copy)
@@ -58,3 +60,40 @@ def test_generated_copy_quality_blocks_hiit_regression_shapes() -> None:
     assert any("possessive result-list prose" in issue for issue in issues)
     assert any("compact path mixed action prose" in issue for issue in issues)
     assert any("scope prefix as a system label" in issue for issue in issues)
+    assert any("unbalanced quoted text" in issue for issue in issues)
+    assert any("malformed punctuation" in issue for issue in issues)
+
+
+def test_generated_copy_quality_treats_shell_commands_as_atomic_quote_units() -> None:
+    command = (
+        "odylith greenfield create --repo-root . --prompt 'Service Goal Planning Workspace: "
+        "A user completes onboarding. A user enters baseline capacity through the accepted first path' "
+        "--intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1"
+    )
+
+    assert generated_public_copy_issues("command", command) == ()
+    assert any(
+        "unbalanced quoted text" in issue
+        for issue in generated_public_copy_issues("bad command", "odylith greenfield create --prompt 'unfinished")
+    )
+
+
+def test_generated_copy_quality_does_not_splice_mermaid_label_headers_into_payload_text() -> None:
+    mermaid = """
+flowchart LR
+  action["First action<br/>Curators: need the product to<br/>coordinate tactile object<br/>labels"] --> owner["Museum Accessibility Exhibit<br/>Planning Workspace Intake<br/>Register Service"]
+  proof["Proof result<br/>Audio-description reviews<br/>visitor safety constraints and<br/>installation signoff"]
+  outcome["Visible result<br/>Audio-description reviews<br/>visitor safety constraints and<br/>installation signoff"]
+"""
+
+    assert generated_public_copy_issues("mermaid", mermaid) == ()
+
+
+def test_generated_copy_quality_allows_structured_memory_context_delimiters() -> None:
+    context = (
+        "reasoning_mode=odylith_confirmed_governed_proposal; source_posture=confirmed_intent_only; "
+        "assumptions=Release 0.0.1 proves one path. | Sensitive context stays auditable.; "
+        "open_questions=Which policy applies?"
+    )
+
+    assert generated_public_copy_issues("memory context", context) == ()

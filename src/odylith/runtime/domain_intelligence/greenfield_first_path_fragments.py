@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects im
 from odylith.runtime.domain_intelligence.greenfield_first_path_routing import routing_action_clause as _routing_action_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_text_case import lower_initial_for_fragment as _lower_initial_for_fragment
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns, normalize_visible_result_language
+from odylith.runtime.domain_intelligence.greenfield_visible_result_focus import focused_visible_result_object
 
 TRIVIAL_START_RE = re.compile(
     r"^(?:a|an|the)?\s*[^,.;]{0,40}?\b(?:open|opens|launch|launches|start|starts)\s+"
@@ -45,6 +46,8 @@ _SUBORDINATE_SUBJECT_MARKERS = frozenset({"if", "that", "when", "where", "whethe
 _SYSTEM_SUBJECT_TERMS = frozenset(
     "app application dashboard engine model os pipeline platform product service system tool view workspace".split()
 )
+_VISIBLE_RESULT_OBJECT_LIMIT = 240
+
 def visible_action_clause(value: str) -> str:
     text = strip_action_subject(clean_visible_result_phrase(value) or clean_first_path_text(value))
     if re.match(r"^(?:gets?|reads?|receives?|sees?|views?)\b", text, flags=re.IGNORECASE):
@@ -285,12 +288,14 @@ def visible_result_object(value: str) -> str:
                 result,
                 flags=re.IGNORECASE,
             ).strip(" .")
-            result = nominal_visible_result_object(result)
-            return clip_first_path_phrase(result, limit=150)
+            result = focused_visible_result_object(nominal_visible_result_object(result))
+            return clip_first_path_phrase(result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
     if not MATERIAL_ACTION_RE.search(text) and looks_like_visible_result(text):
         return clip_first_path_phrase(
-            nominal_visible_result_object(re.sub(r"^(?:this|the)\s+", "", text, flags=re.IGNORECASE)),
-            limit=150,
+            focused_visible_result_object(
+                nominal_visible_result_object(re.sub(r"^(?:this|the)\s+", "", text, flags=re.IGNORECASE))
+            ),
+            limit=_VISIBLE_RESULT_OBJECT_LIMIT,
         )
     return ""
 
@@ -484,20 +489,13 @@ def _relative_actor_action_parts(value: str) -> tuple[str, str]:
 
 
 def _modal_actor_action_parts(value: str) -> tuple[str, str]:
-    words = [word.strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
+    text = clean_first_path_text(value).strip(" .")
+    words = [word.strip(".,:;") for word in text.split() if word.strip(".,:;")]
     if len(words) < 3:
         return "", ""
-    for index, word in enumerate(words[1:-1], start=1):
-        token = word.casefold()
-        action_start = index + 1
-        if token in _MODAL_ACTOR_MARKERS:
-            actor = " ".join(words[:index]).strip(" .")
-            action = " ".join(words[action_start:]).strip(" .")
-        elif token in {"need", "needs"} and words[index + 1].casefold() == "to" and index + 2 < len(words):
-            actor = " ".join(words[:index]).strip(" .")
-            action = " ".join(words[index + 2 :]).strip(" .")
-        else:
-            continue
+    for match in re.finditer(r"\b(?:can|could|must|should|will|would|needs?\s+to)\b", text, flags=re.IGNORECASE):
+        actor = text[: match.start()].strip(" .")
+        action = text[match.end() :].strip(" .")
         if _looks_like_actor_prefix(actor) and action and not _contains_subordinate_subject_marker(actor):
             return actor, action
     return "", ""

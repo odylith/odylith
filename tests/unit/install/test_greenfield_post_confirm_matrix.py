@@ -29,6 +29,59 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _empty_package() -> SimpleNamespace:
+    return SimpleNamespace(
+        proposal={},
+        backlog_result={"idea_files": {}, "backlog_index_text": ""},
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        component_registry_preview=(),
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        next_steps_preview={},
+        program_result={},
+        release_target_result={},
+        release_assignment_result={},
+        release_workstream_ids=(),
+    )
+
+
+def _full_counts(module) -> object:
+    return module.GreenfieldArtifactCounts(
+        radar_workstreams=4,
+        registry_component_specs=3,
+        atlas_mermaid_sources=4,
+        compass_records=1,
+        release_records=1,
+        program_records=1,
+        project_brief_records=1,
+        trace_nodes=12,
+        trace_workstreams=4,
+        rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
+        domain_term_hits=3,
+    )
+
+
+def _passing_manifest() -> dict[str, object]:
+    return {
+        "status": "passed",
+        "validation_status": "passed",
+        "issue_count": 0,
+        "whole_project_elapsed_seconds": 20.0,
+        "write_transaction": {"status": "committed"},
+        "quality_lenses": {
+            "status": "passed",
+            "lenses": {
+                "product_manager": {"status": "passed"},
+                "architect": {"status": "passed"},
+                "engineer": {"status": "passed"},
+                "domain_expert": {"status": "passed"},
+            },
+        },
+    }
+
+
 def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_path: Path) -> None:
     module = _module()
     _write(tmp_path / "odylith/radar/source/AGENTS.md", "Guidance that is not a generated workstream and may end with of.\n")
@@ -104,31 +157,18 @@ def test_collect_artifact_package_prefers_accepted_project_proposal_over_confirm
 
 def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -> None:
     module = _module()
-    package = SimpleNamespace(
-        proposal={},
-        backlog_result={"idea_files": {}, "backlog_index_text": ""},
-        rendered_component_specs={},
-        rendered_atlas_sources={},
-        component_registry_preview=(),
-        project_brief_preview={},
-        accepted_project_preview={},
-        compass_memory_preview={},
-        next_steps_preview={},
-        program_result={},
-        release_target_result={},
-        release_assignment_result={},
-        release_workstream_ids=(),
-    )
 
     verdict = module.build_quality_verdict(
         create_payload={},
-        package=package,
+        package=_empty_package(),
         counts=module.GreenfieldArtifactCounts(),
         create_returncode=0,
         create_seconds=61.0,
     )
 
     assert not verdict.passed
+    assert verdict.score == 0
+    assert verdict.scores["completion"] == 0
     assert "post-confirm quality manifest missing" in verdict.issues
     assert "post-confirm create exceeded 60s: 61.000s" in verdict.issues
     assert all(passed is False for passed in verdict.lenses.values())
@@ -136,59 +176,58 @@ def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -
 
 def test_quality_verdict_requires_committed_write_transaction() -> None:
     module = _module()
-    manifest = {
-        "status": "passed",
-        "validation_status": "passed",
-        "issue_count": 0,
-        "whole_project_elapsed_seconds": 20.0,
-        "write_transaction": {"status": "not_started"},
-        "quality_lenses": {
-            "status": "passed",
-            "lenses": {
-                "product_manager": {"status": "passed"},
-                "architect": {"status": "passed"},
-                "engineer": {"status": "passed"},
-                "domain_expert": {"status": "passed"},
-            },
-        },
-    }
-    package = SimpleNamespace(
-        proposal={},
-        backlog_result={"idea_files": {}, "backlog_index_text": ""},
-        rendered_component_specs={},
-        rendered_atlas_sources={},
-        component_registry_preview=(),
-        project_brief_preview={},
-        accepted_project_preview={},
-        compass_memory_preview={},
-        next_steps_preview={},
-        program_result={},
-        release_target_result={},
-        release_assignment_result={},
-        release_workstream_ids=(),
-    )
-    counts = module.GreenfieldArtifactCounts(
-        radar_workstreams=4,
-        registry_component_specs=3,
-        atlas_mermaid_sources=4,
-        compass_records=1,
-        release_records=1,
-        program_records=1,
-        project_brief_records=1,
-        trace_nodes=12,
-        trace_workstreams=4,
-        rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
-        domain_term_hits=3,
-    )
+    manifest = _passing_manifest()
+    manifest["write_transaction"] = {"status": "not_started"}
 
     verdict = module.build_quality_verdict(
         create_payload={"post_confirm_quality_manifest": manifest},
-        package=package,
-        counts=counts,
+        package=_empty_package(),
+        counts=_full_counts(module),
         create_returncode=0,
         create_seconds=20.0,
     )
 
     assert not verdict.passed
+    assert verdict.score == 0
     assert "post-confirm write transaction was not committed" in verdict.issues
     assert verdict.lenses["engineer"] is False
+
+
+def test_quality_verdict_scores_premium_only_when_every_dimension_is_clean(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+
+    verdict = module.build_quality_verdict(
+        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert verdict.passed
+    assert verdict.score == 10
+    assert all(score == 10 for score in verdict.scores.values())
+    assert "all brutal release-quality dimensions scored 10" in verdict.score_explanation
+
+
+def test_quality_verdict_caps_score_when_rendered_artifacts_have_copy_findings(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(
+        module,
+        "greenfield_rendered_package_quality_issues",
+        lambda package: ["Radar workstream has clipped copy", "Registry spec repeats generic copy"],
+    )
+
+    verdict = module.build_quality_verdict(
+        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score == 6
+    assert verdict.scores["copy_semantic_clarity"] == 6
+    assert any("cap release score at 6" in explanation for explanation in verdict.score_explanation)

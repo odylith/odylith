@@ -926,7 +926,7 @@ def _usable_explicit_system_candidate(candidate: str) -> bool:
     lowered = text.casefold()
     if lowered in {"internal product systems", "internal systems"}:
         return False
-    if re.search(r"\b(?:because|matter|must|while|still|enough|first path|product)\b", lowered):
+    if re.search(r"\b(?:because|matter|must|while|still|enough|first path)\b", lowered):
         return False
     return bool(re.search(r"[A-Za-z]", text))
 

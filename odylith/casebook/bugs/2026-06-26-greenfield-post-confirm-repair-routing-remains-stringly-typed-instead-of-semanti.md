@@ -647,6 +647,54 @@
   package-repair, and post-confirm engine tests passed 66 tests in 29.12s,
   and the widened post-confirm repair pack passed 185 tests in 77.48s after
   the split.
+  A 2026-06-27 read-only audit of a generated wearable-health consumer repo
+  exposed a new escaped false positive in the same custody class. The accepted
+  intent clearly said the first result should show clear `"what changed"`
+  insights, but the first-path semantic extractor clipped the visible-result
+  fact to `clear "what`; Radar, Atlas, the project brief, accepted-project
+  memory, and rendered dashboard surfaces then projected that malformed
+  semantic fact while the final quality manifest still reported passed. The
+  same artifact set leaked `grants consent` in base-verb capability prose and
+  did not fail on unbalanced public quotes. This failure must not be repaired
+  in individual renderers or by project-specific terms. The fix direction is
+  to preserve complete semantic visible-result facts, repair coordinated
+  action grammar in the common prose owner, and make unbalanced quoted text a
+  package-quality blocker before governed writes can claim release quality.
+  A later brutal-score source-local matrix exposed two further quality-proof
+  lessons. First, a raw file scanner falsely reported four unbalanced-quote
+  defects by reading serialized JSON syntax as public prose; release scoring
+  now uses the same structured package collector as the official matrix and
+  reports hard-min 10/10 dimensions instead of shallow pass/fail. Second, the
+  water-rights hearing evidence case failed before governed writes because
+  recovered actor extraction accepted the full action chain as a second human
+  actor, `Legal Aides Organize Diversion`, after the shared grammar failed to
+  recognize the domain-neutral action verb `organize`. That fake actor caused
+  modal/base-form drift across intent summary, validation strategy, release
+  gates, backlog product view, and success metrics. The fix stayed generic:
+  `organize` is now part of the shared prose grammar action map, and confirmed
+  intent recovery rejects actor prefixes that already contain an embedded
+  actor-action-object clause before rendering human actor rows. Proof: the
+  failed water-rights replay now writes governed records in 17.5 seconds with
+  a hard score of 10/10 across completion, latency, semantic manifest,
+  copy/semantic clarity, governance depth, traceability, operator usefulness,
+  and PM/architect/engineer/domain-expert lenses. A final ten-domain
+  source-local cleanup-proof matrix passed neonatal handoff 16.461s, municipal
+  bond covenant 16.524s, water-rights hearing 16.935s, quantum lab 16.405s,
+  kitchen robot 16.114s, vaccine cold-chain 16.513s, film rights 16.464s,
+  distributed-agent incident command 16.270s, wildfire grants 16.316s, and
+  museum accessibility 16.607s. Every scenario scored 10/10, wrote four Radar
+  workstreams, three Registry specs, six Atlas Mermaid sources, 18 trace
+  nodes, release/program/project-brief records, zero artifact issues, and the
+  run verified `all_cleaned=true`.
+  The widened regression pack then caught a prompt-source overcorrection: the
+  earlier `use to choose` safeguard stopped role-purpose clauses such as
+  `sales reps to qualify leads and managers to see pipeline health` from
+  rendering as modal capability prose. The fix stayed in the no-regex
+  prompt-source owner: after preserving `use to` infinitives, actor-purpose
+  tails that look like human roles and lead into a known action now convert
+  `to` to `can`, including coordinated role clauses after `and`. Focused proof
+  passed the two failing CRM wrapper tests, the `use to choose` regression, the
+  water-rights actor-chain regression, and the hard-score matrix unit tests.
 
 - Related Incidents/Bugs: CB-207
 
@@ -673,6 +721,9 @@
 - src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
 - src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
+- src/odylith/runtime/common/prose_grammar.py
+- src/odylith/runtime/artifact_quality/generated_copy_quality.py
+- src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py
 - src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py
 - src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py

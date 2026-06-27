@@ -19,7 +19,7 @@ def domain_risk_for_row(row: Mapping[str, Any], proposal: Mapping[str, Any]) -> 
         if not is_parent_backlog_row(row, proposal) and _all_claims_repeat_parent(local, proposal):
             return derived_child_workstream_risk(row=row, proposal=proposal)
         return _compact_first_path_reference(" ".join(local).strip(), proposal)
-    proposal_risk = proposal_posture_text(proposal, "risks", "security_compliance")
+    proposal_risk = _parent_domain_risk_text(proposal) or proposal_posture_text(proposal, "security_compliance")
     if not proposal_risk:
         return "" if is_parent_backlog_row(row, proposal) else derived_child_workstream_risk(row=row, proposal=proposal)
     if is_parent_backlog_row(row, proposal):
@@ -39,6 +39,8 @@ def workstream_risk_lines(
     local = [str(item).strip() for item in (local_risks if local_risks is not None else text_values(row.get("risks"))) if str(item).strip()]
     if local:
         if is_parent_backlog_row(row, proposal):
+            if _collapsed_risk_rows(local):
+                return _compact_risk_rows(proposal_risks[:3], proposal)
             return _compact_risk_rows(local, proposal)
         derived = derived_child_workstream_risk(row=row, proposal=proposal)
         filtered = [item for item in local if not _claim_repeats_any_parent(item, proposal_risks)]
@@ -53,8 +55,50 @@ def workstream_risk_lines(
 def proposal_posture_text(proposal: Mapping[str, Any], *keys: str) -> str:
     rows: list[str] = []
     for key in keys:
+        if key == "risks":
+            rows.extend(proposal_risk_lines(proposal))
+            continue
         rows.extend(text_values(proposal.get(key)))
     return " ".join(dedupe_strings(rows)).strip()
+
+
+def proposal_risk_lines(proposal: Mapping[str, Any]) -> tuple[str, ...]:
+    """Return product risk rows without flattening field labels into prose."""
+
+    return tuple(dedupe_strings(_risk_lines(proposal.get("risks"))))
+
+
+def _parent_domain_risk_text(proposal: Mapping[str, Any]) -> str:
+    risks = proposal_risk_lines(proposal)
+    return risks[0] if risks else ""
+
+
+def _collapsed_risk_rows(values: Sequence[str]) -> bool:
+    return any(value.count("RISK-") >= 2 or len(value.split()) > 140 for value in values)
+
+
+def _risk_lines(value: Any) -> list[str]:
+    if isinstance(value, Mapping):
+        line = _risk_line(value)
+        return [line] if line else []
+    if isinstance(value, (list, tuple, set)):
+        rows: list[str] = []
+        for item in value:
+            rows.extend(_risk_lines(item))
+        return rows
+    return [text for text in text_values(value) if text]
+
+
+def _risk_line(row: Mapping[str, Any]) -> str:
+    title = str(row.get("title") or row.get("id") or "").strip(" .")
+    statement = str(row.get("statement") or row.get("risk") or "").strip(" .")
+    mitigation = str(row.get("mitigation") or "").strip(" .")
+    if title and statement and title.casefold() not in statement.casefold():
+        statement = f"{title}: {statement}"
+    line = statement or title
+    if mitigation:
+        line = f"{line}. Mitigation: {mitigation}" if line else f"Mitigation: {mitigation}"
+    return line.strip(" .")
 
 
 def _compact_risk_rows(values: Sequence[str], proposal: Mapping[str, Any]) -> list[str]:
@@ -117,7 +161,7 @@ def derived_child_workstream_risk(*, row: Mapping[str, Any], proposal: Mapping[s
 
 
 def _all_claims_repeat_parent(values: Sequence[str], proposal: Mapping[str, Any]) -> bool:
-    proposal_risks = text_values(proposal.get("risks"))
+    proposal_risks = proposal_risk_lines(proposal)
     if not proposal_risks:
         return False
     local = [str(item).strip() for item in values if str(item).strip()]
@@ -167,5 +211,6 @@ __all__ = [
     "domain_risk_for_row",
     "is_parent_backlog_row",
     "proposal_posture_text",
+    "proposal_risk_lines",
     "workstream_risk_lines",
 ]

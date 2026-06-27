@@ -854,6 +854,100 @@ def test_greenfield_component_spec_renderer_preserves_explicit_transition_terms(
     assert "should make accepted, blocked, corrected, completed, and handed-off states explicit" not in spec
 
 
+def test_component_semantic_contract_preserves_local_proof_boundary_obligations() -> None:
+    proposal = {
+        "intent": {
+            "state_object": "A request handoff record tracks subject identity and uploaded request context.",
+            "first_path": (
+                "A coordinator creates a draft request, attaches subject identity and required request context, "
+                "validates uploaded documents, and sends the packet to a destination team."
+            ),
+            "proof_boundary": (
+                "Release 0.0.1 succeeds when missing documentation blocks submission, uploaded context stays attached "
+                "to the correct request, unauthorized users cannot view or mutate request context, and status history "
+                "is traceable to source events."
+            ),
+        }
+    }
+    row = {
+        "label": "Document and Context Handling Surface",
+        "source_system_description": (
+            "creates request packets, attaches subject identity, validates uploaded documents, blocks missing "
+            "required documentation, records request context provenance, protects sensitive request materials, "
+            "and hands context into request lifecycle tracking"
+        ),
+    }
+
+    contract = component_contract.build_component_contract(
+        row,
+        proposal=proposal,
+        previous_label="Recipient Matching Surface",
+        next_label="Request Lifecycle Tracking Service",
+    )
+    spec = build_component_spec(
+        component_id="document-context-handling-surface",
+        label="Document and Context Handling Surface",
+        path="src/request_handoff/document_context.py",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-001",),
+        component_contract=contract,
+    )
+
+    assert "unauthorized users cannot view or mutate request context" in " ".join(contract["local_proof"]).casefold()
+    assert "1 succeeds when" not in " ".join(contract["local_proof"]).casefold()
+    assert "unauthorized users cannot view or mutate request context" in spec.casefold()
+    assert "1 succeeds when" not in spec.casefold()
+    assert rendered_component_spec_quality_issues({"Document and Context Handling Surface": spec}, project_title="Request Handoff Workspace") == []
+
+
+def test_complete_profile_component_contract_rebuilds_to_preserve_semantic_proof_boundary() -> None:
+    proposal = {
+        "intent": {
+            "state_object": "A request handoff record tracks subject identity and uploaded request context.",
+            "first_path": (
+                "A coordinator creates a draft request, attaches subject identity and required request context, "
+                "validates uploaded documents, and sends the packet to a destination team."
+            ),
+            "proof_boundary": (
+                "Release 0.0.1 succeeds when missing documentation blocks submission, uploaded context stays attached "
+                "to the correct request, unauthorized users cannot view or mutate request context, and status history "
+                "is traceable to source events."
+            ),
+        }
+    }
+    row = {
+        "label": "Document and Context Handling Surface",
+        "source_system_description": (
+            "creates request packets, attaches subject identity, validates uploaded documents, blocks missing "
+            "required documentation, records request context provenance, protects sensitive request materials, "
+            "and hands context into request lifecycle tracking"
+        ),
+        "component_contract": {
+            "owned_state": "request context, uploaded documents, subject identity, and packet attachment state",
+            "accepted_inputs": "request packet, subject identity, uploaded documents, and coordinator context",
+            "produced_outputs": "attached request context and blocked missing-document state",
+            "states_or_transitions": "draft, attached, validated, blocked, and sent",
+            "upstream_truth": "recipient matching surface ownership",
+            "downstream_consumers": "request lifecycle tracking service",
+            "outside_boundary": "destination-team lifecycle state and reviewer decision ownership",
+            "local_proof": ["Replay one document attachment with packet, subject identity, and blocked state aligned."],
+            "unique_failure": "Request context can separate from the packet or bypass required document checks.",
+        },
+    }
+
+    contract = component_contract.ensure_component_contract(
+        row,
+        proposal=proposal,
+        previous_label="Recipient Matching Surface",
+        next_label="Request Lifecycle Tracking Service",
+    )
+
+    assert "unauthorized users cannot view or mutate request context" in " ".join(contract["local_proof"]).casefold()
+    assert "1 succeeds when" not in " ".join(contract["local_proof"]).casefold()
+
+
 def test_greenfield_component_spec_renderer_collapses_adjacent_duplicate_terms() -> None:
     spec = build_narrative_component_spec(
         component_id="quote-review-handoff",

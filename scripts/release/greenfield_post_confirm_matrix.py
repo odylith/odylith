@@ -79,12 +79,18 @@ class GreenfieldQualityVerdict:
     passed: bool
     issues: tuple[str, ...]
     lenses: Mapping[str, bool]
+    scores: Mapping[str, int]
+    score: int
+    score_explanation: tuple[str, ...]
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "passed": self.passed,
             "issues": list(self.issues),
             "lenses": dict(self.lenses),
+            "scores": dict(self.scores),
+            "score": self.score,
+            "score_explanation": list(self.score_explanation),
         }
 
 
@@ -357,17 +363,39 @@ def build_quality_verdict(
         "domain_expert": (
             _lens_passed(manifest_lenses, "domain_expert")
             and counts.domain_term_hits >= 3
-            and not rendered_issues
         ),
     }
     for lens, passed in lenses.items():
         if not passed:
             issues.append(f"{lens} release-matrix lens failed")
     unique_issues = tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
+    scores = _quality_scores(
+        manifest=manifest,
+        counts=counts,
+        create_returncode=create_returncode,
+        create_seconds=create_seconds,
+        rendered_issues=rendered_issues,
+        lenses=lenses,
+    )
+    final_score = _final_quality_score(
+        scores=scores,
+        manifest=manifest,
+        create_returncode=create_returncode,
+        rendered_issues=rendered_issues,
+    )
     return GreenfieldQualityVerdict(
-        passed=not unique_issues and all(lenses.values()),
+        passed=not unique_issues and all(lenses.values()) and final_score == 10,
         issues=unique_issues,
         lenses=lenses,
+        scores=scores,
+        score=final_score,
+        score_explanation=_score_explanation(
+            score=final_score,
+            scores=scores,
+            rendered_issues=rendered_issues,
+            manifest=manifest,
+            create_returncode=create_returncode,
+        ),
     )
 
 
@@ -384,6 +412,9 @@ def _failed_case(
         passed=False,
         issues=(f"{status}: {detail.strip()[:800]}",),
         lenses={lens: False for lens in ("product_manager", "architect", "engineer", "domain_expert")},
+        scores={dimension: 0 for dimension in _QUALITY_SCORE_DIMENSIONS},
+        score=0,
+        score_explanation=("post-confirm did not complete a governed write transaction",),
     )
     return GreenfieldMatrixResult(
         name=case.name,
@@ -504,7 +535,164 @@ def _completion_issues(
         "trace workstreams": counts.trace_workstreams,
         "rendered surfaces": counts.rendered_surfaces,
     }
+    minimums = _required_count_minimums()
+    for label, value in required_counts.items():
+        if value < minimums[label]:
+            issues.append(f"{label} incomplete: expected at least {minimums[label]}, found {value}")
+    if counts.domain_term_hits < 3:
+        issues.append(f"domain term coverage too low: expected at least 3, found {counts.domain_term_hits}")
+    return tuple(issues)
+
+
+_QUALITY_SCORE_DIMENSIONS = (
+    "completion",
+    "latency",
+    "semantic_manifest",
+    "copy_semantic_clarity",
+    "governance_depth",
+    "traceability",
+    "operator_usefulness",
+    "product_manager",
+    "architect",
+    "engineer",
+    "domain_expert",
+)
+
+
+def _quality_scores(
+    *,
+    manifest: Mapping[str, Any],
+    counts: GreenfieldArtifactCounts,
+    create_returncode: int,
+    create_seconds: float,
+    rendered_issues: Sequence[str],
+    lenses: Mapping[str, bool],
+) -> dict[str, int]:
+    return {
+        "completion": _completion_score(manifest=manifest, counts=counts, create_returncode=create_returncode),
+        "latency": _latency_score(create_returncode=create_returncode, create_seconds=create_seconds),
+        "semantic_manifest": _semantic_manifest_score(manifest),
+        "copy_semantic_clarity": _copy_semantic_clarity_score(
+            manifest=manifest,
+            create_returncode=create_returncode,
+            rendered_issues=rendered_issues,
+        ),
+        "governance_depth": _governance_depth_score(counts),
+        "traceability": _traceability_score(counts),
+        "operator_usefulness": _operator_usefulness_score(counts=counts, create_returncode=create_returncode),
+        "product_manager": 10 if lenses.get("product_manager") else 0,
+        "architect": 10 if lenses.get("architect") else 0,
+        "engineer": 10 if lenses.get("engineer") else 0,
+        "domain_expert": 10 if lenses.get("domain_expert") else 0,
+    }
+
+
+def _completion_score(*, manifest: Mapping[str, Any], counts: GreenfieldArtifactCounts, create_returncode: int) -> int:
+    if create_returncode != 0 or not _write_committed(manifest):
+        return 0
+    return 10 if _count_floor_ratio(counts, _required_count_minimums()) >= 1.0 else int(_count_floor_ratio(counts, _required_count_minimums()) * 8)
+
+
+def _latency_score(*, create_returncode: int, create_seconds: float) -> int:
+    if create_returncode != 0:
+        return 0
+    if create_seconds < POST_CONFIRM_BUDGET_SECONDS:
+        return 10
+    if create_seconds < 90.0:
+        return 6
+    if create_seconds < 120.0:
+        return 3
+    return 0
+
+
+def _semantic_manifest_score(manifest: Mapping[str, Any]) -> int:
+    if not manifest:
+        return 0
+    return 10 if not _manifest_issues(manifest) else 0
+
+
+def _copy_semantic_clarity_score(
+    *,
+    manifest: Mapping[str, Any],
+    create_returncode: int,
+    rendered_issues: Sequence[str],
+) -> int:
+    if create_returncode != 0 or not _write_committed(manifest):
+        return 0
+    return max(0, 10 - (2 * len(tuple(rendered_issues))))
+
+
+def _governance_depth_score(counts: GreenfieldArtifactCounts) -> int:
+    return 10 if _count_floor_ratio(counts, _required_count_minimums()) >= 1.0 else int(_count_floor_ratio(counts, _required_count_minimums()) * 10)
+
+
+def _traceability_score(counts: GreenfieldArtifactCounts) -> int:
+    minimums = {"trace nodes": 12, "trace workstreams": 4}
+    values = {"trace nodes": counts.trace_nodes, "trace workstreams": counts.trace_workstreams}
+    return 10 if _count_floor_ratio(values, minimums) >= 1.0 else int(_count_floor_ratio(values, minimums) * 10)
+
+
+def _operator_usefulness_score(*, counts: GreenfieldArtifactCounts, create_returncode: int) -> int:
+    if create_returncode != 0:
+        return 0
     minimums = {
+        "release records": 1,
+        "program records": 1,
+        "project brief records": 1,
+        "rendered surfaces": len(REQUIRED_RENDERED_SURFACES),
+    }
+    values = {
+        "release records": counts.release_records,
+        "program records": counts.program_records,
+        "project brief records": counts.project_brief_records,
+        "rendered surfaces": counts.rendered_surfaces,
+    }
+    return 10 if _count_floor_ratio(values, minimums) >= 1.0 else int(_count_floor_ratio(values, minimums) * 10)
+
+
+def _final_quality_score(
+    *,
+    scores: Mapping[str, int],
+    manifest: Mapping[str, Any],
+    create_returncode: int,
+    rendered_issues: Sequence[str],
+) -> int:
+    if create_returncode != 0 or not _write_committed(manifest):
+        return 0
+    score = min(int(scores.get(dimension, 0)) for dimension in _QUALITY_SCORE_DIMENSIONS)
+    if rendered_issues:
+        score = min(score, 6)
+    if _manifest_issues(manifest):
+        score = min(score, 4)
+    return max(0, min(10, score))
+
+
+def _score_explanation(
+    *,
+    score: int,
+    scores: Mapping[str, int],
+    rendered_issues: Sequence[str],
+    manifest: Mapping[str, Any],
+    create_returncode: int,
+) -> tuple[str, ...]:
+    if create_returncode != 0 or not _write_committed(manifest):
+        return ("score forced to 0 because post-confirm did not commit governed records",)
+    explanations: list[str] = []
+    if rendered_issues:
+        explanations.append(f"copy/semantic artifact findings cap release score at 6; findings={len(tuple(rendered_issues))}")
+    if _manifest_issues(manifest):
+        explanations.append("manifest or transaction issues cap release score at 4")
+    if score == 10 and all(int(value) == 10 for value in scores.values()):
+        explanations.append("all brutal release-quality dimensions scored 10")
+        return tuple(explanations)
+    weakest = [dimension for dimension, value in scores.items() if int(value) == score]
+    if weakest:
+        explanations.append(f"final score follows weakest dimension: {', '.join(weakest)}")
+    return tuple(explanations)
+
+
+def _required_count_minimums() -> dict[str, int]:
+    return {
         "Radar workstreams": 4,
         "Registry component specs": 3,
         "Atlas Mermaid sources": 4,
@@ -516,12 +704,34 @@ def _completion_issues(
         "trace workstreams": 4,
         "rendered surfaces": len(REQUIRED_RENDERED_SURFACES),
     }
-    for label, value in required_counts.items():
-        if value < minimums[label]:
-            issues.append(f"{label} incomplete: expected at least {minimums[label]}, found {value}")
-    if counts.domain_term_hits < 3:
-        issues.append(f"domain term coverage too low: expected at least 3, found {counts.domain_term_hits}")
-    return tuple(issues)
+
+
+def _count_floor_ratio(values: GreenfieldArtifactCounts | Mapping[str, int], minimums: Mapping[str, int]) -> float:
+    rows = values.to_dict() if isinstance(values, GreenfieldArtifactCounts) else dict(values)
+    if not minimums:
+        return 1.0
+    ratios = []
+    for label, minimum in minimums.items():
+        if minimum <= 0:
+            continue
+        value = int(rows.get(_count_key(label), rows.get(label, 0)) or 0)
+        ratios.append(min(1.0, value / float(minimum)))
+    return min(ratios) if ratios else 1.0
+
+
+def _count_key(label: str) -> str:
+    return {
+        "Radar workstreams": "radar_workstreams",
+        "Registry component specs": "registry_component_specs",
+        "Atlas Mermaid sources": "atlas_mermaid_sources",
+        "Compass records": "compass_records",
+        "release records": "release_records",
+        "program records": "program_records",
+        "project brief records": "project_brief_records",
+        "trace nodes": "trace_nodes",
+        "trace workstreams": "trace_workstreams",
+        "rendered surfaces": "rendered_surfaces",
+    }.get(label, label)
 
 
 def _manifest_issues(manifest: Mapping[str, Any]) -> tuple[str, ...]:
@@ -630,10 +840,11 @@ def _print_human_summary(results: Sequence[GreenfieldMatrixResult]) -> None:
     print(f"greenfield post-confirm installed matrix: {QUALITY_MATRIX_VERSION}")
     for result in results:
         print(
-            " - {name}: {status}, {seconds:.3f}s, issues={issues}, "
+            " - {name}: {status}, score={score}/10, {seconds:.3f}s, issues={issues}, "
             "radar={radar}, registry={registry}, atlas={atlas}, trace_nodes={trace_nodes}".format(
                 name=result.name,
                 status=result.status,
+                score=result.quality.score,
                 seconds=result.create_seconds,
                 issues=len(result.quality.issues),
                 radar=result.counts.radar_workstreams,
@@ -645,6 +856,8 @@ def _print_human_summary(results: Sequence[GreenfieldMatrixResult]) -> None:
         if result.quality.issues:
             for issue in result.quality.issues:
                 print(f"   issue: {issue}")
+        for explanation in result.quality.score_explanation:
+            print(f"   score: {explanation}")
 
 
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:

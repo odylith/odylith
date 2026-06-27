@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_v
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
+from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_risk_lines
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import workstream_risk_lines
 from odylith.runtime.governance import backlog_authoring
 
@@ -345,7 +346,7 @@ def _patch_sections(
         workstream_risk_lines(
             row=row,
             proposal=proposal,
-            proposal_risks=risks,
+            proposal_risks=proposal_risk_lines(proposal) or risks,
             local_risks=_risk_lines(row.get("risks", [])),
         )
     )

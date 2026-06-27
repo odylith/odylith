@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-27 · Implementation:** Greenfield post-confirm release proof now uses structured artifact-package inspection and hard-min 10/10 quality scoring; recovered actor extraction rejects action-chain prefixes after the shared grammar learned the generic `organize` action.
+  - Scope: B-142
+  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py +2 more
 - **2026-06-27 · Implementation:** Greenfield post-confirm repair custody now separates semantic patch, artifact-plan patch, projection rerender, and exact-path mechanical draft cleanup; focused and widened post-confirm tests are green.
   - Scope: B-142
   - Evidence: src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
@@ -194,6 +197,8 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-27: Tightened scoped semantic PatchSet custody and proposal-target routing. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_semantic_patch_executor.py` now returns a structured semantic application summary with operation ids, applied fields, affected projections, and completion posture; target routing depends on operation-kind allowlists and exact compatibility paths instead of token splitting; proposal-owned projection defects from package findings and quality lenses route to `ArtifactPlanIR` / `plan_patch`; and `greenfield_artifact_plan.py` maps structural envelopes such as `proposal.*`, `prewrite_package.*`, and `ArtifactPlanIR.*` to sanctioned projection scope. Focused ArtifactPlanIR/semantic tests passed 17 tests, the post-confirm repair pack passed 74 tests, the widened quality pack passed 250 tests, and a temporary installed release matrix passed five consumer-lane domains in 18.227-19.788 seconds with zero quality issues, governed writes, and all expert lenses passing.
 - 2026-06-27: Made quality-lens repair ownership authoritative and removed the legacy proposal-repair lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_quality_lens_repair.py` is now a metadata-only owner contract, `greenfield_quality_lenses.py` emits that canonical owner for each reviewer check, `greenfield_post_confirm_findings.py` ignores per-check owner drift for known checks and fails unknown checks closed, and greenfield review/rescue/PatchSet custody no longer accepts `proposal_repair`. Focused proof passed 9 tests in 0.34s, the widened greenfield repair pack passed 252 tests in 354.43s, and a fresh installed consumer-lane matrix passed five domains in 18.244-19.934 seconds with zero quality issues, governed writes, and all expert lenses passing.
 - 2026-06-27: Removed semantic grammar authority from artifact-draft package repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Generated-copy and package-quality findings now route mixed action inflection, modal/base drift, malformed ownership pairs, malformed component responsibility, and other non-mechanical copy defects to typed artifact-plan repair or fail-closed blockers. `greenfield_post_confirm_repair.py` no longer runs visible-result, article, modal/base-form, or ownership-verb rewrites over rendered drafts, and only admits `artifact_draft_mechanical_copy` PatchSet operations from `artifact_draft_cleaner` when they carry no replacement fact, decision-ledger entry, or proof-obligation delta. Focused mechanical executor proof passed 7 tests in 0.29s, the post-confirm repair/prewrite pack passed 113 tests in 397.10s, the widened semantic/quality pack passed 194 tests in 327.84s, and a fresh installed consumer-lane matrix passed five domains in 18.489-20.286 seconds with zero quality issues, governed writes, all expert lenses passing, and temp cleanup verified.
+- 2026-06-27: Added brutal hard-min scoring and fixed action-chain actor recovery. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `scripts/release/greenfield_post_confirm_matrix.py` now reports explicit 10/10 dimensions for completion, latency, semantic manifest, copy/semantic clarity, governance depth, traceability, operator usefulness, and PM/architect/engineer/domain-expert lenses; no-write remains score 0 and rendered artifact defects cap the release score. The scorer uses structured artifact packages rather than raw serialized JSON text. `prose_grammar.py` now recognizes the generic action `organize`, and `greenfield_confirmed_intent_recovery.py` rejects recovered actor labels whose prefix already contains an embedded action clause, preventing action chains from becoming fake actors. Focused score/recovery tests passed 10 tests in 13.58s; the failed water-rights replay passed source-local create in 17.5s at 10/10; and a final ten-domain source-local matrix passed with min score 10/10, max post-confirm 16.935s, governed writes, zero artifact issues, all expert lenses passing, and `all_cleaned=true`.
+- 2026-06-27: Repaired prompt-source role-purpose modalization without reopening infinitive drift. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_confirmed_prompt_source.py` now preserves `use to` infinitive action chains first, then converts human-role purpose tails before action words from `to` to `can`, including coordinated role clauses such as `sales reps to qualify leads and managers to see pipeline health`. The owner remains regex-free and domain-neutral. Focused proof passed the CRM wrapper failures, the kitchen-robot `use to choose` guard, the water-rights actor-chain guard, and hard-score matrix unit tests.
 
 ## Contract
 
@@ -1017,7 +1022,21 @@ This section captures synchronized requirement and contract signals derived from
   proof-control claims such as `release readiness requires ...` remain proof
   facts. First-path action extraction must respect token boundaries inside
   hyphenated noun compounds, and recovered actor extraction must reject passive
-  object-state tails as human actors.
+  object-state tails as human actors. Recovered actor extraction must also
+  reject proposed actor labels whose prefix already contains an embedded
+  actor-action-object clause; comma-heavy action chains must not become second
+  human actors.
+- Release proof scoring must be structured and punitive. Matrix proof inspects
+  collected artifact-package values, not raw JSON serialization, and the final
+  score is the weakest quality dimension after no-write and artifact-defect
+  caps. A passing release-quality claim requires 10/10 across completion,
+  latency, semantic manifest, copy/semantic clarity, governance depth,
+  traceability, operator usefulness, and PM/architect/engineer/domain-expert
+  lenses.
+- Prompt-source recovery must preserve infinitive `use to` action chains while
+  still modalizing human-role purpose clauses into `can` capability prose. This
+  owner must stay regex-free and must not use project-domain vocabularies to
+  classify roles.
 - Apply failures after the pre-write Tribunal must restore the greenfield-owned
   source truth paths before returning an error. Operators must not be asked to
   hand-delete partial Radar ideas, Registry dossiers, Atlas catalog/source, or

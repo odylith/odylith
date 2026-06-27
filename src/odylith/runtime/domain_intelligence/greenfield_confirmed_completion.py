@@ -60,6 +60,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import delimited_text_v
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
+from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_risk_lines
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import workstream_risk_lines
 from odylith.runtime.domain_intelligence.proposal_validation import format_proposal_issue_report
 
@@ -255,7 +256,7 @@ def _complete_backlog(proposal: dict[str, Any]) -> bool:
         projected_risks = workstream_risk_lines(
             row=row,
             proposal=proposal,
-            proposal_risks=text_values(proposal.get("risks")),
+            proposal_risks=proposal_risk_lines(proposal),
             local_risks=risk_values,
         )
         if risk_values and projected_risks != risk_values:
@@ -363,7 +364,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
         projected_risks = workstream_risk_lines(
             row=row,
             proposal=proposal,
-            proposal_risks=text_values(proposal.get("risks")),
+            proposal_risks=proposal_risk_lines(proposal),
             local_risks=risk_values,
         )
         if risk_values and projected_risks != risk_values:

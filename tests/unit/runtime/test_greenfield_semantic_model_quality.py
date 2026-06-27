@@ -6,6 +6,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_model import FirstP
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import _first_path_contract_claim
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 
 
@@ -128,6 +130,29 @@ def test_operator_first_path_keeps_modifier_tail_with_visible_outcome() -> None:
     assert "Operator picks" not in rendered
     assert "With an emergency stop" not in rendered
     assert generated_public_copy_issues("semantic preview", rendered) == ()
+
+
+def test_semantic_visible_result_preserves_quoted_result_and_parallel_verbs() -> None:
+    first_path = (
+        "A user connects a wearable, completes basic health and goal context, grants consent for selected data streams, "
+        "and sees an initial dashboard after enough data is available. The first useful experience should show baseline "
+        'trends, recovery and exertion patterns, estimated metabolic and biological age indicators, athletic capability '
+        'markers, and clear "what changed" insights without making diagnosis claims.'
+    )
+
+    outcome = first_path_outcome_phrase(first_path)
+    capability = first_path_capability_phrase(first_path)
+
+    assert outcome == 'Clear "what changed" insights without making diagnosis claims'
+    assert 'clear "what.' not in outcome.casefold()
+    assert 'clear "what' in outcome.casefold() and '" insights' in outcome
+    assert "baseline trends" not in outcome.casefold()
+    assert "athletic capability markers" not in outcome.casefold()
+    assert "grant consent" in capability
+    assert "grants consent" not in capability
+    assert "grant consent" in first_path_action_phrase(first_path)
+    assert generated_public_copy_issues("semantic preview", outcome) == ()
+    assert generated_semantic_slop_issues({"outcome": outcome}) == []
 
 
 def test_semantic_proof_claim_normalizes_coordinated_title_role_actor() -> None:

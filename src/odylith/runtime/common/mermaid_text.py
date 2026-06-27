@@ -13,6 +13,25 @@ _NOTE_RE = re.compile(r"^(\s*Note\s+(?:over|right of|left of)\s+[^:]+:\s*)(.+?)\
 _NUMBERED_FLOWCHART_NODE_RE = re.compile(
     r"(?<![\w-])(?P<prefix>[A-Za-z]+)(?P<number>\d+)\s*\[\""
 )
+_LABEL_HEADER_TEXTS = frozenset(
+    {
+        "blocked or corrected",
+        "deferred scope",
+        "domain state",
+        "evidence record",
+        "external input",
+        "first action",
+        "outside release",
+        "proof check",
+        "proof checkpoint",
+        "proof result",
+        "release claim",
+        "release decision",
+        "release proof",
+        "state object",
+        "visible result",
+    }
+)
 
 
 def clean_mermaid_text(value: object) -> str:
@@ -104,6 +123,51 @@ def normalize_mermaid_source(source: str) -> str:
     return "\n".join(_normalize_sequence_lines(source.splitlines()))
 
 
+def visible_mermaid_label_texts(source: object) -> tuple[str, ...]:
+    """Return human-visible labels from Mermaid source without graph syntax."""
+
+    return tuple(clean_mermaid_text(label.replace("<br/>", " ").replace("<br>", " ")) for label in _raw_visible_labels(source) if clean_mermaid_text(label))
+
+
+def visible_mermaid_label_quality_texts(source: object) -> tuple[str, ...]:
+    """Return Mermaid labels as prose quality units without flattening label headers into payload text."""
+
+    units: list[str] = []
+    for label in _raw_visible_labels(source):
+        chunks = [
+            clean_mermaid_text(chunk)
+            for chunk in re.split(r"(?i)<br\s*/?>", str(label or ""))
+            if clean_mermaid_text(chunk)
+        ]
+        if not chunks:
+            continue
+        header = chunks[0].casefold().strip(" .:")
+        if header in _LABEL_HEADER_TEXTS:
+            units.extend(chunks[1:] or chunks)
+            continue
+        units.append(clean_mermaid_text(label.replace("<br/>", " ").replace("<br>", " ")))
+    return tuple(unit for unit in dict.fromkeys(units) if unit)
+
+
+def _raw_visible_labels(source: object) -> tuple[str, ...]:
+    labels: list[str] = []
+    for raw_line in str(source or "").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith(("%%", "classDef ", "class ", "style ")):
+            continue
+        labels.extend(_quoted_flowchart_labels(line))
+        participant = _participant_visible_label(line)
+        if participant:
+            labels.append(participant)
+        note = _note_visible_label(line)
+        if note:
+            labels.append(note)
+        message = _sequence_message_label(line)
+        if message:
+            labels.append(message)
+    return tuple(labels)
+
+
 def numbered_flowchart_node_ids(source: object, *, prefix: str = "S") -> tuple[str, ...]:
     """Return unique numbered flowchart node IDs in first-seen order."""
 
@@ -179,6 +243,41 @@ def _normalize_sequence_arrow(line: str) -> str:
     return f"{head}: {normalized}" if normalized else f"{head}:"
 
 
+def _quoted_flowchart_labels(line: str) -> list[str]:
+    labels: list[str] = []
+    index = 0
+    while index < len(line):
+        start = line.find('["', index)
+        if start < 0:
+            break
+        label_start = start + 2
+        end = line.find('"]', label_start)
+        if end < 0:
+            labels.append(line[label_start:])
+            break
+        labels.append(line[label_start:end])
+        index = end + 2
+    return labels
+
+
+def _participant_visible_label(line: str) -> str:
+    match = _PARTICIPANT_RE.match(line)
+    return clean_mermaid_text(match.group(2)) if match else ""
+
+
+def _note_visible_label(line: str) -> str:
+    match = _NOTE_RE.match(line)
+    return clean_mermaid_text(match.group(2)) if match else ""
+
+
+def _sequence_message_label(line: str) -> str:
+    if '["' in line:
+        return ""
+    if ":" not in line or not any(operator in line for operator in ("->>", "-->>", "->", "-->")):
+        return ""
+    return clean_mermaid_text(line.split(":", 1)[1])
+
+
 def _first_content_line(source: str) -> str:
     match = _FIRST_CONTENT_RE.search(source)
     return str(match.group(1)).strip() if match is not None else ""
@@ -211,8 +310,17 @@ def _strip_dangling_tail(value: str) -> str:
             flags=re.IGNORECASE,
         ).rstrip(" ,;:.")
         if cleaned == text:
-            return cleaned
+            return _strip_unbalanced_quote_tail(cleaned)
         text = cleaned
+
+
+def _strip_unbalanced_quote_tail(value: str) -> str:
+    text = clean_mermaid_text(value).rstrip(" ,;:.")
+    if text.count('"') % 2:
+        return text.rsplit('"', 1)[0].rstrip(" ,;:.")
+    if re.search(r"(?:^|\s)'[A-Za-z][^']*$", text):
+        return text.rsplit("'", 1)[0].rstrip(" ,;:.")
+    return text
 
 
 __all__ = [
@@ -221,6 +329,8 @@ __all__ = [
     "normalize_mermaid_source",
     "numbered_flowchart_node_count",
     "numbered_flowchart_node_ids",
+    "visible_mermaid_label_texts",
+    "visible_mermaid_label_quality_texts",
     "wrap_mermaid_label",
     "wrap_sequence_message",
     "wrap_sequence_note",

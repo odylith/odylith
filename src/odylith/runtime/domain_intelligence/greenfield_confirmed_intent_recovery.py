@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import semantic_first_path_from_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import nominal_visible_result_object
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -70,6 +71,7 @@ _HUMAN_ACTOR_TERMS = frozenset(
         "designer",
         "employee",
         "guest",
+        "lead",
         "manager",
         "member",
         "operator",
@@ -80,6 +82,7 @@ _HUMAN_ACTOR_TERMS = frozenset(
         "reviewer",
         "staff",
         "supervisor",
+        "team",
         "user",
         "worker",
     }
@@ -179,7 +182,7 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     outcome_object = _object_result_phrase(outcome)
     lead_actor_ref = _actor_reference(lead_actor)
     lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
-    first_path_inline = _embedded_first_path_clause(first_path_source.rstrip("."))
+    first_path_inline = _embedded_first_path_clause(first_path_source.rstrip("."), actor=lead_actor_ref)
     first_path = _sentence_start(first_path_inline)
     story = _recovered_story_text(
         title=title,
@@ -238,7 +241,11 @@ def _usable_first_path_source(value: str, *, title: str) -> str:
     if not first_path_has_action_signal(text):
         return ""
     if len(model.steps) >= 2:
-        if _preserve_one_line_capability_source(text):
+        if (
+            _preserve_one_line_capability_source(text)
+            or _preserve_one_line_sequence_source(text)
+            or _preserve_one_line_relative_actor_source(text)
+        ):
             return text
         return _first_path_source_from_steps(model.steps) or text
     if word_count(text) >= 6 and (model.material_action or model.visible_outcome):
@@ -256,6 +263,21 @@ def _preserve_one_line_capability_source(value: str) -> bool:
     if not text or any(mark in text for mark in ".!?"):
         return False
     return "can" in {word.casefold().strip(".,:;") for word in text.split()}
+
+
+def _preserve_one_line_sequence_source(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text or any(mark in text for mark in ".!?"):
+        return False
+    tokens = {word.casefold().strip(".,:;") for word in text.split()}
+    return "then" in tokens and first_path_has_action_signal(text)
+
+
+def _preserve_one_line_relative_actor_source(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text or any(mark in text for mark in ".!?"):
+        return False
+    return bool(_relative_actor_action(text))
 
 
 def _path_source_restates_title(value: str, *, title: str) -> bool:
@@ -277,14 +299,90 @@ def _generic_first_path_source(title: str, *, source: str = "") -> str:
     return semantic_first_path_from_context(title=title, source=source)
 
 
-def _embedded_first_path_clause(value: str) -> str:
+def _embedded_first_path_clause(value: str, *, actor: str) -> str:
     text = _clean(value).strip(" .")
     if not text:
         return ""
+    relative_action = _relative_actor_action(text)
+    if relative_action:
+        action = _recovered_action_clause(relative_action)
+        return f"{_clean(actor) or 'the representative user'} can {action}"
+    purpose_action = _actor_purpose_action(text)
+    if purpose_action:
+        action = _recovered_action_clause(purpose_action)
+        return f"{_clean(actor) or 'the representative user'} can {action}"
     clause = _lower_leading_word(text)
-    if looks_like_action_clause(clause):
-        clause = f"the product {clause}"
+    actorless_modal_action = _actorless_modal_action(clause)
+    if actorless_modal_action:
+        clause = f"{_clean(actor) or 'the representative user'} can {actorless_modal_action}"
+    elif looks_like_action_clause(clause):
+        action = base_action_clause(clause).strip(" .") or clause
+        clause = f"{_clean(actor) or 'the representative user'} can {action}"
     return clause
+
+
+def _recovered_action_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    compact = (
+        readable_action_chain_sentence(
+            text,
+            fallback=base_action_clause(text).strip(" .") or text,
+            limit=280,
+            max_steps=6,
+            include_visible_results=True,
+        ).strip(" .")
+        or base_action_clause(text).strip(" .")
+        or text
+    )
+    if _action_compaction_loses_material_terms(source=text, compact=compact):
+        return text
+    return compact
+
+
+def _action_compaction_loses_material_terms(*, source: str, compact: str) -> bool:
+    source_text = _clean(source).strip(" .")
+    compact_text = _clean(compact).strip(" .")
+    if not source_text or not compact_text or "," not in source_text:
+        return False
+    source_terms = _semantic_terms(source_text)
+    compact_terms = _semantic_terms(compact_text)
+    if len(source_terms) < 5:
+        return False
+    return len(source_terms & compact_terms) < max(4, len(source_terms) // 2)
+
+
+def _relative_actor_action(value: str) -> str:
+    text = _clean(value).strip(" .")
+    match = re.match(
+        r"^[A-Za-z][A-Za-z0-9 /&'()-]{1,100}?\s+(?:who|that)\s+(?P<action>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    action = _clean(match.group("action")).strip(" .")
+    return action if looks_like_action_clause(action) else ""
+
+
+def _actor_purpose_action(value: str) -> str:
+    _actor, action = _actor_purpose_parts(value)
+    return action
+
+
+def _actor_purpose_parts(value: str) -> tuple[str, str]:
+    text = _clean(value).strip(" .")
+    match = re.match(r"^(?P<actor>.+?)\s+to\s+(?P<action>.+)$", text, flags=re.IGNORECASE)
+    if not match:
+        return ("", "")
+    actor = _clean(match.group("actor")).strip(" .")
+    action = _clean(match.group("action")).strip(" .")
+    if not actor or not action:
+        return ("", "")
+    if _looks_like_actor_subject(_words(actor)) and looks_like_action_clause(action):
+        return actor, action
+    return ("", "")
 
 
 def _recovered_story_text(
@@ -390,12 +488,27 @@ def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[st
             rows.append(row)
     if rows:
         return rows[:3]
-    return [f"{_fallback_actor_label(title)}: needs the product to complete the first path and keep the result visible and reviewable"]
+    actor = _fallback_actor_label(title)
+    action = _actorless_modal_action(value) or "complete the first path"
+    return [f"{actor}: needs the product to {action} and keep the result visible and reviewable"]
 
 
 def _fallback_actor_label(title: str) -> str:
     label = _clean(title).strip(" .") or "Product"
+    candidate = _title_without_terminal_container(label)
+    if candidate and _looks_like_actor_subject(_words(candidate)):
+        return title_case_text(candidate)
     return f"{label} User"
+
+
+def _title_without_terminal_container(value: str) -> str:
+    words = _words(value)
+    if len(words) < 3:
+        return ""
+    last = words[-1].casefold().strip(".,:;")
+    if last not in _PRODUCT_CONTAINER_TERMS:
+        return ""
+    return " ".join(words[:-1]).strip(" .")
 
 
 def _first_path_actor_clauses(value: str) -> list[str]:
@@ -465,6 +578,9 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
     words = _words(clause)
     if len(words) < 2:
         return ""
+    purpose_actor, purpose_action = _actor_purpose_parts(clause)
+    if purpose_actor and purpose_action:
+        return _human_actor_row(purpose_actor, purpose_action)
     if _starts_with_action_without_actor(clause):
         return ""
     marker_index = _first_word_index(words, _MODAL_MARKERS)
@@ -476,6 +592,8 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
             if role_actor and role_action:
                 return _human_actor_row(role_actor, role_action)
             return ""
+        if _actor_prefix_contains_embedded_action(actor_words):
+            return ""
         if _looks_like_passive_object_subject(actor_words, _words(action)):
             return ""
         return _human_actor_row(" ".join(actor_words), action)
@@ -483,6 +601,8 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
     if action_index > 0:
         actor = " ".join(words[:action_index])
         action = " ".join(words[action_index:])
+        if _actor_prefix_contains_embedded_action(words[:action_index]):
+            return ""
         if _looks_like_material_actor_fragment(words[:action_index], words[action_index:]):
             return ""
         if _looks_like_passive_object_subject(words[:action_index], words[action_index:]):
@@ -546,6 +666,22 @@ def _looks_like_passive_object_subject(actor_words: Sequence[str], action_words:
     return bool(subject_terms & (_OBJECT_STATE_RELATIONS | _OBJECT_STATE_TERMS))
 
 
+def _actor_prefix_contains_embedded_action(actor_words: Sequence[str]) -> bool:
+    """Reject recovered actor labels that already contain an actor/action/object clause."""
+
+    cleaned = _strip_leading_articles(actor_words)
+    if len(cleaned) < 3:
+        return False
+    if _actor_action_object(" ".join(cleaned)):
+        return True
+    for index in range(1, len(cleaned) - 1):
+        if index < 2 and not _looks_like_actor_subject(cleaned[:index]):
+            continue
+        if looks_like_action_clause(" ".join(cleaned[index:])):
+            return True
+    return False
+
+
 def _looks_like_human_actor_token(value: str) -> bool:
     token = str(value or "").casefold().strip(".,:;")
     return len(token) >= 5 and token.endswith(_HUMAN_ROLE_SUFFIXES)
@@ -556,6 +692,16 @@ def _starts_with_action_without_actor(clause: str) -> bool:
     words = _strip_leading_articles(_words(text))
     if len(words) < 2:
         return False
+    first = words[0].casefold().strip(".,:;")
+    if first in _MODAL_MARKERS and looks_like_action_clause(" ".join(words[1:])):
+        return True
+    if (
+        len(words) >= 3
+        and first in {"need", "needs"}
+        and words[1].casefold().strip(".,:;") == "to"
+        and looks_like_action_clause(" ".join(words[2:]))
+    ):
+        return True
     if not looks_like_action_clause(text) and words[0].casefold() not in _ACTORLESS_IMPERATIVE_ACTION_WORDS:
         return False
     if _first_word_index(words, _MODAL_MARKERS) > 0:
@@ -566,6 +712,23 @@ def _starts_with_action_without_actor(clause: str) -> bool:
     if _looks_plural(words[0]) and not contains_finite_action(words[0]):
         return False
     return True
+
+
+def _actorless_modal_action(value: str) -> str:
+    words = _strip_leading_articles(_words(_clean(value)))
+    if len(words) < 2:
+        return ""
+    first = words[0].casefold().strip(".,:;")
+    if first in _MODAL_MARKERS and looks_like_action_clause(" ".join(words[1:])):
+        return base_action_clause(" ".join(words[1:])).strip(" .")
+    if (
+        len(words) >= 3
+        and first in {"need", "needs"}
+        and words[1].casefold().strip(".,:;") == "to"
+        and looks_like_action_clause(" ".join(words[2:]))
+    ):
+        return base_action_clause(" ".join(words[2:])).strip(" .")
+    return ""
 
 
 def _action_start_index(words: Sequence[str]) -> int:
@@ -705,15 +868,15 @@ def _internal_system_rows_from_recovered_title(title: str) -> list[str]:
     label = title_case_text(_clean(title) or "Product")
     return [
         (
-            f"{label} Intake Register - records source input, current status, owner, blocker, "
+            f"{label} Intake Register — records source input, current status, owner, blocker, "
             "handoff, and version history for the first path"
         ),
         (
-            f"{label} Review Workspace - presents current state, missing input, user-facing confirmation, "
+            f"{label} Review Workspace — presents current state, missing input, user-facing confirmation, "
             "and the next useful action"
         ),
         (
-            f"{label} Proof Ledger - keeps validation results, release decisions, failure reasons, "
+            f"{label} Proof Ledger — keeps validation results, release decisions, failure reasons, "
             "and replayable evidence for review"
         ),
     ]

@@ -70,8 +70,20 @@ def _event_summary(
 def _event_context(proposal: Mapping[str, Any]) -> str:
     intent = _intent(proposal)
     source = _observed_source(proposal)
-    assumptions = _first_nonempty([str(item) for item in proposal.get("assumptions", []) if _clean(item)], limit=2)
-    questions = _first_nonempty([str(item) for item in proposal.get("open_questions", []) if _clean(item)], limit=2)
+    assumptions = _first_nonempty(
+        [
+            _context_item_text(item, fields=("statement", "assumption", "summary", "title", "id"))
+            for item in proposal.get("assumptions", [])
+        ],
+        limit=2,
+    )
+    questions = _first_nonempty(
+        [
+            _context_item_text(item, fields=("question", "statement", "summary", "title", "id"))
+            for item in proposal.get("open_questions", [])
+        ],
+        limit=2,
+    )
     parts = [
         f"reasoning_mode={_clean(intent.get('reasoning_mode')) or 'host_model_reasoned'}",
         f"source_posture={_clean(source.get('source_posture')) or 'unknown'}",
@@ -82,6 +94,16 @@ def _event_context(proposal: Mapping[str, Any]) -> str:
     if questions:
         parts.append("open_questions=" + " | ".join(questions))
     return "; ".join(parts)
+
+
+def _context_item_text(value: Any, *, fields: Sequence[str]) -> str:
+    if isinstance(value, Mapping):
+        for field in fields:
+            text = _clean(value.get(field))
+            if text:
+                return text
+        return ""
+    return _clean(value)
 
 
 def _accepted_project_source_path(repo_root: Path) -> Path:

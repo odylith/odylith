@@ -177,7 +177,7 @@ def test_confirmed_intent_parser_lifts_one_line_operator_request_into_confirmati
     assert "keeps prove" not in encoded
     assert "shows prove" not in encoded
     assert "the proven response path before launch" in encoded
-    assert "support leads can triage delayed orders" in intent["first_path"]
+    assert "support leads can triage delayed orders" in intent["first_path"].casefold()
     assert intent["human_actors"] == [
         "Support Leads: need the product to triage delayed orders and keep the result visible and reviewable"
     ]

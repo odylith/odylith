@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from odylith.runtime.common.mermaid_text import wrap_mermaid_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     CONFIRMED_INTENT_VALIDATION_STOPWORDS,
 )
@@ -514,6 +515,17 @@ def test_word_boundary_clipping_stays_in_text_owner() -> None:
         limit=16,
         dangling_words={"with"},
     ) == "Alpha beta"
+    assert (
+        clip_text_at_word_boundary(
+            'baseline trends, capability markers, and clear "what changed" insight',
+            limit=52,
+        )
+        == "baseline trends, capability markers, and clear"
+    )
+    assert "clear 'what<br" not in wrap_mermaid_label(
+        'baseline trends, capability markers, and clear "what changed" insight',
+        limit=52,
+    )
     assert clip_text_at_word_boundary("IdentifierWithoutSpaces", limit=10) == "Identifier"
 
     for caller in touched_callers:

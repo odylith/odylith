@@ -54,6 +54,33 @@ from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normal
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
+_PROOF_OBLIGATION_TERMS = frozenset(
+    {
+        "access",
+        "actor",
+        "audit",
+        "authorized",
+        "blocked",
+        "cannot",
+        "consent",
+        "hidden",
+        "invalid",
+        "missing",
+        "mutate",
+        "permission",
+        "privacy",
+        "reject",
+        "rejected",
+        "required",
+        "role",
+        "safety",
+        "traceable",
+        "unauthorized",
+        "visible",
+        "view",
+    }
+)
+
 
 @dataclass(frozen=True)
 class SemanticComponentContract:
@@ -78,6 +105,7 @@ def derive_component_semantic_contract(
     label = _label(row)
     description = _description(row)
     proposal_context = _proposal_context(proposal)
+    proof_boundary = _proof_boundary_text(proposal)
     local_text = " ".join(text for text in (label, description) if text)
     clauses = semantic_context.clauses(description or label)
     action_terms = semantic_context.action_terms(" ".join(text for text in (label, description) if text)) or semantic_context.action_terms(local_text)
@@ -219,6 +247,17 @@ def derive_component_semantic_contract(
         output_focus=output_focus,
         sibling_label=handoff_label,
         sibling_focus=handoff_focus,
+    )
+    proof = unique_text(
+        [
+            *proof,
+            *_local_proof_boundary_rows(
+                label=label,
+                proof_boundary=proof_boundary,
+                label_terms=label_terms,
+                description_terms=description_terms,
+            ),
+        ]
     )
     evidence_phrases = ("source evidence",) if semantic_context.needs_source_evidence(
         label=label,
@@ -409,6 +448,69 @@ def _proposal_context(proposal: Mapping[str, Any]) -> str:
         *ontology.values(),
     ]
     return " ".join(_clean(value) for value in values if _clean(value))
+
+
+def _proof_boundary_text(proposal: Mapping[str, Any]) -> str:
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    semantic_model = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    ontology = semantic_model.get("domain_ontology") if isinstance(semantic_model.get("domain_ontology"), Mapping) else {}
+    return " ".join(
+        _clean(value)
+        for value in (
+            proposal.get("proof_boundary"),
+            intent.get("proof_boundary"),
+            ontology.get("proof_boundary") if isinstance(ontology, Mapping) else "",
+        )
+        if _clean(value)
+    )
+
+
+def _local_proof_boundary_rows(
+    *,
+    label: str,
+    proof_boundary: str,
+    label_terms: Sequence[str],
+    description_terms: Sequence[str],
+) -> list[str]:
+    local_terms = set(label_terms) | set(description_terms)
+    if not proof_boundary or not local_terms:
+        return []
+    rows: list[str] = []
+    for clause in semantic_context.clauses(_proof_boundary_obligation_text(proof_boundary)):
+        if not _proof_boundary_clause_belongs_to_component(clause, local_terms=local_terms):
+            continue
+        rows.append(f"Proof boundary evidence for {label}: {_sentence_clause(clause)}")
+        if len(rows) >= 2:
+            break
+    return rows
+
+
+def _proof_boundary_obligation_text(value: str) -> str:
+    text = _clean(value).strip(" .")
+    text = re.sub(
+        r"^(?:the\s+)?(?:first\s+)?release(?:\s+[A-Za-z0-9_.-]+)?\s+"
+        r"(?:succeeds|works|passes|is\s+trusted|is\s+proven)\s+when\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+    return text.strip(" .")
+
+
+def _proof_boundary_clause_belongs_to_component(clause: str, *, local_terms: set[str]) -> bool:
+    terms = set(_content_terms(clause))
+    if len(terms) < 3:
+        return False
+    obligation_overlap = bool(terms & _PROOF_OBLIGATION_TERMS)
+    local_overlap = terms & local_terms
+    return obligation_overlap and (len(local_overlap) >= 2 or (len(local_overlap) >= 1 and len(terms) <= 8))
+
+
+def _sentence_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "local proof obligation remains reviewable."
+    return f"{text.rstrip('.')}."
 
 
 def _context_contract_terms(value: str, *, label_terms: Sequence[str], description_terms: Sequence[str]) -> tuple[str, ...]:
