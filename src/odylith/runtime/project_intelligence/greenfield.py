@@ -77,6 +77,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
     non_goals = _non_goal_rows(project)
     accepted = dict_value(proposal.get("_accepted_project"))
     accepted_project = bool(accepted)
+    source_launch_context = dict_value(proposal.get("_source_launch") or proposal.get("source_launch"))
     raw_title = sentence(intent.get("title"), "Greenfield project")
     lens = _lens(proposal=proposal, backlog=backlog, components=components)
     first_path = sentence(intent.get("first_path")) or _first_path(
@@ -145,6 +146,7 @@ def build_greenfield_payload(*, proposal: Mapping[str, Any], repo_root: Path) ->
             risks=risk_source,
             validation=validation,
             non_goals=non_goals,
+            source_launch_context=source_launch_context,
         )
         if accepted_project
         else {}

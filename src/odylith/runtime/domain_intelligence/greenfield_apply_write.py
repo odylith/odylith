@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.proposal_validation import validated_me
 from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
+from odylith.runtime.project_intelligence import builder as project_intelligence_builder
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 
@@ -191,6 +192,14 @@ def write_greenfield_proposal(
     release_id = "none"
     if isinstance(release_targeting, Mapping):
         release_id = str(release_targeting.get("release_id", "")).strip() or "none"
+    next_steps = greenfield_experience.build_next_steps(
+        proposal=proposal,
+        backlog_result=backlog_result,
+        first_release_workstreams=first_release_workstreams,
+        program_result=program_result,
+        release_selector=release_selector,
+    )
+    next_steps = _repair_final_next_steps(next_steps)
     memory_record = record_greenfield_acceptance(
         repo_root=root,
         proposal=proposal,
@@ -200,15 +209,8 @@ def write_greenfield_proposal(
         release_selector=release_selector,
         release_id=release_id,
         validation_gate=tribunal.to_dict(),
+        source_launch_context=next_steps,
     )
-    next_steps = greenfield_experience.build_next_steps(
-        proposal=proposal,
-        backlog_result=backlog_result,
-        first_release_workstreams=first_release_workstreams,
-        program_result=program_result,
-        release_selector=release_selector,
-    )
-    next_steps = _repair_final_next_steps(next_steps)
     _raise_for_final_package_quality(
         root=root,
         proposal=proposal,
@@ -316,6 +318,10 @@ def _raise_for_final_package_quality(
     next_steps: Mapping[str, Any],
 ) -> None:
     accepted_project_preview = _read_json_mapping(root / "odylith/runtime/source/accepted-project.v1.json")
+    project_dashboard_preview = project_intelligence_builder.build_project_intelligence_payload(
+        repo_root=root,
+        shell_payload={},
+    )
     package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector=release_selector,
@@ -325,6 +331,7 @@ def _raise_for_final_package_quality(
         project_brief_preview=proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {},
         tribunal_preview=tribunal.to_dict(),
         accepted_project_preview=accepted_project_preview,
+        project_dashboard_preview=project_dashboard_preview,
         compass_memory_preview=memory_record.get("event") if isinstance(memory_record.get("event"), Mapping) else {},
         next_steps_preview=next_steps,
         backlog_result=backlog_result,

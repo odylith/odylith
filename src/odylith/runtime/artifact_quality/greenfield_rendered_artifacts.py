@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
@@ -18,6 +19,7 @@ class RenderedArtifact:
     projection_id: str = "artifact_draft_set"
     repair_path: str = "prewrite_package.artifact_draft_set.copy_quality"
     kind: str = "prose"
+    fields: Mapping[str, str] = field(default_factory=dict)
 
     @property
     def identity(self) -> str:
@@ -106,6 +108,7 @@ def collect_rendered_package_artifacts(package: Any) -> list[RenderedArtifact]:
             )
         )
 
+    artifacts.extend(_project_handoff_prompt_artifacts(getattr(package, "project_dashboard_preview", None)))
     return artifacts
 
 
@@ -141,6 +144,40 @@ def unique_package_quality_findings(
 
 def package_mapping(value: Any) -> Mapping[Any, Any]:
     return value if isinstance(value, Mapping) else {}
+
+
+def _project_handoff_prompt_artifacts(value: Any) -> list[RenderedArtifact]:
+    project = package_mapping(value)
+    rows = _mapping_rows(project.get("host_handoff_prompts"))
+    artifacts: list[RenderedArtifact] = []
+    for index, row in enumerate(rows, start=1):
+        fields = {key: _handoff_prompt_field(row, key) for key in ("label", "when", "prompt", "result", "stop")}
+        fields["position"] = str(index)
+        label = fields.get("label") or f"Prompt {index}"
+        text = "\n".join(f"{key}: {fields[key]}" for key in ("label", "when", "prompt", "result", "stop") if fields.get(key))
+        artifacts.append(
+            RenderedArtifact(
+                "Project implementation prompt",
+                label,
+                text,
+                "project_dashboard",
+                f"prewrite_package.project_dashboard_preview.host_handoff_prompts[{index - 1}]",
+                fields=fields,
+            )
+        )
+    return artifacts
+
+
+def _handoff_prompt_field(row: Mapping[str, Any], key: str) -> str:
+    if key == "stop":
+        return normalize_string(row.get("stop") or row.get("stop_condition"))
+    return normalize_string(row.get(key))
+
+
+def _mapping_rows(value: Any) -> tuple[Mapping[str, Any], ...]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        return ()
+    return tuple(row for row in value if isinstance(row, Mapping))
 
 
 def _artifact_name(value: Any) -> str:

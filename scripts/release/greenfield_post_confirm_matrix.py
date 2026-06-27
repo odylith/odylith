@@ -28,6 +28,7 @@ from local_release_smoke import _serve_directory  # noqa: E402
 from odylith.runtime.artifact_quality.greenfield_package_quality import (  # noqa: E402
     greenfield_rendered_package_quality_issues,
 )
+from odylith.runtime.project_intelligence import builder as project_intelligence_builder  # noqa: E402
 
 
 POST_CONFIRM_BUDGET_SECONDS = 60.0
@@ -69,6 +70,7 @@ class GreenfieldArtifactCounts:
     trace_workstreams: int = 0
     rendered_surfaces: int = 0
     domain_term_hits: int = 0
+    project_implementation_prompts: int = 0
 
     def to_dict(self) -> dict[str, int]:
         return asdict(self)
@@ -290,6 +292,10 @@ def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, An
         component_registry_preview=tuple(_mapping_rows(create_payload.get("components"))),
         project_brief_preview=_as_mapping(proposal.get("project_brief")) if isinstance(proposal, Mapping) else {},
         accepted_project_preview=accepted_project,
+        project_dashboard_preview=project_intelligence_builder.build_project_intelligence_payload(
+            repo_root=repo_root,
+            shell_payload={},
+        ),
         compass_memory_preview=_as_mapping(_as_mapping(create_payload.get("memory")).get("event")),
         next_steps_preview=_as_mapping(create_payload.get("next_steps")),
         backlog_result=backlog_result,
@@ -320,6 +326,9 @@ def collect_artifact_counts(
         trace_workstreams=len(trace.get("workstreams") or []) if isinstance(trace.get("workstreams"), list) else 0,
         rendered_surfaces=sum(1 for path in REQUIRED_RENDERED_SURFACES if _nonempty(repo_root / path)),
         domain_term_hits=sum(1 for term in required_terms if term.casefold() in rendered_text),
+        project_implementation_prompts=len(
+            _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts"))
+        ),
     )
 
 
@@ -334,6 +343,7 @@ def build_quality_verdict(
     manifest = _as_mapping(create_payload.get("post_confirm_quality_manifest"))
     manifest_lenses = _manifest_lenses(manifest)
     rendered_issues = tuple(greenfield_rendered_package_quality_issues(package)) if create_returncode == 0 else ()
+    prompt_issues = tuple(issue for issue in rendered_issues if issue.startswith("Project implementation prompt "))
     issues = [
         *rendered_issues,
         *_manifest_issues(manifest),
@@ -375,6 +385,7 @@ def build_quality_verdict(
         create_returncode=create_returncode,
         create_seconds=create_seconds,
         rendered_issues=rendered_issues,
+        prompt_issues=prompt_issues,
         lenses=lenses,
     )
     final_score = _final_quality_score(
@@ -382,6 +393,7 @@ def build_quality_verdict(
         manifest=manifest,
         create_returncode=create_returncode,
         rendered_issues=rendered_issues,
+        prompt_issues=prompt_issues,
     )
     return GreenfieldQualityVerdict(
         passed=not unique_issues and all(lenses.values()) and final_score == 10,
@@ -393,6 +405,7 @@ def build_quality_verdict(
             score=final_score,
             scores=scores,
             rendered_issues=rendered_issues,
+            prompt_issues=prompt_issues,
             manifest=manifest,
             create_returncode=create_returncode,
         ),
@@ -534,6 +547,7 @@ def _completion_issues(
         "trace nodes": counts.trace_nodes,
         "trace workstreams": counts.trace_workstreams,
         "rendered surfaces": counts.rendered_surfaces,
+        "Project implementation prompts": counts.project_implementation_prompts,
     }
     minimums = _required_count_minimums()
     for label, value in required_counts.items():
@@ -552,6 +566,7 @@ _QUALITY_SCORE_DIMENSIONS = (
     "governance_depth",
     "traceability",
     "operator_usefulness",
+    "implementation_prompts",
     "product_manager",
     "architect",
     "engineer",
@@ -566,6 +581,7 @@ def _quality_scores(
     create_returncode: int,
     create_seconds: float,
     rendered_issues: Sequence[str],
+    prompt_issues: Sequence[str],
     lenses: Mapping[str, bool],
 ) -> dict[str, int]:
     return {
@@ -580,6 +596,11 @@ def _quality_scores(
         "governance_depth": _governance_depth_score(counts),
         "traceability": _traceability_score(counts),
         "operator_usefulness": _operator_usefulness_score(counts=counts, create_returncode=create_returncode),
+        "implementation_prompts": _implementation_prompt_score(
+            counts=counts,
+            create_returncode=create_returncode,
+            prompt_issues=prompt_issues,
+        ),
         "product_manager": 10 if lenses.get("product_manager") else 0,
         "architect": 10 if lenses.get("architect") else 0,
         "engineer": 10 if lenses.get("engineer") else 0,
@@ -650,18 +671,32 @@ def _operator_usefulness_score(*, counts: GreenfieldArtifactCounts, create_retur
     return 10 if _count_floor_ratio(values, minimums) >= 1.0 else int(_count_floor_ratio(values, minimums) * 10)
 
 
+def _implementation_prompt_score(
+    *,
+    counts: GreenfieldArtifactCounts,
+    create_returncode: int,
+    prompt_issues: Sequence[str],
+) -> int:
+    if create_returncode != 0 or prompt_issues:
+        return 0
+    return 10 if counts.project_implementation_prompts >= 5 else 0
+
+
 def _final_quality_score(
     *,
     scores: Mapping[str, int],
     manifest: Mapping[str, Any],
     create_returncode: int,
     rendered_issues: Sequence[str],
+    prompt_issues: Sequence[str],
 ) -> int:
     if create_returncode != 0 or not _write_committed(manifest):
         return 0
     score = min(int(scores.get(dimension, 0)) for dimension in _QUALITY_SCORE_DIMENSIONS)
     if rendered_issues:
         score = min(score, 6)
+    if prompt_issues:
+        score = min(score, 4)
     if _manifest_issues(manifest):
         score = min(score, 4)
     return max(0, min(10, score))
@@ -672,6 +707,7 @@ def _score_explanation(
     score: int,
     scores: Mapping[str, int],
     rendered_issues: Sequence[str],
+    prompt_issues: Sequence[str],
     manifest: Mapping[str, Any],
     create_returncode: int,
 ) -> tuple[str, ...]:
@@ -680,6 +716,8 @@ def _score_explanation(
     explanations: list[str] = []
     if rendered_issues:
         explanations.append(f"copy/semantic artifact findings cap release score at 6; findings={len(tuple(rendered_issues))}")
+    if prompt_issues:
+        explanations.append(f"Project implementation prompt findings cap release score at 4; findings={len(tuple(prompt_issues))}")
     if _manifest_issues(manifest):
         explanations.append("manifest or transaction issues cap release score at 4")
     if score == 10 and all(int(value) == 10 for value in scores.values()):
@@ -703,6 +741,7 @@ def _required_count_minimums() -> dict[str, int]:
         "trace nodes": 12,
         "trace workstreams": 4,
         "rendered surfaces": len(REQUIRED_RENDERED_SURFACES),
+        "Project implementation prompts": 5,
     }
 
 
@@ -731,6 +770,7 @@ def _count_key(label: str) -> str:
         "trace nodes": "trace_nodes",
         "trace workstreams": "trace_workstreams",
         "rendered surfaces": "rendered_surfaces",
+        "Project implementation prompts": "project_implementation_prompts",
     }.get(label, label)
 
 

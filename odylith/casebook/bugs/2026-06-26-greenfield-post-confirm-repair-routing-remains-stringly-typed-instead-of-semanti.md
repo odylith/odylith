@@ -705,6 +705,33 @@
   `to` to `can`, including coordinated role clauses after `and`. Focused proof
   passed the two failing CRM wrapper tests, the `use to choose` regression, the
   water-rights actor-chain regression, and the hard-score matrix unit tests.
+  A later Project tab audit found another shallow-score failure class: the
+  installed matrix could score a post-confirm package without inspecting the
+  accepted Project dashboard implementation prompts shown to operators. The
+  first fix made Project `host_handoff_prompts` rendered artifacts, but review
+  then found four mechanisms that still could not support a release claim:
+  missing `project_dashboard_preview` bypassed the prompt gate, prompt role
+  checks were keyed to label substrings, prewrite generated Project dashboard
+  prompts from the staged governance tree instead of the target repo root, and
+  framework-leak detection treated ordinary domain phrases such as compass
+  headings or Atlas parcel records as Odylith surface leakage. The current
+  source fix keeps the gate generic: `project_dashboard_preview` is required
+  once Radar, Registry, and Atlas prewrite evidence exists; Project prompt
+  quality is owned by `greenfield_project_prompt_quality.py` and classified by
+  prompt sequence position rather than labels; prewrite dashboard preview uses
+  the target repo root for language/runtime signals; and Odylith-surface
+  leakage now requires surface-specific platform context such as Registry
+  component specs or Atlas diagrams. The same broad regression pass exposed a
+  top-level scalar repair gap: unbalanced quoted text in intent summary,
+  intent product story, and project-brief purpose was recognized as semantic
+  slop but no repair path mutated those scalars. Confirmed completion now
+  repairs those fields from semantic facts and strips embedded proof-boundary
+  punctuation before composing public copy. Source proof for this checkpoint:
+  focused blocker tests passed 6 tests in 35.44s; Project/source-launch/matrix
+  tests passed 10 tests in 0.51s; the broad greenfield suite passed 241 tests
+  in 844.71s after fixing late helper and repair-fixture regressions.
+  Installed dist proof, including a built-dist rescue-path run under 90s,
+  remains required before release-readiness can be claimed.
 
 - Related Incidents/Bugs: CB-207
 
@@ -742,6 +769,10 @@
 - src/odylith/runtime/reasoning/tribunal_engine.py
 - src/odylith/runtime/reasoning/tribunal_patch_planner.py
 - src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py
+- src/odylith/runtime/artifact_quality/greenfield_project_prompt_quality.py
+- src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py
+- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
+- src/odylith/runtime/project_intelligence/source_launch.py
 - tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py
 - tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py
 - odylith/atlas/source/domain-intelligence-greenfield-governance.mmd

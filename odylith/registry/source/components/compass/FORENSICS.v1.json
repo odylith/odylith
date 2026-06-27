@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 315,
-    "mapped_workstream_evidence_count": 238,
+    "explicit_event_count": 327,
+    "mapped_workstream_evidence_count": 249,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 315
+    "timeline_event_count": 327
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,397 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 650,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Project dashboard implementation prompts are now governed prewrite evidence; focused blocker tests, Project/source-launch/matrix tests, and the 241-test broad greenfield suite passed before fresh installed proof.",
+      "ts_iso": "2026-06-27T15:49:16-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 649,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh local release dist odylith-local-release-0.1.15-ddecaf5e passed the installed greenfield post-confirm matrix with hard-min 10/10 scores across five consumer-lane domains in 19.780-23.035s, zero issues, governed writes, all PM/architect/engineer/domain-expert lenses passing, and temp cleanup.",
+      "ts_iso": "2026-06-27T13:37:35-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
+      ],
+      "confidence": "high",
+      "event_index": 648,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Prompt-source role-purpose recovery now preserves use-to infinitives while modalizing human-role purpose clauses such as sales reps to qualify leads; focused regressions passed after the widened pack exposed the overcorrection.",
+      "ts_iso": "2026-06-27T13:08:30-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/common/prose_grammar.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
+        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
+      ],
+      "confidence": "high",
+      "event_index": 647,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm hard-min scoring now reports brutal 10/10 release dimensions; action-chain actor recovery rejects embedded action prefixes after the water-rights no-write repro, and the final ten-domain source-local cleanup-proof matrix passed with min score 10/10, max 16.935s, and all temp repos deleted.",
+      "ts_iso": "2026-06-27T12:54:39-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 646,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Post-split greenfield post-confirm repair pack passed 185 tests in 77.48s, preserving repair custody coverage after test-owner decomposition.",
+      "ts_iso": "2026-06-27T03:45:33-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 645,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm test ownership split kept the engine test owner under the 1500-line ceiling while patch-payload, package-repair, projection-rerender, and engine tests passed 66 tests in 29.12s.",
+      "ts_iso": "2026-06-27T03:41:29-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 644,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield exact-path/projection custody passed installed consumer-lane matrix from temporary local release in 18.383-19.745s across five domains with governed writes, zero quality issues, all expert lenses passing, and temp cleanup.",
+      "ts_iso": "2026-06-27T03:32:42-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py"
+      ],
+      "confidence": "high",
+      "event_index": 643,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm repair custody now separates semantic patch, artifact-plan patch, projection rerender, and exact-path mechanical draft cleanup; focused and widened post-confirm tests are green.",
+      "ts_iso": "2026-06-27T03:20:10-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 642,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Installed local-release greenfield matrix passed five consumer-lane domains in 18.489-20.286 seconds with zero quality issues, governed writes, all expert lenses passing, and temp cleanup verified.",
+      "ts_iso": "2026-06-27T02:01:41-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py"
+      ],
+      "confidence": "high",
+      "event_index": 641,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm artifact-draft repair is now metadata-gated mechanical-only; semantic grammar defects route to typed plan repair or fail closed.",
+      "ts_iso": "2026-06-27T01:49:16-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 637,
+      "explicit_components": [
+        "compass",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "compass",
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Greenfield scoped artifact-plan rerender checkpoint corrected reviewer-found projection escapes: program remains full-prewrite, release rerender includes Compass, focused repair suite passed 66 tests in 24.12s, and widened post-confirm quality pack passed 242 tests in 360.05s.",
+      "ts_iso": "2026-06-26T23:17:11-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
+      ],
+      "confidence": "high",
+      "event_index": 635,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield typed patch dispatch and actor-title projection checkpoint passed 58 focused tests, 181 widened quality tests, and six source-local confirmed-create simulations after fixing the museum clipped-title failure.",
+      "ts_iso": "2026-06-26T22:21:46-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-58a9b7c5",

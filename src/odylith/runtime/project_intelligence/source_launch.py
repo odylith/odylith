@@ -69,9 +69,11 @@ def build_source_launch_handoff(
     risks: Sequence[Any],
     validation: Sequence[str],
     non_goals: Sequence[str],
+    source_launch_context: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return the accepted-greenfield launch sequence from product facts."""
 
+    context = source_launch_context if isinstance(source_launch_context, Mapping) else {}
     product = _clean_title(title)
     path = _first_path_phrase(first_path)
     actor = _primary_actor(actors)
@@ -82,6 +84,10 @@ def build_source_launch_handoff(
     excluded = _exclusion_phrase(non_goals)
     boundary = _source_boundary_hint(product)
     language = _language_signal(repo_root)
+    target = _target_workstream(context)
+    readiness = _context_list(context, "coding_readiness_gates", limit=4)
+    validation_context = _context_list(context, "validation_gates", limit=4)
+    commands = _command_context_list(context, limit=4)
     return {
         "title": "First source creation sequence",
         "note": (
@@ -107,6 +113,9 @@ def build_source_launch_handoff(
                 excluded=excluded,
                 boundary=boundary,
                 language=language,
+                target=target,
+                readiness=readiness,
+                commands=commands,
             ),
             _implementation_prompt(
                 product=product,
@@ -115,9 +124,19 @@ def build_source_launch_handoff(
                 risk=risk,
                 excluded=excluded,
                 boundary=boundary,
+                target=target,
+                readiness=readiness,
             ),
-            _proof_prompt(product=product, path=path, risk=risk, proof=proof),
-            _refresh_prompt(product=product, path=path, capabilities=capabilities),
+            _proof_prompt(
+                product=product,
+                path=path,
+                risk=risk,
+                proof=proof,
+                target=target,
+                validation_context=validation_context,
+                commands=commands,
+            ),
+            _refresh_prompt(product=product, path=path, capabilities=capabilities, target=target, commands=commands),
         ],
         "next_title": "Start source creation",
         "next_note": (
@@ -166,15 +185,23 @@ def _plan_prompt(
     excluded: str,
     boundary: str,
     language: _LanguageSignal | None,
+    target: str,
+    readiness: Sequence[str],
+    commands: Sequence[str],
 ) -> dict[str, str]:
     language_name = language.name if language else "the confirmed language"
     product_responsibilities = _prompt_phrase(capabilities, fallback="the accepted product responsibilities")
+    proof_clause = _prompt_clause(proof, fallback="the accepted proof boundary")
+    excluded_clause = _prompt_clause(excluded, fallback="the excluded first-release scope")
+    target_clause = f" Governed target: {target}." if target else ""
+    readiness_clause = f" Coding-readiness gates to preserve: {_join(readiness)}." if readiness else ""
+    command_clause = f" Validation commands to plan around: {_join(commands)}." if commands else ""
     prompt = (
         f"Odylith, expand the accepted {product} direction into an implementation plan using {language_name}. Keep this first "
         f"path as the only implementation scope: {path}. Before editing source, propose the first source boundary "
         f"around {boundary}, the files or modules to create, the product objects {actor} changes or reads, the handoff for "
         f"{participant}, product responsibilities to cover: {product_responsibilities}, validation points, test commands, "
-        f"proof gates for {proof}, and excluded scope: {excluded}."
+        f"proof gates for {proof_clause}, and excluded scope: {excluded_clause}.{target_clause}{readiness_clause}{command_clause}"
     )
     return {
         "label": "Create first implementation plan",
@@ -193,14 +220,20 @@ def _implementation_prompt(
     risk: str,
     excluded: str,
     boundary: str,
+    target: str,
+    readiness: Sequence[str],
 ) -> dict[str, str]:
     product_responsibilities = _prompt_phrase(capabilities, fallback="the accepted product responsibilities")
+    risk_clause = _prompt_clause(risk, fallback="the named product risk")
+    excluded_clause = _prompt_clause(excluded, fallback="the excluded first-release scope")
+    target_clause = f" Use governed workstream {target} as the source of truth for the coding slice." if target else ""
+    readiness_clause = f" Do not edit until these readiness gates are accepted: {_join(readiness)}." if readiness else ""
     prompt = (
         f"Odylith, implement the smallest runnable {product} product slice from the accepted plan. Restate the target files "
         f"before editing. Build only this path: {path}. Create the minimal domain model, source boundary around {boundary}, "
         f"product behavior for these responsibilities: {product_responsibilities}, input validation, structured result, and user-visible explanation. Protect "
-        f"against this product risk while coding: {_prompt_phrase(risk, fallback='the named product risk')}. Keep outside the slice: {excluded}. If one excluded capability is "
-        "actually required, explain why and stop before editing."
+        f"against this product risk while coding: {risk_clause}. Keep outside the slice: {excluded_clause}. If one excluded capability is "
+        f"actually required, explain why and stop before editing.{target_clause}{readiness_clause}"
     )
     return {
         "label": "Build smallest runnable slice",
@@ -211,12 +244,25 @@ def _implementation_prompt(
     }
 
 
-def _proof_prompt(*, product: str, path: str, risk: str, proof: str) -> dict[str, str]:
+def _proof_prompt(
+    *,
+    product: str,
+    path: str,
+    risk: str,
+    proof: str,
+    target: str,
+    validation_context: Sequence[str],
+    commands: Sequence[str],
+) -> dict[str, str]:
+    target_clause = f" Bind the proof to governed workstream {target}." if target else ""
+    validation_clause = f" Include these accepted validation gates: {_join(validation_context)}." if validation_context else ""
+    command_clause = f" Run or update these verification commands: {_join(commands)}." if commands else ""
+    risk_clause = _prompt_clause(risk, fallback="the named product risk")
     prompt = (
         f"Odylith, add behavior proof for the first {product} source slice. Test the accepted path: {path}. Add tests for "
         "valid input, missing or incomplete required input, an unfavorable or blocked outcome, and reproducibility from "
         f"the same submitted inputs, configuration, and state. Preserve the explanation in a testable structure. Prove this "
-        f"risk is controlled by the tests: {_prompt_phrase(risk, fallback='the named product risk')}. Run the validation commands from the plan."
+        f"risk is controlled by the tests: {risk_clause}. Run the validation commands from the plan.{target_clause}{validation_clause}{command_clause}"
     )
     return {
         "label": "Add tests and proof",
@@ -227,12 +273,14 @@ def _proof_prompt(*, product: str, path: str, risk: str, proof: str) -> dict[str
     }
 
 
-def _refresh_prompt(*, product: str, path: str, capabilities: str) -> dict[str, str]:
+def _refresh_prompt(*, product: str, path: str, capabilities: str, target: str, commands: Sequence[str]) -> dict[str, str]:
+    target_clause = f" Start with governed workstream {target} and its implementation evidence." if target else ""
+    command_clause = f" Cite verification command results from: {_join(commands)}." if commands else ""
     prompt = (
-        f"Odylith, refresh governed records from the implemented {product} source slice. Align the Project dashboard, Radar "
+        f"Odylith, refresh governed records from the implemented accepted {product} source slice. Align the Project dashboard, Radar "
         f"workstreams, Registry components, Atlas diagrams when architecture exists, Compass evidence, and Casebook only if "
         f"bugs were created. Ensure the product story, first path, participants, risks, owned capabilities, and proof records "
-        f"match the implemented behavior: {path}. Keep capability records centered on these responsibilities: {capabilities}."
+        f"match the implemented behavior from the accepted path: {path}. Keep capability records centered on these responsibilities: {capabilities}.{target_clause}{command_clause}"
     )
     return {
         "label": "Refresh governed records",
@@ -241,6 +289,60 @@ def _refresh_prompt(*, product: str, path: str, capabilities: str) -> dict[str, 
         "result": "Updated governed surfaces that reflect implemented source behavior instead of accepted-intent assumptions.",
         "stop": "Stop after refresh and validation results are visible. Do not claim broader release readiness without source proof.",
     }
+
+
+def _target_workstream(context: Mapping[str, Any]) -> str:
+    workstream_id = sentence(context.get("start_workstream_id")).upper()
+    title = sentence(context.get("start_workstream_title"))
+    release = sentence(context.get("release_selector"))
+    if workstream_id and title and release:
+        return f"{workstream_id} ({title}) in release {release}"
+    if workstream_id and title:
+        return f"{workstream_id} ({title})"
+    return workstream_id or title
+
+
+def _context_list(context: Mapping[str, Any], key: str, *, limit: int) -> list[str]:
+    raw = context.get(key)
+    values = raw if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)) else (raw,)
+    rows: list[str] = []
+    for value in values:
+        text = _prompt_phrase(value, fallback="", limit=180)
+        if text and text not in rows:
+            rows.append(text)
+        if len(rows) >= limit:
+            break
+    return rows
+
+
+def _command_context_list(context: Mapping[str, Any], *, limit: int) -> list[str]:
+    raw = context.get("verification_commands")
+    values = raw if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)) else (raw,)
+    rows: list[str] = []
+    for value in values:
+        label = _command_purpose(value)
+        if label and label not in rows:
+            rows.append(label)
+        if len(rows) >= limit:
+            break
+    return rows
+
+
+def _command_purpose(value: object) -> str:
+    text = str(value or "").casefold()
+    if not text.strip():
+        return ""
+    if "plan-workstream-binding" in text:
+        return "plan-workstream-binding validation"
+    if "plan-traceability" in text:
+        return "plan-traceability validation"
+    if "context" in text:
+        return "context lookup for the governed workstream"
+    if "sync" in text:
+        return "selective governed-record refresh"
+    if "validate" in text:
+        return "listed validation command"
+    return "listed verification command"
 
 
 def _language_signal(repo_root: Path) -> _LanguageSignal | None:
@@ -363,6 +465,7 @@ def _first_path_phrase(value: str) -> str:
     text = _clean_fragment(value)
     action = first_path_action_phrase(text, fallback="", limit=180, max_fragments=1)
     outcome = first_path_outcome_phrase(text, fallback="", limit=150)
+    action = _drop_embedded_outcome(action)
     if action and outcome:
         subject_action = _subjectify_path_step(action)
         joiner = "and receive" if subject_action.casefold().startswith("the user can ") else "and receives"
@@ -408,6 +511,10 @@ def _prompt_phrase(value: object, *, fallback: str, limit: int = 180) -> str:
     text = re.sub(r"\s+(?:and|or|asks?|check|checks)\s*$", "", text, flags=re.IGNORECASE).strip(" .,;:")
     text = re.sub(r"\.\.+", ".", text)
     return short(text, limit=limit, fallback=fallback)
+
+
+def _prompt_clause(value: object, *, fallback: str, limit: int = 180) -> str:
+    return _prompt_phrase(value, fallback=fallback, limit=limit).rstrip(" .!?;:")
 
 
 def _drop_embedded_outcome(value: str) -> str:

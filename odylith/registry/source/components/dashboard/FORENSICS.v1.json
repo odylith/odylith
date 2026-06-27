@@ -39,12 +39,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 116,
-    "mapped_workstream_evidence_count": 64,
+    "explicit_event_count": 117,
+    "mapped_workstream_evidence_count": 65,
     "recent_path_match_count": 0,
     "spec_history_event_count": 19,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 116
+    "timeline_event_count": 117
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -54,6 +54,38 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 650,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Project dashboard implementation prompts are now governed prewrite evidence; focused blocker tests, Project/source-launch/matrix tests, and the 241-test broad greenfield suite passed before fresh installed proof.",
+      "ts_iso": "2026-06-27T15:49:16-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/install.json",

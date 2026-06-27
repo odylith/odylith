@@ -15,14 +15,25 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
 
 _FRAMEWORK_RISK_RE = re.compile(
     r"\b(?:accepted\s+first\s+path|accepted\s+proof\s+boundary|proof\s+boundar(?:y|ies)|"
     r"release\s+records?|governance\s+records?|state\s+transitions?|implementation\s+plans?|"
-    r"governed\s+records?|proposal\s+risk|component\s+ownership|radar|registry|atlas|compass|casebook)\b",
+    r"governed\s+records?|proposal\s+risk|component\s+ownership)\b",
     re.IGNORECASE,
 )
+
+_ODYLITH_SURFACE_WORDS = frozenset({"radar", "registry", "atlas", "compass", "casebook"})
+_ODYLITH_SHARED_SURFACE_CONTEXT_WORDS = frozenset({"odylith", "governance", "governed", "artifact", "artifacts", "surface", "surfaces"})
+_ODYLITH_SURFACE_CONTEXT_BY_WORD = {
+    "radar": frozenset({"backlog", "idea", "ideas", "workstream", "workstreams"}),
+    "registry": frozenset({"component", "components", "dossier", "dossiers", "spec", "specs"}),
+    "atlas": frozenset({"catalog", "diagram", "diagrams", "topology"}),
+    "compass": frozenset({"checkpoint", "checkpoints", "execution", "memory", "timeline"}),
+    "casebook": frozenset({"bug", "bugs", "defect", "defects", "incident", "incidents"}),
+}
 
 _POLICY_RE = re.compile(
     r"\b(?:approval|approved|blocked|compliance|eligib|law|legal|limit|policy|qualification|regulated|"
@@ -205,7 +216,25 @@ def risk_text_has_framework_leak(value: Any) -> bool:
     """Return true when a risk talks about Odylith process instead of product reality."""
 
     text = _risk_text(value)
-    return bool(_FRAMEWORK_RISK_RE.search(text))
+    return bool(_FRAMEWORK_RISK_RE.search(text) or _has_odylith_surface_context(text))
+
+
+def _has_odylith_surface_context(value: str) -> bool:
+    words = tuple(word.casefold() for word in visible_words(value))
+    if not words:
+        return False
+    surface_positions = [index for index, word in enumerate(words) if word in _ODYLITH_SURFACE_WORDS]
+    if not surface_positions:
+        return False
+    for index in surface_positions:
+        window = words[max(0, index - 3) : index + 4]
+        surface_word = words[index]
+        surface_context = _ODYLITH_SURFACE_CONTEXT_BY_WORD.get(surface_word, frozenset())
+        if any(word in _ODYLITH_SHARED_SURFACE_CONTEXT_WORDS for word in window if word != surface_word):
+            return True
+        if any(word in surface_context for word in window if word != surface_word):
+            return True
+    return False
 
 
 def _risk_context(

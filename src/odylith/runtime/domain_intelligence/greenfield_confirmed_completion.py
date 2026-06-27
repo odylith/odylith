@@ -594,11 +594,43 @@ def _repair_project_intelligence_validation(proposal: dict[str, Any], *, release
 def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_selector: str) -> bool:
     changed = False
     release = greenfield_programs.proposal_release_selector(proposal, release_selector)
+    label = completion_text.project_title(proposal)
     state_object = completion_text.state_reference(proposal)
     action = completion_text.action_phrase(proposal)
     outcome = completion_text.outcome_phrase(proposal)
     proof_boundary = completion_text.proof_boundary(proposal)
+    proof_clause = _clean(proof_boundary).strip(" .")
     actors = completion_text.actor_summary(proposal)
+    actor_phrase = _actor_phrase_for_sentence(actors)
+    outcome_action = completion_text.outcome_action_phrase(outcome)
+    intent = proposal.get("intent")
+    if isinstance(intent, dict):
+        changed |= _repair_bad_scalar(
+            intent,
+            "summary",
+            fallback=(
+                f"{label} helps {actor_phrase} {action}, keeps {state_object} explainable, and proves that "
+                f"a representative user can {outcome_action} without trusting incomplete information."
+            ),
+        )
+        changed |= _repair_bad_scalar(
+            intent,
+            "product_story",
+            fallback=(
+                f"{label} gives {actor_phrase} a first release path to {action}, {outcome_action}, and recover when "
+                "required input, access, privacy, safety, or explanation is missing."
+            ),
+        )
+    project_brief = proposal.get("project_brief")
+    if isinstance(project_brief, dict):
+        changed |= _repair_bad_scalar(
+            project_brief,
+            "purpose",
+            fallback=(
+                f"{label} exists so {actor_phrase} can {action}, {outcome_action}, and keep the proof inside this "
+                f"accepted boundary: {proof_clause}."
+            ),
+        )
     if _validation_strategy_needs_repair(proposal):
         changed |= _repair_validation_strategy(proposal, release_selector=release_selector)
     for row in dict_rows(proposal.get("backlog")):
@@ -770,6 +802,17 @@ def _path_phrase(value: str) -> str:
     if not text:
         return "path"
     return text if text.split()[-1].casefold().strip(".,;:") == "path" else f"{text} path"
+
+
+def _actor_phrase_for_sentence(value: str) -> str:
+    parts = [_clean(part).strip(" .") for part in _clean(value).split(";") if _clean(part).strip(" .")]
+    if not parts:
+        return "representative users"
+    if len(parts) == 1:
+        return parts[0]
+    if len(parts) == 2:
+        return f"{parts[0]} and {parts[1]}"
+    return f"{', '.join(parts[:-1])}, and {parts[-1]}"
 
 
 def _repair_bad_scalar(row: dict[str, Any], key: str, *, fallback: str = "") -> bool:

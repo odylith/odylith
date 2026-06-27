@@ -182,6 +182,7 @@ def build_accepted_project_source_payload(
     release_selector: str,
     release_id: str,
     validation_gate: Mapping[str, Any] | None,
+    source_launch_context: Mapping[str, Any] | None = None,
     accepted_at: str = "",
 ) -> dict[str, Any]:
     """Build accepted-project memory payload before any durable write."""
@@ -202,9 +203,38 @@ def build_accepted_project_source_payload(
             "release_selector": _clean(release_selector),
             "release_id": _clean(release_id),
         },
+        "source_launch": _source_launch_payload(source_launch_context),
         "validation_gate": dict(validation_gate or {}),
     }
     return dict(_normalize_accepted_memory_copy(display_text.strip_inline_markdown_emphasis_tree(payload)))
+
+
+def _source_launch_payload(value: Mapping[str, Any] | None) -> dict[str, Any]:
+    source = value if isinstance(value, Mapping) else {}
+    allowed = (
+        "project_workstream_id",
+        "project_workstream_title",
+        "start_workstream_id",
+        "start_workstream_title",
+        "first_wave",
+        "release_selector",
+        "implementation_prompt",
+        "coding_readiness_gates",
+        "validation_gates",
+        "verification_commands",
+    )
+    payload: dict[str, Any] = {}
+    for key in allowed:
+        raw = source.get(key)
+        if isinstance(raw, (list, tuple)):
+            values = _first_nonempty([str(item) for item in raw], limit=8)
+            if values:
+                payload[key] = values
+        else:
+            text = _clean(raw)
+            if text:
+                payload[key] = text
+    return payload
 
 
 def build_project_brief_source_markdown(
@@ -325,6 +355,7 @@ def _write_accepted_project_source(
     release_selector: str,
     release_id: str,
     validation_gate: Mapping[str, Any] | None,
+    source_launch_context: Mapping[str, Any] | None = None,
     event: Mapping[str, Any],
 ) -> Path:
     """Write the accepted project source record consumed by Project and context."""
@@ -338,6 +369,7 @@ def _write_accepted_project_source(
         release_selector=release_selector,
         release_id=release_id,
         validation_gate=validation_gate,
+        source_launch_context=source_launch_context,
         accepted_at=_clean(event.get("ts_iso")),
     )
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -382,6 +414,7 @@ def record_greenfield_acceptance(
     release_id: str = "",
     validation_gate: Mapping[str, Any] | None = None,
     tribunal: Mapping[str, Any] | None = None,
+    source_launch_context: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Append the accepted proposal shape to greenfield memory.
 
@@ -427,6 +460,7 @@ def record_greenfield_acceptance(
         release_selector=release_selector,
         release_id=release_id,
         validation_gate=validation_gate or tribunal,
+        source_launch_context=source_launch_context,
         event=payload,
     )
     project_brief_path = _write_project_brief_source(

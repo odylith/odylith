@@ -14,8 +14,10 @@ flowchart LR
       artifact_plan["ArtifactPlanIR<br/>sanctioned projection fields"]
       projection_contract["Projection contract owner<br/>roots, aliases,<br/>envelope paths,<br/>affected projections"]
       projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
+      next_steps["Operator next steps<br/>governed start workstream,<br/>readiness gates, validation commands"]
+      project_dashboard["Project dashboard preview<br/>source-launch prompts from<br/>accepted project context"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
-      validators["Deterministic validators<br/>schema, traceability,<br/>grammar, repetition, topology"]
+      validators["Deterministic validators<br/>schema, traceability,<br/>grammar, repetition, topology,<br/>Project prompt quality"]
       expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer typed owner contract"]
       typed_findings["Source-owned typed findings<br/>target layer, target path,<br/>semantic node, no proposal-repair lane"]
       legacy_blockers["Legacy/raw issue strings<br/>diagnostic blockers only,<br/>no repair authority"]
@@ -48,7 +50,7 @@ flowchart LR
     end
 
     visible_intent --> confirm --> confirmed_ir
-    confirmed_ir --> apply_input --> compiler --> semantic_ir --> artifact_plan --> projection_contract --> projections --> draft_set
+    confirmed_ir --> apply_input --> compiler --> semantic_ir --> artifact_plan --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
     draft_set --> validators --> expert_lenses --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log
@@ -73,7 +75,7 @@ flowchart LR
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirm,confirmed_ir intent;
-    class apply_input,compiler,semantic_ir,artifact_plan,projection_contract,projections,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
+    class apply_input,compiler,semantic_ir,artifact_plan,projection_contract,projections,next_steps,project_dashboard,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
     class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
     class writes,rollback,blockers,proof_log write;
 

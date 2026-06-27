@@ -751,3 +751,21 @@ vocabulary, or degraded packages.
       domain-expert lenses, produced five Radar records, three Registry
       records, six Atlas diagrams, 18 trace nodes, and the harness deleted the
       temporary matrix repos.
+- [x] Source checkpoint for Project tab implementation prompt custody:
+      accepted Project dashboard `host_handoff_prompts` are now collected as
+      rendered package artifacts, required once Radar/Registry/Atlas prewrite
+      evidence exists, scored in the release matrix, and validated by a
+      dedicated position-based prompt-quality owner rather than label
+      substring checks. Prewrite now builds the Project dashboard preview from
+      the target repo root so language/runtime signals match the operator
+      Project tab. The same checkpoint repaired top-level intent/project-brief
+      scalar semantic slop for unbalanced quotes and narrowed Odylith-surface
+      risk leakage so ordinary domain words like compass or Atlas do not fail
+      without platform context. Focused blocker proof passed 6 tests in
+      35.44s; Project/source-launch/matrix proof passed 10 tests in 0.51s; the
+      broad greenfield pack passed 241 tests in 844.71s.
+- [ ] Fresh installed proof after Project prompt custody: build a new local
+      release dist, run the installed standard matrix with the
+      `implementation_prompts` dimension active, run at least one built-dist
+      rescue-path simulation under 90s, verify temp repo cleanup, and only then
+      update release readiness posture.

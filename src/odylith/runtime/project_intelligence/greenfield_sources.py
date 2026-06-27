@@ -61,6 +61,7 @@ def _proposal_from_file(path: Path) -> dict[str, Any]:
             "source_path": str(path),
             "validation_gate": dict_value(raw.get("validation_gate") or raw.get("tribunal")),
         }
+        enriched["_source_launch"] = dict_value(raw.get("source_launch"))
         return enriched
     return proposal
 

@@ -24,12 +24,15 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-27 · Implementation:** Fresh dist 0.1.15-ddecaf5e passed the installed greenfield matrix with hard-min 10/10 scores across five consumer-lane domains in 19.780-23.035s, governed writes, all expert lenses passing, and temp cleanup.
+- **2026-06-27 · Implementation:** Fresh local release dist odylith-local-release-0.1.15-ddecaf5e passed the installed greenfield post-confirm matrix with hard-min 10/10 scores across five consumer-lane domains in 19.780-23.035s, zero issues, governed writes, all PM/architect/engineer/domain-expert lenses passing, and temp cleanup.
   - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md
-- **2026-06-27 · Implementation:** Greenfield post-confirm release proof now uses structured artifact-package inspection and hard-min 10/10 quality scoring; recovered actor extraction rejects action-chain prefixes after the shared grammar learned the generic `organize` action.
+  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
+- **2026-06-27 · Implementation:** Prompt-source role-purpose recovery now preserves use-to infinitives while modalizing human-role purpose clauses such as sales reps to qualify leads; focused regressions passed after the widened pack exposed the overcorrection.
   - Scope: B-142
-  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py +2 more
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py, tests/unit/runtime/test_greenfield_confirmed_intent.py +1 more
+- **2026-06-27 · Implementation:** Greenfield post-confirm hard-min scoring now reports brutal 10/10 release dimensions; action-chain actor recovery rejects embedded action prefixes after the water-rights no-write repro, and the final ten-domain source-local cleanup-proof matrix passed with min score 10/10, max 16.935s, and all temp repos deleted.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/common/prose_grammar.py +3 more
 - **2026-06-27 · Implementation:** Greenfield post-confirm repair custody now separates semantic patch, artifact-plan patch, projection rerender, and exact-path mechanical draft cleanup; focused and widened post-confirm tests are green.
   - Scope: B-142
   - Evidence: src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
@@ -39,19 +42,11 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-27 · Implementation:** Greenfield post-confirm artifact-draft repair is now metadata-gated mechanical-only; semantic grammar defects route to typed plan repair or fail closed.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +3 more
-- **2026-06-26 · Implementation:** Greenfield typed patch dispatch and actor-title projection checkpoint passed 58 focused tests, 181 widened quality tests, and six source-local confirmed-create simulations after fixing the museum clipped-title failure.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md +3 more
-- **2026-06-26 · Implementation:** Fresh local dist 0.1.15-58a9b7c5 passed the installed greenfield post-confirm matrix across five consumer-lane domains in 18.368-20.393s with zero quality issues and governed records written.
-  - Scope: B-142
-  - Evidence: Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-58a9b7c5, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +2 more
-- **2026-06-26 · Implementation:** Greenfield source-local variance proof passed eight new domains in the standard post-confirm path under 16s with governed records committed, all expert lenses passing, and temp repos removed after each case.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
 
+- 2026-06-27: Promoted accepted Project dashboard implementation prompts into the greenfield post-confirm custody boundary. Prewrite packages now fail closed without `project_dashboard_preview`, Project prompt artifacts are collected and validated by a dedicated position-based prompt-quality owner, source-launch prompts receive governed next-step context, prewrite language detection uses the target repo root, and the installed matrix scores the prompt surface through an `implementation_prompts` dimension. The same checkpoint repaired top-level intent/project-brief scalar semantic slop for unbalanced quotes and narrowed Odylith-surface risk leakage so ordinary domain words such as compass or Atlas remain valid without platform context. Source proof passed 6 focused blocker tests, 10 Project/source-launch/matrix tests, and the 241-test broad greenfield suite. Fresh installed dist and rescue-path proof remain required before release closure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
 - 2026-06-27: Tightened greenfield post-confirm repair custody so semantic PatchSet operations cannot synthesize first-path facts from metadata-only requests, profile-triggered component contracts use the semantic basis before profile fallback, gate-only expert-lens checks stay non-patchable, rendered-package findings carry exact artifact repair paths, mechanical artifact-draft cleanup mutates only the addressed leaf, and corrupted rendered Registry scope uses deterministic `projection_rerender` instead of semantic rescue or rendered-prose repair. Focused projection-rerender, quality-lens, and exact-path tests passed; the widened post-confirm repair pack passed; and a fresh installed consumer-lane matrix passed five unrelated domains in 18.383-19.745 seconds with governed writes, zero quality issues, all expert lenses passing, and temp cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
 - 2026-05-03: Replaced the v0.1.13 in-code project-taxonomy path with a host-reasoning evidence/schema contract because a small checked-in catalog cannot cover open-world user intent. The CLI now supplies repo evidence and guardrails; the host model authors the concrete proposal; Odylith validates and applies after confirmation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-05-03: Added `proposal_validation.py` so greenfield apply requires host-authored Mermaid topology per diagram and rejects missing or duplicated diagram source before any Radar, Registry, Atlas, release, or Compass write. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))

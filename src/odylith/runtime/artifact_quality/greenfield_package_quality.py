@@ -10,6 +10,7 @@ from odylith.runtime.artifact_quality.generated_copy_quality import generated_pu
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
 from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenfield_artifact_judgment_issues
 from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfield_project_judgment_issues
+from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import project_implementation_prompt_issues
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedPackageQualityFinding
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import artifact_quality_finding
@@ -117,8 +118,6 @@ _CONNECTOR_CONTINUATION_OPENERS = frozenset(
         "while",
     }
 )
-
-
 def greenfield_rendered_package_quality_issues(package: Any) -> list[str]:
     """Return readability and graph-quality failures across a rendered package."""
 
@@ -164,6 +163,7 @@ def _artifact_language_issues(artifact: RenderedArtifact) -> list[str]:
 def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
     issues: list[str] = []
     issues.extend(generated_public_copy_issues(artifact.identity, artifact.text))
+    issues.extend(project_implementation_prompt_issues(artifact))
     issues.extend(_registry_component_contract_floor_issues(artifact))
     if re.search(r"(?m)^\s*(?:[-*]\s*)?TBD\.?\s*$", artifact.text, flags=re.IGNORECASE):
         issues.append(f"{artifact.identity} contains placeholder TBD copy")

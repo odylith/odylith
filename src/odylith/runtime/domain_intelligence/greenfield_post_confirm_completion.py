@@ -84,6 +84,7 @@ class GreenfieldCompletionPackage:
     project_brief_preview: Mapping[str, Any] | None = None
     tribunal_preview: Mapping[str, Any] | None = None
     accepted_project_preview: Mapping[str, Any] | None = None
+    project_dashboard_preview: Mapping[str, Any] | None = None
     compass_memory_preview: Mapping[str, Any] | None = None
     next_steps_preview: Mapping[str, Any] | None = None
     backlog_result: Mapping[str, Any] | None = None
@@ -233,6 +234,7 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
     project_brief_preview = package.project_brief_preview if isinstance(package.project_brief_preview, Mapping) else {}
     tribunal_preview = package.tribunal_preview if isinstance(package.tribunal_preview, Mapping) else {}
     accepted_preview = package.accepted_project_preview if isinstance(package.accepted_project_preview, Mapping) else {}
+    project_dashboard_preview = package.project_dashboard_preview if isinstance(package.project_dashboard_preview, Mapping) else {}
     compass_preview = package.compass_memory_preview if isinstance(package.compass_memory_preview, Mapping) else {}
     next_steps_preview = package.next_steps_preview if isinstance(package.next_steps_preview, Mapping) else {}
     if backlog_result:
@@ -304,6 +306,10 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
     if accepted_preview:
         issues.extend(_accepted_project_preview_issues(package, accepted_preview, component_preview, atlas_sources))
         issues.extend(generated_public_copy_issues("accepted-project memory preview", accepted_preview))
+    if backlog_result and component_preview and atlas_sources and not project_dashboard_preview:
+        issues.append("prewrite package must include Project dashboard preview")
+    if project_dashboard_preview:
+        issues.extend(_project_dashboard_preview_issues(project_dashboard_preview))
     if backlog_result and component_preview and atlas_sources and not compass_preview:
         issues.append("prewrite package must include Compass memory event preview")
     if compass_preview:
@@ -342,6 +348,14 @@ def _package_artifact_issues(package: GreenfieldCompletionPackage) -> list[str]:
                 if clean_text(target_release.get("release_id")) != clean_text(assignment_release.get("release_id")):
                     issues.append("prewrite release target preview drifted from release assignment preview")
     issues.extend(greenfield_rendered_package_quality_issues(package))
+    return issues
+
+
+def _project_dashboard_preview_issues(project_dashboard_preview: Mapping[str, Any]) -> list[str]:
+    issues: list[str] = []
+    prompts = mapping_rows(project_dashboard_preview.get("host_handoff_prompts"))
+    if len(prompts) < 5:
+        issues.append("Project dashboard preview must include all source-launch implementation prompts")
     return issues
 
 
@@ -413,17 +427,28 @@ def _next_steps_preview_issues(
         "implementation_prompt",
         issues,
         "operator next-steps preview must include an implementation prompt",
-        min_words=10,
+        min_words=18,
     )
+    prompt = clean_text(next_steps_preview.get("implementation_prompt"))
+    title = clean_text(next_steps_preview.get("start_workstream_title"))
+    if start_id and start_id not in prompt.upper():
+        issues.append("operator next-steps implementation prompt must name the first implementation workstream")
+    if title and _semantic_overlap_ratio(title, prompt) < 0.32:
+        issues.append("operator next-steps implementation prompt must mention the first implementation workstream title")
+    semantic = package.proposal.get("semantic_model") if isinstance(package.proposal.get("semantic_model"), Mapping) else {}
+    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    first_path_text = clean_text(" ".join(text_values(first_path)))
+    if first_path_text and _semantic_overlap_ratio(first_path_text, prompt) < 0.08:
+        issues.append("operator next-steps implementation prompt must overlap the accepted first path")
     operator_sequence = text_values(next_steps_preview.get("operator_sequence"))
     if len(operator_sequence) < 3:
         issues.append("operator next-steps preview must include an actionable operator sequence")
     gates = text_values(next_steps_preview.get("coding_readiness_gates"))
-    if len(gates) < 3:
+    if len(gates) < 4:
         issues.append("operator next-steps preview must carry coding-readiness gates")
     commands = text_values(next_steps_preview.get("verification_commands"))
-    if not commands:
-        issues.append("operator next-steps preview must include verification commands")
+    if len(commands) < 2:
+        issues.append("operator next-steps preview must include multiple verification commands")
     issues.extend(_operator_next_step_copy_issues(next_steps_preview))
     return issues
 

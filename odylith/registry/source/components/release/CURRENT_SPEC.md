@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-05-07
+Last updated: 2026-06-27
 
 
 Last updated (UTC): 2026-04-09
@@ -463,6 +463,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-27 · Implementation:** Greenfield post-confirm hard-min scoring now reports brutal 10/10 release dimensions; action-chain actor recovery rejects embedded action prefixes after the water-rights no-write repro, and the final ten-domain source-local cleanup-proof matrix passed with min score 10/10, max 16.935s, and all temp repos deleted.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/common/prose_grammar.py +3 more
 - **2026-04-17 · Implementation:** Implemented and hardened B-126 conditional release-targeted backlog authoring with --release selector preflight, batch release events, queued-status preservation, Radar/Compass refresh reporting, and focused QA coverage.
   - Scope: B-126
   - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, src/odylith/runtime/governance/backlog_authoring.py +3 more

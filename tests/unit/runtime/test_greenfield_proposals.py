@@ -15,6 +15,8 @@ from odylith.runtime.domain_intelligence.greenfield_apply_components import comp
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
+from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks
+from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_risk_lines
@@ -301,6 +303,52 @@ def test_greenfield_validation_rejects_framework_risks(tmp_path) -> None:
 
     with pytest.raises(ValueError, match="describes Odylith process"):
         greenfield_proposals.validate_host_reasoned_proposal(proposal)
+
+
+def test_greenfield_risk_leak_detection_keeps_domain_registry_reviewers() -> None:
+    assert not risk_text_has_framework_leak(
+        {
+            "title": "Summary accuracy",
+            "statement": (
+                "Registry reviewers may trust a soil carbon result when sampling plans, lab results, field histories, "
+                "or reversal risks are incomplete."
+            ),
+            "mitigation": "Show missing evidence and uncertainty before credit issuance decisions proceed.",
+        }
+    )
+    assert not risk_text_has_framework_leak("Compass records show driver heading corrections before dispatch review.")
+    assert not risk_text_has_framework_leak("Atlas records preserve parcel survey views for county reviewers.")
+    assert not risk_text_has_framework_leak("The dashboard shows compass headings for hikers before the route is saved.")
+    assert risk_text_has_framework_leak(
+        {
+            "title": "Surface leakage",
+            "statement": "If Registry component specs are missing, reviewers cannot trust release 0.0.1.",
+        }
+    )
+
+
+def test_greenfield_product_risks_allow_domain_registry_language() -> None:
+    risks = build_product_risks(
+        title="Soil Carbon Verification Workspace",
+        product_story=(
+            "Registry reviewers connect sampling plans, lab results, field histories, uncertainty ranges, reversal risks, "
+            "credit issuance gates, and claim-limiting proof."
+        ),
+        first_path=(
+            "Growers, agronomists, auditors, and registry reviewers connect sampling plans, lab results, field histories, "
+            "uncertainty ranges, reversal risks, credit issuance gates, and claim-limiting proof."
+        ),
+        state_object="A soil carbon verification result record tracks evidence, uncertainty, and credit readiness.",
+        proof_boundary=(
+            "The product shows missing evidence, uncertain inputs, and claim limits before any credit issuance gate proceeds."
+        ),
+        human_actors=("Registry Reviewers: review sampling plans, lab results, and claim-limiting proof",),
+        release="0.0.1",
+    )
+
+    assert len(risks) == 4
+    assert not any(risk_text_has_framework_leak(row) for row in risks)
+    assert "registry reviewers" in json.dumps(risks, sort_keys=True).casefold()
 
 
 def test_project_dashboard_renders_product_risks_not_framework_risks(tmp_path) -> None:

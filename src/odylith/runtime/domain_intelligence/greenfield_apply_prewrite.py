@@ -31,6 +31,7 @@ from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import validate_backlog_contract as backlog_contract
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.governance import release_planning_contract
+from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 
 
 @dataclass(frozen=True)
@@ -180,6 +181,14 @@ def build_prewrite_completion_package(
                 dry_run=True,
             )
         package_proposal = proposal_with_component_brief_gate(proposal)
+        project_brief = package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
+        next_steps_preview = greenfield_experience.build_next_steps(
+            proposal=package_proposal,
+            backlog_result=backlog_result,
+            first_release_workstreams=first_release_workstreams,
+            program_result=preview_program_result,
+            release_selector=release_selector,
+        )
         accepted_project_preview = preview_accepted_project_memory(
             root=prewrite_root,
             proposal=package_proposal,
@@ -189,6 +198,13 @@ def build_prewrite_completion_package(
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
             validation_gate=validation_gate,
+            source_launch_context=next_steps_preview,
+        )
+        project_dashboard_preview = preview_project_dashboard_payload(
+            root=root,
+            proposal=package_proposal,
+            accepted_project_preview=accepted_project_preview,
+            source_launch_context=next_steps_preview,
         )
         compass_memory_preview = preview_compass_acceptance_event(
             root=prewrite_root,
@@ -199,14 +215,6 @@ def build_prewrite_completion_package(
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
         )
-        next_steps_preview = greenfield_experience.build_next_steps(
-            proposal=package_proposal,
-            backlog_result=backlog_result,
-            first_release_workstreams=first_release_workstreams,
-            program_result=preview_program_result,
-            release_selector=release_selector,
-        )
-        project_brief = package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
         return GreenfieldPrewriteBuild(
             backlog_result=backlog_result,
             package=GreenfieldCompletionPackage(
@@ -218,6 +226,7 @@ def build_prewrite_completion_package(
                 project_brief_preview=project_brief,
                 tribunal_preview=validation_gate,
                 accepted_project_preview=accepted_project_preview,
+                project_dashboard_preview=project_dashboard_preview,
                 compass_memory_preview=compass_memory_preview,
                 next_steps_preview=next_steps_preview,
                 backlog_result=backlog_result,
@@ -526,6 +535,7 @@ def preview_accepted_project_memory(
     release_target_result: Mapping[str, Any] | None,
     release_assignment_result: Mapping[str, Any] | None,
     validation_gate: Mapping[str, Any] | None,
+    source_launch_context: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the accepted-project memory record before target writes begin."""
 
@@ -538,8 +548,41 @@ def preview_accepted_project_memory(
         release_selector=release_selector,
         release_id=_prewrite_release_id(release_target_result, release_assignment_result),
         validation_gate=validation_gate,
+        source_launch_context=source_launch_context,
         accepted_at="prewrite",
     )
+
+
+def preview_project_dashboard_payload(
+    *,
+    root: Path,
+    proposal: Mapping[str, Any],
+    accepted_project_preview: Mapping[str, Any],
+    source_launch_context: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Build the accepted Project tab preview before target writes begin."""
+
+    dashboard_proposal = dict(proposal)
+    dashboard_proposal["_accepted_project"] = {
+        "accepted_at": str(accepted_project_preview.get("accepted_at") or "prewrite"),
+        "origin": str(accepted_project_preview.get("origin") or "greenfield"),
+        "evidence_tier": str(accepted_project_preview.get("evidence_tier") or "user_intent"),
+        "created": dict(accepted_project_preview.get("created") or {})
+        if isinstance(accepted_project_preview.get("created"), Mapping)
+        else {},
+        "source_path": "odylith/runtime/source/accepted-project.v1.json",
+        "validation_gate": dict(accepted_project_preview.get("validation_gate") or {})
+        if isinstance(accepted_project_preview.get("validation_gate"), Mapping)
+        else {},
+    }
+    dashboard_proposal["_source_launch"] = (
+        dict(source_launch_context)
+        if isinstance(source_launch_context, Mapping)
+        else dict(accepted_project_preview.get("source_launch") or {})
+        if isinstance(accepted_project_preview.get("source_launch"), Mapping)
+        else {}
+    )
+    return build_greenfield_payload(proposal=dashboard_proposal, repo_root=root)
 
 
 def preview_compass_acceptance_event(
@@ -670,6 +713,7 @@ __all__ = [
     "remove_stale_workstream_artifacts",
     "preview_accepted_project_memory",
     "preview_compass_acceptance_event",
+    "preview_project_dashboard_payload",
     "remap_prewrite_backlog_result",
     "staged_greenfield_prewrite_root",
 ]

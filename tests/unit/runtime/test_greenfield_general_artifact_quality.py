@@ -453,6 +453,19 @@ def _created_backlog(proposal: dict[str, object], tmp_path: Path) -> list[dict[s
     return rows
 
 
+def _accepted_project_dashboard_preview(
+    proposal: dict[str, object],
+    tmp_path: Path,
+    *,
+    accepted_project_preview: dict[str, object],
+    source_launch_context: dict[str, object],
+) -> dict[str, object]:
+    dashboard_proposal = copy.deepcopy(proposal)
+    dashboard_proposal["_accepted_project"] = accepted_project_preview
+    dashboard_proposal["_source_launch"] = source_launch_context
+    return build_greenfield_payload(proposal=dashboard_proposal, repo_root=tmp_path)
+
+
 def test_greenfield_project_payload_keeps_actor_responsibilities_specific(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     payload = build_greenfield_payload(proposal=proposal, repo_root=tmp_path)
@@ -936,14 +949,22 @@ def test_greenfield_post_confirm_completion_fails_without_first_path_and_release
 
 def test_greenfield_completion_package_report_passes_with_prewrite_radar_and_release_bundle(tmp_path: Path) -> None:
     proposal = _protocol_effect_tracking_proposal(tmp_path)
+    accepted_project_preview = {"schema_version": "odylith.accepted_project.v1", "origin": "greenfield", "proposal": {"semantic_model": proposal["semantic_model"]}, "validation_gate": {"status": "passed"}, "created": {"workstreams": _prewrite_backlog_result(proposal)["created"], "components": list(_prewrite_component_preview(proposal)), "diagrams": [f"D-{index:03d}" for index, _row in enumerate(proposal["diagrams"], start=1)], "release_selector": "0.0.1"}}
+    next_steps_preview = {"project_workstream_id": "B-001", "start_workstream_id": "B-001", "start_workstream_title": "Protocol Effect Tracking First Slice", "release_selector": "0.0.1", "implementation_prompt": "Start B-001 Protocol Effect Tracking First Slice from the accepted semantic model, create a protocol, log an active intervention, record baseline and follow-up measurements, and prove the timeline alignment, blocked-input handling, and replay evidence.", "operator_sequence": ["Review the project brief.", "Open the first workstream.", "Author the first technical plan."], "coding_readiness_gates": ["Semantic contract accepted.", "Release boundary accepted.", "Proof commands identified.", "Excluded scope preserved."], "verification_commands": ["./.odylith/bin/odylith context --repo-root . B-001", "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ."]}
     package = GreenfieldCompletionPackage(
         proposal=proposal,
         release_selector="0.0.1",
         backlog_result=_prewrite_backlog_result(proposal),
         rendered_atlas_sources=_prewrite_atlas_sources(proposal),
         component_registry_preview=_prewrite_component_preview(proposal), project_brief_preview=proposal["project_brief"], tribunal_preview={"status": "passed", "version": "greenfield-validation-gate-v1", "summary": "Accepted product direction is coherent enough to create project records.", "dimensions": {"intent": "present", "first_path": "present", "topology": "present", "proof": "present"}, "issues": []},
-        accepted_project_preview={"schema_version": "odylith.accepted_project.v1", "origin": "greenfield", "proposal": {"semantic_model": proposal["semantic_model"]}, "validation_gate": {"status": "passed"}, "created": {"workstreams": _prewrite_backlog_result(proposal)["created"], "components": list(_prewrite_component_preview(proposal)), "diagrams": [f"D-{index:03d}" for index, _row in enumerate(proposal["diagrams"], start=1)], "release_selector": "0.0.1"}},
-        compass_memory_preview={"kind": "decision", "summary": "Accepted greenfield proposal", "evidence_tier": "user_intent", "work_category": "governance", "workstreams": ["B-001", "B-002", "B-003", "B-004"], "components": [row["component_id"] for row in _prewrite_component_preview(proposal)]}, next_steps_preview={"project_workstream_id": "B-001", "start_workstream_id": "B-001", "release_selector": "0.0.1", "implementation_prompt": "Implement the first workstream from the accepted semantic model with proof gates.", "operator_sequence": ["Review the project brief.", "Open the first workstream.", "Author the first technical plan."], "coding_readiness_gates": ["Semantic contract accepted.", "Release boundary accepted.", "Proof commands identified."], "verification_commands": ["./.odylith/bin/odylith context --repo-root . B-001"]},
+        accepted_project_preview=accepted_project_preview,
+        project_dashboard_preview=_accepted_project_dashboard_preview(
+            proposal,
+            tmp_path,
+            accepted_project_preview=accepted_project_preview,
+            source_launch_context=next_steps_preview,
+        ),
+        compass_memory_preview={"kind": "decision", "summary": "Accepted greenfield proposal", "evidence_tier": "user_intent", "work_category": "governance", "workstreams": ["B-001", "B-002", "B-003", "B-004"], "components": [row["component_id"] for row in _prewrite_component_preview(proposal)]}, next_steps_preview=next_steps_preview,
         program_result={"created": True, "dry_run": True},
         release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
         release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
@@ -955,6 +976,32 @@ def test_greenfield_completion_package_report_passes_with_prewrite_radar_and_rel
     assert report.passed, report.issues
     assert report.artifact_counts["rendered_workstream_files"] == len(proposal["backlog"])
     assert report.artifact_counts["release_workstream_ids"] == 1
+
+
+def test_greenfield_completion_package_report_rejects_missing_project_dashboard_preview(tmp_path: Path) -> None:
+    proposal = _protocol_effect_tracking_proposal(tmp_path)
+    accepted_project_preview = {"schema_version": "odylith.accepted_project.v1", "origin": "greenfield", "proposal": {"semantic_model": proposal["semantic_model"]}, "validation_gate": {"status": "passed"}, "created": {"workstreams": _prewrite_backlog_result(proposal)["created"], "components": list(_prewrite_component_preview(proposal)), "diagrams": [f"D-{index:03d}" for index, _row in enumerate(proposal["diagrams"], start=1)], "release_selector": "0.0.1"}}
+    package = GreenfieldCompletionPackage(
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_result=_prewrite_backlog_result(proposal),
+        rendered_atlas_sources=_prewrite_atlas_sources(proposal),
+        component_registry_preview=_prewrite_component_preview(proposal),
+        project_brief_preview=proposal["project_brief"],
+        tribunal_preview={"status": "passed", "version": "greenfield-validation-gate-v1", "summary": "Accepted product direction is coherent enough to create project records.", "dimensions": {"intent": "present", "first_path": "present", "topology": "present", "proof": "present"}, "issues": []},
+        accepted_project_preview=accepted_project_preview,
+        compass_memory_preview={"kind": "decision", "summary": "Accepted greenfield proposal", "evidence_tier": "user_intent", "work_category": "governance", "workstreams": ["B-001"], "components": [row["component_id"] for row in _prewrite_component_preview(proposal)]},
+        next_steps_preview={"project_workstream_id": "B-001", "start_workstream_id": "B-001", "start_workstream_title": "Protocol Effect Tracking First Slice", "release_selector": "0.0.1", "implementation_prompt": "Start B-001 Protocol Effect Tracking First Slice from the accepted semantic model, create a protocol, log an active intervention, record baseline and follow-up measurements, and prove the timeline alignment, blocked-input handling, and replay evidence.", "operator_sequence": ["Review the project brief.", "Open the first workstream.", "Author the first technical plan."], "coding_readiness_gates": ["Semantic contract accepted.", "Release boundary accepted.", "Proof commands identified.", "Excluded scope preserved."], "verification_commands": ["./.odylith/bin/odylith context --repo-root . B-001", "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ."]},
+        program_result={"created": True, "dry_run": True},
+        release_target_result={"dry_run": True, "release": {"release_id": "release-test"}},
+        release_assignment_result={"dry_run": True, "workstream_ids": ["B-001"]},
+        release_workstream_ids=("B-001",),
+    )
+
+    report = build_greenfield_package_report(package)
+
+    assert not report.passed
+    assert "prewrite package must include Project dashboard preview" in report.issues
 
 
 def test_rendered_package_quality_flags_explanatory_component_labels() -> None:
@@ -1710,3 +1757,60 @@ def test_greenfield_component_contract_nominalizes_inflected_verbs_and_notes() -
     assert "case identity" not in rendered_recorder
     assert "workspace status" not in rendered_recorder
     assert "checklist progress" not in rendered_recorder
+
+
+def test_greenfield_package_quality_checks_project_implementation_prompts() -> None:
+    package = SimpleNamespace(
+        proposal={},
+        backlog_result={"idea_files": {}, "backlog_index_text": ""},
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_dashboard_preview={
+            "host_handoff_prompts": [
+                {
+                    "label": "Implement first coding slice",
+                    "when": "Use this after the plan.",
+                    "prompt": "Odylith, implement the first coding slice.",
+                    "result": "Starts source edits.",
+                    "stop": "Pause.",
+                }
+            ]
+        },
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert any("Project implementation prompt" in issue for issue in issues)
+    assert any("stale generic handoff prompt label" in issue for issue in issues)
+
+
+def test_greenfield_package_quality_checks_project_prompt_roles_by_position_not_label() -> None:
+    package = SimpleNamespace(
+        proposal={},
+        backlog_result={"idea_files": {}, "backlog_index_text": ""},
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_dashboard_preview={
+            "host_handoff_prompts": [
+                {
+                    "label": "Choose implementation language",
+                    "when": "Use this first.",
+                    "prompt": "Odylith, prepare the accepted project runtime and test approach before implementation starts.",
+                    "result": "A runtime and test recommendation.",
+                    "stop": "Stop after the runtime recommendation.",
+                },
+                {
+                    "label": "Create implementation boundary",
+                    "when": "Use this after language confirmation.",
+                    "prompt": "Odylith, expand the accepted product direction into the first source plan for B-001.",
+                    "result": "A source plan.",
+                    "stop": "Stop after proposing the plan.",
+                },
+            ]
+        },
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert any("Create implementation boundary" in issue and "governed workstream" in issue for issue in issues)
+    assert any("Create implementation boundary" in issue and "source boundary, files, and proof gates" in issue for issue in issues)

@@ -314,10 +314,13 @@ def _engineer_checks(package: Any, proposal: Mapping[str, Any]) -> list[dict[str
         ),
         _check(
             bool(normalize_string(next_steps.get("implementation_prompt")))
-            and len(text_values(next_steps.get("verification_commands"))) >= 1
-            and len(text_values(next_steps.get("coding_readiness_gates"))) >= 3,
+            and bool(normalize_string(next_steps.get("start_workstream_id")))
+            and normalize_string(next_steps.get("start_workstream_id")).upper()
+            in normalize_string(next_steps.get("implementation_prompt")).upper()
+            and len(text_values(next_steps.get("verification_commands"))) >= 2
+            and len(text_values(next_steps.get("coding_readiness_gates"))) >= 4,
             "implementation_readiness",
-            "implementation prompt, verification commands, and coding-readiness gates inspected",
+            "implementation prompt, governed start workstream, verification commands, and coding-readiness gates inspected",
             "quality lens engineer missing implementation readiness evidence",
         ),
         _check(

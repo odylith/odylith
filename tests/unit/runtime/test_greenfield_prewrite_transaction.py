@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_until_clean
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
 
@@ -153,6 +154,26 @@ def _proposal(tmp_path: Path) -> dict[str, object]:
             prompt="Draft a greenfield proposal for a municipal permit review workspace",
         ),
     )
+
+
+def test_greenfield_prewrite_project_dashboard_uses_target_repo_language_signal(tmp_path: Path) -> None:
+    (tmp_path / "package.json").write_text('{"scripts":{"test":"vitest"}}\n', encoding="utf-8")
+    proposal = _proposal(tmp_path)
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+
+    prompts = prewrite.package.project_dashboard_preview.get("host_handoff_prompts", [])
+    first_prompt = str(prompts[0].get("prompt", "")) if prompts else ""
+
+    assert "Current signal: existing repo language signals point to TypeScript" in first_prompt
 
 
 def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -293,8 +314,14 @@ def _next_steps_preview() -> dict[str, object]:
     return {
         "project_workstream_id": "B-001",
         "start_workstream_id": "B-001",
+        "start_workstream_title": "Municipal Permit Review First Slice",
         "release_selector": "0.0.1",
-        "implementation_prompt": "Implement the accepted first-path workstream from the semantic model with proof gates.",
+        "implementation_prompt": (
+            "Start B-001 Municipal Permit Review First Slice from the accepted first-path workstream. Implement the "
+            "smallest source-backed path where a coordinator imports one permit application, a zoning reviewer records "
+            "a zoning check, the applicant submits one revision, and a supervisor reviews the traceable decision package "
+            "with proof gates, blocked-input behavior, and replayable validation evidence."
+        ),
         "operator_sequence": [
             "Review the accepted project brief.",
             "Open the first implementation workstream.",
@@ -304,24 +331,55 @@ def _next_steps_preview() -> dict[str, object]:
             "Accepted first-path contract is understood.",
             "Release boundary is acknowledged.",
             "Verification commands are known.",
+            "Excluded scope is explicitly preserved.",
         ],
-        "verification_commands": ["./.odylith/bin/odylith context --repo-root . B-001"],
+        "verification_commands": [
+            "./.odylith/bin/odylith context --repo-root . B-001",
+            "./.odylith/bin/odylith validate plan-workstream-binding --repo-root .",
+        ],
     }
+
+
+def _project_dashboard_preview(
+    proposal: dict[str, object],
+    *,
+    accepted_project_preview: dict[str, object],
+    source_launch_context: dict[str, object],
+) -> dict[str, object]:
+    dashboard_proposal = dict(proposal)
+    dashboard_proposal["_accepted_project"] = accepted_project_preview
+    dashboard_proposal["_source_launch"] = source_launch_context
+    return build_greenfield_payload(proposal=dashboard_proposal, repo_root=ROOT)
 
 
 def _package_for_quality_report(
     proposal: dict[str, object],
     **overrides: object,
 ) -> GreenfieldCompletionPackage:
+    next_steps_preview = (
+        overrides.get("next_steps_preview")
+        if isinstance(overrides.get("next_steps_preview"), dict)
+        else _next_steps_preview()
+    )
+    accepted_project_preview = (
+        overrides.get("accepted_project_preview")
+        if isinstance(overrides.get("accepted_project_preview"), dict)
+        else _accepted_preview(proposal)
+    )
     values: dict[str, object] = {
         "release_selector": "0.0.1",
         "rendered_atlas_sources": greenfield_apply_diagrams.render_prewrite_atlas_sources(proposal),
         "component_registry_preview": _prewrite_component_preview(proposal),
         "project_brief_preview": proposal["project_brief"],
         "tribunal_preview": _tribunal_preview(),
-        "accepted_project_preview": _accepted_preview(proposal),
+        "accepted_project_preview": accepted_project_preview,
+        "project_dashboard_preview": _project_dashboard_preview(
+            proposal,
+            accepted_project_preview=accepted_project_preview,
+            source_launch_context=next_steps_preview,
+        ),
         "compass_memory_preview": _compass_preview(proposal),
-        "next_steps_preview": _next_steps_preview(),
+        "next_steps_preview": next_steps_preview,
         "backlog_result": _prewrite_backlog_result(proposal),
         "program_result": {"created": True, "dry_run": True},
         "release_target_result": {"dry_run": True, "release": {"release_id": "release-test"}},
@@ -329,6 +387,12 @@ def _package_for_quality_report(
         "release_workstream_ids": ("B-001",),
     }
     values.update(overrides)
+    if "project_dashboard_preview" not in overrides:
+        values["project_dashboard_preview"] = _project_dashboard_preview(
+            proposal,
+            accepted_project_preview=values["accepted_project_preview"],  # type: ignore[arg-type]
+            source_launch_context=values["next_steps_preview"],  # type: ignore[arg-type]
+        )
     return GreenfieldCompletionPackage(proposal=proposal, **values)
 
 
@@ -1017,8 +1081,9 @@ def test_greenfield_package_repair_cleans_operator_next_step_dangling_tail(tmp_p
     proposal = _proposal(tmp_path)
     next_steps = _next_steps_preview()
     next_steps["implementation_prompt"] = (
-        "After project-first scope is accepted, start B-002: Do not expand beyond referral triage, "
-        "guardian consent, and payer-ready service proof until."
+        "After project-first scope is accepted, start B-001 Municipal Permit Review First Slice: import one permit "
+        "application, record a zoning check, capture one applicant revision, and prove the supervisor decision package "
+        "with blocked-input and replay evidence until."
     )
     package = _package_for_quality_report(proposal, next_steps_preview=next_steps)
 
@@ -1029,7 +1094,7 @@ def test_greenfield_package_repair_cleans_operator_next_step_dangling_tail(tmp_p
     assert repaired.report.passed
     rendered = json.dumps(repaired.package.next_steps_preview, sort_keys=True)
     assert "proof until" not in rendered
-    assert "payer-ready service proof." in rendered
+    assert "replay evidence." in rendered
 
 
 def test_greenfield_package_repair_cleans_radar_clause_dangling_tails(tmp_path: Path) -> None:

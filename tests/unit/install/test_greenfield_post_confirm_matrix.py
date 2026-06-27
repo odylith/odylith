@@ -38,6 +38,7 @@ def _empty_package() -> SimpleNamespace:
         component_registry_preview=(),
         project_brief_preview={},
         accepted_project_preview={},
+        project_dashboard_preview={},
         compass_memory_preview={},
         next_steps_preview={},
         program_result={},
@@ -60,6 +61,7 @@ def _full_counts(module) -> object:
         trace_workstreams=4,
         rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
         domain_term_hits=3,
+        project_implementation_prompts=5,
     )
 
 
@@ -231,3 +233,25 @@ def test_quality_verdict_caps_score_when_rendered_artifacts_have_copy_findings(m
     assert verdict.score == 6
     assert verdict.scores["copy_semantic_clarity"] == 6
     assert any("cap release score at 6" in explanation for explanation in verdict.score_explanation)
+
+
+def test_quality_verdict_rejects_project_implementation_prompt_findings(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(
+        module,
+        "greenfield_rendered_package_quality_issues",
+        lambda package: ["Project implementation prompt `Build smallest runnable slice` does not bind implementation to a governed workstream"],
+    )
+
+    verdict = module.build_quality_verdict(
+        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score == 0
+    assert verdict.scores["implementation_prompts"] == 0
+    assert any("Project implementation prompt findings cap release score at 4" in explanation for explanation in verdict.score_explanation)
