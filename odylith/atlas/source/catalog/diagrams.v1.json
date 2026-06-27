@@ -707,7 +707,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-25",
+      "last_reviewed_utc": "2026-06-26",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-multi-actor-reasoning-engine.png",
@@ -770,7 +770,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md": "dcef54471fcd11d1dac4a5fb66ef15e5943a31956e3d79c2d2886e5a44c0ee82",
         "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md": "eaada1628bac0f86ff653181cdc00f9fafbcbbaf8fee458eacf0f413729b9e36",
-        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "bd55d9f8f61ca074997968d6f7665282158e0225cb4389cdf1a603e405a9f8fc",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "67bd8cbdee4d57b28e3fd0d02158b6c4343a43d9fdf9ba1c066a354b7bc3d18a",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "6e0a1422978fdef63436e0036da27adcdb80aba6bb7546142e805d9ce0548dc2",
         "odylith/registry/source/components/atlas/CURRENT_SPEC.md": "d8ac6012fb9429c4ac879485ab6202e3d3fb351a767006781002ee81598c4fd2",
         "odylith/runtime/odylith-tribunal-and-remediation-design.md": "ba937a1da845bb96fbe1c1e7a6cc831d035d8ca12013cf7ab9c798a4ef8e02b2",
@@ -788,7 +788,7 @@
       "kind": "sequence",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-25",
+      "last_reviewed_utc": "2026-06-26",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-dossier-and-remediation-lifecycle.png",
@@ -853,7 +853,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md": "dcef54471fcd11d1dac4a5fb66ef15e5943a31956e3d79c2d2886e5a44c0ee82",
         "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md": "eaada1628bac0f86ff653181cdc00f9fafbcbbaf8fee458eacf0f413729b9e36",
-        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "bd55d9f8f61ca074997968d6f7665282158e0225cb4389cdf1a603e405a9f8fc",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "67bd8cbdee4d57b28e3fd0d02158b6c4343a43d9fdf9ba1c066a354b7bc3d18a",
         "odylith/registry/source/components/remediator/CURRENT_SPEC.md": "95265d419be6d405766999b0084f11dc53cdc8178369768042af4d79c2a1dcdb",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "6e0a1422978fdef63436e0036da27adcdb80aba6bb7546142e805d9ce0548dc2",
         "odylith/registry/source/components/atlas/CURRENT_SPEC.md": "d8ac6012fb9429c4ac879485ab6202e3d3fb351a767006781002ee81598c4fd2",
@@ -956,7 +956,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-25",
+      "last_reviewed_utc": "2026-06-26",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-selection-funnel-and-queue-formation.png",
@@ -1019,7 +1019,7 @@
         "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md": "eaada1628bac0f86ff653181cdc00f9fafbcbbaf8fee458eacf0f413729b9e36",
         "odylith/runtime/odylith-tribunal-and-remediation-design.md": "ba937a1da845bb96fbe1c1e7a6cc831d035d8ca12013cf7ab9c798a4ef8e02b2",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "6e0a1422978fdef63436e0036da27adcdb80aba6bb7546142e805d9ce0548dc2",
-        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "bd55d9f8f61ca074997968d6f7665282158e0225cb4389cdf1a603e405a9f8fc",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "67bd8cbdee4d57b28e3fd0d02158b6c4343a43d9fdf9ba1c066a354b7bc3d18a",
         "odylith/registry/source/components/atlas/CURRENT_SPEC.md": "d8ac6012fb9429c4ac879485ab6202e3d3fb351a767006781002ee81598c4fd2",
         "src/odylith/runtime/governance/delivery_intelligence_engine.py": "ffef91400594d031fb0b850bc883a77658d25d53fcf1812bd7881f6d4845d1cc",
         "src/odylith/runtime/reasoning/tribunal_engine.py": "2351fffa53bd1f49ae0948b5369518bbf1ec2ba56a8d18d5f4b7930720e31baf",
@@ -1034,7 +1034,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-25",
+      "last_reviewed_utc": "2026-06-26",
       "source_mmd": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.mmd",
       "source_svg": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.svg",
       "source_png": "odylith/atlas/source/odylith-tribunal-adjudication-editor-and-packet-assembly.png",
@@ -1100,7 +1100,7 @@
         "odylith/radar/source/ideas/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md": "dcef54471fcd11d1dac4a5fb66ef15e5943a31956e3d79c2d2886e5a44c0ee82",
         "odylith/technical-plans/done/2026-03/2026-03-26-odylith-product-self-governance-and-repo-boundary.md": "eaada1628bac0f86ff653181cdc00f9fafbcbbaf8fee458eacf0f413729b9e36",
         "odylith/runtime/odylith-tribunal-and-remediation-design.md": "ba937a1da845bb96fbe1c1e7a6cc831d035d8ca12013cf7ab9c798a4ef8e02b2",
-        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "bd55d9f8f61ca074997968d6f7665282158e0225cb4389cdf1a603e405a9f8fc",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "67bd8cbdee4d57b28e3fd0d02158b6c4343a43d9fdf9ba1c066a354b7bc3d18a",
         "odylith/registry/source/components/remediator/CURRENT_SPEC.md": "95265d419be6d405766999b0084f11dc53cdc8178369768042af4d79c2a1dcdb",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "6e0a1422978fdef63436e0036da27adcdb80aba6bb7546142e805d9ce0548dc2",
         "odylith/registry/source/components/atlas/CURRENT_SPEC.md": "d8ac6012fb9429c4ac879485ab6202e3d3fb351a767006781002ee81598c4fd2",
@@ -1842,7 +1842,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-25",
+      "last_reviewed_utc": "2026-06-26",
       "source_mmd": "odylith/atlas/source/odylith-product-runtime-boundary-map.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-runtime-boundary-map.svg",
       "source_png": "odylith/atlas/source/odylith-product-runtime-boundary-map.png",
@@ -2020,7 +2020,7 @@
         "odylith/registry/source/components/odylith-remote-retrieval/CURRENT_SPEC.md": "f9af462ee0d3fc53eebf92252268f86c81add72def7135cbbd1d4cac0d526810",
         "odylith/registry/source/components/odylith-memory-contracts/CURRENT_SPEC.md": "17338502f6823edeb2c2107ca9200b4f5f20da054bbf5d2bbadeae237fa83b27",
         "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md": "111d0e6ea1369a5a09ad11e22d9a9fdc57b705984766b9a8c821bf5c18b785b3",
-        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "bd55d9f8f61ca074997968d6f7665282158e0225cb4389cdf1a603e405a9f8fc",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "67bd8cbdee4d57b28e3fd0d02158b6c4343a43d9fdf9ba1c066a354b7bc3d18a",
         "odylith/registry/source/components/remediator/CURRENT_SPEC.md": "95265d419be6d405766999b0084f11dc53cdc8178369768042af4d79c2a1dcdb",
         "odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md": "606decad2694952260a72b8e592d572a86df2485d2656b1d7e08dae5cf7b5ab5",
         "odylith/registry/source/components/subagent-router/CURRENT_SPEC.md": "beaa67fbe39d4053131d24207de24bdd146a606d064b6f06801b665c83fd8e84",
@@ -4148,22 +4148,34 @@
       "source_svg": "odylith/atlas/source/domain-intelligence-greenfield-governance.svg",
       "source_png": "odylith/atlas/source/domain-intelligence-greenfield-governance.png",
       "change_watch_paths": [
-        "src/odylith/runtime/domain_intelligence",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py",
         "odylith/skills/odylith-greenfield-governance/SKILL.md",
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
-      "summary": "Shows the confirmed greenfield typed compiler path: accepted intent becomes semantic and artifact-plan IR, typed review findings drive semantic PatchSet rescue, and Odylith writes governed records only after deterministic final gates pass.",
-      "read_guide": "Start with the accepted Product Intent Confirmation, then follow it into ConfirmedIntentIR and the host-reasoned SemanticModelIR. Read across to ArtifactPlanIR and the context-starved projections that feed Radar, Registry, Atlas, Compass, and release proof. The final gate either writes under the standard path, sends a repairable failure to PatchSet rescue, or returns exact blockers after rollback.",
+      "summary": "Shows the current confirmed greenfield post-confirm architecture: accepted intent takes a deterministic provider-free standard path, only source-owned typed findings can drive bounded rescue, legacy raw issue strings fail closed, and governed records write only after the final manifest passes.",
+      "read_guide": "Start with Product Intent Confirmation and follow it through ConfirmedIntentIR into the deterministic SemanticModelIR and ArtifactPlanIR compiler path. Read the validation lane as the custody boundary: typed findings carry repair authority, while legacy raw strings become blockers. The rescue lane is optional and budgeted; a structured Tribunal planner may fill only replacement facts, custody validation rejects moved targets, and semantic or artifact-plan executors patch IR facts before rerendering the impacted projections through the same final gates.",
       "components": [
         {
           "name": "Domain Intelligence",
-          "description": "Owns confirmed greenfield semantic compilation, artifact planning, typed review findings, semantic PatchSet rescue, and fail-closed create orchestration."
+          "description": "Owns confirmed greenfield semantic compilation, artifact planning, source-typed review findings, IR-first patch execution, and fail-closed create orchestration."
         },
         {
-          "name": "Host reasoning",
-          "description": "Resolves ambiguous product meaning and returns schema-constrained semantic facts or repair patches instead of rendered prose."
+          "name": "Typed findings",
+          "description": "Carry target layer, target path, semantic node, affected projections, and repairability from source validators into PatchSet repair."
+        },
+        {
+          "name": "Tribunal patch planner",
+          "description": "Provides optional rescue-path host reasoning that fills replacement facts while Odylith retains custody of operation identity, targets, and commit gates."
         },
         {
           "name": "Radar",
@@ -4184,6 +4196,10 @@
         {
           "name": "Release proof",
           "description": "Receives release scope, validation gates, and readiness evidence from sanctioned plan fields."
+        },
+        {
+          "name": "Legacy issue blockers",
+          "description": "Represent untyped/raw report strings as fail-closed diagnostics with no semantic repair authority."
         }
       ],
       "related_backlog": [
@@ -4194,22 +4210,35 @@
       ],
       "related_docs": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
         "odylith/skills/odylith-greenfield-governance/SKILL.md"
       ],
       "related_code": [
-        "src/odylith/runtime/domain_intelligence",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
       ],
       "reviewed_watch_fingerprints": {
-        "src/odylith/runtime/domain_intelligence": "cbd02b9bcd515e31d1363b97d5fe8a5d0f9eec6c934cb18a3a1520b9d81afbc2",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py": "0b281e4ecdbe4eaa4a80198974c4829710a0fbaa5da5aac68a66e111b6fc64ef",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py": "4b51d265d22ec378a9c9bc69fc1bf6b7a918481d145598d6f346d74d2c21afd3",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py": "d71e55c91afd55ad4c3c362a23667597342146887785f1c492dc7947ab035636",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py": "726be4e82a60bda7907a4e9aa4c9b59543b5086d93c98a8b6baedf660de44090",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py": "acf150cea38bc936b8779fdf688bd3b484466534520acb6a73933b642340a69c",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py": "6d87e8d3a7681a7e5aa7f02b182be6eb3438168be3d5705c70e7a15bcc748a34",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py": "8dab3646b8a071c447a8a8e35cad1de1cdac7dd9b38e15965d7be4a3f2064bb9",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "a3c447abc7d01f3a18ee4f55b99f6c3a4e0455e3602be5e50b99efd1115043ce",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "4ebb5700f4dc2da2559dd55b333e5c165a2da9eab28a7bd38121021dc95131da",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "c42d7b86a2a74907fa59d4802a716988fc75af20f524d62e4750faa45ec0eab8",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "67bd8cbdee4d57b28e3fd0d02158b6c4343a43d9fdf9ba1c066a354b7bc3d18a",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "b937c51740ee8cf2c6bf810491da2e85e038e683d53877fb087b304e28a4d5b3"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "2013df15392347d34bcca3475b97e1b7a961f0621febd227c0fb654a91efe771"
       },
-      "render_source_fingerprint": "168ab9f31d9eccfef815919ea691349e6694e0972f0da4bb3aecf5b0b4cd30f9"
+      "render_source_fingerprint": "487419366c83b486608650b7703f1c8a04c4acaa8dd495d9bef290bef11520c5"
     },
     {
       "diagram_id": "D-044",

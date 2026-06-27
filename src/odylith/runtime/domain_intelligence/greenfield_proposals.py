@@ -66,6 +66,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_patch_apply imp
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_patch_apply import (
     complete_greenfield_semantic_apply_payload,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_planner import (
+    enrich_rescue_patchset_with_structured_plan,
+)
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.proposal_validation import validate_host_reasoned_proposal
@@ -462,6 +465,7 @@ def _build_repaired_prewrite_package(
             current,
             release_selector=release_selector,
             repair_context=context,
+            repo_root=root,
         ),
         proposal_ready=proposal_ready,
         max_passes=_MAX_PACKAGE_REPAIR_PASSES,
@@ -475,7 +479,13 @@ def _repair_confirmed_apply_payload(
     *,
     release_selector: str,
     repair_context: GreenfieldPostConfirmRepairContext | None = None,
+    repo_root: Path | None = None,
 ) -> Mapping[str, Any]:
+    repair_context = enrich_rescue_patchset_with_structured_plan(
+        proposal,
+        repair_context=repair_context,
+        repo_root=repo_root,
+    )
     return apply_greenfield_patchset_repairs(
         proposal,
         release_selector=release_selector,

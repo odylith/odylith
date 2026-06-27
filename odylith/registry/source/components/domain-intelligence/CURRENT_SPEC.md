@@ -181,6 +181,9 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-06-26: Final checkpoint proof for prompt-source and proof-boundary custody passed after shared release-scope helper extraction. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) Affected confirmed-intent/CLI paths passed 69 tests in 161.14s, the greenfield quality pack passed 160 tests in 50.09s, the heavy post-confirm engine/artifact suite passed 93 tests in 283.07s, and ten fresh source-local simulations passed in 13.970-15.504s with standard-tier manifests, zero issues, all PM/architect/engineer/domain-expert lenses passing, governed records written, and temp repos deleted after every scenario.
 - 2026-06-26: Made `ArtifactPlanIR` PatchSet operations executable for sanctioned projection facts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_artifact_plan_patch_executor.py` now applies formal `target_layer: artifact_plan` replacement facts to approved proposal roots for project brief, Radar backlog, Registry components, Atlas diagrams, release plan, program, assumptions, questions, risks, and validation strategy. It rejects prose-only patches, protects ids, slugs, schema versions, paths, and timestamps, records an artifact-plan patch ledger, and runs through `greenfield_post_confirm_patch_apply.py` before normalization and deterministic completion rerun.
 - 2026-06-26: Preserved source-local recovered intent facts through completion. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_confirmed_system_completion.py` now keeps explicit spaced-hyphen recovered internal-system rows as canonical system name/description facts instead of collapsing them into one generic component-responsibility row, and `greenfield_confirmed_intent_recovery.py` treats actorless imperative `release ...` clauses as action steps during recovered actor extraction. The fix keeps global prose grammar unchanged after broad regression proof showed that adding `release` globally regressed modal/base-form semantics.
+- 2026-06-26: Removed the old greenfield post-confirm repair authority from raw English issue strings. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_post_confirm_engine.py` now maps raw completion report strings to fail-closed `legacy_untyped_report` blockers, `greenfield_post_confirm_findings.py` maps raw package strings to `legacy_package_artifact_gate` blockers, and `greenfield_post_confirm_package_findings.py` emits source-owned typed package findings for semantic coverage, release drift, Registry preview/spec shape, and bounded mechanical draft-copy cleanup. This keeps human-readable diagnostics out of the semantic routing API.
+- 2026-06-26: Wired the bounded host-reasoned rescue seam through general Tribunal structured patch planning. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_post_confirm_rescue_planner.py` calls `runtime/reasoning/tribunal_patch_planner.py` only in rescue/deep tiers when time remains; the provider can fill replacement facts, decision-ledger entries, proof-obligation deltas, rejected interpretations, and confidence for existing PatchSet operations, while Odylith rejects moved targets, invented operation IDs, and empty facts before semantic or artifact-plan executors run.
+- 2026-06-26: Moved semantic PatchSet application to IR-first custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`) `greenfield_semantic_patch_executor.py` now patches `SemanticModelIR` nodes such as `first_path_contract.raw_path` and `domain_ontology.*` before mirroring accepted-intent compatibility fields, preserves `semantic_model` instead of deleting it for replay, and records `semantic_model.*` applied fields in the semantic patch ledger.
 
 ## Contract
 
@@ -350,6 +353,22 @@ This section captures synchronized requirement and contract signals derived from
   target-layer sets, or source-name sets. Artifact-plan operations may update
   only sanctioned projection roots and must preserve structural metadata such
   as ids, slugs, schema versions, source paths, and timestamps.
+- Post-confirm package findings must be source typed before repair. Raw package
+  issue strings are diagnostic blockers only; they must not be classified by
+  message shape into semantic or plan repair. `greenfield_post_confirm_package_findings.py`
+  owns package-level typed findings for semantic coverage, release drift,
+  Registry preview/spec shape, accepted-project drift, and the explicit
+  safe-mechanical-copy subset.
+- Rescue/deep host reasoning must enter through
+  `greenfield_post_confirm_rescue_planner.py` and the general
+  `runtime/reasoning/tribunal_patch_planner.py` contract. Domain Intelligence
+  may pass typed findings, review evidence, and PatchSet requests, but it must
+  retain custody of operation identity, target layer, target path,
+  semantic-node ID, affected projections, time budget, and final commit gates.
+- Semantic PatchSet execution must patch `SemanticModelIR` first. Accepted
+  intent fields may be mirrored only as compatibility input for current
+  deterministic completion; executors must not delete `semantic_model` and rely
+  on replay as the sole repair authority.
 - Standard confirmed create must complete under 60 seconds without host repair
   on normal inputs. Rescue may extend to 90 seconds only when a final
   semantic/quality gate fails and a targeted host-reasoned `PatchSet` is likely
@@ -896,6 +915,17 @@ This section captures synchronized requirement and contract signals derived from
   semantic-node id, projection id, repairability, and repair owner at the point
   of judgment so post-confirm repair can route by structured custody instead of
   interpreting reviewer prose.
+- Auto-tier post-confirm repair must start on the standard 60-second budget.
+  The engine may extend to the 90-second rescue budget only after a repairable
+  final semantic or quality gate failure activates rescue. Deep 120-second
+  repair remains explicit premium/CI mode, not the normal operator path.
+- Rescue-tier repair must treat Tribunal as the typed adjudication and patch
+  planning boundary. Greenfield may adapt its `ReviewReport` and `PatchSet`
+  request into a Tribunal structured-reasoning dossier, but it must accept only
+  schema-valid semantic or artifact-plan replacement facts with decision-ledger
+  and proof-obligation metadata. It must not ask the provider to rewrite
+  rendered Radar, Registry, Atlas, project-brief, release, Compass, or next-step
+  prose.
 - Confirmed greenfield semantic custody must distinguish product-result noun
   phrases from proof-control text before final gates run. Phrases such as
   `release readiness for ...` can be valid first-path result events, while

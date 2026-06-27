@@ -32,6 +32,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import (
     package_review_findings,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_package_findings import (
+    package_artifact_findings,
+)
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
     GreenfieldReviewFinding,
 )
@@ -142,7 +145,11 @@ def build_greenfield_package_report(package: GreenfieldCompletionPackage) -> Gre
         tribunal_preview=package.tribunal_preview,
     )
     package_issues = _package_artifact_issues(package)
-    package_findings = package_review_findings(package, package_issues=package_issues)
+    package_findings = package_review_findings(
+        package,
+        package_issues=package_issues,
+        package_findings=package_artifact_findings(package),
+    )
     findings = dedupe_review_findings([*report.findings, *package_findings])
     issues = unique_text([*report.issues, *(finding.message for finding in package_findings)])
     status = "failed" if issues or findings else "passed"

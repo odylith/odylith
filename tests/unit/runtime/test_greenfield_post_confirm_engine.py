@@ -9,6 +9,7 @@ import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
+from odylith.runtime.domain_intelligence import greenfield_post_confirm_rescue_planner
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine as engine
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
@@ -129,6 +130,20 @@ def test_post_confirm_issue_classifier_returns_typed_repair_owner() -> None:
         artifact_counts={"next_steps_previews": 1},
         tribunal_status="passed",
         issues=("Operator next steps `next_steps` has modal/base-form grammar drift near `can submits`",),
+        findings=(
+            review_finding(
+                code="generated_copy_quality",
+                surface="Operator next steps",
+                target_path="next_steps",
+                projection_id="next_steps",
+                semantic_node_id="ArtifactDraftSet.next_steps",
+                severity="medium",
+                repairability="safe_package_repair",
+                owner="operator_experience_renderer",
+                source="generated_copy_quality",
+                message="Operator next steps `next_steps` has modal/base-form grammar drift near `can submits`",
+            ),
+        ),
     )
 
     issue = engine.classify_greenfield_post_confirm_issues(report)[0]
@@ -141,6 +156,61 @@ def test_post_confirm_issue_classifier_returns_typed_repair_owner() -> None:
     assert issue.severity == "medium"
 
 
+def test_post_confirm_issue_classifier_fails_closed_for_legacy_untyped_issues() -> None:
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"next_steps_previews": 1},
+        tribunal_status="passed",
+        issues=("Operator next steps `next_steps` has modal/base-form grammar drift near `can submits`",),
+    )
+
+    issue = engine.classify_greenfield_post_confirm_issues(report)[0]
+
+    assert issue.code == "legacy_untyped_report"
+    assert issue.surface == "post_confirm"
+    assert issue.path == ""
+    assert issue.severity == "critical"
+    assert issue.repairability == "unrepairable"
+    assert issue.owner == "typed_review_report"
+    assert issue.source == "legacy_untyped_report"
+
+
+def test_post_confirm_issue_classifier_preserves_unmatched_legacy_blockers_with_findings() -> None:
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"next_steps_previews": 1},
+        tribunal_status="passed",
+        issues=(
+            "Operator next steps `next_steps` has modal/base-form grammar drift near `can submits`",
+            "untyped package gate emitted a blocker without a source-owned finding",
+        ),
+        findings=(
+            review_finding(
+                code="generated_copy_quality",
+                surface="Operator next steps",
+                target_path="next_steps",
+                projection_id="next_steps",
+                semantic_node_id="ArtifactDraftSet.next_steps",
+                severity="medium",
+                repairability="safe_package_repair",
+                owner="operator_experience_renderer",
+                source="generated_copy_quality",
+                message="Operator next steps `next_steps` has modal/base-form grammar drift near `can submits`",
+            ),
+        ),
+    )
+
+    issues = engine.classify_greenfield_post_confirm_issues(report)
+
+    assert [issue.code for issue in issues] == ["generated_copy_quality", "legacy_untyped_report"]
+    assert issues[1].message == "untyped package gate emitted a blocker without a source-owned finding"
+    assert issues[1].repairability == "unrepairable"
+
+
 def test_post_confirm_issue_classifier_marks_malformed_copy_as_package_repair() -> None:
     report = GreenfieldCompletionReport(
         status="failed",
@@ -149,6 +219,20 @@ def test_post_confirm_issue_classifier_marks_malformed_copy_as_package_repair() 
         artifact_counts={"component_registry_previews": 1},
         tribunal_status="passed",
         issues=("`Episode Capture` generated prose uses malformed ownership verb pair at root",),
+        findings=(
+            review_finding(
+                code="generated_copy_quality",
+                surface="registry",
+                target_path="rendered_component_specs",
+                projection_id="registry",
+                semantic_node_id="ArtifactDraftSet.registry",
+                severity="medium",
+                repairability="safe_package_repair",
+                owner="generated_copy_quality_kernel",
+                source="generated_copy_quality",
+                message="`Episode Capture` generated prose uses malformed ownership verb pair at root",
+            ),
+        ),
     )
 
     issue = engine.classify_greenfield_post_confirm_issues(report)[0]
@@ -167,6 +251,21 @@ def test_post_confirm_issue_classifier_marks_quality_lens_gaps() -> None:
         artifact_counts={"next_steps_previews": 1},
         tribunal_status="passed",
         issues=("quality lens engineer missing rendered component specs",),
+        findings=(
+            review_finding(
+                code="quality_lens_gap",
+                surface="engineer",
+                target_path="quality_lenses.engineer.rendered_component_specs",
+                projection_id="review_report",
+                semantic_node_id="ReviewReport.quality_lenses",
+                severity="high",
+                repairability="proposal_repair",
+                owner="quality_lens_contract",
+                source="quality_lens",
+                lens="engineer",
+                message="quality lens engineer missing rendered component specs",
+            ),
+        ),
     )
 
     issue = engine.classify_greenfield_post_confirm_issues(report)[0]
@@ -311,7 +410,7 @@ def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() 
     assert operation["affected_projections"] == ("project_brief", "radar", "release")
 
 
-def test_semantic_coverage_package_findings_route_to_first_path_semantic_patch() -> None:
+def test_string_only_package_issues_fail_closed_instead_of_routing_semantics() -> None:
     findings = package_review_findings(
         GreenfieldCompletionPackage(proposal={"intent": {"title": "Coverage Route"}}),
         package_issues=(
@@ -320,21 +419,61 @@ def test_semantic_coverage_package_findings_route_to_first_path_semantic_patch()
         ),
     )
 
-    semantic_findings = [finding for finding in findings if finding.source == "package_artifact_gate"]
-    assert semantic_findings
-    assert {finding.code for finding in semantic_findings} == {"semantic_alignment"}
-    assert {finding.repairability for finding in semantic_findings} == {"semantic_patch"}
-    assert {finding.semantic_node_id for finding in semantic_findings} == {"SemanticModelIR.first_path_contract"}
-    assert {finding.owner for finding in semantic_findings} == {"semantic_model_compiler"}
+    legacy_findings = [finding for finding in findings if finding.source == "legacy_package_artifact_gate"]
+    assert legacy_findings
+    assert {finding.code for finding in legacy_findings} == {"legacy_package_artifact_gate"}
+    assert {finding.repairability for finding in legacy_findings} == {"unrepairable"}
+    assert {finding.owner for finding in legacy_findings} == {"typed_package_artifact_gate"}
 
-    patchset = patchset_request_from_findings(semantic_findings).to_dict()
+
+def test_package_report_emits_source_typed_semantic_coverage_findings() -> None:
+    proposal = {
+        "intent": {
+            "reasoning_mode": "odylith_confirmed_governed_proposal",
+            "title": "Coverage Route",
+            "first_path": "A reviewer checks the permit record and sees the saved decision.",
+        },
+        "semantic_model": {
+            "schema_version": "odylith.greenfield.semantic_model.v1",
+            "domain_ontology": {"proof_boundary": "saved decision proof is available in the audit trail"},
+            "first_path_contract": {
+                "capability": "reviewer checks the permit record and sees the saved decision"
+            },
+            "component_contracts": [],
+            "workstream_contracts": [],
+            "diagram_event_graph": {
+                "proof_checkpoint": "saved decision proof is available in the audit trail"
+            },
+        },
+    }
+
+    report = build_greenfield_package_report(
+        GreenfieldCompletionPackage(
+            proposal=proposal,
+            backlog_result={
+                "created": [{"title": "Review permit", "idea_id": "B-001"}],
+                "idea_files": {"B-001.md": "Unrelated placeholder content."},
+                "backlog_index_text": "Review permit",
+                "validation_gate": {"status": "passed"},
+            },
+            rendered_atlas_sources={"odylith/atlas/source/permit-flow.mmd": "flowchart LR\n  A[Unrelated]\n"},
+        )
+    )
+
+    semantic_findings = [finding for finding in report.findings if finding.source == "package_artifact_gate"]
+    assert any(finding.code == "semantic_alignment" and finding.projection_id == "radar" for finding in semantic_findings)
+    assert any(finding.code == "semantic_alignment" and finding.projection_id == "atlas" for finding in semantic_findings)
+    assert {finding.repairability for finding in semantic_findings if finding.code == "semantic_alignment"} == {
+        "semantic_patch"
+    }
+
+    patchset = patchset_request_from_findings(
+        tuple(finding for finding in semantic_findings if finding.code == "semantic_alignment")
+    ).to_dict()
     operations = patchset["operations"]
     assert {operation["target_layer"] for operation in operations} == {"semantic_model"}
-    assert {operation["target_path"] for operation in operations} == {"semantic_model.first_path_contract"}
-    assert sorted({projection for operation in operations for projection in operation["affected_projections"]}) == [
-        "project_brief",
-        "radar",
-    ]
+    assert "semantic_model.first_path_contract" in {operation["target_path"] for operation in operations}
+    assert "radar" in {projection for operation in operations for projection in operation["affected_projections"]}
 
 
 def test_package_report_emits_structured_quality_lens_findings() -> None:
@@ -607,6 +746,119 @@ def test_post_confirm_auto_tier_stays_standard_when_first_pass_succeeds(
     assert result.manifest["rescue_activated"] is False
 
 
+def test_post_confirm_auto_tier_does_not_spend_rescue_budget_before_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clock_values = iter([0.0, 61.0, 62.0])
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+
+    with pytest.raises(engine.GreenfieldPostConfirmEngineError) as exc:
+        engine.run_greenfield_post_confirm_engine(
+            proposal={"intent": {"title": "Timeout Test"}},
+            release_selector="0.0.1",
+            build_prewrite=lambda current, _tribunal: SimpleNamespace(
+                package=GreenfieldCompletionPackage(proposal=current, release_selector="0.0.1"),
+                backlog_result={},
+            ),
+            repair_proposal=lambda current, _context: current,
+            proposal_ready=True,
+            repair_tier="auto",
+            clock=lambda: next(clock_values, 62.0),
+        )
+
+    manifest = exc.value.manifest
+    assert manifest["status"] == "failed"
+    assert manifest["stop_reason"] == "time_budget_exhausted"
+    assert manifest["requested_repair_tier"] == "auto"
+    assert manifest["repair_tier"] == "standard"
+    assert manifest["budget_seconds"] == 60.0
+    assert manifest["rescue_activated"] is False
+    assert manifest["pass_records"] == []
+
+
+def test_post_confirm_auto_tier_extends_to_rescue_after_repairable_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reports = [
+        GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={"workstreams": 1},
+            tribunal_status="passed",
+            issues=("semantic alignment missing first path contract",),
+            findings=(
+                review_finding(
+                    code="semantic_alignment",
+                    surface="radar",
+                    target_path="proposal.backlog",
+                    projection_id="radar",
+                    semantic_node_id="SemanticModelIR.workstream_contracts",
+                    severity="high",
+                    repairability="semantic_patch",
+                    owner="semantic_model_compiler",
+                    source="semantic_workstream_alignment",
+                    message="semantic alignment missing first path contract",
+                ),
+            ),
+        ),
+        GreenfieldCompletionReport(
+            status="passed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={"workstreams": 1},
+            tribunal_status="passed",
+            issues=(),
+        ),
+    ]
+    clock_values = iter([0.0, 0.0, 5.0, 6.0, 70.0, 75.0, 80.0])
+    package_calls = {"count": 0}
+    repair_contexts: list[engine.GreenfieldPostConfirmRepairContext] = []
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+
+    def fake_package_repair(package: GreenfieldCompletionPackage) -> SimpleNamespace:
+        index = min(package_calls["count"], len(reports) - 1)
+        package_calls["count"] += 1
+        report = reports[index]
+        return SimpleNamespace(package=package, initial_report=report, report=report, passes=0, changed=False)
+
+    monkeypatch.setattr(engine, "repair_greenfield_package_until_clean", fake_package_repair)
+
+    def repair_callback(
+        current: dict[str, object],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> dict[str, object]:
+        repair_contexts.append(context)
+        return {**current, "semantic_patch_applied": True}
+
+    result = engine.run_greenfield_post_confirm_engine(
+        proposal={"intent": {"title": "Rescue Budget Test"}},
+        release_selector="0.0.1",
+        build_prewrite=lambda current, _tribunal: SimpleNamespace(
+            package=GreenfieldCompletionPackage(proposal=current, release_selector="0.0.1"),
+            backlog_result={},
+        ),
+        repair_proposal=repair_callback,
+        proposal_ready=True,
+        repair_tier="auto",
+        clock=lambda: next(clock_values, 80.0),
+    )
+
+    assert result.proposal["semantic_patch_applied"] is True
+    assert len(repair_contexts) == 1
+    assert repair_contexts[0].repair_tier == "rescue"
+    assert repair_contexts[0].budget_seconds == 90.0
+    assert result.manifest["status"] == "passed"
+    assert result.manifest["repair_tier"] == "rescue"
+    assert result.manifest["budget_seconds"] == 90.0
+    assert result.manifest["rescue_activated"] is True
+    assert result.manifest["elapsed_seconds"] == 80.0
+
+
 def test_post_confirm_deep_tier_requires_explicit_request(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -656,12 +908,29 @@ def test_post_confirm_classifier_preserves_semantic_compiler_counterexamples() -
             issues=(
                 "GreenfieldSemanticCompiler intent.product_view: uses proof-boundary language as a product-result projection",
             ),
+            findings=(
+                review_finding(
+                    code="semantic_compiler",
+                    surface="semantic_model",
+                    target_path="proposal.semantic_model",
+                    projection_id="review_report",
+                    semantic_node_id="SemanticModelIR",
+                    severity="high",
+                    repairability="semantic_patch",
+                    owner="semantic_model_compiler",
+                    source="semantic_compiler",
+                    message=(
+                        "GreenfieldSemanticCompiler intent.product_view: uses proof-boundary language "
+                        "as a product-result projection"
+                    ),
+                ),
+            ),
         )
     )[0]
 
     assert issue.code == "semantic_compiler"
     assert issue.severity == "high"
-    assert issue.repairability == "proposal_repair"
+    assert issue.repairability == "semantic_patch"
     assert issue.owner == "semantic_model_compiler"
 
 
@@ -716,6 +985,201 @@ def test_quality_lens_repair_rehydrates_decision_scope_and_validation() -> None:
     assert proposal["components"][0]["release_scope"] == "first_release"
     assert "proof" in proposal["intent"]["proof_boundary"].casefold()
     assert any("assumption proof" in row.casefold() for row in proposal["validation_strategy"])
+
+
+def test_repair_payload_enriches_rescue_patchset_with_structured_planner(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    provider = SimpleNamespace(
+        provider_name="fake-provider",
+        last_failure_code="",
+        last_failure_detail="",
+        last_request_model="",
+        last_request_reasoning_effort="",
+    )
+    config = SimpleNamespace(
+        model="planner-model",
+        codex_reasoning_effort="high",
+        claude_reasoning_effort="high",
+    )
+
+    monkeypatch.setattr(
+        greenfield_post_confirm_rescue_planner.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda *, repo_root: config,
+    )
+
+    def fake_provider_from_config(
+        resolved_config: Any,
+        *,
+        repo_root: Path,
+        allow_implicit_local_provider: bool,
+    ) -> Any:
+        assert resolved_config is config
+        assert repo_root == tmp_path.resolve()
+        assert allow_implicit_local_provider is True
+        return provider
+
+    monkeypatch.setattr(
+        greenfield_post_confirm_rescue_planner.odylith_reasoning,
+        "provider_from_config",
+        fake_provider_from_config,
+    )
+
+    def fake_plan_structured_patch(**kwargs: Any) -> dict[str, Any]:
+        assert kwargs["provider"] is provider
+        assert kwargs["patchset_request"]["operations"][0]["operation_id"] == "GF-PATCH-001"
+        assert kwargs["evidence"]["intent"]["title"] == "Structured Repair"
+        assert kwargs["model"] == "planner-model"
+        assert kwargs["reasoning_effort"] == ""
+        assert kwargs["timeout_seconds"] == 25.0
+        return {
+            "version": greenfield_post_confirm_rescue_planner.tribunal_patch_planner.TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "planned",
+            "operation_count": 1,
+            "decision_summary": "Repair the first path fact.",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "replacement_fact": {
+                        "first_path": "A reviewer checks the submitted record and sees the saved decision."
+                    },
+                    "decision_ledger_entry": {"chosen_interpretation": "first path is a user-visible decision"},
+                    "proof_obligation_delta": {"visible_result_required": True},
+                    "rejected_interpretation": "first path as a title-only noun phrase",
+                    "confidence": 0.91,
+                }
+            ],
+            "rejections": [],
+            "provider": {},
+        }
+
+    monkeypatch.setattr(
+        greenfield_post_confirm_rescue_planner.tribunal_patch_planner,
+        "plan_structured_patch",
+        fake_plan_structured_patch,
+    )
+    captured: dict[str, Any] = {}
+
+    def fake_apply(
+        proposal: Mapping[str, Any],
+        *,
+        release_selector: str,
+        repair_context: engine.GreenfieldPostConfirmRepairContext | None,
+    ) -> Mapping[str, Any]:
+        captured["proposal"] = proposal
+        captured["release_selector"] = release_selector
+        captured["repair_context"] = repair_context
+        return proposal
+
+    monkeypatch.setattr(greenfield_proposals, "apply_greenfield_patchset_repairs", fake_apply)
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=10.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("typed first path finding",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.first_path_contract",
+                    "semantic_node_id": "SemanticModelIR.first_path_contract",
+                    "issue_code": "semantic_alignment",
+                    "source_finding": "semantic_workstream_alignment",
+                    "affected_projections": ["radar", "project_brief"],
+                    "requested_action": "Return a semantic patch.",
+                    "replacement_fact": "",
+                }
+            ],
+        },
+        quality_lenses={"lenses": {}},
+        semantic_compiler={"status": "failed"},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    greenfield_proposals._repair_confirmed_apply_payload(
+        {"intent": {"title": "Structured Repair"}},
+        release_selector="0.0.1",
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    enriched_context = captured["repair_context"]
+    operation = enriched_context.patchset_request["operations"][0]
+    assert operation["replacement_fact"]["first_path"].startswith("A reviewer checks")
+    assert operation["decision_ledger_entry"]["chosen_interpretation"] == "first path is a user-visible decision"
+    assert enriched_context.patchset_request["tribunal_patch_plan"]["status"] == "planned"
+
+
+def test_repair_payload_skips_structured_planner_on_standard_tier(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        greenfield_post_confirm_rescue_planner.tribunal_patch_planner,
+        "plan_structured_patch",
+        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("standard path called host planner")),
+    )
+    captured: dict[str, Any] = {}
+    monkeypatch.setattr(
+        greenfield_proposals,
+        "apply_greenfield_patchset_repairs",
+        lambda proposal, *, release_selector, repair_context: captured.setdefault("repair_context", repair_context)
+        or proposal,
+    )
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=1.0,
+        budget_seconds=60.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("typed first path finding",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.first_path_contract",
+                    "semantic_node_id": "SemanticModelIR.first_path_contract",
+                    "replacement_fact": "",
+                }
+            ],
+        },
+        quality_lenses={},
+        semantic_compiler={},
+        repair_tier="standard",
+        rescue_activated=False,
+    )
+
+    greenfield_proposals._repair_confirmed_apply_payload(
+        {"intent": {"title": "Standard Repair"}},
+        release_selector="0.0.1",
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    assert captured["repair_context"] is context
 
 
 def test_repair_payload_consumes_patchset_request_targets(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -351,11 +351,69 @@
   in 13.934-15.501s with governed writes, zero issues, and all PM/architect/
   engineer/domain-expert lenses passing. Fresh installed-dist proof remains
   required before this architecture class can be closed.
+  A later architecture audit found the typed PatchSet seam is still not enough:
+  the real confirmed-create path emits repairable semantic or artifact-plan
+  operations, but no live Tribunal/host planner fills `replacement_fact`,
+  `decision_ledger_entry`, or `proof_obligation_delta` before the executors run.
+  That leaves rescue dependent on deterministic proposal replay and remaining
+  rendered-package repair owners. The same pass found a latency-contract bug:
+  `repair-tier=auto` could spend the 90-second rescue budget before any
+  repairable final-gate failure activated rescue. The engine now starts auto on
+  the 60-second standard budget and extends to 90 seconds only after a
+  repairable semantic or quality failure activates rescue. Focused engine proof
+  passed 4 tests in 0.23 seconds, and the widened post-confirm engine plus
+  semantic/artifact-plan patch executor set passed 42 tests in 22.83 seconds.
+  The architecture remains open until a general Tribunal structured-patch
+  planner can request bounded host reasoning in rescue/deep tiers, validate the
+  returned formal patch against evidence and schema, and feed the existing
+  semantic and artifact-plan executors without mutating rendered prose.
+  The next cleanup checkpoint removed the highest-risk compatibility repair
+  path instead of adding more message rules. `greenfield_post_confirm_engine.py`
+  now treats raw `report.issues` strings as `legacy_untyped_report` blockers
+  with no repair authority when typed findings are absent.
+  `greenfield_post_confirm_findings.py` treats raw package issue strings as
+  `legacy_package_artifact_gate` blockers, while
+  `greenfield_post_confirm_package_findings.py` emits source-owned package
+  findings for semantic coverage, release drift, Registry preview/spec shape,
+  and explicitly safe mechanical copy cleanup. This prevents a human-readable
+  gate sentence from becoming the semantic routing API again.
+  The same checkpoint wired rescue/deep host reasoning through
+  `greenfield_post_confirm_rescue_planner.py` and
+  `runtime/reasoning/tribunal_patch_planner.py`. The planner can fill only
+  replacement facts, decision-ledger entries, proof-obligation deltas, rejected
+  interpretations, and confidence on existing PatchSet operations; Odylith
+  rejects moved target layers, target paths, semantic nodes, invented operation
+  IDs, and empty facts before any executor sees the plan. Standard create stays
+  provider-free and under the 60-second budget; the planner is reachable only
+  in rescue/deep tiers when time remains.
+  Finally, `greenfield_semantic_patch_executor.py` now patches
+  `SemanticModelIR` first and mirrors the accepted-intent field only for
+  compatibility with the current deterministic completion path. It no longer
+  deletes `semantic_model` and relies on replay as the sole authority. The
+  ledger records `semantic_model.*` applied fields, preserving the intended
+  repair substrate for the next impacted-projection rerender slice.
+  Initial proof for this checkpoint: the focused semantic patch executor suite
+  passed 5 tests in 0.28 seconds; the focused classifier, package-finding,
+  rescue-planner, semantic-patch, and Tribunal patch-planner set passed 17
+  tests in 0.44 seconds; and the widened greenfield post-confirm suite passed
+  152 tests in 669.31 seconds. The greenfield Atlas topology was replaced and
+  rerendered, and Atlas freshness passed with 44 fresh diagrams and zero stale
+  diagrams after scoped auto-update. Governance proof for the checkpoint also
+  passed: Casebook source validation checked 205 records, Registry validation
+  checked 30 components and 629 events with all 292 meaningful events mapped,
+  backlog contract validated 143 ideas, topology integrity scored 100/100,
+  plan workstream binding/risk/traceability checks passed, and `git diff
+  --check` passed. Release closure still requires fresh high-variance
+  end-to-end simulation after this architecture cleanup and installed-dist
+  proof from the rebuilt package.
 
 - Related Incidents/Bugs: CB-207
 
 - Code References: - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py
+- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py
+- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py
+- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
 - src/odylith/runtime/domain_intelligence/greenfield_workstream_risk_projection.py
@@ -372,3 +430,9 @@
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py
 - src/odylith/runtime/reasoning/tribunal_lens.py
 - src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
+- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
+- src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py
+- src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py
+- src/odylith/runtime/reasoning/tribunal_engine.py
+- src/odylith/runtime/reasoning/tribunal_patch_planner.py
+- odylith/atlas/source/domain-intelligence-greenfield-governance.mmd

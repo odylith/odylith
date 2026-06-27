@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "0495e05931586f2c0e77c37e69efd5ea2b18f459b6daba5a2d0066eaf372ac95",
+    "digest": "3d5477c7646d4919ddf69e7db5111e9892a371c29d674217ecb4fcea380290bb",
     "file_count": 314,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -13576,12 +13576,14 @@
       ],
       "component_names": [
         "Domain Intelligence",
-        "Host reasoning",
+        "Typed findings",
+        "Tribunal patch planner",
         "Radar",
         "Registry",
         "Atlas",
         "Compass",
-        "Release proof"
+        "Release proof",
+        "Legacy issue blockers"
       ],
       "related_component_ids": []
     },
@@ -24666,5 +24668,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-06-26 18:33:25Z"
+  "generated_utc": "2026-06-27 02:59:25Z"
 }

@@ -169,6 +169,15 @@ Tribunal only accepts provider refinement for a limited field set:
 - `discriminating_next_check`
 - `maintainer_brief`
 
+Structured repair planning is a separate Tribunal contract from narrative
+enrichment. When a caller already has typed findings, source-map targets,
+semantic-node IDs, projection IDs, and a formal patch request, Tribunal may ask
+the configured provider for a schema-constrained patch plan. That output is not
+trusted prose. It is admissible only when it returns bounded operations against
+the caller's existing target paths, includes the corrected fact, rejected
+interpretation, decision-ledger entry, proof-obligation delta, and confidence,
+and passes deterministic schema and custody checks before the caller applies it.
+
 ### When provider use is allowed
 Provider use depends on:
 - provider availability
@@ -275,6 +284,11 @@ checkpoint, Stop, or visibility-status hot paths.
   update candidate selection, queue-row generation, and systemic brief logic.
 - New provider contract:
   update the allowed provider fields and validation logic together.
+- New structured repair-planning contract:
+  update the provider schema, validation/admissibility logic, caller adapter,
+  cache/fingerprint metadata, and tests together. The change must stay
+  general-purpose Tribunal infrastructure; domain-specific or surface-specific
+  repair semantics belong in the caller adapter.
 - New case payload field:
   update cache reuse and case serialization, not just the surface renderer.
 
@@ -307,3 +321,5 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Clarified the product boundary that Tribunal diagnoses why a posture exists, while Execution Engine decides whether the next move is admissible. (Plan: [B-072](odylith/radar/radar.html?view=plan&workstream=B-072))
 - 2026-04-17: Documented the Guidance Behavior runtime's Tribunal-ready signal as precomputed downstream evidence for the intervention engine, not a live Tribunal invocation or provider-backed hot-path dependency. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096))
 - 2026-04-17: Clarified that the Guidance Behavior Tribunal-ready signal now travels with the platform end-to-end contract, letting downstream evidence reference benchmark/eval and host-lane proof posture without invoking Tribunal or expanding context on the live path. (Plan: [B-096](odylith/radar/radar.html?view=plan&workstream=B-096); Bug: `CB-123`)
+- 2026-06-26: Extended Tribunal's governed contract to include schema-constrained structured repair planning as a general-purpose provider use case, separate from narrative enrichment. Callers such as greenfield post-confirm rescue may submit typed findings and patch requests, but Tribunal must return only custody-checked operations that deterministic caller-owned executors apply. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
+- 2026-06-26: Wired the structured repair-planning contract into the greenfield rescue seam without moving greenfield semantics into Tribunal. The new `runtime/reasoning/tribunal_patch_planner.py` provider schema preserves the caller's operation id, target layer, target path, and semantic-node id; lets the provider fill only replacement facts, decision-ledger entries, proof-obligation deltas, rejected interpretations, and confidence; rejects invented or moved targets; and returns a merged PatchSet request for caller-owned semantic or artifact-plan executors. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)

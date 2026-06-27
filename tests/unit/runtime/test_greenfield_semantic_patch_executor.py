@@ -42,11 +42,15 @@ def test_semantic_patch_executor_applies_replacement_fact_and_records_ledger() -
     assert proposal["intent"]["first_path"] == (
         "A reviewer records evidence, compares open risks, and sees the release decision."
     )
-    assert "semantic_model" not in proposal
+    assert proposal["semantic_model"]["stale"] is True
+    assert proposal["semantic_model"]["first_path_contract"]["raw_path"] == (
+        "A reviewer records evidence, compares open risks, and sees the release decision."
+    )
+    assert proposal["semantic_model"]["first_path_contract"]["capability"]
     assert proposal["semantic_patch_ledger"] == [
         {
             "ambiguity": "record was interpreted as a user action instead of a governance object.",
-            "applied_field": "intent.first_path",
+            "applied_field": "semantic_model.first_path_contract.raw_path",
             "operation_id": "semantic-patch-1",
             "target_path": "semantic_model.first_path_contract",
             "semantic_node_id": "SemanticModelIR.first_path_contract",
@@ -115,8 +119,11 @@ def test_semantic_patch_executor_routes_external_systems_without_rewriting_inter
     assert changed is True
     assert proposal["intent"]["internal_systems"] == ["Decision Ledger"]
     assert proposal["intent"]["external_systems"] == ["Partner Evidence Feed"]
-    assert "semantic_model" not in proposal
-    assert proposal["semantic_patch_ledger"][0]["applied_field"] == "intent.external_systems"
+    assert proposal["semantic_model"]["stale"] is True
+    assert proposal["semantic_model"]["domain_ontology"]["external_systems"] == ["Partner Evidence Feed"]
+    assert proposal["semantic_patch_ledger"][0]["applied_field"] == (
+        "semantic_model.domain_ontology.external_systems"
+    )
     assert proposal["semantic_patch_ledger"][0]["proof_obligation_delta"] == {
         "add": ["Replay proof must name the external feed version."]
     }
@@ -235,7 +242,7 @@ def test_patchset_repair_applies_host_replacement_before_semantic_model_regenera
     )
     assert repaired["intent"]["first_path"] == expected
     assert repaired["semantic_model"]["first_path_contract"]["raw_path"] == expected
-    assert repaired["semantic_patch_ledger"][0]["applied_field"] == "intent.first_path"
+    assert repaired["semantic_patch_ledger"][0]["applied_field"] == "semantic_model.first_path_contract.raw_path"
     assert repaired["semantic_patch_ledger"][0]["ambiguity"] == (
         "incoming evidence was chosen as the state-changing object."
     )

@@ -208,6 +208,23 @@ vocabulary, or degraded packages.
   passed in 12.708s and 12.328s with complete governed records and all expert
   lenses, and the widened greenfield suite passed 162 tests in 148.37s. Fresh
   installed proof from a rebuilt dist remains required before release closure.
+- 2026-06-26 architectural cleanup checkpoint: post-confirm repair no longer
+  lets untyped English gate strings drive semantic routing. Raw completion
+  report issues now become `legacy_untyped_report` blockers, raw package issue
+  strings become `legacy_package_artifact_gate` blockers, and package review
+  uses source-owned typed findings for semantic coverage, release drift,
+  Registry preview/spec shape, and explicitly safe mechanical copy cleanup.
+  Rescue/deep host reasoning is wired through
+  `greenfield_post_confirm_rescue_planner.py` and the general-purpose
+  `tribunal_patch_planner.py`; the host may fill only replacement facts,
+  decision-ledger entries, proof-obligation deltas, rejected interpretations,
+  and confidence for existing PatchSet operations after remaining-budget
+  checks. `greenfield_semantic_patch_executor.py` now patches
+  `SemanticModelIR` first and mirrors accepted-intent fields only for current
+  compatibility. D-043 was replaced with the current architecture topology and
+  Atlas refreshed to 44 fresh diagrams / zero stale diagrams. Initial focused
+  proof: semantic patch executor passed 5 tests in 0.28s. Widened post-confirm
+  and governance validation are still required before release closure.
 
 ## Implementation Slices
 
@@ -220,23 +237,27 @@ vocabulary, or degraded packages.
       targets, semantic node IDs, projection IDs, severity, and repairability.
       `greenfield_post_confirm_findings.py` now owns typed finding collection
       for proposal, semantic, component, package, and quality-lens gates.
-- [ ] Replace post-confirm issue-substring routing with typed finding routing.
-      Internally generated reports now classify and build failure signatures
-      from typed findings first. `greenfield_post_confirm_patch_apply.py` now
-      consumes operation-level `PatchSet` entries instead of target-layer/source
-      sets, preserves target path plus semantic node context, and leaves
-      artifact-draft-only operations out of proposal mutation. The legacy
-      English-message classifier remains as a compatibility fallback for old
-      report fixtures and external callers, and full host-authored
-      semantic/plan patch application remains open.
+- [x] Replace post-confirm issue-substring routing with typed finding routing.
+      Internally generated reports classify and build failure signatures from
+      typed findings. Untyped completion reports are now fail-closed
+      `legacy_untyped_report` blockers, and raw package issue strings are
+      `legacy_package_artifact_gate` blockers with no semantic repair
+      authority. `greenfield_post_confirm_patch_apply.py` consumes
+      operation-level `PatchSet` entries instead of target-layer/source sets,
+      preserves target path plus semantic node context, and leaves
+      artifact-draft-only operations out of proposal mutation.
 - [ ] Replace rendered-prose package repair with semantic or plan patch
       application and impacted-projection rerender. Current checkpoint emits a
       formal `PatchSet` request into the manifest and repair context, applies
       current deterministic semantic/quality-lens proposal repairs through an
-      executable PatchSet seam, and maps affected artifact projections from
-      typed projection IDs or target paths. The Radar handoff regression and
-      raw first-path risk-copy regression have been moved upstream into
-      projection owners instead of rendered-package cleanup:
+      executable PatchSet seam, maps affected artifact projections from typed
+      projection IDs or target paths, and source-types package semantic
+      coverage plus shape findings before repair. The remaining mechanical
+      copy cleanup is explicitly bounded to generated draft copy issues such as
+      duplicate adjacent words and dangling tails; it is not allowed to route
+      semantic drift. The Radar handoff regression and raw first-path risk-copy
+      regression have been moved upstream into projection owners instead of
+      rendered-package cleanup:
       `greenfield_traceability.py` normalizes validation sentence shape before
       Radar render, `artifact_enrichment.py` preserves complete validation
       predicates, and `greenfield_workstream_risk_projection.py` projects
@@ -286,10 +307,11 @@ vocabulary, or degraded packages.
       `replacement_fact`, `decision_ledger_entry`, `proof_obligation_delta`,
       `rejected_interpretation`, and confidence. Reject prose-only patches.
       Current checkpoint applies host-authored `replacement_fact` operations to
-      accepted-intent semantic fields before semantic-model regeneration,
-      retains proof-obligation deltas in the decision ledger, and routes only by
-      explicit IR target tokens instead of incidental substrings. The actual
-      host-model semantic compiler call remains a separate open integration.
+      `SemanticModelIR` nodes first, mirrors accepted-intent fields only for
+      compatibility with current completion, retains proof-obligation deltas in
+      the decision ledger, and routes only by explicit IR target tokens instead
+      of incidental substrings. The broader host-model semantic compiler call
+      remains a separate open integration.
 - [ ] Add context-starved renderer contracts so Radar, Registry, Atlas,
       Compass, release proof, and next steps cannot cross-contaminate.
       Current checkpoint adds the first projection contract split:
@@ -414,6 +436,45 @@ vocabulary, or degraded packages.
       Tribunal lenses, quality-lens repair, post-confirm engine, artifact-plan
       PatchSet execution, live simulation regressions, and modal first-path
       semantics passed 53 tests in 85.82s.
+- [x] Repair tier budget proof: `repair-tier=auto` now starts on the standard
+      60-second budget and only extends to the 90-second rescue budget after a
+      repairable final semantic or quality failure activates rescue. Focused
+      post-confirm engine timing tests passed 4 tests in 0.23s, and the
+      widened engine plus semantic/artifact-plan patch executor set passed 42
+      tests in 22.83s.
+- [x] Tribunal structured-patch planning unit proof: rescue/deep repair now
+      uses a general-purpose Tribunal planner to ask the configured host
+      reasoning provider for a formal semantic or artifact-plan patch, validate
+      schema/evidence/custody fields, and merge only accepted replacement facts
+      into existing PatchSet operations. Focused planner and rescue seam tests
+      cover custody-field preservation, invented-target rejection,
+      standard-tier no-op behavior, and rescue-tier planner integration.
+- [x] IR-first semantic patch proof: `greenfield_semantic_patch_executor.py`
+      now records applied `semantic_model.*` fields and leaves
+      `semantic_model` alive while mirroring accepted-intent compatibility
+      fields. The focused semantic patch executor suite passed 5 tests in
+      0.28s.
+- [x] Typed-finding/rescue cleanup proof: focused classifier,
+      package-finding, rescue-planner, semantic-patch, and Tribunal
+      patch-planner tests passed 17 tests in 0.44s. The widened greenfield
+      post-confirm suite covering post-confirm engine, semantic patch executor,
+      artifact-plan patch executor, Tribunal patch planner, general artifact
+      quality, and prewrite transactions passed 152 tests in 669.31s.
+- [x] Atlas governance proof for this architecture checkpoint: D-043
+      `domain-intelligence-greenfield-governance` was replaced instead of
+      annotated in place, then Atlas auto-update rerendered the diagram and
+      refreshed impacted catalog fingerprints. `odylith atlas auto-update
+      --from-git-working-tree --fail-on-stale` completed with 44 fresh diagrams
+      and zero stale diagrams.
+- [x] Governance validation proof for this checkpoint: Casebook source
+      validation checked 205 records; Registry validation checked 30 components
+      and 629 events with 292/292 meaningful events mapped; backlog contract
+      validated 143 ideas; topology integrity scored 100/100; plan
+      workstream-binding, risk-mitigation, and traceability validators passed;
+      Atlas render check stayed at 44 fresh / zero stale; and `git diff
+      --check` passed.
+- [ ] Rescue-path end-to-end timing proof under 90 seconds with a real
+      configured host repair remains required before release closure.
 - [x] Current broad greenfield proof: confirmed-intent recovery, confirmed
       intent, post-confirm engine, semantic patch executor, quality repairs,
       package repetition, slop regressions, general artifact quality, component

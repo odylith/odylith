@@ -7,6 +7,7 @@ from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -43,22 +44,29 @@ def _apply_semantic_operation(proposal: dict[str, Any], operation: Mapping[str, 
     target = _semantic_target(operation)
     replacement = operation.get("replacement_fact")
     if target == "first_path":
-        return _set_intent_text(
+        return _set_first_path_contract(
             proposal,
-            "first_path",
             _replacement_text(replacement, _FIRST_PATH_KEYS),
             require_action=True,
         )
     if target == "proof_boundary":
-        return _set_intent_text(proposal, "proof_boundary", _replacement_text(replacement, _PROOF_BOUNDARY_KEYS))
+        return _set_domain_ontology_text(
+            proposal,
+            "proof_boundary",
+            _replacement_text(replacement, _PROOF_BOUNDARY_KEYS),
+        )
     if target == "state_object":
-        return _set_intent_text(proposal, "state_object", _replacement_text(replacement, _STATE_OBJECT_KEYS))
+        return _set_domain_ontology_text(
+            proposal,
+            "state_object",
+            _replacement_text(replacement, _STATE_OBJECT_KEYS),
+        )
     if target == "human_actors":
-        return _set_intent_list(proposal, "human_actors", _replacement_list(replacement, _ACTOR_KEYS))
+        return _set_domain_ontology_list(proposal, "human_actors", _replacement_list(replacement, _ACTOR_KEYS))
     if target == "external_systems":
-        return _set_intent_list(proposal, "external_systems", _replacement_list(replacement, _EXTERNAL_SYSTEM_KEYS))
+        return _set_domain_ontology_list(proposal, "external_systems", _replacement_list(replacement, _EXTERNAL_SYSTEM_KEYS))
     if target == "internal_systems":
-        return _set_intent_list(proposal, "internal_systems", _replacement_list(replacement, _INTERNAL_SYSTEM_KEYS))
+        return _set_domain_ontology_list(proposal, "internal_systems", _replacement_list(replacement, _INTERNAL_SYSTEM_KEYS))
     return ""
 
 
@@ -90,9 +98,8 @@ def _semantic_route_tokens(operation: Mapping[str, Any]) -> set[str]:
     return tokens
 
 
-def _set_intent_text(
+def _set_first_path_contract(
     proposal: dict[str, Any],
-    key: str,
     value: str,
     *,
     require_action: bool = False,
@@ -102,25 +109,69 @@ def _set_intent_text(
         return ""
     if require_action and not first_path_has_action_signal(text):
         return ""
+    semantic = _semantic_model_dict(proposal)
+    contract = _child_dict(semantic, "first_path_contract")
     intent = _intent_dict(proposal)
-    if normalize_string(intent.get(key)) == text:
+    current_contract = normalize_string(contract.get("raw_path"))
+    current_intent = normalize_string(intent.get("first_path"))
+    if current_contract == text and current_intent == text:
         return ""
+    contract["raw_path"] = text
+    capability = first_path_capability_phrase(text, fallback=text, gerund=True)
+    if capability:
+        contract["capability"] = capability
+    intent["first_path"] = text
+    return "semantic_model.first_path_contract.raw_path"
+
+
+def _set_domain_ontology_text(proposal: dict[str, Any], key: str, value: str) -> str:
+    text = normalize_string(value)
+    if not text:
+        return ""
+    ontology = _domain_ontology_dict(proposal)
+    intent = _intent_dict(proposal)
+    current_ontology = normalize_string(ontology.get(key))
+    current_intent = normalize_string(intent.get(key))
+    if current_ontology == text and current_intent == text:
+        return ""
+    ontology[key] = text
     intent[key] = text
-    proposal.pop("semantic_model", None)
-    return f"intent.{key}"
+    return f"semantic_model.domain_ontology.{key}"
 
 
-def _set_intent_list(proposal: dict[str, Any], key: str, values: Sequence[str]) -> str:
+def _set_domain_ontology_list(proposal: dict[str, Any], key: str, values: Sequence[str]) -> str:
     rows = [normalize_string(value) for value in values if normalize_string(value)]
     if not rows:
         return ""
+    ontology = _domain_ontology_dict(proposal)
     intent = _intent_dict(proposal)
+    ontology_current = [normalize_string(value) for value in text_values(ontology.get(key))]
     current = [normalize_string(value) for value in text_values(intent.get(key))]
-    if current == rows:
+    if ontology_current == rows and current == rows:
         return ""
+    ontology[key] = rows
     intent[key] = rows
-    proposal.pop("semantic_model", None)
-    return f"intent.{key}"
+    return f"semantic_model.domain_ontology.{key}"
+
+
+def _semantic_model_dict(proposal: dict[str, Any]) -> dict[str, Any]:
+    semantic = proposal.get("semantic_model")
+    if not isinstance(semantic, dict):
+        semantic = {}
+        proposal["semantic_model"] = semantic
+    return semantic
+
+
+def _domain_ontology_dict(proposal: dict[str, Any]) -> dict[str, Any]:
+    return _child_dict(_semantic_model_dict(proposal), "domain_ontology")
+
+
+def _child_dict(parent: dict[str, Any], key: str) -> dict[str, Any]:
+    child = parent.get(key)
+    if not isinstance(child, dict):
+        child = {}
+        parent[key] = child
+    return child
 
 
 def _intent_dict(proposal: dict[str, Any]) -> dict[str, Any]:

@@ -12,6 +12,7 @@ import json
 import time
 from typing import Any
 
+from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     GreenfieldCompletionReport,
 )
@@ -141,8 +142,6 @@ def run_greenfield_post_confirm_engine(
     rescue_activated = active_tier in {"rescue", "deep"}
     active_budget_seconds = _tier_budget_seconds(active_tier, fallback=budget_seconds)
     effective_budget_seconds = active_budget_seconds
-    if requested_tier == "auto":
-        effective_budget_seconds = POST_CONFIRM_RESCUE_BUDGET_SECONDS
     seen_failures: set[str] = set()
     pass_records: list[GreenfieldPostConfirmPass] = []
     repaired_issue_codes: set[str] = set()
@@ -301,11 +300,20 @@ def run_greenfield_post_confirm_engine(
 def classify_greenfield_post_confirm_issues(
     report: GreenfieldCompletionReport,
 ) -> tuple[GreenfieldPostConfirmIssue, ...]:
-    """Return typed issue records, using legacy string classification only as fallback."""
+    """Return issue records without deriving repair semantics from prose."""
 
     if report.findings:
-        return tuple(_issue_from_review_finding(finding) for finding in report.findings)
-    return tuple(_classify_issue(issue) for issue in report.issues)
+        finding_messages = {normalize_string(finding.message) for finding in report.findings}
+        legacy_issues = tuple(
+            _legacy_untyped_issue(issue)
+            for issue in report.issues
+            if normalize_string(issue) and normalize_string(issue) not in finding_messages
+        )
+        return (
+            *tuple(_issue_from_review_finding(finding) for finding in report.findings),
+            *legacy_issues,
+        )
+    return tuple(_legacy_untyped_issue(issue) for issue in report.issues if str(issue or "").strip())
 
 
 def _normalize_repair_tier(value: str) -> str:
@@ -490,17 +498,17 @@ def _accepts_repair_context(callback: Callable[..., Any]) -> bool:
     return positional_capacity >= 2
 
 
-def _classify_issue(message: str) -> GreenfieldPostConfirmIssue:
+def _legacy_untyped_issue(message: str) -> GreenfieldPostConfirmIssue:
     text = str(message or "").strip()
-    code = _issue_code(text)
     return GreenfieldPostConfirmIssue(
-        code=code,
-        surface=_issue_surface(text),
-        path=_issue_path(text),
-        severity=_issue_severity(code),
-        repairability=_issue_repairability(code, text),
-        owner=_issue_owner(code, text),
+        code="legacy_untyped_report",
+        surface="post_confirm",
+        path="",
+        severity="critical",
+        repairability="unrepairable",
+        owner="typed_review_report",
         message=text,
+        source="legacy_untyped_report",
     )
 
 
@@ -518,131 +526,6 @@ def _issue_from_review_finding(finding: GreenfieldReviewFinding) -> GreenfieldPo
         source=finding.source,
         lens=finding.lens,
     )
-
-
-def _issue_code(message: str) -> str:
-    lowered = message.casefold()
-    if "provider-free" in lowered or "provider call" in lowered:
-        return "provider_call_leak"
-    if "requires greenfieldsemanticmodel" in lowered or "semantic model" in lowered and "requires" in lowered:
-        return "missing_semantic_model"
-    if "greenfieldsemanticcompiler" in lowered:
-        return "semantic_compiler"
-    if "semantic" in lowered and "drift" in lowered:
-        return "semantic_drift"
-    if "semantic" in lowered and ("alignment" in lowered or "coverage" in lowered or "missing" in lowered):
-        return "semantic_alignment"
-    if "tribunal" in lowered or "validation gate" in lowered:
-        return "validation_gate_failure"
-    if "release" in lowered and ("assignment" in lowered or "target" in lowered):
-        return "release_package_drift"
-    if "quality lens" in lowered:
-        return "quality_lens_gap"
-    if "must render one" in lowered or "drifted from" in lowered or "missing rendered" in lowered:
-        return "artifact_shape_drift"
-    if "mermaid" in lowered or "atlas" in lowered:
-        return "atlas_render_quality"
-    if _copy_quality_message(lowered):
-        return "generated_copy_quality"
-    if "component" in lowered and ("label" in lowered or "registry" in lowered or "spec" in lowered):
-        return "component_contract_quality"
-    return "post_confirm_contract"
-
-
-def _copy_quality_message(lowered: str) -> bool:
-    return any(
-        token in lowered
-        for token in (
-            "grammar drift",
-            "malformed",
-            "mixed finite/base",
-            "invalid verb",
-            "clipped",
-            "dangling",
-            "punctuation",
-            "sentence-fragment",
-            "repeats",
-            "placeholder",
-            "vague",
-            "copy",
-        )
-    )
-
-
-def _issue_surface(message: str) -> str:
-    if " `" in message:
-        return message.split(" `", 1)[0].strip() or "post_confirm"
-    lowered = message.casefold()
-    if "radar" in lowered:
-        return "radar"
-    if "registry" in lowered or "component" in lowered:
-        return "registry"
-    if "atlas" in lowered or "mermaid" in lowered or "diagram" in lowered:
-        return "atlas"
-    if "project brief" in lowered:
-        return "project_brief"
-    if "next steps" in lowered:
-        return "next_steps"
-    if "release" in lowered:
-        return "release"
-    return "post_confirm"
-
-
-def _issue_path(message: str) -> str:
-    if "`" not in message:
-        return ""
-    parts = message.split("`")
-    return parts[1].strip() if len(parts) > 1 else ""
-
-
-def _issue_severity(code: str) -> str:
-    if code in {"provider_call_leak", "missing_semantic_model", "validation_gate_failure"}:
-        return "critical"
-    if code in {"semantic_compiler", "semantic_drift", "semantic_alignment", "artifact_shape_drift", "quality_lens_gap"}:
-        return "high"
-    return "medium"
-
-
-def _issue_repairability(code: str, message: str) -> str:
-    lowered = message.casefold()
-    if code in {"provider_call_leak", "validation_gate_failure"}:
-        return "unrepairable"
-    if "modal/base-form grammar drift" in lowered or "mixed finite/base action prose" in lowered:
-        return "safe_package_repair"
-    if "malformed ownership verb pair" in lowered or "malformed component responsibility" in lowered:
-        return "safe_package_repair"
-    if "malformed verb pair" in lowered and code == "generated_copy_quality":
-        return "safe_package_repair"
-    if code in {"generated_copy_quality", "semantic_compiler", "semantic_alignment", "semantic_drift", "component_contract_quality"}:
-        return "proposal_repair"
-    if code in {
-        "missing_semantic_model",
-        "artifact_shape_drift",
-        "atlas_render_quality",
-        "release_package_drift",
-        "quality_lens_gap",
-    }:
-        return "proposal_repair"
-    return "proposal_repair"
-
-
-def _issue_owner(code: str, message: str) -> str:
-    lowered = message.casefold()
-    if code == "quality_lens_gap":
-        return "quality_lens_contract"
-    if "radar" in lowered:
-        return "radar_renderer"
-    if "registry" in lowered or "component" in lowered:
-        return "registry_renderer"
-    if "atlas" in lowered or "mermaid" in lowered or "diagram" in lowered:
-        return "atlas_renderer"
-    if "next steps" in lowered:
-        return "operator_experience_renderer"
-    if code in {"semantic_compiler", "semantic_drift", "semantic_alignment", "missing_semantic_model"}:
-        return "semantic_model_compiler"
-    if code == "generated_copy_quality":
-        return "generated_copy_quality_kernel"
-    return "post_confirm_engine"
 
 
 def _failure_signature(report: GreenfieldCompletionReport) -> str:

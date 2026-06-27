@@ -1,85 +1,75 @@
 flowchart LR
-    subgraph confirmation_lane["Accepted intent"]
+    subgraph accepted_lane["Accepted intent lane"]
       direction TB
-      visible_intent["Product Intent Confirmation<br/>visible story, first path,<br/>actors, systems, proof boundary"]
-      confirm["Operator confirm<br/>single post-confirm create"]
+      visible_intent["Product Intent Confirmation<br/>story, state object,<br/>first path, actors, proof boundary"]
+      confirm["Single operator confirmation"]
       confirmed_ir["ConfirmedIntentIR<br/>section IDs, source spans,<br/>hash, provenance"]
     end
 
-    subgraph reasoning_lane["Host reasoning"]
+    subgraph standard_lane["Standard path under 60s"]
       direction TB
-      semantic_compile["Semantic compiler call<br/>host resolves meaning"]
-      semantic_ir["SemanticModelIR<br/>actors, actions, state,<br/>events, proof, risks"]
-      decision_ledger["Decision ledger<br/>ambiguities and rejected<br/>interpretations"]
-      patchset["PatchSet<br/>semantic or plan patch<br/>with confidence"]
-      patch_apply["PatchSet appliers<br/>semantic and plan facts<br/>before rerender"]
+      compiler["Deterministic semantic compiler<br/>provider-free common path"]
+      semantic_ir["SemanticModelIR<br/>first-path contract,<br/>ontology, event graph,<br/>proof obligations"]
+      artifact_plan["ArtifactPlanIR<br/>sanctioned projection fields"]
+      projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
+      draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
+      validators["Deterministic validators<br/>schema, traceability,<br/>grammar, repetition, topology"]
+      expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer findings"]
+      typed_findings["Source-owned typed findings<br/>target layer, target path,<br/>semantic node, repairability"]
+      legacy_blockers["Legacy/raw issue strings<br/>diagnostic blockers only,<br/>no repair authority"]
+      final_manifest{"Final manifest passes?"}
     end
 
-    subgraph custody_lane["Deterministic Odylith custody"]
+    subgraph rescue_lane["Bounded rescue path up to 90s"]
       direction TB
-      plan_ir["ArtifactPlanIR<br/>surface-specific projections"]
-      draft_set["ArtifactDraftSet<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
-      structural_guard["Structural metadata custody<br/>paths, ids, slugs,<br/>schemas immutable"]
-      validators["Schema, traceability,<br/>copy, repetition, grammar,<br/>and topology gates"]
-      expert_judgment["Expert artifact judgment<br/>PM, architect, engineer,<br/>domain values only"]
-      review_report["ReviewReport<br/>typed PM, architect,<br/>engineer, domain findings"]
-      transaction{"Final manifest<br/>passes?"}
-    end
-
-    subgraph projection_lane["Context-starved renderers"]
-      direction TB
-      radar_sentence["Radar sentence projection<br/>validation and proof predicates<br/>normalized before render"]
-      radar["Radar projection<br/>product slices only"]
-      registry["Registry projection<br/>component contracts only"]
-      atlas["Atlas projection<br/>topology and event flow"]
-      compass["Compass projection<br/>decision and proof record"]
-      release["Release proof<br/>scope and validation"]
+      repairable["Repairable typed findings"]
+      patchset["PatchSet request<br/>operation ID, target layer,<br/>target path, affected projections"]
+      rescue_budget{"Rescue budget remains?"}
+      tribunal_planner["Structured Tribunal patch planner<br/>host fills replacement facts only"]
+      custody_check["Patch-plan custody validator<br/>reject moved targets,<br/>invented paths, empty facts"]
+      semantic_apply["SemanticModelIR patch executor<br/>IR first, intent mirror"]
+      plan_apply["ArtifactPlanIR patch executor<br/>projection facts only"]
+      copy_repair["Safe mechanical draft cleanup<br/>duplicate words and dangling tails only"]
+      rerender["Rerender impacted projections<br/>same gates, no lowered bar"]
     end
 
     subgraph write_lane["Fail-closed governed writes"]
       direction TB
-      writes["Source-truth writes<br/>only after final pass"]
-      rollback["Rollback snapshot<br/>for failed transactions"]
-      blockers["Exact blockers<br/>when repair is exhausted"]
+      writes["Governed records written<br/>Radar, Registry, Atlas,<br/>Compass, release artifacts"]
+      rollback["Rollback snapshot"]
+      blockers["Exact final blockers<br/>operator sees actionable failure"]
+      proof_log["Compass proof checkpoint"]
     end
 
     visible_intent --> confirm --> confirmed_ir
-    confirmed_ir --> semantic_compile --> semantic_ir
-    semantic_compile --> decision_ledger
-    semantic_ir --> plan_ir --> draft_set
-    plan_ir --> radar_sentence --> radar
-    plan_ir --> registry
-    plan_ir --> atlas
-    plan_ir --> compass
-    plan_ir --> release
-    radar --> draft_set
-    registry --> draft_set
-    atlas --> draft_set
-    compass --> draft_set
-    release --> draft_set
-    draft_set --> structural_guard --> validators --> expert_judgment --> review_report --> transaction
-    transaction -- "pass under 60s standard path" --> writes
-    transaction -- "repairable final-gate failure" --> patchset
-    patchset --> patch_apply
-    patch_apply -- "under 90s rescue path" --> semantic_ir
-    patch_apply --> plan_ir
-    transaction -- "non-repairable or budget exhausted" --> rollback --> blockers
-    writes --> compass
+    confirmed_ir --> compiler --> semantic_ir --> artifact_plan --> projections --> draft_set
+    draft_set --> validators --> expert_lenses --> typed_findings --> final_manifest
+    typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
+    final_manifest -- "pass" --> writes --> proof_log
+    final_manifest -- "repairable typed failure" --> repairable --> patchset --> rescue_budget
+    rescue_budget -- "yes" --> tribunal_planner --> custody_check
+    custody_check --> semantic_apply
+    custody_check --> plan_apply
+    custody_check --> copy_repair
+    semantic_apply --> rerender
+    plan_apply --> rerender
+    copy_repair --> rerender
+    rerender --> validators
+    rescue_budget -- "no" --> rollback --> blockers
+    final_manifest -- "non-repairable" --> rollback
+    rollback --> blockers
 
     classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1.2px;
-    classDef reasoning fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1.2px;
-    classDef custody fill:#FFF8E6,stroke:#F6D98B,color:#17233A,stroke-width:1.3px;
-    classDef projection fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1.2px;
-    classDef write fill:#FDF2F8,stroke:#F9A8D4,color:#17233A,stroke-width:1.2px;
+    classDef standard fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1.2px;
+    classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
+    classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirm,confirmed_ir intent;
-    class semantic_compile,semantic_ir,decision_ledger,patchset,patch_apply reasoning;
-    class plan_ir,draft_set,structural_guard,validators,expert_judgment,review_report,transaction custody;
-    class radar_sentence,radar,registry,atlas,compass,release projection;
-    class writes,rollback,blockers write;
+    class compiler,semantic_ir,artifact_plan,projections,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
+    class repairable,patchset,rescue_budget,tribunal_planner,custody_check,semantic_apply,plan_apply,copy_repair,rerender rescue;
+    class writes,rollback,blockers,proof_log write;
 
-    style confirmation_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
-    style reasoning_lane fill:#FBFDFF,stroke:#DDD6FE,stroke-width:1px,color:#334155
-    style custody_lane fill:#FBFDFF,stroke:#F6D98B,stroke-width:1px,color:#334155
-    style projection_lane fill:#FBFDFF,stroke:#A7E9E3,stroke-width:1px,color:#334155
-    style write_lane fill:#FBFDFF,stroke:#F9A8D4,stroke-width:1px,color:#334155
-    linkStyle default stroke:#B9C7D8,stroke-width:1.25px
+    style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
+    style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#334155
+    style rescue_lane fill:#FFFBF5,stroke:#FDBA74,stroke-width:1px,color:#334155
+    style write_lane fill:#F8FFF9,stroke:#86EFAC,stroke-width:1px,color:#334155
+    linkStyle default stroke:#9FB2C8,stroke-width:1.25px

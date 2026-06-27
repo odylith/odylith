@@ -153,18 +153,24 @@ def package_review_findings(
     package: Any,
     *,
     package_issues: Sequence[str],
+    package_findings: Sequence[GreenfieldReviewFinding] = (),
 ) -> tuple[GreenfieldReviewFinding, ...]:
     """Collect typed findings from the prewrite artifact package."""
 
     copy_findings = _generated_copy_quality_findings(package)
     copy_messages = {finding.message for finding in copy_findings}
+    typed_package_findings = tuple(finding for finding in package_findings if isinstance(finding, GreenfieldReviewFinding))
+    typed_package_messages = {finding.message for finding in typed_package_findings}
     return dedupe_review_findings(
         [
             *(
-                _package_issue_finding(issue)
+                _legacy_package_issue_finding(issue)
                 for issue in package_issues
-                if clean_text(issue) and clean_text(issue) not in copy_messages
+                if clean_text(issue)
+                and clean_text(issue) not in copy_messages
+                and clean_text(issue) not in typed_package_messages
             ),
+            *typed_package_findings,
             *copy_findings,
             *_quality_lens_findings(package),
         ]
@@ -176,170 +182,19 @@ def _project_title(proposal: Mapping[str, Any]) -> str:
     return str(intent.get("title", "")).strip()
 
 
-def _package_issue_finding(message: str) -> GreenfieldReviewFinding:
-    route = _package_issue_route(clean_text(message))
-    return review_finding(message=message, source="package_artifact_gate", **route)
-
-
-def _package_issue_route(message: str) -> dict[str, str]:
-    text = clean_text(message)
-    lowered = text.casefold()
-    if _safe_mechanical_copy_issue(lowered):
-        route = _surface_route_for_message(lowered)
-        return _route(
-            "generated_copy_quality",
-            route["surface"],
-            route["target_path"],
-            route["projection_id"],
-            "artifact_draft_cleaner",
-            repairability="safe_package_repair",
-        )
-    semantic_route = _semantic_coverage_route(lowered)
-    if semantic_route:
-        return semantic_route
-    if lowered.startswith("prewrite radar"):
-        return _route("artifact_shape_drift", "radar", "prewrite_package.radar", "radar", "radar_renderer")
-    if "atlas" in lowered or "mermaid" in lowered or "diagram" in lowered:
-        return _route("atlas_render_quality", "atlas", "prewrite_package.atlas", "atlas", "atlas_renderer")
-    if "registry" in lowered or "component authoring" in lowered or "component `" in lowered:
-        return _route(
-            "component_contract_quality",
-            "registry",
-            "prewrite_package.registry",
-            "registry",
-            "registry_renderer",
-        )
-    if lowered.startswith("project brief"):
-        return _route(
-            "artifact_shape_drift",
-            "project_brief",
-            "prewrite_package.project_brief",
-            "project_brief",
-            "project_brief_renderer",
-        )
-    if lowered.startswith("tribunal"):
-        return _route(
-            "validation_gate_failure",
-            "tribunal",
-            "prewrite_package.tribunal",
-            "review_report",
-            "proposal_tribunal",
-            severity="critical",
-            repairability="unrepairable",
-        )
-    if lowered.startswith("accepted-project"):
-        return _route(
-            "artifact_shape_drift",
-            "accepted_project",
-            "prewrite_package.accepted_project",
-            "accepted_project",
-            "accepted_project_memory",
-        )
-    if lowered.startswith("compass"):
-        return _route(
-            "artifact_shape_drift",
-            "compass",
-            "prewrite_package.compass",
-            "compass",
-            "compass_memory",
-        )
-    if "next-steps" in lowered or "next steps" in lowered:
-        return _route(
-            "artifact_shape_drift",
-            "next_steps",
-            "prewrite_package.next_steps",
-            "next_steps",
-            "operator_experience_renderer",
-        )
-    if "release" in lowered:
-        return _route(
-            "release_package_drift",
-            "release",
-            "prewrite_package.release",
-            "release",
-            "release_planner",
-        )
-    return _route(
-        "artifact_shape_drift",
-        "post_confirm_package",
-        "prewrite_package",
-        "artifact_draft_set",
-        "artifact_plan_projector",
+def _legacy_package_issue_finding(message: str) -> GreenfieldReviewFinding:
+    return review_finding(
+        code="legacy_package_artifact_gate",
+        surface="post_confirm_package",
+        target_path="prewrite_package",
+        projection_id="review_report",
+        semantic_node_id="",
+        severity="critical",
+        repairability="unrepairable",
+        owner="typed_package_artifact_gate",
+        source="legacy_package_artifact_gate",
+        message=message,
     )
-
-
-def _semantic_coverage_route(lowered: str) -> dict[str, str]:
-    if "semantic coverage" not in lowered:
-        return {}
-    route = _surface_route_for_message(lowered)
-    if "proof boundary" in lowered or "proof checkpoint" in lowered:
-        node = "SemanticModelIR.domain_ontology.proof_boundary"
-        target = "semantic_model.domain_ontology.proof_boundary"
-    else:
-        node = "SemanticModelIR.first_path_contract"
-        target = "semantic_model.first_path_contract"
-    return {
-        "code": "semantic_alignment",
-        "surface": route["surface"],
-        "target_path": target,
-        "projection_id": route["projection_id"],
-        "semantic_node_id": node,
-        "severity": "high",
-        "repairability": "semantic_patch",
-        "owner": "semantic_model_compiler",
-    }
-
-
-def _route(
-    code: str,
-    surface: str,
-    target_path: str,
-    projection_id: str,
-    owner: str,
-    *,
-    severity: str = "high",
-    repairability: str = "plan_patch",
-) -> dict[str, str]:
-    return {
-        "code": code,
-        "surface": surface,
-        "target_path": target_path,
-        "projection_id": projection_id,
-        "semantic_node_id": "ArtifactPlanIR",
-        "severity": severity,
-        "repairability": repairability,
-        "owner": owner,
-    }
-
-
-def _surface_route_for_message(lowered: str) -> dict[str, str]:
-    if "radar" in lowered:
-        return {"surface": "radar", "target_path": "prewrite_package.radar", "projection_id": "radar"}
-    if "registry" in lowered or "component spec" in lowered:
-        return {"surface": "registry", "target_path": "prewrite_package.registry", "projection_id": "registry"}
-    if "atlas" in lowered or "mermaid" in lowered:
-        return {"surface": "atlas", "target_path": "prewrite_package.atlas", "projection_id": "atlas"}
-    if "project brief" in lowered:
-        return {
-            "surface": "project_brief",
-            "target_path": "prewrite_package.project_brief",
-            "projection_id": "project_brief",
-        }
-    if "accepted-project" in lowered:
-        return {
-            "surface": "accepted_project",
-            "target_path": "prewrite_package.accepted_project",
-            "projection_id": "accepted_project",
-        }
-    if "compass" in lowered:
-        return {"surface": "compass", "target_path": "prewrite_package.compass", "projection_id": "compass"}
-    if "next step" in lowered:
-        return {"surface": "next_steps", "target_path": "prewrite_package.next_steps", "projection_id": "next_steps"}
-    return {
-        "surface": "post_confirm_package",
-        "target_path": "prewrite_package",
-        "projection_id": "artifact_draft_set",
-    }
 
 
 def _safe_mechanical_copy_issue(lowered: str) -> bool:

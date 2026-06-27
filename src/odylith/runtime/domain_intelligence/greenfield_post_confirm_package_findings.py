@@ -1,0 +1,447 @@
+"""Source-typed package findings for greenfield post-confirm gates."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+import re
+from typing import Any
+
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import dedupe_review_findings
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
+    semantic_overlap_ratio as _semantic_overlap_ratio,
+)
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
+
+
+def package_artifact_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
+    """Return package findings whose route is known by the source check."""
+
+    findings: list[GreenfieldReviewFinding] = []
+    backlog_result = package.backlog_result if isinstance(getattr(package, "backlog_result", None), Mapping) else {}
+    atlas_sources = (
+        package.rendered_atlas_sources
+        if isinstance(getattr(package, "rendered_atlas_sources", None), Mapping)
+        else {}
+    )
+    project_brief_preview = (
+        package.project_brief_preview
+        if isinstance(getattr(package, "project_brief_preview", None), Mapping)
+        else {}
+    )
+    if backlog_result:
+        idea_files = backlog_result.get("idea_files") if isinstance(backlog_result.get("idea_files"), Mapping) else {}
+        findings.extend(_radar_preview_semantic_findings(package, idea_files=idea_files))
+    if atlas_sources:
+        findings.extend(_atlas_preview_semantic_findings(package, atlas_sources))
+    if project_brief_preview:
+        findings.extend(_project_brief_preview_semantic_findings(package, project_brief_preview))
+    if clean_text(getattr(package, "release_selector", "")):
+        findings.extend(_release_package_findings(package))
+    findings.extend(_mechanical_package_quality_findings(package))
+    findings.extend(_registry_package_findings(package))
+    findings.extend(_memory_projection_findings(package))
+    return dedupe_review_findings(findings)
+
+
+def _project_brief_preview_semantic_findings(
+    package: Any,
+    project_brief_preview: Mapping[str, Any],
+) -> tuple[GreenfieldReviewFinding, ...]:
+    if not _confirmed_greenfield_package(package):
+        return ()
+    semantic = _semantic_model(package)
+    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    proof_boundary = (
+        semantic.get("domain_ontology", {}).get("proof_boundary")
+        if isinstance(semantic.get("domain_ontology"), Mapping)
+        else ""
+    )
+    preview_text = clean_text(" ".join(value for item in text_values(project_brief_preview) for value in text_values(item)))
+    findings: list[GreenfieldReviewFinding] = []
+    first_path_capability = clean_text(first_path.get("capability"))
+    if first_path_capability and _semantic_overlap_ratio(first_path_capability, preview_text) < 0.16:
+        findings.append(
+            _semantic_package_finding(
+                message="project brief preview missing semantic coverage for FirstPathContract",
+                surface="project_brief",
+                projection_id="project_brief",
+                semantic_node_id="SemanticModelIR.first_path_contract",
+                target_path="semantic_model.first_path_contract",
+            )
+        )
+    if clean_text(proof_boundary) and _semantic_overlap_ratio(clean_text(proof_boundary), preview_text) < 0.12:
+        findings.append(
+            _semantic_package_finding(
+                message="project brief preview missing semantic coverage for proof boundary",
+                surface="project_brief",
+                projection_id="project_brief",
+                semantic_node_id="SemanticModelIR.domain_ontology.proof_boundary",
+                target_path="semantic_model.domain_ontology.proof_boundary",
+            )
+        )
+    return tuple(findings)
+
+
+def _radar_preview_semantic_findings(
+    package: Any,
+    *,
+    idea_files: Mapping[Any, Any],
+) -> tuple[GreenfieldReviewFinding, ...]:
+    if not _confirmed_greenfield_package(package):
+        return ()
+    text = clean_text(" ".join(str(value or "") for value in idea_files.values()))
+    if not text:
+        return ()
+    semantic = _semantic_model(package)
+    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    ontology = semantic.get("domain_ontology") if isinstance(semantic.get("domain_ontology"), Mapping) else {}
+    intent = _intent(package)
+    required = (
+        (
+            "first path",
+            clean_text(first_path.get("capability") or intent.get("first_path")),
+            "SemanticModelIR.first_path_contract",
+            "semantic_model.first_path_contract",
+        ),
+        (
+            "proof boundary",
+            clean_text(ontology.get("proof_boundary")),
+            "SemanticModelIR.domain_ontology.proof_boundary",
+            "semantic_model.domain_ontology.proof_boundary",
+        ),
+    )
+    findings: list[GreenfieldReviewFinding] = []
+    for label, value, semantic_node_id, target_path in required:
+        if value and _semantic_overlap_ratio(value, text) < 0.18:
+            findings.append(
+                _semantic_package_finding(
+                    message=f"prewrite Radar package missing semantic coverage for {label}",
+                    surface="radar",
+                    projection_id="radar",
+                    semantic_node_id=semantic_node_id,
+                    target_path=target_path,
+                )
+            )
+    return tuple(findings)
+
+
+def _atlas_preview_semantic_findings(
+    package: Any,
+    atlas_sources: Mapping[str, str],
+) -> tuple[GreenfieldReviewFinding, ...]:
+    if not _confirmed_greenfield_package(package):
+        return ()
+    text = clean_text(" ".join(str(value or "") for value in atlas_sources.values()))
+    if not text:
+        return ()
+    semantic = _semantic_model(package)
+    graph = semantic.get("diagram_event_graph") if isinstance(semantic.get("diagram_event_graph"), Mapping) else {}
+    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    findings: list[GreenfieldReviewFinding] = []
+    first_path_text = clean_text(first_path.get("capability"))
+    if first_path_text and _semantic_overlap_ratio(first_path_text, text) < 0.16:
+        findings.append(
+            _semantic_package_finding(
+                message="prewrite Atlas package missing semantic coverage for FirstPathContract",
+                surface="atlas",
+                projection_id="atlas",
+                semantic_node_id="SemanticModelIR.first_path_contract",
+                target_path="semantic_model.first_path_contract",
+            )
+        )
+    if "proof checkpoint" not in text.casefold():
+        findings.append(
+            review_finding(
+                code="atlas_render_quality",
+                surface="atlas",
+                target_path="prewrite_package.atlas",
+                projection_id="atlas",
+                semantic_node_id="ArtifactPlanIR.atlas",
+                severity="high",
+                repairability="plan_patch",
+                owner="atlas_renderer",
+                source="package_artifact_gate",
+                message="prewrite Atlas package missing proof checkpoint diagram label",
+            )
+        )
+    checkpoint = _atlas_checkpoint_search_text(clean_text(graph.get("proof_checkpoint")))
+    if checkpoint and _semantic_overlap_ratio(checkpoint, text) < 0.12:
+        findings.append(
+            _semantic_package_finding(
+                message="prewrite Atlas package missing semantic coverage for DiagramEventGraph proof checkpoint",
+                surface="atlas",
+                projection_id="atlas",
+                semantic_node_id="SemanticModelIR.diagram_event_graph.proof_checkpoint",
+                target_path="semantic_model.diagram_event_graph.proof_checkpoint",
+            )
+        )
+    return tuple(findings)
+
+
+def _release_package_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
+    findings: list[GreenfieldReviewFinding] = []
+    backlog_result = package.backlog_result if isinstance(getattr(package, "backlog_result", None), Mapping) else {}
+    if clean_text(getattr(package, "release_selector", "")) and backlog_result and not package.release_workstream_ids:
+        findings.append(_release_package_finding("prewrite release package must resolve first-release workstream ids"))
+    if not clean_text(getattr(package, "release_selector", "")):
+        return tuple(findings)
+    release_target = (
+        package.release_target_result
+        if isinstance(getattr(package, "release_target_result", None), Mapping)
+        else {}
+    )
+    release_assignment = (
+        package.release_assignment_result
+        if isinstance(getattr(package, "release_assignment_result", None), Mapping)
+        else {}
+    )
+    if not isinstance(release_target.get("release"), Mapping):
+        findings.append(_release_package_finding("prewrite release package missing release target preview"))
+    elif clean_text(release_target.get("dry_run")).casefold() not in {"true", "1"}:
+        findings.append(_release_package_finding("prewrite release target preview must run in dry-run mode"))
+    if not release_assignment:
+        findings.append(_release_package_finding("prewrite release package missing release assignment preview"))
+    else:
+        if clean_text(release_assignment.get("dry_run")).casefold() not in {"true", "1"}:
+            findings.append(_release_package_finding("prewrite release assignment preview must run in dry-run mode"))
+        assigned_ids = {
+            clean_text(item).upper()
+            for item in release_assignment.get("workstream_ids", [])
+            if clean_text(item)
+        }
+        expected_ids = {clean_text(item).upper() for item in package.release_workstream_ids if clean_text(item)}
+        if expected_ids and not expected_ids.issubset(assigned_ids):
+            findings.append(
+                _release_package_finding("prewrite release assignment preview did not cover first-release workstream ids")
+            )
+        target_release = release_target.get("release") if isinstance(release_target.get("release"), Mapping) else {}
+        assignment_release = release_assignment.get("release") if isinstance(release_assignment.get("release"), Mapping) else {}
+        if clean_text(target_release.get("release_id")) and clean_text(assignment_release.get("release_id")):
+            if clean_text(target_release.get("release_id")) != clean_text(assignment_release.get("release_id")):
+                findings.append(
+                    _release_package_finding("prewrite release target preview drifted from release assignment preview")
+                )
+    return tuple(findings)
+
+
+def _mechanical_package_quality_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
+    findings: list[GreenfieldReviewFinding] = []
+    for message in greenfield_rendered_package_quality_issues(package):
+        if not _mechanical_package_quality_issue(message):
+            continue
+        projection = _package_quality_projection(message, package=package)
+        findings.append(
+            review_finding(
+                code="generated_copy_quality",
+                surface=projection,
+                target_path=f"prewrite_package.{projection}.copy_quality",
+                projection_id=projection,
+                semantic_node_id=f"ArtifactDraftSet.{projection}",
+                severity="medium",
+                repairability="safe_package_repair",
+                owner="artifact_draft_cleaner",
+                source="package_quality",
+                message=message,
+            )
+        )
+    return tuple(findings)
+
+
+def _registry_package_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
+    findings: list[GreenfieldReviewFinding] = []
+    component_preview = tuple(
+        row
+        for row in getattr(package, "component_registry_preview", ())
+        if isinstance(row, Mapping)
+    )
+    rendered_specs = (
+        getattr(package, "rendered_component_specs", None)
+        if isinstance(getattr(package, "rendered_component_specs", None), Mapping)
+        else {}
+    )
+    if rendered_specs and not component_preview:
+        findings.append(_registry_plan_finding("prewrite Registry package must include component authoring previews"))
+    for message in greenfield_rendered_package_quality_issues(package):
+        text = clean_text(message).casefold()
+        if text.startswith("registry component spec") and not _mechanical_package_quality_issue(message):
+            findings.append(_registry_plan_finding(message))
+    return tuple(findings)
+
+
+def _memory_projection_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
+    findings: list[GreenfieldReviewFinding] = []
+    accepted_preview = (
+        getattr(package, "accepted_project_preview", None)
+        if isinstance(getattr(package, "accepted_project_preview", None), Mapping)
+        else {}
+    )
+    compass_preview = (
+        getattr(package, "compass_memory_preview", None)
+        if isinstance(getattr(package, "compass_memory_preview", None), Mapping)
+        else {}
+    )
+    component_preview = tuple(
+        row
+        for row in getattr(package, "component_registry_preview", ())
+        if isinstance(row, Mapping)
+    )
+    if accepted_preview:
+        created = accepted_preview.get("created") if isinstance(accepted_preview.get("created"), Mapping) else {}
+        components = created.get("components") if isinstance(created.get("components"), list) else []
+        if len(components) != len(component_preview):
+            findings.append(
+                _artifact_plan_finding(
+                    message="accepted-project memory preview component count drifted from Registry prewrite output",
+                    surface="accepted_project",
+                    target_path="prewrite_package.accepted_project",
+                    projection_id="accepted_project",
+                    owner="accepted_project_memory",
+                )
+            )
+    if compass_preview:
+        components = compass_preview.get("components") if isinstance(compass_preview.get("components"), list) else []
+        if len(components) != len(component_preview):
+            findings.append(
+                _artifact_plan_finding(
+                    message="Compass memory event preview components drifted from Registry prewrite output",
+                    surface="compass",
+                    target_path="prewrite_package.compass",
+                    projection_id="compass",
+                    owner="compass_memory",
+                )
+            )
+    return tuple(findings)
+
+
+def _semantic_package_finding(
+    *,
+    message: str,
+    surface: str,
+    projection_id: str,
+    semantic_node_id: str,
+    target_path: str,
+) -> GreenfieldReviewFinding:
+    return review_finding(
+        code="semantic_alignment",
+        surface=surface,
+        target_path=target_path,
+        projection_id=projection_id,
+        semantic_node_id=semantic_node_id,
+        severity="high",
+        repairability="semantic_patch",
+        owner="semantic_model_compiler",
+        source="package_artifact_gate",
+        message=message,
+    )
+
+
+def _release_package_finding(message: str) -> GreenfieldReviewFinding:
+    return review_finding(
+        code="release_package_drift",
+        surface="release",
+        target_path="prewrite_package.release",
+        projection_id="release",
+        semantic_node_id="ArtifactPlanIR.release",
+        severity="high",
+        repairability="plan_patch",
+        owner="release_planner",
+        source="package_artifact_gate",
+        message=message,
+    )
+
+
+def _registry_plan_finding(message: str) -> GreenfieldReviewFinding:
+    return review_finding(
+        code="component_contract_quality",
+        surface="registry",
+        target_path="prewrite_package.registry",
+        projection_id="registry",
+        semantic_node_id="ArtifactPlanIR.registry",
+        severity="medium",
+        repairability="plan_patch",
+        owner="registry_renderer",
+        source="package_artifact_gate",
+        message=message,
+    )
+
+
+def _artifact_plan_finding(
+    *,
+    message: str,
+    surface: str,
+    target_path: str,
+    projection_id: str,
+    owner: str,
+) -> GreenfieldReviewFinding:
+    return review_finding(
+        code="artifact_shape_drift",
+        surface=surface,
+        target_path=target_path,
+        projection_id=projection_id,
+        semantic_node_id="ArtifactPlanIR",
+        severity="high",
+        repairability="plan_patch",
+        owner=owner,
+        source="package_artifact_gate",
+        message=message,
+    )
+
+
+def _mechanical_package_quality_issue(message: str) -> bool:
+    text = clean_text(message).casefold()
+    return any(
+        marker in text
+        for marker in (
+            "repeats adjacent word",
+            "modal/base-form grammar drift",
+            "mixed finite/base action prose",
+            "clipped or dangling phrase ending",
+            "clipped article phrase ending",
+            "greenfield scope boundary truncates the accepted first-path tail",
+        )
+    )
+
+
+def _package_quality_projection(message: str, *, package: Any) -> str:
+    text = clean_text(message).casefold()
+    if text.startswith("radar workstream") or text.startswith("radar index"):
+        return "radar"
+    if text.startswith("registry component spec"):
+        return "registry"
+    if text.startswith("atlas mermaid"):
+        return "atlas"
+    if text.startswith("project brief preview"):
+        return "project_brief"
+    if text.startswith("operator next steps"):
+        return "next_steps"
+    if "scope boundary truncates" in text and isinstance(getattr(package, "next_steps_preview", None), Mapping):
+        return "next_steps"
+    return "artifact_draft_set"
+
+
+def _confirmed_greenfield_package(package: Any) -> bool:
+    return clean_text(_intent(package).get("reasoning_mode")) == "odylith_confirmed_governed_proposal"
+
+
+def _intent(package: Any) -> Mapping[str, Any]:
+    proposal = getattr(package, "proposal", {}) if isinstance(getattr(package, "proposal", {}), Mapping) else {}
+    return proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+
+
+def _semantic_model(package: Any) -> Mapping[str, Any]:
+    proposal = getattr(package, "proposal", {}) if isinstance(getattr(package, "proposal", {}), Mapping) else {}
+    return proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+
+
+def _atlas_checkpoint_search_text(value: str) -> str:
+    text = clean_text(value)
+    text = re.sub(r"^accepted\s+first\s+path\s+proof\s*:\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^proven\s+when\s+", "", text, flags=re.IGNORECASE)
+    return text
+
+
+__all__ = ["package_artifact_findings"]
