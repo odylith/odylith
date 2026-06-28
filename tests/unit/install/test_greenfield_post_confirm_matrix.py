@@ -36,6 +36,14 @@ def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
 
     cases = module.default_cases()
 
+    assert len(cases) >= 10
+    for name in (
+        "credit union fair lending exception",
+        "apprenticeship credential readiness",
+        "film archive rights clearance",
+        "developer incident runbook readiness",
+    ):
+        assert any(case.name == name for case in cases)
     escaped_case = next(case for case in cases if case.name == "open source security embargo")
     assert "open source security embargo room" in escaped_case.prompt
     assert "receives vulnerability reports" in escaped_case.prompt
@@ -472,6 +480,36 @@ def test_rescue_cli_issues_require_auto_escalation() -> None:
     assert "auto-rescue manifest did not record the typed rescue probe repair" in issues
 
 
+def test_quality_verdict_requires_all_case_domain_terms() -> None:
+    module = _module()
+    counts = module.GreenfieldArtifactCounts(
+        radar_workstreams=4,
+        registry_component_specs=3,
+        atlas_mermaid_sources=4,
+        compass_records=1,
+        release_records=1,
+        program_records=1,
+        project_brief_records=1,
+        trace_nodes=12,
+        trace_workstreams=4,
+        rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
+        domain_term_hits=3,
+        required_domain_terms=4,
+        project_implementation_prompts=5,
+    )
+    quality = module.build_quality_verdict(
+        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        package=_empty_package(),
+        counts=counts,
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not quality.passed
+    assert quality.scores["domain_expert"] == 0
+    assert "domain term coverage too low: expected at least 4, found 3" in quality.issues
+
+
 def test_main_includes_rescue_smoke_by_default(monkeypatch, tmp_path: Path, capsys) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
@@ -517,11 +555,20 @@ def test_main_includes_rescue_smoke_by_default(monkeypatch, tmp_path: Path, caps
             "--temp-parent",
             str(tmp_path),
             "--json",
+            "--output-json",
+            str(tmp_path / "matrix-proof.json"),
         ]
     )
     payload = json.loads(capsys.readouterr().out)
+    persisted = json.loads((tmp_path / "matrix-proof.json").read_text(encoding="utf-8"))
 
     assert exit_code == 0
     assert payload["status"] == "passed"
+    assert payload == persisted
+    assert payload["proof_scope"]["standard_path"] == "real_installed_greenfield_post_confirm_quality_matrix"
+    assert payload["proof_scope"]["rescue_path"] == "synthetic_typed_probe_wiring_only"
+    assert payload["proof_scope"]["natural_rescue_quality_proven"] is False
     assert payload["rescue_smoke"]["status"] == "passed"
+    assert payload["rescue_smoke"]["proof_scope"] == "synthetic_typed_probe_wiring_only"
+    assert payload["rescue_smoke"]["natural_rescue_quality_proven"] is False
     assert "engine_manifest" not in payload["rescue_smoke"]

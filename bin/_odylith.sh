@@ -334,4 +334,11 @@ print(f"release preflight wheel ok: {wheel}")
 PY
 
   "$odylith_python" scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"
+  local matrix_temp_parent
+  matrix_temp_parent="${ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT:-$(dirname "$dist_dir")}"
+  "$odylith_python" scripts/release/greenfield_post_confirm_matrix.py \
+    --version "$resolved_version" \
+    --dist-dir "$dist_dir" \
+    --temp-parent "$matrix_temp_parent" \
+    --output-json "$dist_dir/greenfield-post-confirm-matrix.v1.json"
 }

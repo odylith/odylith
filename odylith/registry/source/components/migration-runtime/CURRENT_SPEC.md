@@ -58,6 +58,11 @@ contract.
 - `migration_required=true` releases are blocked only when no registered
   migration can satisfy the declared requirement for the concrete from/to
   version window.
+- Missing runtime verification evidence must outrank already-current consumer
+  classification. A same-version consumer reinstall may stay no-op only when
+  the runtime is verified and `previous_version == target_version`; a
+  `migration_required=true` release transition must still reach the registered
+  migration blocker when no migration covers the concrete target.
 - `doctor` may report migration state, but repair-class cleanup must not run
   release migrations.
 - `release migration-gate` fixture coverage is explicit per migration id and
@@ -152,3 +157,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-09: Registered the v0.1.15 Atlas box-explanation migration so 0.1.10, 0.1.11, 0.1.12, 0.1.13, and 0.1.14 consumer installs upgrade to Atlas surfaces that explain containers and inner boxes with readable copy while leaving repo-owned Atlas source truth intact. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140))
 - 2026-05-04: Invalidated generated refresh-guard cache entries with a v2 byte-content fingerprint so existing installs upgrading to v0.1.14 cannot reuse stale surface-render decisions from older size/mtime cache state. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-167`)
 - 2026-05-04: Added the post-upgrade dashboard version-state sidecar and forced default shell refresh so upgraded consumer repos cannot keep showing an old shell version after `odylith version` has advanced. Install-time repo-state migrations now force the same dashboard refresh when they do not route through upgrade, the hosted installer names the complete-install upgrade lifecycle, and sync dirty-overlap recovery blocks before tracked Radar normalization while pointing shell drift to the narrow dashboard refresh path. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Bug: `CB-168`)
+- 2026-06-28: Tightened migration scenario classification so missing runtime verification blocks before already-current no-op, verified same-version reinstalls remain no-op, and `migration_required=true` release transitions without a registered target migration still fail closed. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-135`)

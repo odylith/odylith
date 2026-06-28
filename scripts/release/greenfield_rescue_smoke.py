@@ -47,9 +47,11 @@ def rescue_cli_issues(
             )
         )
     issues.extend(_count_floor_issues(counts, minimums=count_minimums, count_key=count_key))
-    if int(getattr(counts, "domain_term_hits", 0) or 0) < 3:
+    required_domain_terms = max(3, int(getattr(counts, "required_domain_terms", 0) or 0))
+    if int(getattr(counts, "domain_term_hits", 0) or 0) < required_domain_terms:
         issues.append(
-            f"auto-rescue domain term coverage too low: expected at least 3, found {getattr(counts, 'domain_term_hits', 0)}"
+            "auto-rescue domain term coverage too low: "
+            f"expected at least {required_domain_terms}, found {getattr(counts, 'domain_term_hits', 0)}"
         )
     if create_returncode == 0:
         issues.extend(package_quality_issues(package))

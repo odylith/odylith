@@ -42,10 +42,10 @@
   },
   "digest": {
     "24h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ],
     "48h": [
-      "Brief unavailable right now: The narration provider failed on the last attempt. Compass will retry on backoff."
+      "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
     ]
   },
   "digest_scoped": {
@@ -402,13 +402,13 @@
         "Nothing moved in this window: B-114 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-115": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-116": [
         "Nothing moved in this window: B-116 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-117": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-118": [
         "Nothing moved in this window: B-118 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -435,7 +435,7 @@
         "Nothing moved in this window: B-125 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-127": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-128": [
         "Nothing moved in this window: B-128 was quiet in the last 24 hours, so Compass has nothing new to brief for that scope."
@@ -833,13 +833,13 @@
         "Nothing moved in this window: B-114 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-115": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-116": [
         "Nothing moved in this window: B-116 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-117": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-118": [
         "Nothing moved in this window: B-118 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -866,7 +866,7 @@
         "Nothing moved in this window: B-125 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
       ],
       "B-127": [
-        "Brief reused last validated narration: Compass skipped a fresh narrator call because the winning narrative facts did not materially change."
+        "Fresh brief still warming: Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet."
       ],
       "B-128": [
         "Nothing moved in this window: B-128 was quiet in the last 48 hours, so Compass has nothing new to brief for that scope."
@@ -920,20 +920,20 @@
       "fingerprint": "6a746b34b0d24bc67f284de9f8c624ef9e6140a40d746af8ef40c1e6867423ab",
       "substrate_fingerprint": "6a746b34b0d24bc67f284de9f8c624ef9e6140a40d746af8ef40c1e6867423ab",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-06-28T07:44:34Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "codex-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. Error loading config.toml: unknown variant `default`, expected `fast` or `flex` in `service_tier`",
-        "provider_model": "gpt-5.3-codex-spark",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-06-28T08:14:38Z"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry; Universal.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: High variance installed greenfield prompts still stop before governed writes. It is still open at P1."
+        ]
       },
       "evidence_lookup": {}
     },
@@ -944,20 +944,20 @@
       "fingerprint": "44d52553e59c5e5de926b54956c1eddb2a146f1ab0551cdffcaf993313511979",
       "substrate_fingerprint": "44d52553e59c5e5de926b54956c1eddb2a146f1ab0551cdffcaf993313511979",
       "bundle_fingerprint": "",
-      "provider_decision": "provider_error",
+      "provider_decision": "provider_deferred",
       "last_successful_narration_fingerprint": "",
       "generated_utc": "2026-06-28T07:44:34Z",
       "sections": [],
       "diagnostics": {
-        "reason": "provider_error",
-        "title": "Brief unavailable right now",
-        "message": "The narration provider failed on the last attempt. Compass will retry on backoff.",
-        "provider": "codex-cli",
-        "provider_failure_code": "provider_error",
-        "provider_failure_detail": "Codex CLI exited with status 1. Error loading config.toml: unknown variant `default`, expected `fast` or `flex` in `service_tier`",
-        "provider_model": "gpt-5.3-codex-spark",
-        "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-06-28T08:14:38Z"
+        "reason": "provider_deferred",
+        "title": "Fresh brief still warming",
+        "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+        "fallback_title": "Local runtime facts",
+        "fallback_digest": [
+          "Current: Add an Odylith-owned confirmed greenfield path that turns vague or precise project intent into concrete backlog, program waves, provisional release plan, planned Registry; Universal.",
+          "Next: Complex-Repo Benchmark Corpus Expansion and Frontier Improvement (B-021): Bring Registry, Radar, Atlas, Compass, and the benchmark docs back into.",
+          "Watch: High variance installed greenfield prompts still stop before governed writes. It is still open at P1."
+        ]
       },
       "evidence_lookup": {}
     }
@@ -2537,19 +2537,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "396b424b4d8a1e5b060833d1c1e46db2d5fcb3305dfd8f8032a64d07516b8783",
+        "substrate_fingerprint": "396b424b4d8a1e5b060833d1c1e46db2d5fcb3305dfd8f8032a64d07516b8783",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-06-28T07:44:34Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith; Discipline.",
+            "Next: Execution wave context: Primary in W5; under B-110.",
+            "Watch: Primary watch item is timeline confidence: Discipline Tooling And Host Parity (B-115) is still projected heuristically at roughly 6 days."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -2570,19 +2574,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "7a3a9a646821193adbf0e19ac876ee5415f2f75ebab67994664e71f1684168b1",
+        "substrate_fingerprint": "7a3a9a646821193adbf0e19ac876ee5415f2f75ebab67994664e71f1684168b1",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-06-28T07:44:34Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith; Discipline.",
+            "Next: Execution wave context: Primary in W7; under B-110.",
+            "Watch: Primary watch item is timeline confidence: Discipline Surfaces And Release Proof (B-117) is still projected heuristically at roughly 6 days."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -2694,19 +2702,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "0e0035f233fcd97fd3c0076b480a88adc7235082a65eafd0692f7b62dbd314e7",
+        "substrate_fingerprint": "0e0035f233fcd97fd3c0076b480a88adc7235082a65eafd0692f7b62dbd314e7",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-06-28T07:44:34Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Create a first-class migration runtime that classifies repo state, selects registered migrations, writes durable ledgers, and gates releases so every upgrade has one; Migration Runtime.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Migration Runtime Release Gate (B-127).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4467,19 +4479,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "dbfc31070e26f588c3a72cd6d76d011e17998d399530f1b4dd9eef06b0931227",
+        "substrate_fingerprint": "dbfc31070e26f588c3a72cd6d76d011e17998d399530f1b4dd9eef06b0931227",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-06-28T07:44:34Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith; Discipline.",
+            "Next: Execution wave context: Primary in W5; under B-110.",
+            "Watch: Primary watch item is timeline confidence: Discipline Tooling And Host Parity (B-115) is still projected heuristically at roughly 6 days."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4500,19 +4516,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "f41291128551546c6b0e30952bb71615afcf63acd286fcc05c675b6357c5cb33",
+        "substrate_fingerprint": "f41291128551546c6b0e30952bb71615afcf63acd286fcc05c675b6357c5cb33",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-06-28T07:44:34Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Create bounded child workstreams under B-110 so each major platform slice has a clear owner, proof obligation, and wave gate while the umbrella retains the full Odylith; Discipline.",
+            "Next: Execution wave context: Primary in W7; under B-110.",
+            "Watch: Primary watch item is timeline confidence: Discipline Surfaces And Release Proof (B-117) is still projected heuristically at roughly 6 days."
+          ]
         },
         "evidence_lookup": {}
       },
@@ -4624,19 +4644,23 @@
         "schema_version": "v25",
         "status": "unavailable",
         "source": "unavailable",
-        "fingerprint": "",
-        "substrate_fingerprint": "",
+        "fingerprint": "8b56ea9073142f491c082b0d83bb1ba8c8aa2d5b80e6f0481c6f225d605c94a0",
+        "substrate_fingerprint": "8b56ea9073142f491c082b0d83bb1ba8c8aa2d5b80e6f0481c6f225d605c94a0",
         "bundle_fingerprint": "",
-        "provider_decision": "skipped_not_worth_calling",
+        "provider_decision": "provider_deferred",
         "last_successful_narration_fingerprint": "",
         "generated_utc": "2026-06-28T07:44:34Z",
         "sections": [],
         "diagnostics": {
-          "reason": "skipped_not_worth_calling",
-          "title": "Brief reused last validated narration",
-          "message": "Compass skipped a fresh narrator call because the winning narrative facts did not materially change.",
-          "provider_decision": "skipped_not_worth_calling",
-          "skip_reason": "deferred_to_background"
+          "reason": "provider_deferred",
+          "title": "Fresh brief still warming",
+          "message": "Compass is still warming a fresh brief for this exact packet. There was no exact replay ready yet.",
+          "fallback_title": "Local runtime facts",
+          "fallback_digest": [
+            "Current: Land Create a first-class migration runtime that classifies repo state, selects registered migrations, writes durable ledgers, and gates releases so every upgrade has one; Migration Runtime.",
+            "Next: Immediate forcing function is to capture the next verified checkpoint for Migration Runtime Release Gate (B-127).",
+            "Watch: No critical blockers are currently surfaced."
+          ]
         },
         "evidence_lookup": {}
       },

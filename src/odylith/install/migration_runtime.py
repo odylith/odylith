@@ -351,6 +351,7 @@ def classify_repo_migration_scenario(
     repo_role: str = "",
     active_version: str = "",
     pinned_version: str = "",
+    previous_version: str = "",
     target_version: str = "",
     source_repo: bool = False,
     state: Mapping[str, object] | None = None,
@@ -366,6 +367,7 @@ def classify_repo_migration_scenario(
     pin_exists = version_pin_path(repo_root=root).is_file()
     pin = load_version_pin(repo_root=root, fallback_version=None)
     observed_pin = normalize_version(pinned_version or (pin.odylith_version if pin is not None and pin_exists else ""))
+    previous = normalize_version(previous_version)
     target = normalize_version(target_version)
     manifest = dict(release_manifest or {})
     launcher_exists = (root / ".odylith" / "bin" / "odylith").is_file()
@@ -423,15 +425,17 @@ def classify_repo_migration_scenario(
             reasons.append("Odylith product repo is realigning detached source-local runtime to the pinned release target")
         else:
             reasons.append("Odylith product repo is using pinned dogfood posture")
-    elif target and observed_active == target and observed_pin == target:
+    elif runtime is not None and not verification and observed_active:
+        scenario = SCENARIO_RUNTIME_VERIFICATION_MISSING
+        reasons.append("runtime artifact exists but verification evidence is missing")
+    elif target and observed_active == target and observed_pin == target and (
+        not bool(manifest.get("migration_required")) or previous == target
+    ):
         scenario = SCENARIO_ALREADY_CURRENT_CONSUMER
         reasons.append("active runtime and tracked pin already match the resolved target")
     elif bool(manifest.get("migration_required")):
         scenario = SCENARIO_RELEASE_MIGRATION_REQUIRED
         reasons.append("target release manifest declares migration_required=true")
-    elif runtime is not None and not verification and observed_active:
-        scenario = SCENARIO_RUNTIME_VERIFICATION_MISSING
-        reasons.append("runtime artifact exists but verification evidence is missing")
     elif observed_active and not rollback_target and target and observed_active != target and current_runtime_root(repo_root=root) is None:
         scenario = SCENARIO_ROLLBACK_TARGET_MISSING
         reasons.append("upgrade would replace the active runtime but no rollback target is retained")
@@ -899,6 +903,7 @@ def plan_release_migrations(
         repo_role=repo_role,
         active_version=active_version,
         pinned_version=pinned_version,
+        previous_version=previous,
         target_version=target,
         source_repo=source_repo,
         state=state,

@@ -899,6 +899,20 @@
   external source/repository/provider context, with component-kind classification
   moved into its own owner instead of bloating confirmed component assembly. The
   repaired artifact-quality and prewrite pack passed 61 tests in 328.35 seconds.
+  A 2026-06-28 release-proof audit found a separate custody gap outside the
+  semantic compiler itself: the standard installed matrix had grown into a
+  meaningful release proof, but canonical release-candidate/preflight proof did
+  not require it. The default installed matrix was expanded from eight to
+  twelve standard high-variance domains, strict matrix scoring now requires all
+  case-declared domain anchors, matrix JSON can be persisted as a release proof
+  artifact, and the rescue leg is explicitly marked as
+  `synthetic_typed_probe_wiring_only` with `natural_rescue_quality_proven:
+  false`. The current c6286f0a installed package passed the expanded twelve-case
+  standard matrix in 19.834-22.057 seconds with zero issues and hard 10/10
+  scores before the new stricter metadata fields were added. CB-208 remains open
+  because this does not prove natural rescue from a non-internal repairable
+  failure and does not finish full host-authored SemanticModelIR/ArtifactPlanIR
+  repair as the normal rescue substrate.
 
 - Related Incidents/Bugs: CB-207
 

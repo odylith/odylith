@@ -95,14 +95,31 @@
   reported zero issues, wrote five Radar records, three Registry specs, six
   Atlas diagrams, and 18 trace nodes; rescue smoke reported zero issues with
   the same governed-record count floor.
+  2026-06-28 evidence audit found a release-proof recurrence: this bug already
+  required installed matrix proof by default, but the shared
+  `run_release_proof_steps` lane still stopped after local release smoke and
+  did not run `greenfield_post_confirm_matrix.py`. The matrix was therefore
+  available as an explicit make target but not canonical release-gated. The
+  same audit found the default matrix was still eight standard cases, rescue
+  smoke could be read as full rescue-quality proof, and matrix JSON proof was
+  stdout-only. The forward fix wires the installed matrix into the shared
+  release proof lane, expands the default standard catalog to twelve domains,
+  persists `greenfield-post-confirm-matrix.v1.json` under the dist directory,
+  records rescue as `synthetic_typed_probe_wiring_only`, and tightens domain
+  expertise scoring so every case-required domain anchor must appear.
+  The standalone `greenfield-post-confirm-matrix` target now also writes
+  `greenfield-post-confirm-matrix.v1.json` by default, with
+  `GREENFIELD_MATRIX_OUTPUT_JSON` as the explicit override, so explicit local
+  matrix runs and canonical release proof both leave durable evidence instead
+  of relying on terminal output.
 
-- Prevention: Keep high-variance installed simulations in release proof; require failure stderr/blocker retention for any matrix failure before cleanup; do not rely on standard-domain passes alone. Release proof must include the installed standard matrix and the installed CLI auto-rescue smoke by default; `RESCUE_SMOKE=0` is local debugging only and cannot support release-readiness claims. Expert-lens failures must carry typed Tribunal lens evidence at the point of judgment: source-map target, semantic node, projection, repairability, and owner. Failed mechanisms recorded here must not be repeated: broad proof-control rejection of product-result noun phrases, action extraction inside hyphenated noun compounds, passive object-state tails promoted to actors, rendered-string cleanup after Radar files are already written, blank Codex structured model inheritance under ignored user config, unsupported automatic model ladder rungs, model-facing patch-plan schema holes, raw first-path fallback after cleaned projection, source-only rescue proof substituted for built-dist rescue evidence, opt-in rescue smoke silently under-proving the default matrix, synthetic installed-engine probes substituted for packaged CLI auto-rescue, semantic/plan repairs omitted from manifest repaired issue codes, or internal rescue-probe environment wired to standard matrix cases while rescue smoke runs without it.
+- Prevention: Keep high-variance installed simulations in release proof; require failure stderr/blocker retention for any matrix failure before cleanup; do not rely on standard-domain passes alone. Release proof must include the installed standard matrix and the installed CLI auto-rescue smoke by default; `RESCUE_SMOKE=0` is local debugging only and cannot support release-readiness claims. The shared release proof function itself must invoke the matrix, persist the matrix JSON proof artifact, and fail closed when standard cases, expert lenses, strict domain-anchor coverage, governed writes, rendered artifact checks, cleanup, or the wiring-only rescue smoke fail. Standalone matrix runs must persist the same proof payload instead of becoming stdout-only evidence. Expert-lens failures must carry typed Tribunal lens evidence at the point of judgment: source-map target, semantic node, projection, repairability, and owner. Failed mechanisms recorded here must not be repeated: broad proof-control rejection of product-result noun phrases, action extraction inside hyphenated noun compounds, passive object-state tails promoted to actors, rendered-string cleanup after Radar files are already written, blank Codex structured model inheritance under ignored user config, unsupported automatic model ladder rungs, model-facing patch-plan schema holes, raw first-path fallback after cleaned projection, source-only rescue proof substituted for built-dist rescue evidence, release-lane smoke substituted for installed matrix proof, opt-in rescue smoke silently under-proving the default matrix, synthetic installed-engine probes substituted for packaged CLI auto-rescue, semantic/plan repairs omitted from manifest repaired issue codes, or internal rescue-probe environment wired to standard matrix cases while rescue smoke runs without it.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: 0.1.15 local release dist f6a06af6 passed the installed standard matrix and CLI auto-rescue smoke with hard 10/10 standard scores; release posture is green for this slice
+- Version/Build: 0.1.15 local release dist c6286f0a passed the expanded twelve-case installed standard matrix and CLI auto-rescue smoke with hard 10/10 standard scores before release-gate wiring was tightened; final release posture now requires a rebuilt dist from the post-fix commit to pass local release smoke plus the canonical release-gated matrix artifact.
 
 - Related Incidents/Bugs: CB-208
 

@@ -155,6 +155,21 @@
   assert that split instead of requiring every shared rule to be restated in the
   nested file.
 
+- Prevention Update: A 2026-06-28 broad install-suite pass found a fresh
+  guidance-budget regression: the root managed block exceeded the 11.6 KB
+  guard, the project Claude bridge exceeded the 1.6 KB guard, and consumer
+  bootstrap guidance exceeded the 17 KB guard after governance-learning rules
+  were duplicated into always-loaded surfaces. The forward fix compacted
+  `AGENTS.md`, `src/odylith/install/agents.py`,
+  `src/odylith/install/bootstrap_assets.py`, `.claude/CLAUDE.md`, and the
+  bundled `.claude` mirror while preserving greenfield "do not inspect Odylith
+  source", no hand-authored proposal JSON, no parser/schema retry narration,
+  and failed-mechanism learning. Failed mechanism recorded: do not solve
+  governance-learning by restating every rule in every always-loaded guidance
+  file; keep the hard-law kernel compact and route detail to governed skills,
+  guidelines, and component specs. Proof: `tests/unit/install` passed with 383
+  tests, and the mirror/guidance runtime slice passed with 100 tests.
+
 - Prevention Update: Source-local maintainer launchers must not silently fall
   back to a pinned managed interpreter when proving unreleased engine work.
   Consumer installs keep the managed feature pack, but maintainer

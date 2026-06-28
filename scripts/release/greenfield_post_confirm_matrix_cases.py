@@ -77,6 +77,44 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             required_terms=("open", "source", "security", "embargo"),
         ),
         GreenfieldMatrixCase(
+            name="credit union fair lending exception",
+            prompt=(
+                "Create a greenfield proposal for a credit union fair-lending exception review workspace that helps "
+                "loan officers submit exception requests, preserves applicant consent and underwriting evidence, "
+                "routes compliance review, records adverse-action rationale, and publishes portfolio readiness proof "
+                "without automating final credit decisions in the first release."
+            ),
+            required_terms=("credit", "union", "lending", "underwriting"),
+        ),
+        GreenfieldMatrixCase(
+            name="apprenticeship credential readiness",
+            prompt=(
+                "Create a greenfield proposal for a regional apprenticeship credential readiness system that lets "
+                "training coordinators register apprentices, map completed skills to employer requirements, track "
+                "mentor signoff evidence, manage accommodation exceptions, and publish certification readiness for "
+                "review by a workforce board."
+            ),
+            required_terms=("apprenticeship", "credential", "mentor", "certification"),
+        ),
+        GreenfieldMatrixCase(
+            name="film archive rights clearance",
+            prompt=(
+                "Create a greenfield proposal for an independent film archive rights-clearance workspace that helps "
+                "curators ingest donated reels, track contributor agreements, flag disputed footage, preserve review "
+                "evidence, and publish screening readiness without claiming automated legal clearance."
+            ),
+            required_terms=("film", "archive", "rights", "screening"),
+        ),
+        GreenfieldMatrixCase(
+            name="developer incident runbook readiness",
+            prompt=(
+                "Create a greenfield proposal for a developer incident runbook readiness tool that lets engineering "
+                "leads capture service incidents, map owners to mitigation steps, collect verification evidence, "
+                "track follow-up exceptions, and publish release-readiness proof before the next deployment window."
+            ),
+            required_terms=("developer", "incident", "runbook", "deployment"),
+        ),
+        GreenfieldMatrixCase(
             name="sparse disclosure confirmation",
             prompt=(
                 "Create a greenfield proposal for a cross-organization disclosure council that receives reports, "

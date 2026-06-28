@@ -261,6 +261,13 @@ Run the targets in this order.
   runtime bundles, context-engine pack assets, signed release manifest inputs,
   and a local hosted-style installer proof for
   `install -> version -> doctor -> sync`.
+- `make release-preflight` must also fail closed unless the built local dist
+  passes the installed greenfield post-confirm release matrix. That matrix is
+  part of shared release proof, must cover at least ten high-variance standard
+  cases under the 60 second budget, must persist
+  `greenfield-post-confirm-matrix.v1.json` in the dist directory, and must label
+  installed rescue smoke as wiring-only unless a natural non-internal rescue
+  scenario is also proven.
 - `make release-preflight` also fails closed when release-facing security docs
   drift from the candidate version, including the repo-root GitHub security
   overview file and bundled security-posture mirrors.

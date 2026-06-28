@@ -19,6 +19,8 @@ if [[ ! -f "$dist_dir/install.sh" ]]; then
   die "local release dist is missing install.sh: $dist_dir"
 fi
 
+proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-post-confirm-matrix.v1.json}"
+
 extra_args=(--include-rescue-smoke)
 if [[ "${RESCUE_SMOKE:-1}" == "0" ]]; then
   extra_args=(--skip-rescue-smoke)
@@ -28,4 +30,5 @@ fi
   --dist-dir "$dist_dir" \
   --version "$requested_version" \
   --temp-parent "$temp_parent" \
+  --output-json "$proof_json" \
   "${extra_args[@]}"

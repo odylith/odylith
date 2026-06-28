@@ -1414,16 +1414,20 @@ def test_greenfield_post_confirm_matrix_target_runs_installed_release_gate() -> 
     assert 'extra_args=(--include-rescue-smoke)' in text
     assert 'RESCUE_SMOKE:-1' in text
     assert '--skip-rescue-smoke' in text
+    assert 'proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-post-confirm-matrix.v1.json}"' in text
     assert '--dist-dir "$dist_dir"' in text
     assert '--version "$requested_version"' in text
     assert '--temp-parent "$temp_parent"' in text
+    assert '--output-json "$proof_json"' in text
     assert "make greenfield-post-confirm-matrix" in help_text
-    assert "installed CLI auto-rescue smoke" in help_text
+    assert "write greenfield-post-confirm-matrix.v1.json" in help_text
+    assert "installed CLI auto-rescue wiring smoke" in help_text
     assert "RESCUE_SMOKE=0 skips rescue only for local debugging" in help_text
 
 
 def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> None:
     text = (REPO_ROOT / "bin" / "release-candidate").read_text(encoding="utf-8")
+    shared = (REPO_ROOT / "bin" / "_odylith.sh").read_text(encoding="utf-8")
     makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
     help_text = (REPO_ROOT / "bin" / "help").read_text(encoding="utf-8")
 
@@ -1437,6 +1441,8 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     assert "skip_proof_and_compare" in text
     assert "tracked maintainer override marks benchmark proof advisory for this exact release" in text
     assert 'benchmark compare --repo-root . --baseline last-shipped' in text
+    assert 'scripts/release/greenfield_post_confirm_matrix.py \\' in shared
+    assert '--output-json "$dist_dir/greenfield-post-confirm-matrix.v1.json"' in shared
     assert 'release_version_session.py' not in text
     assert 'release_worktree.py' not in text
     assert 'release-candidate:' in makefile

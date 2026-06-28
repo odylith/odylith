@@ -910,10 +910,12 @@ vocabulary, or degraded packages.
 - [x] Added a release-proof checkpoint that avoids commit-hash recursion:
       the final local-release dist is built after the proof checkpoint commit,
       then must pass local-release smoke and the installed greenfield matrix.
-      The matrix proves eight standard consumer-lane cases under 60s with
-      governed writes, zero quality issues, hard 10/10 scores, and all
-      PM/architect/engineer/domain-expert lenses passing. The retained quantum
-      communication case must stay under 60s with no clipped terminal label.
+      The matrix now proves at least ten standard consumer-lane cases under
+      60s with governed writes, zero quality issues, hard 10/10 scores, all
+      PM/architect/engineer/domain-expert lenses passing, and every
+      case-declared domain anchor present. The retained sparse-confirmation and
+      quantum-communication cases must stay under 60s with no clipped terminal
+      label.
       Installed CLI auto-rescue smoke must stay under the 90s rescue budget
       with rescue activated and `post_confirm_rescue_probe` repaired; this
       remains wiring proof only, not natural rescue-quality proof.
@@ -923,6 +925,37 @@ vocabulary, or degraded packages.
       and rescue smoke; `greenfield_post_confirm_matrix_cases.py` owns only the
       high-variance case catalog. The runner is back under the hard threshold,
       and install-matrix unit proof passed.
+- [x] Closed the release-gate custody miss found by independent review: the
+      shared release proof lane now runs `greenfield_post_confirm_matrix.py`
+      after local release smoke, persists
+      `greenfield-post-confirm-matrix.v1.json` in the dist directory, and fails
+      release-candidate/preflight proof if the installed matrix fails. The
+      matrix payload now labels standard-path proof separately from the
+      synthetic typed rescue probe so release reporting cannot imply natural
+      rescue quality from wiring-only evidence.
+- [x] Expanded the default installed standard matrix from eight to twelve
+      domains by adding credit-union fair-lending exceptions, apprenticeship
+      credential readiness, film archive rights clearance, and developer
+      incident runbook readiness to the existing civic, health, lab, logistics,
+      security, sparse-confirmation, and quantum cases. A c6286f0a package
+      replay passed all twelve standard cases in 19.834-22.057s with zero
+      issues and hard 10/10 scores; final proof still needs a rebuilt dist from
+      the post-fix commit because the release-gate and strict-score metadata are
+      source changes.
+- [x] Closed the standalone proof-evidence gap and two broader release
+      blockers exposed by the full install suite. `make
+      greenfield-post-confirm-matrix` now writes
+      `greenfield-post-confirm-matrix.v1.json` by default, matching canonical
+      release proof. The same pass repaired guidance-budget regressions in
+      always-loaded AGENTS/Claude/install guidance without dropping the
+      greenfield no-source/no-hand-authored-JSON contract, and fixed
+      migration-runtime scenario ordering so missing verification blocks before
+      already-current no-op while verified same-version reinstall remains
+      cheap. Proof passed: focused release/matrix tests (`62 passed`), full
+      install suite (`383 passed`), and mirror/guidance runtime slice
+      (`100 passed`). Final proof still needs a rebuilt dist from the
+      post-fix commit plus local release smoke and the twelve-case installed
+      matrix against that exact dist.
 - [ ] Remaining full-rescue release blocker: the installed auto-rescue smoke still proves
       rescue wiring through an exact internal probe, not a naturally occurring
       repairable package or semantic failure. Do not claim full release

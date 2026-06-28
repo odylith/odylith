@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-06-27
+Last updated: 2026-06-28
 
 
 Last updated (UTC): 2026-04-09
@@ -437,17 +437,29 @@ governed subsystem.
   repair loop strings. A second fresh repo must run confirmed
   `odylith greenfield create` so the one-command shortcut cannot drift from the
   explicit propose/apply path.
-- The installed greenfield release matrix must include rescue-smoke proof by
-  default when post-confirm repair behavior changes. That smoke must run the
-  packaged CLI in `--repair-tier auto`, inject one exact-token internal typed
-  final-gate finding, prove auto-escalation from standard to the 90 second
+- The shared release proof lane must run the installed greenfield release matrix
+  after local release smoke and persist the matrix payload as
+  `greenfield-post-confirm-matrix.v1.json` in the dist directory. The standard
+  leg must cover at least ten high-variance domains, stay under the 60 second
+  standard budget for every create, write complete governed records, pass all
+  expert lenses, satisfy strict case-required domain-anchor coverage, and score
+  10/10 across the release matrix dimensions. The matrix must include rescue
+  smoke by default when post-confirm repair behavior changes. That smoke must
+  run the packaged CLI in `--repair-tier auto`, inject one exact-token internal
+  typed final-gate finding, prove auto-escalation from standard to the 90 second
   rescue budget, write the expected governed records, return a passed final
   manifest, and record the repaired semantic issue code. The release harness
   must keep standard matrix creates free of the internal probe token and must
   apply that token only to the rescue-smoke create subprocess. Source-local
-  rescue tests, opt-in-only smoke, synthetic installed-engine probes, and
-  probe-env leakage into the wrong matrix leg do not substitute for this
-  installed release proof.
+  rescue tests, opt-in-only smoke, synthetic installed-engine probes, local
+  release smoke alone, a standalone matrix target that the release lane does not
+  invoke, and probe-env leakage into the wrong matrix leg do not substitute for
+  this installed release proof. The rescue-smoke result is wiring proof unless a
+  natural non-internal repairable failure also passes under the 90 second tier.
+- The standalone `make greenfield-post-confirm-matrix` maintainer target must
+  write `greenfield-post-confirm-matrix.v1.json` by default, with
+  `GREENFIELD_MATRIX_OUTPUT_JSON` as the explicit override. A stdout-only
+  matrix pass is not durable release evidence.
 - Local release smoke must inspect installed greenfield guidance files as part of
   the same journey. Installed AGENTS, README, and skill guidance must mention the
   `greenfield create` confirmation path, must forbid hand-authored proposal JSON,
@@ -497,5 +509,6 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Codified release-target progress semantics so release-member badges use shared execution-progress truth, show tracked partial completion honestly, and never render active implementation with unchecked execution as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068)) (Bug: [CB-087](odylith/casebook/casebook.html?bug=CB-087))
 - 2026-05-07: Added release-smoke coverage for both empty-repo greenfield paths: the explicit `show -> greenfield propose --format json -> greenfield apply --proposal-file --confirm -> surfaces` journey and the one-command `greenfield create --confirm` shortcut. The same slice tightened installer progress output so child renderer lines no longer collide with the elapsed progress row. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-180`, `CB-181`)
 - 2026-05-07: Extended release smoke from runtime behavior into installed guidance proof: fresh installed AGENTS/README/skill guidance must point confirmation at `greenfield create --confirm`, forbid hand-authored proposal JSON, and reject stale host-drafts-proposal instructions. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-176`, `CB-181`)
+- 2026-06-28: Required both canonical release proof and the standalone greenfield matrix target to persist `greenfield-post-confirm-matrix.v1.json`, expanded the installed standard matrix to at least ten/currently twelve domains, and labeled rescue smoke as wiring-only proof unless a natural repairable failure passes under the 90 second tier. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
 - 2026-05-09: Release manifests now derive `migration_required` from the registered migration registry, and hosted bootstrap validation accepts migration-marked releases so v0.1.15 can route installed `0.1.10` through `0.1.14` repos into the registered Atlas box-explanation migration. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127))
-- 2026-06-27: Added default installed greenfield CLI auto-rescue proof to the local release matrix so post-confirm repair changes must prove packaged-runtime `--repair-tier auto` escalation, 90 second rescue-budget custody, final-manifest pass status, governed writes, and repaired semantic issue-code evidence before the rescue path can be described. A follow-up installed proof found and fixed the harness env-custody bug: standard cases no longer receive the internal probe token, while rescue smoke does. The post-commit local-release proof must pass release smoke, eight standard installed greenfield cases under 60s with governed writes and hard 10/10 scores, and installed CLI auto-rescue smoke under the 90s rescue budget with zero quality issues. This proves the packaged standard path as release-candidate and proves rescue wiring only; it does not prove a naturally occurring rescue-quality scenario. `RESCUE_SMOKE=0` is debug-only and not release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
+- 2026-06-28: Closed the release-proof custody gap where `release-candidate` and `release-preflight` ran local release smoke but did not require the installed greenfield matrix. The shared release proof lane now runs the matrix after smoke and writes `greenfield-post-confirm-matrix.v1.json` into the dist directory. The default standard catalog expanded from eight to twelve domains and the score contract now requires every case-declared domain anchor, not merely three keyword hits. The c6286f0a package passed the expanded twelve-case matrix in 19.834-22.057s with zero issues and 10/10 scores before this release-gate metadata change; final release proof requires a rebuilt dist from the post-fix commit. Installed CLI auto-rescue remains explicitly wiring-only unless a natural non-internal repairable failure is proven under the 90s rescue tier. `RESCUE_SMOKE=0` is debug-only and not release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)

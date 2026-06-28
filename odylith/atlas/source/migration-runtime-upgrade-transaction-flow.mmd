@@ -2,6 +2,7 @@ flowchart TB
     operator["Operator command<br/>install / upgrade / reinstall / doctor / release migration-gate"]
     resolver["Resolve target release<br/>version, manifest, schema, verification inputs"]
     classifier["Repo scenario classifier<br/>pin, launcher, state, runtime pointer, ledger, source-local, legacy roots"]
+    noop["Verified same-version reinstall<br/>already-current no-op only when<br/>previous == target + runtime verified"]
     registry["Migration registry<br/>MigrationDefinition contracts"]
     planner["MigrationPlan<br/>selected, skipped, blocked, satisfied-unrecorded, ledger-stale"]
     dryrun["Dry-run and JSON report<br/>scenario, write set, rollback scope, plan fingerprint"]
@@ -12,7 +13,10 @@ flowchart TB
     block["Fail closed before runtime mutation"]
     surfaces["Post-upgrade surfaces<br/>dashboard refresh is separate from migration"]
 
-    operator --> resolver --> classifier --> registry --> planner
+    operator --> resolver --> classifier
+    classifier -->|"release transition or repair state"| registry --> planner
+    classifier -->|"verified same-version reinstall"| noop --> planner
+    classifier -->|"missing runtime verification"| planner
     planner --> dryrun
     planner --> apply
     planner --> doctor

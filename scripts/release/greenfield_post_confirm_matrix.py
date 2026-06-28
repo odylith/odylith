@@ -63,6 +63,7 @@ class GreenfieldArtifactCounts:
     trace_workstreams: int = 0
     rendered_surfaces: int = 0
     domain_term_hits: int = 0
+    required_domain_terms: int = 0
     project_implementation_prompts: int = 0
 
     def to_dict(self) -> dict[str, int]:
@@ -116,6 +117,8 @@ class GreenfieldRescueSmokeResult:
     counts: GreenfieldArtifactCounts
     issues: tuple[str, ...]
     manifest: Mapping[str, Any]
+    proof_scope: str = "synthetic_typed_probe_wiring_only"
+    natural_rescue_quality_proven: bool = False
     create_returncode: int = 0
 
     @property
@@ -130,6 +133,8 @@ class GreenfieldRescueSmokeResult:
             "counts": self.counts.to_dict(),
             "issues": list(self.issues),
             "manifest": dict(self.manifest),
+            "proof_scope": self.proof_scope,
+            "natural_rescue_quality_proven": self.natural_rescue_quality_proven,
         }
 
 
@@ -438,6 +443,7 @@ def collect_artifact_counts(
         trace_workstreams=len(trace.get("workstreams") or []) if isinstance(trace.get("workstreams"), list) else 0,
         rendered_surfaces=sum(1 for path in REQUIRED_RENDERED_SURFACES if _nonempty(repo_root / path)),
         domain_term_hits=sum(1 for term in required_terms if term.casefold() in rendered_text),
+        required_domain_terms=len(tuple(dict.fromkeys(term.casefold() for term in required_terms if str(term).strip()))),
         project_implementation_prompts=len(
             _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts"))
         ),
@@ -484,7 +490,7 @@ def build_quality_verdict(
         ),
         "domain_expert": (
             _lens_passed(manifest_lenses, "domain_expert")
-            and counts.domain_term_hits >= 3
+            and counts.domain_term_hits >= _required_domain_term_hits(counts)
         ),
     }
     for lens, passed in lenses.items():
@@ -665,8 +671,11 @@ def _completion_issues(
     for label, value in required_counts.items():
         if value < minimums[label]:
             issues.append(f"{label} incomplete: expected at least {minimums[label]}, found {value}")
-    if counts.domain_term_hits < 3:
-        issues.append(f"domain term coverage too low: expected at least 3, found {counts.domain_term_hits}")
+    domain_term_minimum = _required_domain_term_hits(counts)
+    if counts.domain_term_hits < domain_term_minimum:
+        issues.append(
+            f"domain term coverage too low: expected at least {domain_term_minimum}, found {counts.domain_term_hits}"
+        )
     return tuple(issues)
 
 
@@ -857,6 +866,10 @@ def _required_count_minimums() -> dict[str, int]:
     }
 
 
+def _required_domain_term_hits(counts: GreenfieldArtifactCounts) -> int:
+    return max(3, int(counts.required_domain_terms or 0))
+
+
 def _count_floor_ratio(values: GreenfieldArtifactCounts | Mapping[str, int], minimums: Mapping[str, int]) -> float:
     rows = values.to_dict() if isinstance(values, GreenfieldArtifactCounts) else dict(values)
     if not minimums:
@@ -1016,8 +1029,9 @@ def _print_rescue_summary(rescue: GreenfieldRescueSmokeResult | None) -> None:
     if rescue is None:
         return
     print(
-        " - rescue smoke: {status}, cli_auto_rescue={cli:.3f}s, issues={issues}, "
+        " - rescue smoke ({scope}): {status}, cli_auto_rescue={cli:.3f}s, issues={issues}, "
         "radar={radar}, registry={registry}, atlas={atlas}, trace_nodes={trace_nodes}".format(
+            scope=rescue.proof_scope,
             status=rescue.status,
             cli=rescue.cli_create_seconds,
             issues=len(rescue.issues),
@@ -1049,6 +1063,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Skip rescue smoke for local debugging only; this is not release proof.",
     )
     parser.add_argument("--json", action="store_true", dest="json_output")
+    parser.add_argument(
+        "--output-json",
+        default="",
+        help="Optional path where the full matrix proof payload should be persisted.",
+    )
     return parser.parse_args(argv)
 
 
@@ -1072,10 +1091,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     payload = {
         "version": QUALITY_MATRIX_VERSION,
         "status": "passed" if passed else "failed",
+        "proof_scope": {
+            "standard_path": "real_installed_greenfield_post_confirm_quality_matrix",
+            "rescue_path": "synthetic_typed_probe_wiring_only",
+            "natural_rescue_quality_proven": False,
+        },
         "results": [result.to_dict() for result in results],
     }
     if rescue is not None:
         payload["rescue_smoke"] = rescue.to_dict()
+    if str(args.output_json or "").strip():
+        output_path = Path(str(args.output_json)).expanduser().resolve()
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     if args.json_output:
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
