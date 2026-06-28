@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 412,
-    "mapped_workstream_evidence_count": 252,
+    "explicit_event_count": 414,
+    "mapped_workstream_evidence_count": 254,
     "recent_path_match_count": 0,
     "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 412
+    "timeline_event_count": 414
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,68 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 656,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Fixed greenfield installed rescue-smoke env custody: standard matrix cases now stay free of the internal rescue probe token, rescue smoke passes the token only to packaged greenfield create --repair-tier auto, and the 265cc0cf installed package passed five 10/10 standard cases plus CLI auto-rescue smoke in 29.974s.",
+      "ts_iso": "2026-06-27T18:42:52-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 655,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Installed 0.1.15 dist 265cc0cf passed five standard greenfield creates under 32s with 10/10 matrix scores, but release proof failed because packaged CLI auto-rescue smoke stayed on standard tier and did not record the typed rescue probe repair.",
+      "ts_iso": "2026-06-27T18:32:09-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",

@@ -6,6 +6,13 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
+    RESCUE_PROBE_ENV,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
+    RESCUE_PROBE_TOKEN,
+)
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_ROOT = REPO_ROOT / "scripts" / "release"
@@ -82,6 +89,82 @@ def _passing_manifest() -> dict[str, object]:
             },
         },
     }
+
+
+def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    create_envs: list[dict[str, str]] = []
+    monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
+    monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        if "create" in command:
+            create_envs.append(dict(env))
+            payload = {"post_confirm_quality_manifest": _passing_manifest()}
+            return module.subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+        if "propose" in command:
+            return module.subprocess.CompletedProcess(command, 0, "Visible product intent\n", "")
+        return module.subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="standard custody",
+            prompt="Create a standard greenfield project.",
+            required_terms=("standard", "project"),
+        ),
+        repo_root=tmp_path / "standard-repo",
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    assert result.status == "passed"
+    assert len(create_envs) == 1
+    assert RESCUE_PROBE_ENV not in create_envs[0]
+
+
+def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    create_envs: list[dict[str, str]] = []
+    monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
+    monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        if "create" in command:
+            create_envs.append(dict(env))
+            manifest = _passing_manifest()
+            manifest.update(
+                {
+                    "requested_repair_tier": "auto",
+                    "repair_tier": "rescue",
+                    "rescue_activated": True,
+                    "budget_seconds": 90.0,
+                    "passes": 2,
+                    "repaired_issue_codes": ["post_confirm_rescue_probe"],
+                }
+            )
+            payload = {"post_confirm_quality_manifest": manifest}
+            return module.subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+        if "propose" in command:
+            return module.subprocess.CompletedProcess(command, 0, "Visible product intent\n", "")
+        return module.subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_rescue_smoke_case(  # noqa: SLF001
+        repo_root=tmp_path / "rescue-repo",
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    assert result.status == "passed"
+    assert len(create_envs) == 1
+    assert create_envs[0][RESCUE_PROBE_ENV] == RESCUE_PROBE_TOKEN
 
 
 def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_path: Path) -> None:

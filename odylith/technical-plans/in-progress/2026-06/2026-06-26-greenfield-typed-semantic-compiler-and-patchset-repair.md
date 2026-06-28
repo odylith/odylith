@@ -798,6 +798,17 @@ vocabulary, or degraded packages.
       `post_confirm_rescue_probe` recorded as repaired. The matrix script is
       back under the size guard at 1148 LOC after extracting
       `scripts/release/greenfield_rescue_smoke.py`.
+- [x] Fixed the installed rescue-smoke env-custody miss found by the rebuilt
+      265cc0cf proof: the failed matrix passed five standard cases but the
+      rescue-smoke leg stayed on the standard tier because the harness applied
+      the internal probe token to standard cases and left the rescue-smoke
+      subprocess on a plain environment. The matrix now keeps standard creates
+      clean and sends the exact internal probe token only to
+      `greenfield create --repair-tier auto` inside rescue smoke. Focused unit
+      proof passed 3 tests in 0.12s, the install-matrix unit pack passed 13
+      tests in 0.11s, and the same packaged 265cc0cf dist passed five standard
+      installed cases in 22.452-24.913s with 10/10 scores plus installed CLI
+      auto-rescue smoke in 29.974s with zero issues.
 - [ ] Fresh installed proof after Project prompt custody: build a new local
       release dist, run the installed standard matrix with the
       `implementation_prompts` dimension active, keep the default installed CLI

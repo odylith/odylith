@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 104,
-    "mapped_workstream_evidence_count": 74,
+    "explicit_event_count": 105,
+    "mapped_workstream_evidence_count": 75,
     "recent_path_match_count": 1,
     "spec_history_event_count": 13,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 105
+    "timeline_event_count": 106
   },
   "name": "Release",
   "path_prefixes": [
@@ -44,6 +44,54 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 658,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-27T18:42:26-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 655,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Installed 0.1.15 dist 265cc0cf passed five standard greenfield creates under 32s with 10/10 matrix scores, but release proof failed because packaged CLI auto-rescue smoke stayed on standard tier and did not record the typed rescue probe repair.",
+      "ts_iso": "2026-06-27T18:32:09-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -107,22 +155,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 656,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "release"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-27T17:50:36-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

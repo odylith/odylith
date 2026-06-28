@@ -763,8 +763,14 @@
   current broad greenfield post-confirm pack passed 282 tests in 933.23s, and a
   disposable source-local CLI auto-rescue probe committed governed records in
   20.411s with `post_confirm_rescue_probe` recorded as repaired. Fresh
-  installed dist proof using the default rescue smoke remains required before
-  release-readiness can be claimed.
+  installed dist proof initially failed because the matrix harness placed the
+  internal probe env on standard cases while the rescue-smoke subprocess used
+  the plain environment. The harness now proves the opposite custody boundary:
+  standard cases stay clean, rescue smoke receives the exact internal probe
+  token. Rerunning the packaged 265cc0cf dist passed five standard cases in
+  22.452-24.913s with 10/10 scores and the installed CLI auto-rescue smoke in
+  29.974s with zero issues. Final release-readiness still requires a rebuilt
+  dist from the post-fix commit and the same installed matrix proof.
 
 - Related Incidents/Bugs: CB-207
 

@@ -292,7 +292,7 @@ def _run_case(
     started = time.perf_counter()
     create = _run(
         cwd=repo_root,
-        env=installed_auto_rescue_env(env),
+        env=env,
         command=[
             "./.odylith/bin/odylith",
             "greenfield",
@@ -377,7 +377,7 @@ def _run_rescue_smoke_case(
     started = time.perf_counter()
     create = _run(
         cwd=repo_root,
-        env=env,
+        env=installed_auto_rescue_env(env),
         command=[
             "./.odylith/bin/odylith",
             "greenfield",
