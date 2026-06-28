@@ -770,7 +770,11 @@
   token. Rerunning the packaged 265cc0cf dist passed five standard cases in
   22.452-24.913s with 10/10 scores and the installed CLI auto-rescue smoke in
   29.974s with zero issues. Final release-readiness still requires a rebuilt
-  dist from the post-fix commit and the same installed matrix proof.
+  dist from the post-fix commit and the same installed matrix proof. That final
+  rebuilt proof passed on dist odylith-local-release-0.1.15-f6a06af6: five
+  standard cases completed in 20.223-22.425s with hard 10/10 scores, zero
+  issues, complete governed artifacts, and the installed CLI auto-rescue smoke
+  passed in 26.842s with zero issues.
 
 - Related Incidents/Bugs: CB-207
 

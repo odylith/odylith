@@ -809,9 +809,14 @@ vocabulary, or degraded packages.
       tests in 0.11s, and the same packaged 265cc0cf dist passed five standard
       installed cases in 22.452-24.913s with 10/10 scores plus installed CLI
       auto-rescue smoke in 29.974s with zero issues.
-- [ ] Fresh installed proof after Project prompt custody: build a new local
-      release dist, run the installed standard matrix with the
-      `implementation_prompts` dimension active, keep the default installed CLI
-      auto-rescue smoke enabled, verify temp repo cleanup, and only then update
-      release readiness posture. `RESCUE_SMOKE=0` is allowed only for local
-      debugging and cannot support release-readiness claims.
+- [x] Fresh installed proof after Project prompt custody: built local release
+      dist `odylith-local-release-0.1.15-f6a06af6` from the pushed
+      `f6a06af6` checkpoint, ran the installed standard matrix with the
+      `implementation_prompts` dimension active, kept the default installed CLI
+      auto-rescue smoke enabled, and verified complete governed artifacts under
+      budget. Standard cases passed with hard 10/10 scores and zero issues:
+      flood shelter intake 22.425s, pediatric agency practice 21.431s,
+      semiconductor lab custody 20.657s, port berth carbon tariff 20.223s, and
+      security disclosure council 20.605s. Installed CLI auto-rescue smoke
+      passed in 26.842s with zero issues, five Radar records, three Registry
+      specs, six Atlas diagrams, and 18 trace nodes.

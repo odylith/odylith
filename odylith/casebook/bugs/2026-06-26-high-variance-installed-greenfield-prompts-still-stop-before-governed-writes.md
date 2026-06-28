@@ -87,6 +87,14 @@
   zero issues, five Radar records, three Registry specs, six Atlas diagrams,
   and 18 trace nodes. The installed CLI auto-rescue smoke then passed in
   29.974s with zero issues and the same governed-record count floor.
+  Final rebuilt proof from pushed commit f6a06af6 passed on dist
+  odylith-local-release-0.1.15-f6a06af6: flood shelter intake 22.425s,
+  pediatric agency practice 21.431s, semiconductor lab custody 20.657s, port
+  berth carbon tariff 20.223s, security disclosure council 20.605s, and
+  installed CLI auto-rescue smoke 26.842s. Every standard case scored 10/10,
+  reported zero issues, wrote five Radar records, three Registry specs, six
+  Atlas diagrams, and 18 trace nodes; rescue smoke reported zero issues with
+  the same governed-record count floor.
 
 - Prevention: Keep high-variance installed simulations in release proof; require failure stderr/blocker retention for any matrix failure before cleanup; do not rely on standard-domain passes alone. Release proof must include the installed standard matrix and the installed CLI auto-rescue smoke by default; `RESCUE_SMOKE=0` is local debugging only and cannot support release-readiness claims. Expert-lens failures must carry typed Tribunal lens evidence at the point of judgment: source-map target, semantic node, projection, repairability, and owner. Failed mechanisms recorded here must not be repeated: broad proof-control rejection of product-result noun phrases, action extraction inside hyphenated noun compounds, passive object-state tails promoted to actors, rendered-string cleanup after Radar files are already written, blank Codex structured model inheritance under ignored user config, unsupported automatic model ladder rungs, model-facing patch-plan schema holes, raw first-path fallback after cleaned projection, source-only rescue proof substituted for built-dist rescue evidence, opt-in rescue smoke silently under-proving the default matrix, synthetic installed-engine probes substituted for packaged CLI auto-rescue, semantic/plan repairs omitted from manifest repaired issue codes, or internal rescue-probe environment wired to standard matrix cases while rescue smoke runs without it.
 
@@ -94,7 +102,7 @@
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: 0.1.15 local release dist 265cc0cf proved the packaged runtime after harness custody was fixed; final release-readiness still requires a rebuilt dist from the post-fix commit
+- Version/Build: 0.1.15 local release dist f6a06af6 passed the installed standard matrix and CLI auto-rescue smoke with hard 10/10 standard scores; release posture is green for this slice
 
 - Related Incidents/Bugs: CB-208
 

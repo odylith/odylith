@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 168,
-    "mapped_workstream_evidence_count": 153,
+    "explicit_event_count": 169,
+    "mapped_workstream_evidence_count": 154,
     "recent_path_match_count": 1,
     "spec_history_event_count": 153,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 169
+    "timeline_event_count": 170
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -18,6 +18,54 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 657,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Final f6a06af6 local release dist passed installed greenfield matrix: five standard cases scored 10/10 in 20.223-22.425s with zero issues and complete governed artifacts; installed CLI auto-rescue smoke passed in 26.842s with zero issues.",
+      "ts_iso": "2026-06-27T18:57:24-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 658,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-27T18:56:59-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -47,22 +95,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 657,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-27T18:42:44-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

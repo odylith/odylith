@@ -45,12 +45,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 414,
-    "mapped_workstream_evidence_count": 254,
+    "explicit_event_count": 415,
+    "mapped_workstream_evidence_count": 255,
     "recent_path_match_count": 0,
     "spec_history_event_count": 32,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 414
+    "timeline_event_count": 415
   },
   "name": "Odylith",
   "path_prefixes": [
@@ -64,6 +64,38 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 657,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Final f6a06af6 local release dist passed installed greenfield matrix: five standard cases scored 10/10 in 20.223-22.425s with zero issues and complete governed artifacts; installed CLI auto-rescue smoke passed in 26.842s with zero issues.",
+      "ts_iso": "2026-06-27T18:57:24-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
