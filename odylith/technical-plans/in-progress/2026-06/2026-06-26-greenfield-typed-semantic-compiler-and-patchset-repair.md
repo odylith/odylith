@@ -873,6 +873,33 @@ vocabulary, or degraded packages.
       Regression proof passed, the failed quantum replay now commits governed
       records in 18.010s on the standard path, and the installed matrix now
       includes the quantum confirmed-intent shape.
+- [x] Fixed the next packaged quantum matrix escape without domain-specific
+      terms. Local release dist `odylith-local-release-0.1.15-231bde74` passed
+      seven standard cases and rescue wiring smoke but failed the quantum
+      communication case before governed writes because Atlas first-path Mermaid
+      clipped the terminal result to `QBER, and the key`. The repair preserves
+      result-state modifiers inside first-path semantics, normalizes terminal
+      status-result item order through a result-specific status-modifier owner,
+      and makes the terminal Atlas label prefer the semantic visible result when
+      the step is only a long wrapper around that result. Review caught and the
+      patch fixed two generic regressions: expanded result-status words no
+      longer leak into artifact-tail/component cleanup, and apostrophes in
+      possessive results no longer disable comma-aware status normalization.
+      Focused proof covers the exact saved-intent shape, rejects
+      `and the<br/>key`, preserves the complete saved/viewable result tail, pins
+      the artifact-tail leak repro, and pins possessive result ordering. A live
+      source replay wrote governed records in 16.746s with four Radar records,
+      four Registry specs, six Atlas diagrams, 19 trace nodes, and no clipped
+      terminal label. The wider artifact-quality pack then caught and the patch
+      narrowed two over-broad mechanisms: terminal Atlas labels now prefer
+      semantic visible results only for long clipping-risk wrappers, and
+      evidence-boundary adapter recovery requires strong audit/trail/source/
+      attachment/provenance naming plus external source/repository/provider
+      context so history/timeline views stay services; component-kind
+      classification now lives in its own owner instead of expanding confirmed
+      component assembly. The repaired artifact-quality/prewrite pack passed 61
+      tests in 328.35s. Fresh rebuilt installed proof remains required before
+      release closure.
 - [x] Decomposed the installed release matrix after adding the sparse and
       quantum cases pushed the runner past the source-size threshold. The
       runner now owns install, timing, artifact collection, scoring, cleanup,

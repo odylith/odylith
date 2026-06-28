@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import tri
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import without_ellipsis as _without_ellipsis
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import ACTION_VERB_PATTERN as _ACTION_VERB_PATTERN
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
+from odylith.runtime.domain_intelligence.greenfield_sequence_terminal_labels import terminal_step_prefers_visible_result
 
 _BASE_ACTION_VERB_PATTERN = action_base_verb_pattern()
 
@@ -193,15 +194,24 @@ def _lower_leading_possessive_fragment(value: str) -> str:
 def _terminal_step_label(step: str, visible_result: str) -> str:
     outcome = _compact_text(visible_result).strip(" .")
     action_label = _step_action_label(step)
+    action_terms = _sequence_terms(action_label)
+    outcome_terms = _sequence_terms(outcome)
+    if outcome and terminal_step_prefers_visible_result(
+        action_label,
+        outcome,
+        step_terms=action_terms,
+        visible_terms=outcome_terms,
+    ):
+        return outcome[:1].upper() + outcome[1:]
     if _starts_with_path_action(action_label):
         return action_label
     if not outcome:
         return action_label
     step_terms = _sequence_terms(step)
-    outcome_terms = _sequence_terms(outcome)
     if step_terms and not step_terms <= outcome_terms:
         return action_label
     return outcome[:1].upper() + outcome[1:] if outcome else action_label
+
 
 def best_component_node_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
     """Return the component node id whose local language best matches the text."""
@@ -745,6 +755,7 @@ def _sequence_terms(value: object) -> set[str]:
             stem_ing=True,
         )
     )
+
 
 def _participant_label(value: str) -> str:
     text = _actor_role_label(value)

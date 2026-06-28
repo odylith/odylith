@@ -1101,6 +1101,7 @@ def test_greenfield_component_phrase_cleaner_keeps_status_modifiers_attached_to_
     assert clean_artifact_phrase("settling finished result remain") == "finished result"
     assert clean_artifact_phrase("review readiness") == "review readiness"
     assert clean_artifact_phrase("visible blockers") == "visible blockers"
+    assert clean_artifact_phrase("prior runs viewable") != "viewable state"
     assert singularize_last_word("input matches") == "input match"
     assert singularize_last_word("review boxes") == "review box"
     assert generated_public_copy_issues("sample", "The catalog owns the entities records attach to.") == (

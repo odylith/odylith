@@ -1021,11 +1021,14 @@ def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_sco
     assert len(payload["components"]) == 4
     assert len(payload["diagrams"]) == 6
     assert "the Bell inequality was violated" in first_path["visible_result"]
-    assert "the QBER, and the key established" in first_path["visible_result"]
+    assert "the QBER, and the established key" in first_path["visible_result"]
     assert "saved and viewable with prior runs" in first_path["visible_result"]
     assert any(row.get("visible_result") for row in first_path["events"])
     for term in ("qber", "key", "saved", "viewable", "prior"):
         assert term in sequence_source
+    assert 'and the<br/>key"]' not in sequence_source
+    assert "the key established" not in sequence_source
+    assert "established key" in sequence_source
     component_labels = {row["label"] for row in payload["components"]}
     assert "Live Telemetry Stream Service" not in component_labels
     for banned in (
@@ -1036,6 +1039,8 @@ def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_sco
         "lets the lab lead reach",
         "lets the next participant reach",
         "visible-result event",
+        "ending in `key`",
+        "and the<br/>key",
     ):
         assert banned not in rendered_payload
         assert banned not in generated_payload

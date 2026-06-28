@@ -10,6 +10,7 @@ from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common import display_text
+from odylith.runtime.domain_intelligence.greenfield_status_modifiers import RESULT_STATUS_MODIFIERS
 
 _LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;)+")
 _COMMA_LIST_SPLIT_RE = re.compile(r"(?:\r?\n|;|,)+")
@@ -112,6 +113,7 @@ def normalize_visible_result_language(value: Any) -> str:
     text = _normalize_saved_destination_language(text)
     text = _normalize_possessive_result_lists(text)
     text = normalize_reviewed_result_nouns(text)
+    text = _normalize_result_status_item_order(text)
     text = _replace_casefolded_phrase(text, "reasons against", "uses for comparison")
     text = _replace_casefolded_phrase(text, "reason against", "use for comparison")
     text = re.sub(r"\bvisible[- ]result\s+event\b", "visible result", text, flags=re.IGNORECASE)
@@ -130,6 +132,87 @@ def normalize_visible_result_language(value: Any) -> str:
     )
     text = normalize_action_target_language(text)
     return clean_text(text)
+
+
+def _normalize_result_status_item_order(value: str) -> str:
+    original = clean_text(value)
+    terminal = original[-1:] if original[-1:] in {".", "!", "?"} else ""
+    body = original[:-1] if terminal else original
+    parts = _split_commas_outside_quotes(body)
+    if len(parts) <= 1:
+        normalized = _normalize_result_status_item(parts[0]) if parts else ""
+    else:
+        normalized = ", ".join(_normalize_result_status_item(part) for part in parts)
+    return f"{normalized}{terminal}" if normalized and terminal else normalized
+
+
+def _split_commas_outside_quotes(value: str) -> list[str]:
+    rows: list[str] = []
+    current: list[str] = []
+    quote: str | None = None
+    for char in value:
+        if char == '"':
+            quote = None if quote == char else char if quote is None else quote
+        if char == "," and quote is None:
+            rows.append("".join(current).strip())
+            current = []
+            continue
+        current.append(char)
+    rows.append("".join(current).strip())
+    return [row for row in rows if row]
+
+
+def _normalize_result_status_item(value: str) -> str:
+    text = clean_text(value).strip(" .,;:")
+    split = re.split(r"\s+[–—-]\s+", text, maxsplit=1)
+    if len(split) == 2:
+        head, tail = (part.strip(" .,;:") for part in split)
+        normalized_head = _normalize_result_status_item(head)
+        if normalized_head != head and _starts_with_result_status_tail(tail):
+            return f"{normalized_head}, {tail[:1].casefold()}{tail[1:]}".strip(" .,;:")
+    words = text.split()
+    if len(words) < 2:
+        return text
+    connector = ""
+    if words[0].casefold() in {"and", "or"}:
+        connector = words.pop(0).casefold()
+    article = ""
+    if words and words[0].casefold() in {"a", "an", "the"}:
+        article = words.pop(0).casefold()
+    if len(words) < 2:
+        return text
+    status = words[-1].strip(".,;:").casefold()
+    object_words = words[:-1]
+    object_keys = [word.strip(".,;:").casefold() for word in object_words]
+    if status not in RESULT_STATUS_MODIFIERS:
+        return text
+    if len(object_words) > 5 or any(key in {"am", "are", "be", "been", "being", "is", "was", "were"} for key in object_keys):
+        return text
+    if any(re.fullmatch(action_verb_pattern(), key, flags=re.IGNORECASE) for key in object_keys):
+        return text
+    if not object_words:
+        return text
+    if article in {"a", "an"}:
+        article = "an" if status[:1] in {"a", "e", "i", "o", "u"} else "a"
+    prefix = f"{connector} " if connector else ""
+    article_text = f"{article} " if article else ""
+    if object_words[0].casefold().endswith(("'s", "s'")):
+        normalized_object = f"{object_words[0]} {status}"
+        if len(object_words) > 1:
+            normalized_object = f"{normalized_object} {' '.join(object_words[1:])}"
+    else:
+        normalized_object = f"{status} {' '.join(object_words)}"
+    return f"{prefix}{article_text}{normalized_object}".strip()
+
+
+def _starts_with_result_status_tail(value: str) -> bool:
+    words = clean_text(value).strip(" .,;:").split()
+    if not words:
+        return False
+    first = words[0].strip(".,;:").casefold()
+    if first in {"and", "or"} and len(words) > 1:
+        first = words[1].strip(".,;:").casefold()
+    return first in RESULT_STATUS_MODIFIERS or (len(first) > 4 and first.endswith("ed"))
 
 
 def normalize_cover_article_language(value: Any) -> str:

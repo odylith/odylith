@@ -832,6 +832,49 @@
   standard cases plus the internal rescue wiring smoke.
   Rescue remains wiring-only proof until a non-internal repairable failure is
   demonstrated or release reporting is explicitly downgraded.
+  A fresh packaged installed matrix from committed dist
+  `odylith-local-release-0.1.15-231bde74` proved that the previous release
+  posture was still not acceptable. Seven standard cases and the installed
+  rescue wiring smoke passed, but the quantum communication confirmed-intent
+  case failed before governed writes because Atlas first-path Mermaid rendered a
+  terminal node ending in the dangling phrase `QBER, and the key`. The accepted
+  intent had the complete result-state tail: the key was established, saved,
+  and viewable with prior runs. Root cause was generic, not quantum-specific:
+  first-path semantics split a result-state modifier into a standalone step,
+  visible-result copy left noun/status order as `key established`, and the
+  terminal Atlas label preferred a long report-wrapper step over the semantic
+  visible result, allowing Mermaid wrapping to clip the label into a bad noun
+  tail. The banned mechanisms are explicit: do not weaken the clipped-label
+  gate, do not add `key`, `QBER`, `quantum`, or any domain exception, and do not
+  patch rendered Mermaid after package assembly. The fix must stay in semantic
+  and projection owners: preserve result-state modifiers with the visible
+  result, normalize status-modifier result items through shared phrase
+  ownership, and choose the semantic visible result when a terminal step is only
+  a long wrapper around that result. Pre-commit review then caught two generic
+  regressions in that repair: widening the artifact-tail status vocabulary could
+  turn unrelated component phrases into fake `state` artifacts, and apostrophes
+  in possessive result phrases could disable comma-aware status normalization.
+  The repair now keeps artifact-tail status modifiers conservative, separates
+  result-status modifiers from artifact cleanup, treats apostrophes as ordinary
+  possessive characters during comma splitting, and normalizes possessive result
+  items such as `user's key established` into grammatical result order. Focused
+  source proof covers the exact saved-intent shape, rejects the clipped Mermaid
+  label, pins the artifact-tail leak repro, and pins the possessive result
+  repro. A live source replay of the retained quantum intent wrote governed
+  records in 16.746 seconds with four Radar records, four Registry specs, six
+  Atlas diagrams, 19 trace nodes, and no clipped terminal label. Fresh rebuilt
+  installed-dist proof remains required before any release-readiness claim.
+  The wider artifact-quality suite then rejected two over-broad follow-up
+  mechanisms before release: terminal Atlas labels were preferring bare semantic
+  results for short, readable action labels such as `Publish a decision packet`
+  and `Receive one follow-up reminder`, and evidence-boundary adapter recovery
+  initially treated ordinary history/timeline view components as external
+  adapters. The fix narrowed terminal result preference to long clipping-risk
+  result wrappers only, and narrowed source-backed adapter recovery to strong
+  evidence-boundary names such as audit/trail/source/attachment/provenance plus
+  external source/repository/provider context, with component-kind classification
+  moved into its own owner instead of bloating confirmed component assembly. The
+  repaired artifact-quality and prewrite pack passed 61 tests in 328.35 seconds.
 
 - Related Incidents/Bugs: CB-207
 
@@ -845,6 +888,14 @@
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_probe.py
 - src/odylith/runtime/domain_intelligence/greenfield_workstream_risk_projection.py
 - src/odylith/runtime/domain_intelligence/greenfield_first_path_repair.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py
+- src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py
+- src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py
+- src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py
+- src/odylith/runtime/domain_intelligence/greenfield_sequence_terminal_labels.py
+- src/odylith/runtime/domain_intelligence/greenfield_semantic_compiler.py
+- src/odylith/runtime/domain_intelligence/greenfield_status_modifiers.py
+- src/odylith/runtime/domain_intelligence/greenfield_text.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_prompt_source.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py

@@ -5,6 +5,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion 
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import FirstPathContract
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import _first_path_contract_claim
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
@@ -130,6 +131,40 @@ def test_operator_first_path_keeps_modifier_tail_with_visible_outcome() -> None:
     assert "Operator picks" not in rendered
     assert "With an emergency stop" not in rendered
     assert generated_public_copy_issues("semantic preview", rendered) == ()
+
+
+def test_result_status_modifiers_stay_attached_to_visible_outcome() -> None:
+    first_path = (
+        "A researcher opens the lab, defines a new E91 run, launches it against the hardware, "
+        "watches coincidences and the live CHSH value stream in, and ends with a completed run "
+        "that reports whether the Bell inequality was violated, the QBER, and the key established, "
+        "saved and viewable with prior runs."
+    )
+
+    model = first_path_model(first_path)
+    outcome = first_path_outcome_phrase(first_path)
+
+    assert len(model.steps) == 5
+    assert model.visible_outcome == (
+        "The Bell inequality was violated, the QBER, and the established key, saved and viewable with prior runs"
+    )
+    assert outcome == (
+        "the Bell inequality was violated, the QBER, and the established key, saved and viewable with prior runs"
+    )
+    assert "the key established" not in outcome
+    assert "saved and viewable with prior runs" in outcome
+
+    possessive = first_path.replace("the key established", "the user's key established")
+    possessive_model = first_path_model(possessive)
+    possessive_outcome = first_path_outcome_phrase(possessive)
+
+    assert possessive_model.visible_outcome == (
+        "The Bell inequality was violated, the QBER, and the user's established key, saved and viewable with prior runs"
+    )
+    assert possessive_outcome == (
+        "the Bell inequality was violated, the QBER, and the user's established key, saved and viewable with prior runs"
+    )
+    assert "user's key established" not in possessive_outcome.casefold()
 
 
 def test_semantic_visible_result_preserves_quoted_result_and_parallel_verbs() -> None:

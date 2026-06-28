@@ -110,6 +110,8 @@ def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generi
         normalize_artifact_tail("field intake with attribution command", carrier_terms={"command", "intake"})
         == "field intake with attribution command"
     )
+    assert normalize_artifact_tail("key established", carrier_terms={"state"}) == "key established"
+    assert normalize_artifact_tail("prior runs viewable", carrier_terms={"state"}) == "prior runs viewable"
 
     lines = rationale_lines(
         label="Cooking Robot Controller",

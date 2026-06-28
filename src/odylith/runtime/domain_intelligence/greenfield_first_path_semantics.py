@@ -5,6 +5,9 @@ from __future__ import annotations
 import re
 from typing import Any, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_status_modifiers import RESULT_STATE_MODIFIER_CONTEXT_TERMS
+from odylith.runtime.domain_intelligence.greenfield_status_modifiers import RESULT_STATE_MODIFIER_LEADS
+from odylith.runtime.domain_intelligence.greenfield_status_modifiers import RESULT_STATUS_MODIFIERS
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
@@ -39,12 +42,12 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
     visible_result_object as _visible_result_object,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language as _normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 _ACTION_BASE_VERB_PATTERN = action_base_verb_pattern()
 _ACTION_VERB_PATTERN = action_verb_pattern()
 _SPLIT_ACTION_VERB_PATTERN = action_verb_pattern(exclude={"keep", "keeps"})
-
 _OPEN_PLUS_MATERIAL_RE = re.compile(
     r"^\s*(?P<subject>(?:a|an|the)?\s*[^,.;]{0,80}?)\b(?:open|opens|launch|launches)\b"
     r"(?P<object>\s+[^,.;]{1,80}?)\s+\band\b\s+(?P<material>.+)$",
@@ -147,8 +150,8 @@ def _merge_leading_modifier_steps(steps: Sequence[str]) -> list[str]:
         cleaned = _clean(step).strip(" .")
         if not cleaned:
             continue
-        if merged and _is_leading_modifier_step(cleaned):
-            merged[-1] = f"{merged[-1]} {_lower_initial(cleaned)}".strip()
+        if merged and _is_result_modifier_for_previous(cleaned, previous=merged[-1]):
+            merged[-1] = _append_result_modifier(merged[-1], cleaned)
             continue
         merged.append(cleaned)
     return merged
@@ -191,6 +194,36 @@ def _is_leading_modifier_step(value: str) -> bool:
             flags=re.IGNORECASE,
         )
     )
+
+
+def _is_result_modifier_for_previous(value: str, *, previous: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text:
+        return False
+    if _is_leading_modifier_step(text):
+        return True
+    if not (_looks_like_visible_result(previous) or _looks_like_visible_result(text)):
+        return False
+    words = [word.strip(".,:;()[]{}").casefold() for word in text.split() if word.strip(".,:;()[]{}")]
+    if not words:
+        return False
+    first = words[0]
+    if first == "and" and len(words) > 1:
+        first = words[1]
+    if first not in RESULT_STATE_MODIFIER_LEADS and not (len(first) > 4 and first.endswith("ed")):
+        return False
+    terms = {word for word in words if len(word) >= 4}
+    return len(words) <= 8 or bool(terms & RESULT_STATE_MODIFIER_CONTEXT_TERMS)
+
+
+def _append_result_modifier(previous: str, modifier: str) -> str:
+    previous_text = _clean(previous).strip(" .")
+    modifier_text = _lower_initial(_clean(modifier).strip(" ."))
+    if not previous_text:
+        return modifier_text
+    if _is_leading_modifier_step(modifier_text):
+        return f"{previous_text} {modifier_text}".strip()
+    return f"{previous_text}, {modifier_text}".strip()
 
 
 def _lower_initial(value: str) -> str:
@@ -240,7 +273,7 @@ def _material_action(steps: Sequence[str]) -> str:
 def _visible_outcome(steps: Sequence[str]) -> str:
     terminal_choice = _terminal_choice_outcome(steps)
     if terminal_choice:
-        return _sentence_case(terminal_choice)
+        return _sentence_case(_normalize_visible_result_language(terminal_choice) or terminal_choice)
     preferred: list[str] = []
     fallback: list[str] = []
     for step in reversed(steps):
@@ -259,12 +292,13 @@ def _visible_outcome(steps: Sequence[str]) -> str:
             else:
                 fallback.append(_visible_action_clause(cleaned) or _visible_result_object(cleaned) or cleaned)
     if preferred:
-        return _sentence_case(preferred[0])
+        return _sentence_case(_normalize_visible_result_language(preferred[0]) or preferred[0])
     if fallback:
-        return _sentence_case(fallback[0])
+        return _sentence_case(_normalize_visible_result_language(fallback[0]) or fallback[0])
     for step in reversed(steps):
         if not _is_scope_or_deferred_statement(step):
-            return _sentence_case(_nominal_material_outcome(step) or step)
+            outcome = _nominal_material_outcome(step) or step
+            return _sentence_case(_normalize_visible_result_language(outcome) or outcome)
     return ""
 
 
@@ -448,7 +482,9 @@ def _split_action_pieces(value: str) -> list[str]:
         for purpose_segment in _split_purpose_action_tail(raw_segment):
             for segment in _split_temporal_action_tail(purpose_segment):
                 current = ""
-                for part in [piece.strip(" .,;:") for piece in re.split(r",\s+", segment) if piece.strip(" .,;:")]:
+                for part in _merge_status_modifier_parts(
+                    [piece.strip(" .,;:") for piece in re.split(r",\s+", segment) if piece.strip(" .,;:")]
+                ):
                     if current and _starts_new_action_clause(part) and not _continues_subject_object_list(part, current):
                         pieces.append(current.strip(" .,;:"))
                         current = _with_carried_subject(part, subject_prefix)
@@ -460,6 +496,33 @@ def _split_action_pieces(value: str) -> list[str]:
                 if current:
                     pieces.append(current.strip(" .,;:"))
     return pieces
+
+
+def _merge_status_modifier_parts(parts: Sequence[str]) -> list[str]:
+    rows = [_clean(part).strip(" .,;:") for part in parts if _clean(part).strip(" .,;:")]
+    if len(rows) < 2:
+        return rows
+    merged: list[str] = []
+    index = 0
+    while index < len(rows):
+        current = rows[index]
+        if index + 1 < len(rows) and (_is_article_status_fragment(current) or _ends_with_article_status_fragment(current)):
+            merged.append(f"{current}, {rows[index + 1][:1].casefold()}{rows[index + 1][1:]}".strip())
+            index += 2
+            continue
+        merged.append(current)
+        index += 1
+    return merged
+
+
+def _is_article_status_fragment(value: str) -> bool:
+    words = [word.strip(".,:;()[]{}").casefold() for word in _clean(value).split() if word.strip(".,:;()[]{}")]
+    return len(words) == 2 and words[0] in {"a", "an", "the"} and words[1] in RESULT_STATUS_MODIFIERS
+
+
+def _ends_with_article_status_fragment(value: str) -> bool:
+    words = [word.strip(".,:;()[]{}").casefold() for word in _clean(value).split() if word.strip(".,:;()[]{}")]
+    return len(words) >= 3 and words[-2] in {"a", "an", "the"} and words[-1] in RESULT_STATUS_MODIFIERS
 
 
 def _split_purpose_action_tail(value: str) -> list[str]:

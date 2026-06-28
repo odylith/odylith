@@ -23,6 +23,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     risks_from_contract,
     validation_from_contract,
 )
+from odylith.runtime.domain_intelligence.greenfield_component_kinds import system_kind
 from odylith.runtime.domain_intelligence.greenfield_component_contract_differentiation import (
     differentiate_component_contracts,
     preserve_first_path_signal_terms,
@@ -152,7 +153,7 @@ def _confirmed_system_components(
         else:
             component_id = component_slug
         component_id = _dedupe_slug_tokens(component_id)
-        kind = _system_kind(name, description)
+        kind = system_kind(name, description, external_systems=external_systems or [])
         responsibility = _responsibility(name=name, description=description)
         row: dict[str, Any] = {
             "component_id": _unique_component_id(component_id, rows, index),
@@ -406,31 +407,6 @@ def _parenthetical_descriptor_replacement(match: re.Match[str]) -> str:
     if "," in body or word_count(body) > 4:
         return ""
     return f" {body}"
-
-
-def _system_kind(name: str, description: str) -> str:
-    name_text = name.casefold()
-    description_text = description.casefold()
-    if _contains_kind_token(f"{name_text} {description_text}", ("web", "ui", "surface", "mobile", "portal", "client", "dashboard")):
-        return "client"
-    if _contains_kind_token(name_text, ("adapter", "provider", "integration", "connector", "import")):
-        return "adapter"
-    if _contains_kind_token(description_text, ("adapter", "provider", "integration", "connector", "external", "import")):
-        return "adapter"
-    return "service"
-
-
-def _contains_kind_token(text: str, tokens: tuple[str, ...]) -> bool:
-    words = [word.casefold() for word in visible_words(text)]
-    for token in tokens:
-        normalized = token.casefold()
-        if normalized in {"ui", "web"}:
-            if normalized in words:
-                return True
-            continue
-        if any(word == normalized or word == f"{normalized}s" for word in words):
-            return True
-    return False
 
 
 def _component_label(name: str, kind: str) -> str:

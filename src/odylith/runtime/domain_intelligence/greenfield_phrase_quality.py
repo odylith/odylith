@@ -5,43 +5,8 @@ from __future__ import annotations
 import re
 from collections.abc import Iterable, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_status_modifiers import TERMINAL_STATUS_MODIFIERS
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-
-TERMINAL_STATUS_MODIFIERS = frozenset(
-    {
-        "accepted",
-        "active",
-        "blocked",
-        "closed",
-        "complete",
-        "completed",
-        "current",
-        "declined",
-        "delivered",
-        "denied",
-        "draft",
-        "eligible",
-        "final",
-        "finished",
-        "invalid",
-        "live",
-        "missing",
-        "open",
-        "pending",
-        "ready",
-        "received",
-        "rejected",
-        "requested",
-        "scheduled",
-        "selected",
-        "stale",
-        "submitted",
-        "trusted",
-        "valid",
-        "validated",
-        "visible",
-    }
-)
 
 TRANSITION_ACTION_TERMS = frozenset({"advance", "advances", "advanced", "moving", "move", "moved", "moves", "transition", "transitioned", "transitions"})
 TRANSITION_CONTEXT_TERMS = frozenset({"draft", "final", "from", "live", "scheduled", "state", "status"})

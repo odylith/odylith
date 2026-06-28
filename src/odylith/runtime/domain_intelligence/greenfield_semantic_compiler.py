@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import word_count
 
@@ -263,6 +264,7 @@ def _product_result_from_visible_outcome(value: Any) -> str:
     candidate = _binary_actor_action_result_object(candidate) or candidate
     candidate = _resolve_result_anaphora(candidate)
     candidate = nominal_visible_result_object(candidate) or candidate
+    candidate = normalize_visible_result_language(candidate) or candidate
     return lowercase_leading_article(candidate).strip(" .")
 
 

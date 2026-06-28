@@ -12,13 +12,14 @@ flowchart LR
       apply_input["Typed apply-semantic input<br/>source paths, provenance,<br/>legacy proposal bridge"]
       compiler["Deterministic semantic compiler<br/>provider-free common path"]
       semantic_ir["SemanticModelIR<br/>first-path contract,<br/>ontology, event graph,<br/>proof obligations"]
+      result_language["Result-language owner<br/>result-status modifiers stay attached,<br/>artifact-tail status stays conservative,<br/>grammatical result item order"]
       artifact_plan["ArtifactPlanIR<br/>sanctioned projection fields"]
       projection_contract["Projection contract owner<br/>roots, aliases,<br/>envelope paths,<br/>affected projections"]
-      projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
+      projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof<br/>Atlas terminal labels prefer semantic result<br/>only for long clipping-risk wrappers"]
       next_steps["Operator next steps<br/>governed start workstream,<br/>readiness gates, validation commands"]
       project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>from accepted project context"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
-      validators["Deterministic validators<br/>schema, traceability,<br/>grammar, repetition, topology,<br/>Project prompt quality"]
+      validators["Deterministic validators<br/>schema, traceability,<br/>grammar, repetition, topology,<br/>Project prompt quality,<br/>clipped terminal labels"]
       expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer typed owner contract<br/>coverage over accepted systems,<br/>including deferred topology"]
       typed_findings["Source-owned typed findings<br/>target layer, target path,<br/>semantic node, no proposal-repair lane"]
       legacy_blockers["Legacy/raw issue strings<br/>diagnostic blockers only,<br/>no repair authority"]
@@ -48,11 +49,11 @@ flowchart LR
       rollback["Rollback snapshot"]
       blockers["Exact final blockers<br/>operator sees actionable failure"]
       proof_log["Compass proof checkpoint"]
-      release_matrix["Installed release proof<br/>expanded standard matrix,<br/>sparse and quantum confirmation cases<br/>plus rescue wiring smoke<br/>natural rescue proof still required"]
+      release_matrix["Installed release proof<br/>eight-case standard matrix,<br/>sparse and quantum confirmation cases<br/>plus rescue wiring smoke<br/>natural rescue proof still required"]
     end
 
     visible_intent --> confirm --> source_guard --> confirmed_ir
-    confirmed_ir --> apply_input --> compiler --> semantic_ir --> artifact_plan --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
+    confirmed_ir --> apply_input --> compiler --> semantic_ir --> result_language --> artifact_plan --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
     draft_set --> validators --> expert_lenses --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log --> release_matrix
@@ -77,7 +78,7 @@ flowchart LR
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirm,source_guard,confirmed_ir intent;
-    class apply_input,compiler,semantic_ir,artifact_plan,projection_contract,projections,next_steps,project_dashboard,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
+    class apply_input,compiler,semantic_ir,result_language,artifact_plan,projection_contract,projections,next_steps,project_dashboard,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
     class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
     class writes,rollback,blockers,proof_log,release_matrix write;
 
