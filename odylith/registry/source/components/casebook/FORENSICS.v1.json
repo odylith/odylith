@@ -32,12 +32,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 85,
-    "mapped_workstream_evidence_count": 72,
+    "explicit_event_count": 87,
+    "mapped_workstream_evidence_count": 73,
     "recent_path_match_count": 0,
     "spec_history_event_count": 5,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 85
+    "timeline_event_count": 87
   },
   "name": "Casebook",
   "path_prefixes": [
@@ -47,6 +47,64 @@
   ],
   "spec_ref": "odylith/registry/source/components/casebook/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 675,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "registry",
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "Cross-surface governance learning captured for B-142/CB-208: Casebook, Registry, Atlas, Compass, technical plans, release proof, and prompts must be scored as governed artifact packages with source-owned facts, exact freshness, readable copy, traceable proof, and punitive multi-lens gates; count-based or rendered-prose fixes are banned.",
+      "ts_iso": "2026-06-28T15:32:38-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 669,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield release proof now includes Casebook generated surfaces, stricter surface asset wiring, first-path Project prompt custody, and per-case browser proof requested by maintained release wrappers.",
+      "ts_iso": "2026-06-28T02:41:56-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",

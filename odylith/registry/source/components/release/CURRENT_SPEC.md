@@ -493,6 +493,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-28 · Implementation:** Release proof now treats the installed greenfield matrix as a canonical release gate: the default standard catalog is twelve domains, the matrix persists proof JSON, strict domain-anchor scoring is enforced, and rescue smoke is labeled wiring-only.
+  - Scope: B-142
+  - Evidence: bin/_odylith.sh, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
 - **2026-06-27 · Implementation:** Greenfield post-confirm hard-min scoring now reports brutal 10/10 release dimensions; action-chain actor recovery rejects embedded action prefixes after the water-rights no-write repro, and the final ten-domain source-local cleanup-proof matrix passed with min score 10/10, max 16.935s, and all temp repos deleted.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/common/prose_grammar.py +3 more

@@ -9,6 +9,8 @@ from odylith.runtime.common.prose_grammar import (
     base_action_clause,
     base_following_action_verbs,
     gerund_action_verb,
+    looks_like_action_clause,
+    looks_like_finite_action,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
@@ -22,6 +24,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects im
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_routing import routing_action_clause as _routing_action_clause
 from odylith.runtime.domain_intelligence.greenfield_first_path_text_case import lower_initial_for_fragment as _lower_initial_for_fragment
+from odylith.runtime.domain_intelligence.greenfield_gerund_actions import GERUND_ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns, normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_visible_result_focus import focused_visible_result_object
 
@@ -69,7 +72,6 @@ def is_system_generated_action(value: str) -> bool:
     if re.match(rf"^(?:the\s+)?(?:{system_subject})\s+(?:{system_verb})\b", text, flags=re.IGNORECASE):
         return True
     return bool(re.match(rf"^[A-Z][A-Za-z0-9_-]{{1,}}\s+(?:{system_verb})\b", text))
-
 
 def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
@@ -168,6 +170,8 @@ def action_chain_fragment(value: str) -> str:
     outcome = "" if (re.search(r"\b(?:route|routes|send|sends|submit|submits)\b", text, flags=re.IGNORECASE) and re.search(r"\bto\s+(?:a|an|the)?\s*[A-Za-z0-9]", text, flags=re.IGNORECASE)) else visible_result_object(text)
     if outcome and not re.search(r"\b(?:receives?|gets?)\b", text, flags=re.IGNORECASE):
         stripped = strip_action_subject(text)
+        if re.match(r"^confirms?\b", stripped, flags=re.IGNORECASE) and _confirm_action_is_actor_led(text):
+            return base_action_clause(stripped).strip(" .")
         if re.match(
             r"^(?:checks?|closes?|decides?|inspects?|publishes?|reads?|reports?|reviews?|sees?|uses?|views?)\b",
             stripped,
@@ -214,6 +218,19 @@ def _drop_explanatory_action_tail(value: str) -> str:
     if MATERIAL_ACTION_RE.match(tail):
         return head
     return text
+
+def _confirm_action_is_actor_led(value: str) -> bool:
+    text = clean_first_path_text(value).strip(" .")
+    match = MATERIAL_ACTION_RE.search(text)
+    if not match:
+        return True
+    prefix = text[: match.start()].strip(" ,.")
+    if not prefix:
+        return True
+    if _looks_like_actor_subject_prefix(prefix):
+        return True
+    terms = {term.casefold() for term in label_terms(prefix)}
+    return not bool(terms & _SYSTEM_SUBJECT_TERMS)
 
 def _strip_action_possessives(value: str) -> str:
     text = clean_first_path_text(value)
@@ -299,7 +316,6 @@ def visible_result_object(value: str) -> str:
         )
     return ""
 
-
 def _decision_result_object(verb: str, result: str) -> str:
     token = str(verb or "").casefold().strip(".,:;")
     text = clean_first_path_text(result).strip(" .")
@@ -330,7 +346,6 @@ def nominal_visible_result_object(value: str) -> str:
     ):
         return f"the usage-linked metric change view{protocol_suffix}"
     return text
-
 
 _RESULT_ACTION_NOMINALS = {
     "capture": "captured",
@@ -398,6 +413,9 @@ def strip_action_subject(value: str) -> str:
     _modal_actor, modal_action = _modal_actor_action_parts(text)
     if modal_action:
         return modal_action
+    _actor, actor_action = _actor_led_finite_action_parts(text)
+    if actor_action:
+        return actor_action
     match = MATERIAL_ACTION_RE.search(text)
     if match and match.start() > 0:
         prefix = text[: match.start()].strip(" ,")
@@ -438,6 +456,9 @@ def actor_signature(value: str) -> str:
         modal_actor, _modal_action = _modal_actor_action_parts(text)
         if not subject and modal_actor:
             subject = modal_actor
+        actor, _actor_action = _actor_led_finite_action_parts(text)
+        if not subject and actor:
+            subject = actor
         match = MATERIAL_ACTION_RE.search(text)
         if not subject and match and match.start() > 0:
             candidate = text[: match.start()].strip(" ,")
@@ -461,6 +482,17 @@ def actor_signature(value: str) -> str:
         )
     )
 
+def _actor_led_finite_action_parts(value: str) -> tuple[str, str]:
+    text = clean_first_path_text(value).strip(" .")
+    for match in MATERIAL_ACTION_RE.finditer(text):
+        prefix = text[: match.start()].strip(" ,")
+        if not _looks_like_actor_subject_prefix(prefix):
+            continue
+        action = text[match.start() :].strip(" .")
+        if looks_like_finite_action(action):
+            return prefix, action
+    return "", ""
+
 def _modal_actor_prefix(value: str) -> str:
     words = [word.strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
     if len(words) < 2:
@@ -477,7 +509,6 @@ def _modal_actor_prefix(value: str) -> str:
         return ""
     return actor
 
-
 def _relative_actor_action_parts(value: str) -> tuple[str, str]:
     pattern = r"^(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,100}?)\s+(?:who|that)\s+(?P<action>.+)$"
     match = re.match(pattern, clean_first_path_text(value).strip(" ."), flags=re.IGNORECASE)
@@ -486,7 +517,6 @@ def _relative_actor_action_parts(value: str) -> tuple[str, str]:
     actor = match.group("actor").strip(" .")
     action = match.group("action").strip(" .")
     return (actor, action) if action and MATERIAL_ACTION_RE.search(action) and _looks_like_actor_prefix(actor) else ("", "")
-
 
 def _modal_actor_action_parts(value: str) -> tuple[str, str]:
     text = clean_first_path_text(value).strip(" .")
@@ -516,10 +546,11 @@ def _looks_like_actor_prefix(value: str) -> bool:
     terms = {term.casefold() for term in label_terms(value)}
     return bool(terms and len(terms) <= 6 and (not terms & _SYSTEM_SUBJECT_TERMS or _has_actor_role_word(text)))
 
-
 def _looks_like_actor_subject_prefix(value: str) -> bool:
     text = clean_first_path_text(value).strip(" .")
     if not text or not _looks_like_actor_prefix(text):
+        return False
+    if _has_unowned_action_tail(text):
         return False
     if re.search(r"\b(?:if|that|when|where|which|while)\b", text, flags=re.IGNORECASE):
         return False
@@ -530,9 +561,22 @@ def _looks_like_actor_subject_prefix(value: str) -> bool:
     terms = [term.casefold() for term in label_terms(text)]
     return len(terms) == 1 and _looks_like_plural_actor_term(terms[0])
 
-
 def _has_actor_role_word(value: str) -> bool:
-    return bool(re.search(r"\b(?:actors?|applicants?|coordinators?|customers?|inspectors?|leads?|makers?|managers?|operators?|owners?|participants?|people|persons?|planners?|preparers?|recipients?|requesters?|reviewers?|supervisors?|travelers?|users?)\b", value, flags=re.IGNORECASE))
+    return bool(re.search(r"\b(?:actors?|applicants?|coordinators?|customers?|inspectors?|leads?|liaisons?|makers?|managers?|officers?|operators?|owners?|participants?|people|persons?|planners?|preparers?|recipients?|requesters?|reviewers?|supervisors?|travelers?|users?)\b", value, flags=re.IGNORECASE))
+
+
+def _has_unowned_action_tail(value: str) -> bool:
+    words = [word.casefold().strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
+    for index in range(1, len(words)):
+        token = words[index]
+        if _has_actor_role_word(token):
+            continue
+        if not looks_like_action_clause(f"{token} placeholder"):
+            continue
+        if _has_actor_role_word(" ".join(words[index + 1 :])):
+            continue
+        return True
+    return False
 
 
 def _looks_like_plural_actor_term(value: str) -> bool:
@@ -563,130 +607,10 @@ def leading_subject_prefix(value: str) -> str:
     subject = text[: match.start()].strip()
     if not re.match(r"^(?:a|an|the|one|this|that|each|another)\s+", subject, flags=re.IGNORECASE):
         return ""
-    subject = re.sub(r"\s+[A-Za-z]+ly$", "", subject, flags=re.IGNORECASE).strip()
+    subject = re.sub(r"\s+(?:[A-Za-z]+ly|again|already|eventually|finally|later|next|then)$", "", subject, flags=re.IGNORECASE).strip()
     if len(label_terms(subject)) > 6:
         return ""
     return subject
-
-_GERUND_ACTION_VERBS = {
-    "accept": "accepting",
-    "accepts": "accepting",
-    "add": "adding",
-    "adds": "adding",
-    "advance": "advancing",
-    "advances": "advancing",
-    "adjust": "adjusting",
-    "adjusts": "adjusting",
-    "answer": "answering",
-    "answers": "answering",
-    "approve": "approving",
-    "approves": "approving",
-    "block": "blocking",
-    "blocks": "blocking",
-    "calculate": "calculating",
-    "calculates": "calculating",
-    "check": "checking",
-    "checks": "checking",
-    "choose": "choosing",
-    "chooses": "choosing",
-    "click": "clicking",
-    "clicks": "clicking",
-    "compare": "comparing",
-    "compares": "comparing",
-    "complete": "completing",
-    "completes": "completing",
-    "confirm": "confirming",
-    "confirms": "confirming",
-    "create": "creating",
-    "creates": "creating",
-    "display": "displaying",
-    "displays": "displaying",
-    "dismiss": "dismissing",
-    "dismisses": "dismissing",
-    "draft": "drafting",
-    "drafts": "drafting",
-    "edit": "editing",
-    "edits": "editing",
-    "enter": "entering",
-    "enters": "entering",
-    "export": "exporting",
-    "exports": "exporting",
-    "fetch": "fetching",
-    "fetches": "fetching",
-    "finalize": "finalizing",
-    "finalizes": "finalizing",
-    "flag": "flagging",
-    "flags": "flagging",
-    "highlight": "highlighting",
-    "highlights": "highlighting",
-    "import": "importing",
-    "imports": "importing",
-    "let": "letting",
-    "lets": "letting",
-    "log": "logging",
-    "logs": "logging",
-    "make": "making",
-    "makes": "making",
-    "mark": "marking",
-    "marks": "marking",
-    "open": "opening",
-    "opens": "opening",
-    "pick": "picking",
-    "picks": "picking",
-    "produce": "producing",
-    "produces": "producing",
-    "prompt": "prompting",
-    "prompts": "prompting",
-    "publish": "publishing",
-    "publishes": "publishing",
-    "pull": "pulling",
-    "pulls": "pulling",
-    "rank": "ranking",
-    "ranks": "ranking",
-    "read": "reading",
-    "reads": "reading",
-    "receive": "receiving",
-    "receives": "receiving",
-    "record": "recording",
-    "records": "recording",
-    "render": "rendering",
-    "renders": "rendering",
-    "resolve": "resolving",
-    "resolves": "resolving",
-    "return": "returning",
-    "returns": "returning",
-    "review": "reviewing",
-    "reviews": "reviewing",
-    "run": "running", "runs": "running",
-    "save": "saving",
-    "saves": "saving",
-    "see": "seeing",
-    "sees": "seeing",
-    "select": "selecting",
-    "selects": "selecting",
-    "send": "sending",
-    "sends": "sending",
-    "set": "setting",
-    "sets": "setting",
-    "show": "showing",
-    "shows": "showing",
-    "store": "storing",
-    "stores": "storing",
-    "stop": "stopping", "stops": "stopping",
-    "submit": "submitting",
-    "submits": "submitting",
-    "surface": "surfacing",
-    "surfaces": "surfacing",
-    "tap": "tapping",
-    "taps": "tapping",
-    "update": "updating",
-    "updates": "updating",
-    "validate": "validating",
-    "validates": "validating",
-    "view": "viewing",
-    "views": "viewing",
-}
-
 
 def gerund_action_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
@@ -740,7 +664,7 @@ def _gerund_segment_actions(value: str) -> str:
     return " ".join(converted).strip(" ,.")
 
 def _gerund_for_action_token(token: str) -> str:
-    mapped = _GERUND_ACTION_VERBS.get(token)
+    mapped = GERUND_ACTION_VERBS.get(token)
     if mapped:
         return mapped
     if re.fullmatch(action_base_verb_pattern(), token):

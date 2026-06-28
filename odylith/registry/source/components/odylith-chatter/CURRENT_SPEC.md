@@ -6,7 +6,7 @@
   copy or claim completion beyond fresh proof.
 - Odylith Discipline signals may inform closeout only after proof, benchmark, or
   visible-intervention evidence supports the statement.
-Last updated: 2026-06-25
+Last updated: 2026-06-28
 
 
 Last updated (UTC): 2026-04-17
@@ -296,6 +296,9 @@ end-of-work outcomes instead of canned self-promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-28 · Implementation:** Release proof and install custody hardening: standalone greenfield matrix now persists JSON proof, full install suite is green after guidance-budget compaction, and migration-runtime classification now blocks missing verification before already-current no-op while preserving verified same-version reinstall.
+  - Scope: B-142
+  - Evidence: bin/greenfield-post-confirm-matrix, odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md +5 more
 - **2026-06-25 · Decision:** Maintainer work must keep Casebook, Radar, Registry, Atlas, and Compass current when simulations, live repros, validation runs, or architecture reviews expose durable Odylith product learning.
   - Evidence: odylith/maintainer/AGENTS.md
 - **2026-05-03 · Implementation:** CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in a real consumer repo; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.
@@ -309,9 +312,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: src/odylith/install/lock_hygiene.py, src/odylith/install/manager.py +2 more
 - **2026-04-27 · Implementation:** v0.1.12 / CB-133: hardened upgrade lifecycle UX with exact dry-run target metadata, idempotent current-target planning, upgrade JSON/report persistence, clearer installed-local version wording, doctor trust/upgrade observability, OS metadata dirty-path filtering, and rollback scope closeout.
   - Evidence: src/odylith/cli.py, src/odylith/install/manager.py +2 more
-- **2026-04-17 · Implementation:** B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.
-  - Scope: B-110
-  - Evidence: odylith/runtime/source/optimization-evaluation-corpus.v1.json, odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md
 <!-- registry-requirements:end -->
 
 ## Feature History

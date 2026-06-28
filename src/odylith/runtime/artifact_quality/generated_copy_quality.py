@@ -9,6 +9,9 @@ import shlex
 from typing import Any
 
 from odylith.runtime.common.mermaid_text import visible_mermaid_label_quality_texts
+from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import actor_led_finite_action_inside_user_can
+from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import gerund_actor_role_finite_action_splice
+from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -17,6 +20,14 @@ from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 class GeneratedCopyFinding:
     category: str
     message: str
+
+
+@dataclass(frozen=True)
+class _WordToken:
+    text: str
+    separator_before: str = ""
+    hyphen_before: bool = False
+    hyphen_after: bool = False
 
 
 _INLINE_ROLE_TERMS = (
@@ -84,6 +95,7 @@ def generated_public_copy_findings(scope: str, value: Any) -> tuple[GeneratedCop
             findings.append(GeneratedCopyFinding("malformed_punctuation", f"{scope} leaked malformed punctuation"))
     for text in _text_quality_units(value):
         tokens = _word_tokens(text)
+        token_rows = _word_token_rows(text)
         lowered = tuple(token.casefold() for token in tokens)
         if _has_mechanical_actor_path_clause(lowered):
             findings.append(GeneratedCopyFinding("mechanical_actor_path", f"{scope} leaked mechanical actor-path prose"))
@@ -97,9 +109,17 @@ def generated_public_copy_findings(scope: str, value: Any) -> tuple[GeneratedCop
             findings.append(GeneratedCopyFinding("raw_success_metric_gate", f"{scope} leaked raw success-metric gate prose"))
         if _has_actor_action_splice(lowered):
             findings.append(GeneratedCopyFinding("actor_action_splice", f"{scope} leaked actor/action splice prose"))
+        if actor_led_finite_action_inside_user_can(text):
+            findings.append(GeneratedCopyFinding("actor_led_modal_splice", f"{scope} leaked actor-led finite action inside user-can prose"))
+        if gerund_actor_role_finite_action_splice(text):
+            findings.append(GeneratedCopyFinding("gerund_actor_role_splice", f"{scope} leaked gerundized actor-role action prose"))
         if _has_terminal_result_chain(lowered):
             findings.append(GeneratedCopyFinding("terminal_result_chain", f"{scope} leaked terminal action inside result prose"))
-        if _has_awkward_visible_result_action(lowered):
+        if _has_adjacent_duplicate_word(token_rows):
+            findings.append(GeneratedCopyFinding("adjacent_duplicate_word", f"{scope} leaked adjacent duplicate word prose"))
+        if _has_clipped_terminal_public_copy(lowered):
+            findings.append(GeneratedCopyFinding("clipped_public_copy", f"{scope} leaked clipped or dangling public copy"))
+        if _has_awkward_visible_result_action(token_rows):
             findings.append(GeneratedCopyFinding("awkward_visible_result_action", f"{scope} leaked awkward visible-result action prose"))
         if _has_presentational_action_splice(text.casefold()):
             findings.append(GeneratedCopyFinding("presentational_action_splice", f"{scope} leaked presentational verb/action splice prose"))
@@ -297,12 +317,69 @@ def _result_word_is_captured_object(tokens: tuple[str, ...], index: int) -> bool
     return any(token in capture_verbs for token in left)
 
 
-def _has_awkward_visible_result_action(tokens: tuple[str, ...]) -> bool:
-    result_words = {"consequence", "outcome", "readout", "reflection", "result", "summary", "view"}
+def _has_adjacent_duplicate_word(tokens: tuple[_WordToken, ...]) -> bool:
+    previous = ""
+    for token in tokens:
+        current = token.text.casefold().strip(".,;:")
+        if (
+            current
+            and len(current) > 2
+            and previous == current
+            and not token.hyphen_before
+            and not token.separator_before.strip()
+        ):
+            return True
+        previous = current
+    return False
+
+
+def _has_clipped_terminal_public_copy(tokens: tuple[str, ...]) -> bool:
+    if len(tokens) < 5:
+        return False
+    return tokens[-1] in {
+        "include",
+        "includes",
+        "keep",
+        "keeps",
+        "remain",
+        "remains",
+        "return",
+        "returns",
+        "with",
+    }
+
+
+def _has_awkward_visible_result_action(tokens: tuple[_WordToken, ...]) -> bool:
+    result_words = {"consequence", "outcome", "readiness", "readout", "reflection", "result", "summary", "view"}
+    lowered = tuple(token.text.casefold() for token in tokens)
     for index, token in enumerate(tokens[:-1]):
-        if token in {"reach", "use"} and any(item in result_words for item in tokens[index + 1 : min(len(tokens), index + 5)]):
+        if token.hyphen_before or token.hyphen_after:
+            continue
+        if _token_is_title_label_word(tokens, index):
+            continue
+        if token.text.casefold() in {"reach", "use"} and any(
+            item in result_words for item in lowered[index + 1 : min(len(lowered), index + 5)]
+        ):
             return True
     return False
+
+
+def _token_is_title_label_word(tokens: tuple[_WordToken, ...], index: int) -> bool:
+    if index <= 0 or index >= len(tokens):
+        return False
+    token = tokens[index].text.strip("'")
+    if not token[:1].isupper():
+        return False
+    previous = tokens[index - 1].text.strip("'") if index > 0 else ""
+    next_token = tokens[index + 1].text.strip("'") if index + 1 < len(tokens) else ""
+    return _looks_like_title_token(previous) or _looks_like_title_token(next_token)
+
+
+def _looks_like_title_token(value: str) -> bool:
+    text = str(value or "").strip("'")
+    if len(text) <= 1:
+        return False
+    return text[:1].isupper() or text.isupper()
 
 
 _PRESENTATIONAL_VERBS = {"display", "displays", "present", "presents", "show", "showing", "shown", "shows"}
@@ -590,6 +667,45 @@ def _word_tokens(value: str) -> tuple[str, ...]:
     return tuple(token for token in tokens if token)
 
 
+def _word_token_rows(value: str) -> tuple[_WordToken, ...]:
+    rows: list[_WordToken] = []
+    current: list[str] = []
+    token_start = 0
+    previous_token_end = 0
+    text = str(value or "")
+    for index, char in enumerate(text):
+        if char.isalnum() or char == "'":
+            if not current:
+                token_start = index
+            current.append(char)
+            continue
+        if current:
+            token = "".join(current).strip("'")
+            if token:
+                rows.append(
+                    _WordToken(
+                        token,
+                        separator_before=text[previous_token_end:token_start],
+                        hyphen_before=token_start > 0 and text[token_start - 1] == "-",
+                        hyphen_after=index < len(text) and char == "-",
+                    )
+                )
+                previous_token_end = index
+            current = []
+    if current:
+        token = "".join(current).strip("'")
+        if token:
+            rows.append(
+                _WordToken(
+                    token,
+                    separator_before=text[previous_token_end:token_start],
+                    hyphen_before=token_start > 0 and text[token_start - 1] == "-",
+                    hyphen_after=False,
+                )
+            )
+    return tuple(rows)
+
+
 def _text_quality_units(value: Any) -> tuple[str, ...]:
     units: list[str] = []
     _append_text_quality_units(units, value)
@@ -603,36 +719,46 @@ def _raw_text_values(value: Any) -> tuple[str, ...]:
 
 
 def _append_raw_text_values(units: list[str], value: Any) -> None:
+    _append_raw_text_values_for_key(units, value, key="")
+
+
+def _append_raw_text_values_for_key(units: list[str], value: Any, *, key: str) -> None:
     if value is None:
         return
     if isinstance(value, Mapping):
-        for nested in value.values():
-            _append_raw_text_values(units, nested)
+        for nested_key, nested in value.items():
+            _append_raw_text_values_for_key(units, nested, key=str(nested_key))
         return
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         for nested in value:
-            _append_raw_text_values(units, nested)
+            _append_raw_text_values_for_key(units, nested, key=key)
         return
     text = clean_text(value)
-    if text:
+    if text and not structural_copy_value(key=key, value=text):
         units.append(text)
 
 
 def _append_text_quality_units(units: list[str], value: Any) -> None:
+    _append_text_quality_units_for_key(units, value, key="")
+
+
+def _append_text_quality_units_for_key(units: list[str], value: Any, *, key: str) -> None:
     if value is None:
         return
     if isinstance(value, Mapping):
-        for nested in value.values():
-            _append_text_quality_units(units, nested)
+        for nested_key, nested in value.items():
+            _append_text_quality_units_for_key(units, nested, key=str(nested_key))
         return
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         for nested in value:
-            _append_text_quality_units(units, nested)
+            _append_text_quality_units_for_key(units, nested, key=key)
+        return
+    if structural_copy_value(key=key, value=clean_text(value)):
         return
     mermaid_units = visible_mermaid_label_quality_texts(value)
     if mermaid_units:
         for unit in mermaid_units:
-            _append_text_quality_units(units, unit)
+            _append_text_quality_units_for_key(units, unit, key=key)
         return
     if _looks_like_shell_command(str(value or "")):
         units.append(clean_text(value))

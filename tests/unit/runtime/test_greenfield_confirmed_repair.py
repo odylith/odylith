@@ -84,6 +84,9 @@ def test_confirmed_completion_prewrite_gate_stays_in_dedicated_owner() -> None:
     assert component_focus_phrase(label="Risk_policy component", contract={}, fallback="fallback") == (
         "risk policy"
     )
+    assert component_focus_phrase(label="Flood Shelter Intake System Intake Register Service", contract={}, fallback="fallback") == (
+        "flood shelter intake register"
+    )
     assert keywords(["Status Windows Service", "Build window proof"]) == {
         "build",
         "proof",

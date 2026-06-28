@@ -14,7 +14,9 @@ from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
+from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import drop_release_proof_control_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
@@ -34,7 +36,9 @@ def sequence_event_steps(
 ) -> list[str]:
     """Return normalized first-path event steps for sequence-style Atlas diagrams."""
 
-    steps = _drop_launcher_only_steps(_semantic_event_steps(semantic_model) or _first_path_steps(first_path))
+    steps = drop_release_proof_control_steps(
+        _drop_launcher_only_steps(_semantic_event_steps(semantic_model) or _first_path_steps(first_path))
+    )
     return _dedupe_steps(steps) if dedupe else steps
 
 
@@ -59,7 +63,7 @@ def _semantic_event_steps(semantic_model: Mapping[str, Any] | None) -> list[str]
             text = _normalize_event_step(text)
             text = _anchor_visible_result_step(text, visible_result)
             steps.append(text)
-    return _dedupe_steps(_expand_compound_steps(steps))
+    return _dedupe_steps(drop_release_proof_control_steps(_expand_compound_steps(steps)))
 
 
 def _is_generated_floor_event(value: str, visible_result: str) -> bool:
@@ -228,6 +232,9 @@ def _first_path_steps(value: str) -> list[str]:
 def _expand_compound_steps(values: list[str]) -> list[str]:
     expanded: list[str] = []
     for value in values:
+        if _modal_actor_capability_step(value):
+            expanded.append(_sentence(value).rstrip("."))
+            continue
         parts = [
             part.strip(" .")
             for part in re.split(
@@ -252,6 +259,11 @@ def _expand_compound_steps(values: list[str]) -> list[str]:
     return expanded
 
 
+def _modal_actor_capability_step(value: str) -> bool:
+    actor, action = modal_actor_action_parts(_compact_text(value))
+    return bool(actor and action)
+
+
 def _carry_subject_across_parts(values: list[str]) -> list[str]:
     rows: list[str] = []
     current_subject = ""
@@ -266,6 +278,9 @@ def _carry_subject_across_parts(values: list[str]) -> list[str]:
             current_subject = subject
             current_action = _leading_base_action(text)
         elif current_action and _looks_like_carried_object_fragment(core, has_connector=has_connector):
+            if rows:
+                rows[-1] = _append_carried_object_fragment(rows[-1], core, has_connector=has_connector)
+                continue
             text = f"{current_action[:1].upper()}{current_action[1:]} {core}".strip(" .")
         elif current_subject and has_connector and _starts_with_action_word(core):
             text = f"{current_subject} {_subject_action_clause(current_subject, core)}"
@@ -273,6 +288,16 @@ def _carry_subject_across_parts(values: list[str]) -> list[str]:
             text = f"{current_subject} {_subject_action_clause(current_subject, text)}"
         rows.append(text)
     return rows
+
+
+def _append_carried_object_fragment(previous: str, fragment: str, *, has_connector: bool) -> str:
+    head = _compact_text(previous).strip(" .")
+    tail = _compact_text(fragment).strip(" .")
+    if not head or not tail:
+        return head or tail
+    if has_connector:
+        return f"{head} and {tail}".strip(" .")
+    return f"{head}, {tail}".strip(" .")
 
 
 def _subject_action_clause(subject: str, action: str) -> str:
@@ -318,14 +343,22 @@ def _looks_like_carried_object_fragment(value: str, *, has_connector: bool) -> b
         return False
     if leading_subject_prefix(text):
         return False
+    words = [word.strip(".,:;()[]{}").casefold() for word in text.split() if word.strip(".,:;()[]{}")]
+    if _looks_like_coordinated_object_tail(words):
+        return True
     if looks_like_finite_action(text):
         return False
-    words = [word.strip(".,:;()[]{}").casefold() for word in text.split() if word.strip(".,:;()[]{}")]
     if has_connector and _connector_core_starts_action_clause(words):
         return False
     if looks_like_action_clause(text) and not has_connector:
         return False
     return True
+
+
+def _looks_like_coordinated_object_tail(words: list[str]) -> bool:
+    if len(words) < 3 or words[1] not in {"and", "or"}:
+        return False
+    return _starts_with_action_word(words[0]) and not _starts_with_action_word(words[2])
 
 
 def _connector_core_starts_action_clause(words: list[str]) -> bool:

@@ -78,6 +78,17 @@ def test_greenfield_traceability_splits_long_first_slice_lines() -> None:
     assert all(len(line) < 220 for line in lines)
 
 
+def test_greenfield_traceability_does_not_repeat_first_step_label_as_step_body() -> None:
+    lines = greenfield_traceability._first_implementation_step_lines(
+        "First implementation step: record corridor request, check blocked constraints, confirm receiving-site readiness, "
+        "publish safe operating status, record review evidence, and keep deferred integrations outside the release proof."
+    )
+
+    assert lines[0] != "First implementation step: First implementation step."
+    assert lines[0].startswith("First implementation step: record corridor request")
+    assert "First implementation step: First implementation step" not in "\n".join(lines)
+
+
 def test_greenfield_traceability_why_now_starts_with_workstream_focus() -> None:
     text = greenfield_traceability._why_now_text(
         row={},

@@ -171,7 +171,7 @@ def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     focus = _focus_label(title)
     state = state_label(_clean(intent.get("state_object")), title=title)
     proof = _short(_clean(intent.get("proof_boundary")), fallback="the release proof")
-    names = [f"{focus} {suffix}" for suffix in _SYSTEM_SUFFIXES]
+    names = [_focus_system_name(focus, suffix) for suffix in _SYSTEM_SUFFIXES]
     descriptions = [
         f"owns identity, current status, version history, and traceable changes for {state}",
         "presents the current state, missing-information guidance, user-facing confirmation, and next useful action without owning source records",
@@ -179,6 +179,16 @@ def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
         "shows the visible result, known limits, and recovery conditions before broader rollout",
     ]
     return [f"{_title_case_system_name(name)} — {description.rstrip('.')}" for name, description in zip(names, descriptions)]
+
+
+def _focus_system_name(focus: str, suffix: str) -> str:
+    focus_text = _clean(focus)
+    focus_terms = {term.casefold().strip(".,;:") for term in focus_text.split() if term.strip(".,;:")}
+    suffix_words = [word for word in _clean(suffix).split() if word.casefold().strip(".,;:") not in focus_terms]
+    suffix_text = " ".join(suffix_words).strip()
+    if not suffix_text:
+        return focus_text
+    return f"{focus_text} {suffix_text}".strip()
 
 
 def _clean_system_description(value: str) -> str:

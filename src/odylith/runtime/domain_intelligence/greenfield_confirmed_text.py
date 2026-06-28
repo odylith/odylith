@@ -365,6 +365,37 @@ def focus_label(title: str) -> str:
     return title_case_text(" ".join(words[:4]) or "Project")
 
 
+def label_with_suffix(label: str, suffix: str) -> str:
+    """Append a generic suffix without repeating an overlapping label tail."""
+
+    clean_label = clean_confirmed_text(label).strip(" .")
+    clean_suffix = clean_confirmed_text(suffix).strip(" .")
+    if not clean_label:
+        return clean_suffix
+    if not clean_suffix:
+        return clean_label
+    label_tokens = [_normalized_join_token(token) for token in label_terms(clean_label)]
+    suffix_words = clean_suffix.split()
+    suffix_tokens = [_normalized_join_token(token) for token in label_terms(clean_suffix)]
+    overlap = 0
+    for width in range(1, min(len(label_tokens), len(suffix_tokens)) + 1):
+        if label_tokens[-width:] == suffix_tokens[:width]:
+            overlap = width
+    suffix_tail = suffix_words[overlap:]
+    if not suffix_tail:
+        return clean_label
+    return f"{clean_label} {' '.join(suffix_tail)}"
+
+
+def _normalized_join_token(value: str) -> str:
+    token = value.casefold().strip(" ,.;:()[]{}")
+    if len(token) > 4 and token.endswith("ies"):
+        return f"{token[:-3]}y"
+    if len(token) > 3 and token.endswith("s"):
+        return token[:-1]
+    return token
+
+
 def domain_object_label(value: str, *, fallback: str) -> str:
     text = compact_text(value)
     if not text:
@@ -421,6 +452,33 @@ def domain_object_label(value: str, *, fallback: str) -> str:
     if len(words) <= 7:
         return title_label(text) or fallback
     return fallback
+
+
+def compact_domain_object_label(value: str, *, fallback: str) -> str:
+    """Return a concise state/object label for titles and proof references."""
+
+    source = compact_text(value)
+    label = domain_object_label(source, fallback="")
+    if not label and source:
+        head = re.split(r"\s+with\b", source, maxsplit=1, flags=re.IGNORECASE)[0].strip(" .")
+        if head and word_count(head) >= 2:
+            label = title_label(head)
+    if not label:
+        label = fallback
+    if not label:
+        return fallback
+    compact_label = re.sub(r"\s+with\b.*$", "", label, flags=re.IGNORECASE).strip(" .")
+    if compact_label and word_count(compact_label) >= 2:
+        return compact_label
+    if len(label) <= 90 and word_count(label) <= 10:
+        return label
+    terms = [
+        term
+        for term in label_terms(label)
+        if term.casefold() not in CONFIRMED_SEMANTIC_STOPWORDS
+    ]
+    title = title_label(" ".join(terms[:5])) if terms else ""
+    return title or fallback
 
 
 def state_object_descriptor(value: str) -> str:

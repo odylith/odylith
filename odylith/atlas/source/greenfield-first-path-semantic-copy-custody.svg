@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4516" height="566" viewBox="0 0 4516 566" role="img">
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#B9C7D8" /></marker>
+</defs>
+<rect width="100%" height="100%" fill="#FFFFFF" />
+<g class="flowchart-group"><rect x="32" y="30" width="1292" height="170" rx="14" fill="#FBFDFF" stroke="#D8E5F4" stroke-width="1.15" />
+<text x="48" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">Accepted First-Path Facts</text></g>
+<g class="flowchart-group"><rect x="1772" y="30" width="1313" height="188" rx="14" fill="#FBFDFF" stroke="#D8E5F4" stroke-width="1.15" />
+<text x="1788" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">Generated Prose Shape</text></g>
+<g class="flowchart-group"><rect x="1424" y="30" width="2023" height="492" rx="14" fill="#FBFDFF" stroke="#D8E5F4" stroke-width="1.15" />
+<text x="1440" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">Surface Projections</text></g>
+<g class="flowchart-group"><rect x="3512" y="30" width="972" height="358" rx="14" fill="#FBFDFF" stroke="#D8E5F4" stroke-width="1.15" />
+<text x="3528" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">Repair Custody</text></g>
+<path d="M291.0,104.0 C347.5,104.0 347.5,122.0 404.0,122.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M632.0,122.0 C692.0,122.0 692.0,113.0 752.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1008.0,113.0 C1054.0,113.0 1054.0,113.0 1100.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1300.0,113.0 C1374.0,113.0 1374.0,104.0 1448.0,104.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1300.0,113.0 C1374.0,113.0 1374.0,274.0 1448.0,274.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1300.0,113.0 C1374.0,113.0 1374.0,453.0 1448.0,453.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1676.0,104.0 C1736.0,104.0 1736.0,113.0 1796.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1662.0,274.0 C1729.0,274.0 1729.0,113.0 1796.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1704.0,453.0 C1750.0,453.0 1750.0,113.0 1796.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M2031.0,113.0 C2087.5,113.0 2087.5,104.0 2144.0,104.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M2393.0,104.0 C2442.5,104.0 2442.5,113.0 2492.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M2692.0,113.0 C2766.0,113.0 2766.0,131.0 2840.0,131.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3061.0,131.0 C3124.5,131.0 3124.5,113.0 3188.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3423.0,113.0 C3479.5,113.0 3479.5,104.0 3536.0,104.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3423.0,113.0 C3479.5,113.0 3479.5,301.0 3536.0,301.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3743.0,104.0 C3813.5,104.0 3813.5,113.0 3884.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3778.0,301.0 C3831.0,301.0 3831.0,113.0 3884.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M4119.0,113.0 C4175.5,113.0 4175.5,104.0 4232.0,104.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<g id="accepted_path"><rect x="56" y="68" width="235" height="72" rx="8" fill="#EFF6FF" stroke="#BFD7FE" stroke-width="1.35" />
+<text x="173.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Accepted first path</text>
+<text x="173.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">operator-confirmed behavior</text>
+</g>
+<g id="semantic_contract"><rect x="404" y="68" width="228" height="108" rx="8" fill="#EFF6FF" stroke="#BFD7FE" stroke-width="1.35" />
+<text x="518.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">SemanticModelIR first-path</text>
+<text x="518.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">contract</text>
+<text x="518.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">events, visible result,</text>
+<text x="518.0" y="149.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">proof obligations</text>
+</g>
+<g id="sequence_owner"><rect x="752" y="68" width="256" height="90" rx="8" fill="#EFF6FF" stroke="#BFD7FE" stroke-width="1.35" />
+<text x="880.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Sequence step owner</text>
+<text x="880.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">keeps coordinated object lists</text>
+<text x="880.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">on the prior action</text>
+</g>
+<g id="modal_owner"><rect x="1100" y="68" width="200" height="90" rx="8" fill="#EFF6FF" stroke="#BFD7FE" stroke-width="1.35" />
+<text x="1200.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Modal actor owner</text>
+<text x="1200.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">plural actors keep can</text>
+<text x="1200.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">plus base action</text>
+</g>
+<g id="shape_checks"><rect x="1796" y="68" width="235" height="90" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.35" />
+<text x="1913.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Prose-shape checks</text>
+<text x="1913.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">actor-led capability drift,</text>
+<text x="1913.5" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">gerund actor splice</text>
+</g>
+<g id="gerund_owner"><rect x="2144" y="68" width="249" height="72" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.35" />
+<text x="2268.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Gerund action owner</text>
+<text x="2268.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">bounded proof-action phrasing</text>
+</g>
+<g id="structural_filter"><rect x="2492" y="68" width="200" height="90" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.35" />
+<text x="2592.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Structural-copy filter</text>
+<text x="2592.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">ids, paths, slugs,</text>
+<text x="2592.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">versions, URLs</text>
+</g>
+<g id="repetition_gate"><rect x="2840" y="68" width="221" height="126" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.35" />
+<text x="2950.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Semantic repetition gate</text>
+<text x="2950.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">allows complete canonical</text>
+<text x="2950.5" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">events,</text>
+<text x="2950.5" y="149.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">rejects repeated sentence</text>
+<text x="2950.5" y="167.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">shape</text>
+</g>
+<g id="radar_projection"><rect x="1448" y="68" width="228" height="72" rx="8" fill="#ECFDFB" stroke="#A7E9E3" stroke-width="1.35" />
+<text x="1562.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Radar and brief projection</text>
+<text x="1562.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">surface-local wording</text>
+</g>
+<g id="atlas_projection"><rect x="1448" y="238" width="214" height="72" rx="8" fill="#ECFDFB" stroke="#A7E9E3" stroke-width="1.35" />
+<text x="1555.0" y="265.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Atlas event projection</text>
+<text x="1555.0" y="283.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">sequence and flow labels</text>
+</g>
+<g id="next_step_prompts"><rect x="1448" y="408" width="256" height="90" rx="8" fill="#ECFDFB" stroke="#A7E9E3" stroke-width="1.35" />
+<text x="1576.0" y="435.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Project next-step prompts</text>
+<text x="1576.0" y="453.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">accepted first path preserved,</text>
+<text x="1576.0" y="471.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">no Radar slice echo</text>
+</g>
+<g id="package_findings"><rect x="3188" y="68" width="235" height="90" rx="8" fill="#ECFDFB" stroke="#A7E9E3" stroke-width="1.35" />
+<text x="3305.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Typed package findings</text>
+<text x="3305.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">source path, projection id,</text>
+<text x="3305.5" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">repair owner</text>
+</g>
+<g id="semantic_plan_patch"><rect x="3536" y="68" width="207" height="72" rx="8" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.35" />
+<text x="3639.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Semantic or plan patch</text>
+<text x="3639.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">source fact repair only</text>
+</g>
+<g id="exact_draft_cleanup"><rect x="3536" y="238" width="242" height="126" rx="8" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.35" />
+<text x="3657.0" y="265.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Exact-path draft cleanup</text>
+<text x="3657.0" y="283.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">duplicate words and dangling</text>
+<text x="3657.0" y="301.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">tails</text>
+<text x="3657.0" y="319.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">on collected public-copy</text>
+<text x="3657.0" y="337.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">leaves</text>
+</g>
+<g id="final_gate"><rect x="3884" y="68" width="235" height="90" rx="8" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.35" />
+<text x="4001.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Final package gate</text>
+<text x="4001.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">same validators, no lowered</text>
+<text x="4001.5" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">bar</text>
+</g>
+<g id="governed_write"><rect x="4232" y="68" width="228" height="72" rx="8" fill="#FFF7ED" stroke="#FDBA74" stroke-width="1.35" />
+<text x="4346.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Governed writes</text>
+<text x="4346.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">only after manifest passes</text>
+</g>
+</svg>

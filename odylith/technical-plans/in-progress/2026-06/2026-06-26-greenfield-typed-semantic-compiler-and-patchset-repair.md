@@ -1049,3 +1049,118 @@ vocabulary, or degraded packages.
       passing, create times of 20.666-23.468s, and clean matrix temp roots.
       The included rescue smoke passed in 27.399s and remains synthetic
       wiring-only rather than natural rescue-quality proof.
+- [x] Closed a SemanticModelIR visible-result ownership gap exposed by a
+      hostile source-local confirmed intent using `record` as both noun and
+      verb. The semantic parser selected `Recorded readiness` as the visible
+      result, but no first-path event was marked as the visible-result owner
+      once the event list already contained three rows, so post-confirm failed
+      before governed writes. The source fix attaches the selected visible
+      result to the terminal event when no event owns it, keeping the repair in
+      semantic-model construction instead of rendered prose, issue-message
+      classification, or domain-specific wording. Focused proof passed 28
+      semantic/repetition/patch-planner tests in 0.52s. The retained
+      record-as-noun/verb replay now commits governed records in 15.53s with a
+      standard passed manifest, zero final issues, no rescue, and temp cleanup;
+      a hostile Review Status Board replay also completed standard create after
+      one safe generated-copy cleanup pass. This improves the standard path
+      but does not close the remaining natural rescue proof blocker.
+- [x] Fixed the next hostile source-local matrix failure without weakening the
+      final gate. Seven of eight cases passed, but water-rights hearing
+      evidence failed before writes after auto-escalating to rescue; the
+      PatchSet had empty replacement facts and the engine stopped with
+      `no_progress`. Diagnosis found two generic owners, not a project defect:
+      readiness/status result objects were phrased as `reach ... readiness`,
+      and generated-copy tokenization treated title-label words and hyphenated
+      noun compounds (`Water Use Claim`, `water-use claim`) as action verbs
+      near result/status words. The fix adds token metadata for hyphen and
+      title-label context in the copy gate and projects readiness/status-like
+      visible results as see-style actions. Focused regressions pin the false
+      positive and true positive, and the retained water-rights replay now
+      commits governed records in 15.681s with a standard passed manifest, zero
+      issues, all four expert lenses passing, and temp cleanup. This again
+      improves standard-path quality; natural rescue remains unproven.
+- [ ] Current release-quality regression: a 2026-06-28 source-local retained
+      battery-materials readiness create failed before governed writes in 24s
+      on clipped Project Brief preview copy ending in `or`, and the widened
+      greenfield quality pack failed 14 tests while passing 284. The known
+      actor-led modal/gerund escape now has focused proof, but the new shared
+      prose-shape guard is too broad in evidence/review component contexts and
+      list-comma regressions remain. Next fix must keep the detector
+      domain-neutral while adding semantic context: corrupted actor-led
+      capability/proof text should fail closed, but legitimate component
+      phrases such as evidence extraction, review assignment, and publication
+      record responsibilities must not be treated as actor-role corruption.
+      Release scoring is capped to non-release-ready until a fresh live
+      post-confirm create passes under 60s, the broad greenfield quality pack
+      is green, and artifact readback confirms no clipped copy, modal drift,
+      gerundized actor-role splice, or Project prompt corruption.
+- [ ] Follow-up 2026-06-28 proof after shared actor-prefix, first-path list,
+      and prose-shape segmentation fixes: the targeted subset passed 8 tests
+      and the broader affected greenfield pack passed 284 tests in 338.06s.
+      The first live source-local matrix remains red under the brutal release
+      scorer. Battery materials failed before writes in 26.096s on
+      `modal/base-form grammar drift leaked at proposal.risks.1.statement`.
+      Public records, solar assessment, structured review, and cooking robot
+      wrote governed records in 24.761-28.957s with expert manifest lenses
+      passing, but release scoring failed because rendered Atlas/surface
+      custody was incomplete: missing `odylith/atlas/atlas.html`, missing
+      SVG/PNG diagram renders, 5/6 rendered surfaces, 10/12 surface payloads,
+      and 0 Atlas rendered assets. Every temp repo and the matrix root were
+      deleted. Next repair targets are risk-statement semantic/projection
+      grammar and post-confirm rendered Atlas/surface custody; do not weaken
+      the scorer or reintroduce rendered-prose repair.
+- [x] Follow-up 2026-06-28 source-local standard-path proof after the
+      Product Intent renderer, sequence-step, modal-actor, repetition, and
+      exact-path artifact-draft repairs. The fix keeps repair ownership in
+      typed semantic/projection owners: text `greenfield propose` now emits a
+      concrete Product Intent Confirmation that can be saved as the confirmed
+      intent file; sequence-step ownership keeps coordinated object lists on
+      the prior action and preserves plural modal actor capability chains;
+      package repetition allows complete canonical semantic event custody
+      without allowing sentence-shape boilerplate; Project next-step prompts
+      carry the accepted first path without echoing Radar
+      `recommended_first_slice`; and artifact-draft cleanup is limited to exact
+      collected public-copy projection leaves after shared structural-copy
+      filtering. Expanded affected proof passed 106 tests in 414.34s; the
+      focused modal/live/sequence/repetition pack passed 19 tests in 190.09s.
+      Six fresh source-local operator-flow projects then passed
+      propose-save-confirm-create with governed writes, zero final issues,
+      hard-min 10/10 scores across completion, latency, semantic manifest,
+      copy/semantic clarity, governance depth, traceability, operator
+      usefulness, Project implementation prompts, product-manager, architect,
+      engineer, and domain-expert lenses, and temp cleanup after every case:
+      hospital sterile instrument recall 23.127s, satellite thermal anomaly
+      triage 23.207s, drought water-rights transfer ledger 24.639s, battery
+      recycling hazmat custody 22.815s, cryptographic key ceremony readiness
+      23.949s, and workplace accommodation plan review 24.279s. This restores
+      source-local standard-path quality for the tested variance, but release
+      readiness still requires rebuilt installed-dist matrix proof before
+      closeout.
+- [x] Cross-surface governance artifact learning captured for day-to-day ops.
+      The durable lesson is that generated Casebook, Registry, Atlas, Compass,
+      technical-plan, release-proof, and operator-prompt artifacts must be
+      evaluated as governed artifact packages with source-owned facts,
+      surface-local custody, readable grammar, non-repetition, traceable proof
+      obligations, exact freshness state, and actionable next decisions. The
+      banned mechanisms carry across every governance surface: rendered-prose
+      repair, diagnostic-sentence routing, role/surface label fallback as
+      projection identity, dashboard refresh without source truth freshness,
+      shallow Compass claims without validation evidence, and count-based
+      scoring that ignores artifact readability. Operational rule for future
+      governance generation: update owned source truth first, refresh generated
+      surfaces through the first-class CLI, validate source and generated
+      surface contracts, and cap release/readiness claims until punitive
+      multi-lens artifact-package checks pass.
+- [x] Atlas architecture coverage refreshed for the latest greenfield and
+      rendered-surface owners. Created D-045 for first-path semantic/copy
+      custody and D-046 for rendered-surface plus static Atlas custody; updated
+      D-043 to include confirmable propose stdout, first-path sequence custody,
+      collected public-copy cleanup, and rendered-surface proof; updated D-040
+      to show static generated-flowchart fallback in the surface DAG. Atlas
+      catalog watch paths now include the extracted sequence-step, step-role,
+      prose-shape, gerund-action, structural-copy, confirmed-completion helper,
+      and generated-flowchart owners. Source-local Atlas auto-update rendered
+      the new SVG/PNG assets through the browserless fallback after Chromium
+      launch degraded, and the rendered Atlas payload verifies D-040, D-043,
+      D-045, and D-046 as fresh with SVG and PNG present. Atlas render reports
+      46 diagrams, 46 fresh, 0 stale.

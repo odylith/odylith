@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_command_text import shell_qu
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_confirmed_items
@@ -27,8 +28,8 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import fi
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
-from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_outcome_text
+from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
 
@@ -53,13 +54,13 @@ def confirmed_project_brief(
     non_goals: list[str] | None = None,
 ) -> dict[str, Any]:
     label_lower = sentence_label(label)
-    state_label = domain_object_label(state_object, fallback=f"{label} state")
+    state_label = compact_domain_object_label(state_object, fallback=f"{label} state")
     state_reference = _state_reference_text(state_object, state_label=state_label)
     state_descriptor = state_object_descriptor(state_reference)
     evidence_label = domain_object_label(evidence_record, fallback=evidence_record)
     state_ref = sentence_label(state_label)
     evidence_ref = sentence_label(evidence_label)
-    actor_summary = _actor_boundary_text(human_actors, project_focus=label) or f"the first {label_lower} operator and reviewer"
+    actor_summary = _actor_boundary_text(human_actors, project_focus=label, limit=8) or f"the first {label_lower} operator and reviewer"
     internal_summary = join_system_labels(internal_systems, limit=8) or (
         f"{state_ref} ownership and {evidence_ref} review"
     )
@@ -76,7 +77,7 @@ def confirmed_project_brief(
         or f"The first release proves one {label_lower} path from intake through state update and evidence review.",
         human_actors=human_actors,
         label=label,
-        limit=300,
+        limit=520,
     )
     raw_proof_source = proof_boundary or (
         f"Release {release} succeeds only when {state_ref} and "
@@ -97,7 +98,7 @@ def confirmed_project_brief(
         first_path or first,
         fallback=first,
         proof_boundary=proof_source,
-        limit=260,
+        limit=520,
     )
     non_goal_summary = (
         boundary_clause_text(non_goals) or "wider automation, live irreversible integrations, and production scaling"
@@ -421,7 +422,7 @@ def _drop_trailing_clause_or_words(value: str, *, drop_words: int) -> str:
 
 
 def _first_path_brief(value: str, *, human_actors: list[str] | None = None, label: str = "", limit: int = 180) -> str:
-    steps = first_path_steps(value)
+    steps = sequence_event_steps(value)
     if steps:
         text = base_adverbial_note_action(_first_path_step_summary(list(steps), limit=limit))
     else:
@@ -432,6 +433,7 @@ def _first_path_brief(value: str, *, human_actors: list[str] | None = None, labe
             actor_rows=[value for value in human_actors or [] if not is_deferred_actor(str(value))],
             project_focus=label,
             fallback=f"{sentence_label(label)} user" if label else "first user",
+            sentence_context=True,
         ),
         limit=limit,
     )
@@ -484,6 +486,7 @@ def _first_path_readiness_summary(
     proof_boundary: str,
     limit: int = 220,
 ) -> str:
+    structured_action = _first_path_action_step_summary(value, limit=limit)
     clauses = first_path_clauses(
         value,
         proof_boundary=proof_boundary,
@@ -495,7 +498,7 @@ def _first_path_readiness_summary(
         outcome_limit=limit,
     )
     capability = _dedupe_repeated_capability(clauses.capability_chain)
-    text = capability or clauses.action_chain or fallback
+    text = _prefer_more_complete_action_summary(structured_action, capability or clauses.action_chain) or fallback
     outcome = compact_text(clauses.visible_result).strip(" .")
     if outcome and not _result_terms_covered(outcome, text) and not _outcome_action_covered(outcome, text):
         text = f"{text} and validate the promised result: {outcome}"
@@ -530,6 +533,41 @@ def _coverage_term(value: str) -> str:
     if token in {"prove", "proves", "proved", "proven", "proof"}:
         return "proof"
     return token
+
+
+def _first_path_action_step_summary(value: str, *, limit: int) -> str:
+    actions: list[str] = []
+    for step in sequence_event_steps(value):
+        action = action_chain_fragment(step)
+        if action and looks_like_action_clause(action):
+            actions.append(action)
+    summary = _join_capability_clauses(_dedupe_action_rows(actions))
+    if not summary:
+        return ""
+    return _brief_clause(summary, limit=limit)
+
+
+def _dedupe_action_rows(values: list[str]) -> list[str]:
+    rows: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = compact_text(value).strip(" .")
+        key = " ".join(sorted(_coverage_terms(text)))
+        if not text or key in seen:
+            continue
+        seen.add(key)
+        rows.append(text)
+    return rows
+
+
+def _prefer_more_complete_action_summary(primary: str, secondary: str) -> str:
+    first = compact_text(primary).strip(" .")
+    second = compact_text(secondary).strip(" .")
+    if not first:
+        return second
+    if not second:
+        return first
+    return first if len(_coverage_terms(first)) >= len(_coverage_terms(second)) else second
 
 
 def _summary_sentences(value: str) -> list[str]:

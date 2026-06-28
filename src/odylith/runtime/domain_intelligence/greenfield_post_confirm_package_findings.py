@@ -432,8 +432,10 @@ def _mechanical_package_quality_issue(message: str) -> bool:
         marker in text
         for marker in (
             "repeats adjacent word",
+            "leaked adjacent duplicate word prose",
             "clipped or dangling phrase ending",
             "clipped article phrase ending",
+            "leaked clipped or dangling public copy",
         )
     )
 

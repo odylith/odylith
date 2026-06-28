@@ -21,6 +21,9 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIRMED_DANGLING_WORDS
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
 
 _HANDOFF_MATCH_STOPWORDS = frozenset(
     {
@@ -423,10 +426,44 @@ def _first_slice_text(row: Mapping[str, Any]) -> str:
 
 
 def _first_path_summary(proposal: Mapping[str, Any]) -> str:
+    brief_first_path = _project_brief_first_path(proposal)
+    if brief_first_path:
+        return brief_first_path
     semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    values = text_values(first_path)
-    return _preview_safe_fragment(" ".join(values), limit=360) if values else ""
+    raw_path = str(first_path.get("raw_path", "")).strip() if isinstance(first_path, Mapping) else ""
+    if raw_path:
+        action = readable_action_chain_sentence(
+            raw_path,
+            fallback="",
+            limit=420,
+            max_steps=6,
+            include_visible_results=True,
+        ) or first_path_action_phrase(raw_path, fallback="", limit=240, max_fragments=4)
+        outcome = first_path_outcome_phrase(raw_path, fallback="", limit=150)
+        action = _preview_safe_fragment(action, limit=420)
+        outcome = _preview_safe_fragment(outcome, limit=150)
+        if action and outcome and outcome.casefold() not in action.casefold():
+            return _preview_safe_fragment(f"{action}, ending with {outcome}", limit=460)
+        return _preview_safe_fragment(action or outcome or raw_path, limit=460)
+    return ""
+
+
+def _project_brief_first_path(proposal: Mapping[str, Any]) -> str:
+    project_brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {}
+    sections = project_brief.get("blueprint_sections") if isinstance(project_brief, Mapping) else []
+    if not isinstance(sections, Sequence) or isinstance(sections, (str, bytes)):
+        return ""
+    for row in sections:
+        if not isinstance(row, Mapping):
+            continue
+        section = str(row.get("section", "")).casefold()
+        if "first" not in section or "path" not in section:
+            continue
+        must_capture = _preview_safe_fragment(row.get("must_capture"), limit=460)
+        if must_capture:
+            return must_capture
+    return ""
 
 
 def _component_local_first_slice(row: Mapping[str, Any], *, fallback: str) -> str:
@@ -623,13 +660,19 @@ def _implementation_prompt(*, start_id: str, title: str, first_slice: str, first
     first_slice_text = str(first_slice or "").strip()
     if first_slice_text and first_slice_text[-1] not in ".!?":
         first_slice_text = f"{first_slice_text}."
-    scope_sentence = f"{first_slice_text} " if first_slice_text else ""
     first_path_text = str(first_path or "").strip()
     if first_path_text and first_path_text[-1] not in ".!?":
         first_path_text = f"{first_path_text}."
-    first_path_sentence = f"Preserve this accepted first path: {first_path_text} " if first_path_text else ""
+    if first_path_text:
+        return (
+            f"After project-first scope is accepted, start {start_id}. "
+            f"Preserve this accepted first path: {first_path_text} "
+            f"Treat `{title_text}` as the first coding scope and do not advance waves until success, blocked-input, "
+            "replay, and handoff evidence is written and reviewed."
+        )
+    scope_sentence = f"{first_slice_text} " if first_slice_text else ""
     return (
-        f"After project-first scope is accepted, start {start_id}: {scope_sentence}{first_path_sentence}"
+        f"After project-first scope is accepted, start {start_id}: {scope_sentence}"
         f"Treat `{title_text}` as the first coding scope and do not advance waves until success, blocked-input, "
         "replay, and handoff evidence is written and reviewed."
     )

@@ -262,6 +262,42 @@ def test_project_brief_long_outcome_uses_state_object_label_not_state_sentence()
     assert generated_public_copy_issues("project outcome", normalized["project_outcome"]) == ()
 
 
+def test_project_brief_outcome_compacts_field_heavy_state_object() -> None:
+    normalized = normalize_project_brief(
+        {
+            "project_outcome": (
+                "Release 0.0.1 succeeds when one corridor request can be recorded, reviewed against landing "
+                "and safety constraints, assigned a route readiness decision, replayed with evidence history, "
+                "and published as a stakeholder-safe public status while deferred external feeds and autonomous "
+                "flight control stay outside the claim."
+            )
+        },
+        intent={
+            "title": "Regional Drone Corridor Safety Console",
+            "first_path": "A coordinator records a request and a reviewer publishes corridor status.",
+            "proof_boundary": (
+                "Release 0.0.1 succeeds when one corridor request can be recorded, reviewed against landing "
+                "and safety constraints, assigned a route readiness decision, replayed with evidence history, "
+                "and published as a stakeholder-safe public status while deferred external feeds and autonomous "
+                "flight control stay outside the claim."
+            ),
+            "state_object": (
+                "The core state object is a corridor readiness record with route segment, requesting organization, "
+                "receiving site, operating window, restriction checks, landing-window status, waiver notes, "
+                "decision owner, public status, and evidence history."
+            ),
+        },
+        release_selector="0.0.1",
+    )
+
+    outcome = normalized["project_outcome"]
+    assert outcome.endswith("review evidence")
+    assert not outcome.rstrip(" .").endswith("and")
+    assert "Corridor Readiness Record stay connected" in outcome
+    assert "Waiver Notes" not in outcome
+    assert generated_public_copy_issues("project outcome", outcome) == ()
+
+
 def test_project_brief_renderer_keeps_comma_heavy_story_as_coherent_sentence() -> None:
     lines = render_project_brief_lines(
         {

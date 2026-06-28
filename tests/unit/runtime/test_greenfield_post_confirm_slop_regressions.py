@@ -25,26 +25,34 @@ from odylith.runtime.domain_intelligence.greenfield_component_semantic_contract 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
+from odylith.runtime.domain_intelligence.greenfield_confirmed_project_intelligence import complete_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import component_focus_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_risk
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import state_object as completion_state_object
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import state_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import workstream_product_view
+from odylith.runtime.domain_intelligence.greenfield_component_contract_profiles import status_view_contract
 from odylith.runtime.domain_intelligence import greenfield_confirmed_diagram_text as diagram_text
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_actions as backlog_actions
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_evidence_record_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_backlog_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_program
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_release_plan
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import confirmed_workstream_titles
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import confirmed_components
+from odylith.runtime.domain_intelligence.greenfield_confirmed_diagrams import confirmed_diagrams
+from odylith.runtime.domain_intelligence.greenfield_experience import build_next_steps
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_brief import confirmed_project_brief
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_name
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import _contains_stale_generic_label
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
 from odylith.runtime.domain_intelligence.greenfield_proposals import build_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
@@ -66,6 +74,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
@@ -123,6 +132,55 @@ CONFIRMED_INTENT_COMPLETION_PATH = (
 )
 PRODUCT_RISKS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py"
 CONFIRMED_DIAGRAM_TEXT_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py"
+
+
+def test_release_suffixed_labels_do_not_duplicate_release_across_governance_surfaces() -> None:
+    components = [
+        {"component_id": "intake", "label": "Batch Evidence Console Service", "kind": "service"},
+        {"component_id": "safety", "label": "Safety Constraint Ledger", "kind": "service"},
+        {"component_id": "readiness", "label": "Manufacturing Readiness Surface", "kind": "client"},
+    ]
+    program = confirmed_program(
+        label="Battery Materials Release",
+        parent_title="Battery Materials Release Evidence Desk",
+        release="0.0.1",
+        workflow_title="Record one lab batch",
+        boundary_title="Prove safety constraints",
+        proof_title="Publish manufacturing readiness",
+        components=components,
+    )
+    release_plan = confirmed_release_plan(
+        label="Battery Materials Release",
+        label_slug="battery-materials-release",
+        release="0.0.1",
+        workflow_title="Record one lab batch",
+        boundary_title="Prove safety constraints",
+        proof_title="Publish manufacturing readiness",
+    )
+    diagrams = confirmed_diagrams(
+        label="Battery Materials Release",
+        diagram_slugs={
+            "context": "context",
+            "sequence": "sequence",
+            "state_evidence": "state-evidence",
+            "component_boundaries": "component-boundaries",
+            "ownership": "ownership",
+            "proof_review": "proof-review",
+        },
+        components=components,
+        product_story="Materials teams need release evidence review.",
+        first_path="Materials reviewer records one lab batch and approves manufacturing readiness.",
+        proof_boundary="First release proves the manufacturing readiness decision.",
+        state_object="Batch Release Evidence Record",
+        evidence_record="Batch Evidence Console Proof Record",
+        human_actors=["Materials reviewer"],
+    )
+    rendered = json.dumps({"program": program, "release_plan": release_plan, "diagrams": diagrams}, sort_keys=True)
+    duplicate_normalized = re.sub(r"<br\s*/?>", " ", rendered, flags=re.IGNORECASE)
+
+    assert not re.search(r"\brelease\s+release\b", duplicate_normalized, flags=re.IGNORECASE)
+    assert re.search(r"\bbattery materials release gate\b", rendered, flags=re.IGNORECASE)
+    assert "Battery Materials Release release gate" not in rendered
 
 
 def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
@@ -221,6 +279,29 @@ def test_first_path_clause_rendering_stays_in_dedicated_owner() -> None:
     assert model.material_action == "Record follow-up notes"
 
 
+def test_project_intelligence_completion_defaults_do_not_leak_control_plane_names() -> None:
+    proposal = {"project_intelligence": {"schema_version": "odylith.greenfield.project_intelligence.v1"}}
+
+    changed = complete_project_intelligence(
+        proposal,
+        release_selector="0.0.1",
+        project_title="Regional Safety Console",
+        first_path="A coordinator records a request and a reviewer publishes a status.",
+        state_object="corridor readiness record",
+        proof_boundary="Release succeeds when the status is reviewable with evidence.",
+        text_needs_repair=lambda _value: False,
+    )
+    rendered = json.dumps(proposal["project_intelligence"], sort_keys=True)
+
+    assert changed
+    assert "Radar" not in rendered
+    assert "Registry" not in rendered
+    assert "Atlas" not in rendered
+    assert "Workstream records" in rendered
+    assert "Component records" in rendered
+    assert "Diagram records" in rendered
+
+
 def test_first_path_semantic_view_precomputes_step_facts_for_renderers() -> None:
     model = first_path_model(
         "A resident describes a repair, selects an appointment slot, the system confirms the booking, "
@@ -259,6 +340,7 @@ def test_plural_actor_subjects_and_decision_pair_outcomes_render_as_reviewable_r
         outcome_action_phrase("Supervisors approve or reject the permit with an auditable rationale")
         == "review the approval or rejection of the permit with an auditable rationale"
     )
+    assert outcome_action_phrase("Hearing readiness") == "see the hearing readiness"
 
 
 def test_temporal_choice_tail_expands_into_reviewable_first_path_events() -> None:
@@ -398,7 +480,7 @@ def test_workstream_titles_avoid_clipped_actor_and_material_action_slop() -> Non
     )[0]
 
     assert solar == "Let Homeowner See an Approved Quote Summary with Assumptions"
-    assert public == "Let Resident Reach a Tracking Status"
+    assert public == "Let Resident See a Tracking Status"
     assert research == "Let Submitting Researcher Submit for Review"
     assert not looks_like_visible_result("A submitting researcher submits for review")
     assert operator == "Let Home Cook Pick a Recipe"
@@ -1137,6 +1219,54 @@ def test_confirmed_project_brief_next_steps_normalize_adverbial_action_copy() ->
     assert "optionally note the trigger context" in rendered
 
 
+def test_confirmed_project_brief_summarizes_long_boundary_without_clipped_tail() -> None:
+    brief = confirmed_project_brief(
+        label="Regional Coordination Workspace",
+        prompt="Coordinate a regional incident across partner teams.",
+        release="0.0.1",
+        state_object=(
+            "A coordination record with support request, access restriction, capacity constraint, "
+            "resource commitment, readiness, approval decision, and public coordination status."
+        ),
+        evidence_record="Coordination Proof Record",
+        product_story=(
+            "A regional office coordinates partner decisions, separates private evidence from public status, "
+            "and publishes a trusted coordination status before field teams act."
+        ),
+        first_path=(
+            "City dispatcher records support request, tribal liaison reviews access needs, hospital coordinator "
+            "records capacity constraints, mutual-aid officer confirms resource commitments, shelter lead records "
+            "readiness, and emergency commander publishes public coordination status."
+        ),
+        proof_boundary=(
+            "Release 0.0.1 is proven when one support request moves through access review, hospital capacity "
+            "constraint recording, resource commitment confirmation, shelter readiness recording, and public "
+            "coordination status publication while private resident and partner details remain inside the governed boundary."
+        ),
+        human_actors=[
+            "City dispatcher",
+            "Tribal liaison",
+            "Hospital coordinator",
+            "Mutual-aid officer",
+            "Shelter lead",
+            "Emergency commander",
+        ],
+        internal_systems=[
+            "Request intake",
+            "Access review board",
+            "Capacity constraint ledger",
+            "Resource commitment tracker",
+            "Readiness board",
+            "Public coordination status view",
+        ],
+    )
+
+    outcome = str(brief["project_outcome"])
+    assert not outcome.casefold().rstrip(" .").endswith(("remain", "remains", "with"))
+    assert "details remain" not in outcome.casefold()
+    assert generated_public_copy_issues("project brief preview", outcome) == ()
+
+
 def test_confirmed_backlog_success_metrics_use_compact_state_reference() -> None:
     intent = parse_confirmed_intent_text(
         """
@@ -1467,7 +1597,9 @@ def test_confirmed_project_brief_readiness_gates_do_not_embed_raw_action_lists()
     assert "record how the day felt, record what action was tried" not in rendered
     assert "After a handful of entries." not in rendered
     assert "first implementation lane" in rendered
-    assert "record first entry, log again" in rendered
+    assert "record first entry" in rendered
+    assert "log again" in rendered
+    assert "show a simple trend" in rendered
 
 
 def test_system_label_join_does_not_clip_labels_containing_and() -> None:
@@ -1967,6 +2099,55 @@ def test_signal_pipeline_first_path_phrases_do_not_leak_modal_or_understand_frag
     assert generated_semantic_slop_issues({"product_view": product_view}) == []
 
 
+def test_workstream_product_view_modalizes_actor_led_actions_without_user_can_splice() -> None:
+    product_view = workstream_product_view(
+        label="Batch Evidence Console Service",
+        action="intake coordinator records one lab batch and precursor lot",
+        outcome="approved or rejected manufacturing readiness",
+    )
+
+    assert "the intake coordinator can record one lab batch and precursor lot" in product_view
+    assert "the user can intake coordinator records" not in product_view
+    assert "can records" not in product_view
+    assert generated_semantic_slop_issues({"product_view": product_view}) == []
+
+
+def test_semantic_slop_gate_rejects_multi_word_actor_inside_user_can_clause() -> None:
+    public_issues = generated_public_copy_issues(
+        "proposal.product_view",
+        "Batch Evidence Console Service is complete when the user can intake coordinator records one lab batch.",
+    )
+    issues = generated_semantic_slop_issues(
+        {
+            "product_view": (
+                "Batch Evidence Console Service is complete when the user can intake coordinator records "
+                "one lab batch and precursor lot, see the approved or rejected manufacturing readiness, "
+                "and recover cleanly from a bad or incomplete attempt."
+            )
+        },
+        root="proposal",
+    )
+
+    assert any("actor-led finite action inside user-can prose" in issue for issue in public_issues)
+    assert any("actor-led finite action leaked inside user-can clause" in issue for issue in issues)
+
+
+def test_copy_and_semantic_gates_reject_gerundized_actor_role_action_splice() -> None:
+    bad_capability = (
+        "intaking coordinator records one lab batch and precursor lot, checking blocking observations, "
+        "and approving or rejecting manufacturing readiness"
+    )
+
+    public_issues = generated_public_copy_issues("proposal.semantic_model.first_path_contract.capability", bad_capability)
+    semantic_issues = generated_semantic_slop_issues(
+        {"semantic_model": {"first_path_contract": {"capability": bad_capability}}},
+        root="proposal",
+    )
+
+    assert any("gerundized actor-role action prose" in issue for issue in public_issues)
+    assert any("gerundized actor-role action leaked" in issue for issue in semantic_issues)
+
+
 def test_predicate_visible_outcome_does_not_become_user_import_action() -> None:
     first_path = (
         "A homeowner connects inverter, meter, battery, and weather sources. "
@@ -2279,6 +2460,30 @@ def test_first_path_gerund_chain_handles_set_draft_and_send_actions() -> None:
     assert "drafts a response" not in capability
 
 
+def test_actor_role_modifiers_do_not_become_gerund_actions_or_modal_splices() -> None:
+    first_path = (
+        "Intake coordinator records one lab batch and precursor lot; "
+        "checks blocking observations; "
+        "process engineer records exception rationale; "
+        "approval reviewer approves or rejects manufacturing readiness."
+    )
+
+    assert actor_signature("Intake coordinator records one lab batch and precursor lot") == "intake coordinator"
+    assert action_chain_fragment("Intake coordinator records one lab batch and precursor lot") == (
+        "record one lab batch and precursor lot"
+    )
+    assert gerund_action_fragment("Intake coordinator records one lab batch and precursor lot") == (
+        "recording one lab batch and precursor lot"
+    )
+    capability = first_path_capability_phrase(first_path, fallback="review readiness", gerund=True, max_fragments=8, limit=360)
+
+    assert "recording one lab batch and precursor lot" in capability
+    assert "checking blocking observations" in capability
+    assert "approving or rejecting manufacturing readiness" in capability
+    assert "intaking coordinator" not in capability
+    assert generated_semantic_slop_issues({"capability": capability}) == []
+
+
 def test_first_path_capability_preserves_routed_review_actions_without_duplicate_outcome() -> None:
     first_path = (
         "A case worker creates an appeal case from a denied grant decision, records evidence, schedules a hearing, "
@@ -2587,6 +2792,385 @@ def test_generated_public_copy_rejects_action_shaped_result_and_template_prefix(
         "Registry component spec",
         "Triage Board shows open questions, selected route evidence, and review status.",
     ) == ()
+    assert generated_public_copy_issues(
+        "Radar workstream",
+        (
+            "The case coordinator can accept a water-use claim. "
+            "The product checks the details before it produces a result."
+        ),
+    ) == ()
+    assert generated_public_copy_issues(
+        "Radar workstream",
+        "Let Case Coordinator Accept a Water Use Claim: `docket-readiness-view` (Docket Readiness View Service).",
+    ) == ()
+    assert generated_public_copy_issues(
+        "Radar workstream",
+        "The product lets the evidence clerk reach the hearing readiness.",
+    ) == ("Radar workstream leaked awkward visible-result action prose",)
+
+
+def test_generated_public_copy_rejects_duplicate_status_and_clipped_terminals() -> None:
+    assert generated_public_copy_issues(
+        "accepted-project memory preview",
+        {
+            "owned_state": (
+                "Public Coordination Status View Service owns status status timeline, "
+                "current owner, and transition history."
+            )
+        },
+    ) == ("accepted-project memory preview leaked adjacent duplicate word prose",)
+    assert generated_public_copy_issues(
+        "project brief preview",
+        (
+            "Release 0.0.1 proves one accepted coordination path while private "
+            "details remain"
+        ),
+    ) == ("project brief preview leaked clipped or dangling public copy",)
+    assert generated_public_copy_issues(
+        "accepted-project memory preview",
+        (
+            "Accepts request intake state, request intake, intake state, and actor context. "
+            "Plan: odylith/radar/radar.html?view=plan. "
+            "flowchart LR action --> domain_state domain_state --> review."
+        ),
+    ) == ()
+
+
+def test_status_view_contract_does_not_repeat_status_when_object_already_names_status() -> None:
+    contract = status_view_contract(
+        label="Public Coordination Status View Service",
+        state_label="Public coordination status",
+        context="public coordination status",
+        previous_label="Coordination ledger",
+        next_label="",
+    )
+
+    owned_state = str(contract["owned_state"])
+    assert "status status" not in owned_state
+    assert "public coordination status timeline" in owned_state
+
+
+def test_release_scope_keeps_visible_result_owner_in_first_release_despite_private_boundary() -> None:
+    scope = release_scope_for_component(
+        {
+            "label": "Public Coordination Status View Service",
+            "source_system_description": "Public coordination status view",
+            "responsibility": "Owns public coordination status view state and publication handoff.",
+            "boundary": "Owns public coordination status timeline and local handoff decisions.",
+        },
+        first_path=(
+            "A coordinator records a support request, a reviewer confirms readiness, "
+            "and a commander publishes public coordination status."
+        ),
+        proof_boundary=(
+            "Release 0.0.1 is proven when public coordination status is published "
+            "while private resident details remain inside the governed boundary."
+        ),
+        non_goals=(),
+    )
+
+    assert scope == "first_path_required"
+
+
+def test_confirmed_intent_actor_completion_uses_semantic_steps_not_cross_actor_clause_tail() -> None:
+    intent = parse_confirmed_intent_text(
+        """
+# Cross Border Coordination
+
+## Product story
+A regional office coordinates partner decisions and publishes public status before teams act.
+
+## State object
+Coordination record with support request, access restriction, capacity constraint, resource commitment, readiness, and public status.
+
+## First complete path
+City dispatcher records evacuation support request, tribal liaison reviews restricted access needs, hospital coordinator records capacity constraints, mutual-aid officer confirms resource commitments, shelter lead records readiness, and emergency commander publishes public coordination status.
+
+## Human actors
+- City dispatcher
+- Tribal liaison
+- Hospital coordinator
+- Mutual-aid officer
+- Shelter lead
+- Emergency commander
+- Public information officer
+
+## Internal product systems
+- Request intake
+- Access review board
+- Capacity ledger
+- Commitment tracker
+- Readiness board
+- Public status view
+
+## Proof boundary
+Release 0.0.1 is proven when one request moves through access, capacity, commitment, readiness, and public status proof.
+""",
+        prompt="Create a coordination workspace.",
+    )
+
+    rendered = json.dumps(intent, sort_keys=True)
+    assert "record capacity constraints, mutual-aid" not in rendered
+    assert "Public Information Officer: uses the product to review resource commitments" not in rendered
+    assert intent["human_actors"][0] == (
+        "City Dispatcher: uses the product to record evacuation support request; "
+        "the outcome stays clear enough to choose the next step"
+    )
+    assert "Hospital Coordinator: uses the product to record capacity constraints;" in rendered
+    assert "Mutual Aid Officer: uses the product to confirm resource commitments;" in rendered
+    assert "Emergency Commander: uses the product to publish public coordination status;" in rendered
+    assert "Public Information Officer: supplies context, reviews the result, or takes the next step named by the first release" in rendered
+
+
+def test_confirmed_actor_completion_augments_partial_actor_list_from_first_path() -> None:
+    completed = complete_confirmed_intent(
+        {
+            "title": "Multi-jurisdictional Disaster Logistics Coordination Platform",
+            "product_story": (
+                "The product coordinates a first evacuation logistics path where named operators record, "
+                "review, confirm, and publish status without making emergency decisions."
+            ),
+            "state_object": (
+                "A public coordination status record tracks the actor, source input, current status, "
+                "owner, blocker, handoff, evidence, and version history for the first path."
+            ),
+            "first_path": (
+                "A city dispatcher records an evacuation support request. A tribal liaison reviews restricted "
+                "access needs. A hospital coordinator records capacity constraints. A mutual-aid officer confirms "
+                "resource commitments. A shelter lead records readiness. An emergency commander publishes public "
+                "coordination status."
+            ),
+            "proof_boundary": (
+                "Release 0.0.1 succeeds when the accepted first path is complete, reviewable, and blocked when "
+                "required, with replayable public coordination status evidence."
+            ),
+            "human_actors": [
+                "City Dispatcher: needs the product to record an evacuation support request and keep the result visible and reviewable",
+                "Tribal Liaison: needs the product to review restricted access needs and keep the result visible and reviewable",
+                "Hospital Coordinator: needs the product to record capacity constraints and keep the result visible and reviewable",
+            ],
+            "internal_systems": [
+                "Intake register records source input.",
+                "Review workspace presents current state.",
+                "Proof ledger keeps validation evidence.",
+            ],
+        }
+    )
+
+    rendered = json.dumps(completed, sort_keys=True)
+    assert "Mutual Aid Officer: uses the product to confirm resource commitments" in rendered
+    assert "Shelter Lead: uses the product to record readiness" in rendered
+    assert "Emergency Commander: uses the product to publish public coordination status" in rendered
+    assert "Evacuation Support" not in rendered
+    assert "Reviewable Tribal Liaison" not in rendered
+
+
+def test_confirmed_project_brief_preserves_complete_first_path_and_actor_boundary() -> None:
+    first_path = (
+        "A city dispatcher records an evacuation support request. A tribal liaison reviews restricted access needs. "
+        "A hospital coordinator records capacity constraints. A mutual-aid officer confirms resource commitments. "
+        "A shelter lead records readiness. An emergency commander publishes public coordination status. "
+        "First release proves one end-to-end request moves through access, capacity commitment, readiness and public "
+        "status without making emergency decisions."
+    )
+    human_actors = [
+        "City Dispatcher: uses the product to record evacuation support request; the outcome stays clear enough to choose the next step",
+        "Tribal Liaison: uses the product to review restricted access needs; the outcome stays clear enough to choose the next step",
+        "Hospital Coordinator: uses the product to record capacity constraints; the outcome stays clear enough to choose the next step",
+        "Mutual Aid Officer: uses the product to confirm resource commitments; the outcome stays clear enough to choose the next step",
+        "Shelter Lead: uses the product to record readiness; the outcome stays clear enough to choose the next step",
+        "Emergency Commander: uses the product to publish public coordination status; the outcome stays clear enough to choose the next step",
+    ]
+
+    brief = confirmed_project_brief(
+        label="Multi-jurisdictional Disaster Logistics Coordination Platform",
+        prompt="Create a coordination workspace.",
+        release="0.0.1",
+        state_object="Public coordination status record",
+        evidence_record="Coordination proof ledger",
+        product_story=(
+            "The product coordinates a first evacuation logistics path where named operators record, review, "
+            "confirm, and publish status without making emergency decisions."
+        ),
+        first_path=first_path,
+        proof_boundary=(
+            "Release 0.0.1 succeeds when the accepted first path is complete, reviewable, and blocked when "
+            "required, with replayable public coordination status evidence."
+        ),
+        human_actors=human_actors,
+        internal_systems=[
+            "Request intake",
+            "Access review board",
+            "Capacity ledger",
+            "Commitment tracker",
+            "Readiness board",
+            "Public status view",
+        ],
+    )
+    rendered = json.dumps(brief, sort_keys=True)
+    first_path_section = next(row for row in brief["blueprint_sections"] if row["section"] == "First path")
+    actor_section = next(row for row in brief["blueprint_sections"] if row["section"] == "Actors and systems")
+    readiness_gate = brief["coding_readiness_gates"][1]
+
+    assert "mutual-aid officer confirms resource commitments" in first_path_section["must_capture"]
+    assert "emergency commander publishes public coordination status" in first_path_section["must_capture"]
+    assert "First release proves" not in first_path_section["must_capture"]
+    assert "Mutual Aid Officer" in actor_section["must_capture"]
+    assert "Shelter Lead" in actor_section["must_capture"]
+    assert "Emergency Commander" in actor_section["must_capture"]
+    assert "confirm resource commitments" in readiness_gate
+    assert "record readiness" in readiness_gate
+    assert "publish public coordination status" in readiness_gate
+    assert generated_public_copy_issues("coordination project brief", brief) == ()
+    assert "without making emergency decisions" in rendered
+
+
+def test_operator_next_steps_use_typed_first_path_instead_of_contract_field_dump() -> None:
+    first_path = (
+        "City dispatcher records evacuation support request. Tribal liaison reviews restricted access needs. "
+        "Hospital coordinator records capacity constraints. Mutual-aid officer confirms resource commitments. "
+        "Shelter lead records readiness. Emergency commander publishes public coordination status."
+    )
+    state_object = (
+        "Evacuation coordination record with incident area, resident support request, route constraint, "
+        "mutual-aid commitment, hospital capacity note, tribal access restriction, shelter readiness, "
+        "approval decision, and public coordination status."
+    )
+    model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Cross Border Wildfire Coordination",
+            first_path=first_path,
+            state_object=state_object,
+            proof_boundary="Public coordination status is visible and reviewable.",
+            components=(),
+        )
+    )
+    proposal = {
+        "intent": {"title": "Cross Border Wildfire Coordination", "first_path": first_path, "state_object": state_object},
+        "semantic_model": model,
+        "backlog": [
+            {"title": "Prove one path"},
+            {
+                "title": "Let City Dispatcher See Public Coordination Status",
+                "recommended_first_slice": (
+                    "One representative path where the city dispatcher can record evacuation support request "
+                    "and the tribal liaison can see public coordination status."
+                ),
+            },
+        ],
+        "project_brief": {
+            "coding_readiness_gates": [
+                "The accepted product story names the user problem.",
+                "The first implementation lane is ready.",
+                "Release 0.0.1 has proof checks for success, failure, replay, and review evidence.",
+                "External dependencies are simulated, source-backed, or deferred.",
+            ]
+        },
+    }
+    next_steps = build_next_steps(
+        proposal=proposal,
+        backlog_result={
+            "created": [
+                {"idea_id": "B-001", "title": "Prove One Complete Cross Border Wildfire Path"},
+                {"idea_id": "B-002", "title": "Let City Dispatcher See Public Coordination Status"},
+            ]
+        },
+        first_release_workstreams=["B-001", "B-002"],
+        program_result={"umbrella_id": "B-001", "waves": [{"status": "active", "primary_workstreams": ["B-002"]}]},
+        release_selector="0.0.1",
+    )
+    prompt = next_steps["implementation_prompt"]
+
+    assert "Preserve this accepted first path:" in prompt
+    assert "records evacuation support request" in prompt
+    assert "public coordination status" in prompt
+    assert "status evacuation coordination incident area" not in prompt
+    assert "route constraint" not in prompt
+    assert generated_public_copy_issues("operator next-steps preview", next_steps) == ()
+
+
+def test_field_heavy_state_object_stays_compact_in_workstream_titles_and_completion_metrics() -> None:
+    state_object = (
+        "Corridor Readiness Record with route segment, requesting organization, receiving site, operating window, "
+        "waiver notes, constraint status, approval decision, public status, and review evidence."
+    )
+    first_path = (
+        "Municipal airspace coordinator records a corridor request, route constraint reviewer checks blocked constraints, "
+        "hospital receiving-site coordinator confirms receiving-site readiness, and public information officer publishes a safe operating status."
+    )
+    components = [
+        {"component_id": "corridor_console", "label": "Corridor Readiness Console"},
+        {"component_id": "route_ledger", "label": "Route Constraint Ledger"},
+        {"component_id": "public_surface", "label": "Public Status Surface"},
+    ]
+    workflow_title, boundary_title, proof_title = confirmed_workstream_titles(
+        label="Regional Drone Corridor Safety Console",
+        components=components,
+        internal_systems=[
+            "Corridor Readiness Console records corridor request evidence.",
+            "Route Constraint Ledger keeps route constraints and approval history.",
+            "Public Status Surface presents safe operating status.",
+        ],
+        first_path=first_path,
+        state_object=state_object,
+        proof_boundary="First release proves one corridor request from intake to public safe operating status.",
+        human_actors=["Municipal airspace coordinator", "Public information officer"],
+    )
+    projected_state = completion_state_object({"intent": {"state_object": state_object}})
+
+    assert "Requesting Organization" not in boundary_title
+    assert "Requesting Organization" not in proof_title
+    assert "Corridor Readiness Record" in boundary_title
+    assert "Corridor Readiness Record" in proof_title
+    assert projected_state == "Corridor Readiness Record"
+    assert workflow_title
+    assert generated_public_copy_issues(
+        "field-heavy state titles",
+        {"workflow_title": workflow_title, "boundary_title": boundary_title, "proof_title": proof_title},
+    ) == ()
+
+
+def test_accepted_source_launch_prompt_fails_when_state_terms_leak_into_first_path_segment() -> None:
+    first_path = "City dispatcher records evacuation support request. Emergency commander publishes public coordination status."
+    state_object = "Evacuation coordination record with incident area, route constraint, approval decision, and public coordination status."
+    model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Cross Border Wildfire Coordination",
+            first_path=first_path,
+            state_object=state_object,
+            proof_boundary="Public coordination status is visible and reviewable.",
+            components=(),
+        )
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "intent": {"title": "Cross Border Wildfire Coordination", "first_path": first_path, "state_object": state_object},
+            "semantic_model": model,
+        },
+        release_selector="0.0.1",
+        accepted_project_preview={
+            "schema_version": "odylith.accepted_project.v1",
+            "origin": "greenfield",
+            "proposal": {
+                "intent": {"title": "Cross Border Wildfire Coordination", "first_path": first_path, "state_object": state_object},
+                "semantic_model": model,
+            },
+            "validation_gate": {"status": "passed"},
+            "created": {"workstreams": [], "components": [], "diagrams": [], "release_selector": "0.0.1"},
+            "source_launch": {
+                "implementation_prompt": (
+                    "After project-first scope is accepted, start B-002. Preserve this accepted first path: "
+                    "City dispatcher records evacuation support request status evacuation coordination incident area. "
+                    "Treat the first workstream as the coding scope."
+                )
+            },
+        },
+    )
+
+    report = build_greenfield_package_report(package)
+
+    assert report.status == "failed"
+    assert any("mixes state-object terms into the accepted first-path clause" in issue for issue in report.issues)
 
 
 def test_first_path_clauses_separate_user_action_from_internal_processing() -> None:
@@ -2814,6 +3398,36 @@ def test_component_spec_narration_rejects_derived_system_description_debris() ->
     assert "run one blocked" not in spec
     assert "replay evidence for request workflow planner surface" in spec
     assert generated_semantic_slop_issues(contract) == []
+
+
+def test_status_view_registry_spec_preserves_complete_failure_clause() -> None:
+    contract = status_view_contract(
+        label="Public Coordination Status View Service",
+        state_label="Coordination Status",
+        context="Public coordination status view publishes lifecycle status, role visibility, and source event history.",
+        previous_label="Shelter Readiness Board Service",
+        next_label="Status viewers and release proof review",
+    )
+
+    spec = build_narrative_component_spec(
+        component_id="public-coordination-status-view",
+        label="Public Coordination Status View Service",
+        path="src/example/public_coordination_status_view",
+        kind="service",
+        status="planned",
+        sources=("user_intent",),
+        workstreams=("B-004",),
+        diagrams=("D-002",),
+        responsibility="keeps public coordination status visible without rewriting source records",
+        implementation_handoff={"workstream_id": "B-004", "workstream_title": "Show Trusted Status"},
+        component_contract=contract,
+    )
+    lowered = spec.casefold()
+
+    assert "the product failure to guard against: an invalid transition can look valid" in lowered
+    assert "wrong role can see private status" in lowered
+    assert "an can look lifecycle event" not in lowered
+    assert generated_public_copy_issues("Registry component spec `Public Coordination Status View Service`", spec) == ()
 
 
 def test_unheaded_confirmation_preserves_story_state_path_and_proof_boundaries() -> None:

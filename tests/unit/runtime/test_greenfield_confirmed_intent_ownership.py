@@ -59,7 +59,9 @@ def test_confirmed_intent_system_rows_stay_in_dedicated_owner() -> None:
     assert "def _semantic_terms" not in parser_source
     assert "def _semantic_terms" not in system_source
     assert "role_or_system_rows as _role_or_system_rows" in parser_source
+    assert "combined_system_rows as _combined_system_rows" in parser_source
     assert "contains_generic_system_scaffold as _contains_generic_system_scaffold" in parser_source
+    assert "def combined_system_rows" in system_source
     assert "validate_confirmed_intent as _validate_confirmed_intent" in parser_source
     assert "def role_or_system_rows" in system_source
     assert "def internal_system_rows" in system_source
@@ -158,6 +160,37 @@ def test_confirmed_actor_completion_role_candidates_use_shared_label_terms() -> 
 
     labels = [row.split(":", 1)[0] for row in completed_actor_rows(intent, title=intent["title"])]
     assert "Source-backed Reviewer" in labels
+
+
+def test_confirmed_system_completion_does_not_repeat_focus_words_in_fallback_labels() -> None:
+    completed = complete_confirmed_intent(
+        {
+            "title": "Battery Materials Release Evidence Desk",
+            "product_story": (
+                "Battery materials program leads need one workspace to collect release evidence, compare safety "
+                "constraints, preserve reviewer decisions, and publish manufacturing-readiness status."
+            ),
+            "state_object": (
+                "Batch Release Evidence Record with precursor lot, cell chemistry, lab batch identifier, "
+                "reviewer decision, manufacturing readiness status, and replay evidence."
+            ),
+            "first_path": (
+                "Materials intake coordinator records one lab batch, safety reviewer checks blocking observations, "
+                "and release owner publishes manufacturing-readiness status with replay evidence."
+            ),
+            "proof_boundary": (
+                "First release proves one lab batch from intake to manufacturing-readiness status with replay proof."
+            ),
+            "human_actors": ["Materials intake coordinator", "Safety reviewer", "Release owner"],
+            "internal_systems": [],
+        }
+    )
+    rendered = json.dumps(completed["internal_systems"], sort_keys=True)
+
+    assert "Evidence Evidence" not in rendered
+    assert "Release Evidence Release" not in rendered
+    assert "Battery Materials Release Evidence Log" in rendered
+    assert "Battery Materials Release Evidence Guardrail" in rendered
 
 
 def test_confirmed_intent_bare_title_uses_shared_label_terms() -> None:

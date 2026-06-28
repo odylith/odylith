@@ -7,17 +7,11 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
-from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
-from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
-from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description
-from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import completed_actor_rows as _completed_actor_rows
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_release_actor_rows as _first_release_actor_rows
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
-from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import inline_result_phrase as _inline_result_phrase
-from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase as _outcome_action_phrase
-from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import completed_system_rows as _completed_system_rows
-from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import state_label as _state_label
-from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import system_labels as _system_labels
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference, project_specific_actor_row
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description, completed_actor_rows as _completed_actor_rows
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_release_actor_rows as _first_release_actor_rows, proof_claim_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import inline_result_phrase as _inline_result_phrase, outcome_action_phrase as _outcome_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import completed_system_rows as _completed_system_rows, state_label as _state_label, system_labels as _system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item as _boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
@@ -27,24 +21,11 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_confirmed_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
-from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title
-from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import title as _title
-from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import title_needs_repair as _title_needs_repair
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
-from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
-from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
-    repair_confirmed_intent_semantic_projections,
-)
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
-from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language as _normalize_visible_result_terms
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
-from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase, readable_action_chain_sentence
+from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, material_first_path_action, normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_confirmed_intent_semantic_projections
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text, normalize_confirmed_proof_boundary_sentence, normalize_visible_result_language as _normalize_visible_result_terms, text_values, unique_text
 
 
 CORE_FIELD_MIN_WORDS = {"product_story": 28, "state_object": 12, "first_path": 18, "proof_boundary": 18}
@@ -481,7 +462,7 @@ def _decision_problem_phrase(outcome_text: str) -> str:
     outcome = _inline_result_phrase(_clean(outcome_text).rstrip(" .") or "the product result")
     if outcome.casefold().startswith("the usage-linked metric change view"):
         return "act on the metric-change view"
-    return f"decide what to do using {outcome}"
+    return f"decide the next step from {outcome}"
 
 
 def _product_view_needs_repair(value: Any) -> bool:

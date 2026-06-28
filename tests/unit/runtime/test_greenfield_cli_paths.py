@@ -15,27 +15,39 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governan
 from tests.unit.runtime.greenfield_proposal_fixtures import _write_confirmed_intent
 
 
+def _write_stubbed_atlas_render_outputs(repo_root: Path) -> None:
+    for relative_path in (
+        "odylith/atlas/atlas.html",
+        "odylith/atlas/mermaid-payload.v1.js",
+        "odylith/atlas/mermaid-app.v1.js",
+    ):
+        path = repo_root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("stubbed official Atlas render\n", encoding="utf-8")
+    catalog_path = repo_root / "odylith/atlas/source/catalog/diagrams.v1.json"
+    if not catalog_path.is_file():
+        return
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    for diagram in catalog.get("diagrams", []):
+        svg_path = repo_root / str(diagram.get("source_svg", ""))
+        png_path = repo_root / str(diagram.get("source_png", ""))
+        if svg_path.name:
+            svg_path.parent.mkdir(parents=True, exist_ok=True)
+            svg_path.write_text("<svg viewBox='0 0 1200 800'><title>Mermaid</title></svg>\n", encoding="utf-8")
+        if png_path.name:
+            png_path.parent.mkdir(parents=True, exist_ok=True)
+            png_path.write_bytes(b"\x89PNG\r\n\x1a\n")
+        watched = [str(path) for path in diagram.get("change_watch_paths", []) if str(path).strip()]
+        diagram["reviewed_watch_fingerprints"] = {path: "stubbed-official-refresh" for path in watched}
+        diagram["render_source_fingerprint"] = "stubbed-official-refresh"
+    catalog_path.write_text(json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def _stub_dashboard_refresh(monkeypatch, calls: list[dict[str, object]] | None = None) -> None:
     def refresh(**kwargs: object) -> None:
         if calls is not None:
             calls.append(dict(kwargs))
-        repo_root = Path(str(kwargs["repo_root"]))
-        catalog_path = repo_root / "odylith/atlas/source/catalog/diagrams.v1.json"
-        if catalog_path.is_file():
-            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
-            for diagram in catalog.get("diagrams", []):
-                svg_path = repo_root / str(diagram.get("source_svg", ""))
-                png_path = repo_root / str(diagram.get("source_png", ""))
-                if svg_path.name:
-                    svg_path.parent.mkdir(parents=True, exist_ok=True)
-                    svg_path.write_text("<svg viewBox='0 0 1200 800'><title>Mermaid</title></svg>\n", encoding="utf-8")
-                if png_path.name:
-                    png_path.parent.mkdir(parents=True, exist_ok=True)
-                    png_path.write_bytes(b"\x89PNG\r\n\x1a\n")
-                watched = [str(path) for path in diagram.get("change_watch_paths", []) if str(path).strip()]
-                diagram["reviewed_watch_fingerprints"] = {path: "stubbed-official-refresh" for path in watched}
-                diagram["render_source_fingerprint"] = "stubbed-official-refresh"
-            catalog_path.write_text(json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        _write_stubbed_atlas_render_outputs(Path(str(kwargs["repo_root"])))
 
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", refresh)
 
@@ -48,7 +60,7 @@ def test_greenfield_domain_token_normalizer_keeps_common_words_legible() -> None
     assert normalize_domain_token("readings") == "reading"
 
 
-def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsys) -> None:
+def test_greenfield_text_renders_confirmable_product_intent(tmp_path, capsys) -> None:
     rc = greenfield_proposals.main(
         [
             "propose",
@@ -61,27 +73,24 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
 
     assert rc == 0
     output = capsys.readouterr().out
-    assert "Product Intent Confirmation needed" in output
-    assert "No files changed." in output
-    assert "Host reasoning task" in output
-    assert "Visible format contract" in output
-    assert "Render the visible confirmation as sectioned Markdown" in output
-    assert "Product story; State object; First complete path; Human actors" in output
-    assert "Use bullets for Human actors, External systems, Internal product systems" in output
-    assert "Render Next step as three separate bullet lines: Confirm, Edit, and Reject" in output
-    assert "Write in chat" in output
-    assert "Do not" in output
-    assert "echo command instructions as the product name" in output
-    assert "collapse the confirmation into a wall of prose without clear sections" in output
-    assert "use Markdown emphasis or code formatting around normal domain words" in output
-    assert "generate implementation records, architecture records, release waves, validation obligations, or proposal JSON before confirmation" in output
-    assert "Original user intent" in output
+    assert "Product Intent Confirmation" in output
+    assert "Product story" in output
+    assert "State object" in output
+    assert "First complete path" in output
+    assert "Human actors" in output
+    assert "External systems" in output
+    assert "Internal product systems" in output
+    assert "Critical assumptions" in output
+    assert "Ambiguities" in output
+    assert "Proof boundary" in output
     assert "Next step" in output
-    assert "- Confirm: if the interpretation is right" in output
+    assert "- Confirm: if this interpretation is right" in output
     assert "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong" in output
     assert "- Reject: if this is not the intended product" in output
-    assert "bounded, provider-free post-confirm repair loop" in output
-    assert "final manifest passes" in output
+    assert "Host reasoning task" not in output
+    assert "Visible format contract" not in output
+    assert "Original user intent" not in output
+    assert "No files changed." not in output
     assert "No records were written. Confirm, edit, or reject this interpretation." not in output
     assert "greenfield create --repo-root ." in output
     assert "--confirm" in output
@@ -103,8 +112,49 @@ def test_greenfield_text_starts_with_product_intent_confirmation(tmp_path, capsy
     assert "shared artifact:" not in output
     assert "Project-first blueprint" not in output
     assert "Workstream domain intelligence" not in output
-    assert len(output.splitlines()) <= 38
-    assert len(output) <= 3200
+    assert len(output.splitlines()) <= 72
+    assert len(output) <= 6400
+
+
+def test_greenfield_propose_stdout_can_be_confirmed_and_created(tmp_path, capsys) -> None:
+    prompt = (
+        "Create a greenfield proposal for a flood shelter intake system that helps city staff register displaced "
+        "residents, match household needs to shelter capacity, track medical and accessibility constraints, "
+        "preserve consent evidence, and produce a daily placement readiness report."
+    )
+    rc = greenfield_proposals.main(["propose", "--repo-root", str(tmp_path), "--prompt", prompt])
+    confirmation = capsys.readouterr().out
+    assert rc == 0
+    assert "Host reasoning task" not in confirmation
+    assert "Original user intent" not in confirmation
+    intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(confirmation, encoding="utf-8")
+
+    rc = greenfield_proposals.main(
+        [
+            "create",
+            "--repo-root",
+            str(tmp_path),
+            "--prompt",
+            prompt,
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--confirm",
+            "--release",
+            "0.0.1",
+            "--json",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert rc == 0, output
+    assert "No governed records were written" not in output
+    assert "post-confirm completion failed" not in output
+    assert (tmp_path / "odylith/radar/source").is_dir()
+    assert (tmp_path / "odylith/registry/source/components").is_dir()
+    assert (tmp_path / "odylith/atlas/source").is_dir()
+    assert (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").is_file()
 
 
 def test_greenfield_confirm_intent_shows_direct_apply_handoff(tmp_path, capsys) -> None:
@@ -314,8 +364,10 @@ def test_greenfield_prompt_paths_do_not_expose_legacy_apply_ready_scaffold(tmp_p
     out = capsys.readouterr().out
 
     assert rc == 0
-    assert "Product Intent Confirmation needed" in out
-    assert "Host reasoning task" in out
+    assert "Product Intent Confirmation" in out
+    assert "Product story" in out
+    assert "First complete path" in out
+    assert "Host reasoning task" not in out
     assert "raw greenfield intent" not in out
 
     rc = greenfield_proposals.main(
@@ -803,6 +855,7 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
     def noisy_refresh(**_kwargs: object) -> None:
         print("refresh progress that must not contaminate JSON stdout", flush=True)
         os.write(1, b"fd-level refresh progress must not contaminate JSON stdout\n")
+        _write_stubbed_atlas_render_outputs(Path(str(_kwargs["repo_root"])))
 
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", noisy_refresh)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)

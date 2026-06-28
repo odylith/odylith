@@ -432,10 +432,12 @@ def test_greenfield_tribunal_uses_domain_specific_visible_actors(tmp_path) -> No
     assert "Plant safety reviewer" in actor_labels
     assert "Care proof reviewer" in actor_labels
     assert "Plant monitor build owner" in actor_labels
+    assert "Plant sensor risk reviewer" not in actor_labels
+    assert "Plant sensor proof reviewer" not in actor_labels
     assert "beneficiary advocate" not in actor_labels
     assert not any("Host Reasoned Project" in label for label in actor_labels)
     assert not any(label in {"Actor", "State object", "Evidence record", "Release gate"} for label in actor_labels)
-    assert "stable judgment roles render as domain-specific actors" in decision.dimensions["validation_roles"]
+    assert "grounded product actors or explicit governance owner roles" in decision.dimensions["validation_roles"]
 
 
 def test_tribunal_role_suffixes_do_not_repeat_existing_role_words() -> None:
@@ -458,7 +460,38 @@ def test_greenfield_tribunal_ignores_runtime_behavior_scaffold_as_actor() -> Non
 
     assert "Runtime behavior to exercise" not in actor_labels
     assert not any("Runtime behavior" in label for label in actor_labels)
-    assert any("operator" in label.casefold() for label in actor_labels)
+    assert "Resident" in actor_labels
+    assert "Project implementation owner" in actor_labels
+
+
+def test_greenfield_tribunal_rejects_stable_proof_owner_as_visible_actor() -> None:
+    projection = tribunal_actor_projection(
+        {
+            "title": "Municipal Permit Review Portal",
+            "project_intelligence": {
+                "actors": ["Resident applicant", "Permit reviewer"],
+                "owners": ["Proof Owner"],
+            },
+            "backlog": [
+                {
+                    "customer": "Resident applicant",
+                    "domain_intelligence": {
+                        "actors": ["Resident applicant", "Permit reviewer"],
+                        "risk_owners": ["Proof Owner"],
+                        "evidence_types": ["Proof Owner"],
+                        "proof_standards": ["Proof Owner"],
+                    },
+                }
+            ],
+            "semantic_model": {"first_path_contract": {"actor": "Resident applicant"}},
+        }
+    )
+    actor_labels = [row["visible_actor"] for row in projection]
+    normalized = {label.casefold() for label in actor_labels}
+
+    assert "Proof Owner" not in actor_labels
+    assert "resident applicant" in normalized
+    assert "permit reviewer" in normalized or "project release owner" in normalized
 
 
 def test_greenfield_tribunal_projection_keeps_explicit_actor_roles_distinct() -> None:
@@ -482,7 +515,10 @@ def test_greenfield_tribunal_projection_keeps_explicit_actor_roles_distinct() ->
     labels = [row["visible_actor"] for row in projection]
 
     assert "Field Technician" in labels
-    assert len(labels) == len(set(label.casefold() for label in labels))
+    assert labels.count("Field Technician") >= 2
+    assert "Dispatch Reviewer" in labels or "Dispatch reviewer" in labels
+    assert "Field Technician Proof" not in labels
+    assert not any("risk reviewer" in label.casefold() for label in labels)
 
 
 def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -> None:

@@ -297,15 +297,36 @@ def localize_leading_actor_reference(
     actor_rows: Sequence[str] = (),
     project_focus: str = "",
     fallback: str = "first user",
+    sentence_context: bool = False,
 ) -> str:
     """Replace a generic leading actor reference with an accepted actor label."""
 
     text = _clean(value).strip()
     prefix = generic_actor_label_prefix(text)
     if not prefix:
+        if sentence_context:
+            existing = _first_actor_display_label(actor_rows, project_focus=project_focus)
+            if existing and text.startswith(existing):
+                return f"{_sentence_actor_reference(existing)}{text[len(existing):]}"
         return text
     replacement = _first_actor_display_label(actor_rows, project_focus=project_focus) or fallback
+    if sentence_context:
+        replacement = _sentence_actor_reference(replacement)
     return f"{replacement}{text[len(prefix):]}"
+
+
+def _sentence_actor_reference(value: str) -> str:
+    words = _clean(value).strip(" .").split()
+    if not words:
+        return ""
+    lowered = [word if _preserve_actor_token_case(word) else word.casefold() for word in words]
+    lowered[0] = lowered[0][:1].upper() + lowered[0][1:]
+    return " ".join(lowered)
+
+
+def _preserve_actor_token_case(value: str) -> bool:
+    letters = [char for char in str(value or "") if char.isalpha()]
+    return len(letters) >= 2 and all(char.isupper() for char in letters)
 
 
 def project_specific_actor_row(row: str, *, project_focus: str) -> str:

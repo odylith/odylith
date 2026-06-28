@@ -12,6 +12,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
 from odylith.runtime.surfaces import display_text
 
 
@@ -1159,7 +1160,8 @@ def _clean_label(value: Any) -> str:
     text = re.sub(r"<[^>]+>", " ", text)
     text = display_text.strip_inline_markdown_emphasis(text)
     text = text.strip().strip('"').strip("'")
-    return " ".join(text.split())
+    compact = " ".join(text.split())
+    return terminal_deferral_subject(compact) or compact
 
 
 def _primary_label(value: str) -> str:

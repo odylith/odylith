@@ -20,8 +20,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_row import
     first_success_metric_rows as _first_success_metric_rows,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_components import system_component_name
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_domain_object_label as _compact_domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label as _domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_items as _join_items
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import label_with_suffix as _label_with_suffix
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import problem_text as _problem_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label as _sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
@@ -54,7 +56,7 @@ def confirmed_workstream_titles(
     actor = backlog_text.lead_actor_label(human_actors)
     action = backlog_text.imperative_action_phrase(first_path)
     actor_owned_action = backlog_actions.workflow_title_action(first_path=first_path, actor=actor, fallback=action)
-    state_label = _domain_object_label(state_object, fallback=f"{label} state")
+    state_label = _compact_domain_object_label(state_object, fallback=f"{label} state")
     proof_label = labels[-1] if len(labels) > 2 else (labels[0] if labels else label)
     outcome = backlog_text.first_path_outcome(first_path, proof_boundary=proof_boundary)
     if (
@@ -160,10 +162,14 @@ def confirmed_program(
 ) -> dict[str, Any]:
     label_ref = _sentence_label(label)
     component_ids = [str(row["component_id"]) for row in components]
+    first_path_proof = _label_with_suffix(label, "first-path proof")
+    state_boundary = _label_with_suffix(label, "state and evidence boundary")
+    release_review = _label_with_suffix(label, "release review")
+    release_proof = _label_with_suffix(label, "release proof")
     return {
         "shape": "program_with_waves",
         "wave_count": 3,
-        "recommended_first_wave": f"{label} first-path proof",
+        "recommended_first_wave": first_path_proof,
         "blueprint": {
             "program_type": "greenfield_program",
             "parent_workstream": parent_title,
@@ -174,16 +180,16 @@ def confirmed_program(
             "wave_to_workstream_policy": "Waves follow product build order; each child owns a distinct implementation slice.",
             "release_strategy": f"Target release {release} only after first-path, state replay, and proof review pass.",
             "recommended_wave_order": [
-                f"{label} first-path proof",
-                f"{label} state and evidence boundary",
-                f"{label} release review",
+                first_path_proof,
+                state_boundary,
+                release_review,
             ],
             "evidence_tier": "odylith_assumption",
         },
         "waves": [
             {
                 "wave": 1,
-                "label": f"{label} first-path proof",
+                "label": first_path_proof,
                 "goal": f"Prove the accepted {label_ref} first path from intake to release-review outcome.",
                 "validation_gate": f"{label} success, validation failure, and recovery path tests pass.",
                 "workstream_titles": [workflow_title],
@@ -192,7 +198,7 @@ def confirmed_program(
             },
             {
                 "wave": 2,
-                "label": f"{label} state and evidence boundary",
+                "label": state_boundary,
                 "goal": f"Make {label_ref} state, proof packet, ownership, and review boundaries explicit.",
                 "validation_gate": f"{label} state replay and release-evidence traceability tests pass.",
                 "workstream_titles": [boundary_title],
@@ -201,9 +207,11 @@ def confirmed_program(
             },
             {
                 "wave": 3,
-                "label": f"{label} release review",
+                "label": release_review,
                 "goal": f"Prepare release {release} evidence, access posture, non-goals, and promotion criteria.",
-                "validation_gate": f"{label} release proof names validation result, release decision, failure mode, and recovery expectation.",
+                "validation_gate": (
+                    f"{release_proof} names validation result, release decision, failure mode, and recovery expectation."
+                ),
                 "workstream_titles": [proof_title],
                 "component_focus": [component_ids[-1]],
                 "evidence_tier": "odylith_assumption",
@@ -222,6 +230,9 @@ def confirmed_release_plan(
     proof_title: str,
 ) -> dict[str, Any]:
     label_ref = _sentence_label(label)
+    first_path_proof = _label_with_suffix(label, "first-path proof")
+    release_review_accepted = _label_with_suffix(label, "release review accepted")
+    release_evidence = _label_with_suffix(label, "release evidence")
     return {
         "selector": release,
         "label": f"{label} {release} first path",
@@ -231,21 +242,21 @@ def confirmed_release_plan(
         "release_stages": [
             {
                 "stage": "wave-1",
-                "label": f"{label} first-path proof",
+                "label": first_path_proof,
                 "release_gate": f"{label} first path passes success, failure, replay, and evidence checks.",
                 "workstream_titles": [workflow_title],
             }
         ],
         "milestones": [
             {
-                "name": f"{label} release review accepted",
+                "name": release_review_accepted,
                 "exit_criteria": f"The product owner accepts the {label_ref} first path, non-goals, and release proof.",
             }
         ],
         "promotion_criteria": [
             f"{label} first-path proof passes with representative inputs.",
             f"{label} state replay matches the release-review outcome decision.",
-            f"{label} release evidence maps every readiness assertion to validation output.",
+            f"{release_evidence} maps every readiness assertion to validation output.",
         ],
         "evidence_tier": "odylith_assumption",
     }
@@ -276,7 +287,7 @@ def confirmed_backlog_rows(
     success_metrics: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     component_ids = [str(row["component_id"]) for row in components]
-    state_label = _domain_object_label(state_object, fallback=f"{label} state")
+    state_label = _compact_domain_object_label(state_object, fallback=f"{label} state")
     evidence_label = _domain_object_label(evidence_record, fallback=evidence_record)
     first_release_human_actors = backlog_text.first_release_actor_rows(human_actors)
     problem_summary = _problem_text(label=label, problem=problem, product_story=product_story, first_path=first_path)
@@ -532,7 +543,7 @@ def confirmed_backlog_rows(
             f"the product preserves the saved context, and {workflow_followup_clause}."
         ),
         product_view=(
-            f"{metric_actor} can {workflow_action}. The product checks the details, explains missing information before it produces a result, "
+            f"{metric_actor} can {workflow_action}. The product checks the details, explains missing information before returning a result, "
             f"{workflow_result_sentence}. {follow_up_subject} {follow_up_receives} the saved context needed to continue without reinterpreting the user's intent."
         ),
         first_slice=(

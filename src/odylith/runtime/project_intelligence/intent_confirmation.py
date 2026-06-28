@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import Any
 
 
@@ -99,75 +99,75 @@ def build_product_intent_confirmation(
 
 
 def format_product_intent_confirmation_text(confirmation: Mapping[str, Any]) -> str:
-    """Render the host task without pretending deterministic code authored the story."""
+    """Render the no-write confirmation as the exact artifact safe to confirm."""
 
     intent = _mapping(confirmation.get("intent"))
-    source_posture = _clean(confirmation.get("source_posture")) or "unknown"
-    task = _mapping(confirmation.get("host_reasoning_task"))
     commands = _mapping(confirmation.get("commands"))
     prompt = _clean(intent.get("prompt"))
     confirmed_create = _clean(commands.get("confirmed_create_after_confirmation"))
-    lines = [
-        "Product Intent Confirmation needed",
-        f"No files changed. Source posture: {source_posture}.",
-        "",
-        f"Host reasoning task: {_clean(task.get('reasoning_standard'))}",
-        "",
-        "Visible format contract",
-    ]
-    lines.append(
-        "- Render the visible confirmation as sectioned Markdown in this order: "
-        "Product story; State object; First complete path; Human actors; External systems; "
-        "Internal product systems; Critical assumptions; Ambiguities; Proof boundary; Next step. "
-        "Use bullets for Human actors, External systems, Internal product systems, Critical assumptions, "
-        "and Ambiguities. Render Next step as three separate bullet lines: Confirm, Edit, and Reject; "
-        "do not collapse it into a wall of prose."
-    )
+    try:
+        from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import (
+            confirmation_from_operator_intent,
+        )
+    except ImportError:
+        confirmation_from_operator_intent = None
+    if confirmation_from_operator_intent is None:
+        title = _clean(intent.get("working_title")) or _clean(intent.get("repo_name")) or "Greenfield Project"
+        body = _fallback_confirmation_markdown(prompt=prompt, title=title)
+    else:
+        body = confirmation_from_operator_intent(prompt, prefer_product_title=True).rstrip()
+    lines = [body, "", "Next step"]
     lines.extend(
         [
-            "",
-            "Write in chat",
-        ]
-    )
-    lines.extend(
-        [
-            "- product title, Product story, State object, and First complete path",
-            "- Human actors, External systems, and Internal product systems",
-            "- Critical assumptions, Ambiguities, and Proof boundary",
-            "- Next step with three separate bullet lines: Confirm, Edit, and Reject",
-        ]
-    )
-    lines.extend(
-        [
-            "",
-            "Do not",
-        ]
-    )
-    lines.extend(f"- {item}" for item in _strings(task.get("must_not")))
-    lines.extend(
-        [
-            "",
-            "Original user intent",
-            prompt,
-            "Next step",
-            "- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith normalizes the accepted narrative internally, validates it, runs the bounded, provider-free post-confirm repair loop, and applies accepted project records only after the final manifest passes. Do not ask the operator to inspect proposal JSON.",
-            "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, ask for corrections and rerun this confirmation.",
-            "- Reject: if this is not the intended product, stop here and write nothing.",
+            "- Confirm: if this interpretation is right, save this same Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm.",
+            "- Edit: if the product story, actors, systems, assumptions, first path, or proof boundary is wrong, revise those sections before create.",
+            "- Reject: if this is not the intended product, stop here and write no records.",
         ]
     )
     if confirmed_create:
         lines.append(f"Confirmed CLI after confirmation: {confirmed_create}")
-    return "\n".join(line for line in lines if line is not None).rstrip() + "\n"
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _fallback_confirmation_markdown(*, prompt: str, title: str) -> str:
+    clean_prompt = prompt or title
+    lines = [
+        f"# {title} - Product Intent Confirmation",
+        "",
+        "Product story",
+        f"{title} gives the first user a clear way to complete the requested path: {clean_prompt}.",
+        "",
+        "State object",
+        f"A {title.lower()} record tracks source input, owner, status, blocker, evidence, and version history.",
+        "",
+        "First complete path",
+        f"The first user provides the source input, reviews the result, and sees the {title.lower()} status with proof.",
+        "",
+        "Human actors",
+        f"- Primary user: completes the first {title.lower()} path and reviews the result.",
+        "",
+        "External systems",
+        "",
+        "",
+        "Internal product systems",
+        f"- {title} Intake Register — records source input, owner, status, blocker, and version history.",
+        f"- {title} Review Workspace — presents current state, missing input, confirmation, and next action.",
+        f"- {title} Proof Ledger — keeps validation results, decisions, failure reasons, and replayable evidence.",
+        "",
+        "Critical assumptions",
+        "- Release 0.0.1 proves one complete path before broader automation or integrations.",
+        "",
+        "Ambiguities",
+        "- Exact policies, integrations, and operational ownership can be refined after the first proof path is accepted.",
+        "",
+        "Proof boundary",
+        f"Release 0.0.1 succeeds when the first {title.lower()} path is complete, reviewable, blocked when required, and backed by replayable evidence.",
+    ]
+    return "\n".join(lines)
 
 
 def _mapping(value: object) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
-
-
-def _strings(value: object) -> list[str]:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
-        return []
-    return [_clean(item) for item in value if _clean(item)]
 
 
 def _clean(value: object) -> str:

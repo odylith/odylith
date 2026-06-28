@@ -1,0 +1,63 @@
+flowchart LR
+    subgraph write_lane["Post-Confirm Write Boundary"]
+      direction TB
+      final_manifest["Final greenfield manifest<br/>semantic, package, and lens gates"]
+      governed_write["Governed records written<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
+      dashboard_refresh["Surface refresh orchestration<br/>readable views after source truth"]
+    end
+
+    subgraph atlas_lane["Atlas Render Custody"]
+      direction TB
+      catalog_truth["Atlas catalog truth<br/>source MMD, links,<br/>watch fingerprints"]
+      mermaid_worker["Mermaid worker render<br/>preferred SVG and PNG path"]
+      static_renderer["Static generated-flowchart renderer<br/>browserless fallback for<br/>Odylith-generated flowcharts"]
+      rendered_assets["Rendered Atlas assets<br/>SVG, PNG, payload entries"]
+      freshness_gate["Freshness gate<br/>all diagrams fresh,<br/>no stale watched truth"]
+    end
+
+    subgraph surface_lane["Generated Surface Package"]
+      direction TB
+      rendered_package["Rendered package collector<br/>Radar, Registry, Atlas,<br/>Compass, Casebook, Project"]
+      surface_health["Surface health checks<br/>HTML, payload, routes,<br/>asset references"]
+      browser_state["Generated browser state proof<br/>normal, fallback,<br/>invalid-query recovery"]
+      hard_score["Brutal release score<br/>weakest dimension wins"]
+    end
+
+    subgraph blocker_lane["Fail-Closed Outcomes"]
+      direction TB
+      exact_blockers["Exact blockers<br/>missing assets, stale diagrams,<br/>unattempted browser proof"]
+      no_release_claim["No release claim<br/>until installed matrix proves<br/>the generated package"]
+      proof_checkpoint["Compass proof checkpoint<br/>validated evidence only"]
+    end
+
+    final_manifest --> governed_write
+    governed_write --> dashboard_refresh
+    dashboard_refresh --> catalog_truth
+    catalog_truth --> mermaid_worker
+    mermaid_worker --> rendered_assets
+    mermaid_worker --> static_renderer
+    static_renderer --> rendered_assets
+    rendered_assets --> freshness_gate
+    freshness_gate --> rendered_package
+    rendered_package --> surface_health
+    surface_health --> browser_state
+    browser_state --> hard_score
+    hard_score --> proof_checkpoint
+    freshness_gate --> exact_blockers
+    surface_health --> exact_blockers
+    exact_blockers --> no_release_claim
+
+    classDef write fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;
+    classDef atlas fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1px;
+    classDef surface fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;
+    classDef blocker fill:#FFF1F0,stroke:#F7B4AE,color:#17233A,stroke-width:1px;
+    class final_manifest,governed_write,dashboard_refresh write;
+    class catalog_truth,mermaid_worker,static_renderer,rendered_assets,freshness_gate atlas;
+    class rendered_package,surface_health,browser_state,hard_score surface;
+    class exact_blockers,no_release_claim,proof_checkpoint blocker;
+
+    style write_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
+    style atlas_lane fill:#FCFBFF,stroke:#DDD6FE,stroke-width:1px,color:#334155
+    style surface_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#334155
+    style blocker_lane fill:#FFF8F7,stroke:#F7B4AE,stroke-width:1px,color:#334155
+    linkStyle default stroke:#9FB2C8,stroke-width:1.25px

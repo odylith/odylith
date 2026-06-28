@@ -965,6 +965,7 @@ def test_atlas_box_explanations_do_not_prefix_action_component_copy_with_owns() 
                 "flowchart LR",
                 '  forecast["Forecasting Service"] --> dispatch["Dispatch / Automation Service"]',
                 '  dispatch --> surface["Insights Surface"]',
+                '  surface --> status["Public Coordination Status View Service"]',
                 "",
             ]
         ),
@@ -981,6 +982,10 @@ def test_atlas_box_explanations_do_not_prefix_action_component_copy_with_owns() 
                 "name": "Insights Surface",
                 "description": "Shows the plan, realized result, and history to the operator.",
             },
+            {
+                "name": "Public Coordination Status View Service",
+                "description": "Presents public coordination status, role visibility, and source event history.",
+            },
         ],
         diagram_title="Component Boundary View",
         diagram_summary="Shows which product systems own SunLedger release responsibilities.",
@@ -993,9 +998,45 @@ def test_atlas_box_explanations_do_not_prefix_action_component_copy_with_owns() 
         "Dispatch / Automation Service"
     ]
     assert "Insights Surface shows the plan" in by_label["Insights Surface"]
+    assert "Public Coordination Status View Service presents public coordination status" in by_label[
+        "Public Coordination Status View Service"
+    ]
     assert "owns predicts" not in rendered
     assert "owns issues" not in rendered
     assert "owns shows" not in rendered
+    assert "owns presents" not in rendered
+
+
+def test_atlas_box_explanations_strip_deferred_predicates_before_sentence_templates() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        "\n".join(
+            [
+                "flowchart LR",
+                '  external1["Weather alert feeds are<br/>deferred"] --> product',
+                '  external2["Emergency dispatch systems are<br/>deferred"] --> product',
+                '  product["Coordination Workspace"] --> status["Public Coordination Status View Service"]',
+                "",
+            ]
+        ),
+        component_rows=[
+            {
+                "name": "Public Coordination Status View Service",
+                "description": "Presents public coordination status, role visibility, and source event history.",
+            },
+        ],
+        diagram_title="System Context View",
+        diagram_summary="Coordination Workspace boundary view showing deferred outside inputs.",
+    )
+    by_label = {box.label: box.description for box in boxes}
+    rendered = "\n".join(f"{box.label}: {box.description}" for box in boxes)
+
+    assert "Weather alert feeds" in by_label
+    assert "Emergency dispatch systems" in by_label
+    assert "Weather alert feeds are" not in rendered
+    assert "Emergency dispatch systems are" not in rendered
+    assert "are is" not in rendered
+    assert "are and Emergency dispatch systems are" not in rendered
+    assert "owns presents" not in rendered
 
 
 def test_atlas_box_explanations_parse_sequence_participants_without_broken_labels() -> None:

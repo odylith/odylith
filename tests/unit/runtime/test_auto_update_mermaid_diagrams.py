@@ -88,6 +88,69 @@ def test_render_diagrams_batch_raises_blocking_ids_when_one_shot_fallback_fails(
     assert "warning: one-shot Mermaid render failed for D-001" in output
 
 
+def test_render_diagrams_batch_uses_static_generated_flowchart_renderer_when_browser_paths_fail(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    class _DeadWorker:
+        def __init__(self, *, repo_root: Path, cli_version: str) -> None:  # noqa: ARG002
+            return None
+
+        def __enter__(self) -> _DeadWorker:
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> None:  # type: ignore[no-untyped-def]
+            return None
+
+        def render_one(self, *, job, timeout_seconds: float = 60.0) -> None:  # noqa: ANN001, ARG002
+            raise RuntimeError("Chromium launch denied")
+
+    def _failing_render_diagram(*, repo_root: Path, source_mmd: str, source_svg: str, source_png: str, cli_version: str) -> None:  # noqa: ARG001
+        raise subprocess.CalledProcessError(returncode=1, cmd=["mmdc"])
+
+    source = tmp_path / "odylith/atlas/source/demo.mmd"
+    svg = tmp_path / "odylith/atlas/source/demo.svg"
+    png = tmp_path / "odylith/atlas/source/demo.png"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text(
+        "\n".join(
+            [
+                "flowchart LR",
+                '  actor["Resident"] --> S1["Submit request"]',
+                '  S1 --> component1["Review queue"]',
+                '  component1 --> proof["Proof result<br/>decision stays visible"]',
+                "  classDef personStyle fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;",
+                "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
+                "  class actor personStyle;",
+                "  class component1 service;",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(mermaid, "_MermaidWorkerSession", _DeadWorker)
+    monkeypatch.setattr(mermaid, "_render_diagram", _failing_render_diagram)
+
+    mermaid._render_diagrams_batch(  # noqa: SLF001
+        repo_root=tmp_path,
+        render_jobs=(
+            {
+                "diagram_id": "D-001",
+                "source_mmd": "odylith/atlas/source/demo.mmd",
+                "source_svg": "odylith/atlas/source/demo.svg",
+                "source_png": "odylith/atlas/source/demo.png",
+            },
+        ),
+        cli_version="11.12.0",
+    )
+
+    output = capsys.readouterr().out
+    assert "rendered Odylith-generated flowchart with static renderer" in output
+    assert svg.read_text(encoding="utf-8").startswith("<svg")
+    assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+
+
 def test_one_shot_mermaid_render_uses_atlas_render_config(tmp_path: Path, monkeypatch) -> None:
     commands: list[list[str]] = []
 

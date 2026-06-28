@@ -48,6 +48,8 @@ _PROJECTION_ALIASES = {
     "operator_next_steps": "next_steps",
     "open_questions": "project_brief",
     "program": "program",
+    "project_dashboard": "project_dashboard",
+    "project_dashboard_preview": "project_dashboard",
     "project_brief": "project_brief",
     "radar": "radar",
     "registry": "registry",

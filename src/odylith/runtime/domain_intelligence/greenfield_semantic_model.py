@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from dataclasses import dataclass
+from dataclasses import replace
 import re
 from typing import Any, Mapping, Sequence
 
@@ -400,9 +401,11 @@ def _ensure_first_path_event_floor(
     state_object: str,
     visible_result: str,
 ) -> list[FirstPathEvent]:
-    if len(events) >= 3:
-        return events
     rows = list(events)
+    if visible_result and rows and not any(event.visible_result for event in rows):
+        rows[-1] = replace(rows[-1], visible_result=True)
+    if len(rows) >= 3:
+        return rows
     while len(rows) < 3:
         if visible_result and not any(event.visible_result for event in rows):
             text = f"Review {visible_result[:1].lower()}{visible_result[1:]}"
@@ -444,6 +447,14 @@ def _unique_visible_result_review(events: list[FirstPathEvent], visible_result: 
 
 def _event_actor(value: str, *, human_actors: Sequence[str], fallback: str) -> str:
     signature = actor_signature(value)
+    explicit_subject = _explicit_event_subject(value)
+    if not signature and explicit_subject:
+        signature = " ".join(
+            ordered_terms(
+                explicit_subject,
+                stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS,
+            )
+        )
     if not signature:
         return fallback
     signature_terms = set(ordered_terms(signature, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS))
@@ -457,9 +468,43 @@ def _event_actor(value: str, *, human_actors: Sequence[str], fallback: str) -> s
         if overlap:
             candidates.append((overlap, -len(label_terms), label))
     if not candidates:
+        if explicit_subject:
+            return _actor_label([explicit_subject], fallback=fallback)
         return fallback
     candidates.sort(reverse=True)
     return candidates[0][2]
+
+
+def _explicit_event_subject(value: str) -> str:
+    text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip(" .,;:")
+    if not text:
+        return ""
+    for match in re.finditer(rf"\b({_ACTION_VERB_PATTERN})\b", text, re.IGNORECASE):
+        token = match.group(1).casefold()
+        if token in _NOUN_LIKE_ACTION_TOKENS and re.match(
+            rf"\s+(?:{_ACTION_VERB_PATTERN})\b",
+            text[match.end() :],
+            re.IGNORECASE,
+        ):
+            continue
+        if match.start() <= 0:
+            return ""
+        subject = text[: match.start()].strip(" .,;:")
+        subject = re.sub(
+            r"^(?:a|an|the|one|this|that|each|another)\s+",
+            "",
+            subject,
+            flags=re.IGNORECASE,
+        )
+        terms = ordered_terms(subject, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)
+        if not terms or len(terms) > 6:
+            return ""
+        if re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", subject, re.IGNORECASE):
+            return ""
+        if re.search(r"\b(?:app|application|dashboard|engine|product|service|system|view|workspace)\b", subject, re.IGNORECASE):
+            return ""
+        return subject
+    return ""
 
 
 def _component_ref(

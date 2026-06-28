@@ -58,20 +58,20 @@ def test_product_intent_confirmation_requests_sectioned_host_reasoning_without_r
     output = capsys.readouterr().out
 
     assert rc == 0
-    assert "Product Intent Confirmation needed" in output
-    assert "Host reasoning task" in output
-    assert "Write in chat" in output
-    assert "bounded, provider-free post-confirm repair loop" in output
-    assert "final manifest passes" in output
-    assert "Do not" in output
-    assert "No files changed" in output
-    assert "implementation records" in output
-    assert "architecture records" in output
+    assert "Product Intent Confirmation" in output
+    assert "Product story" in output
+    assert "State object" in output
+    assert "First complete path" in output
+    assert "Human actors" in output
+    assert "External systems" in output
+    assert "Internal product systems" in output
+    assert "Proof boundary" in output
+    assert "Next step" in output
+    assert "Host reasoning task" not in output
+    assert "Visible format contract" not in output
+    assert "No files changed" not in output
     assert "Registry" not in output
     assert "Atlas" not in output
-    assert "Product story; State object; First complete path; Human actors" in output
-    assert "Proof boundary; Next step" in output
-    assert "do not collapse it into a wall of prose" in output
     assert "Primary user" not in output
     assert "Project operator" not in output
     assert "Evidence owner" not in output

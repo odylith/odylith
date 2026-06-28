@@ -11,6 +11,7 @@ from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import text_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
@@ -24,8 +25,10 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import is_system_generated_action
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_text import imperative_action_with_copula_words
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns
@@ -125,9 +128,14 @@ def _base_user_action_phrase(value: str) -> str:
 
 
 def _actor_led_base_action_phrase(value: str) -> str:
+    _actor, action = _actor_led_base_action_parts(value)
+    return action
+
+
+def _actor_led_base_action_parts(value: str) -> tuple[str, str]:
     text = _clean(value).strip(" .")
     if not text:
-        return ""
+        return "", ""
     words = text.split()
     for index in range(1, min(len(words), 6)):
         prefix = " ".join(words[:index]).strip(" .")
@@ -138,9 +146,9 @@ def _actor_led_base_action_phrase(value: str) -> str:
         candidate = " ".join(words[index:]).strip(" .")
         if looks_like_finite_action(candidate) or looks_like_action_clause(candidate):
             if imperative_action_with_copula_words(words, index):
-                return ""
-            return base_action_clause(candidate)
-    return ""
+                return "", ""
+            return prefix, base_action_clause(candidate)
+    return "", ""
 
 
 def outcome_phrase(proposal: Mapping[str, Any]) -> str:
@@ -167,21 +175,23 @@ def outcome_action_phrase(outcome: str) -> str:
         return f"see {text}"
     if _looks_like_predicate_result(text):
         return f"see that {text}"
+    actor_action = _actor_led_base_action_phrase(re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE))
+    if actor_action:
+        return actor_action
     words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
     object_text = _object_phrase(text)
     if "status" in words and "visible" in words:
         return f"see {object_text}"
     if words & {"proof", "proven", "verified", "evidence", "audit"}:
         return f"review {object_text}"
-    if "status" in words and words & {"tracking", "readiness", "lifecycle"}:
-        return f"reach {object_text}"
+    if "readiness" in words:
+        return f"see {object_text}"
+    if "status" in words and words & {"tracking", "lifecycle"}:
+        return f"see {object_text}"
     if words & _VISIBLE_SEE_RESULT_HINTS:
         return f"see {object_text}"
     if words & _VISIBLE_RESULT_OBJECT_HINTS:
         return f"use {object_text}"
-    actor_action = _actor_led_base_action_phrase(re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE))
-    if actor_action:
-        return actor_action
     return f"reach {object_text}"
 
 
@@ -342,10 +352,50 @@ def workstream_opportunity(*, label: str, action: str, outcome: str) -> str:
 
 def workstream_product_view(*, label: str, action: str, outcome: str) -> str:
     outcome_action = outcome_action_phrase(outcome)
+    path_parts = [_capability_action_statement(action)]
+    if outcome_action:
+        path_parts.append(outcome_action)
+    path_parts.append("recover cleanly from a bad or incomplete attempt")
     return _sentence(
-        f"{label} is complete when the user can {action}, {outcome_action}, and recover cleanly from a bad or incomplete attempt.",
+        f"{label} is complete when {_join_path_actions(path_parts)}.",
         limit=520,
     )
+
+
+def _capability_action_statement(action: str) -> str:
+    text = _clean(action).strip(" .")
+    modal_actor, modal_action = modal_actor_action_parts(text)
+    if modal_actor and modal_action:
+        return f"{_actor_subject_phrase(modal_actor)} can {base_action_clause(modal_action)}"
+    actor, actor_action = _actor_led_base_action_parts(text)
+    if actor and actor_action:
+        return f"{_actor_subject_phrase(actor)} can {actor_action}"
+    action_text = _base_user_action_phrase(text) or "complete the first product action"
+    return f"the user can {action_text}"
+
+
+def _actor_subject_phrase(actor: str) -> str:
+    text = _clean(actor).strip(" .")
+    if not text:
+        return "the user"
+    if re.match(r"^(?:a|an|the|one)\s+", text, flags=re.IGNORECASE):
+        return text[:1].lower() + text[1:]
+    lowered = text[:1].lower() + text[1:]
+    last = lowered.split()[-1].casefold().strip(".,:;") if lowered.split() else ""
+    if last.endswith("s") and not last.endswith(("ics", "ss", "us")):
+        return lowered
+    return f"the {lowered}"
+
+
+def _join_path_actions(values: Sequence[str]) -> str:
+    rows = [_clean(value).strip(" .") for value in values if _clean(value).strip(" .")]
+    if not rows:
+        return "the user can complete the first product action"
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) == 2:
+        return f"{rows[0]} and {rows[1]}"
+    return f"{', '.join(rows[:-1])}, and {rows[-1]}"
 
 
 def workstream_risk(*, label: str, outcome: str, state: str) -> str:
@@ -450,7 +500,7 @@ def _label_focus_phrase(label: str) -> str:
             stopwords=_LABEL_FOCUS_STOPWORDS,
         )
     ]
-    return _trim_terminal_connector(" ".join(words[:6]).strip())
+    return collapse_adjacent_duplicate_terms(_trim_terminal_connector(" ".join(words[:6]).strip()))
 
 
 def _trim_terminal_connector(value: str) -> str:
@@ -550,7 +600,7 @@ def proof_boundary(proposal: Mapping[str, Any]) -> str:
 def state_object(proposal: Mapping[str, Any]) -> str:
     raw_state = _state_object_source(proposal)
     if raw_state:
-        return domain_object_label(raw_state, fallback="the accepted state")
+        return compact_domain_object_label(raw_state, fallback="the accepted state")
     return "the accepted state"
 
 

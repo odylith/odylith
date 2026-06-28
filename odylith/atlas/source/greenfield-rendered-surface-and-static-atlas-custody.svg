@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4418" height="420" viewBox="0 0 4418 420" role="img">
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#B9C7D8" /></marker>
+</defs>
+<rect width="100%" height="100%" fill="#FFFFFF" />
+<g class="flowchart-group"><rect x="32" y="30" width="979" height="152" rx="14" fill="#FBFDFF" stroke="#D8E5F4" stroke-width="1.15" />
+<text x="48" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">Post-Confirm Write Boundary</text></g>
+<g class="flowchart-group"><rect x="1055" y="30" width="1612" height="170" rx="14" fill="#FBFDFF" stroke="#D8E5F4" stroke-width="1.15" />
+<text x="1071" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">Atlas Render Custody</text></g>
+<g class="flowchart-group"><rect x="2760" y="30" width="1271" height="152" rx="14" fill="#FBFDFF" stroke="#D8E5F4" stroke-width="1.15" />
+<text x="2776" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">Generated Surface Package</text></g>
+<g class="flowchart-group"><rect x="3442" y="30" width="944" height="322" rx="14" fill="#FBFDFF" stroke="#D8E5F4" stroke-width="1.15" />
+<text x="3458" y="52" fill="#334155" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="12" font-weight="600">Fail-Closed Outcomes</text></g>
+<path d="M291.0,113.0 C344.0,113.0 344.0,113.0 397.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M611.0,113.0 C674.5,113.0 674.5,113.0 738.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M987.0,113.0 C1033.0,113.0 1033.0,113.0 1079.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1269.0,113.0 C1344.5,113.0 1344.5,104.0 1420.0,104.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1648.0,104.0 C1875.0,104.0 1875.0,104.0 2102.0,104.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M1648.0,104.0 C1704.5,104.0 1704.5,122.0 1761.0,122.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M2003.0,122.0 C2052.5,122.0 2052.5,104.0 2102.0,104.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M2323.0,104.0 C2383.0,104.0 2383.0,113.0 2443.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M2643.0,113.0 C2713.5,113.0 2713.5,113.0 2784.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3012.0,113.0 C3068.5,113.0 3068.5,113.0 3125.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3325.0,113.0 C3395.5,113.0 3395.5,113.0 3466.0,113.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3715.0,113.0 C3761.0,113.0 3761.0,104.0 3807.0,104.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M4007.0,104.0 C4077.5,104.0 4077.5,104.0 4148.0,104.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M2643.0,113.0 C3054.5,113.0 3054.5,274.0 3466.0,274.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3325.0,113.0 C3395.5,113.0 3395.5,274.0 3466.0,274.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<path d="M3687.0,274.0 C3747.0,274.0 3747.0,265.0 3807.0,265.0" fill="none" stroke="#B9C7D8" stroke-width="1.25" marker-end="url(#arrow)" />
+<g id="final_manifest"><rect x="56" y="68" width="235" height="90" rx="8" fill="#EFF6FF" stroke="#BFD7FE" stroke-width="1.35" />
+<text x="173.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Final greenfield manifest</text>
+<text x="173.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">semantic, package, and lens</text>
+<text x="173.5" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">gates</text>
+</g>
+<g id="governed_write"><rect x="397" y="68" width="214" height="90" rx="8" fill="#EFF6FF" stroke="#BFD7FE" stroke-width="1.35" />
+<text x="504.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Governed records written</text>
+<text x="504.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Radar, Registry, Atlas,</text>
+<text x="504.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Compass, release proof</text>
+</g>
+<g id="dashboard_refresh"><rect x="738" y="68" width="249" height="90" rx="8" fill="#EFF6FF" stroke="#BFD7FE" stroke-width="1.35" />
+<text x="862.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Surface refresh orchestration</text>
+<text x="862.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">readable views after source</text>
+<text x="862.5" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">truth</text>
+</g>
+<g id="catalog_truth"><rect x="1079" y="68" width="190" height="90" rx="8" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.35" />
+<text x="1174.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Atlas catalog truth</text>
+<text x="1174.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">source MMD, links,</text>
+<text x="1174.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">watch fingerprints</text>
+</g>
+<g id="mermaid_worker"><rect x="1420" y="68" width="228" height="72" rx="8" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.35" />
+<text x="1534.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Mermaid worker render</text>
+<text x="1534.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">preferred SVG and PNG path</text>
+</g>
+<g id="static_renderer"><rect x="1761" y="68" width="242" height="108" rx="8" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.35" />
+<text x="1882.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Static generated-flowchart</text>
+<text x="1882.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">renderer</text>
+<text x="1882.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">browserless fallback for</text>
+<text x="1882.0" y="149.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Odylith-generated flowcharts</text>
+</g>
+<g id="rendered_assets"><rect x="2102" y="68" width="221" height="72" rx="8" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.35" />
+<text x="2212.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Rendered Atlas assets</text>
+<text x="2212.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">SVG, PNG, payload entries</text>
+</g>
+<g id="freshness_gate"><rect x="2443" y="68" width="200" height="90" rx="8" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="1.35" />
+<text x="2543.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Freshness gate</text>
+<text x="2543.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">all diagrams fresh,</text>
+<text x="2543.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">no stale watched truth</text>
+</g>
+<g id="rendered_package"><rect x="2784" y="68" width="228" height="90" rx="8" fill="#ECFDFB" stroke="#A7E9E3" stroke-width="1.35" />
+<text x="2898.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Rendered package collector</text>
+<text x="2898.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Radar, Registry, Atlas,</text>
+<text x="2898.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Compass, Casebook, Project</text>
+</g>
+<g id="surface_health"><rect x="3125" y="68" width="200" height="90" rx="8" fill="#ECFDFB" stroke="#A7E9E3" stroke-width="1.35" />
+<text x="3225.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Surface health checks</text>
+<text x="3225.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">HTML, payload, routes,</text>
+<text x="3225.0" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">asset references</text>
+</g>
+<g id="browser_state"><rect x="3466" y="68" width="249" height="90" rx="8" fill="#ECFDFB" stroke="#A7E9E3" stroke-width="1.35" />
+<text x="3590.5" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Generated browser state proof</text>
+<text x="3590.5" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">normal, fallback,</text>
+<text x="3590.5" y="131.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">invalid-query recovery</text>
+</g>
+<g id="hard_score"><rect x="3807" y="68" width="200" height="72" rx="8" fill="#ECFDFB" stroke="#A7E9E3" stroke-width="1.35" />
+<text x="3907.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Brutal release score</text>
+<text x="3907.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">weakest dimension wins</text>
+</g>
+<g id="exact_blockers"><rect x="3466" y="220" width="221" height="108" rx="8" fill="#FFF1F0" stroke="#F7B4AE" stroke-width="1.35" />
+<text x="3576.5" y="247.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Exact blockers</text>
+<text x="3576.5" y="265.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">missing assets, stale</text>
+<text x="3576.5" y="283.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">diagrams,</text>
+<text x="3576.5" y="301.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">unattempted browser proof</text>
+</g>
+<g id="no_release_claim"><rect x="3807" y="220" width="249" height="90" rx="8" fill="#FFF1F0" stroke="#F7B4AE" stroke-width="1.35" />
+<text x="3931.5" y="247.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">No release claim</text>
+<text x="3931.5" y="265.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">until installed matrix proves</text>
+<text x="3931.5" y="283.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">the generated package</text>
+</g>
+<g id="proof_checkpoint"><rect x="4148" y="68" width="214" height="72" rx="8" fill="#FFF1F0" stroke="#F7B4AE" stroke-width="1.35" />
+<text x="4255.0" y="95.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">Compass proof checkpoint</text>
+<text x="4255.0" y="113.0" text-anchor="middle" dominant-baseline="middle" fill="#17233A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13">validated evidence only</text>
+</g>
+</svg>

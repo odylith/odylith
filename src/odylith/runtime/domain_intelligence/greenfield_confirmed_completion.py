@@ -29,6 +29,21 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion i
     value_starts_with_generic_actor_label,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import (
+    actor_phrase_for_sentence as _actor_phrase_for_sentence,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import (
+    ensure_text as _ensure_text,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import (
+    path_phrase as _path_phrase,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import (
+    repair_bad_scalar as _repair_bad_scalar,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import (
+    security_posture_text as _security_posture_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_project_intelligence import complete_project_intelligence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_repair import repair_project_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prewrite_gate import complete_semantic_model as _complete_semantic_model
@@ -751,75 +766,6 @@ def _repair_generic_actor_labels(proposal: dict[str, Any]) -> bool:
             intelligence["actors"] = labels[:2]
             changed = True
     return changed
-
-
-def _ensure_text(row: dict[str, Any], key: str, default: str, *, repair_bad_text: bool = False) -> bool:
-    if _clean(row.get(key)) and not (repair_bad_text and _text_needs_repair(row.get(key))):
-        return False
-    row[key] = default
-    return True
-
-
-def _security_posture_text(label: str) -> str:
-    owner = _clean(label) or "This workstream"
-    role = _security_posture_role(owner)
-    if role == "proof":
-        return (
-            f"Security proof for {owner}: evidence access must stay auditable. "
-            f"Before release, {owner} must show who accessed its proof, what evidence made replay safe, and which safety check passed."
-        )
-    if role == "review":
-        return (
-            f"Review security for {owner}: only authorized actors should change the visible outcome. "
-            f"{owner} must keep correction history and access decisions tied to each visible outcome without exposing private context."
-        )
-    if role == "release":
-        return (
-            f"Release security for {owner}: promotion waits for access and privacy proof. "
-            f"{owner} promotion evidence must show accessibility, retention, audit history, and privacy checks together before release."
-        )
-    return (
-        f"Input security for {owner}: accepted facts and recovery history must be protected. "
-        f"{owner} must keep accepted facts, access control, recovery history, and audit evidence traceable without exposing private context."
-    )
-
-
-def _security_posture_role(label: str) -> str:
-    text = _clean(label).casefold()
-    if any(term in text for term in ("review", "clear", "result", "outcome")):
-        return "review"
-    if any(term in text for term in ("intake", "register", "submit", "enter", "capture", "record")):
-        return "input"
-    if any(term in text for term in ("release", "complete", "path")):
-        return "release"
-    if any(term in text for term in ("proof", "trust", "evidence", "ledger")):
-        return "proof"
-    return "input"
-
-
-def _path_phrase(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return "path"
-    return text if text.split()[-1].casefold().strip(".,;:") == "path" else f"{text} path"
-
-
-def _actor_phrase_for_sentence(value: str) -> str:
-    parts = [_clean(part).strip(" .") for part in _clean(value).split(";") if _clean(part).strip(" .")]
-    if not parts:
-        return "representative users"
-    if len(parts) == 1:
-        return parts[0]
-    if len(parts) == 2:
-        return f"{parts[0]} and {parts[1]}"
-    return f"{', '.join(parts[:-1])}, and {parts[-1]}"
-
-
-def _repair_bad_scalar(row: dict[str, Any], key: str, *, fallback: str = "") -> bool:
-    if not _text_needs_repair(row.get(key)):
-        return False
-    value = fallback or _clean(row.get(key))
-    return _set_text(row, key, value)
 
 
 __all__ = ["complete_confirmed_proposal", "greenfield_repair_until_clean"]

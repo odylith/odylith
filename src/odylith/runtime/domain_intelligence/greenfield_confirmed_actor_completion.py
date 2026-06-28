@@ -27,6 +27,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_c
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 _DANGLING_ACTOR_LABEL_TAILS = frozenset(
@@ -67,11 +68,17 @@ def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     rows = [row for row in confirmed_text_values(intent.get("human_actors")) if not _actor_row_is_meta(row)]
     labels = [_actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label and not _actor_label_has_clause_lead(label)]
-    if not labels:
-        labels.extend(_derived_actor_labels(intent, title=title, allow_generic_fallback=True))
-    labels = list(unique_text(labels))[:5]
+    if labels and _generated_partial_actor_rows(rows):
+        first_path_labels = _derived_first_path_actor_labels(intent, title=title)
+        derived_labels = first_path_labels if len(first_path_labels) > len(labels) else []
+    else:
+        derived_labels = [] if labels else _derived_actor_labels(intent, title=title, allow_generic_fallback=True)
+    for label in derived_labels:
+        if label and label.casefold() not in {existing.casefold() for existing in labels}:
+            labels.append(label)
+    labels = list(unique_text(labels))[:8]
 
-    first_path = _short(_clean(intent.get("first_path")), fallback="the accepted first path")
+    first_path = _clean(intent.get("first_path")) or "the accepted first path"
     state = _short(_clean(intent.get("state_object")), fallback="the accepted state")
     completed: list[str] = []
     for index, label in enumerate(labels):
@@ -142,6 +149,9 @@ def _actor_row_is_meta(value: str) -> bool:
 
 def _actor_description(*, label: str, index: int, title: str, first_path: str, state: str) -> str:
     label_text = label.casefold()
+    path_role = _actor_path_role(label=label, first_path=first_path, state=state)
+    if path_role:
+        return f"{label}: {path_role}."
     if re.search(r"\b(public\s+figure|public\s+person|tracked|being\s+tracked|subject|official|executive|creator)\b", label_text):
         body = "is represented by lawful source records, evidence, confidence, and privacy limits; the product must not imply private access, endorsement, or guaranteed outcome"
     elif re.search(r"\b(compliance|policy|privacy|legal|risk|safety)\b", label_text):
@@ -163,9 +173,6 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
     elif re.search(r"\b(admin|administrator|config|maintainer|support|scheduler)\b", label_text):
         body = "owns the policies, settings, and operating limits that keep the product outcome reliable"
     else:
-        path_role = _actor_path_role(label=label, first_path=first_path, state=state)
-        if path_role:
-            return f"{label}: {path_role}."
         body = (
             "supplies context, reviews the result, or takes the next step named by the first release"
         )
@@ -189,7 +196,7 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
                 continue
             if not _clause_subject_matches_actor(clause, label=label):
                 continue
-            overlap = len(terms & _semantic_terms(clause))
+            overlap = len(terms & _actor_match_terms(clause))
             if overlap <= 0:
                 continue
             scored.append((overlap * 10 + source_bonus, overlap, -index, clause))
@@ -205,8 +212,17 @@ def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
     clause = _trim_following_actor_transition(clause)
     if not clause:
         return ""
-    action = readable_action_chain_phrase(clause, fallback=capability_action_clause(clause), limit=170, max_steps=3)
+    action = _sentence_action_fragment(
+        readable_action_chain_phrase(clause, fallback=capability_action_clause(clause), limit=170, max_steps=3)
+    )
     return f"uses the product to {action}; the outcome stays clear enough to choose the next step"
+
+
+def _sentence_action_fragment(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if len(text) >= 2 and text[:1].isupper() and not text[:2].isupper():
+        return f"{text[:1].casefold()}{text[1:]}"
+    return text
 
 
 def _trim_following_actor_transition(value: str) -> str:
@@ -227,15 +243,47 @@ def _trim_following_actor_transition(value: str) -> str:
 def _clause_subject_matches_actor(value: str, *, label: str) -> bool:
     """Reject object-term overlap when another actor owns the clause."""
 
-    subject = leading_subject_prefix(value)
+    subject = leading_subject_prefix(value) or _explicit_clause_subject(value)
     if not subject:
         return True
-    subject_terms = _semantic_terms(subject)
+    subject_terms = _actor_match_terms(subject)
     actor_terms = _actor_path_terms(label)
     generic_subject = subject_terms & {"person", "user", "participant", "customer", "client"}
     if generic_subject and re.search(r"\b(person|user|participant|customer|client)\b", label, re.IGNORECASE):
         return True
-    return bool(subject_terms & actor_terms)
+    overlap = subject_terms & actor_terms
+    if not overlap:
+        return False
+    subject_specific = subject_terms - _ROLE_WORDS
+    actor_specific = actor_terms - _ROLE_WORDS
+    if subject_specific and actor_specific and not (subject_specific & actor_specific):
+        return False
+    return True
+
+
+def _explicit_clause_subject(value: str) -> str:
+    words = [word.strip(".,;:") for word in _clean(value).split() if word.strip(".,;:")]
+    if len(words) < 2:
+        return ""
+    for index, word in enumerate(words):
+        if not looks_like_finite_action_token(word):
+            continue
+        subject_words = words[:index]
+        if not subject_words:
+            return ""
+        subject = " ".join(subject_words).strip(" .,;:")
+        subject = re.sub(
+            r"^(?:a|an|the|one|this|that|each|another)\s+",
+            "",
+            subject,
+            flags=re.IGNORECASE,
+        )
+        if len(subject.split()) > 6:
+            return ""
+        if re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", subject, re.IGNORECASE):
+            return ""
+        return subject
+    return ""
 
 
 def _state_definition_clause(value: str) -> bool:
@@ -248,7 +296,7 @@ def _state_definition_clause(value: str) -> bool:
 
 
 def _actor_path_terms(label: str) -> set[str]:
-    return _semantic_terms(label) - {
+    return _actor_match_terms(label) - {
         "actor",
         "client",
         "customer",
@@ -264,6 +312,16 @@ def _actor_path_terms(label: str) -> set[str]:
         "tracking",
         "user",
     }
+
+
+def _actor_match_terms(value: str) -> set[str]:
+    terms = set(_semantic_terms(value))
+    expanded = set(terms)
+    for term in terms:
+        for part in re.split(r"[-_]+", term):
+            if len(part) >= 3:
+                expanded.add(part)
+    return expanded
 
 def _focus_clause_on_actor_label(value: str, *, label: str) -> str:
     """Focus a multi-actor clause on the actor label being described."""
@@ -326,23 +384,20 @@ def _strip_actor_subject_from_clause(value: str, *, label: str) -> str:
 
 
 def _path_clauses(value: str) -> list[str]:
-    rows: list[str] = []
-    for sentence in re.split(r"(?<=[.!?])\s+", _clean(value)):
-        for clause in re.split(
-            r";\s+|,\s+(?=(?:and\s+)?(?:a|an|the|[A-Za-z][a-z]+)\s+"
-            r"(?:opens?|reviews?|reads?|compares?|saves?|records?|creates?|submits?|receives?|checks?|"
-            r"assigns?|captures?|resolves?|moves?|builds?|exports?|imports?|sees?|supplies?|provides?|"
-            r"validates?|runs?|shows?|reaches?|finishes?|returns?))",
-            sentence,
-        ):
-            cleaned = _clean(re.sub(r"^(?:and|then)\s+", "", clause, flags=re.IGNORECASE)).strip(" .")
-            if _word_count(cleaned) >= 4:
-                rows.append(cleaned)
-    return rows
+    rows = [_clean(step).strip(" .") for step in first_path_steps(value)]
+    return [row for row in rows if _word_count(row) >= 4]
 
 
 def _actor_row_has_usable_description(value: str) -> bool:
     return bool(actor_row_description(value))
+
+
+def _generated_partial_actor_rows(rows: Sequence[str]) -> bool:
+    return bool(rows) and all(
+        re.search(r"\bneeds?\s+the\s+product\s+to\b", _clean(row), flags=re.IGNORECASE)
+        and re.search(r"\bkeep\s+the\s+result\s+visible\s+and\s+reviewable\b", _clean(row), flags=re.IGNORECASE)
+        for row in rows
+    )
 
 
 def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generic_fallback: bool = True) -> list[str]:
@@ -378,6 +433,16 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generi
             ]
         )
     return list(unique_text(labels))
+
+
+def _derived_first_path_actor_labels(intent: Mapping[str, Any], *, title: str) -> list[str]:
+    labels: list[str] = []
+    for candidate in _role_candidates(_clean(intent.get("first_path"))):
+        if _word_count(candidate) <= 5:
+            label = _title_case(candidate)
+            if _actor_label_is_usable(label) and _derived_actor_label_has_human_signal(label):
+                labels.append(label)
+    return _dedupe_actor_labels(list(unique_text(labels)))
 
 
 def _derived_actor_label_has_human_signal(value: str) -> bool:
@@ -493,6 +558,7 @@ def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:
         "note",
         "notes",
         "record",
+        "request",
         "ready",
         "status",
         "visible",
@@ -590,6 +656,19 @@ def _actor_label_is_action_fragment(value: str) -> bool:
     return bool(words and not any(_word_has_role_signal(word) for word in words) and (looks_like_base_action_token(words[0]) or looks_like_finite_action_token(words[0]) or words[0].endswith("ing")))
 
 
+def _actor_label_has_embedded_action(value: str) -> bool:
+    words = [word for word in (raw.casefold().strip(".,;:()[]{}") for raw in _clean(value).split()) if word]
+    for index, word in enumerate(words[1:], start=1):
+        if _word_has_role_signal(word):
+            continue
+        if (
+            any(_word_has_role_signal(previous) for previous in words[:index])
+            and (looks_like_base_action_token(word) or looks_like_finite_action_token(word) or word.endswith("ing"))
+        ):
+            return True
+    return False
+
+
 def _actor_label_is_usable(value: str) -> bool:
     return (
         bool(_clean(value))
@@ -597,6 +676,7 @@ def _actor_label_is_usable(value: str) -> bool:
         and not _actor_label_has_clause_lead(value)
         and not _actor_label_has_dangling_tail(value)
         and not _actor_label_is_action_fragment(value)
+        and not _actor_label_has_embedded_action(value)
     )
 
 

@@ -9,6 +9,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text impor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_text import semantic_proof_checkpoint
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
+from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 
@@ -170,6 +172,114 @@ def test_component_boundary_wraps_long_deferred_component_identity() -> None:
     assert "Evidence Archive and Reviewer Signoff Ledger" not in boundary["mermaid_source"]
 
 
+def test_confirmed_diagrams_keep_deferred_scope_and_proof_record_labels_readable() -> None:
+    first_path = (
+        "Coordinator records a support request. Reviewer records access restrictions. Capacity lead records capacity limits. "
+        "Public coordinator publishes public coordination status."
+    )
+    state_object = (
+        "Coordination record with support request, access restriction, capacity limit, and public coordination status."
+    )
+    proof_boundary = (
+        "Release 0.0.1 is proven when one request moves through access review, capacity recording, "
+        "and public coordination status publication while private participant details remain inside the governed boundary."
+    )
+    components = [
+        {
+            "component_id": "request-intake",
+            "label": "Request Intake Service",
+            "kind": "service",
+            "release_scope": "first_path_required",
+            "responsibility": "Records support request facts and actor context.",
+        },
+        {
+            "component_id": "capacity-ledger",
+            "label": "Capacity Limit Ledger",
+            "kind": "service",
+            "release_scope": "first_path_required",
+            "responsibility": "Maintains capacity limits and source notes.",
+        },
+        {
+            "component_id": "public-status",
+            "label": "Public Coordination Status View Service",
+            "kind": "client",
+            "release_scope": "first_path_required",
+            "responsibility": "Presents public coordination status, role visibility, and source event history.",
+        },
+        {
+            "component_id": "notification-automation",
+            "label": "Notification Automation Service",
+            "kind": "service",
+            "release_scope": "deferred",
+            "responsibility": "Sends reminders or receives external updates after the first release.",
+        },
+    ]
+    semantic_model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Regional Coordination Workspace",
+            first_path=first_path,
+            state_object=state_object,
+            proof_boundary=proof_boundary,
+            components=components,
+        )
+    )
+
+    rows = confirmed_diagrams(
+        label="Regional Coordination Workspace",
+        diagram_slugs=_diagram_slugs(),
+        components=components,
+        first_path=first_path,
+        proof_boundary=proof_boundary,
+        state_object=state_object,
+        evidence_record="Coordination Proof Record",
+        human_actors=["Coordinator", "Reviewer", "Capacity lead", "Public coordinator"],
+        internal_systems=[str(row["label"]) for row in components],
+        non_goals=["Do not claim notification automation or receives external updates before the first coordination loop works."],
+        semantic_model=semantic_model,
+    )
+    boundary = next(row for row in rows if row["title"] == "Component Boundary View")
+    ownership = next(row for row in rows if row["title"] == "Ownership and Proof View")
+    proof_review = next(row for row in rows if row["title"] == "Release Proof Review")
+    rendered = json.dumps(rows)
+    status_component = next(row for row in boundary["components"] if row["name"] == "Public Coordination Status View Service")
+
+    assert "notification automation or<br/>external updates" in boundary["mermaid_source"]
+    assert "notification automation or<br/>external updates" in proof_review["mermaid_source"]
+    assert "or receives" not in rendered
+    assert status_component["description"].startswith("Presents public coordination status")
+    assert "Owns product responsibility to present" not in rendered
+    assert "Release proof<br/>Public coordination status" in ownership["mermaid_source"]
+    assert "Evidence record<br/>Coordination Proof Record" in proof_review["mermaid_source"]
+    assert "Capacity Limit Ledger Record" not in proof_review["mermaid_source"]
+
+
+def test_context_diagram_strips_deferred_predicate_from_external_labels() -> None:
+    rows = confirmed_diagrams(
+        label="Coordination Workspace",
+        diagram_slugs=_diagram_slugs(),
+        components=[
+            {
+                "component_id": "request-intake",
+                "label": "Request Intake Service",
+                "kind": "service",
+                "release_scope": "first_path_required",
+            }
+        ],
+        external_systems=[
+            "Weather alert feeds are deferred.",
+            "Emergency dispatch systems are deferred.",
+        ],
+    )
+    context = next(row for row in rows if row["title"] == "System Context View")["mermaid_source"]
+    boundary = next(row for row in rows if row["title"] == "Component Boundary View")["mermaid_source"]
+    rendered = f"{context}\n{boundary}"
+
+    assert "Weather alert feeds<br/>are" not in rendered
+    assert "Emergency dispatch systems<br/>are" not in rendered
+    assert "Weather alert feeds" in rendered
+    assert "Emergency dispatch systems" in rendered
+
+
 def test_sequence_event_steps_stay_in_dedicated_owner() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     diagram_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py"
@@ -235,6 +345,76 @@ def test_release_proof_frame_does_not_collapse_first_path_events() -> None:
     assert steps[-1].startswith("A home cook sees the run finish")
 
 
+def test_release_proof_control_does_not_render_as_first_path_step() -> None:
+    first_path = (
+        "A city dispatcher records an evacuation support request. A tribal liaison reviews restricted access needs. "
+        "A hospital coordinator records capacity constraints. A mutual-aid officer confirms resource commitments. "
+        "A shelter lead records readiness. An emergency commander publishes public coordination status. "
+        "First release proves one end-to-end request moves through access, capacity commitment, readiness and public "
+        "status without making emergency decisions."
+    )
+    actors = [
+        "City Dispatcher: uses the product to record evacuation support request.",
+        "Tribal Liaison: uses the product to review restricted access needs.",
+        "Hospital Coordinator: uses the product to record capacity constraints.",
+        "Mutual Aid Officer: uses the product to confirm resource commitments.",
+        "Shelter Lead: uses the product to record readiness.",
+        "Emergency Commander: uses the product to publish public coordination status.",
+    ]
+    components = [
+        {"component_id": "request-intake", "label": "Request Intake", "release_scope": "first_path_required"},
+        {"component_id": "access-review", "label": "Access Review Board", "release_scope": "first_path_required"},
+        {"component_id": "capacity-ledger", "label": "Capacity Ledger", "release_scope": "first_path_required"},
+        {"component_id": "commitment-tracker", "label": "Commitment Tracker", "release_scope": "first_path_required"},
+        {"component_id": "readiness-board", "label": "Readiness Board", "release_scope": "first_path_required"},
+        {"component_id": "public-status", "label": "Public Status View", "release_scope": "first_path_required"},
+    ]
+    semantic_model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Multi-jurisdictional Coordination Workspace",
+            first_path=first_path,
+            state_object="Public coordination status record",
+            proof_boundary="Release 0.0.1 succeeds when public coordination status evidence is reviewable.",
+            components=components,
+        )
+    )
+
+    steps = sequence_event_steps(first_path, semantic_model=semantic_model, dedupe=True)
+    diagrams = confirmed_diagrams(
+        label="Multi-jurisdictional Coordination Workspace",
+        diagram_slugs=_diagram_slugs(),
+        components=components,
+        first_path=first_path,
+        state_object="Public coordination status record",
+        evidence_record="Coordination proof ledger",
+        human_actors=actors,
+        proof_boundary="Release 0.0.1 succeeds when public coordination status evidence is reviewable.",
+        semantic_model=semantic_model,
+    )
+    context = next(row for row in diagrams if row["slug"] == "context")["mermaid_source"]
+    sequence = next(row for row in diagrams if row["slug"] == "sequence")["mermaid_source"]
+    state_evidence = next(row for row in diagrams if row["slug"] == "state-evidence")["mermaid_source"]
+
+    assert steps == [
+        "A city dispatcher records an evacuation support request",
+        "A tribal liaison reviews restricted access needs",
+        "A hospital coordinator records capacity constraints",
+        "A mutual-aid officer confirms resource commitments",
+        "A shelter lead records readiness",
+        "An emergency commander publishes public coordination status",
+    ]
+    assert "Emergency Commander" in context
+    event_text = " ".join(str(row["text"]) for row in semantic_model["first_path_contract"]["events"])
+    assert "First release proves" not in event_text
+    assert "without making emergency decisions" not in event_text
+    assert "First release proves" not in sequence
+    assert "without making" not in sequence
+    assert "Confirm resource commitments" in sequence
+    assert "Publish public coordination" in sequence
+    assert "First action<br/>Record an evacuation support" in state_evidence
+    assert "needs the product" not in state_evidence
+
+
 def test_sequence_diagram_term_routing_uses_shared_index() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     diagram_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py"
@@ -279,3 +459,19 @@ def test_sequence_event_steps_preserve_action_later_decision_tail() -> None:
     )
 
     assert steps[-1] == "A user records whether they plan to research, ignore, or act later"
+
+
+def test_sequence_event_steps_keep_coordinated_object_lists_with_prior_action() -> None:
+    steps = sequence_event_steps(
+        "A permit coordinator imports one permit application, a zoning reviewer records a zoning check, "
+        "the applicant submits one revision, and a supervisor reviews the decision package with traceable "
+        "documents, comments, checks, and final status.",
+        dedupe=True,
+    )
+
+    assert steps == [
+        "A permit coordinator imports one permit application",
+        "A zoning reviewer records a zoning check",
+        "The applicant submits one revision",
+        "A supervisor reviews the decision package with traceable documents, comments, checks, and final status",
+    ]

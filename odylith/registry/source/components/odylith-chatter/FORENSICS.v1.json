@@ -16,12 +16,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 136,
-    "mapped_workstream_evidence_count": 122,
-    "recent_path_match_count": 0,
+    "explicit_event_count": 137,
+    "mapped_workstream_evidence_count": 123,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 136
+    "timeline_event_count": 138
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -54,6 +54,66 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 680,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-28T15:34:40-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "bin/greenfield-post-confirm-matrix",
+        "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/bootstrap_assets.py",
+        "src/odylith/install/migration_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 667,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Release proof and install custody hardening: standalone greenfield matrix now persists JSON proof, full install suite is green after guidance-budget compaction, and migration-runtime classification now blocks missing verification before already-current no-op while preserving verified same-version reinstall.",
+      "ts_iso": "2026-06-28T00:44:33-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/agents-guidelines/DELIVERY_AND_GOVERNANCE_SURFACES.md",

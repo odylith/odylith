@@ -259,6 +259,22 @@
   inside recovered actor extraction, and internal-system completion reuses the
   canonical system-row parser only for spaced-hyphen recovered rows while
   leaving existing em-dash enrichment behavior intact.
+  A 2026-06-28 brutal source-local live matrix after the actor/prose-shape
+  cleanup remains non-release-ready. The affected unit pack passed 284 tests
+  in 338.06 seconds, but five fresh confirmed-create simulations scored 0/10
+  under the release-quality scorer. Battery materials release evidence failed
+  before governed writes in 26.096 seconds on `modal/base-form grammar drift
+  leaked at proposal.risks.1.statement`. Public records, solar assessment,
+  structured review, and cooking robot wrote records in 24.761-28.957 seconds
+  with all PM/architect/engineer/domain-expert manifest lenses passing, but
+  failed release scoring because rendered Atlas/surface custody was incomplete:
+  `odylith/atlas/atlas.html` was missing or empty, every Atlas source diagram
+  missed SVG/PNG renders, rendered surfaces were 5/6, surface payloads were
+  10/12, and Atlas rendered assets were 0. Every temp repo and the matrix root
+  were deleted after learning. This proves the current standard path is fast
+  but not release quality: semantic write success is not enough without
+  rendered-surface custody, and risk-statement modal/base-form repair still
+  needs a semantic/projection-owner fix rather than rendered prose cleanup.
   Latest installed-dist proof after the brutal scoring and prompt-source
   checkpoints: local release dist `odylith-local-release-0.1.15-ddecaf5e`
   passed the installed greenfield post-confirm matrix across flood shelter
@@ -913,6 +929,114 @@
   because this does not prove natural rescue from a non-internal repairable
   failure and does not finish full host-authored SemanticModelIR/ArtifactPlanIR
   repair as the normal rescue substrate.
+  2026-06-28 brutal source-local repro found a fresh SemanticModelIR custody
+  gap before the next variance pass. A confirmed first path using overloaded
+  `record` as both noun and verb (`Record owner records a record, compliance
+  records review evidence, and the office records readiness`) let the
+  first-path model select `Recorded readiness` as the visible result, but
+  `GreenfieldSemanticModel.first_path_contract.events` marked no event as the
+  visible-result owner because the event floor returned early once three
+  events existed. The final semantic quality gate correctly rejected the
+  inconsistent IR before governed writes. The repair belongs in SemanticModelIR
+  construction, not in project terms, issue-message parsing, rendered copy
+  repair, or a weakened gate: when a selected visible result exists and no
+  event owns it, the terminal event now becomes the visible-result owner.
+  Focused semantic/repetition/patch-planner proof passed 28 tests in 0.52s;
+  the retained record-as-noun/verb replay committed records in 15.53 seconds
+  with a standard passed manifest, no rescue, zero final issues, and temp
+  cleanup; and a second hostile Review Status Board replay completed standard
+  create after one safe generated-copy cleanup pass. This closes only the
+  SemanticModelIR event-ownership gap. Natural installed rescue quality remains
+  unclaimed until a non-internal repairable final-gate failure proves
+  host-planned semantic or artifact-plan repair under the 90 second rescue
+  budget.
+  The next hostile source-local matrix passed seven of eight cases but failed
+  water-rights hearing evidence before governed writes. The first pass reported
+  Radar `generated_copy_quality` findings for awkward visible-result action
+  prose, auto-escalated to rescue, then stopped with `no_progress` because the
+  PatchSet operations carried empty replacement facts. Root-cause inspection
+  found two generic owners: visible-result phrase projection rendered readiness
+  objects as `reach ... readiness`, and the public-copy classifier treated
+  title-label words and hyphenated noun compounds such as `Water Use Claim` and
+  `water-use claim` as action verbs near result/status words. The fix stays out
+  of rendered-string repair and project vocabulary: readiness/status-like
+  result objects now project as see-style actions, and generated-copy token
+  metadata preserves hyphen and title-label context before classifying
+  `reach/use result` shapes. Focused regressions pin both the false positive
+  and the true positive, and the retained water-rights replay now commits
+  governed records in 15.681 seconds with a standard passed manifest, zero
+  issues, all expert lenses passing, and temp cleanup. This proves another
+  standard-path owner fix, not natural rescue readiness.
+  A 2026-06-28 brutal source-local eval reopened release readiness for the
+  current working tree. The focused actor-led prompt/gerund regression pack
+  passed, and the known `intaking coordinator` / `user can intake coordinator
+  records` false-negative class was moved into shared actor/prose-shape
+  ownership, but a real source-local post-confirm create for the retained
+  battery-materials readiness scenario still failed in 24 seconds before
+  governed writes because the Project Brief preview had a clipped phrase
+  ending in `or`. The widened greenfield quality pack also failed 14 tests
+  while passing 284, including over-broad gerundized actor-role detections on
+  legitimate evidence/review component copy, comma/list regression fallout, and
+  confirmed-intent create failures. This proves two mechanism-level lessons:
+  the shared shape detector must distinguish corrupted actor-role grammar from
+  valid evidence/review noun phrases, and live post-confirm release scoring
+  must be capped to non-release-ready whenever the standard path fails or the
+  broad greenfield pack is red.
+  A later 2026-06-28 source-local repair pass closed the next escaped classes
+  without adding project-domain rules or returning repair authority to rendered
+  prose. Durable failures captured in this pass: text `greenfield propose`
+  emitted a host-instruction envelope instead of a confirmable Product Intent
+  artifact; sequence-step splitting treated coordinated object-list tails such
+  as `checks, and final status` as new actions; plural modal actor clauses such
+  as `digestive health patients can log...` were singularized into invalid
+  finite verbs; next-step handoff prompts echoed Radar
+  `recommended_first_slice` prose across Radar, accepted-project, and operator
+  surfaces; canonical first-path event repetition was misclassified as
+  noncanonical package repetition; and artifact-draft cleanup was temporarily
+  too broad for whole accepted-project preview trees. Fixes stayed generic and
+  source-owned: Product Intent Confirmation now renders concrete sectioned
+  product intent; first-path sequence ownership preserves coordinated object
+  lists and modal actor capability chains; package repetition allows complete
+  semantic-custody event facts while still rejecting noncanonical boilerplate;
+  next-step prompts preserve the accepted first path without duplicating Radar
+  slice prose; structural-copy filtering is shared; and mechanical artifact
+  repair is limited to exact collected public-copy projections. Proof:
+  expanded affected greenfield suite passed 106 tests in 414.34 seconds;
+  focused modal/live/sequence regression pack passed 19 tests in 190.09
+  seconds; six fresh source-local operator-flow projects completed
+  propose-save-confirm-create, scored 10/10 under the brutal hard-min release
+  scorer, and deleted temp repos: hospital sterile instrument recall 23.127s,
+  satellite thermal anomaly triage 23.207s, drought water-rights transfer
+  ledger 24.639s, battery recycling hazmat custody 22.815s, cryptographic key
+  ceremony readiness 23.949s, and workplace accommodation plan review 24.279s.
+  This proves the current source-local standard path for the tested variance;
+  installed-dist matrix proof is still required before a release claim.
+  Cross-surface governance learning from this pass applies beyond greenfield:
+  Casebook, Registry, Atlas, Compass, technical plans, release proof, and
+  operator prompts must be judged as governed artifact packages, not as loose
+  Markdown or dashboard text. A generated record is not acceptable merely
+  because it exists or validates structurally; it needs source-owned semantic
+  facts, surface-local custody, readable grammar, non-repetitive copy, precise
+  proof obligations, exact stale/fresh state, and an actionable next decision.
+  Failed mechanisms to avoid across day-to-day ops are the same ones banned in
+  post-confirm: repairing rendered prose instead of the source fact, inferring
+  repair ownership from diagnostic sentences, treating role/surface labels as
+  projection IDs, refreshing dashboards while Atlas/Registry truth is stale,
+  logging shallow Compass claims without validation evidence, and scoring
+  record counts as quality. Future governance-generation work should use the
+  same pattern proven here: update the owned source record first, refresh only
+  the owned generated surfaces through CLI paths, fail closed on stale
+  diagrams or unmapped meaningful Registry events, and keep release/readiness
+  claims capped until the artifact package passes punitive multi-lens checks.
+  A 2026-06-28 Atlas coverage pass exposed a related visibility failure mode:
+  newly scaffolded diagrams D-045 and D-046 existed in source and catalog truth
+  but were not operator-visible until SVG/PNG assets and the Atlas payload were
+  rendered. The source-local auto-update path correctly fell back to the static
+  Odylith-generated flowchart renderer when Chromium launch degraded, refreshed
+  D-040/D-043/D-045/D-046, and verified 46 fresh diagrams with D-045 assets
+  present. The durable rule is that Atlas source truth alone is insufficient
+  proof for architecture updates; any new or updated diagram must also prove
+  rendered asset presence and payload visibility before completion is claimed.
 
 - Related Incidents/Bugs: CB-207
 
@@ -939,6 +1063,7 @@
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py
 - src/odylith/runtime/domain_intelligence/greenfield_release_scope_limits.py
 - src/odylith/runtime/domain_intelligence/greenfield_quality_lens_repair.py
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py
@@ -948,6 +1073,11 @@
 - src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
 - src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
+- src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py
+- src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py
+- src/odylith/runtime/domain_intelligence/greenfield_first_path_step_roles.py
+- src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py
+- src/odylith/runtime/domain_intelligence/greenfield_gerund_actions.py
 - src/odylith/runtime/common/prose_grammar.py
 - src/odylith/runtime/artifact_quality/generated_copy_quality.py
 - src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py
@@ -960,6 +1090,8 @@
 - src/odylith/runtime/reasoning/tribunal_patch_planner.py
 - src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py
 - src/odylith/runtime/artifact_quality/greenfield_project_prompt_quality.py
+- src/odylith/runtime/artifact_quality/greenfield_package_quality.py
+- src/odylith/runtime/surfaces/generated_flowchart_assets.py
 - scripts/release/greenfield_rescue_smoke.py
 - src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py

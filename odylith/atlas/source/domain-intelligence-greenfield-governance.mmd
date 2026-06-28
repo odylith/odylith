@@ -2,6 +2,7 @@ flowchart LR
     subgraph accepted_lane["Accepted intent lane"]
       direction TB
       visible_intent["Product Intent Confirmation<br/>story, state object,<br/>first path, actors, proof boundary"]
+      confirmable_stdout["Confirmable propose stdout<br/>concrete product intent,<br/>no host instructions or CLI envelope"]
       confirm["Single operator confirmation"]
       source_guard["Intent source boundary guard<br/>Original user intent block only,<br/>no host guidance or CLI envelope"]
       confirmed_ir["ConfirmedIntentIR<br/>section IDs, source spans,<br/>hash, provenance,<br/>grammatical object phrases"]
@@ -12,6 +13,7 @@ flowchart LR
       apply_input["Typed apply-semantic input<br/>source paths, provenance,<br/>legacy proposal bridge"]
       compiler["Deterministic semantic compiler<br/>provider-free common path"]
       semantic_ir["SemanticModelIR<br/>first-path contract,<br/>ontology, event graph,<br/>proof obligations"]
+      sequence_owner["First-path sequence owner<br/>modal actor capability chains,<br/>coordinated object-list tails"]
       result_language["Result-language owner<br/>result-status modifiers stay attached,<br/>artifact-tail status stays conservative,<br/>grammatical result item order"]
       artifact_plan["ArtifactPlanIR<br/>sanctioned projection fields"]
       projection_contract["Projection contract owner<br/>roots, aliases,<br/>envelope paths,<br/>affected projections"]
@@ -39,7 +41,7 @@ flowchart LR
       plan_apply["ArtifactPlanIR patch executor<br/>proposal-target reroute,<br/>projection facts only"]
       scope_ledger["Patch application ledger<br/>explicit affected projections,<br/>full-prewrite posture"]
       projection_rerender["Projection rerender finding<br/>corrupted rendered scope only<br/>no host semantic patch"]
-      copy_repair["Exact-path draft cleanup<br/>artifact_draft_mechanical_copy only<br/>one artifact leaf, duplicate/tail cleanup"]
+      copy_repair["Exact-path draft cleanup<br/>artifact_draft_mechanical_copy only<br/>collected public-copy leaves,<br/>duplicate/tail cleanup"]
       rerender["Scoped prewrite rerender<br/>named package previews,<br/>same gates, no lowered bar"]
     end
 
@@ -49,14 +51,15 @@ flowchart LR
       rollback["Rollback snapshot"]
       blockers["Exact final blockers<br/>operator sees actionable failure"]
       proof_log["Compass proof checkpoint"]
+      surface_custody["Rendered surface custody<br/>Casebook included,<br/>Atlas static fallback,<br/>browser state proof"]
       release_matrix["Installed release proof<br/>12-case standard matrix,<br/>Casebook surface included,<br/>per-case generated browser state proof,<br/>Atlas diagram state checked,<br/>persisted matrix JSON<br/>plus rescue wiring smoke<br/>natural rescue proof still required"]
     end
 
-    visible_intent --> confirm --> source_guard --> confirmed_ir
-    confirmed_ir --> apply_input --> compiler --> semantic_ir --> result_language --> artifact_plan --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
+    visible_intent --> confirmable_stdout --> confirm --> source_guard --> confirmed_ir
+    confirmed_ir --> apply_input --> compiler --> semantic_ir --> sequence_owner --> result_language --> artifact_plan --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
     draft_set --> validators --> expert_lenses --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
-    final_manifest -- "pass" --> writes --> proof_log --> release_matrix
+    final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> release_matrix
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> patchset --> rescue_budget
     rescue_budget -- "yes" --> tribunal_planner --> provider_adapter --> strict_schema --> custody_check
@@ -77,10 +80,10 @@ flowchart LR
     classDef standard fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1.2px;
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
-    class visible_intent,confirm,source_guard,confirmed_ir intent;
-    class apply_input,compiler,semantic_ir,result_language,artifact_plan,projection_contract,projections,next_steps,project_dashboard,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
+    class visible_intent,confirmable_stdout,confirm,source_guard,confirmed_ir intent;
+    class apply_input,compiler,semantic_ir,sequence_owner,result_language,artifact_plan,projection_contract,projections,next_steps,project_dashboard,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
     class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
-    class writes,rollback,blockers,proof_log,release_matrix write;
+    class writes,rollback,blockers,proof_log,surface_custody,release_matrix write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
     style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#334155

@@ -695,17 +695,22 @@ def _complete_semantic_repetition_source(semantic_model: Mapping[str, Any]) -> b
 
 
 def _semantic_label_repetition_values(first_path: Mapping[str, Any]) -> list[str]:
-    values = [
+    short_values = [
         normalize_string(first_path.get("capability")),
         normalize_string(first_path.get("visible_result")),
     ]
+    event_values: list[str] = []
     events = first_path.get("events")
     if isinstance(events, Sequence) and not isinstance(events, (str, bytes, bytearray)):
         for item in events:
             if not isinstance(item, Mapping):
                 continue
-            values.append(normalize_string(item.get("target_entity")))
-    return [value for value in values if value and len(_word_tokens(value)) <= 10]
+            event_values.append(normalize_string(item.get("text") or item.get("mutation")))
+            short_values.append(normalize_string(item.get("target_entity")))
+    return [
+        *[value for value in short_values if value and len(_word_tokens(value)) <= 10],
+        *[value for value in event_values if value],
+    ]
 
 
 def _actor_label_summary(values: list[str]) -> str:

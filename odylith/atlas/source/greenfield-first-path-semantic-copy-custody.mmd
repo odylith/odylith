@@ -1,0 +1,66 @@
+flowchart LR
+    subgraph intent_lane["Accepted First-Path Facts"]
+      direction TB
+      accepted_path["Accepted first path<br/>operator-confirmed behavior"]
+      semantic_contract["SemanticModelIR first-path contract<br/>events, visible result,<br/>proof obligations"]
+      sequence_owner["Sequence step owner<br/>keeps coordinated object lists<br/>on the prior action"]
+      modal_owner["Modal actor owner<br/>plural actors keep can<br/>plus base action"]
+    end
+
+    subgraph prose_lane["Generated Prose Shape"]
+      direction TB
+      shape_checks["Prose-shape checks<br/>actor-led capability drift,<br/>gerund actor splice"]
+      gerund_owner["Gerund action owner<br/>bounded proof-action phrasing"]
+      structural_filter["Structural-copy filter<br/>ids, paths, slugs,<br/>versions, URLs"]
+      repetition_gate["Semantic repetition gate<br/>allows complete canonical events,<br/>rejects repeated sentence shape"]
+    end
+
+    subgraph projection_lane["Surface Projections"]
+      direction TB
+      radar_projection["Radar and brief projection<br/>surface-local wording"]
+      atlas_projection["Atlas event projection<br/>sequence and flow labels"]
+      next_step_prompts["Project next-step prompts<br/>accepted first path preserved,<br/>no Radar slice echo"]
+      package_findings["Typed package findings<br/>source path, projection id,<br/>repair owner"]
+    end
+
+    subgraph repair_lane["Repair Custody"]
+      direction TB
+      semantic_plan_patch["Semantic or plan patch<br/>source fact repair only"]
+      exact_draft_cleanup["Exact-path draft cleanup<br/>duplicate words and dangling tails<br/>on collected public-copy leaves"]
+      final_gate["Final package gate<br/>same validators, no lowered bar"]
+      governed_write["Governed writes<br/>only after manifest passes"]
+    end
+
+    accepted_path --> semantic_contract
+    semantic_contract --> sequence_owner
+    sequence_owner --> modal_owner
+    modal_owner --> radar_projection
+    modal_owner --> atlas_projection
+    modal_owner --> next_step_prompts
+    radar_projection --> shape_checks
+    atlas_projection --> shape_checks
+    next_step_prompts --> shape_checks
+    shape_checks --> gerund_owner
+    gerund_owner --> structural_filter
+    structural_filter --> repetition_gate
+    repetition_gate --> package_findings
+    package_findings --> semantic_plan_patch
+    package_findings --> exact_draft_cleanup
+    semantic_plan_patch --> final_gate
+    exact_draft_cleanup --> final_gate
+    final_gate --> governed_write
+
+    classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;
+    classDef prose fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;
+    classDef projection fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;
+    classDef repair fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;
+    class accepted_path,semantic_contract,sequence_owner,modal_owner intent;
+    class shape_checks,gerund_owner,structural_filter,repetition_gate prose;
+    class radar_projection,atlas_projection,next_step_prompts,package_findings projection;
+    class semantic_plan_patch,exact_draft_cleanup,final_gate,governed_write repair;
+
+    style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
+    style prose_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#334155
+    style projection_lane fill:#F8FFFE,stroke:#A7E9E3,stroke-width:1px,color:#334155
+    style repair_lane fill:#FFFBF5,stroke:#FDBA74,stroke-width:1px,color:#334155
+    linkStyle default stroke:#9FB2C8,stroke-width:1.25px

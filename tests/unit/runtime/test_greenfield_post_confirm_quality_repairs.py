@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.common.prose_grammar import base_action_clause
@@ -114,6 +116,23 @@ def test_package_repair_surface_stays_limited_to_duplicate_and_dangling_cleanup(
     assert "evidence evidence" not in rendered
     assert rendered.endswith("visible.")
     assert "owns maintains state" in rendered
+
+
+def test_generated_copy_quality_ignores_structural_semantic_axis_values() -> None:
+    issues = generated_public_copy_issues(
+        "accepted-project memory preview",
+        {
+            "proposal": {
+                "semantic_model": {
+                    "components": [
+                        {"semantic_axis": "derived_flood-shelter-intake-ledger-keep"},
+                    ],
+                },
+            },
+        },
+    )
+
+    assert issues == ()
 
 
 def test_package_repair_mutates_only_addressed_artifact_leaf() -> None:
@@ -378,6 +397,55 @@ def test_final_next_steps_repair_preserves_release_selector_tokens() -> None:
     rendered = json.dumps(repaired, sort_keys=True)
     assert "0.0.1" in rendered
     assert "0. 0. 1" not in rendered
+
+
+def test_greenfield_dashboard_refresh_fails_closed_on_visibility_failure(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(
+        greenfield_apply_write.owned_surface_refresh,
+        "raise_for_failed_refreshes",
+        lambda **_kwargs: (_ for _ in ()).throw(RuntimeError("Atlas render failed")),
+    )
+
+    with pytest.raises(RuntimeError, match="Atlas render failed"):
+        greenfield_apply_write._refresh_greenfield_dashboard(repo_root=tmp_path)  # noqa: SLF001
+
+
+def test_greenfield_rendered_surface_custody_requires_atlas_assets_and_fingerprints(tmp_path) -> None:
+    atlas_root = tmp_path / "odylith/atlas"
+    source_root = atlas_root / "source"
+    catalog_path = source_root / "catalog/diagrams.v1.json"
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    for relative in ("atlas.html", "mermaid-payload.v1.js", "mermaid-app.v1.js"):
+        (atlas_root / relative).write_text("rendered\n", encoding="utf-8")
+    (source_root / "demo.svg").write_text("<svg />\n", encoding="utf-8")
+    catalog_path.write_text(
+        json.dumps(
+            {
+                "diagrams": [
+                    {
+                        "diagram_id": "D-001",
+                        "source_svg": "odylith/atlas/source/demo.svg",
+                        "source_png": "odylith/atlas/source/demo.png",
+                        "render_source_fingerprint": "",
+                        "reviewed_watch_fingerprints": {},
+                    }
+                ]
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError) as exc_info:
+        greenfield_apply_write._raise_for_greenfield_rendered_surface_custody(  # noqa: SLF001
+            repo_root=tmp_path,
+            diagram_ids=("D-001",),
+        )
+
+    message = str(exc_info.value)
+    assert "D-001: missing rendered Atlas source_png" in message
+    assert "D-001: missing Atlas render_source_fingerprint" in message
+    assert "D-001: missing Atlas reviewed_watch_fingerprints" in message
 
 
 def test_robotic_safety_parent_workstream_uses_proof_subject_and_visible_status() -> None:
@@ -670,6 +738,45 @@ def test_product_risks_turn_abstract_boundary_actor_into_review_role() -> None:
     assert "for the safety." not in rendered
     assert "for the safety reviewer" in rendered
     assert generated_semantic_slop_issues({"risks": risks}) == []
+
+
+def test_product_risks_nominalize_actor_led_decision_pair_outcomes() -> None:
+    reject_risks = build_product_risks(
+        title="Evidence Review Desk",
+        product_story="Review teams need a clear evidence path before readiness decisions are trusted.",
+        first_path=(
+            "Intake coordinator records one case packet, reviewer checks required evidence, "
+            "approval reviewer approves or rejects release readiness."
+        ),
+        state_object="A review record with packet evidence, reviewer decision, and readiness status.",
+        proof_boundary="Release 0.0.1 proves one packet can be reviewed with decision evidence.",
+        human_actors=["Intake coordinator", "Reviewer", "Approval reviewer"],
+        release="0.0.1",
+    )
+    reject_rendered = json.dumps(reject_risks, sort_keys=True)
+
+    assert "the approval or rejection of release readiness" in reject_rendered
+    assert "product produced approval reviewer approves" not in reject_rendered
+    assert "approves or reject" not in reject_rendered
+    assert generated_semantic_slop_issues({"risks": reject_risks}) == []
+
+    block_risks = build_product_risks(
+        title="Battery Materials Release Evidence Desk",
+        product_story="A lab team needs one place to record batch evidence and approve or block a first manufacturing handoff.",
+        first_path=(
+            "A materials intake coordinator records one lab batch, attaches required test evidence, "
+            "a reviewer checks readiness criteria, and the release owner approves or blocks manufacturing readiness."
+        ),
+        state_object="A lab batch readiness record with material identity, review evidence, and release status.",
+        proof_boundary="Release 0.0.1 succeeds when a release owner can approve or block the handoff.",
+        human_actors=["Materials intake coordinator", "Technical reviewer", "Release owner"],
+        release="0.0.1",
+    )
+    block_rendered = json.dumps(block_risks, sort_keys=True)
+
+    assert "the approval or blocking of manufacturing readiness" in block_rendered
+    assert "product produced the release owner approves" not in block_rendered
+    assert generated_semantic_slop_issues({"risks": block_risks}) == []
 
 
 def test_workstream_titles_compact_while_keeping_clauses() -> None:

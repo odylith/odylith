@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIRMED_DANGLING_WORDS
+from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
 from odylith.runtime.domain_intelligence.greenfield_text import strip_dangling_word_tail
 
 
@@ -23,49 +24,6 @@ _SCALAR_CLAUSE_SPLIT_RE = re.compile(r"([,;.!?])\s*")
 _MARKDOWN_LINK_TARGET_RE = re.compile(r"\]\(([^)\s]+)\)")
 _VERSION_TOKEN_RE = re.compile(r"\b\d+(?:\.\d+){1,4}\b")
 _PROTECTED_INLINE_PREFIX = "__ODYLITH_INLINE_ROUTE_"
-_STRUCTURAL_COPY_KEYS = frozenset(
-    {
-        "category",
-        "component",
-        "components",
-        "created",
-        "date",
-        "diagrams",
-        "href",
-        "id",
-        "kind",
-        "origin",
-        "owner",
-        "path",
-        "paths",
-        "product_layer",
-        "qualification",
-        "release",
-        "schema_version",
-        "slug",
-        "slugs",
-        "source",
-        "sources",
-        "status",
-        "uri",
-        "url",
-        "version",
-        "workstreams",
-    }
-)
-_STRUCTURAL_COPY_KEY_SUFFIXES = (
-    "_id",
-    "_ids",
-    "_path",
-    "_paths",
-    "_slug",
-    "_slugs",
-    "_uri",
-    "_uris",
-    "_url",
-    "_urls",
-    "_version",
-)
 
 
 @dataclass(frozen=True)
@@ -170,6 +128,14 @@ def _exact_artifact_draft_target_path(value: str) -> bool:
         "prewrite_package.next_steps_preview",
     }:
         return True
+    if value.startswith(
+        (
+            "prewrite_package.accepted_project_preview.source_launch.",
+            "prewrite_package.project_dashboard_preview.host_handoff_prompts[",
+            "prewrite_package.next_steps.",
+        )
+    ):
+        return True
     return value.startswith(
         (
             "prewrite_package.rendered_component_specs::",
@@ -210,9 +176,19 @@ def _apply_artifact_draft_repair(
             updates.get("project_brief_preview", package.project_brief_preview)
         )
         return
-    if operation.projection == "next_steps" and target_path == "prewrite_package.next_steps_preview":
+    if operation.projection == "next_steps" and target_path.startswith("prewrite_package.next_steps"):
         updates["next_steps_preview"] = _repair_optional_mapping(
             updates.get("next_steps_preview", package.next_steps_preview)
+        )
+        return
+    if operation.projection == "accepted_project" and target_path.startswith("prewrite_package.accepted_project"):
+        updates["accepted_project_preview"] = _repair_optional_mapping(
+            updates.get("accepted_project_preview", package.accepted_project_preview)
+        )
+        return
+    if operation.projection == "project_dashboard" and target_path.startswith("prewrite_package.project_dashboard"):
+        updates["project_dashboard_preview"] = _repair_optional_mapping(
+            updates.get("project_dashboard_preview", package.project_dashboard_preview)
         )
 
 
@@ -250,7 +226,7 @@ def _repair_optional_mapping(value: Mapping[str, Any] | None) -> Mapping[str, An
 
 def _repair_tree(value: Any, *, key: str = "") -> Any:
     if isinstance(value, str):
-        if _structural_copy_value(key=key, value=value):
+        if structural_copy_value(key=key, value=value):
             return value
         return _repair_public_copy(value)
     if isinstance(value, Mapping):
@@ -260,16 +236,6 @@ def _repair_tree(value: Any, *, key: str = "") -> Any:
     if isinstance(value, list):
         return [_repair_tree(item, key=key) for item in value]
     return value
-
-
-def _structural_copy_value(*, key: str, value: str) -> bool:
-    field = str(key or "").strip().casefold()
-    if field in _STRUCTURAL_COPY_KEYS or field.endswith(_STRUCTURAL_COPY_KEY_SUFFIXES):
-        return True
-    text = str(value or "").strip()
-    if not text:
-        return False
-    return bool(("://" in text or "/" in text) and not any(char.isspace() for char in text))
 
 
 def _repair_public_copy(value: str) -> str:

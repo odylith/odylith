@@ -1,16 +1,18 @@
 {
   "component_id": "domain-intelligence",
   "diagrams": [
-    "D-043"
+    "D-043",
+    "D-045",
+    "D-046"
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 173,
-    "mapped_workstream_evidence_count": 158,
+    "explicit_event_count": 186,
+    "mapped_workstream_evidence_count": 170,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 154,
+    "spec_history_event_count": 163,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 174
+    "timeline_event_count": 187
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -20,23 +22,496 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/atlas/source/greenfield-rendered-surface-and-static-atlas-custody.mmd",
+        "odylith/atlas/source/odylith-discipline-surface-dags-and-release-proof.mmd"
       ],
       "confidence": "high",
-      "event_index": 662,
+      "event_index": 676,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Created D-045 and D-046 Atlas coverage for greenfield semantic copy custody and rendered-surface static fallback, refreshed D-040 and D-043, and proved D-045 visible with fresh SVG/PNG assets in the Atlas payload.",
+      "ts_iso": "2026-06-28T15:46:44-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_actor_labels.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_actor_led_prefix.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_actor_terms.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_contract_profiles.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_semantic_contract.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_intelligence.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_deferral_predicates.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_clauses.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_project_brief.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_traceability.py",
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_step_roles.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_gerund_actions.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py"
+      ],
+      "confidence": "high",
+      "event_index": 678,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py +3 more",
-      "ts_iso": "2026-06-27T21:10:51-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py +44 more",
+      "ts_iso": "2026-06-28T15:46:03-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 673,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh local dist odylith-local-release-0.1.15-prompt-quality-proof passed the maintained thirteen-case installed greenfield matrix with zero issues, zero Project prompt findings, every browser proof attempted and passed, create times 20.666-23.468s, clean temp cleanup, and synthetic wiring-only rescue smoke at 27.399s; natural rescue quality remains unclaimed.",
+      "ts_iso": "2026-06-28T06:15:28-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 672,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Project source-launch prompt quality now renders proof clauses from first-path base actions, bounds prompt grammar guards to proof-action segments, and passed 132 affected greenfield artifact/prewrite/quality tests after the package-manager prompt false-positive.",
+      "ts_iso": "2026-06-28T05:30:10-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 671,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh dist odylith-local-release-0.1.15-atlas-state-proof passed the twelve-case installed greenfield post-confirm matrix with per-case generated browser state proof: all cases 10/10, zero issues, max create 23.125s, all browser proof attempted, clean matrix temp cleanup, and wiring-only rescue 27.280s.",
+      "ts_iso": "2026-06-28T04:05:38-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 670,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield release proof was tightened from heading-level shell checks to generated browser state proof with Atlas diagram state assertions, skipped-proof honesty, refreshed Atlas diagrams, focused proof, broad source regression proof, and governed sync; release component contract updated in the same checkpoint.",
+      "ts_iso": "2026-06-28T03:46:35-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 669,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield release proof now includes Casebook generated surfaces, stricter surface asset wiring, first-path Project prompt custody, and per-case browser proof requested by maintained release wrappers.",
+      "ts_iso": "2026-06-28T02:41:56-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-22e6fb37/greenfield-post-confirm-matrix.v1.json",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 668,
+      "explicit_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "domain-intelligence",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Final local dist proof for 22e6fb37: installed smoke passed; 12-case greenfield post-confirm matrix passed with zero issues, 10/10 lens scores, and 21.591s max create time; rescue remains synthetic wiring-only proof, not natural rescue quality proof.",
+      "ts_iso": "2026-06-28T01:03:17-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "bin/greenfield-post-confirm-matrix",
+        "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/bootstrap_assets.py",
+        "src/odylith/install/migration_runtime.py"
+      ],
+      "confidence": "high",
+      "event_index": 667,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "migration-runtime",
+        "odylith",
+        "odylith-chatter",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Release proof and install custody hardening: standalone greenfield matrix now persists JSON proof, full install suite is green after guidance-budget compaction, and migration-runtime classification now blocks missing verification before already-current no-op while preserving verified same-version reinstall.",
+      "ts_iso": "2026-06-28T00:44:33-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "bin/_odylith.sh",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 666,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Release proof now treats the installed greenfield matrix as a canonical release gate: the default standard catalog is twelve domains, the matrix persists proof JSON, strict domain-anchor scoring is enforced, and rescue smoke is labeled wiring-only.",
+      "ts_iso": "2026-06-28T00:20:47-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 665,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield packaged standard matrix passed on final dist ed6f7e41 in 19.828-21.826s; rescue smoke passed as wiring-only proof, not natural rescue readiness.",
+      "ts_iso": "2026-06-27T23:28:45-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 664,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh local release odylith-local-release-0.1.15-7e548d40 passed release smoke and the installed greenfield matrix: eight standard cases scored 10/10 in 19.887-22.399s with zero issues, quantum passed in 21.296s, and rescue smoke passed in 26.587s as wiring proof.",
+      "ts_iso": "2026-06-27T23:05:24-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 663,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Narrowed greenfield result-status and terminal-label repair after broad artifact-quality regressions: artifact-tail cleanup remains conservative, terminal Atlas semantic-result labels apply only to long clipping-risk wrappers, component kinds moved to a dedicated owner, and source proof passed 36 focused plus 61 artifact-quality tests.",
+      "ts_iso": "2026-06-27T22:48:47-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 662,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Fixed packaged quantum post-confirm Atlas clipping by keeping result-state modifiers in semantic result language, separating result-status vocabulary from artifact-tail cleanup, and proving the retained source replay in 16.573s before rebuilt installed proof.",
+      "ts_iso": "2026-06-27T22:06:04-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [],

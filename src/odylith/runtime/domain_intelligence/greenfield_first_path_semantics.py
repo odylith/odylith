@@ -15,6 +15,7 @@ from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.common.prose_grammar import third_person_action_verb
+from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text as _clean
@@ -41,6 +42,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     visible_result_object as _visible_result_object,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import drop_release_proof_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language as _normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -139,7 +141,9 @@ def _first_path_steps(value: str) -> list[str]:
                 normalized.append(cleaned)
     if len(normalized) > 1 and _is_trivial_start(normalized[0]):
         normalized = normalized[1:]
-    return _unique(_drop_leading_context_fragments(_merge_leading_modifier_steps(normalized)))
+    merged = _merge_leading_modifier_steps(normalized)
+    without_context = _drop_leading_context_fragments(merged)
+    return _unique(drop_release_proof_control_steps(without_context))
 
 
 def _merge_leading_modifier_steps(steps: Sequence[str]) -> list[str]:
@@ -417,6 +421,10 @@ def _strip_dangling_step_tail(value: str) -> str:
     return " ".join(words).strip(" .")
 
 
+def _compact_final_list_comma(value: str) -> str:
+    return re.sub(r",\s+and\s+([^,.;:]+)$", r" and \1", _clean(value).strip(" ."), flags=re.IGNORECASE)
+
+
 def _normalize_role_can_step(value: str) -> str:
     text = _clean(value).strip(" .")
     match = re.match(
@@ -431,16 +439,20 @@ def _normalize_role_can_step(value: str) -> str:
     role_words = {word.casefold().strip(".,:;") for word in role.split()}
     if role_words & {"how", "if", "that", "what", "when", "where", "whether", "which", "while", "who", "whom", "whose", "why"}:
         return text
-    rest = _normalize_role_can_rest(match.group("rest"))
+    plural_subject = _looks_like_plural_subject(role)
+    rest = _normalize_role_can_rest(match.group("rest"), third_person=not plural_subject)
+    if plural_subject:
+        return f"{role} can {base_action_clause(match.group('verb'))}{rest}".strip(" .")
     return f"{role} {third_person_action_verb(match.group('verb'))}{rest}".strip(" .")
 
 
-def _normalize_role_can_rest(value: str) -> str:
+def _normalize_role_can_rest(value: str, *, third_person: bool = True) -> str:
     rest = str(value or "")
+    normalize_verb = third_person_action_verb if third_person else base_action_clause
 
     def replace_comma(match: re.Match[str]) -> str:
         prefix = " and " if match.group("and") else ", "
-        return f"{prefix}{third_person_action_verb(match.group('verb'))}"
+        return f"{prefix}{normalize_verb(match.group('verb'))}"
 
     rest = re.sub(
         rf"\s*,\s+(?P<and>and\s+)?(?P<verb>{_ACTION_BASE_VERB_PATTERN})\b",
@@ -450,7 +462,7 @@ def _normalize_role_can_rest(value: str) -> str:
     )
     return re.sub(
         rf"\s+and\s+(?P<verb>{_ACTION_BASE_VERB_PATTERN})\b",
-        lambda match: f" and {third_person_action_verb(match.group('verb'))}",
+        lambda match: f" and {normalize_verb(match.group('verb'))}",
         rest,
         flags=re.IGNORECASE,
     )
@@ -458,7 +470,7 @@ def _normalize_role_can_rest(value: str) -> str:
 
 def _normalize_subjectless_action_step(value: str) -> str:
     text = _clean(value).strip(" .")
-    if not text or _leading_subject_prefix(text):
+    if not text or _leading_subject_prefix(text) or _has_actor_led_subject_prefix(text):
         return text
     if _MATERIAL_ACTION_RE.match(text):
         text = base_action_clause(text)
@@ -473,6 +485,14 @@ def _normalize_subjectless_action_step(value: str) -> str:
     text = base_following_action_verbs(text)
     text = re.sub(r",\s+and\s+", " and ", text, flags=re.IGNORECASE)
     return text.strip(" .")
+
+
+def _has_actor_led_subject_prefix(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    match = _MATERIAL_ACTION_RE.search(text)
+    if not match or match.start() <= 0:
+        return False
+    return looks_like_actor_led_subject_prefix(text[: match.start()].strip(), text)
 
 
 def _split_action_pieces(value: str) -> list[str]:
@@ -538,7 +558,7 @@ def _split_purpose_action_tail(value: str) -> list[str]:
     if not match or not _MATERIAL_ACTION_RE.search(text[: match.start()]):
         return [text]
     head = text[: match.start()].strip(" ,")
-    tail = _normalize_role_can_step(match.group("tail").strip(" ,"))
+    tail = _compact_final_list_comma(_normalize_role_can_step(match.group("tail").strip(" ,")))
     return [part for part in (head, tail) if part]
 
 
@@ -556,7 +576,7 @@ def _split_temporal_action_tail(value: str) -> list[str]:
     base = _base_from_gerund_action(match.group("verb"))
     if not base:
         return [text]
-    head = text[: match.start()].strip(" ,")
+    head = _compact_final_list_comma(text[: match.start()].strip(" ,"))
     tail = match.group("tail").strip(" ,")
     action = f"{base} {tail}".strip(" .")
     return [part for part in (head, action) if part]

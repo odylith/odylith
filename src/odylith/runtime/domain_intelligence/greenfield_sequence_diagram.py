@@ -64,7 +64,7 @@ def sequence_mermaid(
 
     selected = [dict(row) for row in active_release_components(components)] if components else []
     selected = selected[:7] or [{"label": f"{label} product core"}]
-    actor_rows = actors[:5] or [f"{label} user"]
+    actor_rows = actors[:8] or [f"{label} user"]
     lines = [
         "sequenceDiagram",
         "  autonumber",

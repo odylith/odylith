@@ -5,6 +5,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import con
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
@@ -36,6 +37,20 @@ def test_first_path_steps_repair_carried_modal_base_form_drift() -> None:
         for step in steps
         for phrase in modal_base_form_drift_phrases(step)
     ]
+
+
+def test_first_path_steps_preserve_plural_actor_can_base_form() -> None:
+    steps = first_path_steps(
+        "Digestive health patients can log meals and related inputs and prepare a clinician-ready "
+        "follow-up summary with safety escalation notes."
+    )
+
+    assert steps == (
+        "Digestive health patients can log meals and related inputs and prepare a clinician-ready follow-up summary with safety escalation notes",
+    )
+    assert sequence_event_steps(steps[0]) == [steps[0]]
+    assert not any("patients logs" in step.casefold() for step in steps)
+    assert not [phrase for step in steps for phrase in modal_base_form_drift_phrases(step)]
 
 
 def test_confirmed_completion_repairs_modal_drift_from_recovered_host_guidance_intent() -> None:

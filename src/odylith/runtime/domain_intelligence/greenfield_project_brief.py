@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 import re
 from typing import Any
 
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -75,9 +75,9 @@ def project_outcome_text(
         release_selector=release_selector,
         fallback=fallback,
     ):
-        text = _brief_field_text(candidate, limit=_PROJECT_OUTCOME_LIMIT)
-        text = _readable_project_outcome(text, intent=intent, release_selector=release_selector)
-        if word_count(text) >= PROJECT_OUTCOME_MIN_WORDS:
+        text = _readable_project_outcome(clean_text(candidate), intent=intent, release_selector=release_selector)
+        text = _brief_field_text(text, limit=_PROJECT_OUTCOME_LIMIT)
+        if word_count(text) >= PROJECT_OUTCOME_MIN_WORDS and not _looks_like_clipped_project_outcome(text):
             return text
     return _brief_field_text(value or fallback, limit=_PROJECT_OUTCOME_LIMIT)
 
@@ -198,7 +198,14 @@ def _brief_field_text(value: Any, *, limit: int) -> str:
 
 def _readable_project_outcome(value: str, *, intent: Mapping[str, Any], release_selector: str) -> str:
     text = clean_text(value).strip(" .")
-    if text.count(",") < 5 and len(text) <= _PROJECT_OUTCOME_LIMIT:
+    if text.count(",") < 5 and len(text) <= 240:
+        return text
+    if (
+        len(text) <= _PROJECT_OUTCOME_LIMIT
+        and word_count(text) <= 60
+        and re.search(r"\b(?:proof|path|workflow|journey)\b", text, flags=re.IGNORECASE)
+        and re.search(r"\b(?:when|where)\b", text, flags=re.IGNORECASE)
+    ):
         return text
     title = clean_text(intent.get("title") or intent.get("source_title")) or "the accepted project"
     state_object = _brief_state_label(clean_text(intent.get("state_object")) or "the product state")
@@ -209,11 +216,19 @@ def _readable_project_outcome(value: str, *, intent: Mapping[str, Any], release_
     )
 
 
+def _looks_like_clipped_project_outcome(value: str) -> bool:
+    words = [word.strip(".,;:").casefold() for word in clean_text(value).split() if word.strip(".,;:")]
+    if not words:
+        return True
+    return words[-1] in {"include", "includes", "keep", "keeps", "remain", "remains", "with"}
+
+
 def _brief_state_label(value: str) -> str:
     text = clean_text(value).strip(" .")
-    label = domain_object_label(text, fallback="")
+    label = compact_domain_object_label(text, fallback="")
     if label:
-        return label
+        if len(label) <= 90 and word_count(label) <= 10:
+            return label
     parts = list(text_values(text, split_scalar=True, split_commas=True))
     if len(parts) >= 3:
         return parts[0]

@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 from odylith.runtime.project_intelligence.greenfield_project_text import _clean_display_title
@@ -188,7 +189,7 @@ def _dashboard_risk_title(value: str, *, meaning: str, used: set[str]) -> str:
         title = _risk_label(meaning, used=used)
     else:
         title = _title_case(short(title, limit=48))
-    return _dedupe_label(title, used=used)
+    return _dedupe_label(title, used=used, source=meaning)
 
 
 def _risk_classes(risks: Sequence[str]) -> list[dict[str, str]]:
@@ -227,11 +228,48 @@ def _risk_label(value: str, *, used: set[str]) -> str:
     ]
     for needles, label in checks:
         if any(needle in lowered for needle in needles):
-            return _dedupe_label(label, used=used)
-    return _dedupe_label("Proposal risk", used=used)
+            return _dedupe_label(label, used=used, source=value)
+    return _dedupe_label("Proposal risk", used=used, source=value)
 
 
-def _dedupe_label(label: str, *, used: set[str]) -> str:
+_RISK_LABEL_TERM_STOPWORDS = frozenset(
+    {
+        "accepted",
+        "additional",
+        "before",
+        "blocked",
+        "clear",
+        "confidence",
+        "control",
+        "evidence",
+        "missing",
+        "product",
+        "release",
+        "result",
+        "risk",
+        "state",
+        "trust",
+        "user",
+        "users",
+        "without",
+    }
+)
+
+
+def _dedupe_label(label: str, *, used: set[str], source: str = "") -> str:
     if label.casefold() not in used:
         return label
-    return f"Additional {label.casefold()}"
+    focus = _risk_label_focus(source)
+    if focus:
+        candidate = f"{focus} {label}"
+        if candidate.casefold() not in used:
+            return candidate
+    return f"{label} {len(used) + 1}"
+
+
+def _risk_label_focus(value: object) -> str:
+    terms = ordered_terms(value, minimum=4, stopwords=_RISK_LABEL_TERM_STOPWORDS, stem_ing=True)
+    selected = [term for term in terms if term.casefold() not in _RISK_LABEL_TERM_STOPWORDS][:2]
+    if not selected:
+        return ""
+    return _title_case(" ".join(selected))

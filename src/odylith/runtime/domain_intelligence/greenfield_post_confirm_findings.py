@@ -204,8 +204,10 @@ def _safe_mechanical_copy_issue(lowered: str) -> bool:
         token in lowered
         for token in (
             "repeats adjacent word",
+            "leaked adjacent duplicate word prose",
             "clipped or dangling phrase ending",
             "clipped article phrase ending",
+            "leaked clipped or dangling public copy",
         )
     )
 
@@ -214,6 +216,7 @@ def _generated_copy_quality_findings(package: Any) -> tuple[GreenfieldReviewFind
     findings: list[GreenfieldReviewFinding] = []
     for route in _generated_copy_routes(package):
         for copy_finding in generated_public_copy_findings(route["scope"], route["value"]):
+            repairability = _generated_copy_repairability(copy_finding.category)
             findings.append(
                 review_finding(
                     code="generated_copy_quality",
@@ -222,8 +225,8 @@ def _generated_copy_quality_findings(package: Any) -> tuple[GreenfieldReviewFind
                     projection_id=route["projection_id"],
                     semantic_node_id=route["semantic_node_id"],
                     severity="medium",
-                    repairability=_generated_copy_repairability(copy_finding.category),
-                    owner=route["owner"],
+                    repairability=repairability,
+                    owner="artifact_draft_cleaner" if repairability == "safe_package_repair" else route["owner"],
                     source="generated_copy_quality",
                     message=copy_finding.message,
                 )
@@ -332,9 +335,9 @@ def _copy_route(
 
 
 def _generated_copy_repairability(category: str) -> str:
-    if clean_text(category):
-        return "plan_patch"
-    return "unrepairable"
+    if clean_text(category) in {"adjacent_duplicate_word", "clipped_public_copy"}:
+        return "safe_package_repair"
+    return "plan_patch" if clean_text(category) else "unrepairable"
 
 
 def _extend_review_findings(

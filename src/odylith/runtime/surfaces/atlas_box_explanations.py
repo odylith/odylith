@@ -7,6 +7,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_action_target_language
 from odylith.runtime.surfaces import atlas_diagram_intelligence
 from odylith.runtime.surfaces import display_text
@@ -44,13 +45,13 @@ _SCOPE_OUT_RE = re.compile(
 _OWNED_ACTION_RE = re.compile(
     r"^owns?\s+"
     r"(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
-    r"issues?|links?|maintains?|normalizes?|optimizes?|performs?|predicts?|preserves?|pulls?|records?|renders?|"
+    r"issues?|links?|maintains?|normalizes?|optimizes?|performs?|predicts?|presents?|preserves?|pulls?|records?|renders?|"
     r"resolves?|shows?|stores?|tracks?|validates?|writes?)\b",
     re.IGNORECASE,
 )
 _ACTION_START_RE = re.compile(
     r"^(accepts?|assembles?|binds?|captures?|computes?|derives?|engraves?|estimates?|exports?|handles?|imports?|"
-    r"issues?|links?|maintains?|normalizes?|optimizes?|performs?|predicts?|preserves?|pulls?|records?|renders?|"
+    r"issues?|links?|maintains?|normalizes?|optimizes?|performs?|predicts?|presents?|preserves?|pulls?|records?|renders?|"
     r"resolves?|shows?|stores?|tracks?|validates?|writes?)\b",
     re.IGNORECASE,
 )
@@ -151,9 +152,13 @@ def _clean_label(value: str) -> str:
     lines = [" ".join(line.split()) for line in text.splitlines()]
     lines = [line for line in lines if line]
     if not lines:
-        return " ".join(text.split())
+        compact = " ".join(text.split())
+        return terminal_deferral_subject(compact) or compact
+    deferred_subject = terminal_deferral_subject(" ".join(lines))
+    if deferred_subject:
+        return deferred_subject
     if len(lines) == 1:
-        return lines[0]
+        return terminal_deferral_subject(lines[0]) or lines[0]
     first = lines[0]
     if first.endswith(":"):
         return f"{first} {', '.join(line.rstrip(',') for line in lines[1:])}"

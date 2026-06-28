@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation 
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_description
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import confirmed_system_name
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import combined_system_rows as _combined_system_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import (
     contains_generic_system_scaffold as _contains_generic_system_scaffold,
 )
@@ -212,7 +213,8 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
         "success_metrics": _section_list(sections, "success_metrics"),
         "component_responsibilities": _section_list(sections, "component_responsibilities"),
         "human_actors": _section_list(sections, "human_actors"),
-        "external_systems": _section_list(sections, "external_systems"),
+        "external_systems": _section_list(sections, "external_systems")
+        + _combined_system_rows(sections, "external", section_list=_section_list, section_text=_section_text),
         "internal_systems": [],
         "assumptions": _section_list(sections, "assumptions"),
         "ambiguities": _section_list(sections, "ambiguities"),

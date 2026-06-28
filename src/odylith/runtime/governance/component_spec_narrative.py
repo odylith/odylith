@@ -84,7 +84,7 @@ def build_narrative_component_spec(
     proofs = _proof_items(component_contract.get("local_proof"))
     upstream = _entity_text(component_contract.get("upstream_truth"))
     downstream = _entity_text(component_contract.get("downstream_consumers"))
-    failure = _sentence(_clean_fragment(component_contract.get("unique_failure")))
+    failure = _sentence(_failure_fragment(component_contract.get("unique_failure")))
     accepted_intent = _accepted_intent_sentence(responsibility, label=label)
 
     focus = _fallback_phrase(owns, label)
@@ -850,7 +850,7 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
         return text
     text = re.sub(r"\bRelated path\s*:\s*[^.;]+[.;]?", "", text, flags=re.I)
     text = re.sub(r"\b(?:Done|DoD)\s+mean(?:s)?\b", "", text, flags=re.I)
-    text = re.sub(r"\bMean\s+[a-z][^.;,]*", "", text, flags=re.I)
+    text = re.sub(r"\bMean(?:s)?\s*:\s*[a-z][^.;,]*", "", text, flags=re.I)
     text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.I)
     text = re.sub(r"\bon\s+screen,\s+alongside\b", "on screen with", text, flags=re.I)
     text = re.sub(r"\balongside\b", "with", text, flags=re.I)
@@ -908,6 +908,15 @@ def _clean_fragment(value: Any, *, proof: bool = False) -> str:
     if len(text.split()) <= 2 and lowered in {"state", "command", "record", "result", "evidence", "handoff"}:
         return ""
     return _lower_first(text)
+
+
+def _failure_fragment(value: Any) -> str:
+    text = clean_text(display_text.strip_inline_markdown_emphasis_tokens(str(value or "")))
+    text = re.sub(r"^[-*]\s*", "", text).strip(" .;:")
+    text = re.sub(r"\bRelated path\s*:\s*[^.;]+[.;]?", "", text, flags=re.I)
+    text = re.sub(r"\b(?:Done|DoD)\s+mean(?:s)?\s*:?\s*", "", text, flags=re.I).strip(" .;:")
+    text = re.sub(r"\s+", " ", text).strip(" .;:,")
+    return repair_modal_base_form_drift(text)
 
 
 def _drop_unanchored_pronouns(value: str) -> str:

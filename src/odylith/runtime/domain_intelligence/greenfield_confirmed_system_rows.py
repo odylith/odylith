@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms as _semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import reference_relation_description
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
@@ -125,7 +126,7 @@ def internal_system_rows(
             return expand_internal_system_rows(component_rows, context_text=context_text)
         return expanded
     if not rows:
-        rows = _combined_system_rows(sections, "internal", section_text=section_text)
+        rows = combined_system_rows(sections, "internal", section_list=section_list, section_text=section_text)
     return expand_internal_system_rows(rows, context_text=context_text)
 
 
@@ -225,6 +226,56 @@ def role_or_system_rows(value: object) -> list[str]:
             continue
         rows.extend(_rows_from_text(str(item or "")))
     return [_clean(row) for row in rows if _clean(row)]
+
+
+def combined_system_rows(
+    sections: Mapping[str, list[str]],
+    target: str,
+    *,
+    section_list: Any,
+    section_text: Any,
+) -> list[str]:
+    """Classify rows from a combined Systems section into internal or external rows."""
+
+    classified = [
+        row
+        for row, row_target in (
+            _classified_combined_system_row(row)
+            for row in section_list(sections, "systems")
+        )
+        if row_target == target and row
+    ]
+    if classified:
+        return role_or_system_rows(classified)
+    return _combined_system_rows(sections, target, section_text=section_text)
+
+
+def _classified_combined_system_row(value: str) -> tuple[str, str]:
+    text = _clean(value)
+    if not text:
+        return "", ""
+    deferred_subject = terminal_deferral_subject(text)
+    if deferred_subject:
+        return deferred_subject, "external"
+    if re.match(
+        r"^(?:deferred|future|later|optional|optionally)\s+external\s+(?:product\s+)?systems?\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return _strip_combined_system_heading(text), "external"
+    if re.match(
+        r"^(?:external\s+(?:product\s+)?systems?|third[- ]party\s+systems?)\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return _strip_combined_system_heading(text), "external"
+    if re.match(
+        r"^internal\s+(?:product\s+)?systems?\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return _strip_combined_system_heading(text), "internal"
+    return text, "internal"
 
 
 def has_meaningful_system_description(row: str, *, minimum_words: int = 5) -> bool:
@@ -428,10 +479,10 @@ def _combined_system_rows(sections: Mapping[str, list[str]], target: str, *, sec
     target_pattern = (
         r"internal(?:\s+product)?\s+systems?"
         if target == "internal"
-        else r"external(?:\s+product)?\s+systems?"
+        else r"(?:(?:deferred|future|later|optional|optionally)\s+)?external(?:\s+product)?\s+systems?"
     )
     other_pattern = (
-        r"external(?:\s+product)?\s+systems?"
+        r"(?:(?:deferred|future|later|optional|optionally)\s+)?external(?:\s+product)?\s+systems?"
         if target == "internal"
         else r"internal(?:\s+product)?\s+systems?"
     )
@@ -445,6 +496,26 @@ def _combined_system_rows(sections: Mapping[str, list[str]], target: str, *, sec
     return role_or_system_rows(match.group(1))
 
 
+def _strip_combined_system_heading(value: str) -> str:
+    text = _clean(value)
+    text = re.sub(
+        r"^(?:(?:deferred|future|later|optional|optionally)\s+)?"
+        r"(?:internal|external)(?:\s+product)?\s+systems?\s*(?:are|include|includes|:)?\s*",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    text = re.sub(
+        r"^third[- ]party\s+systems?\s*(?:are|include|includes|:)?\s*",
+        "",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    return _clean(text)
+
+
 def _explicit_system_row(value: str) -> bool:
     text = _clean(value)
     separator = re.search(r"\s+[—-]\s+|:\s+", text)
@@ -456,10 +527,10 @@ def _explicit_system_row(value: str) -> bool:
 
 
 def _expanded_system_description(candidate: str, *, context_text: str, rationale: str) -> str:
-    subject = candidate.lower()
+    subject = _clean(candidate).strip(" .").lower()
     clause = _best_context_clause(candidate, context_text)
     if clause:
-        return f"Owns {subject}. Relevant behavior: {_brief_clause(clause, limit=240)}"
+        return f"Owns {subject} and keeps relevant behavior visible: {_brief_clause(clause, limit=240)}"
     if rationale:
         return f"Defines how {subject} receives input, changes state, produces output, and exposes review evidence"
     return f"Defines how {subject} receives input, changes state, produces output, and exposes review evidence"
@@ -950,6 +1021,7 @@ def _system_name_key(value: str) -> str:
 __all__ = [
     "confirmed_system_description",
     "confirmed_system_name",
+    "combined_system_rows",
     "contains_generic_system_scaffold",
     "expand_internal_system_rows",
     "has_meaningful_system_description",

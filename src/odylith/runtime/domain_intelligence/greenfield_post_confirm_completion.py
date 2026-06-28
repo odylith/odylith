@@ -20,6 +20,7 @@ from odylith.runtime.artifact_quality.greenfield_package_quality import (
 )
 from odylith.runtime.domain_intelligence.greenfield_project_brief import PROJECT_BRIEF_SCHEMA_VERSION
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_count
 from odylith.runtime.domain_intelligence.greenfield_rows import row_count
@@ -549,6 +550,7 @@ def _accepted_project_preview_issues(
         issues.append("accepted-project memory preview diagram count drifted from Atlas prewrite output")
     if package.release_selector and clean_text(created.get("release_selector")) != clean_text(package.release_selector):
         issues.append("accepted-project memory preview release selector drifted from requested release")
+    issues.extend(_source_launch_preview_issues(package, accepted_preview))
     issues.extend(_prewrite_path_leak_issues("accepted-project memory preview", accepted_preview))
     issues.extend(
         _component_preview_path_fidelity_issues(
@@ -558,6 +560,79 @@ def _accepted_project_preview_issues(
         )
     )
     return issues
+
+
+_SOURCE_LAUNCH_TERM_STOPWORDS = frozenset(
+    {
+        "accepted",
+        "action",
+        "after",
+        "before",
+        "blocked",
+        "coding",
+        "complete",
+        "evidence",
+        "first",
+        "handoff",
+        "path",
+        "product",
+        "project",
+        "proof",
+        "release",
+        "result",
+        "scope",
+        "source",
+        "state",
+        "success",
+        "this",
+        "until",
+        "user",
+        "workstream",
+    }
+)
+
+
+def _source_launch_preview_issues(
+    package: GreenfieldCompletionPackage,
+    accepted_preview: Mapping[str, Any],
+) -> list[str]:
+    source_launch = accepted_preview.get("source_launch") if isinstance(accepted_preview.get("source_launch"), Mapping) else {}
+    prompt = clean_text(source_launch.get("implementation_prompt"))
+    if not prompt:
+        return []
+    issues = list(generated_public_copy_issues("accepted-project source launch", prompt))
+    proposal = accepted_preview.get("proposal") if isinstance(accepted_preview.get("proposal"), Mapping) else package.proposal
+    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    contract = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    raw_path = clean_text(contract.get("raw_path") or intent.get("first_path"))
+    state_object = clean_text(intent.get("state_object"))
+    accepted_segment = _source_launch_accepted_path_segment(prompt)
+    if (
+        accepted_segment
+        and raw_path
+        and state_object
+        and _source_launch_has_state_object_drift(accepted_segment, raw_path=raw_path, state_object=state_object)
+    ):
+        issues.append("accepted-project source launch implementation prompt mixes state-object terms into the accepted first-path clause")
+    return issues
+
+
+def _source_launch_accepted_path_segment(value: str) -> str:
+    match = re.search(
+        r"\bPreserve this accepted first path:\s*(?P<body>.+?)(?:\s+Treat\b|$)",
+        clean_text(value),
+        flags=re.I,
+    )
+    return clean_text(match.group("body")) if match else ""
+
+
+def _source_launch_has_state_object_drift(segment: str, *, raw_path: str, state_object: str) -> bool:
+    path_terms = set(ordered_terms(raw_path, minimum=4, stopwords=_SOURCE_LAUNCH_TERM_STOPWORDS, stem_ing=True))
+    state_terms = set(ordered_terms(state_object, minimum=4, stopwords=_SOURCE_LAUNCH_TERM_STOPWORDS, stem_ing=True))
+    segment_terms = set(ordered_terms(segment, minimum=4, stopwords=_SOURCE_LAUNCH_TERM_STOPWORDS, stem_ing=True))
+    unexpected_state_terms = (state_terms - path_terms) & segment_terms
+    return len(unexpected_state_terms) >= 2
 
 
 def _compass_memory_preview_issues(

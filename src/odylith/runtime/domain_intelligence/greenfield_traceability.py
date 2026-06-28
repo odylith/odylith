@@ -543,6 +543,9 @@ def _first_implementation_step_lines(first_slice: str) -> list[str]:
     text = _clean(first_slice).strip(" .")
     if not text:
         return []
+    text = re.sub(r"^first implementation step\s*:\s*", "", text, count=1, flags=re.IGNORECASE).strip(" .")
+    if not text:
+        return []
     if len(text) <= 240 or text.count(",") < 5:
         return [f"First implementation step: {text}."]
     lead, separator, detail = text.partition(":")

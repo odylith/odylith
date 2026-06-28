@@ -138,6 +138,49 @@ Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prom
     assert intent["internal_systems"]
 
 
+def test_confirmed_intent_parser_classifies_deferred_system_rows_as_external() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Regional Drone Corridor Safety Console
+
+## Product story
+Regional airspace coordinators need one place to receive a corridor request, compare route constraints, and publish a safe operating status without claiming live aviation integration in the first release.
+
+## State object
+Corridor Readiness Record with route segment, requesting organization, receiving site, operating window, waiver notes, constraint status, approval decision, public status, and review evidence.
+
+## First complete path
+Municipal airspace coordinator records a corridor request, route constraint reviewer checks blocked constraints, hospital receiving-site coordinator confirms receiving-site readiness, and public information officer publishes a safe operating status.
+
+## Systems
+- Corridor Readiness Console records corridor request evidence and visible operator corrections.
+- Route Constraint Ledger keeps route constraints, waiver notes, and approval decision history.
+- Public Status Surface presents safe operating status and review evidence.
+- Weather alert feeds are deferred.
+- NOTAM feeds are deferred.
+- Hospital scheduling integration is deferred.
+
+## Human actors
+- Municipal airspace coordinator
+- Route constraint reviewer
+- Hospital receiving-site coordinator
+- Public information officer
+
+## Proof boundary
+First release proves one corridor request from intake to public safe operating status without live aviation, weather, or hospital scheduling integrations.
+"""
+    )
+
+    encoded_internal = json.dumps(intent["internal_systems"], sort_keys=True)
+
+    assert "Corridor Readiness Console" in encoded_internal
+    assert "Public Status Surface" in encoded_internal
+    assert "Weather alert feeds" in intent["external_systems"]
+    assert "NOTAM feeds" in intent["external_systems"]
+    assert "Hospital scheduling integration" in intent["external_systems"]
+    assert "Weather alert feeds are deferred" not in encoded_internal
+    assert "NOTAM feeds are deferred" not in encoded_internal
+
+
 def test_confirmed_create_keeps_open_source_domain_word_out_of_adapter_drift(tmp_path: Path) -> None:
     prompt = (
         "Create a greenfield proposal for an open source security embargo room that receives vulnerability reports, "

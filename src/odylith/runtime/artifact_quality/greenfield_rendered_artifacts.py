@@ -108,6 +108,20 @@ def collect_rendered_package_artifacts(package: Any) -> list[RenderedArtifact]:
             )
         )
 
+    accepted_project = package_mapping(getattr(package, "accepted_project_preview", None))
+    source_launch = package_mapping(accepted_project.get("source_launch"))
+    source_launch_prompt = normalize_string(source_launch.get("implementation_prompt"))
+    if source_launch_prompt:
+        artifacts.append(
+            RenderedArtifact(
+                "Accepted project source launch",
+                "implementation_prompt",
+                source_launch_prompt,
+                "accepted_project",
+                "prewrite_package.accepted_project_preview.source_launch.implementation_prompt",
+            )
+        )
+
     artifacts.extend(_project_handoff_prompt_artifacts(getattr(package, "project_dashboard_preview", None)))
     return artifacts
 

@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import project_implementation_prompt_issues
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_action_subject
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.project_intelligence.source_launch import build_source_launch_handoff
 
 
@@ -130,6 +133,44 @@ def test_greenfield_source_launch_prompts_suppress_repeated_action_outcome(tmp_p
             assert generated_public_copy_issues(f"Project implementation prompt `{row['label']}`", row) == ()
 
 
+def test_greenfield_source_launch_prompt_accepts_request_shaped_product_titles(tmp_path: Path) -> None:
+    handoff = build_source_launch_handoff(
+        repo_root=tmp_path,
+        title="Build an ecommerce checkout recovery product",
+        first_path=(
+            "A shopper starts checkout, sees a failed payment reason, edits payment details, "
+            "and receives a recovered order confirmation."
+        ),
+        actors=(("", "Shopper: reviews checkout status", ""), ("", "Support coordinator: reviews recovery evidence", "")),
+        components=(
+            {"label": "Checkout Recovery", "responsibility": "Recover failed checkouts."},
+        ),
+        risks=(
+            {"statement": "A shopper may lose trust if the recovery path creates duplicate charge confusion."},
+        ),
+        validation=("A recovered checkout is shown with replayable evidence.",),
+        non_goals=("Payment processor integration.",),
+        source_launch_context={
+            "start_workstream_id": "B-001",
+            "start_workstream_title": "Recover failed checkout",
+            "release_selector": "0.0.1",
+        },
+    )
+    encoded = json.dumps(handoff, sort_keys=True).casefold()
+
+    assert "product product" not in encoded
+    assert "smallest runnable build an ecommerce checkout recovery product slice" in encoded
+    for row in handoff["prompts"]:
+        artifact = RenderedArtifact(
+            "Project implementation prompt",
+            row["label"],
+            "\n".join(str(row.get(key, "")) for key in ("label", "when", "prompt", "result", "stop")),
+            fields={**row, "position": str(handoff["prompts"].index(row) + 1)},
+        )
+        assert generated_public_copy_issues(f"Project implementation prompt `{row['label']}`", row) == ()
+        assert project_implementation_prompt_issues(artifact) == []
+
+
 def test_greenfield_source_launch_prompts_render_proof_from_base_actions(tmp_path: Path) -> None:
     handoff = build_source_launch_handoff(
         repo_root=tmp_path,
@@ -191,6 +232,46 @@ def test_greenfield_source_launch_prompts_render_proof_from_base_actions(tmp_pat
         assert project_implementation_prompt_issues(artifact) == []
 
 
+def test_greenfield_source_launch_refresh_prompt_uses_consumer_safe_governed_record_names(tmp_path: Path) -> None:
+    handoff = build_source_launch_handoff(
+        repo_root=tmp_path,
+        title="Regional Drone Corridor Safety Console",
+        first_path=(
+            "Municipal airspace coordinator records a corridor request, route constraint reviewer checks blocked constraints, "
+            "and public information officer publishes a safe operating status."
+        ),
+        actors=(("", "Municipal airspace coordinator: reviews corridor readiness", ""),),
+        components=(
+            {"label": "Corridor Readiness Console", "responsibility": "Records corridor request evidence."},
+        ),
+        risks=("A safe operating status can be wrong when constraints are stale.",),
+        validation=("Validate one successful corridor request and one blocked constraint path.",),
+        non_goals=("Live aviation integration.",),
+        source_launch_context={
+            "start_workstream_id": "B-002",
+            "start_workstream_title": "Record corridor request",
+            "release_selector": "0.0.1",
+        },
+    )
+    encoded = json.dumps(handoff, sort_keys=True)
+
+    assert "Project dashboard" in encoded
+    assert "workstream records" in encoded
+    assert "component records" in encoded
+    assert "architecture diagrams" in encoded
+    assert "Radar workstreams" not in encoded
+    assert "Registry components" not in encoded
+    assert "Atlas diagrams" not in encoded
+    for row in handoff["prompts"]:
+        artifact = RenderedArtifact(
+            "Project implementation prompt",
+            row["label"],
+            "\n".join(str(row.get(key, "")) for key in ("label", "when", "prompt", "result", "stop")),
+            fields={**row, "position": str(handoff["prompts"].index(row) + 1)},
+        )
+        assert project_implementation_prompt_issues(artifact) == []
+
+
 def test_greenfield_source_launch_prompts_render_single_step_proof_from_base_action(tmp_path: Path) -> None:
     handoff = build_source_launch_handoff(
         repo_root=tmp_path,
@@ -221,6 +302,81 @@ def test_greenfield_source_launch_prompts_render_single_step_proof_from_base_act
             fields={**row, "position": str(handoff["prompts"].index(row) + 1)},
         )
         assert project_implementation_prompt_issues(artifact) == []
+
+
+def test_greenfield_source_launch_actor_led_path_uses_modal_base_grammar(tmp_path: Path) -> None:
+    first_path = (
+        "Materials intake coordinator records one lab batch and precursor lot, safety reviewer checks blocking observations, "
+        "process engineer records exception rationale, compliance reviewer approves or rejects manufacturing readiness, "
+        "and release owner publishes a manufacturing-readiness status with replay evidence."
+    )
+    handoff = build_source_launch_handoff(
+        repo_root=tmp_path,
+        title="Battery Materials Release Evidence Desk",
+        first_path=first_path,
+        actors=(
+            ("", "Materials intake coordinator: records lab batch evidence", ""),
+            ("", "Safety reviewer: checks safety constraints", ""),
+        ),
+        components=(
+            {"label": "Batch Evidence Console Service", "responsibility": "Records lab batch evidence."},
+            {"label": "Safety Constraint Ledger", "responsibility": "Checks blocking observations."},
+        ),
+        risks=("Manufacturing readiness can be wrong when the review evidence is incomplete.",),
+        validation=("Validate success, blocked input, replay, and handoff evidence.",),
+        non_goals=("No automated chemistry approval.",),
+        source_launch_context={
+            "start_workstream_id": "B-002",
+            "start_workstream_title": "Record lab batch evidence",
+            "release_selector": "0.0.1",
+            "coding_readiness_gates": (
+                "The accepted product story names the user problem: materials teams need clear release evidence before manufacturing readiness.",
+                "The first implementation lane is ready when it covers: intake coordinator records one lab batch, safety reviewer checks blocking observations, and compliance reviewer approves or rejects manufacturing readiness.",
+            ),
+            "verification_commands": (
+                "odylith context --repo-root . B-002",
+                "odylith validate plan-workstream-binding --repo-root .",
+                "odylith validate plan-traceability --repo-root .",
+            ),
+        },
+    )
+    encoded = json.dumps(handoff, sort_keys=True)
+    model = first_path_model(first_path)
+
+    assert model.visible_outcome == "Compliance reviewer approves or rejects manufacturing readiness"
+    assert (
+        "the materials intake coordinator can record one lab batch and precursor lot "
+        "and receive the approved or rejected manufacturing readiness"
+    ) in encoded
+    assert "the user can intake coordinator records" not in encoded
+    assert "can record one lab batch and precursor lot and receives" not in encoded
+    assert not re.search(r"\bapproves\s+or\s+reject\b(?!s)", encoded, flags=re.IGNORECASE)
+    assert "governed workstream" not in encoded
+    assert "accepted first-release work item lookup" in encoded
+    assert "accepted work item binding check" in encoded
+    assert "implementation traceability check" in encoded
+    assert "preserve," not in encoded
+    for row in handoff["prompts"]:
+        artifact = RenderedArtifact(
+            "Project implementation prompt",
+            row["label"],
+            "\n".join(str(row.get(key, "")) for key in ("label", "when", "prompt", "result", "stop")),
+            fields={**row, "position": str(handoff["prompts"].index(row) + 1)},
+        )
+        assert project_implementation_prompt_issues(artifact) == []
+
+
+def test_greenfield_backlog_proof_subject_strips_actor_role_before_gerund() -> None:
+    subject = proof_action_subject(
+        "intake coordinator records one lab batch and precursor lot; "
+        "check blocking observations; process engineer records exception rationale; "
+        "approve or reject manufacturing readiness"
+    )
+
+    assert "intaking coordinator" not in subject
+    assert "recording one lab batch and precursor lot" in subject
+    assert "checking blocking observations" in subject
+    assert "approving or rejecting manufacturing readiness" in subject
 
 
 def test_greenfield_project_prompt_quality_rejects_gerundized_actor_drift() -> None:

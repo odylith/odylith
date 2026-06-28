@@ -88,6 +88,30 @@ def test_repetition_gate_allows_shared_customer_metadata() -> None:
     assert "repeats noncanonical prose" not in "\n".join(issues)
 
 
+def test_repetition_gate_allows_complete_semantic_event_custody() -> None:
+    event = "A supervisor reviews the decision package with traceable documents, comments, checks, and final status"
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {},
+                "first_path_contract": {
+                    "events": [{"text": event}],
+                },
+            }
+        },
+        backlog_result={},
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_preview={"first_path": event},
+        next_steps_preview={"implementation_prompt": event},
+        accepted_project_preview={"source_launch": {"implementation_prompt": event}},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" not in "\n".join(issues)
+
+
 def test_rendered_package_quality_rejects_malformed_connector_sequences() -> None:
     package = SimpleNamespace(
         proposal={},

@@ -50,6 +50,76 @@ def test_semantic_model_prefers_terminal_visible_outcome_over_mid_path_confirmat
     ]
 
 
+def test_semantic_model_attaches_terminal_visible_result_when_record_is_noun_and_verb() -> None:
+    first_path = (
+        "Record owner records a record, compliance records review evidence, "
+        "and the office records readiness."
+    )
+    model = build_greenfield_semantic_model(
+        title="Grants Compliance Record Office",
+        state_object="A grant compliance record with evidence, review status, and readiness.",
+        first_path=first_path,
+        proof_boundary="One record has evidence, review status, and readiness proof.",
+        components=[],
+        human_actors=["Record owner", "Compliance reviewer"],
+        internal_systems=["Record desk", "Evidence log", "Readiness view"],
+    )
+    contract = model.first_path_contract
+
+    assert contract.visible_result == "Recorded readiness"
+    assert [(event.text, event.visible_result) for event in contract.events] == [
+        ("Record owner records a record", False),
+        ("Compliance records review evidence", False),
+        ("The office records readiness", True),
+    ]
+
+
+def test_semantic_model_preserves_explicit_actor_subjects_across_multi_actor_path() -> None:
+    first_path = (
+        "City dispatcher records evacuation support request, "
+        "tribal liaison reviews restricted access needs, "
+        "hospital coordinator records capacity constraints, "
+        "mutual-aid officer confirms resource commitments, "
+        "shelter lead records readiness, "
+        "and emergency commander publishes public coordination status."
+    )
+    model = build_greenfield_semantic_model(
+        title="Regional Coordination Workspace",
+        state_object=(
+            "A coordination record with support request, access restriction, capacity constraint, "
+            "resource commitment, readiness, and public coordination status."
+        ),
+        first_path=first_path,
+        proof_boundary="One coordination record moves through access, capacity, resource, readiness, and public status proof.",
+        components=[],
+        human_actors=[
+            "City dispatcher",
+            "Tribal liaison",
+            "Hospital coordinator",
+            "Mutual-aid officer",
+            "Shelter lead",
+            "Emergency commander",
+        ],
+        internal_systems=[
+            "Request intake",
+            "Access review board",
+            "Capacity ledger",
+            "Resource commitment tracker",
+            "Readiness board",
+            "Public status view",
+        ],
+    )
+
+    assert [(event.actor, event.text) for event in model.first_path_contract.events] == [
+        ("City dispatcher", "City dispatcher records evacuation support request"),
+        ("Tribal liaison", "Tribal liaison reviews restricted access needs"),
+        ("Hospital coordinator", "Hospital coordinator records capacity constraints"),
+        ("Mutual-aid officer", "Mutual-aid officer confirms resource commitments"),
+        ("Shelter lead", "Shelter lead records readiness"),
+        ("Emergency commander", "Emergency commander publishes public coordination status"),
+    ]
+
+
 def test_semantic_model_claim_normalizes_actor_led_finite_tails() -> None:
     claim = _first_path_contract_claim(
         FirstPathContract(

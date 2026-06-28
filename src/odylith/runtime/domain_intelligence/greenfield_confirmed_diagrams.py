@@ -9,12 +9,16 @@ from typing import Any
 from odylith.runtime.domain_intelligence import greenfield_confirmed_diagram_text as diagram_text
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import label_with_suffix
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_object_descriptor
+from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label as wrapped_flow_label
+from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 
 
 def confirmed_diagrams(
@@ -62,6 +66,8 @@ def confirmed_diagrams(
     state_label = diagram_text.brief_object_label(state_object, fallback=f"{label} state")
     evidence_label = diagram_text.brief_object_label(evidence_record, fallback=f"{label} evidence record")
     label_ref = sentence_label(label)
+    release_responsibilities = label_with_suffix(label, "release 0.0.1 responsibilities")
+    release_gate_ref = sentence_label(label_with_suffix(label, "release gate"))
     return [
         {
             "slug": diagram_slugs["context"],
@@ -145,6 +151,7 @@ def confirmed_diagrams(
                 evidence_record=evidence_label,
                 components=release_components,
                 actors=actors,
+                first_path=display_first_path,
                 proof_boundary=proof_boundary,
                 semantic_model=semantic_model,
             ),
@@ -154,7 +161,7 @@ def confirmed_diagrams(
             "title": "Component Boundary View",
             "kind": "flowchart",
             "summary": (
-                f"Shows which product systems own {label} release 0.0.1 responsibilities and which dependencies stay outside. "
+                f"Shows which product systems own {release_responsibilities} and which dependencies stay outside. "
                 f"Use it to separate {state_label}, {evidence_label}, and deferred scope before implementation expands."
             ),
             "read_guide": (
@@ -211,7 +218,7 @@ def confirmed_diagrams(
                 f"Show which first-path result, state replay, evidence check, access proof, and release decision must exist before {label} trust increases"
             ),
             "read_guide": (
-                f"Read this as the {label_ref} release gate. The product result, {state_label}, {evidence_label}, "
+                f"Read this as the {release_gate_ref}. The product result, {state_label}, {evidence_label}, "
                 "validation output, and release decision must all be present; deferred scope stays outside the claim."
             ),
             "owner": "repo",
@@ -246,7 +253,8 @@ def _context_mermaid(
     product_node = "P"
     if components:
         lines.append(f'  {product_node}["{diagram_text.flow_label(label, limit=64)}<br/>product boundary"]')
-    for index, actor in enumerate(actors[:5], start=1):
+    actor_rows = actors[:8]
+    for index, actor in enumerate(actor_rows, start=1):
         node = _node_id("actor", index)
         target = best_component_node_for_text(actor, components=components) or (product_node if components else first_component)
         lines.append(f'  {node}["{diagram_text.flow_label(actor, limit=96)}"] --> {target}')
@@ -262,7 +270,7 @@ def _context_mermaid(
     for index, external in enumerate(external_systems[:5], start=1):
         node = _node_id("external", index)
         target_component = best_component_node_for_text(external, components=components) or _adapter_node(components) or (product_node if components else first_component)
-        external_label = boundary_clause_item(external, limit=96) or external
+        external_label = _external_identity_label(external) or boundary_clause_item(external, limit=96) or external
         lines.append(f'  {node}["{diagram_text.flow_label(external_label, limit=96)}"] --> {target_component}')
     lines.extend(
         [
@@ -270,7 +278,7 @@ def _context_mermaid(
             "  classDef boundary fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;",
             "  classDef service fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;",
             "  classDef external fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;",
-            "  class " + ",".join(_node_id("actor", index) for index in range(1, min(len(actors), 5) + 1)) + " personStyle;",
+            "  class " + ",".join(_node_id("actor", index) for index in range(1, len(actor_rows) + 1)) + " personStyle;",
             "  class " + ",".join(_node_id("component", index) for index in range(1, max(1, min(len(components), 7)) + 1)) + " service;",
         ]
     )
@@ -321,13 +329,18 @@ def _state_evidence_mermaid(
     evidence_record: str,
     components: list[dict[str, Any]],
     actors: list[str],
+    first_path: str,
     proof_boundary: str,
     semantic_model: Mapping[str, Any] | None = None,
 ) -> str:
     first_owner = diagram_text.component_label(components, 0, fallback="First path owner")
     evidence_owner = _component_label_for_text(evidence_record, components=components) or diagram_text.component_label(components, min(2, max(0, len(components) - 1)), fallback="Proof Review Component")
     review_owner = diagram_text.component_label(components, len(components) - 1, fallback="Review owner")
-    actor_label = _diagram_label(actors[0] if actors else diagram_text.actor_phrase(actors, label=label), limit=72, fallback="Actor")
+    actor_label = _first_action_label(
+        first_path=first_path,
+        semantic_model=semantic_model,
+        fallback=actors[0] if actors else diagram_text.actor_phrase(actors, label=label),
+    )
     proof_label = diagram_text.semantic_proof_checkpoint(semantic_model) or diagram_text.release_proof_label(proof_boundary) or "source-backed release check"
     state_descriptor = state_object_descriptor(state_object)
     lines = [
@@ -351,6 +364,19 @@ def _state_evidence_mermaid(
         "  class review,correction review;",
     ]
     return "\n".join(lines) + "\n"
+
+
+def _first_action_label(
+    *,
+    first_path: str,
+    semantic_model: Mapping[str, Any] | None,
+    fallback: str,
+) -> str:
+    for step in sequence_event_steps(first_path, semantic_model=semantic_model, dedupe=True):
+        action = action_chain_fragment(step) or step
+        if action:
+            return _diagram_label(action[:1].upper() + action[1:], limit=72, fallback="First path action")
+    return _diagram_label(fallback, limit=72, fallback="First path action")
 
 
 def _component_label_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
@@ -378,7 +404,8 @@ def _component_boundary_mermaid(
         for component in components
         if str(component.get("release_scope", "")).strip() in {"deferred", "out_of_scope", "external"}
     ][:3]
-    lines = ["flowchart TB", f'  subgraph product["{_diagram_label(label, limit=96, fallback="Product")}<br/>release boundary"]']
+    boundary_label = label_with_suffix(label, "release boundary")
+    lines = ["flowchart TB", f'  subgraph product["{_diagram_label(boundary_label, limit=96, fallback="Product boundary")}"]']
     for index, component in enumerate(selected_components, start=1):
         node = _node_id("boundary", index)
         component_label = str(component.get("label", "")) or f"Component {index}"
@@ -491,6 +518,9 @@ def _external_identity_label(value: str) -> str:
     if not text:
         return ""
     text = text.split(":", 1)[0].strip()
+    deferred_subject = terminal_deferral_subject(text)
+    if deferred_subject:
+        text = deferred_subject
     text = re.split(
         r"\s+\b(?:supplies|provides|stores|signs|sends|receives|imports|exports)\b\s+",
         text,

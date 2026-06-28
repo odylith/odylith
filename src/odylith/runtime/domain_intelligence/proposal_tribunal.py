@@ -203,7 +203,10 @@ def run_greenfield_tribunal(
     dimensions["domain_security"] = "explicit domain risk, security, compliance, policy, and abuse posture present"
     _check_visible_tribunal_actors(visible_actors=visible_actors, issues=issues)
     actor_labels = ", ".join(row["visible_actor"] for row in visible_actors[:4])
-    dimensions["validation_roles"] = f"stable judgment roles render as domain-specific actors: {actor_labels}"
+    dimensions["validation_roles"] = (
+        "stable judgment roles render as grounded product actors or explicit governance owner roles: "
+        f"{actor_labels}"
+    )
 
     dimensions["record_refresh"] = "accepted product records refresh after all writes"
     status = "failed" if issues else "passed"
@@ -389,10 +392,10 @@ _GENERIC_VISIBLE_TRIBUNAL_ACTORS = {
     "end-user advocate",
     "workflow operator",
     "risk reviewer",
+    "proof owner",
     "proof reviewer",
     "build owner",
     "release owner",
-    "project release owner",
 }
 _STABLE_ROLE_LABELS = {
     "beneficiary advocate",
@@ -420,13 +423,6 @@ def _check_visible_tribunal_actors(
         issues.append(
             "Tribunal visible actors must be project-specific, not stable-role placeholders: "
             + ", ".join(generic)
-        )
-    normalized = [label.casefold() for label in labels if label]
-    repeated = sorted({label for label in normalized if normalized.count(label) > 1})
-    if repeated:
-        issues.append(
-            "Tribunal visible actors must distinguish stable judgment roles instead of reusing one label: "
-            + ", ".join(repeated)
         )
 
 

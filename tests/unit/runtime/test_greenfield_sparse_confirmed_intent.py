@@ -26,6 +26,11 @@ def test_sparse_confirmed_intent_uses_grammatical_state_phrase_before_writes(
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped_in_sparse_semantic_unit"},
+    )
     prompt = (
         "Create a greenfield proposal for a cross-organization disclosure council that receives reports, "
         "coordinates review, records evidence custody, decides embargo status, and publishes release readiness proof."
@@ -93,4 +98,13 @@ Evidence custody and embargo decision.
     encoded = json.dumps(accepted)
     assert "understand Report" not in encoded
     assert "understand the report" in encoded
+    review_specs = [
+        path.read_text(encoding="utf-8")
+        for path in (tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md")
+        if "review-log" in str(path)
+    ]
+    assert review_specs
+    rendered_review_log = "\n".join(review_specs)
+    assert "owns review log.." not in rendered_review_log
+    assert "Relevant behavior." not in rendered_review_log
     assert generated_semantic_slop_issues(accepted, root="proposal") == []

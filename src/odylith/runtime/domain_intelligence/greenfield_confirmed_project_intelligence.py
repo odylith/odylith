@@ -76,7 +76,7 @@ def complete_project_intelligence(
         proof_boundary=proof_boundary,
     )
     for key in PROJECT_INTELLIGENCE_LAYERS:
-        minimum = 3 if key in {"intent", "ontology", "operators", "validation_obligations", "topology"} else 2
+        minimum = 3 if key in {"intent", "ontology", "operators", "validation_obligations", "topology", "artifacts"} else 2
         changed |= _repair_rows(
             intelligence,
             key,
@@ -129,7 +129,7 @@ def _flow_rows(*, project_title: str, first_path: str, state_object: str) -> tup
         f"Capture the accepted user intent for {project_title} before writing governed records.",
         f"Create the smallest release slice that exercises the first path: {first_path}",
         f"Record {state_object} with current status, owner, result, and recovery path.",
-        "Refresh Radar, Registry, Atlas, release, and view surfaces only after proposal gates pass.",
+        "Refresh workstream, component, diagram, release, and project-view records only after proposal gates pass.",
     )
 
 
@@ -206,9 +206,9 @@ def _layer_defaults(
             f"Validate release proof against the accepted product promise: {proof_boundary}",
         ),
         "artifacts": (
-            "Radar records state the work to build and why it matters to users.",
-            "Registry records state component ownership, contracts, dependencies, proof, and failure modes.",
-            "Atlas records state architecture views, related components, evidence, and refresh ownership.",
+            "Workstream records state the work to build and why it matters to users.",
+            "Component records state ownership, contracts, dependencies, proof, and failure modes.",
+            "Diagram records state architecture views, related components, evidence, and refresh ownership.",
         ),
         "owners": (
             "Product owners preserve accepted intent, release scope, user value, and risk evidence.",

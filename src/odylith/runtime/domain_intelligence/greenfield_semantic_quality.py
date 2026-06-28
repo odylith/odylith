@@ -8,10 +8,11 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_findings
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
-from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import actor_led_finite_action_inside_user_can
+from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import gerund_actor_role_finite_action_splice
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -54,13 +55,6 @@ _PROVISIONAL_TITLE_RE = re.compile(
     """,
     re.IGNORECASE | re.VERBOSE,
 )
-_ACTOR_LED_FINITE_ACTION_IN_USER_CAN_RE = re.compile(
-    rf"\busers?\s+can\s+(?!(?:{action_base_verb_pattern()})\b)"
-    r"[a-z][a-z-]*(?:\s+\([^)]+\))?\s+"
-    r"(?:adds?|asks?|chooses?|describes?|enters?|logs?|opens?|places?|records?|reviews?|saves?|selects?|submits?)\b",
-    flags=re.IGNORECASE,
-)
-
 _NGRAM_STOPWORDS = {
     "a",
     "an",
@@ -227,6 +221,9 @@ def release_scope_for_component(
     deferred_text = _scope_text(proof_boundary, *non_goals)
     path_terms = _terms(" ".join((first_path, material_first_path_action(first_path))))
     proof_terms = _terms(proof_boundary)
+    visible_terms = _terms(first_path_outcome_phrase(first_path, proof_boundary=proof_boundary))
+    if _material_overlap(terms, visible_terms) >= 2:
+        return "first_path_required"
     if _scope_context_matches(deferred_text, terms, markers=_OUT_OF_SCOPE_MARKERS):
         return "out_of_scope"
     if _scope_context_matches(deferred_text, terms, markers=_DEFERRED_MARKERS):
@@ -310,8 +307,10 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"mechanical activity-without-result scaffold leaked at {location}")
         if re.search(r"\baccepted\s+path\s+lets\s+users\b", lowered):
             issues.append(f"mechanical success-metric scaffold leaked at {location}")
-        if _ACTOR_LED_FINITE_ACTION_IN_USER_CAN_RE.search(text):
+        if actor_led_finite_action_inside_user_can(text):
             issues.append(f"actor-led finite action leaked inside user-can clause at {location}")
+        if gerund_actor_role_finite_action_splice(text):
+            issues.append(f"gerundized actor-role action leaked at {location}")
         if re.search(r"\bsource\s+evidence,\s+visible\s+blockers,\s+and\s+the\s+systems?\s+that\s+own\b", lowered):
             issues.append(f"governance-scaffold problem language leaked at {location}")
         if re.search(r"\bmetrics?\s+trended\s+with\b", lowered):

@@ -25,6 +25,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common import diagram_freshness
 from odylith.runtime.common import generated_refresh_guard
 from odylith.runtime.common import repo_path_resolver
+from odylith.runtime.surfaces import generated_flowchart_assets
 from odylith.runtime.surfaces import mermaid_worker_session as _mermaid_worker_session
 from odylith.runtime.surfaces import surface_path_helpers
 from odylith.runtime.surfaces.mermaid_worker_session import MermaidDiagramValidationError
@@ -655,6 +656,17 @@ def _render_diagrams_batch(
                 cli_version=cli_version,
             )
         except Exception as fallback_exc:
+            if generated_flowchart_assets.render_generated_flowchart_assets(
+                repo_root=repo_root,
+                source_mmd=str(job.get("source_mmd", "")).strip(),
+                source_svg=str(job.get("source_svg", "")).strip(),
+                source_png=str(job.get("source_png", "")).strip(),
+            ):
+                print(
+                    "warning: one-shot Mermaid render failed for "
+                    f"{label}; rendered Odylith-generated flowchart with static renderer ({fallback_exc})"
+                )
+                continue
             fallback_failures.append(label)
             print(f"warning: one-shot Mermaid render failed for {label} ({fallback_exc})")
     if degraded_jobs:

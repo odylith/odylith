@@ -22,7 +22,7 @@ def system_kind(name: str, description: str, *, external_systems: list[str] | No
 def _evidence_boundary_needs_adapter(name_text: str, external_systems: list[str]) -> bool:
     name_terms = set(visible_words(name_text))
     external_terms = set(visible_words(" ".join(external_systems)))
-    return bool(name_terms & {"audit", "trail", "attachment", "attachments", "provenance", "source"}) and bool(
+    return bool(name_terms & {"attachment", "attachments", "provenance"}) and bool(
         external_terms & {"feed", "portal", "provider", "repository", "source", "storage", "system"}
     )
 

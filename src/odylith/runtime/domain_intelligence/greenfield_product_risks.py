@@ -7,11 +7,14 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -472,6 +475,9 @@ def _outcome_clause_as_noun(value: str) -> str:
     text = re.sub(r"\s+is\s+the\s+visible\s+result\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
     text = re.sub(r"^(?:and|then|finally)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"^(?:her|his|its|our|their|your)\s+", "", text, flags=re.IGNORECASE)
+    actor_led_decision = _actor_led_decision_result_object(text)
+    if actor_led_decision:
+        return actor_led_decision
     subject_verb = re.match(
         r"^(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"
         r"(?:can\s+)?(?:acts?\s+on|approves?|blocks?|decides?|displays?|explains?|gets?|inspects?|receives?|reviews?|sees?|shows?|uses?)\s+"
@@ -499,6 +505,38 @@ def _outcome_clause_as_noun(value: str) -> str:
     if verb_first:
         return _lower_first(short_summary(verb_first.group("object"), limit=200))
     return _lower_first(short_summary(text, limit=200))
+
+
+def _actor_led_decision_result_object(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    for match in MATERIAL_ACTION_RE.finditer(text):
+        if match.start() <= 0:
+            continue
+        actor = text[: match.start()].strip(" ,")
+        if not looks_like_actor_led_subject_prefix(actor, text):
+            continue
+        action = base_action_clause(text[match.start() :].strip(" ."))
+        decision_object = _decision_pair_result_object(action)
+        if decision_object:
+            return decision_object
+    return ""
+
+
+def _decision_pair_result_object(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    pairs = {
+        ("accept", "reject"): ("acceptance", "rejection"),
+        ("approve", "block"): ("approval", "blocking"),
+        ("approve", "reject"): ("approval", "rejection"),
+    }
+    for (left, right), (left_noun, right_noun) in pairs.items():
+        match = re.match(rf"^{left}\s+or\s+{right}\s+(?P<object>.+)$", text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        result_object = compact_text(match.group("object")).strip(" .")
+        if result_object:
+            return f"the {left_noun} or {right_noun} of {result_object}"
+    return ""
 
 
 def _last_outcome_clause(value: str) -> str:

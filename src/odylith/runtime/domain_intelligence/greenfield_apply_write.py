@@ -227,6 +227,10 @@ def write_greenfield_proposal(
         next_steps=next_steps,
     )
     dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
+    dashboard_refresh["rendered_surface_custody"] = _raise_for_greenfield_rendered_surface_custody(
+        repo_root=root,
+        diagram_ids=diagrams_created,
+    )
 
     return {
         "mode": "applied",
@@ -250,23 +254,62 @@ _GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "casebo
 
 def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
     view = owned_surface_refresh.dashboard_handoff(surface="project")
-    try:
-        owned_surface_refresh.raise_for_failed_refreshes(
-            repo_root=Path(repo_root).resolve(),
-            surfaces=_GREENFIELD_VISIBLE_SURFACES,
-            operation_label="Greenfield apply dashboard visibility",
-        )
-    except RuntimeError as exc:
-        return {
-            "status": "warning",
-            "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
-            "view": view,
-            "warning": str(exc),
-        }
+    owned_surface_refresh.raise_for_failed_refreshes(
+        repo_root=Path(repo_root).resolve(),
+        surfaces=_GREENFIELD_VISIBLE_SURFACES,
+        operation_label="Greenfield apply dashboard visibility",
+    )
     return {
         "status": "passed",
         "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
         "view": view,
+    }
+
+
+def _raise_for_greenfield_rendered_surface_custody(*, repo_root: Path, diagram_ids: Sequence[str]) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    issues: list[str] = []
+    required_surfaces = (
+        "odylith/atlas/atlas.html",
+        "odylith/atlas/mermaid-payload.v1.js",
+        "odylith/atlas/mermaid-app.v1.js",
+    )
+    for relative_path in required_surfaces:
+        path = root / relative_path
+        if not path.is_file() or path.stat().st_size <= 0:
+            issues.append(f"missing rendered Atlas surface: {relative_path}")
+    catalog_path = root / "odylith/atlas/source/catalog/diagrams.v1.json"
+    catalog = _read_json_mapping(catalog_path)
+    rows = catalog.get("diagrams") if isinstance(catalog.get("diagrams"), list) else []
+    by_id = {
+        str(row.get("diagram_id", "")).strip(): row
+        for row in rows
+        if isinstance(row, Mapping) and str(row.get("diagram_id", "")).strip()
+    }
+    checked_ids: list[str] = []
+    for diagram_id in [str(value).strip() for value in diagram_ids if str(value).strip()]:
+        checked_ids.append(diagram_id)
+        row = by_id.get(diagram_id)
+        if not isinstance(row, Mapping):
+            issues.append(f"missing Atlas catalog entry for greenfield diagram: {diagram_id}")
+            continue
+        for field in ("source_svg", "source_png"):
+            relative_asset = str(row.get(field, "")).strip()
+            asset_path = root / relative_asset if relative_asset else None
+            if not relative_asset or asset_path is None or not asset_path.is_file() or asset_path.stat().st_size <= 0:
+                issues.append(f"{diagram_id}: missing rendered Atlas {field}: {relative_asset or '<empty>'}")
+        if not str(row.get("render_source_fingerprint", "")).strip():
+            issues.append(f"{diagram_id}: missing Atlas render_source_fingerprint")
+        fingerprints = row.get("reviewed_watch_fingerprints")
+        if not isinstance(fingerprints, Mapping) or not fingerprints:
+            issues.append(f"{diagram_id}: missing Atlas reviewed_watch_fingerprints")
+    if issues:
+        detail = "\n".join(f"- {issue}" for issue in issues)
+        raise RuntimeError(f"greenfield post-confirm rendered surface custody failed with {len(issues)} issue(s):\n{detail}")
+    return {
+        "status": "passed",
+        "atlas_surface_count": len(required_surfaces),
+        "atlas_diagram_count": len(checked_ids),
     }
 
 

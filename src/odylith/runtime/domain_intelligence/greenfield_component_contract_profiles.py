@@ -79,7 +79,7 @@ def status_view_contract(
     transitions = _status_transitions(context)
     object_name = _object_phrase(state_label)
     object_base = _status_object_base(context, object_name=object_name)
-    timeline = f"{object_base} status timeline"
+    timeline = _status_timeline_phrase(object_base)
     view_scope = _status_view_scope(label=label, context=context)
     role_scope = _role_scope_phrase(context)
     stale_indicator = f"stale or blocked {object_base} indicators"
@@ -340,6 +340,16 @@ def _status_object_base(context: str, *, object_name: str) -> str:
         if match:
             return match.group(1)
     return _object_base(object_name)
+
+
+def _status_timeline_phrase(object_base: str) -> str:
+    text = _clean(object_base).casefold().strip(" .")
+    if not text:
+        return "status timeline"
+    words = text.split()
+    if words and words[-1] in {"status", "timeline"}:
+        return f"{text} timeline"
+    return f"{text} status timeline"
 
 
 def _role_scope_phrase(context: str) -> str:

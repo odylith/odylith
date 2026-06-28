@@ -8,8 +8,11 @@ from pathlib import Path
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
+from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
@@ -58,6 +61,7 @@ _PROTECTED_SCOPE = (
     "observability platforms",
     "multi-tenant policy systems",
 )
+_FINITE_ACTION_VERB_PATTERN = action_verb_pattern(include_base=False, include_finite=True)
 
 _SEMANTIC_FRAGMENT_STOPWORDS = frozenset(
     {
@@ -250,7 +254,7 @@ def _plan_prompt(
     product_responsibilities = _prompt_phrase(capabilities, fallback="the accepted product responsibilities")
     proof_clause = _prompt_clause(proof, fallback="the accepted proof boundary")
     excluded_clause = _prompt_clause(excluded, fallback="the excluded first-release scope")
-    target_clause = f" Governed target: {target}." if target else ""
+    target_clause = f" Accepted first-release work item: {target}." if target else ""
     readiness_clause = f" Coding-readiness gates to preserve: {_join(readiness)}." if readiness else ""
     command_clause = f" Validation commands to plan around: {_join(commands)}." if commands else ""
     prompt = (
@@ -283,10 +287,10 @@ def _implementation_prompt(
     product_responsibilities = _prompt_phrase(capabilities, fallback="the accepted product responsibilities")
     risk_clause = _prompt_clause(risk, fallback="the named product risk")
     excluded_clause = _prompt_clause(excluded, fallback="the excluded first-release scope")
-    target_clause = f" Use governed workstream {target} as the source of truth for the coding slice." if target else ""
+    target_clause = f" Use accepted first-release work item {target} as the source of truth for the coding slice." if target else ""
     readiness_clause = f" Do not edit until these readiness gates are accepted: {_join(readiness)}." if readiness else ""
     prompt = (
-        f"Odylith, implement the smallest runnable {product} product slice from the accepted plan. Restate the target files "
+        f"Odylith, implement the smallest runnable {product} slice from the accepted plan. Restate the target files "
         f"before editing. Build only this path: {path}. Create the minimal domain model, source boundary around {boundary}, "
         f"product behavior for these responsibilities: {product_responsibilities}, input validation, structured result, and user-visible explanation. Protect "
         f"against this product risk while coding: {risk_clause}. Keep outside the slice: {excluded_clause}. If one excluded capability is "
@@ -311,7 +315,7 @@ def _proof_prompt(
     validation_context: Sequence[str],
     commands: Sequence[str],
 ) -> dict[str, str]:
-    target_clause = f" Bind the proof to governed workstream {target}." if target else ""
+    target_clause = f" Bind the proof to accepted first-release work item {target}." if target else ""
     validation_clause = f" Include these accepted validation gates: {_join(validation_context)}." if validation_context else ""
     command_clause = f" Run or update these verification commands: {_join(commands)}." if commands else ""
     risk_clause = _prompt_clause(risk, fallback="the named product risk")
@@ -331,11 +335,11 @@ def _proof_prompt(
 
 
 def _refresh_prompt(*, product: str, path: str, capabilities: str, target: str, commands: Sequence[str]) -> dict[str, str]:
-    target_clause = f" Start with governed workstream {target} and its implementation evidence." if target else ""
+    target_clause = f" Start with accepted first-release work item {target} and its implementation evidence." if target else ""
     command_clause = f" Cite verification command results from: {_join(commands)}." if commands else ""
     prompt = (
-        f"Odylith, refresh governed records from the implemented accepted {product} source slice. Align the Project dashboard, Radar "
-        f"workstreams, Registry components, Atlas diagrams when architecture exists, Compass evidence, and Casebook only if "
+        f"Odylith, refresh governed records from the implemented accepted {product} source slice. Align the Project dashboard, "
+        f"workstream records, component records, architecture diagrams when architecture exists, decision evidence, and defects only if "
         f"bugs were created. Ensure the product story, first path, participants, risks, owned capabilities, and proof records "
         f"match the implemented behavior from the accepted path: {path}. Keep capability records centered on these responsibilities: {capabilities}.{target_clause}{command_clause}"
     )
@@ -364,7 +368,7 @@ def _context_list(context: Mapping[str, Any], key: str, *, limit: int) -> list[s
     values = raw if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)) else (raw,)
     rows: list[str] = []
     for value in values:
-        text = _prompt_phrase(value, fallback="", limit=180)
+        text = _prompt_phrase(value, fallback="", limit=320 if key == "coding_readiness_gates" else 220)
         if text and text not in rows:
             rows.append(text)
         if len(rows) >= limit:
@@ -390,13 +394,13 @@ def _command_purpose(value: object) -> str:
     if not text.strip():
         return ""
     if "plan-workstream-binding" in text:
-        return "plan-workstream-binding validation"
+        return "accepted work item binding check"
     if "plan-traceability" in text:
-        return "plan-traceability validation"
+        return "implementation traceability check"
     if "context" in text:
-        return "context lookup for the governed workstream"
+        return "accepted first-release work item lookup"
     if "sync" in text:
-        return "selective governed-record refresh"
+        return "selective record refresh"
     if "validate" in text:
         return "listed validation command"
     return "listed verification command"
@@ -553,6 +557,9 @@ def _base_action_from_step(value: str) -> str:
     text = _clean_fragment(value)
     if not text:
         return ""
+    actor_action = _actor_led_base_action_from_step(text)
+    if actor_action:
+        return actor_action
     tokens = text.split()
     candidates = [text]
     for index in range(1, min(len(tokens), 9)):
@@ -587,11 +594,11 @@ def _first_path_phrase(value: str) -> str:
     if _outcome_starts_with_actor_action(outcome) or _outcome_restates_action(action, outcome):
         outcome = ""
     if action and outcome:
-        subject_action = _subjectify_path_step(action)
-        joiner = "and receive" if subject_action.casefold().startswith("the user can ") else "and receives"
+        subject_action = _first_actor_led_subject_action(text) or _subjectify_path_step(action)
+        joiner = "and receive" if re.search(r"\bcan\s+\w+", subject_action, flags=re.IGNORECASE) else "and receives"
         return short(f"{subject_action} {joiner} {outcome}", limit=320)
     if action:
-        return short(_subjectify_path_step(action), limit=260)
+        return short(_first_actor_led_subject_action(text) or _subjectify_path_step(action), limit=260)
     model = first_path_model(text)
     if model.steps:
         rows: list[str] = []
@@ -614,10 +621,63 @@ def _subjectify_path_step(value: str) -> str:
     if not text:
         return ""
     text = _normalize_embedded_action_verbs(text)
+    actor_led = _actor_led_modal_step(text)
+    if actor_led:
+        return actor_led
     if looks_like_action_clause(text):
-        action = base_action_clause(text)
+        action = repair_modal_base_form_drift(base_action_clause(text))
         return f"the user can {action}" if action else text
     return text
+
+
+def _first_actor_led_subject_action(first_path: str) -> str:
+    for step in first_path_model(first_path).steps:
+        actor_led = _actor_led_modal_step(_clean_fragment(step))
+        if actor_led:
+            return actor_led
+    return ""
+
+
+def _actor_led_modal_step(value: str) -> str:
+    text = _clean_fragment(value)
+    for match in re.finditer(rf"(?<![A-Za-z0-9_-])(?:{_FINITE_ACTION_VERB_PATTERN})(?![A-Za-z0-9_-])", text, flags=re.IGNORECASE):
+        if match.start() <= 0:
+            continue
+        actor = text[: match.start()].strip(" ,")
+        if not looks_like_actor_led_subject_prefix(actor, text):
+            continue
+        action = repair_modal_base_form_drift(base_action_clause(text[match.start() :].strip(" .,")))
+        action = _drop_embedded_outcome(_prompt_fragment(action))
+        if action:
+            return f"{_actor_subject_phrase(actor)} can {action}"
+    return ""
+
+
+def _actor_led_base_action_from_step(value: str) -> str:
+    text = _clean_fragment(value)
+    for match in re.finditer(rf"(?<![A-Za-z0-9_-])(?:{_FINITE_ACTION_VERB_PATTERN})(?![A-Za-z0-9_-])", text, flags=re.IGNORECASE):
+        if match.start() <= 0:
+            continue
+        actor = text[: match.start()].strip(" ,")
+        if not looks_like_actor_led_subject_prefix(actor, text):
+            continue
+        action = repair_modal_base_form_drift(base_action_clause(text[match.start() :].strip(" .,")))
+        if action:
+            return _drop_embedded_outcome(_prompt_fragment(action))
+    return ""
+
+
+def _actor_subject_phrase(value: str) -> str:
+    text = _clean_fragment(value).strip(" .")
+    if not text:
+        return "the user"
+    lower = text.casefold()
+    if re.match(r"^(?:a|an|the|this|that|each|one|we|they|he|she|it)\b", text, flags=re.IGNORECASE):
+        return lower
+    words = text.split()
+    if len(words) == 1:
+        return text
+    return f"the {lower}"
 
 
 def _prompt_phrase(value: object, *, fallback: str, limit: int = 180) -> str:
@@ -638,10 +698,10 @@ def _prompt_clause(value: object, *, fallback: str, limit: int = 180) -> str:
 
 
 def _prompt_fragment(value: object) -> str:
-    words = sentence(value).strip(" .!?;:").split()
+    words = sentence(value).strip(" .,!?;:").split()
     while words and words[-1].casefold().strip(".,;:") in _PROMPT_DANGLING_TAILS:
         words.pop()
-    return " ".join(words)
+    return " ".join(words).rstrip(" ,;:")
 
 
 def _outcome_restates_action(action: str, outcome: str) -> bool:

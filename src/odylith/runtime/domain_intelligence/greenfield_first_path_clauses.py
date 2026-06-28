@@ -274,7 +274,12 @@ def _first_path_action_text(
 
 
 def _step_fragment(step: FirstPathStepView, *, gerund: bool) -> str:
-    return _gerund_action_fragment(step.text) if gerund else step.fragment
+    if not gerund:
+        return step.fragment
+    _actor, actor_action = _actor_led_action_parts(step.text)
+    if actor_action:
+        return _gerund_action_fragment(actor_action)
+    return _gerund_action_fragment(step.fragment or step.text)
 
 
 def _readable_action_steps(

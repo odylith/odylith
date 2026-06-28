@@ -24,6 +24,15 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-27 · Implementation:** Fresh local release odylith-local-release-0.1.15-7e548d40 passed release smoke and the installed greenfield matrix: eight standard cases scored 10/10 in 19.887-22.399s with zero issues, quantum passed in 21.296s, and rescue smoke passed in 26.587s as wiring proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
+- **2026-06-27 · Implementation:** Narrowed greenfield result-status and terminal-label repair after broad artifact-quality regressions: artifact-tail cleanup remains conservative, terminal Atlas semantic-result labels apply only to long clipping-risk wrappers, component kinds moved to a dedicated owner, and source proof passed 36 focused plus 61 artifact-quality tests.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +2 more
+- **2026-06-27 · Implementation:** Fixed packaged quantum post-confirm Atlas clipping by keeping result-state modifiers in semantic result language, separating result-status vocabulary from artifact-tail cleanup, and proving the retained source replay in 16.573s before rebuilt installed proof.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +2 more
 - **2026-06-27 · Implementation:** Fresh local release dist odylith-local-release-0.1.15-ddecaf5e passed the installed greenfield post-confirm matrix with hard-min 10/10 scores across five consumer-lane domains in 19.780-23.035s, zero issues, governed writes, all PM/architect/engineer/domain-expert lenses passing, and temp cleanup.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
@@ -33,19 +42,55 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-27 · Implementation:** Greenfield post-confirm hard-min scoring now reports brutal 10/10 release dimensions; action-chain actor recovery rejects embedded action prefixes after the water-rights no-write repro, and the final ten-domain source-local cleanup-proof matrix passed with min score 10/10, max 16.935s, and all temp repos deleted.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/common/prose_grammar.py +3 more
-- **2026-06-27 · Implementation:** Greenfield post-confirm repair custody now separates semantic patch, artifact-plan patch, projection rerender, and exact-path mechanical draft cleanup; focused and widened post-confirm tests are green.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
-- **2026-06-27 · Implementation:** Installed local-release greenfield matrix passed five consumer-lane domains in 18.489-20.286 seconds with zero quality issues, governed writes, all expert lenses passing, and temp cleanup verified.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
-- **2026-06-27 · Implementation:** Greenfield post-confirm artifact-draft repair is now metadata-gated mechanical-only; semantic grammar defects route to typed plan repair or fail closed.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
 
+- 2026-06-28: Added first-class Atlas coverage for the latest greenfield source-local architecture. D-045 maps first-path semantic/copy custody across sequence-step ownership, step-role filtering, prose-shape checks, gerund action handling, structural-copy filtering, package findings, exact-path draft cleanup, and governed writes. D-046 maps rendered-surface custody, static Atlas generated-flowchart fallback, surface-health proof, browser-state proof, and fail-closed release posture. D-043 was refreshed with confirmable propose stdout, first-path sequence custody, collected public-copy cleanup, and rendered-surface proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
+- 2026-06-28: Restored the current source-local standard path. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-208`)
+  The retained live matrix exposed proposal-envelope, sequence-step,
+  modal-actor, repetition, next-step prompt, and over-broad artifact-draft
+  cleanup failures. Text `greenfield propose` now renders a concrete Product
+  Intent Confirmation instead of host instructions; first-path sequence
+  derivation preserves coordinated object-list tails and plural modal actor
+  capability clauses; canonical semantic first-path event repetition is
+  allowed only when it is complete event custody; Project next-step prompts
+  preserve the accepted first path without duplicating Radar
+  `recommended_first_slice`; and generated-copy mechanical cleanup is limited
+  to exact collected public-copy leaves after shared structural filtering.
+  Expanded affected proof passed 106 tests in 414.34s, focused modal/live/
+  sequence proof passed 19 tests in 190.09s, and six fresh source-local
+  operator-flow projects passed with governed writes, zero final issues,
+  hard-min 10/10 scores, all PM/architect/engineer/domain-expert and
+  implementation-prompt dimensions passing, and temp cleanup after every
+  case. Current release posture remains source-local only until rebuilt
+  installed-dist matrix proof passes.
+- 2026-06-28: Kept Domain Intelligence in non-release-ready posture after the first source-local live matrix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-208`)
+  The matrix followed the actor/prose-shape cleanup. The
+  targeted subset passed 8 tests and the affected greenfield pack passed 284
+  tests in 338.06s, but five fresh confirmed-create simulations scored 0/10
+  under the brutal release-quality scorer. Battery materials failed before
+  governed writes in 26.096s on modal/base-form grammar drift in a risk
+  statement. Public records, solar assessment, structured review, and cooking
+  robot wrote governed records in 24.761-28.957s with expert manifest lenses
+  passing, but failed rendered-surface custody because Atlas HTML and SVG/PNG
+  diagram renders were missing, rendered surfaces were 5/6, surface payloads
+  10/12, and Atlas rendered assets 0. Temp repos and the matrix root were
+  deleted after evidence capture. Next required repairs are risk-statement
+  semantic/projection grammar and post-confirm rendered Atlas/surface custody.
+- 2026-06-28: Reopened current-working-tree release readiness after a brutal source-local eval. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-208`)
+  Focused actor-led modal/gerund regressions passed and the
+  known `intaking coordinator` / `user can intake coordinator records` escape
+  now routes through shared actor/prose-shape ownership, but retained
+  battery-materials confirmed create still failed before governed writes in
+  24s because Project Brief preview copy clipped on a dangling `or`. The
+  widened greenfield quality pack failed 14 tests while passing 284, including
+  over-broad gerundized actor-role detections against valid evidence/review
+  component copy and list-comma regressions. Domain Intelligence is not
+  release-ready in this working tree until live create, broad tests, and
+  artifact readback are green again.
+- 2026-06-28: Closed a SemanticModelIR visible-result ownership gap in confirmed greenfield create. A hostile source-local first path that used `record` as both noun and verb selected `Recorded readiness` as the visible result but marked no `first_path_contract.events` row as the visible-result owner once three parsed events already existed, so post-confirm semantic quality failed before governed writes. `greenfield_semantic_model.py` now attaches an accepted visible result to the terminal event when no event owns it, preserving semantic custody without project terms, rendered-copy repair, or issue-message routing. Focused semantic/repetition/patch-planner proof passed 28 tests in 0.52s, the retained record-as-noun/verb replay committed records in 15.53s with a standard passed manifest and zero final issues, and a hostile Review Status Board replay completed standard create after one safe generated-copy cleanup pass. Natural installed rescue quality remains unclaimed; current release readiness is still blocked on non-internal rescue proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
+- 2026-06-28: Fixed a high-variance water-rights standard-path failure that exposed empty-action rescue no-progress. Radar copy rendered readiness result objects as `reach ... readiness`, and generated-copy classification treated title-label or hyphenated noun-compound words such as `Water Use Claim` and `water-use claim` as action verbs near result/status words. The repair stays generic: visible-result action projection now uses see-style phrasing for readiness/status-like result objects, and `generated_copy_quality.py` carries hyphen/title-label token metadata before classifying `reach/use result` shapes. Focused regressions pin `water-use claim` as valid, `Water Use Claim` title labels as valid, and `reach the hearing readiness` as invalid. The retained water-rights replay now commits governed records in 15.681s with a standard passed manifest, zero issues, all expert lenses passing, and temp cleanup. Natural installed rescue quality remains unclaimed. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
 - 2026-06-28: Tightened greenfield generated-surface and Project prompt custody after release-proof review found the prior matrix still under-proved artifact quality. Post-confirm writes now refresh Casebook with the other generated governance surfaces, static surface health requires Casebook HTML/app/payload plus shell tab/frame/href wiring, stale asset subpaths and malformed tooling-payload globals fail closed, and maintained release proof runs per-case headless generated browser state proof by default. That browser lane now checks normal shell routes, invalid-query recovery, Casebook empty/filter fallback, Atlas generated diagram state, and invalid Atlas diagram recovery, while the wrapper provisions Playwright Chromium before proof. Matrix proof JSON now reports requested-but-unattempted browser proof as skipped and failed instead of passed. Operator next-step implementation prompts now carry the accepted first-path contract directly, preventing Project tab prompts from drifting away from confirmed intent while still passing loose workstream overlap checks. Focused proof passed 71 release/matrix checks for matrix scoring, wrapper wiring, stale surface detection, browser fail-closed behavior, Atlas state proof, skipped-proof honesty, and first-path prompt fidelity. Rebuilt dist `odylith-local-release-0.1.15-atlas-state-proof` passed the twelve-case installed matrix with all cases 10/10, zero issues, every browser proof attempted and passed, create timings of 20.660-23.125s, six rendered surfaces, twelve payload assets, twelve Atlas rendered assets, clean matrix-temp cleanup, and synthetic wiring-only auto-rescue at 27.280s. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
 - 2026-06-28: Closed a Project implementation prompt false-positive exposed by a fresh twelve-domain installed audit. The package-manager supply-chain exception desk case wrote governed records in 21.671s and scored 10/10, but manual prompt inspection found malformed source-launch copy (`supplying chain exception desk user receives...`, `tracking provenance and building evidence`, and mixed `receive Release readiness` casing) that the prompt-quality gate missed. Source-launch proof prompts now project base action clauses from the typed first-path model instead of gerundized validation prose, fragment casing preserves title-cased product names while lowering ordinary result phrases, actor-action outcome phrases such as `a user updates...` are not composed as receive/return objects, and one-action first paths remain first-class proof facts instead of falling back to validation prose. Project prompt quality now rejects gerundized actor/product-subject drift only inside bounded proof-action segments; an over-broad `-ing` chain-count guard was removed after independent review proved it falsely rejected valid noun-heavy domain phrases. A broader affected runtime pack caught the failed mechanism where whole-prompt scanning falsely rejected valid title/context phrases; after narrowing the guard, the greenfield artifact/prewrite/quality pack passed 132 tests in 788.25s, and the final affected pack passed 159 tests in 786.84s. Source-local replay of the escaped case produced no bad phrases, preserved `track provenance and build evidence`, reported zero Project prompt-quality issues, and deleted its temp repo. Focused follow-up proof for the single-action escape and noun-heavy false-positive passed 27 tests. Rebuilt installed dist `odylith-local-release-0.1.15-prompt-quality-proof` passed the maintained thirteen-case matrix, including the package supply-chain regression, with all cases 10/10, zero prompt findings, zero total issues, all browser proofs attempted and passed, create timings of 20.666-23.468s, clean matrix-temp cleanup, and synthetic wiring-only rescue smoke at 27.399s. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
 - 2026-06-28: Reopened the greenfield release posture after a brutal installed audit found an open-source security embargo prompt failing before governed writes on `normalized` drift and malformed recovered copy. The source checkpoint now isolates the accepted operator-intent block from no-host guidance envelopes, keeps `open source` out of adapter classification, renders adapter boundaries with accepted-result language, and forces short first-path base actions through modal clauses to avoid copy such as `The product receive...`. The escaped prompt is now part of the default installed release matrix. A second public replay exposed and fixed a false expert-lens blocker where two valid internal product systems and two rendered component specs failed solely because the quality lens required three active components. Expert lenses now require coverage of accepted internal systems and active component specs, not an arbitrary count floor. Post-commit local-release proof must pass release smoke and the release-gated installed matrix: at least ten standard cases, currently twelve, under 60s with governed writes, hard 10/10 scores, every case-required domain anchor present, and the sparse-confirmation plus quantum-communication cases retained. The current c6286f0a package passed the expanded twelve-case standard matrix in 19.834-22.057s with zero issues before the release-gate metadata changes; final release proof still needs a rebuilt dist from the post-fix commit. The standard packaged path is release-candidate; full natural rescue readiness remains unclaimed because the rescue proof is an internal probe classified as wiring-only. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
@@ -227,11 +272,23 @@ This section captures synchronized requirement and contract signals derived from
   gate before any writes. After confirmation, `greenfield create --confirm`
   builds and applies the durable record; `propose --confirm-intent --format json`
   is the optional review artifact for the same apply-ready object.
+- Default text `greenfield propose` output must itself be a concrete,
+  confirmable Product Intent Confirmation. It must not render host instruction
+  envelopes, implementation guidance, CLI next steps, or proposal-authoring
+  meta-prompts as the artifact an operator is expected to save and confirm.
+  Confirmed create must be able to consume that exact visible text through the
+  confirmed-intent path without hand-authored proposal JSON.
 - First-path and projection repair must target semantic facts before rendered
   artifacts. Non-action first paths are repaired through the shared first-path
   semantic repair owner; modal-safe action phrases, visible result outcome
   actions, and child workstream risk posture are projection fields, not
   renderer-local string guesses.
+- First-path sequence ownership must preserve semantic event shape before Atlas,
+  Radar, Project prompt, or next-step projection. Coordinated object-list tails
+  such as proof items or status objects belong to the preceding action, and
+  plural modal actor capability clauses must keep `can` plus the base action
+  rather than being singularized into finite verbs. Sequence repair must not
+  patch rendered Atlas labels or operator prompts after projection.
 - Confirmed-intent parsing must accept both bullet-row and prose-row internal
   systems when the accepted narrative is concrete enough to infer owned product
   systems. Generic scaffold detection may reject exact fallback names together,

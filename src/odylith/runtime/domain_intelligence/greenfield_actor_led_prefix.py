@@ -11,15 +11,57 @@ from odylith.runtime.domain_intelligence.greenfield_text import plain_title_phra
 
 _SUBJECT_PREFIX_PREPOSITIONS = frozenset({"at", "by", "for", "from", "in", "of", "on", "through", "to", "via", "with", "without"})
 _SUBORDINATE_SUBJECT_MARKERS = frozenset({"if", "that", "when", "where", "whether", "which", "while"})
+_ROLE_NOUNS = frozenset(
+    {
+        "actor",
+        "actors",
+        "applicant",
+        "applicants",
+        "coordinator",
+        "coordinators",
+        "customer",
+        "customers",
+        "lead",
+        "leads",
+        "manager",
+        "managers",
+        "officer",
+        "officers",
+        "operator",
+        "operators",
+        "owner",
+        "owners",
+        "participant",
+        "participants",
+        "person",
+        "people",
+        "planner",
+        "planners",
+        "reviewer",
+        "reviewers",
+        "staff",
+        "supervisor",
+        "supervisors",
+        "team",
+        "teams",
+        "user",
+        "users",
+    }
+)
 
 
 def looks_like_actor_led_subject_prefix(prefix: str, full_text: str = "") -> bool:
     """Return whether a short prefix can be stripped before a finite actor action."""
 
     text = clean_first_path_text(prefix).strip(" .")
-    if not text or looks_like_action_clause(f"{text} placeholder") or base_gerund_clause(f"{text} placeholder"):
+    if not text:
         return False
     words = [word.casefold().strip(".,:;") for word in text.split() if word.strip(".,:;")]
+    has_role_noun = bool(set(words) & _ROLE_NOUNS)
+    if _has_unowned_action_tail(words):
+        return False
+    if (looks_like_action_clause(f"{text} placeholder") or base_gerund_clause(f"{text} placeholder")) and not has_role_noun:
+        return False
     if not words or _contains_subordinate_subject_marker(words) or any(word in _SUBJECT_PREFIX_PREPOSITIONS for word in words):
         return False
     whole = clean_first_path_text(full_text).strip(" .")
@@ -32,6 +74,19 @@ def looks_like_actor_led_subject_prefix(prefix: str, full_text: str = "") -> boo
 
 def _contains_subordinate_subject_marker(words: list[str]) -> bool:
     return any(word in _SUBORDINATE_SUBJECT_MARKERS for word in words)
+
+
+def _has_unowned_action_tail(words: list[str]) -> bool:
+    for index in range(1, len(words)):
+        token = words[index]
+        if token in _ROLE_NOUNS:
+            continue
+        if not looks_like_action_clause(f"{token} placeholder"):
+            continue
+        if set(words[index + 1 :]) & _ROLE_NOUNS:
+            continue
+        return True
+    return False
 
 
 def _looks_like_plural_actor_term(value: str) -> bool:

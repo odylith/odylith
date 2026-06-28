@@ -75,8 +75,8 @@ def _source_launch_prompt_scope_issues(artifact: RenderedArtifact, fields: Mappi
     if position == 1 and not _contains_all(combined, ("runtime", "test")):
         issues.append(f"{artifact.identity} does not make language/runtime/test tradeoffs explicit")
     if position == 2:
-        if "governed target" not in combined and "governed workstream" not in combined:
-            issues.append(f"{artifact.identity} does not bind the plan to a governed workstream")
+        if not _binds_first_release_work_item(combined):
+            issues.append(f"{artifact.identity} does not bind the plan to the accepted first-release work item")
         if not _contains_all(combined, ("source boundary", "files", "proof")):
             issues.append(f"{artifact.identity} does not require source boundary, files, and proof gates")
         if "validation" not in combined and "test commands" not in combined:
@@ -84,27 +84,38 @@ def _source_launch_prompt_scope_issues(artifact: RenderedArtifact, fields: Mappi
         if "excluded" not in combined:
             issues.append(f"{artifact.identity} does not preserve excluded scope")
     if position == 3:
-        if "governed workstream" not in combined:
-            issues.append(f"{artifact.identity} does not bind implementation to a governed workstream")
+        if not _binds_first_release_work_item(combined):
+            issues.append(f"{artifact.identity} does not bind implementation to the accepted first-release work item")
         if not _contains_all(combined, ("target files", "build only", "input validation", "structured result")):
             issues.append(f"{artifact.identity} does not bound the implementation slice tightly")
         if "risk" not in combined or ("outside the slice" not in combined and "excluded" not in combined):
             issues.append(f"{artifact.identity} does not carry risk and excluded-scope controls")
     if position == 4:
-        if "governed workstream" not in combined:
-            issues.append(f"{artifact.identity} does not bind proof to a governed workstream")
+        if not _binds_first_release_work_item(combined):
+            issues.append(f"{artifact.identity} does not bind proof to the accepted first-release work item")
         if not _contains_all(combined, ("valid input", "missing", "validation")):
             issues.append(f"{artifact.identity} does not require valid, missing-input, and validation proof")
         if "fails" not in stop:
             issues.append(f"{artifact.identity} does not stop on failed validation")
     if position == 5:
-        if "governed workstream" not in combined:
-            issues.append(f"{artifact.identity} does not bind refresh to a governed workstream")
+        if not _binds_first_release_work_item(combined):
+            issues.append(f"{artifact.identity} does not bind refresh to the accepted first-release work item")
         if "governed records" not in combined or "implemented behavior" not in combined:
             issues.append(f"{artifact.identity} does not bind governance refresh to implemented behavior")
         if "release readiness" not in stop:
             issues.append(f"{artifact.identity} can imply release readiness without source proof")
     return issues
+
+
+def _binds_first_release_work_item(value: str) -> bool:
+    return any(
+        phrase in value
+        for phrase in (
+            "accepted first-release work item",
+            "governed target",
+            "governed workstream",
+        )
+    )
 
 
 def _prompt_position(fields: Mapping[str, str]) -> int:

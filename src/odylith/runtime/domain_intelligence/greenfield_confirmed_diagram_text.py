@@ -15,6 +15,7 @@ from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import rationale_deferred_focus
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import semantic_words
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
@@ -138,13 +139,30 @@ def semantic_visible_result_label(semantic_model: Mapping[str, Any] | None) -> s
 def proof_evidence_label(*, components: list[dict[str, Any]], fallback: str) -> str:
     for component in components:
         label = str(component.get("label", "")).strip()
-        if re.search(r"\b(audit|trail|history|evidence|source-backed|version|provenance|proof|ledger)\b", label, re.IGNORECASE):
+        if _explicit_proof_owner_label(label):
             return _proof_record_label(label)
+    accepted = _accepted_proof_record_label(fallback)
+    if accepted:
+        return accepted
     for component in components:
         label = str(component.get("label", "")).strip()
         if re.search(r"\b(record|log|attachment|source)\b", label, re.IGNORECASE):
             return _proof_record_label(label)
     return fallback
+
+
+def _explicit_proof_owner_label(value: str) -> bool:
+    return bool(re.search(r"\b(audit|trail|history|evidence|source-backed|version|provenance|proof|trace)\b", value, re.IGNORECASE))
+
+
+def _accepted_proof_record_label(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if not text or word_count(text) > 10:
+        return ""
+    terms = semantic_words(text)
+    if terms & {"audit", "evidence", "history", "proof", "trace"} and terms & {"ledger", "packet", "record", "trail"}:
+        return title_label(text) or text
+    return ""
 
 
 def _proof_record_label(value: str) -> str:
@@ -384,7 +402,7 @@ def _component_clause_explains_boundary(value: str) -> bool:
     return bool(
         re.search(
             r"\b(?:owns?|owned|responsible|authority|boundary|state|record|version|source of truth|"
-            r"receives?|produces?|records?|stores?|tracks?|links?|assembles?|derives?|controls?|"
+            r"displays?|exposes?|presents?|publishes?|receives?|produces?|records?|shows?|stores?|tracks?|links?|assembles?|derives?|controls?|"
             r"protects?|coordinates?|maintains?|preserves?)\b",
             value,
             re.IGNORECASE,
@@ -655,7 +673,30 @@ def _scope_list_label(value: str) -> str:
             if len(comma_items) > 2:
                 selected.append(comma_items[-1])
             text = ", ".join(selected)
+    text = _deferred_scope_noun_list(text)
     return _strip_dangling_tail(text)
+
+
+_DEFERRED_SCOPE_ACTION_LEADS = frozenset(
+    {
+        "automate", "automates", "connect", "connects", "export", "exports", "import", "imports",
+        "notify", "notifies", "receive", "receives", "route", "routes", "send", "sends", "share",
+        "shares", "sync", "syncs",
+    }
+)
+
+
+def _deferred_scope_noun_list(value: str) -> str:
+    parts = re.split(r"\s+\b(and|or)\b\s+", compact_text(value).strip(" ."), flags=re.IGNORECASE)
+    if len(parts) < 3:
+        return value
+    rebuilt = [parts[0].strip(" .")]
+    for connector, segment in zip(parts[1::2], parts[2::2]):
+        first, separator, rest = segment.strip(" .").partition(" ")
+        item = rest.strip(" .") if separator and first.casefold() in _DEFERRED_SCOPE_ACTION_LEADS else segment.strip(" .")
+        if item:
+            rebuilt.extend([connector.casefold(), item])
+    return " ".join(part for part in rebuilt if part).strip(" .")
 
 
 def _without_ellipsis(value: str) -> str:

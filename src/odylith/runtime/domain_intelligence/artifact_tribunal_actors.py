@@ -24,6 +24,35 @@ TRIBUNAL_STABLE_ROLES = (
     "release_owner",
 )
 
+_GENERIC_ACTOR_ROLE_LABELS = {
+    "actor",
+    "actors",
+    "beneficiary advocate",
+    "build owner",
+    "domain operator",
+    "domain reviewer",
+    "evidence owner",
+    "human actors",
+    "implementation owner",
+    "main human actors",
+    "maintainer",
+    "owner",
+    "primary user",
+    "project operator",
+    "proof owner",
+    "proof reviewer",
+    "release owner",
+    "release reviewer",
+    "result reviewer",
+    "reviewer",
+    "risk owner",
+    "risk reviewer",
+    "state object",
+    "team",
+    "user",
+    "workflow operator",
+}
+
 
 def tribunal_actor_projection(proposal: Mapping[str, Any]) -> tuple[dict[str, str], ...]:
     """Return domain-specific visible Tribunal actors for a proposal."""
@@ -61,6 +90,7 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
     compact = _compact_lens_name(graph, proposal=proposal)
     proposal_actors = _proposal_actor_candidates(proposal)
     actors = _role_candidates([*proposal_actors, *graph.actors])
+    actor_pool = actors or _role_candidates(proposal_actors)
     first_path_actor = _first_path_contract_actor(proposal)
     operators = _role_specific_candidates(
         [*proposal_actors, *graph.operators, *graph.actors],
@@ -78,39 +108,61 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
         ownerish_fallback=False,
     )
     implementation_owners = _role_specific_candidates(
-        [*proposal_actors, *graph.invariants, *graph.validation_obligations, *graph.actors],
+        proposal_actors,
         ("build", "builder", "implementation", "source", "engineer"),
         ownerish_fallback=False,
     ) or _role_specific_candidates(
-        [*proposal_actors, *graph.invariants, *graph.validation_obligations, *graph.actors],
+        proposal_actors,
         ("maintainer",),
         ownerish_fallback=False,
     )
+    primary_actor = _actor_label(actor_pool, fallback=first_path_actor or f"{compact} beneficiary advocate")
+    domain_operator = _actor_label(
+        operators,
+        fallback=_best_role_actor(
+            actor_pool,
+            ("operator", "coordinator", "lead", "dispatcher", "liaison", "manager", "officer"),
+            fallback=first_path_actor or primary_actor,
+        ),
+    )
     names = {
-        "beneficiary_advocate": _actor_label(actors, fallback=f"{compact} beneficiary advocate"),
-        "domain_operator": _actor_label(operators, fallback=first_path_actor or f"{compact} operator"),
-        "risk_owner": _actor_label(risk_owners, fallback=f"{compact} risk reviewer"),
-        "evidence_owner": _actor_label(
-            evidence_owners,
-            fallback=_derived_role_label(
-                [*implementation_owners, *actors],
-                explicit_tokens=("proof", "evidence", "validation"),
-                fallback_lens=compact,
-                role_suffix="proof reviewer",
+        "beneficiary_advocate": primary_actor,
+        "domain_operator": domain_operator,
+        "risk_owner": _actor_label(
+            risk_owners,
+            fallback=_best_role_actor(
+                actor_pool,
+                ("commander", "chief", "director", "authority", "risk", "safety", "compliance", "security", "privacy", "manager", "owner", "officer", "lead"),
+                fallback=domain_operator or primary_actor,
             ),
         ),
-        "implementation_owner": _actor_label(implementation_owners, fallback=f"{compact} build owner"),
-        "release_owner": _derived_role_label(
-            [
-                *implementation_owners,
-                *evidence_owners,
-                *risk_owners,
-                *operators,
-                *actors,
-            ],
-            explicit_tokens=("release", "promotion", "readiness", "rollback", "launch", "delivery"),
-            fallback_lens=compact,
-            role_suffix="release reviewer",
+        "evidence_owner": _actor_label(
+            evidence_owners,
+            fallback=_best_role_actor(
+                actor_pool,
+                ("commander", "proof", "evidence", "validation", "audit", "auditor", "inspector", "reviewer", "analyst", "information", "officer"),
+                fallback=domain_operator or primary_actor,
+            ),
+        ),
+        "implementation_owner": _actor_label(implementation_owners, fallback="Project implementation owner"),
+        "release_owner": _actor_label(
+            _role_specific_candidates(
+                [
+                    *proposal_actors,
+                    *implementation_owners,
+                    *evidence_owners,
+                    *risk_owners,
+                    *operators,
+                    *actors,
+                ],
+                ("release", "promotion", "readiness", "rollback", "launch", "delivery"),
+                ownerish_fallback=False,
+            ),
+            fallback=_best_role_actor(
+                actor_pool,
+                ("commander", "chief", "director", "release", "promotion", "rollback", "launch", "delivery", "manager", "owner", "readiness", "lead"),
+                fallback="Project release owner",
+            ),
         ),
     }
     return _dedupe_visible_actor_names(names)
@@ -128,31 +180,11 @@ def _first_path_contract_actor(proposal: Mapping[str, Any]) -> str:
 
 
 def _dedupe_visible_actor_names(names: Mapping[str, str]) -> dict[str, str]:
-    """Keep visible Tribunal roles distinct even when one human owns many hats."""
+    """Keep visible actors grounded; one real actor may legitimately own several hats."""
 
-    suffixes = {
-        "beneficiary_advocate": "beneficiary advocate",
-        "domain_operator": "workflow operator",
-        "risk_owner": "risk reviewer",
-        "evidence_owner": "proof reviewer",
-        "implementation_owner": "build owner",
-        "release_owner": "release reviewer",
-    }
     result: dict[str, str] = {}
-    seen: set[str] = set()
     for role in TRIBUNAL_STABLE_ROLES:
         label = clean_text(names.get(role, ""))
-        key = label.casefold()
-        if key and key in seen:
-            prefix = _actor_label_prefix(label) or label
-            suffix = suffixes.get(role, "reviewer")
-            label = _role_suffixed_label(prefix, suffix)
-            key = label.casefold()
-        if key and key in seen:
-            label = f"{label} for {role.replace('_', ' ')}"
-            key = label.casefold()
-        if key:
-            seen.add(key)
         result[role] = label
     return result
 
@@ -195,7 +227,13 @@ def _actor_candidate_label(value: str) -> str:
     text = clean_text(value).strip(" .")
     if not text:
         return ""
+    if _looks_like_actor_list_bundle(text):
+        return ""
+    if _is_generic_actor_role_label(text):
+        return ""
     direct = accepted_actor_label(text)
+    if _is_generic_actor_role_label(direct):
+        return ""
     if direct and _looks_like_actor_label(direct):
         return direct
     for separator in (" \u2014 ", " \u2013 ", " - ", ":"):
@@ -225,18 +263,28 @@ def _actor_candidate_label(value: str) -> str:
         if role_phrase:
             text = role_phrase
     normalized = accepted_actor_label(text)
+    if _is_generic_actor_role_label(normalized):
+        return ""
     if normalized and _looks_like_actor_label(normalized):
         return normalized
-    if clean_text(text).casefold() in {
-        "primary user",
-        "project operator",
-        "domain reviewer",
-        "workflow operator",
-        "risk reviewer",
-        "proof reviewer",
-    }:
+    if _is_generic_actor_role_label(text):
         return ""
     return text if _looks_like_actor_label(text) else ""
+
+
+def _is_generic_actor_role_label(value: str) -> bool:
+    return clean_text(value).casefold().replace("_", " ") in _GENERIC_ACTOR_ROLE_LABELS
+
+
+def _looks_like_actor_list_bundle(value: str) -> bool:
+    text = clean_text(value).strip(" .")
+    if "," not in text and ";" not in text:
+        return False
+    pieces = [piece.strip(" .") for piece in re.split(r"[,;]", text) if piece.strip(" .")]
+    if len(pieces) < 2:
+        return False
+    actorish = [piece for piece in pieces if accepted_actor_label(piece) and _looks_like_actor_label(piece)]
+    return len(actorish) >= 2
 
 
 def _looks_like_actor_label(value: str) -> bool:
@@ -256,7 +304,7 @@ def _looks_like_actor_label(value: str) -> bool:
         return False
     if " row " in f" {lowered} " and "names the owner" in lowered:
         return False
-    if lowered.endswith((" proof record", " evidence record", " release gate")):
+    if lowered.endswith((" proof", " proof record", " evidence", " evidence record", " validation", " release gate")):
         return False
     role_words = {
         "admin",
@@ -290,6 +338,7 @@ def _looks_like_actor_label(value: str) -> bool:
         "planner",
         "preparer",
         "recipient",
+        "resident",
         "requester",
         "researcher",
         "reviewer",
@@ -412,6 +461,31 @@ def _role_specific_candidates(
     return unique_text(candidates) or (_ownerish_candidates(values) if ownerish_fallback else [])
 
 
+def _best_role_actor(values: Sequence[str], role_terms: Sequence[str], *, fallback: str) -> str:
+    weights = {term.casefold(): len(role_terms) - index for index, term in enumerate(role_terms) if term}
+    ranked: list[tuple[int, str]] = []
+    for value in values:
+        label = _actor_candidate_label(value)
+        if not label:
+            continue
+        tokens = _actor_affinity_tokens(f"{value} {label}")
+        score = sum(weight for token, weight in weights.items() if token in tokens)
+        if score:
+            ranked.append((score, label))
+    if not ranked:
+        return fallback
+    ranked.sort(key=lambda item: item[0], reverse=True)
+    return ranked[0][1]
+
+
+def _actor_affinity_tokens(value: str) -> set[str]:
+    return {
+        token.strip(".,;:()[]{}").casefold()
+        for token in clean_text(value).replace("-", " ").replace("/", " ").split()
+        if token.strip(".,;:()[]{}")
+    }
+
+
 def _derived_role_label(
     values: Sequence[str],
     *,
@@ -474,36 +548,15 @@ def _actor_label(values: Sequence[str], *, fallback: str) -> str:
         if (
             label
             and _looks_like_actor_label(label)
+            and not _is_generic_actor_role_label(label)
             and label.casefold()
             not in {
-                "actor",
-                "actors",
-                "human actors",
-                "main human actors",
-                "maintainer",
-                "owner",
-                "reviewer",
-                "state object",
-                "team",
-                "user",
                 "evidence record",
                 "evidence for this slice",
                 "release gate",
                 "the first-release actors are",
                 "actors involved in the first release are",
-                "build owner",
-                "domain operator",
-                "evidence owner",
-                "implementation owner",
-                "proof owner",
                 "proof for this slice",
-                "proof reviewer",
-                "release owner",
-                "release reviewer",
-                "result reviewer",
-                "risk owner",
-                "risk reviewer",
-                "workflow operator",
                 "check",
                 "confirm",
                 "prove",

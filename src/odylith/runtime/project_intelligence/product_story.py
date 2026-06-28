@@ -354,22 +354,22 @@ def _source_artifact_paragraph(
     proof = evidence_boundary_phrase(evidence_sources)
     clauses: list[str] = []
     if work:
-        clauses.append(f"Radar carries {work}")
+        clauses.append(f"Workstream records carry {work}")
     if component_text:
-        clauses.append(f"Registry names the owned boundaries as {component_text}")
+        clauses.append(f"Component records name the owned boundaries as {component_text}")
     if diagram_text:
-        clauses.append(f"Atlas gives reviewers {diagram_text}")
+        clauses.append(f"Diagram records give reviewers {diagram_text}")
     if proof:
         clauses.append(f"the proof boundary is {proof}")
     if not clauses:
         return "The story is still thin: source records exist, but no connected workstream, component, diagram, or proof boundary is strong enough to narrate yet."
     parts: list[str] = []
     if work:
-        parts.append(f"After the product story is clear, Radar turns the active work into {work}.")
+        parts.append(f"After the product story is clear, workstream records turn the active work into {work}.")
     if component_text:
-        parts.append(f"Registry anchors that work in {component_text}.")
+        parts.append(f"Component records anchor that work in {component_text}.")
     if diagram_text:
-        parts.append(f"Atlas gives reviewers {diagram_text}.")
+        parts.append(f"Diagram records give reviewers {diagram_text}.")
     if proof:
         parts.append(f"Evidence stays bounded to {proof}, so the story does not outrun the source records.")
     return " ".join(parts)
@@ -389,11 +389,11 @@ def _source_supporting_records(
     proof = evidence_boundary_phrase(evidence_sources)
     rows: list[str] = []
     if work:
-        rows.append(f"Radar carries {work}.")
+        rows.append(f"Workstream records carry {work}.")
     if component_text:
-        rows.append(f"Registry names the owned boundaries as {component_text}.")
+        rows.append(f"Component records name the owned boundaries as {component_text}.")
     if diagram_text:
-        rows.append(f"Atlas gives reviewers {diagram_text}.")
+        rows.append(f"Diagram records give reviewers {diagram_text}.")
     if proof:
         rows.append(f"Evidence is bounded by {proof}.")
     return rows

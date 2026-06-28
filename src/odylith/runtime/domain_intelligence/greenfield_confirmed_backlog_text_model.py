@@ -510,6 +510,9 @@ def capability_action_clause(value: str) -> str:
 
 def proof_action_subject(value: str) -> str:
     text = normalize_action_clause(value)
+    _actor, actor_action = actor_action_parts(text)
+    if actor_action:
+        text = actor_action
     words = text.split()
     if not words:
         return ""
@@ -525,7 +528,7 @@ def proof_action_subject(value: str) -> str:
             convert_next = False
             continue
         rows.append(word)
-        convert_next = token in {"and", "or", "then"} or (converted and word.endswith(","))
+        convert_next = token in {"and", "or", "then"} or (converted and word.endswith((",", ";")))
     return re.sub(r"\s+", " ", " ".join(rows)).strip(" .") if converted else text
 
 
