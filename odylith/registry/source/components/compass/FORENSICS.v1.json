@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 327,
-    "mapped_workstream_evidence_count": 249,
+    "explicit_event_count": 331,
+    "mapped_workstream_evidence_count": 253,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 327
+    "timeline_event_count": 331
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,132 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 654,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Broad greenfield post-confirm source proof passed after CLI auto-rescue hardening: 282 tests passed in 933.23s across post-confirm slop, component spec quality, general artifact quality, prewrite transaction, source-launch prompts, preview trimming, engine rescue, rescue probe, release matrix, and release bootstrap default-rescue coverage. Installed rebuilt dist proof remains pending.",
+      "ts_iso": "2026-06-27T18:10:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 653,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield rescue proof hardened after review: canonical release matrix now runs installed CLI auto-rescue smoke by default, synthetic installed-engine probe was removed, semantic/plan repairs now populate manifest repaired issue codes, and a disposable source-local CLI auto-rescue probe committed governed records in 20.411s with post_confirm_rescue_probe repaired; rebuilt installed dist proof remains pending.",
+      "ts_iso": "2026-06-27T17:51:00-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 652,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield Project prompt custody fix now suppresses duplicate action/outcome object restatement, routes proof fallback through cleaned first-path projection, and adds installed release rescue smoke for 90s rescue-tier proof; source and harness tests are green, rebuilt installed dist proof remains pending.",
+      "ts_iso": "2026-06-27T17:29:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 651,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Installed dist 33bdb122 reopened greenfield post-confirm: 2/5 standard matrix cases failed before governed writes from Project source-launch prompt punctuation; source fix makes prompts fragment-safe, trims next-step subordinate tails, and focused source proof passed.",
+      "ts_iso": "2026-06-27T16:27:04-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",

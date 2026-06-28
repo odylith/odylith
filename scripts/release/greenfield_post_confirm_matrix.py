@@ -25,6 +25,9 @@ if str(SCRIPT_DIR) not in sys.path:
 from local_release_smoke import _cleanup_smoke_temp_root  # noqa: E402
 from local_release_smoke import _local_release_env  # noqa: E402
 from local_release_smoke import _serve_directory  # noqa: E402
+from greenfield_rescue_smoke import POST_CONFIRM_RESCUE_BUDGET_SECONDS  # noqa: E402
+from greenfield_rescue_smoke import installed_auto_rescue_env  # noqa: E402
+from greenfield_rescue_smoke import rescue_cli_issues  # noqa: E402
 from odylith.runtime.artifact_quality.greenfield_package_quality import (  # noqa: E402
     greenfield_rendered_package_quality_issues,
 )
@@ -113,6 +116,30 @@ class GreenfieldMatrixResult:
             "create_returncode": self.create_returncode,
             "counts": self.counts.to_dict(),
             "quality": self.quality.to_dict(),
+        }
+
+
+@dataclass(frozen=True)
+class GreenfieldRescueSmokeResult:
+    status: str
+    cli_create_seconds: float
+    counts: GreenfieldArtifactCounts
+    issues: tuple[str, ...]
+    manifest: Mapping[str, Any]
+    create_returncode: int = 0
+
+    @property
+    def passed(self) -> bool:
+        return self.status == "passed" and not self.issues
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "cli_create_seconds": self.cli_create_seconds,
+            "create_returncode": self.create_returncode,
+            "counts": self.counts.to_dict(),
+            "issues": list(self.issues),
+            "manifest": dict(self.manifest),
         }
 
 
@@ -206,6 +233,37 @@ def run_matrix(
     return tuple(results)
 
 
+def run_rescue_smoke(
+    *,
+    dist_dir: Path,
+    version: str,
+    temp_parent: Path,
+) -> GreenfieldRescueSmokeResult:
+    """Prove installed rescue-tier writes and auto-rescue engine escalation."""
+
+    release_dir = Path(dist_dir).expanduser().resolve()
+    install_script = release_dir / "install.sh"
+    if not install_script.is_file():
+        raise FileNotFoundError(f"missing local release install script: {install_script}")
+    run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-rescue-{uuid.uuid4().hex[:8]}"
+    run_root.mkdir(parents=True, exist_ok=False)
+    server, base_url = _serve_directory(release_dir)
+    try:
+        repo_root = run_root / f"odylith-sim-rescue-{uuid.uuid4().hex[:8]}"
+        result = _run_rescue_smoke_case(
+            repo_root=repo_root,
+            install_script=install_script,
+            base_url=base_url,
+            version=version,
+        )
+        _cleanup_repo_before_next(repo_root)
+        return result
+    finally:
+        server.shutdown()
+        server.server_close()
+        _cleanup_smoke_temp_root(run_root)
+
+
 def _run_case(
     *,
     case: GreenfieldMatrixCase,
@@ -234,7 +292,7 @@ def _run_case(
     started = time.perf_counter()
     create = _run(
         cwd=repo_root,
-        env=env,
+        env=installed_auto_rescue_env(env),
         command=[
             "./.odylith/bin/odylith",
             "greenfield",
@@ -270,6 +328,120 @@ def _run_case(
         counts=counts,
         quality=quality,
         create_returncode=create.returncode,
+    )
+
+
+def _run_rescue_smoke_case(
+    *,
+    repo_root: Path,
+    install_script: Path,
+    base_url: str,
+    version: str,
+) -> GreenfieldRescueSmokeResult:
+    case = GreenfieldMatrixCase(
+        name="rescue disclosure council",
+        prompt=(
+            "Create a greenfield proposal for a cross-organization disclosure council that receives external reports, "
+            "coordinates review, records evidence custody, decides embargo status, and publishes release readiness proof "
+            "without claiming personalized notification delivery in the first release."
+        ),
+        required_terms=("disclosure", "council", "embargo", "evidence"),
+    )
+    repo_root.mkdir(parents=True)
+    env = _local_release_env(base_url=base_url, version=version)
+    _run(cwd=repo_root, env=env, command=["git", "init"], timeout=60)
+    install = _run(cwd=repo_root, env=env, command=["bash", str(install_script)], timeout=COMMAND_TIMEOUT_SECONDS)
+    if install.returncode != 0:
+        return _rescue_smoke_result(
+            create_payload={},
+            counts=GreenfieldArtifactCounts(),
+            issues=(f"install_failed: {(install.stderr or install.stdout).strip()[:800]}",),
+            create_returncode=install.returncode,
+        )
+    propose = _run(
+        cwd=repo_root,
+        env=env,
+        command=["./.odylith/bin/odylith", "greenfield", "propose", "--repo-root", ".", "--prompt", case.prompt],
+        timeout=120,
+    )
+    if propose.returncode != 0:
+        return _rescue_smoke_result(
+            create_payload={},
+            counts=GreenfieldArtifactCounts(),
+            issues=(f"propose_failed: {(propose.stderr or propose.stdout).strip()[:800]}",),
+            create_returncode=propose.returncode,
+        )
+    intent_path = repo_root / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(propose.stdout, encoding="utf-8")
+    started = time.perf_counter()
+    create = _run(
+        cwd=repo_root,
+        env=env,
+        command=[
+            "./.odylith/bin/odylith",
+            "greenfield",
+            "create",
+            "--repo-root",
+            ".",
+            "--prompt",
+            case.prompt,
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--confirm",
+            "--release",
+            "0.0.1",
+            "--repair-tier",
+            "auto",
+            "--json",
+        ],
+        timeout=150,
+    )
+    create_seconds = round(time.perf_counter() - started, 3)
+    payload = _parse_json_object(create.stdout)
+    package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
+    counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    issues = list(
+        rescue_cli_issues(
+            manifest=_as_mapping(payload.get("post_confirm_quality_manifest")),
+            package=package,
+            counts=counts,
+            count_minimums=_required_count_minimums(),
+            count_key=_count_key,
+            write_committed=_write_committed,
+            as_mapping=_as_mapping,
+            package_quality_issues=greenfield_rendered_package_quality_issues,
+            create_returncode=create.returncode,
+            create_seconds=create_seconds,
+            detail=create.stderr or create.stdout,
+            expected_requested_tier="auto",
+        )
+    )
+    return _rescue_smoke_result(
+        create_payload=payload,
+        counts=counts,
+        issues=tuple(issues),
+        create_returncode=create.returncode,
+        cli_create_seconds=create_seconds,
+    )
+
+
+def _rescue_smoke_result(
+    *,
+    create_payload: Mapping[str, Any],
+    counts: GreenfieldArtifactCounts,
+    issues: Sequence[str],
+    create_returncode: int,
+    cli_create_seconds: float = 0.0,
+) -> GreenfieldRescueSmokeResult:
+    cleaned_issues = tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
+    return GreenfieldRescueSmokeResult(
+        status="passed" if not cleaned_issues else "failed",
+        cli_create_seconds=cli_create_seconds,
+        counts=counts,
+        issues=cleaned_issues,
+        manifest=_as_mapping(create_payload.get("post_confirm_quality_manifest")),
+        create_returncode=create_returncode,
     )
 
 
@@ -900,11 +1072,42 @@ def _print_human_summary(results: Sequence[GreenfieldMatrixResult]) -> None:
             print(f"   score: {explanation}")
 
 
+def _print_rescue_summary(rescue: GreenfieldRescueSmokeResult | None) -> None:
+    if rescue is None:
+        return
+    print(
+        " - rescue smoke: {status}, cli_auto_rescue={cli:.3f}s, issues={issues}, "
+        "radar={radar}, registry={registry}, atlas={atlas}, trace_nodes={trace_nodes}".format(
+            status=rescue.status,
+            cli=rescue.cli_create_seconds,
+            issues=len(rescue.issues),
+            radar=rescue.counts.radar_workstreams,
+            registry=rescue.counts.registry_component_specs,
+            atlas=rescue.counts.atlas_mermaid_sources,
+            trace_nodes=rescue.counts.trace_nodes,
+        )
+    )
+    for issue in rescue.issues:
+        print(f"   issue: {issue}")
+
+
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run installed greenfield post-confirm release simulations.")
     parser.add_argument("--dist-dir", required=True, help="Local release asset directory containing install.sh.")
     parser.add_argument("--version", default=_version_from_pyproject())
     parser.add_argument("--temp-parent", default=str(_default_temp_parent()))
+    parser.add_argument(
+        "--include-rescue-smoke",
+        action="store_true",
+        default=True,
+        help="Prove installed CLI auto-rescue governed writes. Enabled by default.",
+    )
+    parser.add_argument(
+        "--skip-rescue-smoke",
+        action="store_false",
+        dest="include_rescue_smoke",
+        help="Skip rescue smoke for local debugging only; this is not release proof.",
+    )
     parser.add_argument("--json", action="store_true", dest="json_output")
     return parser.parse_args(argv)
 
@@ -916,15 +1119,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         version=str(args.version),
         temp_parent=Path(args.temp_parent),
     )
+    rescue = (
+        run_rescue_smoke(
+            dist_dir=Path(args.dist_dir),
+            version=str(args.version),
+            temp_parent=Path(args.temp_parent),
+        )
+        if bool(args.include_rescue_smoke)
+        else None
+    )
+    passed = all(result.quality.passed for result in results) and (rescue is None or rescue.passed)
     payload = {
         "version": QUALITY_MATRIX_VERSION,
-        "status": "passed" if all(result.quality.passed for result in results) else "failed",
+        "status": "passed" if passed else "failed",
         "results": [result.to_dict() for result in results],
     }
+    if rescue is not None:
+        payload["rescue_smoke"] = rescue.to_dict()
     if args.json_output:
         print(json.dumps(payload, indent=2, sort_keys=True))
     else:
         _print_human_summary(results)
+        _print_rescue_summary(rescue)
     return 0 if payload["status"] == "passed" else 1
 
 

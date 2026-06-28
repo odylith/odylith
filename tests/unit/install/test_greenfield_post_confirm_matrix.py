@@ -255,3 +255,129 @@ def test_quality_verdict_rejects_project_implementation_prompt_findings(monkeypa
     assert verdict.score == 0
     assert verdict.scores["implementation_prompts"] == 0
     assert any("Project implementation prompt findings cap release score at 4" in explanation for explanation in verdict.score_explanation)
+
+
+def test_rescue_cli_issues_allow_committed_rescue_under_90s(monkeypatch) -> None:
+    module = _module()
+    manifest = _passing_manifest()
+    manifest.update(
+        {
+            "requested_repair_tier": "auto",
+            "repair_tier": "rescue",
+            "rescue_activated": True,
+            "budget_seconds": 90.0,
+            "whole_project_elapsed_seconds": 74.5,
+            "passes": 2,
+            "repaired_issue_codes": ["post_confirm_rescue_probe"],
+        }
+    )
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+
+    issues = module.rescue_cli_issues(
+        manifest=manifest,
+        package=_empty_package(),
+        counts=_full_counts(module),
+        count_minimums=module._required_count_minimums(),  # noqa: SLF001
+        count_key=module._count_key,  # noqa: SLF001
+        write_committed=module._write_committed,  # noqa: SLF001
+        as_mapping=module._as_mapping,  # noqa: SLF001
+        package_quality_issues=module.greenfield_rendered_package_quality_issues,
+        create_returncode=0,
+        create_seconds=74.5,
+        detail="",
+        expected_requested_tier="auto",
+    )
+
+    assert issues == ()
+
+
+def test_rescue_cli_issues_require_auto_escalation() -> None:
+    module = _module()
+
+    issues = module.rescue_cli_issues(
+        manifest={
+            "status": "passed",
+            "validation_status": "passed",
+            "requested_repair_tier": "auto",
+            "repair_tier": "standard",
+            "rescue_activated": False,
+            "budget_seconds": 60.0,
+            "passes": 1,
+            "issue_count": 0,
+            "repaired_issue_codes": [],
+            "write_transaction": {"status": "committed"},
+            "whole_project_elapsed_seconds": 30.0,
+            "quality_lenses": {"status": "passed"},
+        },
+        package=_empty_package(),
+        counts=_full_counts(module),
+        count_minimums=module._required_count_minimums(),  # noqa: SLF001
+        count_key=module._count_key,  # noqa: SLF001
+        write_committed=module._write_committed,  # noqa: SLF001
+        as_mapping=module._as_mapping,  # noqa: SLF001
+        package_quality_issues=lambda _package: [],
+        create_returncode=0,
+        create_seconds=30.0,
+        detail="",
+        expected_requested_tier="auto",
+    )
+
+    assert "auto-rescue manifest active tier is 'standard'" in issues
+    assert "auto-rescue manifest did not mark rescue_activated" in issues
+    assert "auto-rescue manifest did not record a repair pass after the injected typed failure" in issues
+    assert "auto-rescue manifest did not record the typed rescue probe repair" in issues
+
+
+def test_main_includes_rescue_smoke_by_default(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    monkeypatch.setattr(
+        module,
+        "run_matrix",
+        lambda **_kwargs: (
+            module.GreenfieldMatrixResult(
+                name="matrix case",
+                status="passed",
+                create_seconds=18.0,
+                counts=_full_counts(module),
+                quality=module.GreenfieldQualityVerdict(
+                    passed=True,
+                    issues=(),
+                    lenses={lens: True for lens in ("product_manager", "architect", "engineer", "domain_expert")},
+                    scores={dimension: 10 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
+                    score=10,
+                    score_explanation=("all brutal release-quality dimensions scored 10",),
+                ),
+            ),
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "run_rescue_smoke",
+        lambda **_kwargs: module.GreenfieldRescueSmokeResult(
+            status="passed",
+            cli_create_seconds=44.0,
+            counts=_full_counts(module),
+            issues=(),
+            manifest={"repair_tier": "rescue"},
+        ),
+    )
+
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "passed"
+    assert payload["rescue_smoke"]["status"] == "passed"
+    assert "engine_manifest" not in payload["rescue_smoke"]

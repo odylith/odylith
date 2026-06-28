@@ -41,6 +41,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import r
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
     review_report_from_findings,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
+    RESCUE_PROBE_CODE,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     compile_greenfield_semantics,
 )
@@ -267,6 +270,7 @@ def run_greenfield_post_confirm_engine(
             active_budget_seconds = POST_CONFIRM_RESCUE_BUDGET_SECONDS
             effective_budget_seconds = POST_CONFIRM_RESCUE_BUDGET_SECONDS
             bounded_passes = max(bounded_passes, POST_CONFIRM_RESCUE_MAX_PASSES)
+        previous = current
         current = _repair_proposal_with_context(
             repair_proposal,
             current,
@@ -284,6 +288,12 @@ def run_greenfield_post_confirm_engine(
                 rescue_activated=rescue_activated,
             ),
         )
+        if current != previous:
+            repaired_issue_codes.update(
+                issue.code
+                for issue in typed_issues
+                if issue.repairability in {"semantic_patch", "plan_patch"}
+            )
         pending_rerender_projections = _scoped_rerender_projections(current)
         if pending_rerender_projections:
             pending_prewrite_build = prewrite_build
@@ -398,6 +408,7 @@ def _rescue_eligible(issues: Sequence[GreenfieldPostConfirmIssue]) -> bool:
         "component_contract_quality",
         "generated_copy_quality",
         "missing_semantic_model",
+        RESCUE_PROBE_CODE,
         "post_confirm_contract",
         "proposal_quality_gate",
         "quality_lens_gap",

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_experience import (
+    _trim_preview_terminal_fragment,
     _workstream_title_matches_component,
 )
 
@@ -53,3 +54,12 @@ def test_experience_handoff_terms_use_shared_domain_index() -> None:
         "Build reviews service handoffs",
         {"label": "Review Service"},
     )
+
+
+def test_experience_preview_trims_incomplete_subordinate_tail() -> None:
+    assert _trim_preview_terminal_fragment(  # noqa: SLF001
+        "Give clear correction guidance when required information"
+    ) == "Give clear correction guidance"
+    assert _trim_preview_terminal_fragment(  # noqa: SLF001
+        "Give clear correction guidance when required information is missing"
+    ) == "Give clear correction guidance when required information is missing"

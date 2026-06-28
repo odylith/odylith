@@ -13,6 +13,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import r
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
     semantic_overlap_ratio as _semantic_overlap_ratio,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
+    rescue_probe_findings,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -45,6 +48,7 @@ def package_artifact_findings(package: Any) -> tuple[GreenfieldReviewFinding, ..
     findings.extend(_plan_package_quality_findings(package))
     findings.extend(_registry_package_findings(package))
     findings.extend(_memory_projection_findings(package))
+    findings.extend(rescue_probe_findings(package))
     return dedupe_review_findings(findings)
 
 

@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 162,
-    "mapped_workstream_evidence_count": 147,
+    "explicit_event_count": 166,
+    "mapped_workstream_evidence_count": 151,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 152,
+    "spec_history_event_count": 153,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 163
+    "timeline_event_count": 167
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -19,26 +19,152 @@
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 654,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Broad greenfield post-confirm source proof passed after CLI auto-rescue hardening: 282 tests passed in 933.23s across post-confirm slop, component spec quality, general artifact quality, prewrite transaction, source-launch prompts, preview trimming, engine rescue, rescue probe, release matrix, and release bootstrap default-rescue coverage. Installed rebuilt dist proof remains pending.",
+      "ts_iso": "2026-06-27T18:10:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
       "artifacts": [
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py",
-        "src/odylith/runtime/domain_intelligence/proposal_memory.py"
+        "src/odylith/runtime/domain_intelligence/greenfield_experience.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_probe.py"
       ],
       "confidence": "high",
-      "event_index": 651,
+      "event_index": 655,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py +5 more",
-      "ts_iso": "2026-06-27T15:50:20-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_experience.py +5 more",
+      "ts_iso": "2026-06-27T18:10:07-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 653,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield rescue proof hardened after review: canonical release matrix now runs installed CLI auto-rescue smoke by default, synthetic installed-engine probe was removed, semantic/plan repairs now populate manifest repaired issue codes, and a disposable source-local CLI auto-rescue probe committed governed records in 20.411s with post_confirm_rescue_probe repaired; rebuilt installed dist proof remains pending.",
+      "ts_iso": "2026-06-27T17:51:00-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 652,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield Project prompt custody fix now suppresses duplicate action/outcome object restatement, routes proof fallback through cleaned first-path projection, and adds installed release rescue smoke for 90s rescue-tier proof; source and harness tests are green, rebuilt installed dist proof remains pending.",
+      "ts_iso": "2026-06-27T17:29:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 651,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Installed dist 33bdb122 reopened greenfield post-confirm: 2/5 standard matrix cases failed before governed writes from Project source-launch prompt punctuation; source fix makes prompts fragment-safe, trims next-step subordinate tails, and focused source proof passed.",
+      "ts_iso": "2026-06-27T16:27:04-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [],

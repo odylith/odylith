@@ -10,6 +10,7 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -56,6 +57,62 @@ _PROTECTED_SCOPE = (
     "deployment infrastructure",
     "observability platforms",
     "multi-tenant policy systems",
+)
+
+_SEMANTIC_FRAGMENT_STOPWORDS = frozenset(
+    {
+        "accepted",
+        "across",
+        "after",
+        "and",
+        "app",
+        "application",
+        "before",
+        "can",
+        "direction",
+        "evidence",
+        "first",
+        "for",
+        "from",
+        "into",
+        "its",
+        "multiple",
+        "path",
+        "product",
+        "project",
+        "receive",
+        "receives",
+        "release",
+        "result",
+        "source",
+        "system",
+        "the",
+        "this",
+        "to",
+        "user",
+        "users",
+        "workspace",
+    }
+)
+_PROMPT_DANGLING_TAILS = frozenset(
+    {
+        "about",
+        "across",
+        "against",
+        "after",
+        "around",
+        "before",
+        "between",
+        "during",
+        "for",
+        "from",
+        "into",
+        "through",
+        "until",
+        "while",
+        "with",
+        "without",
+    }
 )
 
 
@@ -401,10 +458,14 @@ def _capability_phrase(*, components: Sequence[Mapping[str, Any]], first_path: s
     action = first_path_action_phrase(first_path, fallback="", limit=110, max_fragments=1)
     outcome = first_path_outcome_phrase(first_path, fallback="", limit=110)
     action = _drop_embedded_outcome(action)
+    if _outcome_restates_action(action, outcome):
+        outcome = ""
     if action and outcome:
         return f"capture the information needed to {action} and return {outcome}"
     if outcome:
         return f"return {outcome} with enough context for the next participant"
+    if action:
+        return f"capture the information needed to {action} and return a clear, reviewable result"
     phrases: list[str] = []
     for component in components:
         text = (
@@ -445,8 +506,10 @@ def _proof_phrase(*, validation: Sequence[str], first_path: str) -> str:
                     return f"the accepted path returns {outcome} with repeatable evidence"
                 return "the accepted path returns its promised result with repeatable evidence"
             clean = re.sub(r"^(?:the\s+)?accepted\s+first\s+path\s+proves\s+", "", clean, flags=re.IGNORECASE).strip(" .")
+            clean = re.sub(r"^(?:success\s+proof|proof)\s+includes\s+", "", clean, flags=re.IGNORECASE).strip(" .")
             return clean
-    return short(f"the accepted path produces its intended result: {first_path}", limit=220)
+    safe_path = _first_path_phrase(first_path)
+    return short(f"the accepted path produces its intended result: {safe_path}", limit=220)
 
 
 def _exclusion_phrase(non_goals: Sequence[str]) -> str:
@@ -466,6 +529,8 @@ def _first_path_phrase(value: str) -> str:
     action = first_path_action_phrase(text, fallback="", limit=180, max_fragments=1)
     outcome = first_path_outcome_phrase(text, fallback="", limit=150)
     action = _drop_embedded_outcome(action)
+    if _outcome_restates_action(action, outcome):
+        outcome = ""
     if action and outcome:
         subject_action = _subjectify_path_step(action)
         joiner = "and receive" if subject_action.casefold().startswith("the user can ") else "and receives"
@@ -510,11 +575,35 @@ def _prompt_phrase(value: object, *, fallback: str, limit: int = 180) -> str:
     text = re.sub(r"\bThe weak inputs are\s*[. ]*", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+(?:and|or|asks?|check|checks)\s*$", "", text, flags=re.IGNORECASE).strip(" .,;:")
     text = re.sub(r"\.\.+", ".", text)
-    return short(text, limit=limit, fallback=fallback)
+    return _prompt_fragment(short(text, limit=limit, fallback=fallback))
 
 
 def _prompt_clause(value: object, *, fallback: str, limit: int = 180) -> str:
     return _prompt_phrase(value, fallback=fallback, limit=limit).rstrip(" .!?;:")
+
+
+def _prompt_fragment(value: object) -> str:
+    words = sentence(value).strip(" .!?;:").split()
+    while words and words[-1].casefold().strip(".,;:") in _PROMPT_DANGLING_TAILS:
+        words.pop()
+    return " ".join(words)
+
+
+def _outcome_restates_action(action: str, outcome: str) -> bool:
+    action_terms = _semantic_fragment_terms(action)
+    outcome_terms = _semantic_fragment_terms(outcome)
+    if not action_terms or not outcome_terms:
+        return False
+    if outcome_terms <= action_terms:
+        return True
+    overlap = len(action_terms & outcome_terms)
+    if overlap < 3:
+        return False
+    return overlap / max(1, min(len(action_terms), len(outcome_terms))) >= 0.55
+
+
+def _semantic_fragment_terms(value: object) -> set[str]:
+    return set(ordered_terms(value, minimum=3, stopwords=_SEMANTIC_FRAGMENT_STOPWORDS, stem_ing=True))
 
 
 def _drop_embedded_outcome(value: str) -> str:

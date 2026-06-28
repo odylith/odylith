@@ -19,7 +19,13 @@ if [[ ! -f "$dist_dir/install.sh" ]]; then
   die "local release dist is missing install.sh: $dist_dir"
 fi
 
+extra_args=(--include-rescue-smoke)
+if [[ "${RESCUE_SMOKE:-1}" == "0" ]]; then
+  extra_args=(--skip-rescue-smoke)
+fi
+
 "$odylith_python" scripts/release/greenfield_post_confirm_matrix.py \
   --dist-dir "$dist_dir" \
   --version "$requested_version" \
-  --temp-parent "$temp_parent"
+  --temp-parent "$temp_parent" \
+  "${extra_args[@]}"

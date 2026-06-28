@@ -1,6 +1,6 @@
 - Bug ID: CB-209
 
-- Status: FixedPendingRelease
+- Status: Open
 
 - Created: 2026-06-26
 
@@ -16,21 +16,21 @@
 
 - Components Affected: domain-intelligence
 
-- Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a
+- Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-33bdb122
 
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
-- Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`.
+- Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts.
 
 - Trigger Path: scripts/release/greenfield_post_confirm_matrix.py custom cases using greenfield propose followed by greenfield create --confirm --release 0.0.1 --json
 
 - Ownership: Domain Intelligence greenfield post-confirm semantic compiler and final quality gate
 
-- Timeline: 2026-06-26: standard installed five-domain matrix passed at 17.404-18.353s with zero quality issues; custom high-variance installed matrix then failed autonomous warehouse safety state at 17.855s and federated agent incident command at 10.728s before governed writes. After semantic-custody and typed Tribunal-lens fixes, the cedafc79 standard installed matrix passed five cases at 17.074-18.574s with zero issues and all expert lenses passing. A harder cedafc79 custom installed matrix then passed autonomous warehouse safety state, federated agent incident command, deepfake provenance escrow, and fusion plasma shot readiness at 16.851-17.347s, but indigenous data sovereignty review failed before governed writes in 8.999s and spacecraft anomaly triage failed the package/domain-expert gate after writing records in 18.454s due clipped Radar article phrases. After the second semantic-custody fix, the b0713a0a dist passed release smoke, the standard installed matrix, and the harder six-case installed matrix with every create under 19s and every PM, architect, engineer, and domain-expert lens passing.
+- Timeline: 2026-06-26: standard installed five-domain matrix passed at 17.404-18.353s with zero quality issues; custom high-variance installed matrix then failed autonomous warehouse safety state at 17.855s and federated agent incident command at 10.728s before governed writes. After semantic-custody and typed Tribunal-lens fixes, the cedafc79 standard installed matrix passed five cases at 17.074-18.574s with zero issues and all expert lenses passing. A harder cedafc79 custom installed matrix then passed autonomous warehouse safety state, federated agent incident command, deepfake provenance escrow, and fusion plasma shot readiness at 16.851-17.347s, but indigenous data sovereignty review failed before governed writes in 8.999s and spacecraft anomaly triage failed the package/domain-expert gate after writing records in 18.454s due clipped Radar article phrases. After the second semantic-custody fix, the b0713a0a dist passed release smoke, the standard installed matrix, and the harder six-case installed matrix with every create under 19s and every PM, architect, engineer, and domain-expert lens passing. On 2026-06-27 the 33bdb122 installed matrix failed two of five cases after Project dashboard prompt custody was added: flood shelter intake, semiconductor lab custody, and port berth carbon tariff passed with hard 10/10 scores in 19.878-22.416s, but pediatric agency practice failed in 14.282s and security disclosure council failed in 10.708s before governed records were committed.
 
 - Blast Radius: Any consumer greenfield prompt with overloaded safety/state/agent/model/release language that deterministic completion cannot safely normalize before final writes
 
-- SLO/SLA Impact: Fixed in the b0713a0a local release dist: post-confirm create stayed under the 60s standard budget in the standard and high-variance installed matrices.
+- SLO/SLA Impact: Reopened by 33bdb122. Passing cases stayed under the 60s standard budget, but failing cases did not commit governed records at any latency, so release readiness is blocked until a rebuilt dist passes the installed matrix.
 
 - Data Risk: Low: governed records are not written after failed create; product intent can remain in runtime files
 
@@ -41,8 +41,11 @@
 - Workaround: None acceptable; do not hand-edit generated project repos or weaken quality gates
 
 - Root Cause: Retained repros showed multiple semantic-custody misses. First, system-generated outcome text such as product monitors reporting evidence was projected into user capability prose as modal drift (`can reports`). Second, passive review-state clauses such as `operator override records and release readiness must be reviewable` were misread as actor rows, promoting result nouns like `Release Readiness` into people. A separate modal normalizer misread `decide what can be released` as an actor plus verb, producing `what bes released`. The artifact-plan PatchSet executor also had a repair-custody risk: an untargeted row patch could mutate the only row instead of requiring an explicit row selector. The cedafc79 installed repros exposed two further owner defects: the semantic compiler treated every phrase beginning with `release readiness` as proof-control text, rejecting a valid first-path result event and falling back to proof-boundary prose; and first-path/actor recovery treated hyphenated noun compounds and passive object-state tails as action or actor facts, turning `research-use limits` into a fake `use limits` action and `recovery state before a corrective procedure is released` into a human actor. The rescue-path proof then exposed provider-path failed mechanisms: with `--ignore-user-config`, a blank Codex model inherited an account-incompatible CLI default, the automatic ladder still contained unsupported `gpt-5.3-codex`, and the Tribunal patch-plan schema had open-ended or untyped fields that strict structured output rejected. The architectural learning is that actor, action, object, passive state predicate, system-generated result, proof-control text, review target, provider model selection, and schema-constrained repair facts must be separated before rendering governed artifacts; row-level and provider-authored repair must be fail-closed without explicit custody.
+  Additional Root Cause on 2026-06-27: Project dashboard source-launch prompts were admitted into the final package gate, but their renderer still treated clipped embedded clauses as full sentences. The shared Project `short()` helper re-added terminal periods to fragments, and source-launch then embedded those fragments before comma clauses, producing `workspace., validation points` and `workspace., input validation`. The same source-launch path joined an action with a visible outcome that semantically restated the action, creating low-quality `do X and receive do X` prompts. Separately, operator next-step previews could clip inside subordinate tails such as `when required information`, which passed existing gates but failed the premium human-readable bar.
+  Follow-up Root Cause on 2026-06-27: Independent review showed the initial source fix was still incomplete. The duplicate action/outcome class survived for shorter object-repetition shapes such as `receive a disclosure and receive a disclosure` and `review compliance exceptions and receive compliance exceptions`, and the proof fallback still copied the raw first-path text after the displayed path had been semantically cleaned. Release proof also had an evidence gap: installed matrix and release smoke could prove normal governed writes, while rescue activation after a repairable typed failure was only proven source-local. The first rescue-smoke harness narrowed that gap but still under-proved release readiness because rescue was opt-in from the canonical matrix wrapper and the auto-rescue check used a monkeypatched installed-engine script instead of the packaged CLI. The engine manifest also recorded mechanical package repairs but not semantic or artifact-plan repair issue codes, so a real auto-rescue create could pass without durable evidence of which typed issue was repaired.
 
 - Solution: Fix Odylith generally in semantic/projection ownership rather than domain-specific terms or rendered-string repair. Confirmed-intent recovery now localizes role-only actors to the project, keeps object modifiers out of actor labels, treats state-review predicates as review targets, rejects passive object-state subjects as human actors, and uses article-safe actor references. Outcome-action projection now converts system-generated results into modal-safe `review` or `see` actions before `user can` prose is composed. The role-can normalizer now preserves interrogative/modal clauses such as `what can be released`. First-path visible-result extraction now respects token boundaries inside hyphenated noun compounds, and semantic proof-control detection no longer rejects first-path `release readiness for ...` noun results while still rejecting control claims such as `release readiness requires ...`. Artifact-plan PatchSet row repair now refuses untargeted row mutations. A shared Tribunal lens contract now lets PM, architect, engineer, and domain-expert checks emit source-map target paths, semantic-node IDs, projection IDs, repairability, and repair owner at judgment time instead of reconstructing repair custody from check-name prose. The structured reasoning adapter now supplies an explicit live-proven Codex model for general structured repair when config is blank, maps the legacy Spark alias to the live CLI model, avoids the unsupported Codex ladder rung, and keeps user-config bypass reproducible. Tribunal patch planning now uses strict structured-output schemas for decision ledger, proof deltas, and replacement facts, then materializes the typed fact envelope back into caller-owned semantic or artifact-plan replacements after custody validation.
+  Current Source Fix: Source-launch prompt composition now emits embedded prompt facts as fragments instead of sentences, strips dangling subordinate tails, uses generic material-term containment plus semantic overlap scoring to suppress outcomes that merely restate the action object, and routes proof fallback through the same cleaned first-path projection instead of copying raw confirmed text. Operator next-step preview trimming now detects incomplete subordinate tails near the end of clipped fragments, removing tails like `when required information` while preserving complete clauses such as `when required information is missing`. Release proof now runs installed rescue smoke by default from the canonical matrix wrapper. The smoke uses the packaged CLI in `--repair-tier auto`, injects one maintainer-only typed post-confirm finding through an exact internal release-proof token, requires the engine to auto-escalate to rescue, applies a typed semantic PatchSet marker, writes governed records, and fails unless the final manifest records `post_confirm_rescue_probe` as repaired under the 90s budget.
 
 - Rollback/Forward Fix: Forward fix only
 
@@ -54,14 +57,34 @@
   The checkpoint is not release-closed until a fresh dist proves the installed
   standard matrix and at least one installed rescue-path simulation under the
   90s rescue budget with temp cleanup.
+  Reopened installed proof on 2026-06-27: 33bdb122 built successfully but the
+  installed standard matrix failed two of five cases before governed writes.
+  The retained pediatric repro showed exact final blockers:
+  `Project implementation prompt Create first implementation plan leaked
+  malformed punctuation` and `Project implementation prompt Build smallest
+  runnable slice leaked malformed punctuation`. Source replay after the fix
+  produced zero rendered-package issues for the same saved confirmed intent,
+  and source-mode confirmed create committed governed records in 15.428s.
+  Focused source-launch, duplicate action/outcome, next-step clipping, and
+  release-matrix rescue harness tests passed 15 tests in 0.41s. The current
+  broad greenfield package and installed-matrix unit pack passed 245 tests in
+  900.23s. Reviewer feedback then rejected the opt-in/synthetic rescue proof.
+  The repaired source checkpoint passed 17 focused prompt/probe/matrix tests in
+  0.43s and a real disposable source-local CLI auto-rescue probe completed in
+  20.411s with requested tier `auto`, active tier `rescue`, two passes, zero
+  issues, committed write transaction, and repaired issue code
+  `post_confirm_rescue_probe`; the temp repo was deleted. The broadened
+  source-level greenfield post-confirm pack then passed 282 tests in 933.23s.
+  Fresh installed proof from a rebuilt dist, using the default matrix rescue
+  smoke, is still required.
 
-- Prevention: Keep high-variance installed simulations in release proof; require failure stderr/blocker retention for any matrix failure before cleanup; do not rely on standard-domain passes alone. Expert-lens failures must carry typed Tribunal lens evidence at the point of judgment: source-map target, semantic node, projection, repairability, and owner. Failed mechanisms recorded here must not be repeated: broad proof-control rejection of product-result noun phrases, action extraction inside hyphenated noun compounds, passive object-state tails promoted to actors, rendered-string cleanup after Radar files are already written, blank Codex structured model inheritance under ignored user config, unsupported automatic model ladder rungs, or model-facing patch-plan schema holes.
+- Prevention: Keep high-variance installed simulations in release proof; require failure stderr/blocker retention for any matrix failure before cleanup; do not rely on standard-domain passes alone. Release proof must include the installed standard matrix and the installed CLI auto-rescue smoke by default; `RESCUE_SMOKE=0` is local debugging only and cannot support release-readiness claims. Expert-lens failures must carry typed Tribunal lens evidence at the point of judgment: source-map target, semantic node, projection, repairability, and owner. Failed mechanisms recorded here must not be repeated: broad proof-control rejection of product-result noun phrases, action extraction inside hyphenated noun compounds, passive object-state tails promoted to actors, rendered-string cleanup after Radar files are already written, blank Codex structured model inheritance under ignored user config, unsupported automatic model ladder rungs, model-facing patch-plan schema holes, raw first-path fallback after cleaned projection, source-only rescue proof substituted for built-dist rescue evidence, opt-in rescue smoke silently under-proving the default matrix, synthetic installed-engine probes substituted for packaged CLI auto-rescue, or semantic/plan repairs omitted from manifest repaired issue codes.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: 0.1.15 local release dist built from commit b0713a0a
+- Version/Build: 0.1.15 local release dist 33bdb122 reopened the installed matrix failure; source fix pending rebuilt installed proof
 
 - Related Incidents/Bugs: CB-208
 
@@ -69,3 +92,6 @@
 - src/odylith/runtime/reasoning/tribunal_lens.py
 - src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
 - scripts/release/greenfield_post_confirm_matrix.py
+- scripts/release/greenfield_rescue_smoke.py
+- src/odylith/runtime/project_intelligence/source_launch.py
+- src/odylith/runtime/domain_intelligence/greenfield_experience.py

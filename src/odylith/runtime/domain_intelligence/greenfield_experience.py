@@ -57,6 +57,23 @@ _PREVIEW_DANGLING_WORDS = frozenset((CONFIRMED_DANGLING_WORDS - {"final"}) | {"a
 _PREVIEW_TERMINAL_FINAL_STATE_WORDS = frozenset(
     {"case", "decision", "match", "record", "result", "review", "score", "status"}
 )
+_PREVIEW_SUBORDINATE_TAIL_MARKERS = frozenset({"because", "if", "unless", "until", "when", "where", "while", "which"})
+_PREVIEW_SUBORDINATE_TAIL_VERBS = frozenset(
+    {
+        "are",
+        "blocks",
+        "changes",
+        "exists",
+        "fails",
+        "has",
+        "have",
+        "is",
+        "passes",
+        "was",
+        "were",
+        "will",
+    }
+)
 
 
 def row_text_tuple(row: Mapping[str, Any], *keys: str) -> tuple[str, ...]:
@@ -487,7 +504,26 @@ def _trim_preview_terminal_fragment(value: str) -> str:
             text = " ".join(words[:-2]).strip(" ,;:.")
         elif tail == "final" and not _preview_allows_terminal_final(words):
             text = " ".join(words[:-1]).strip(" ,;:.")
+    words = _trim_preview_subordinate_tail(text.split())
+    text = " ".join(words).strip(" ,;:.")
     return strip_dangling_word_tail(text, dangling_words=_PREVIEW_DANGLING_WORDS)
+
+
+def _trim_preview_subordinate_tail(words: Sequence[str]) -> list[str]:
+    lowered = [word.casefold().strip(".,;:") for word in words]
+    for index in range(len(lowered) - 1, -1, -1):
+        marker = lowered[index]
+        if marker not in _PREVIEW_SUBORDINATE_TAIL_MARKERS:
+            continue
+        tail = lowered[index + 1 :]
+        if len(tail) > 7:
+            return list(words)
+        if not tail or tail[-1] in {"are", "is", "was", "were"}:
+            return list(words[:index])
+        if not any(token in _PREVIEW_SUBORDINATE_TAIL_VERBS for token in tail):
+            return list(words[:index])
+        return list(words)
+    return list(words)
 
 
 def _preview_allows_terminal_final(words: Sequence[str]) -> bool:

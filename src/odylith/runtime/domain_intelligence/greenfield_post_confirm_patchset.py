@@ -11,6 +11,9 @@ from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_affected_projections
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_projection_for_path
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
+    rescue_probe_patch_values,
+)
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
 
 
@@ -97,6 +100,7 @@ def _operation_from_finding(
     target_layer = _target_layer(finding)
     if not target_layer:
         return None
+    probe_values = rescue_probe_patch_values(finding)
     return GreenfieldPatchOperation(
         operation_id=f"GF-PATCH-{index:03d}",
         target_layer=target_layer,
@@ -104,16 +108,16 @@ def _operation_from_finding(
         semantic_node_id=normalize_string(finding.semantic_node_id),
         issue_code=finding.code,
         source_finding=finding.source,
-        operation_kind=_operation_kind(finding, target_layer=target_layer),
+        operation_kind=normalize_token(probe_values.get("operation_kind")) or _operation_kind(finding, target_layer=target_layer),
         repair_owner=finding.owner,
         projection_kind=_projection_kind(finding),
         affected_projections=_affected_projections(finding),
         requested_action=_requested_action(finding, target_layer=target_layer),
-        replacement_fact="",
-        decision_ledger_entry="",
-        proof_obligation_delta="",
+        replacement_fact=probe_values.get("replacement_fact", ""),
+        decision_ledger_entry=probe_values.get("decision_ledger_entry", ""),
+        proof_obligation_delta=probe_values.get("proof_obligation_delta", ""),
         rejected_interpretation=_rejected_interpretation(finding, target_layer=target_layer),
-        confidence=0.2 if target_layer in {"semantic_model", "artifact_plan"} else 0.0,
+        confidence=float(probe_values.get("confidence", 0.2 if target_layer in {"semantic_model", "artifact_plan"} else 0.0)),
     )
 
 

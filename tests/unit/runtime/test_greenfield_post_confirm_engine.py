@@ -887,6 +887,7 @@ def test_post_confirm_auto_tier_extends_to_rescue_after_repairable_failure(
     assert result.manifest["budget_seconds"] == 90.0
     assert result.manifest["rescue_activated"] is True
     assert result.manifest["elapsed_seconds"] == 80.0
+    assert result.manifest["repaired_issue_codes"] == ["semantic_alignment"]
 
 
 def test_post_confirm_deep_tier_requires_explicit_request(

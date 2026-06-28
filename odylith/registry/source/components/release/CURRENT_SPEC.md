@@ -437,6 +437,14 @@ governed subsystem.
   repair loop strings. A second fresh repo must run confirmed
   `odylith greenfield create` so the one-command shortcut cannot drift from the
   explicit propose/apply path.
+- The installed greenfield release matrix must include rescue-smoke proof by
+  default when post-confirm repair behavior changes. That smoke must run the
+  packaged CLI in `--repair-tier auto`, inject one exact-token internal typed
+  final-gate finding, prove auto-escalation from standard to the 90 second
+  rescue budget, write the expected governed records, return a passed final
+  manifest, and record the repaired semantic issue code. Source-local rescue
+  tests, opt-in-only smoke, and synthetic installed-engine probes do not
+  substitute for this installed release proof.
 - Local release smoke must inspect installed greenfield guidance files as part of
   the same journey. Installed AGENTS, README, and skill guidance must mention the
   `greenfield create` confirmation path, must forbid hand-authored proposal JSON,
@@ -487,3 +495,4 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-05-07: Added release-smoke coverage for both empty-repo greenfield paths: the explicit `show -> greenfield propose --format json -> greenfield apply --proposal-file --confirm -> surfaces` journey and the one-command `greenfield create --confirm` shortcut. The same slice tightened installer progress output so child renderer lines no longer collide with the elapsed progress row. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-180`, `CB-181`)
 - 2026-05-07: Extended release smoke from runtime behavior into installed guidance proof: fresh installed AGENTS/README/skill guidance must point confirmation at `greenfield create --confirm`, forbid hand-authored proposal JSON, and reject stale host-drafts-proposal instructions. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-176`, `CB-181`)
 - 2026-05-09: Release manifests now derive `migration_required` from the registered migration registry, and hosted bootstrap validation accepts migration-marked releases so v0.1.15 can route installed `0.1.10` through `0.1.14` repos into the registered Atlas box-explanation migration. (Plan: [B-127](odylith/radar/radar.html?view=plan&workstream=B-127))
+- 2026-06-27: Added default installed greenfield CLI auto-rescue proof to the local release matrix so post-confirm repair changes must prove packaged-runtime `--repair-tier auto` escalation, 90 second rescue-budget custody, final-manifest pass status, governed writes, and repaired semantic issue-code evidence before release-readiness can be claimed. `RESCUE_SMOKE=0` is debug-only and not release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)

@@ -730,8 +730,41 @@
   focused blocker tests passed 6 tests in 35.44s; Project/source-launch/matrix
   tests passed 10 tests in 0.51s; the broad greenfield suite passed 241 tests
   in 844.71s after fixing late helper and repair-fixture regressions.
-  Installed dist proof, including a built-dist rescue-path run under 90s,
-  remains required before release-readiness can be claimed.
+  The 33bdb122 installed matrix then proved that this source checkpoint was
+  still insufficient. Pediatric agency practice and security disclosure
+  council failed before governed writes because the new Project prompt gate
+  saw malformed punctuation in source-launch prompts. Retained pediatric
+  evidence showed `workspace., validation points` and `workspace., input
+  validation`, caused by sentence-shaped clipped facts being embedded before
+  comma clauses. The fix remains generic and upstream: source-launch prompt
+  facts now render as punctuation-free fragments, action/outcome joins use
+  semantic overlap to avoid `do X and receive do X` duplication, and operator
+  next-step previews trim incomplete subordinate tails such as `when required
+  information` before the final package gate.
+  Source replay for the retained pediatric intent now reports zero rendered
+  package issues, and source-mode confirmed create committed governed records
+  in 15.428s. Focused source-launch and next-step clipping tests passed 3
+  tests in 0.38s; the focused prewrite/Project package regression set passed
+  58 tests in 485.56s. Fresh installed proof from a rebuilt dist remains
+  required.
+  Independent review then found that shorter object-repetition shapes still
+  survived the overlap-only repair, and proof fallback still copied raw
+  duplicated first-path text. Source-launch now suppresses outcomes whose
+  material terms are already contained in the action, and proof fallback uses
+  the cleaned first-path projection. Review also rejected the first rescue
+  harness because rescue smoke was opt-in from the canonical matrix wrapper and
+  the auto-rescue leg used a synthetic installed-engine probe instead of the
+  packaged CLI. The matrix wrapper now includes rescue smoke by default, the
+  rescue smoke runs installed `odylith greenfield create --repair-tier auto`
+  with one exact-token internal typed finding, the engine must auto-escalate to
+  rescue, semantic/plan repairs are recorded in manifest repaired issue codes,
+  and `RESCUE_SMOKE=0` is explicitly local-debug only. Focused
+  source-launch/experience/probe/matrix proof passed 17 tests in 0.43s, the
+  current broad greenfield post-confirm pack passed 282 tests in 933.23s, and a
+  disposable source-local CLI auto-rescue probe committed governed records in
+  20.411s with `post_confirm_rescue_probe` recorded as repaired. Fresh
+  installed dist proof using the default rescue smoke remains required before
+  release-readiness can be claimed.
 
 - Related Incidents/Bugs: CB-207
 
@@ -742,6 +775,7 @@
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
+- src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_probe.py
 - src/odylith/runtime/domain_intelligence/greenfield_workstream_risk_projection.py
 - src/odylith/runtime/domain_intelligence/greenfield_first_path_repair.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py
@@ -770,8 +804,10 @@
 - src/odylith/runtime/reasoning/tribunal_patch_planner.py
 - src/odylith/runtime/artifact_quality/greenfield_rendered_artifacts.py
 - src/odylith/runtime/artifact_quality/greenfield_project_prompt_quality.py
+- scripts/release/greenfield_rescue_smoke.py
 - src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
+- src/odylith/runtime/domain_intelligence/greenfield_experience.py
 - src/odylith/runtime/project_intelligence/source_launch.py
 - tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py
 - tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py

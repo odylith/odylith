@@ -15,7 +15,7 @@ flowchart LR
       projection_contract["Projection contract owner<br/>roots, aliases,<br/>envelope paths,<br/>affected projections"]
       projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
       next_steps["Operator next steps<br/>governed start workstream,<br/>readiness gates, validation commands"]
-      project_dashboard["Project dashboard preview<br/>source-launch prompts from<br/>accepted project context"]
+      project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>from accepted project context"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
       validators["Deterministic validators<br/>schema, traceability,<br/>grammar, repetition, topology,<br/>Project prompt quality"]
       expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer typed owner contract"]
@@ -47,13 +47,14 @@ flowchart LR
       rollback["Rollback snapshot"]
       blockers["Exact final blockers<br/>operator sees actionable failure"]
       proof_log["Compass proof checkpoint"]
+      release_matrix["Installed release proof<br/>standard matrix plus<br/>CLI auto-rescue smoke"]
     end
 
     visible_intent --> confirm --> confirmed_ir
     confirmed_ir --> apply_input --> compiler --> semantic_ir --> artifact_plan --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
     draft_set --> validators --> expert_lenses --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
-    final_manifest -- "pass" --> writes --> proof_log
+    final_manifest -- "pass" --> writes --> proof_log --> release_matrix
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> patchset --> rescue_budget
     rescue_budget -- "yes" --> tribunal_planner --> provider_adapter --> strict_schema --> custody_check
@@ -77,7 +78,7 @@ flowchart LR
     class visible_intent,confirm,confirmed_ir intent;
     class apply_input,compiler,semantic_ir,artifact_plan,projection_contract,projections,next_steps,project_dashboard,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
     class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
-    class writes,rollback,blockers,proof_log write;
+    class writes,rollback,blockers,proof_log,release_matrix write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
     style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#334155

@@ -764,8 +764,43 @@ vocabulary, or degraded packages.
       without platform context. Focused blocker proof passed 6 tests in
       35.44s; Project/source-launch/matrix proof passed 10 tests in 0.51s; the
       broad greenfield pack passed 241 tests in 844.71s.
+- [x] Reopened installed-matrix failure and source-level prompt-fragment fix:
+      the fresh 33bdb122 local release dist built successfully but failed the
+      installed standard matrix in two of five cases before governed writes.
+      Pediatric agency practice failed in 14.282s and security disclosure
+      council failed in 10.708s with no committed quality manifest and zero
+      Registry, Atlas, release, trace, or Project prompt records. Retained
+      pediatric evidence showed Project source-launch prompts composing
+      sentence-shaped clipped facts before comma clauses, producing malformed
+      `workspace., validation points` and `workspace., input validation`
+      punctuation. The source fix keeps prompt facts fragment-shaped, uses
+      semantic overlap scoring to suppress duplicate action/outcome joins, and
+      trims incomplete subordinate tails in operator next-step previews. Source
+      replay for the saved pediatric confirmed intent now has zero
+      rendered-package issues; source-mode confirmed create committed governed
+      records in 15.428s; focused source-launch/next-step proof passed 3 tests
+      in 0.38s; and the focused prewrite/Project package regression set passed
+      58 tests in 485.56s.
+- [x] Closed the reviewer-found duplicate action/outcome and rescue-proof
+      harness gaps: source-launch now treats an outcome as non-distinct when
+      its material terms are already contained in the action, proof fallback
+      reuses the cleaned first-path projection, and the installed matrix runs
+      rescue smoke by default. The first rescue harness failed review because
+      rescue was opt-in and auto-rescue was a synthetic installed-engine probe;
+      the replacement smoke now runs the packaged CLI in `--repair-tier auto`
+      with an exact-token typed internal finding, requires auto escalation to
+      the 90s rescue tier, commits governed artifacts, and fails unless the
+      manifest records the semantic repair code. Focused source-launch,
+      experience, probe, and matrix harness proof passed 17 tests in 0.43s;
+      compile proof passed; the current broad greenfield post-confirm pack
+      passed 282 tests in 933.23s; and a disposable source-local CLI
+      auto-rescue probe committed governed records in 20.411s with
+      `post_confirm_rescue_probe` recorded as repaired. The matrix script is
+      back under the size guard at 1148 LOC after extracting
+      `scripts/release/greenfield_rescue_smoke.py`.
 - [ ] Fresh installed proof after Project prompt custody: build a new local
       release dist, run the installed standard matrix with the
-      `implementation_prompts` dimension active, run at least one built-dist
-      rescue-path simulation under 90s, verify temp repo cleanup, and only then
-      update release readiness posture.
+      `implementation_prompts` dimension active, keep the default installed CLI
+      auto-rescue smoke enabled, verify temp repo cleanup, and only then update
+      release readiness posture. `RESCUE_SMOKE=0` is allowed only for local
+      debugging and cannot support release-readiness claims.

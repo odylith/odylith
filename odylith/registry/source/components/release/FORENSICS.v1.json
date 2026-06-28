@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 101,
-    "mapped_workstream_evidence_count": 71,
+    "explicit_event_count": 104,
+    "mapped_workstream_evidence_count": 74,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 12,
+    "spec_history_event_count": 13,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 102
+    "timeline_event_count": 105
   },
   "name": "Release",
   "path_prefixes": [
@@ -45,11 +45,75 @@
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 654,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Broad greenfield post-confirm source proof passed after CLI auto-rescue hardening: 282 tests passed in 933.23s across post-confirm slop, component spec quality, general artifact quality, prewrite transaction, source-launch prompts, preview trimming, engine rescue, rescue probe, release matrix, and release bootstrap default-rescue coverage. Installed rebuilt dist proof remains pending.",
+      "ts_iso": "2026-06-27T18:10:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 653,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield rescue proof hardened after review: canonical release matrix now runs installed CLI auto-rescue smoke by default, synthetic installed-engine probe was removed, semantic/plan repairs now populate manifest repaired issue codes, and a disposable source-local CLI auto-rescue probe committed governed records in 20.411s with post_confirm_rescue_probe repaired; rebuilt installed dist proof remains pending.",
+      "ts_iso": "2026-06-27T17:51:00-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
       "artifacts": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 652,
+      "event_index": 656,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -57,8 +121,40 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-27T15:50:20-07:00",
+      "ts_iso": "2026-06-27T17:50:36-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 652,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield Project prompt custody fix now suppresses duplicate action/outcome object restatement, routes proof fallback through cleaned first-path projection, and adds installed release rescue smoke for 90s rescue-tier proof; source and harness tests are green, rebuilt installed dist proof remains pending.",
+      "ts_iso": "2026-06-27T17:29:58-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

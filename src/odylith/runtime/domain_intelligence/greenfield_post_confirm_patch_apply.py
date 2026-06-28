@@ -19,6 +19,9 @@ from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope impor
 from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_scope_requires_full_prewrite
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmRepairContext
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair_context import repair_context_operations
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
+    apply_rescue_probe_operations,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_greenfield_semantic_projections
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import SemanticPatchApplication
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import (
@@ -69,18 +72,20 @@ def _apply_operations(
     semantic_application = apply_semantic_patch_operations_detailed(repaired, operations)
     semantic_changed = semantic_application.changed
     plan_changed = apply_artifact_plan_patch_operations(repaired, operations)
-    if semantic_changed or plan_changed:
+    probe_changed = apply_rescue_probe_operations(repaired, operations)
+    if semantic_changed or plan_changed or probe_changed:
         repaired = _normalized_proposal(repaired)
     completion_required = semantic_application.completion_required
     if completion_required:
         repaired = _complete_confirmed_semantic_proposal(repaired, release_selector=release_selector)
-    if semantic_changed or plan_changed or completion_required:
+    if semantic_changed or plan_changed or probe_changed or completion_required:
         _append_patch_application_ledger(
             repaired,
             operations=operations,
             semantic_application=semantic_application,
             semantic_changed=semantic_changed,
             plan_changed=plan_changed,
+            internal_probe_changed=probe_changed,
             completion_required=completion_required,
         )
     return repaired
@@ -140,6 +145,7 @@ def _append_patch_application_ledger(
     semantic_application: SemanticPatchApplication,
     semantic_changed: bool,
     plan_changed: bool,
+    internal_probe_changed: bool,
     completion_required: bool,
 ) -> None:
     affected_projections = tuple(
@@ -172,6 +178,7 @@ def _append_patch_application_ledger(
         "rerender_projections": rerender_projections,
         "semantic_changed": bool(semantic_changed),
         "artifact_plan_changed": bool(plan_changed),
+        "internal_probe_changed": bool(internal_probe_changed),
         "completion_required": bool(completion_required),
         "full_prewrite_required": bool(full_prewrite_required),
         "rerender_scope": "full_prewrite" if full_prewrite_required else "affected_projections",
