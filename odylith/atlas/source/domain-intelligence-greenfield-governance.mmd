@@ -3,7 +3,8 @@ flowchart LR
       direction TB
       visible_intent["Product Intent Confirmation<br/>story, state object,<br/>first path, actors, proof boundary"]
       confirm["Single operator confirmation"]
-      confirmed_ir["ConfirmedIntentIR<br/>section IDs, source spans,<br/>hash, provenance"]
+      source_guard["Intent source boundary guard<br/>Original user intent block only,<br/>no host guidance or CLI envelope"]
+      confirmed_ir["ConfirmedIntentIR<br/>section IDs, source spans,<br/>hash, provenance,<br/>grammatical object phrases"]
     end
 
     subgraph standard_lane["Standard path under 60s"]
@@ -18,7 +19,7 @@ flowchart LR
       project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>from accepted project context"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
       validators["Deterministic validators<br/>schema, traceability,<br/>grammar, repetition, topology,<br/>Project prompt quality"]
-      expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer typed owner contract"]
+      expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer typed owner contract<br/>coverage over accepted systems,<br/>including deferred topology"]
       typed_findings["Source-owned typed findings<br/>target layer, target path,<br/>semantic node, no proposal-repair lane"]
       legacy_blockers["Legacy/raw issue strings<br/>diagnostic blockers only,<br/>no repair authority"]
       final_manifest{"Final manifest passes?"}
@@ -47,10 +48,10 @@ flowchart LR
       rollback["Rollback snapshot"]
       blockers["Exact final blockers<br/>operator sees actionable failure"]
       proof_log["Compass proof checkpoint"]
-      release_matrix["Installed release proof<br/>standard matrix plus<br/>CLI auto-rescue smoke"]
+      release_matrix["Installed release proof<br/>expanded standard matrix,<br/>sparse and quantum confirmation cases<br/>plus rescue wiring smoke<br/>natural rescue proof still required"]
     end
 
-    visible_intent --> confirm --> confirmed_ir
+    visible_intent --> confirm --> source_guard --> confirmed_ir
     confirmed_ir --> apply_input --> compiler --> semantic_ir --> artifact_plan --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
     draft_set --> validators --> expert_lenses --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
@@ -75,7 +76,7 @@ flowchart LR
     classDef standard fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1.2px;
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
-    class visible_intent,confirm,confirmed_ir intent;
+    class visible_intent,confirm,source_guard,confirmed_ir intent;
     class apply_input,compiler,semantic_ir,artifact_plan,projection_contract,projections,next_steps,project_dashboard,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
     class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
     class writes,rollback,blockers,proof_log,release_matrix write;

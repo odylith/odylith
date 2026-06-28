@@ -28,6 +28,8 @@ from local_release_smoke import _serve_directory  # noqa: E402
 from greenfield_rescue_smoke import POST_CONFIRM_RESCUE_BUDGET_SECONDS  # noqa: E402
 from greenfield_rescue_smoke import installed_auto_rescue_env  # noqa: E402
 from greenfield_rescue_smoke import rescue_cli_issues  # noqa: E402
+from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
+from greenfield_post_confirm_matrix_cases import default_cases  # noqa: E402
 from odylith.runtime.artifact_quality.greenfield_package_quality import (  # noqa: E402
     greenfield_rendered_package_quality_issues,
 )
@@ -47,18 +49,6 @@ REQUIRED_RENDERED_SURFACES = (
     "odylith/compass/compass.html",
     "odylith/index.html",
 )
-
-
-@dataclass(frozen=True)
-class GreenfieldMatrixCase:
-    name: str
-    prompt: str
-    required_terms: tuple[str, ...]
-
-    @property
-    def slug(self) -> str:
-        return "-".join(token for token in self.name.casefold().split() if token)
-
 
 @dataclass(frozen=True)
 class GreenfieldArtifactCounts:
@@ -143,59 +133,6 @@ class GreenfieldRescueSmokeResult:
         }
 
 
-def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
-    """Return the high-variance release matrix used for greenfield proof."""
-
-    return (
-        GreenfieldMatrixCase(
-            name="flood shelter intake",
-            prompt=(
-                "Create a greenfield proposal for a flood shelter intake system that helps city staff register "
-                "displaced residents, match household needs to shelter capacity, track medical and accessibility "
-                "constraints, preserve consent evidence, and produce a daily placement readiness report."
-            ),
-            required_terms=("flood", "shelter", "resident", "placement"),
-        ),
-        GreenfieldMatrixCase(
-            name="pediatric agency practice",
-            prompt=(
-                "Create a greenfield proposal for a pediatric therapy agency practice workspace that coordinates "
-                "referral intake, guardian consent, therapist assignment, care-plan readiness, visit evidence, "
-                "and exception review for children served across multiple schools."
-            ),
-            required_terms=("pediatric", "therapy", "guardian", "care"),
-        ),
-        GreenfieldMatrixCase(
-            name="semiconductor lab custody",
-            prompt=(
-                "Create a greenfield proposal for a semiconductor reliability lab custody platform that receives "
-                "wafer lot samples, records chamber exposure conditions, preserves chain-of-custody evidence, "
-                "tracks failed stress runs, and prepares release readiness proof for engineering review."
-            ),
-            required_terms=("semiconductor", "wafer", "custody", "reliability"),
-        ),
-        GreenfieldMatrixCase(
-            name="port berth carbon tariff",
-            prompt=(
-                "Create a greenfield proposal for a port berth carbon tariff planner that lets port operations "
-                "compare vessel schedules, berth windows, shore-power availability, emissions evidence, tariff "
-                "exceptions, and operator signoff before publishing a daily berth plan."
-            ),
-            required_terms=("port", "berth", "tariff", "emissions"),
-        ),
-        GreenfieldMatrixCase(
-            name="security disclosure council",
-            prompt=(
-                "Create a greenfield proposal for a multi-party security disclosure council that coordinates "
-                "external vulnerability reports, affected partner review, embargo decisions, evidence custody, "
-                "legal signoff, and public advisory release readiness without personalized notification campaigns "
-                "in the first release."
-            ),
-            required_terms=("security", "disclosure", "embargo", "evidence"),
-        ),
-    )
-
-
 def run_matrix(
     *,
     dist_dir: Path,
@@ -278,17 +215,20 @@ def _run_case(
     install = _run(cwd=repo_root, env=env, command=["bash", str(install_script)], timeout=COMMAND_TIMEOUT_SECONDS)
     if install.returncode != 0:
         return _failed_case(case, repo_root, "install_failed", install.returncode, install.stderr or install.stdout)
-    propose = _run(
-        cwd=repo_root,
-        env=env,
-        command=["./.odylith/bin/odylith", "greenfield", "propose", "--repo-root", ".", "--prompt", case.prompt],
-        timeout=120,
-    )
-    if propose.returncode != 0:
-        return _failed_case(case, repo_root, "propose_failed", propose.returncode, propose.stderr or propose.stdout)
+    confirmed_intent = str(case.confirmed_intent_markdown or "").strip()
+    if not confirmed_intent:
+        propose = _run(
+            cwd=repo_root,
+            env=env,
+            command=["./.odylith/bin/odylith", "greenfield", "propose", "--repo-root", ".", "--prompt", case.prompt],
+            timeout=120,
+        )
+        if propose.returncode != 0:
+            return _failed_case(case, repo_root, "propose_failed", propose.returncode, propose.stderr or propose.stdout)
+        confirmed_intent = propose.stdout
     intent_path = repo_root / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
-    intent_path.write_text(propose.stdout, encoding="utf-8")
+    intent_path.write_text(confirmed_intent, encoding="utf-8")
     started = time.perf_counter()
     create = _run(
         cwd=repo_root,

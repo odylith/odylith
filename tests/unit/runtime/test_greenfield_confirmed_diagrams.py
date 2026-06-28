@@ -73,7 +73,7 @@ def test_atlas_component_cards_explain_specific_boundary_without_path_boilerplat
 
     assert components["Source Import Adapter"] == (
         "Translates external source import inputs into product-owned records and preserves source provenance. "
-        "The Source Import Adapter boundary must show which source supplied the input and what normalized result entered the product."
+        "The Source Import Adapter boundary must show which source supplied the input, what result was accepted, and which error state blocked unsafe input."
     )
     assert components["Decision Scoring Engine"] == (
         "Scores candidate decisions with confidence, inputs, and rule version. The Decision Scoring Engine boundary "

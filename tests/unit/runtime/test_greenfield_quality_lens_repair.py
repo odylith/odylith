@@ -122,6 +122,152 @@ def test_quality_lens_report_emits_typed_tribunal_repair_targets() -> None:
     } == QUALITY_LENS_REPAIR_OWNER_BY_CHECK
 
 
+def test_quality_lens_accepts_two_component_confirmed_create_when_systems_are_covered() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "write_policy": "confirmed_intent_before_confirmed_create",
+            "intent": {
+                "reasoning_mode": "odylith_confirmed_governed_proposal",
+                "state_object": "An evidence case records packet, decision, blocker, readiness proof, and review history.",
+                "internal_systems": [
+                    "Evidence Intake Log: records submitted packets and missing input blockers.",
+                    "Readiness Review Board: records supervisor decision and readiness proof.",
+                ],
+            },
+            "components": [
+                {
+                    "component_id": "evidence-intake-log",
+                    "label": "Evidence Intake Log Service",
+                    "release_scope": "first_path_required",
+                },
+                {
+                    "component_id": "readiness-review-board",
+                    "label": "Readiness Review Board",
+                    "release_scope": "first_path_required",
+                },
+            ],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={},
+        rendered_component_specs={
+            "Evidence Intake Log Service": "# Evidence Intake Log Service\n",
+            "Readiness Review Board": "# Readiness Review Board\n",
+        },
+        component_registry_preview=(
+            {"component_id": "evidence-intake-log", "validation_gate": {"status": "passed"}},
+            {"component_id": "readiness-review-board", "validation_gate": {"status": "passed"}},
+        ),
+        next_steps_preview={},
+        backlog_result={},
+        program_result={},
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    architect_checks = {
+        check["name"]: check
+        for check in report["lenses"]["architect"]["checks"]
+    }
+    engineer_checks = {
+        check["name"]: check
+        for check in report["lenses"]["engineer"]["checks"]
+    }
+
+    assert architect_checks["component_topology"]["status"] == "passed"
+    assert engineer_checks["component_specs"]["status"] == "passed"
+    assert "2 active component(s), 2 component row(s), 2 internal system(s)" in architect_checks["component_topology"]["evidence"]
+    assert "2 spec or preview evidence row(s) for 2 active component(s)" in engineer_checks["component_specs"]["evidence"]
+
+
+def test_quality_lens_accepts_deferred_component_topology_when_all_systems_are_covered() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "write_policy": "confirmed_intent_before_confirmed_create",
+            "intent": {
+                "reasoning_mode": "odylith_confirmed_governed_proposal",
+                "state_object": "A communication run records configuration, execution, telemetry, verification, and saved history.",
+                "internal_systems": [
+                    "Run Configuration and Validation supports E91 parameters and endpoints.",
+                    "Hardware Control and Run Execution sequences the hardware run.",
+                    "Live Telemetry Stream exposes CHSH and QBER while the run progresses.",
+                    "Security and Verification Logic computes secure-link verdicts.",
+                    "Results Store and Run History keeps persisted comparison evidence.",
+                ],
+            },
+            "components": [
+                {
+                    "component_id": "run-configuration-and-validation",
+                    "label": "Run Configuration and Validation Service",
+                    "release_scope": "supporting",
+                },
+                {
+                    "component_id": "hardware-control-and-run-execution",
+                    "label": "Hardware Control and Run Execution Service",
+                    "release_scope": "first_path_required",
+                },
+                {
+                    "component_id": "live-telemetry-stream",
+                    "label": "Live Telemetry Stream Service",
+                    "release_scope": "deferred",
+                },
+                {
+                    "component_id": "security-and-verification-logic",
+                    "label": "Security and Verification Logic Service",
+                    "release_scope": "supporting",
+                },
+                {
+                    "component_id": "results-store-and-run-history",
+                    "label": "Results Store and Run History",
+                    "release_scope": "supporting",
+                },
+            ],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={},
+        rendered_component_specs={
+            "Run Configuration and Validation Service": "# Run Configuration and Validation Service\n",
+            "Hardware Control and Run Execution Service": "# Hardware Control and Run Execution Service\n",
+            "Security and Verification Logic Service": "# Security and Verification Logic Service\n",
+            "Results Store and Run History": "# Results Store and Run History\n",
+        },
+        component_registry_preview=(
+            {"component_id": "run-configuration-and-validation", "validation_gate": {"status": "passed"}},
+            {"component_id": "hardware-control-and-run-execution", "validation_gate": {"status": "passed"}},
+            {"component_id": "security-and-verification-logic", "validation_gate": {"status": "passed"}},
+            {"component_id": "results-store-and-run-history", "validation_gate": {"status": "passed"}},
+        ),
+        next_steps_preview={},
+        backlog_result={},
+        program_result={},
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    architect_checks = {
+        check["name"]: check
+        for check in report["lenses"]["architect"]["checks"]
+    }
+    engineer_checks = {
+        check["name"]: check
+        for check in report["lenses"]["engineer"]["checks"]
+    }
+
+    assert architect_checks["component_topology"]["status"] == "passed"
+    assert engineer_checks["component_specs"]["status"] == "passed"
+    assert "4 active component(s), 5 component row(s), 5 internal system(s)" in architect_checks["component_topology"]["evidence"]
+    assert "4 spec or preview evidence row(s) for 4 active component(s)" in engineer_checks["component_specs"]["evidence"]
+
+
 def test_gate_only_quality_lens_check_stays_non_patchable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

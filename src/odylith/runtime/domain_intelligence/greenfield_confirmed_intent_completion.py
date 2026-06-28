@@ -307,7 +307,7 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
         action = _clean(action).rstrip(" .") or "provide the required information"
         outcome = _clean(outcome).rstrip(" .") or "a clear result"
         intent["first_path"] = _sentence(
-            f"{primary} {action}. The product uses the accepted information to return {outcome}, explains any missing input, and leaves the result reviewable."
+            f"{primary} {_modal_action_clause(action)}. The product uses the accepted information to return {outcome}, explains any missing input, and leaves the result reviewable."
         )
     if _word_count(proof) < CORE_FIELD_MIN_WORDS["proof_boundary"]:
         action = first_path_action_phrase(first_path or story, fallback="complete the first useful product action", max_fragments=1)
@@ -326,6 +326,16 @@ def _first_path_is_complete_enough(value: str) -> bool:
     action = first_path_action_phrase(text, fallback="", max_fragments=2)
     outcome = first_path_outcome_phrase(text, fallback="", limit=160)
     return bool(_clean(action) and _clean(outcome) and len(_semantic_terms(text)) >= 4)
+
+
+def _modal_action_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "can provide the required information"
+    first = text.split(maxsplit=1)[0].strip(".,;:").casefold()
+    if first in {"can", "could", "must", "should", "will"}:
+        return text
+    return f"can {text}"
 
 
 def _story_needs_completion(value: str) -> bool:
@@ -590,7 +600,7 @@ def _state_focus_phrase(state: str, *, title: str) -> str:
     if not text:
         return f"{_focus_label(title).lower()} state"
     state_label = _state_label(text, title=title)
-    if 2 <= _word_count(state_label) <= 8:
+    if 1 <= _word_count(state_label) <= 8:
         label = state_label.casefold()
         if not label.startswith(("a ", "an ", "the ")):
             label = f"the {label}"

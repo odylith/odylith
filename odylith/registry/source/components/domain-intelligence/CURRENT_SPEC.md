@@ -46,6 +46,7 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-28: Reopened the greenfield release posture after a brutal installed audit found an open-source security embargo prompt failing before governed writes on `normalized` drift and malformed recovered copy. The source checkpoint now isolates the accepted operator-intent block from no-host guidance envelopes, keeps `open source` out of adapter classification, renders adapter boundaries with accepted-result language, and forces short first-path base actions through modal clauses to avoid copy such as `The product receive...`. The escaped prompt is now part of the default installed release matrix. A second public replay exposed and fixed a false expert-lens blocker where two valid internal product systems and two rendered component specs failed solely because the quality lens required three active components. Expert lenses now require coverage of accepted internal systems and active component specs, not an arbitrary count floor. Source proof is green, but full release readiness remains blocked until a rebuilt installed dist passes the expanded matrix and the rescue lane is proven with a non-internal natural repairable failure or explicitly reported as wiring-only proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
 - 2026-06-27: Reopened Project prompt custody after installed dist `33bdb122` failed two standard matrix cases before governed writes. Source-launch prompt composition now treats Project tab implementation prompts as structured semantic fragments rather than sentence-shaped prose, strips terminal punctuation before clause composition, uses material-term containment plus semantic overlap scoring to avoid duplicate action/outcome joins, and routes proof fallback through the cleaned first-path projection. Next-step preview trimming removes incomplete subordinate tails such as `when required information` while preserving complete clauses. The release matrix now runs installed CLI auto-rescue smoke by default: packaged `greenfield create --repair-tier auto` receives one exact-token typed internal finding, must auto-escalate to rescue under 90s, commit governed records, and record the repaired semantic issue code in the final manifest. The installed harness now proves probe-env custody explicitly: standard matrix cases stay clean, and only the rescue-smoke subprocess receives the internal token. Source proof passed focused source-launch/experience/probe/matrix tests, a disposable source-local CLI auto-rescue probe, and the current broad 282-test greenfield post-confirm pack; the final rebuilt dist `odylith-local-release-0.1.15-f6a06af6` passed five standard installed cases in 20.223-22.425s with 10/10 scores plus installed CLI auto-rescue smoke in 26.842s, all with zero issues and complete governed artifacts. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
 - 2026-06-27: Promoted accepted Project dashboard implementation prompts into the greenfield post-confirm custody boundary. Prewrite packages now fail closed without `project_dashboard_preview`, Project prompt artifacts are collected and validated by a dedicated position-based prompt-quality owner, source-launch prompts receive governed next-step context, prewrite language detection uses the target repo root, and the installed matrix scores the prompt surface through an `implementation_prompts` dimension. The same checkpoint repaired top-level intent/project-brief scalar semantic slop for unbalanced quotes and narrowed Odylith-surface risk leakage so ordinary domain words such as compass or Atlas remain valid without platform context. Source proof passed 6 focused blocker tests, 10 Project/source-launch/matrix tests, and the 241-test broad greenfield suite. Fresh installed dist and rescue-path proof remain required before release closure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-208`, `CB-209`)
 - 2026-06-27: Tightened greenfield post-confirm repair custody so semantic PatchSet operations cannot synthesize first-path facts from metadata-only requests, profile-triggered component contracts use the semantic basis before profile fallback, gate-only expert-lens checks stay non-patchable, rendered-package findings carry exact artifact repair paths, mechanical artifact-draft cleanup mutates only the addressed leaf, and corrupted rendered Registry scope uses deterministic `projection_rerender` instead of semantic rescue or rendered-prose repair. Focused projection-rerender, quality-lens, and exact-path tests passed; the widened post-confirm repair pack passed; and a fresh installed consumer-lane matrix passed five unrelated domains in 18.383-19.745 seconds with governed writes, zero quality issues, all expert lenses passing, and temp cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
@@ -351,6 +352,12 @@ This section captures synchronized requirement and contract signals derived from
   it must return schema-constrained semantic or plan patches with source
   provenance and rejected interpretations. Odylith then rerenders only impacted
   projections and runs deterministic gates before any source-truth write.
+- Expert quality lenses must judge coverage of the accepted semantic contract,
+  not a fixed template shape. Component topology passes only when active
+  components cover the accepted internal product systems, and component-spec
+  checks pass only when every active component has rendered spec or preview
+  evidence. The lens must not fail a valid two-system confirmed create solely
+  because a historical matrix usually emitted three components.
 - Post-confirm findings must be typed and lens-owned, not mutable English
   substrings. PM, architect, engineer, and domain-review checks may produce
   readable diagnostics, but repair routing must depend on finding codes,
@@ -1026,6 +1033,16 @@ This section captures synchronized requirement and contract signals derived from
   reject proposed actor labels whose prefix already contains an embedded
   actor-action-object clause; comma-heavy action chains must not become second
   human actors.
+- Confirmed-intent completion must render object phrases grammatically before
+  proposal validation and before the post-confirm package engine. One-word
+  accepted state labels such as `Report` must become mid-sentence object
+  phrases such as `the report`, not title-cased fragments after verbs such as
+  `understand`.
+- Quality-lens topology checks must judge semantic component coverage, not raw
+  active-component counts. Accepted internal systems may map to active or
+  deferred component rows; first-release scope is a release/readiness concern,
+  while architect topology is complete when every accepted system has a
+  component-owned place in the proposal.
 - Release proof scoring must be structured and punitive. Matrix proof inspects
   collected artifact-package values, not raw JSON serialization, and the final
   score is the weakest quality dimension after no-write and artifact-defect
@@ -1033,6 +1050,11 @@ This section captures synchronized requirement and contract signals derived from
   latency, semantic manifest, copy/semantic clarity, governance depth,
   traceability, operator usefulness, and PM/architect/engineer/domain-expert
   lenses.
+- Installed release matrix ownership is split: the runner owns install,
+  timing, artifact collection, scoring, cleanup, and rescue smoke; the case
+  catalog owner contains only high-variance project scenarios and any
+  confirmed-intent override text needed to replay escaped operator-input
+  shapes.
 - Prompt-source recovery must preserve infinitive `use to` action chains while
   still modalizing human-role purpose clauses into `can` capability prose. This
   owner must stay regex-free and must not use project-domain vocabularies to

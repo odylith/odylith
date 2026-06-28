@@ -4251,12 +4251,12 @@
         "src/odylith/runtime/project_intelligence/source_launch.py": "638ef65eda61d4eb06eb924b788975622af2319788f1cda94e7ad4cbe66ab46b",
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "57664efd8a6b44694eb2157bc99405c7bf261808b3becfa920fa2049dadc180f",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "9e18fbce28913af1eb5fd60fa0cf924ed940155eb67ba63cb6ec09b0c7248b0b",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "6ae812ced1457046e148a16bf426b159400bccce0e0a4eefc1950769cd062fc1",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "19f07ddfda21d61fb60009938c12791137ed0d1690637b83361c98629aac9aea",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "5fa871fb155c4c49cfc829af167e392531878f752182fdf1df6b41de932be886"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "032f8c22393a48541d9c2d30df75e8f900c3e3e4f86a18112ea578422e887e76"
       },
-      "render_source_fingerprint": "bc49730b69cef9412e4b9fb5e0657051c4f7eea97126a8891b10d71a74f98af9"
+      "render_source_fingerprint": "f611a7ff2adc9968a8866f32a970c6ee05928f58db93043140e72f53a2e4811e"
     },
     {
       "diagram_id": "D-044",

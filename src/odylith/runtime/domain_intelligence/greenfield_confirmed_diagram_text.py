@@ -335,7 +335,7 @@ def compact_text(value: str) -> str:
 def _component_kind(*, row: Mapping[str, Any], label: str) -> str:
     kind = str(row.get("kind", "")).strip().casefold()
     label_text = label.casefold()
-    if re.search(r"\b(adapter|connector|integration|provider|import|source)\b", label_text):
+    if re.search(r"\b(adapter|connector|integration|provider|import)\b", label_text):
         return "adapter"
     if re.search(r"\b(client|surface|ui|portal|dashboard|app|view)\b", label_text):
         return "client"
@@ -404,7 +404,7 @@ def _base_initial_action_clause(value: str) -> str:
 def _component_review_sentence(*, label: str, subject: str, kind: str) -> str:
     lead = f"The {label} boundary must show"
     if kind == "adapter":
-        return f"{lead} which source supplied the input and what normalized result entered the product"
+        return f"{lead} which source supplied the input, what result was accepted, and which error state blocked unsafe input"
     if kind == "client":
         return f"{lead} what the user saw, submitted, corrected, or approved and which product state changed after that action"
     if _is_workflow_like(label, subject):

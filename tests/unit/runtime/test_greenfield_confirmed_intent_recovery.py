@@ -205,6 +205,32 @@ def test_host_guidance_recovery_does_not_invent_modal_actor_from_can_path() -> N
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_host_guidance_recovery_keeps_open_source_out_of_adapter_classification(tmp_path) -> None:
+    prompt = (
+        "Create a greenfield proposal for an open source security embargo room that receives vulnerability reports, "
+        "coordinates maintainer triage, tracks affected package evidence, records disclosure approvals, and shows "
+        "advisory readiness without sending public announcements in the first release."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["title"] == "Open Source Security Embargo Room"
+    assert "The product receive" not in rendered
+    assert "open source security embargo room user can receive vulnerability reports" in rendered.casefold()
+    assert "normalized result" not in rendered.casefold()
+    assert "normalized output" not in rendered.casefold()
+    assert all(not str(row["label"]).endswith(" Adapter") for row in proposal["components"])
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_operator_intent_recovery_visible_confirmation_keeps_sequence_and_actor_readable() -> None:
     prompt = (
         "Create a greenfield product for wearable-informed lab recovery teams that ingest device data, "

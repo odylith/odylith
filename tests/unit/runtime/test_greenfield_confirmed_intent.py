@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import norm
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_completion_report
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.governance import artifact_tribunal
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -135,6 +136,48 @@ Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prom
     assert "residents report broken streetlights" in intent["first_path"].casefold()
     assert "repair status updates" in intent["proof_boundary"].casefold()
     assert intent["internal_systems"]
+
+
+def test_confirmed_create_keeps_open_source_domain_word_out_of_adapter_drift(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield proposal for an open source security embargo room that receives vulnerability reports, "
+        "coordinates maintainer triage, tracks affected package evidence, records disclosure approvals, and shows "
+        "advisory readiness without sending public announcements in the first release."
+    )
+    intent = parse_confirmed_intent_text(
+        f"""Product Intent Confirmation needed
+No files changed. Source posture: docs_only.
+
+Host reasoning task: Infer the product shape live from the operator prompt and any observed repo source.
+
+Visible format contract
+- Render the visible confirmation as sectioned Markdown in this order.
+
+Original user intent
+{prompt}
+Next step
+- Confirm: if the interpretation is right, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md, then run greenfield create with --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm so Odylith normalizes the accepted narrative internally.
+- Edit: ask for corrections.
+- Reject: stop here.
+Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+""",
+        prompt=prompt,
+    )
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+    encoded = json.dumps(proposal, sort_keys=True)
+
+    assert report.passed, "\n".join(report.issues)
+    assert "normalized result" not in encoded.casefold()
+    assert "normalized output" not in encoded.casefold()
+    assert all(not str(row["label"]).endswith(" Adapter") for row in proposal["components"])
 
 
 def test_confirmed_intent_parser_removes_command_wrapper_from_recovered_first_path() -> None:
@@ -274,6 +317,40 @@ def test_confirmed_intent_completion_polishes_gerund_actor_descriptions() -> Non
 
     assert "Instructor: supports by assigning or reviewing lab scenarios" in intent["human_actors"]
     assert "Instructor assigning or reviewing" not in rendered
+
+
+def test_confirmed_intent_completion_renders_base_action_with_modal_clause() -> None:
+    intent = normalize_confirmed_intent(
+        {
+            "title": "Security Embargo Room",
+            "product_story": (
+                "Maintainers need a controlled space that receives vulnerability reports, coordinates triage, "
+                "tracks affected package evidence, and prepares advisory readiness proof."
+            ),
+            "state_object": (
+                "An embargo case records report status, affected package evidence, triage decision, disclosure approval, "
+                "advisory readiness, reviewer, blocked reason, and proof history."
+            ),
+            "first_path": "Maintainer intake",
+            "human_actors": [
+                "Maintainer: receives vulnerability reports and coordinates triage",
+                "Disclosure Reviewer: approves advisory readiness before publication",
+            ],
+            "internal_systems": [
+                "Embargo Intake Log tracks received reports, package evidence, triage status, and readiness blockers.",
+                "Disclosure Approval Board records reviewer approval, advisory readiness, and release proof history.",
+            ],
+            "proof_boundary": (
+                "Release succeeds when one maintainer can receive a report, coordinate triage, track package evidence, "
+                "approve disclosure readiness, and review proof without public announcement delivery."
+            ),
+        }
+    )
+    rendered = json.dumps(intent, sort_keys=True)
+
+    assert "Maintainer receive" not in intent["first_path"]
+    assert "The product receive" not in rendered
+    assert intent["first_path"].startswith("Maintainer can receive vulnerability reports.")
 
 
 def test_confirmed_intent_parser_normalizes_terminal_loop_narration() -> None:

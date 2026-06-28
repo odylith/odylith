@@ -775,6 +775,63 @@
   standard cases completed in 20.223-22.425s with hard 10/10 scores, zero
   issues, complete governed artifacts, and the installed CLI auto-rescue smoke
   passed in 26.842s with zero issues.
+  2026-06-28 brutal installed-dist audit reopened the release posture: a
+  retained installed consumer repro for an open-source security embargo room
+  failed before governed writes in 12.169 seconds because contrastive domain
+  drift found `normalized` in generated artifacts. The saved
+  `confirmed-intent.md` was the no-host Product Intent Confirmation guidance
+  envelope rather than the visible operator confirmation, and the structured
+  companion showed recovery defects such as `The product receive vulnerability
+  reports`. This proves the earlier guidance-envelope isolation mechanism was
+  incomplete: platform instruction language can still enter accepted intent
+  recovery and then poison downstream artifact drift checks. The same brutal
+  audit also found the latest installed rescue smoke still depends on an
+  internal synthetic probe path, so it proves rescue wiring rather than real
+  recovery from naturally occurring package or semantic failures. This bug
+  remains release-blocking until the confirmed-intent source boundary is fixed
+  generically, real installed create proof passes, and rescue proof no longer
+  relies on synthetic success evidence.
+  The next source checkpoint fixed the concrete source-custody and copy
+  failures without adding domain terms: confirmed-intent envelope recovery now
+  stops at generic guidance headings, `open source` no longer classifies a
+  component as an adapter, adapter copy says accepted result instead of
+  normalized result, and short first-path completion renders base action
+  clauses through a modal phrase instead of producing `The product receive...`.
+  The escaped open-source security embargo prompt is now a default installed
+  matrix case, not an opt-in manual replay. A public two-component confirmed
+  intent also exposed a separate false expert-lens blocker: the architect and
+  engineer quality lenses required at least three active components even
+  though the confirmed-create contract accepts two internal product systems.
+  The lens now requires complete coverage of accepted internal systems and
+  component specs rather than an arbitrary component-count floor. Source proof
+  passed the focused parser/recovery/grammar/matrix guard tests, semantic
+  drift and prompt-quality tests, engine and install-harness custody tests,
+  the live create performance group, the exact open-source replay in 17.875s,
+  and the two-component public replay in 15.473s. Release readiness is still
+  blocked until a rebuilt installed dist passes the expanded eight-case matrix
+  and the rescue lane is either proven by a non-internal natural repair or
+  explicitly downgraded to wiring-only evidence.
+  A subsequent sparse-confirmation replay exposed a separate pre-engine
+  escape: a valid but terse confirmed-intent file with `State object: Report`
+  failed before the post-confirm manifest because the completion renderer wrote
+  `understand Report` into semantic public copy. This was not a domain defect
+  and not a rescue-loop defect; it was a general grammatical phrase-rendering
+  defect in confirmed-intent completion. One-word state labels now render as
+  mid-sentence object phrases such as `the report`, the sparse confirmation
+  replay writes governed records in 12.227s on the standard path, and the
+  sparse confirmation shape is now part of the installed release matrix. The
+  A full live-create suite then exposed one more false quality-lens blocker in
+  the quantum communication case: the architect lens compared active
+  first-release components against every accepted internal system and therefore
+  rejected a valid topology where the live telemetry system was represented as
+  a deferred component. The lens now checks semantic coverage of accepted
+  internal systems across all component rows, while the engineer lens still
+  requires rendered specs for active components. The quantum replay commits
+  governed records in 18.010s on the standard path, and the quantum confirmed
+  intent is now part of the installed release matrix. The matrix is now eight
+  standard cases plus the internal rescue wiring smoke.
+  Rescue remains wiring-only proof until a non-internal repairable failure is
+  demonstrated or release reporting is explicitly downgraded.
 
 - Related Incidents/Bugs: CB-207
 

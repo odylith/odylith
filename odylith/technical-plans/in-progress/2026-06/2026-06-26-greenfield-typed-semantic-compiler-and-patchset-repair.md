@@ -820,3 +820,69 @@ vocabulary, or degraded packages.
       security disclosure council 20.605s. Installed CLI auto-rescue smoke
       passed in 26.842s with zero issues, five Radar records, three Registry
       specs, six Atlas diagrams, and 18 trace nodes.
+- [ ] Reopened release blocker from brutal installed audit: a ten-domain
+      installed consumer-lane audit against dist `83f3c38f` found that the
+      official matrix score can still overstate quality and that an
+      open-source security embargo prompt failed before governed writes in
+      12.169s. The retained repro shows a source-custody defect, not a
+      project defect: a no-host greenfield proposal guidance envelope saved as
+      `confirmed-intent.md` leaked platform instruction language into accepted
+      intent recovery, producing contrastive drift on `normalized` and
+      ungrammatical structured intent text such as `The product receive...`.
+      Required fix: isolate the accepted operator-intent source before any
+      title, first-path, or semantic-drift recovery; repair the source model
+      generically without domain terms; add regression proof for the exact
+      envelope class; rerun real installed creates; and replace synthetic-only
+      rescue proof with a naturally occurring repairable failure or clearly
+      classify the current probe as wiring-only.
+- [x] Source checkpoint for the reopened audit: confirmed-intent envelope
+      recovery now stops at generic guidance headings, `open source` no
+      longer triggers adapter classification, adapter copy uses accepted-result
+      language instead of normalized-result language, and short first-path
+      completion renders base action phrases through modal clauses so public
+      copy cannot become `The product receive...`. The escaped open-source
+      security embargo prompt is now part of the default installed release
+      matrix. Focused parser/recovery/grammar/matrix proof passed 10 tests in
+      31.18s, semantic drift and Project prompt quality proof passed 7 tests
+      in 40.81s, engine/install-harness proof passed 16 tests in 17.23s, the
+      live source create performance group passed 3 tests in 53.59s, and the
+      exact open-source source replay committed governed records in 17.875s.
+- [x] Fixed a false expert-lens release blocker found while searching for
+      natural rescue evidence: a public two-component confirmed intent kept
+      two active components and two rendered specs, but the PM/architect/
+      engineer/domain-expert gate still failed because architect and engineer
+      checks imposed an arbitrary three-component minimum. The lens now
+      requires complete coverage of accepted internal systems and active
+      component specs instead of a hard-coded count. Regression proof passed,
+      and the same public replay committed governed records in 15.473s with a
+      passed standard manifest.
+- [x] Fixed a pre-engine sparse-confirmation grammar escape: a terse but valid
+      confirmed intent with one-word `State object: Report` previously failed
+      before the post-confirm manifest because generated semantic copy said
+      `understand Report`. One-word state labels now render as lower-cased
+      object phrases in mid-sentence copy. Regression proof passed, the same
+      source CLI replay committed governed records in 12.227s on the standard
+      path, and the installed release matrix now includes a sparse confirmed
+      intent override case so packaged proof covers this operator-input shape.
+- [x] Fixed a false architect-lens blocker from the full live-create suite:
+      the quantum communication case correctly generated a deferred live
+      telemetry component, but the lens compared active first-release
+      components against all internal systems and blocked writes. Architect
+      topology now checks semantic coverage across all component rows, while
+      engineer readiness still requires rendered specs for active components.
+      Regression proof passed, the failed quantum replay now commits governed
+      records in 18.010s on the standard path, and the installed matrix now
+      includes the quantum confirmed-intent shape.
+- [x] Decomposed the installed release matrix after adding the sparse and
+      quantum cases pushed the runner past the source-size threshold. The
+      runner now owns install, timing, artifact collection, scoring, cleanup,
+      and rescue smoke; `greenfield_post_confirm_matrix_cases.py` owns only the
+      high-variance case catalog. The runner is back under the hard threshold,
+      and install-matrix unit proof passed.
+- [ ] Remaining release blocker: the installed auto-rescue smoke still proves
+      rescue wiring through an exact internal probe, not a naturally occurring
+      repairable package or semantic failure. Do not claim full release
+      readiness until either a public non-internal rescue scenario passes under
+      the 90s tier with host-structured patch evidence, or release reporting is
+      changed to classify the current probe as wiring-only rather than rescue
+      quality proof.

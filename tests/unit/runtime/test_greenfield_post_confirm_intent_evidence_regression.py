@@ -141,6 +141,7 @@ on a risky step, and produce an accountable review record with evidence and deci
     )
 
     rendered = str(proposal)
-    assert "Operator Supervising an Execution Run" in rendered
+    assert "Agent Execution Operator: supervising an execution run" in rendered
+    assert "High-risk Boundaries Reviewer: approving high-risk boundaries" in rendered
     assert "customer': 'Operator'" not in rendered
     assert "['Operator']" not in rendered

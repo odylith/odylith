@@ -972,7 +972,8 @@ def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_und
     assert "GLP-1 Companion - Medication Tracking App" in visible_surface_payload
     assert "They optionally log their weight" in visible_surface_payload
     assert "The app advances them along their titration schedule" in visible_surface_payload
-    assert "Caregiver: supplies context" in rendered_payload
+    assert "Caregiver: helping that person stay on schedule (later, not in the first path)" in generated_payload
+    assert "Caregiver" in visible_surface_payload
     assert "deferred from the first path" in rendered_payload
     component_labels = {row["label"] for row in payload["components"]}
     assert "Medication and Titration Schedule Model Service" in component_labels

@@ -31,6 +31,26 @@ def _module():
     return _load_module(SCRIPTS_ROOT / "greenfield_post_confirm_matrix.py", "greenfield_post_confirm_matrix")
 
 
+def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
+    module = _module()
+
+    cases = module.default_cases()
+
+    escaped_case = next(case for case in cases if case.name == "open source security embargo")
+    assert "open source security embargo room" in escaped_case.prompt
+    assert "receives vulnerability reports" in escaped_case.prompt
+    assert escaped_case.required_terms == ("open", "source", "security", "embargo")
+    sparse_case = next(case for case in cases if case.name == "sparse disclosure confirmation")
+    assert "## State object\nReport." in sparse_case.confirmed_intent_markdown
+    assert "## Proof boundary\nEvidence custody and embargo decision." in sparse_case.confirmed_intent_markdown
+    assert sparse_case.required_terms == ("disclosure", "council", "evidence", "embargo")
+    quantum_case = next(case for case in cases if case.name == "quantum communication lab")
+    assert "## State object\nA communication run" in quantum_case.confirmed_intent_markdown
+    assert "CHSH" in quantum_case.confirmed_intent_markdown
+    assert "QBER" in quantum_case.confirmed_intent_markdown
+    assert quantum_case.required_terms == ("quantum", "e91", "qber", "chsh")
+
+
 def _write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
@@ -122,6 +142,47 @@ def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monke
     )
 
     assert result.status == "passed"
+    assert len(create_envs) == 1
+    assert RESCUE_PROBE_ENV not in create_envs[0]
+
+
+def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monkeypatch, tmp_path: Path) -> None:
+    module = _module()
+    commands: list[list[str]] = []
+    create_envs: list[dict[str, str]] = []
+    monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
+    monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+
+    def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
+        commands.append(list(command))
+        if "create" in command:
+            create_envs.append(dict(env))
+            payload = {"post_confirm_quality_manifest": _passing_manifest()}
+            return module.subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+        return module.subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module, "_run", fake_run)
+
+    result = module._run_case(  # noqa: SLF001
+        case=module.GreenfieldMatrixCase(
+            name="sparse standard",
+            prompt="Create a sparse confirmed project.",
+            required_terms=("sparse", "project"),
+            confirmed_intent_markdown="# Product Intent Confirmation\n\n## State object\nReport.\n",
+        ),
+        repo_root=tmp_path / "standard-repo",
+        install_script=tmp_path / "install.sh",
+        base_url="http://127.0.0.1:8123",
+        version="0.1.15",
+    )
+
+    intent_text = (tmp_path / "standard-repo/.odylith/runtime/greenfield/confirmed-intent.md").read_text(
+        encoding="utf-8"
+    )
+    assert result.status == "passed"
+    assert "## State object\nReport." in intent_text
+    assert all("propose" not in command for command in commands)
     assert len(create_envs) == 1
     assert RESCUE_PROBE_ENV not in create_envs[0]
 

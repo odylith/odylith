@@ -301,15 +301,36 @@ def _host_guidance_original_intent(text: str) -> str:
         normalized = _normalize_heading(line.rstrip(":"))
         if normalized == "original user intent":
             collecting = True
+            if ":" in line:
+                tail = _clean(line.split(":", 1)[1])
+                if tail:
+                    values.append(tail)
             continue
-        if collecting and (
-            normalized in {"next step", "confirmed cli after confirmation"}
-            or line.casefold().startswith("confirmed cli after confirmation:")
-        ):
+        if collecting and _host_guidance_boundary_heading(line, normalized):
             break
         if collecting and line:
             values.append(line)
     return _clean(" ".join(values))
+
+
+_HOST_GUIDANCE_BOUNDARY_HEADINGS = frozenset(
+    {
+        "confirmed cli after confirmation",
+        "do not",
+        "host reasoning task",
+        "next step",
+        "visible format contract",
+        "write in chat",
+    }
+)
+
+
+def _host_guidance_boundary_heading(line: str, normalized: str) -> bool:
+    if normalized in _HOST_GUIDANCE_BOUNDARY_HEADINGS:
+        return True
+    if line.casefold().startswith("confirmed cli after confirmation:"):
+        return True
+    return bool(_heading_key(line) and normalized != "original user intent")
 
 
 def _has_structured_body_sections(sections: Mapping[str, list[str]]) -> bool:

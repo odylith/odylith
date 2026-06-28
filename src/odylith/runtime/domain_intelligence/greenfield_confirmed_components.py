@@ -413,7 +413,7 @@ def _system_kind(name: str, description: str) -> str:
     description_text = description.casefold()
     if _contains_kind_token(f"{name_text} {description_text}", ("web", "ui", "surface", "mobile", "portal", "client", "dashboard")):
         return "client"
-    if _contains_kind_token(name_text, ("adapter", "provider", "integration", "connector", "source", "import")):
+    if _contains_kind_token(name_text, ("adapter", "provider", "integration", "connector", "import")):
         return "adapter"
     if _contains_kind_token(description_text, ("adapter", "provider", "integration", "connector", "external", "import")):
         return "adapter"
@@ -491,7 +491,7 @@ def _boundary(*, name: str, description: str, kind: str) -> str:
         )
     if kind == "adapter":
         return (
-            f"{name} owns translation, normalization, and provenance for {responsibility}. "
+            f"{name} owns translation, validation, and provenance for {responsibility}. "
             "The upstream provider, imported file, or external system remains outside this boundary."
         )
     rationale_text = f" {_evidence_sentence(rationale)}" if rationale else ""
@@ -526,7 +526,7 @@ def _interfaces(*, name: str, description: str, kind: str) -> list[str]:
     if kind == "client":
         return [f"Visible action and state contract for {responsibility}, including normal, empty, blocked, and recovery states."]
     if kind == "adapter":
-        return [f"Input and output contract for {responsibility}, including source identity, payload shape, normalized result, and error state."]
+        return [f"Input and output contract for {responsibility}, including source identity, payload shape, accepted result, and error state."]
     return [f"Command, query, or event contract for {responsibility}; includes accepted input, produced state, failure state, and ownership handoff."]
 
 
@@ -538,7 +538,7 @@ def _validation(*, name: str, description: str, kind: str) -> list[str]:
     if kind == "client":
         return [f"Normal path, blocked path, and recovery state are visible for {responsibility}."]
     if kind == "adapter":
-        return [f"Accepted input, rejected input, provenance preservation, and repeatable normalized output are proven while this component {_does_clause(action, responsibility)}."]
+        return [f"Accepted input, rejected input, provenance preservation, and repeatable accepted output are proven while this component {_does_clause(action, responsibility)}."]
     return [f"Valid transition, invalid input rejection, and traceable output are proven while this component {_does_clause(action, responsibility)}."]
 
 

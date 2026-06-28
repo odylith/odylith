@@ -5,12 +5,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 169,
-    "mapped_workstream_evidence_count": 154,
+    "explicit_event_count": 173,
+    "mapped_workstream_evidence_count": 158,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 153,
+    "spec_history_event_count": 154,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 170
+    "timeline_event_count": 174
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -18,6 +18,150 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagram_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
+      ],
+      "confidence": "high",
+      "event_index": 662,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py +3 more",
+      "ts_iso": "2026-06-27T21:10:51-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 661,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm checkpoint fixed false architect topology blocking for deferred component rows; quantum communication replay now writes governed records in 18.010s and the full live-create suite passes 13 cases in 251.05s.",
+      "ts_iso": "2026-06-27T21:05:02-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 660,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm checkpoint fixed sparse confirmed-intent state-object grammar before validation, added the sparse confirmation shape to the installed matrix, and preserved the release blocker that rescue proof is still internal wiring-only until non-internal repair proof exists.",
+      "ts_iso": "2026-06-27T20:46:38-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 659,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield post-confirm source checkpoint fixed open-source adapter drift, modal first-path grammar, and false two-component expert-lens failures; focused, quality, engine, and live-create tests pass, while natural non-internal rescue proof remains release-blocking.",
+      "ts_iso": "2026-06-27T20:34:09-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 658,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Brutal greenfield audit fixed open-source source-custody drift: source term no longer creates adapter/normalized-result artifacts; focused drift, engine, matrix-custody, and live create proofs are green.",
+      "ts_iso": "2026-06-27T20:06:56-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -49,22 +193,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 658,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-27T18:56:59-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

@@ -257,6 +257,7 @@ def _architect_checks(
     intent = _as_mapping(proposal.get("intent"))
     domain = _as_mapping(semantic.get("domain_ontology"))
     components = _active_component_rows(proposal)
+    component_rows = mapping_rows(proposal.get("components"))
     diagrams = mapping_rows(proposal.get("diagrams"))
     atlas_sources = _as_mapping(getattr(package, "rendered_atlas_sources", None))
     strict_create = _strict_confirmed_create_payload(proposal)
@@ -269,6 +270,10 @@ def _architect_checks(
     )
     external_boundary_known = "external_systems" in domain or "external_systems" in intent
     state_object = normalize_string(intent.get("state_object")) or normalize_string(domain.get("state_object"))
+    component_topology_complete = _component_topology_covers_internal_systems(
+        internal_systems,
+        component_rows=component_rows,
+    )
     return [
         _check(
             bool(state_object),
@@ -277,9 +282,9 @@ def _architect_checks(
             "quality lens architect missing accepted state object",
         ),
         _check(
-            len(components) >= 3 and len(internal_systems) >= 2,
+            component_topology_complete,
             "component_topology",
-            f"{len(components)} active component(s), {len(internal_systems)} internal system(s)",
+            f"{len(components)} active component(s), {len(component_rows)} component row(s), {len(internal_systems)} internal system(s)",
             "quality lens architect missing component topology from internal systems",
         ),
         _check(
@@ -305,9 +310,10 @@ def _engineer_checks(package: Any, proposal: Mapping[str, Any]) -> list[dict[str
     next_steps = _as_mapping(getattr(package, "next_steps_preview", None))
     backlog_result = _as_mapping(getattr(package, "backlog_result", None))
     program_result = _as_mapping(getattr(package, "program_result", None))
+    component_specs_complete = bool(components) and component_spec_evidence_count >= len(components)
     return [
         _check(
-            component_spec_evidence_count >= len(components) >= 3,
+            component_specs_complete,
             "component_specs",
             f"{component_spec_evidence_count} spec or preview evidence row(s) for {len(components)} active component(s)",
             "quality lens engineer missing rendered component specs",
@@ -441,6 +447,55 @@ def _active_component_rows(proposal: Mapping[str, Any]) -> list[Mapping[str, Any
         for row in mapping_rows(proposal.get("components"))
         if normalize_string(row.get("component_id"))
     ]
+
+
+def _component_topology_covers_internal_systems(
+    internal_systems: Sequence[str],
+    *,
+    component_rows: Sequence[Mapping[str, Any]],
+) -> bool:
+    if len(internal_systems) < 2 or not component_rows:
+        return False
+    component_texts = [
+        normalize_string(
+            " ".join(
+                text_values(
+                    [
+                        row.get("component_id"),
+                        row.get("label"),
+                        row.get("responsibility"),
+                        row.get("boundary"),
+                    ]
+                )
+            )
+        )
+        for row in component_rows
+    ]
+    return all(_system_has_component_coverage(system, component_texts=component_texts) for system in internal_systems)
+
+
+def _system_has_component_coverage(system: str, *, component_texts: Sequence[str]) -> bool:
+    system_terms = _topology_terms(system)
+    if not system_terms:
+        return False
+    for component_text in component_texts:
+        component_terms = _topology_terms(component_text)
+        if len(system_terms & component_terms) >= min(2, len(system_terms)):
+            return True
+    return False
+
+
+def _topology_terms(value: str) -> set[str]:
+    return set(
+        ordered_terms(
+            value,
+            stopwords=_TERM_STOPWORDS - {"evidence"},
+            minimum=4,
+            preserve_terms={"ai", "api", "ev", "glp", "ml", "sms", "ui", "ux"},
+            stem_ing=True,
+            stem_ing_minimum_length=5,
+        )
+    )
 
 
 def _strict_confirmed_create_payload(proposal: Mapping[str, Any]) -> bool:
