@@ -879,6 +879,14 @@
   passed in 26.587 seconds with rescue activated and `post_confirm_rescue_probe`
   repaired. That rescue result remains wiring proof for the 90-second tier, not
   a naturally occurring rescue-quality scenario.
+  A final rebuilt dist from committed HEAD `ed6f7e41` passed local-release
+  smoke and the installed greenfield matrix after the governance proof update:
+  eight standard consumer-lane cases completed in 19.828-21.826 seconds with
+  governed writes, zero quality issues, hard 10/10 scores, and all expert
+  lenses passing. The retained quantum communication installed case completed
+  in 21.342 seconds with no clipped terminal label. The installed CLI
+  auto-rescue smoke passed in 26.589 seconds and is deliberately recorded as
+  wiring-only proof, not natural rescue-quality proof.
   The wider artifact-quality suite then rejected two over-broad follow-up
   mechanisms before release: terminal Atlas labels were preferring bare semantic
   results for short, readable action labels such as `Publish a decision packet`

@@ -907,13 +907,23 @@ vocabulary, or degraded packages.
       completed in 21.296s with no clipped terminal label. The installed
       auto-rescue smoke passed in 26.587s with rescue activated; it remains
       wiring proof, not a natural rescue-quality scenario.
+- [x] Rebuilt the final local release dist from committed HEAD `ed6f7e41`
+      after governance proof updates and reran packaged proof. Local-release
+      smoke passed. The installed greenfield matrix passed eight standard
+      consumer-lane cases in 19.828-21.826s with governed writes, zero quality
+      issues, hard 10/10 scores, and all PM/architect/engineer/domain-expert
+      lenses passing. The installed quantum communication case completed in
+      21.342s with no clipped terminal label. Installed CLI auto-rescue smoke
+      passed in 26.589s with rescue activated and `post_confirm_rescue_probe`
+      repaired; this remains wiring proof only, not natural rescue-quality
+      proof.
 - [x] Decomposed the installed release matrix after adding the sparse and
       quantum cases pushed the runner past the source-size threshold. The
       runner now owns install, timing, artifact collection, scoring, cleanup,
       and rescue smoke; `greenfield_post_confirm_matrix_cases.py` owns only the
       high-variance case catalog. The runner is back under the hard threshold,
       and install-matrix unit proof passed.
-- [ ] Remaining release blocker: the installed auto-rescue smoke still proves
+- [ ] Remaining full-rescue release blocker: the installed auto-rescue smoke still proves
       rescue wiring through an exact internal probe, not a naturally occurring
       repairable package or semantic failure. Do not claim full release
       readiness until either a public non-internal rescue scenario passes under
