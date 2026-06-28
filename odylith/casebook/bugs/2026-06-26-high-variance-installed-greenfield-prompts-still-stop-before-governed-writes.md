@@ -103,7 +103,7 @@
   same audit found the default matrix was still eight standard cases, rescue
   smoke could be read as full rescue-quality proof, and matrix JSON proof was
   stdout-only. The forward fix wires the installed matrix into the shared
-  release proof lane, expands the default standard catalog to twelve domains,
+  release proof lane, expands the default standard catalog to thirteen domains,
   persists `greenfield-post-confirm-matrix.v1.json` under the dist directory,
   records rescue as `synthetic_typed_probe_wiring_only`, and tightens domain
   expertise scoring so every case-required domain anchor must appear.
@@ -144,6 +144,50 @@
   wiring-only rescue smoke passed in 27.280s. Matrix-owned temp directories
   were empty after the run, and the proof JSON was persisted as
   `greenfield-post-confirm-matrix.v1.json` in the local release dist.
+  A later brutal installed audit with twelve fresh domains found no governed
+  write failures, but it exposed a release-quality false positive in the
+  Project implementation prompt surface. The package-manager supply-chain
+  exception desk case completed in 21.671s, scored 10/10, passed all current
+  prompt-quality checks, and deleted its temp repo, while independent prompt
+  inspection found low-quality source-launch copy: `supplying chain exception
+  desk user receives vulnerable dependency reports` and `tracking provenance
+  and building evidence`. A focused reproduction on the same installed dist
+  confirmed the five Project prompts were present and Odylith reported no
+  `Project implementation prompt` issues. The failed mechanism is that
+  source-launch proof prompts reused gerundized validation fragments rather
+  than projecting base actions from the first-path semantic model, and the
+  release matrix gave `implementation_prompts` 10/10 for row count plus coarse
+  structural checks instead of semantic readability.
+  The first source fix also produced an implementation-level failed mechanism:
+  a prompt-quality guard scanned entire prompt text for gerund actor drift and
+  falsely rejected valid title/context phrases such as `city permitting team
+  uses...` and `Pain Entry Capture and Editing Service blocks...`. The forward
+  fix scopes the guard to bounded proof-action segments (`proof gates for`,
+  `evidence covering`, and `covering`) and requires lowercase gerundized
+  subjects followed by actor-like markers and finite verbs. The same pass fixed
+  a second source-launch projection defect where a visible-result phrase like
+  `a user updates the plan...` was composed as `receive a user updates...` and
+  a truncated proof clause ended as `clear..`.
+  Independent review then found two more failed mechanisms before the rebuilt
+  installed matrix could count as evidence. First, the semantic proof renderer
+  required at least two first-path actions, so single-action paths such as a
+  release readiness gate could still fall back to validation prose and render
+  `evidence covering publishing release readiness...` while the prompt checker
+  returned no issues. Second, the prompt checker briefly counted `-ing` words
+  after `covering`, which falsely rejected valid noun-heavy domain results such
+  as `screening intake, staffing review, and packaging approval`. The forward
+  fix makes one-action first paths first-class semantic proof facts, phrases
+  proof results as `evidence that the accepted path can...`, and removes the
+  suffix-count guard instead of growing a regex tower.
+  Post-fix rebuilt installed proof from dist
+  `odylith-local-release-0.1.15-prompt-quality-proof` passed the maintained
+  thirteen-case matrix plus the retained package supply-chain exception desk
+  regression: all standard cases scored 10/10, every create finished in
+  20.666-23.468s with a 21.694s average, every case attempted and passed
+  headless generated browser proof, prompt findings were zero, total issues
+  were zero, all PM/architect/engineer/domain-expert lenses passed, temp
+  matrix roots were clean, and the synthetic wiring-only rescue smoke passed
+  in 27.399s. Natural rescue quality remains unclaimed.
 
 - Prevention: Keep high-variance installed simulations in release proof; require failure stderr/blocker retention for any matrix failure before cleanup; do not rely on standard-domain passes alone. Release proof must include the installed standard matrix and the installed CLI auto-rescue smoke by default; `RESCUE_SMOKE=0` is local debugging only and cannot support release-readiness claims. The shared release proof function itself must invoke the matrix, persist the matrix JSON proof artifact, and fail closed when standard cases, expert lenses, strict domain-anchor coverage, governed writes, rendered artifact checks, cleanup, or the wiring-only rescue smoke fail. Standalone matrix runs must persist the same proof payload instead of becoming stdout-only evidence. Expert-lens failures must carry typed Tribunal lens evidence at the point of judgment: source-map target, semantic node, projection, repairability, and owner. Failed mechanisms recorded here must not be repeated: broad proof-control rejection of product-result noun phrases, action extraction inside hyphenated noun compounds, passive object-state tails promoted to actors, rendered-string cleanup after Radar files are already written, blank Codex structured model inheritance under ignored user config, unsupported automatic model ladder rungs, model-facing patch-plan schema holes, raw first-path fallback after cleaned projection, source-only rescue proof substituted for built-dist rescue evidence, release-lane smoke substituted for installed matrix proof, opt-in rescue smoke silently under-proving the default matrix, synthetic installed-engine probes substituted for packaged CLI auto-rescue, semantic/plan repairs omitted from manifest repaired issue codes, or internal rescue-probe environment wired to standard matrix cases while rescue smoke runs without it.
   Updated prevention on 2026-06-28: release proof must include Casebook in the
@@ -157,12 +201,27 @@
   preserve the accepted first-path contract directly instead of relying on
   loose semantic overlap between a selected workstream title and the confirmed
   path.
+  Updated prevention after the package-manager audit: Project source-launch
+  prompts must render proof and validation obligations from typed first-path
+  actions or other semantic facts, not from gerundized validation prose. The
+  Project prompt quality gate must reject awkward semantic projection in prompt
+  text and result text, and the release matrix must not award a 10/10 prompt
+  score merely because five prompt rows exist.
+  Guardrails from the failed source fix: do not scan whole prompt bodies for
+  proof-action grammar defects when the prompt also carries product story,
+  excluded-scope, readiness, and validation-command context. Quality guards
+  must inspect the owned semantic clause they are judging, or they become a new
+  brittle regex tower.
+  Additional guardrail from independent review: do not use suffix counts such
+  as repeated `-ing` words as semantic quality evidence. If the generator can
+  project an accepted first-path action directly, fix the projection and make
+  the prompt checker reject only typed or locally owned malformed structures.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: 0.1.15 local release dist `odylith-local-release-0.1.15-atlas-state-proof` passed the expanded twelve-case installed standard matrix and CLI auto-rescue smoke with hard 10/10 standard scores, per-case generated browser state proof, and persisted matrix evidence after release-gate wiring and Atlas-state proof were tightened. Full natural rescue quality remains unclaimed because the rescue proof is still synthetic wiring-only.
+- Version/Build: 0.1.15 local release dist `odylith-local-release-0.1.15-prompt-quality-proof` passed the expanded thirteen-case installed standard matrix and CLI auto-rescue smoke with hard 10/10 standard scores, per-case generated browser state proof, zero prompt findings, persisted matrix evidence, and retained package supply-chain prompt-quality regression coverage. Full natural rescue quality remains unclaimed because the rescue proof is still synthetic wiring-only.
 
 - Related Incidents/Bugs: CB-208
 

@@ -325,7 +325,7 @@ def _proof_prompt(
         "label": "Add tests and proof",
         "when": "Use this after the first runnable slice exists.",
         "prompt": prompt,
-        "result": f"Tests and validation evidence covering {proof}.",
+        "result": _proof_result_sentence(proof),
         "stop": "Stop if validation fails. Do not refresh governed records until the failed behavior is fixed or recorded.",
     }
 
@@ -458,7 +458,8 @@ def _capability_phrase(*, components: Sequence[Mapping[str, Any]], first_path: s
     action = first_path_action_phrase(first_path, fallback="", limit=110, max_fragments=1)
     outcome = first_path_outcome_phrase(first_path, fallback="", limit=110)
     action = _drop_embedded_outcome(action)
-    if _outcome_restates_action(action, outcome):
+    outcome = _sentence_case_fragment(_prompt_fragment(outcome))
+    if _outcome_starts_with_actor_action(outcome) or _outcome_restates_action(action, outcome):
         outcome = ""
     if action and outcome:
         return f"capture the information needed to {action} and return {outcome}"
@@ -496,6 +497,9 @@ def _risk_phrase(risks: Sequence[Any]) -> str:
 
 
 def _proof_phrase(*, validation: Sequence[str], first_path: str) -> str:
+    semantic_clause = _first_path_proof_clause(first_path)
+    if semantic_clause:
+        return semantic_clause
     for row in validation:
         text = sentence(row)
         if text:
@@ -510,6 +514,56 @@ def _proof_phrase(*, validation: Sequence[str], first_path: str) -> str:
             return clean
     safe_path = _first_path_phrase(first_path)
     return short(f"the accepted path produces its intended result: {safe_path}", limit=220)
+
+
+def _proof_result_sentence(proof: str) -> str:
+    clean = _prompt_fragment(proof).rstrip(" .!?;:")
+    if not clean:
+        return "Tests and validation evidence that the accepted path can produce its promised result."
+    lowered = clean.casefold()
+    if lowered.startswith("the accepted path "):
+        return f"Tests and validation evidence that {clean}."
+    if lowered.startswith("accepted path "):
+        return f"Tests and validation evidence that the {clean}."
+    if lowered.startswith(("can ", "must ", "should ", "will ")):
+        return f"Tests and validation evidence that the accepted path {clean}."
+    return f"Tests and validation evidence that the accepted path can {clean}."
+
+
+def _first_path_proof_clause(first_path: str) -> str:
+    """Render proof obligations from first-path actions without gerundizing nouns."""
+
+    rows: list[str] = []
+    seen: set[str] = set()
+    for step in first_path_model(first_path).steps:
+        action = _base_action_from_step(str(step))
+        key = action.casefold()
+        if not action or key in seen:
+            continue
+        rows.append(action)
+        seen.add(key)
+        if len(rows) >= 5:
+            break
+    if not rows:
+        return ""
+    return short(_join(rows), limit=260).rstrip(" .!?;:")
+
+
+def _base_action_from_step(value: str) -> str:
+    text = _clean_fragment(value)
+    if not text:
+        return ""
+    tokens = text.split()
+    candidates = [text]
+    for index in range(1, min(len(tokens), 9)):
+        candidates.append(" ".join(tokens[index:]))
+    for candidate in candidates:
+        if not looks_like_action_clause(candidate):
+            continue
+        action = base_action_clause(candidate)
+        if action:
+            return _drop_embedded_outcome(_prompt_fragment(action))
+    return ""
 
 
 def _exclusion_phrase(non_goals: Sequence[str]) -> str:
@@ -529,7 +583,8 @@ def _first_path_phrase(value: str) -> str:
     action = first_path_action_phrase(text, fallback="", limit=180, max_fragments=1)
     outcome = first_path_outcome_phrase(text, fallback="", limit=150)
     action = _drop_embedded_outcome(action)
-    if _outcome_restates_action(action, outcome):
+    outcome = _sentence_case_fragment(_prompt_fragment(outcome))
+    if _outcome_starts_with_actor_action(outcome) or _outcome_restates_action(action, outcome):
         outcome = ""
     if action and outcome:
         subject_action = _subjectify_path_step(action)
@@ -643,7 +698,32 @@ def _clean_fragment(value: object) -> str:
     text = re.sub(r"\breadout\s+plus\b", "readout and", text, flags=re.IGNORECASE)
     text = _normalize_leading_capability_verb(text)
     text = text.strip(" .")
-    return text[:1].lower() + text[1:] if text else ""
+    return _sentence_case_fragment(text)
+
+
+def _sentence_case_fragment(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    words = text.split()
+    first = words[0].strip(".,;:")
+    if first.isupper() or (
+        first[:1].isupper()
+        and any(word.strip(".,;:")[:1].isupper() for word in words[1:5])
+    ):
+        return text
+    return text[:1].lower() + text[1:]
+
+
+def _outcome_starts_with_actor_action(value: str) -> bool:
+    words = [word.casefold().strip(".,;:'") for word in str(value or "").split()]
+    if len(words) < 3:
+        return False
+    if words[0] in {"a", "an", "the"}:
+        words = words[1:]
+    if len(words) < 2 or words[0] not in {"participant", "person", "user"}:
+        return False
+    return words[1].endswith(("s", "ed"))
 
 
 def _normalize_leading_capability_verb(value: str) -> str:

@@ -555,10 +555,12 @@ def build_quality_verdict(
         score_explanation=_score_explanation(
             score=final_score,
             scores=scores,
+            counts=counts,
             rendered_issues=rendered_issues,
             prompt_issues=prompt_issues,
             manifest=manifest,
             create_returncode=create_returncode,
+            lenses=lenses,
         ),
     )
 
@@ -862,10 +864,12 @@ def _score_explanation(
     *,
     score: int,
     scores: Mapping[str, int],
+    counts: GreenfieldArtifactCounts,
     rendered_issues: Sequence[str],
     prompt_issues: Sequence[str],
     manifest: Mapping[str, Any],
     create_returncode: int,
+    lenses: Mapping[str, bool],
 ) -> tuple[str, ...]:
     if create_returncode != 0 or not _write_committed(manifest):
         return ("score forced to 0 because post-confirm did not commit governed records",)
@@ -878,6 +882,28 @@ def _score_explanation(
         explanations.append("manifest or transaction issues cap release score at 4")
     if score == 10 and all(int(value) == 10 for value in scores.values()):
         explanations.append("all brutal release-quality dimensions scored 10")
+        explanations.append(
+            "completion evidence: "
+            f"{counts.radar_workstreams} Radar workstreams, "
+            f"{counts.registry_component_specs} Registry specs, "
+            f"{counts.atlas_mermaid_sources} Atlas diagrams, "
+            f"{counts.project_brief_records} project brief records"
+        )
+        explanations.append(
+            "rendered-surface evidence: "
+            f"{counts.rendered_surfaces} surfaces, "
+            f"{counts.rendered_surface_payloads} payload assets, "
+            f"{counts.atlas_rendered_assets} Atlas rendered assets"
+        )
+        explanations.append(
+            "traceability and prompt evidence: "
+            f"{counts.trace_nodes} trace nodes, "
+            f"{counts.trace_workstreams} trace workstreams, "
+            f"{counts.project_implementation_prompts} Project implementation prompts, "
+            f"{len(tuple(prompt_issues))} prompt findings"
+        )
+        passed_lenses = ", ".join(name for name, passed in lenses.items() if passed)
+        explanations.append(f"expert-lens evidence: {passed_lenses} passed")
         return tuple(explanations)
     weakest = [dimension for dimension, value in scores.items() if int(value) == score]
     if weakest:

@@ -77,6 +77,15 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             required_terms=("open", "source", "security", "embargo"),
         ),
         GreenfieldMatrixCase(
+            name="package supply chain exception desk",
+            prompt=(
+                "Create a greenfield proposal for a package supply chain exception desk that receives vulnerable "
+                "dependency reports, tracks provenance and waiver evidence, coordinates package manager review, "
+                "preserves release readiness proof, and blocks shipment until exceptions are approved."
+            ),
+            required_terms=("package", "dependency", "provenance", "waiver"),
+        ),
+        GreenfieldMatrixCase(
             name="credit union fair lending exception",
             prompt=(
                 "Create a greenfield proposal for a credit union fair-lending exception review workspace that helps "

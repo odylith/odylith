@@ -1005,3 +1005,47 @@ vocabulary, or degraded packages.
       the 90s tier with host-structured patch evidence, or release reporting is
       changed to classify the current probe as wiring-only rather than rescue
       quality proof.
+- [x] Project implementation prompt release-quality blocker: a fresh twelve-domain
+      installed audit against dist `odylith-local-release-0.1.15-atlas-state-proof`
+      wrote governed records for every case under 60s, but the package-manager
+      supply-chain exception desk case exposed a false 10/10. Source-launch
+      prompts included malformed semantic projection (`supplying chain exception
+      desk user receives vulnerable dependency reports` and `tracking provenance
+      and building evidence`) while the Project prompt checker reported no
+      issues and the matrix awarded `implementation_prompts=10`. Repair must be
+      generic: render prompt proof clauses from typed first-path actions or
+      other semantic facts instead of gerundized validation prose, harden
+      prompt-quality checks across prompt/result text, and make release score
+      explanations auditable enough that a 10/10 claim is not a row-count
+      assertion.
+      Source checkpoint now renders proof clauses from first-path base actions,
+      preserves title-cased product names without leaking mixed `package
+      Manager` casing, lowers ordinary result fragments such as `release
+      readiness`, rejects gerundized actor/product-subject drift inside bounded
+      proof-action segments, and emits concrete score evidence for 10/10
+      matrix cases. Focused proof passed 9 tests, and a disposable
+      source-local package-manager replay completed post-confirm create,
+      produced five Project prompts with no bad phrases, reported zero prompt
+      quality issues, preserved `track provenance and build evidence`, and
+      deleted the temp repo. A broader affected runtime pack then caught and
+      forced a correction to an over-broad whole-prompt grammar scan plus a
+      `receive a user updates...` outcome-composition defect; after narrowing
+      the guard to bounded proof-action segments and dropping actor-action
+      outcome phrases from receive/return composition, the full affected
+      greenfield artifact/prewrite/quality pack passed 132 tests in 788.25s.
+      The package-manager source replay was rerun after the correction and
+      stayed clean with temp cleanup. Independent review then found that the
+      first semantic proof fix still fell back to gerundized validation prose
+      for single-action first paths and that the temporary `-ing` chain guard
+      falsely rejected valid noun-heavy domain phrases. The source fix now
+      treats one-action first paths as valid proof facts, phrases proof results
+      as `evidence that the accepted path can...`, removes the suffix-count
+      guard, and pins the false negative plus false positive in focused tests.
+      Rebuilt installed proof is complete for the standard path: dist
+      `odylith-local-release-0.1.15-prompt-quality-proof` passed the maintained
+      thirteen-case installed matrix with the package supply-chain regression
+      retained, every standard case scoring 10/10, zero prompt findings, zero
+      total issues, all browser proofs attempted and passed, all expert lenses
+      passing, create times of 20.666-23.468s, and clean matrix temp roots.
+      The included rescue smoke passed in 27.399s and remains synthetic
+      wiring-only rather than natural rescue-quality proof.

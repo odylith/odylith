@@ -59,6 +59,8 @@ def project_implementation_prompt_issues(artifact: RenderedArtifact) -> list[str
         issues.append(f"{artifact.identity} does not anchor to accepted product direction")
     if "stop" not in stop.casefold() and "do not" not in stop.casefold():
         issues.append(f"{artifact.identity} stop condition is not explicit enough")
+    if _has_gerund_actor_drift(combined):
+        issues.append(f"{artifact.identity} has gerundized actor or product-subject drift")
     issues.extend(_source_launch_prompt_scope_issues(artifact, fields))
     return issues
 
@@ -115,6 +117,85 @@ def _prompt_position(fields: Mapping[str, str]) -> int:
 
 def _contains_all(value: str, terms: Sequence[str]) -> bool:
     return all(term in value for term in terms)
+
+
+_ACTOR_OR_PRODUCT_SUBJECT_MARKERS = frozenset(
+    {
+        "analyst",
+        "coordinator",
+        "desk",
+        "lead",
+        "manager",
+        "operator",
+        "owner",
+        "participant",
+        "reviewer",
+        "service",
+        "system",
+        "team",
+        "user",
+        "workspace",
+    }
+)
+
+
+def _has_gerund_actor_drift(value: str) -> bool:
+    segments = _proof_action_segments(value)
+    return any(_segment_has_gerund_actor_drift(segment) for segment in segments)
+
+
+def _proof_action_segments(value: str) -> tuple[str, ...]:
+    text = normalize_string(value)
+    lowered = text.casefold()
+    segments: list[str] = []
+    for marker in ("proof gates for", "evidence covering", "covering"):
+        start = lowered.find(marker)
+        if start >= 0:
+            segments.append(_bounded_proof_action_segment(text[start + len(marker) :]))
+    return tuple(segments)
+
+
+def _bounded_proof_action_segment(value: str) -> str:
+    text = normalize_string(value)
+    lowered = text.casefold()
+    end = len(text)
+    for marker in (
+        ", and excluded scope:",
+        ". governed target:",
+        ". coding-readiness",
+        ". validation commands",
+        ".",
+    ):
+        index = lowered.find(marker)
+        if index >= 0:
+            end = min(end, index)
+    return text[:end]
+
+
+def _segment_has_gerund_actor_drift(value: str) -> bool:
+    raw_words = [word.strip("'") for word in visible_words(value)]
+    words = [word.casefold() for word in raw_words]
+    for index, word in enumerate(words):
+        raw_word = raw_words[index]
+        if len(word) < 7 or not word.endswith("ing"):
+            continue
+        if raw_word[:1] and not raw_word[:1].islower():
+            continue
+        window = words[index + 1 : index + 6]
+        for marker_offset, token in enumerate(window):
+            if token not in _ACTOR_OR_PRODUCT_SUBJECT_MARKERS:
+                continue
+            tail_index = index + marker_offset + 2
+            if tail_index < len(words) and _looks_like_finite_prompt_verb(words[tail_index]):
+                return True
+    return False
+
+
+def _looks_like_finite_prompt_verb(value: str) -> bool:
+    word = value.casefold().strip("'")
+    if word in {"has", "is", "needs", "owns", "reads", "sees", "uses"}:
+        return True
+    return len(word) > 3 and word.endswith(("ed", "es", "s"))
 
 
 __all__ = ["project_implementation_prompt_issues"]

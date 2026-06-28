@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
+from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import project_implementation_prompt_issues
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
 from odylith.runtime.project_intelligence.source_launch import build_source_launch_handoff
 
 
@@ -48,7 +50,10 @@ def test_greenfield_source_launch_prompts_keep_sun_burn_copy_complete(tmp_path: 
     assert "Current signal: existing repo language signals point to Python. Confirm that Python is still" in encoded
     assert "Sun-exposed Individual changes or reads" in encoded
     assert "Caregiver" in encoded
-    assert "comparing new photos and symptom scores against the baseline" in encoded
+    assert "compare new photos and symptom scores against the baseline" in encoded
+    assert "receive a user updates" not in encoded
+    assert "return a user updates" not in encoded
+    assert "clear.." not in encoded
     assert "a photo and answers" not in encoded
     assert "a photo and the intake." not in encoded
     assert "contributes information" not in encoded
@@ -123,3 +128,145 @@ def test_greenfield_source_launch_prompts_suppress_repeated_action_outcome(tmp_p
         assert duplicated_capability not in encoded
         for row in handoff["prompts"]:
             assert generated_public_copy_issues(f"Project implementation prompt `{row['label']}`", row) == ()
+
+
+def test_greenfield_source_launch_prompts_render_proof_from_base_actions(tmp_path: Path) -> None:
+    handoff = build_source_launch_handoff(
+        repo_root=tmp_path,
+        title="Package Manager Supply Chain Exception Desk",
+        first_path=(
+            "A package-manager supply-chain exception desk receives vulnerable dependency reports, "
+            "maps affected package owners, records waiver rationale, tracks provenance and build evidence, "
+            "and publishes release readiness without auto-upgrading production dependencies."
+        ),
+        actors=(
+            ("", "Package Manager Supply Chain Exception Desk User: reviews the result", ""),
+            ("", "Security Reviewer: approves exceptions", ""),
+        ),
+        components=(),
+        risks=("Release readiness without auto-upgrading production dependencies can be wrong or misleading.",),
+        validation=(
+            "Success proof includes supplying chain exception desk user receives vulnerable dependency reports, "
+            "mapping affected package owners, recording waiver rationale, and tracking provenance and building evidence.",
+        ),
+        non_goals=("Authentication, billing, full UI, database persistence, and external APIs.",),
+        source_launch_context={
+            "start_workstream_id": "B-002",
+            "start_workstream_title": "Map affected package owners",
+            "release_selector": "0.0.1",
+            "coding_readiness_gates": (
+                "The accepted product story names the user problem.",
+                "The first implementation lane is ready.",
+            ),
+            "validation_gates": (
+                "Validate one successful path.",
+                "Validate one missing-input path.",
+                "Validate one corrected path.",
+            ),
+            "verification_commands": (
+                "odylith context --repo-root . B-002",
+                "odylith validate plan-workstream-binding --repo-root .",
+                "odylith validate plan-traceability --repo-root .",
+            ),
+        },
+    )
+    encoded = json.dumps(handoff, sort_keys=True)
+
+    assert "receive vulnerable dependency reports" in encoded
+    assert "track provenance and build evidence" in encoded
+    assert "receive release readiness without auto-upgrading production dependencies" in encoded
+    assert "Tests and validation evidence that the accepted path can receive vulnerable dependency reports" in encoded
+    assert "supplying chain exception desk user receives" not in encoded
+    assert "tracking provenance and building evidence" not in encoded
+    assert "Tests and validation evidence covering" not in encoded
+    assert "receive Release readiness" not in encoded
+    assert "package Manager" not in encoded
+    for row in handoff["prompts"]:
+        artifact = RenderedArtifact(
+            "Project implementation prompt",
+            row["label"],
+            "\n".join(str(row.get(key, "")) for key in ("label", "when", "prompt", "result", "stop")),
+            fields={**row, "position": str(handoff["prompts"].index(row) + 1)},
+        )
+        assert project_implementation_prompt_issues(artifact) == []
+
+
+def test_greenfield_source_launch_prompts_render_single_step_proof_from_base_action(tmp_path: Path) -> None:
+    handoff = build_source_launch_handoff(
+        repo_root=tmp_path,
+        title="Release Readiness Gate",
+        first_path="A release readiness gate publishes release readiness without shipment.",
+        actors=(("", "Release Manager: reviews release readiness", ""),),
+        components=(),
+        risks=("Release readiness without shipment can be wrong or misleading.",),
+        validation=("Success proof includes publishing release readiness without shipment.",),
+        non_goals=("Authentication, billing, full UI, database persistence, and external APIs.",),
+        source_launch_context={
+            "start_workstream_id": "B-002",
+            "start_workstream_title": "Publish release readiness",
+            "release_selector": "0.0.1",
+            "validation_gates": ("Validate one successful path.", "Validate one missing-input path."),
+        },
+    )
+    encoded = json.dumps(handoff, sort_keys=True)
+
+    assert "Tests and validation evidence that the accepted path can publish release readiness without shipment." in encoded
+    assert "publishing release readiness without shipment" not in encoded
+    assert "Tests and validation evidence covering" not in encoded
+    for row in handoff["prompts"]:
+        artifact = RenderedArtifact(
+            "Project implementation prompt",
+            row["label"],
+            "\n".join(str(row.get(key, "")) for key in ("label", "when", "prompt", "result", "stop")),
+            fields={**row, "position": str(handoff["prompts"].index(row) + 1)},
+        )
+        assert project_implementation_prompt_issues(artifact) == []
+
+
+def test_greenfield_project_prompt_quality_rejects_gerundized_actor_drift() -> None:
+    artifact = RenderedArtifact(
+        "Project implementation prompt",
+        "Add tests and proof",
+        "",
+        fields={
+            "label": "Add tests and proof",
+            "when": "Use this after the first runnable slice exists.",
+            "prompt": (
+                "Odylith, add behavior proof for the accepted product. Test the accepted path with validation. "
+                "Bind the proof to governed workstream B-002."
+            ),
+            "result": (
+                "Tests and validation evidence covering supplying chain exception desk user receives vulnerable "
+                "dependency reports, mapping affected package owners, recording waiver rationale, and tracking "
+                "provenance and building evidence."
+            ),
+            "stop": "Stop if validation fails.",
+            "position": "4",
+        },
+    )
+
+    issues = project_implementation_prompt_issues(artifact)
+
+    assert any("gerundized actor" in issue for issue in issues)
+    assert not any("proof-action chain" in issue for issue in issues)
+
+
+def test_greenfield_project_prompt_quality_accepts_noun_heavy_covering_results() -> None:
+    artifact = RenderedArtifact(
+        "Project implementation prompt",
+        "Add tests and proof",
+        "",
+        fields={
+            "label": "Add tests and proof",
+            "when": "Use this after the first runnable slice exists.",
+            "prompt": (
+                "Odylith, add behavior proof for the accepted product. Test valid input, missing required input, "
+                "blocked outcomes, and validation evidence for governed workstream B-002 without widening scope."
+            ),
+            "result": "Tests and validation evidence covering screening intake, staffing review, and packaging approval.",
+            "stop": "Stop if validation fails.",
+            "position": "4",
+        },
+    )
+
+    assert project_implementation_prompt_issues(artifact) == []

@@ -48,6 +48,10 @@ def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
     assert "open source security embargo room" in escaped_case.prompt
     assert "receives vulnerability reports" in escaped_case.prompt
     assert escaped_case.required_terms == ("open", "source", "security", "embargo")
+    package_case = next(case for case in cases if case.name == "package supply chain exception desk")
+    assert "receives vulnerable dependency reports" in package_case.prompt
+    assert "tracks provenance and waiver evidence" in package_case.prompt
+    assert package_case.required_terms == ("package", "dependency", "provenance", "waiver")
     sparse_case = next(case for case in cases if case.name == "sparse disclosure confirmation")
     assert "## State object\nReport." in sparse_case.confirmed_intent_markdown
     assert "## Proof boundary\nEvidence custody and embargo decision." in sparse_case.confirmed_intent_markdown
