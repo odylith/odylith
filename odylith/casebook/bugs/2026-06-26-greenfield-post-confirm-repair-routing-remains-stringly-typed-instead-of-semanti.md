@@ -863,7 +863,22 @@
   repro. A live source replay of the retained quantum intent wrote governed
   records in 16.746 seconds with four Radar records, four Registry specs, six
   Atlas diagrams, 19 trace nodes, and no clipped terminal label. Fresh rebuilt
-  installed-dist proof remains required before any release-readiness claim.
+  installed-dist proof from local release
+  `odylith-local-release-0.1.15-7e548d40` then passed release smoke and the
+  installed greenfield matrix. Eight standard consumer-lane cases completed in
+  19.887-22.399 seconds: flood shelter intake, pediatric agency practice,
+  semiconductor lab custody, port berth carbon tariff, security disclosure
+  council, open-source security embargo, sparse disclosure confirmation, and
+  quantum communication lab. Every standard case returned zero quality issues,
+  wrote governed records, scored 10/10 across completion, latency,
+  semantic-manifest, copy/semantic clarity, governance depth, traceability,
+  implementation prompts, operator usefulness, and PM/architect/engineer/domain
+  expert lenses. The quantum communication lab installed case completed in
+  21.296 seconds with four Registry specs, six Atlas Mermaid sources, 19 trace
+  nodes, and no clipped terminal label. The installed auto-rescue smoke also
+  passed in 26.587 seconds with rescue activated and `post_confirm_rescue_probe`
+  repaired. That rescue result remains wiring proof for the 90-second tier, not
+  a naturally occurring rescue-quality scenario.
   The wider artifact-quality suite then rejected two over-broad follow-up
   mechanisms before release: terminal Atlas labels were preferring bare semantic
   results for short, readable action labels such as `Publish a decision packet`

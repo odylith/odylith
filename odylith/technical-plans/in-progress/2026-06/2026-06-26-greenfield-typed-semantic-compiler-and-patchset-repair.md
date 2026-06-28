@@ -898,8 +898,15 @@ vocabulary, or degraded packages.
       context so history/timeline views stay services; component-kind
       classification now lives in its own owner instead of expanding confirmed
       component assembly. The repaired artifact-quality/prewrite pack passed 61
-      tests in 328.35s. Fresh rebuilt installed proof remains required before
-      release closure.
+      tests in 328.35s. Fresh local release
+      `odylith-local-release-0.1.15-7e548d40` passed release smoke and the
+      installed greenfield matrix: eight standard consumer-lane cases completed
+      in 19.887-22.399s with governed writes, zero quality issues, hard 10/10
+      scores across every brutal dimension, and all PM/architect/engineer/
+      domain-expert lenses passing. The installed quantum communication case
+      completed in 21.296s with no clipped terminal label. The installed
+      auto-rescue smoke passed in 26.587s with rescue activated; it remains
+      wiring proof, not a natural rescue-quality scenario.
 - [x] Decomposed the installed release matrix after adding the sparse and
       quantum cases pushed the runner past the source-size threshold. The
       runner now owns install, timing, artifact collection, scoring, cleanup,
