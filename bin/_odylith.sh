@@ -38,6 +38,10 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
 }
 
+ensure_playwright_chromium() {
+  "$odylith_python" -m playwright install chromium >/dev/null
+}
+
 require_tag() {
   local tag="${1:-}"
   [[ -n "$tag" ]] || die "release tag is required (example: v0.1.0)"
@@ -336,9 +340,11 @@ PY
   "$odylith_python" scripts/release/local_release_smoke.py --version "$resolved_version" --dist-dir "$dist_dir"
   local matrix_temp_parent
   matrix_temp_parent="${ODYLITH_GREENFIELD_MATRIX_TEMP_PARENT:-$(dirname "$dist_dir")}"
+  ensure_playwright_chromium
   "$odylith_python" scripts/release/greenfield_post_confirm_matrix.py \
     --version "$resolved_version" \
     --dist-dir "$dist_dir" \
     --temp-parent "$matrix_temp_parent" \
+    --include-browser-proof \
     --output-json "$dist_dir/greenfield-post-confirm-matrix.v1.json"
 }

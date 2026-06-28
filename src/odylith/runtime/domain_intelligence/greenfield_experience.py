@@ -115,6 +115,7 @@ def build_next_steps(
     proposal_row = _proposal_row_for_created_id(proposal=proposal, created=created, created_id=start_id)
     validation_items = _validation_items(row=proposal_row, wave=active_wave)
     first_slice = _first_slice_text(proposal_row)
+    first_path = _first_path_summary(proposal)
     title = str(start_row.get("title", "")).strip()
     project_title = str(umbrella_row.get("title", "")).strip() or str(
         proposal.get("intent", {}).get("title", "the greenfield project")
@@ -137,16 +138,33 @@ def build_next_steps(
             start_id=start_id,
             start_title=title,
         ),
-        "implementation_prompt": _implementation_prompt(start_id=start_id, title=title, first_slice=first_slice),
+        "implementation_prompt": _implementation_prompt(
+            start_id=start_id,
+            title=title,
+            first_slice=first_slice,
+            first_path=first_path,
+        ),
         "customization_options": customization_options,
         "coding_readiness_gates": readiness_gates,
         "validation_gates": list(validation_items[:6]),
         "operator_sequence": [
             "Do not start source edits from this closeout; treat the applied records as the project review board.",
-            f"Open the project program view for `{umbrella_id or start_id}` and review the project brief, direction choices, non-goals, diagrams, and proof gates.",
-            f"Open the progress view and verify the active wave `{wave_label}` plus release `{release_selector or '0.0.1'}` match the accepted project shape.",
-            "Answer or explicitly accept the choices that materially change runtime, data posture, architecture, validation, release ambition, or first user.",
-            f"Only after the coding-readiness gates are accepted, open `{start_id}` and author the first technical plan before source writes.",
+            (
+                f"Open the project program view for `{umbrella_id or start_id}` and review the project brief, "
+                "direction choices, non-goals, diagrams, and proof gates."
+            ),
+            (
+                f"Open the progress view and verify the active wave `{wave_label}` plus release "
+                f"`{release_selector or '0.0.1'}` match the accepted project shape."
+            ),
+            (
+                "Answer or explicitly accept the choices that materially change runtime, data posture, "
+                "architecture, validation, release ambition, or first user."
+            ),
+            (
+                f"Only after the coding-readiness gates are accepted, open `{start_id}` and author the first "
+                "technical plan before source writes."
+            ),
         ],
         "verification_commands": verification_commands(start_id),
     }
@@ -369,13 +387,16 @@ def _first_wave(program_result: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 def _active_wave(program_result: Mapping[str, Any]) -> Mapping[str, Any]:
-    waves = [row for row in program_result.get("waves", []) if isinstance(row, Mapping)] if isinstance(program_result, Mapping) else []
-    return next((row for row in waves if str(row.get("status", "")).strip().casefold() == "active"), waves[0] if waves else {})
+    waves = mapping_rows(program_result.get("waves")) if isinstance(program_result, Mapping) else []
+    return next(
+        (row for row in waves if str(row.get("status", "")).strip().casefold() == "active"),
+        waves[0] if waves else {},
+    )
 
 
 def _wave_for_workstream(*, program_result: Mapping[str, Any], workstream_id: str) -> Mapping[str, Any]:
     token = str(workstream_id or "").strip().upper()
-    waves = [row for row in program_result.get("waves", []) if isinstance(row, Mapping)] if isinstance(program_result, Mapping) else []
+    waves = mapping_rows(program_result.get("waves")) if isinstance(program_result, Mapping) else []
     for wave in waves:
         for field in ("primary_workstreams", "carried_workstreams", "in_band_workstreams"):
             values = wave.get(field, []) if isinstance(wave.get(field), list) else []
@@ -401,6 +422,13 @@ def _first_slice_text(row: Mapping[str, Any]) -> str:
     )
 
 
+def _first_path_summary(proposal: Mapping[str, Any]) -> str:
+    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    values = text_values(first_path)
+    return _preview_safe_fragment(" ".join(values), limit=360) if values else ""
+
+
 def _component_local_first_slice(row: Mapping[str, Any], *, fallback: str) -> str:
     label = str(row.get("label", "") or row.get("component_id", "") or "component").strip()
     contract = row.get("component_contract") if isinstance(row.get("component_contract"), Mapping) else {}
@@ -418,7 +446,10 @@ def _component_local_first_slice(row: Mapping[str, Any], *, fallback: str) -> st
             "result, explanation, and recovery path reviewable."
         )
     if label and inputs and outputs:
-        return f"Implement {label} local contract: accept {inputs}, produce {outputs}, and block invalid or missing state."
+        return (
+            f"Implement {label} local contract: accept {inputs}, produce {outputs}, "
+            "and block invalid or missing state."
+        )
     if label and responsibility and validation:
         return f"Implement {label} inside this boundary: {responsibility}. Prove it with {validation}."
     if label and validation:
@@ -582,7 +613,7 @@ def _project_first_prompt(*, project_id: str, project_title: str, start_id: str,
     )
 
 
-def _implementation_prompt(*, start_id: str, title: str, first_slice: str) -> str:
+def _implementation_prompt(*, start_id: str, title: str, first_slice: str, first_path: str = "") -> str:
     if not start_id:
         return (
             "After the project-first scope is accepted, select the first targeted child workstream, write a technical "
@@ -593,7 +624,12 @@ def _implementation_prompt(*, start_id: str, title: str, first_slice: str) -> st
     if first_slice_text and first_slice_text[-1] not in ".!?":
         first_slice_text = f"{first_slice_text}."
     scope_sentence = f"{first_slice_text} " if first_slice_text else ""
+    first_path_text = str(first_path or "").strip()
+    if first_path_text and first_path_text[-1] not in ".!?":
+        first_path_text = f"{first_path_text}."
+    first_path_sentence = f"Preserve this accepted first path: {first_path_text} " if first_path_text else ""
     return (
-        f"After project-first scope is accepted, start {start_id}: {scope_sentence}Treat `{title_text}` as the first "
-        "coding scope and do not advance waves until success, blocked-input, replay, and handoff evidence is written and reviewed."
+        f"After project-first scope is accepted, start {start_id}: {scope_sentence}{first_path_sentence}"
+        f"Treat `{title_text}` as the first coding scope and do not advance waves until success, blocked-input, "
+        "replay, and handoff evidence is written and reviewed."
     )

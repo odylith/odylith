@@ -112,14 +112,57 @@
   `GREENFIELD_MATRIX_OUTPUT_JSON` as the explicit override, so explicit local
   matrix runs and canonical release proof both leave durable evidence instead
   of relying on terminal output.
+  2026-06-28 brutal proof audit reopened the proof contract again. The first
+  hardened release matrix still under-proved generated governance quality
+  because its rendered-surface health check counted only Radar, Registry,
+  Atlas, Compass, and shell output while the product shell also ships Casebook.
+  The same audit found that browser proof was optional, ran against only one
+  generated repo, and was absent from the maintained release wrapper and shared
+  release-candidate lane. A live broad greenfield test also exposed Project tab
+  prompt drift: operator next-step implementation prompts could pass through
+  the selected workstream title and slice while omitting the accepted
+  first-path contract. Those were failed proof mechanisms, not consumer-project
+  defects.
+  A second 2026-06-28 release-proof review found the next false-confidence
+  recurrence: the renamed browser state proof still checked Atlas only by shell
+  heading and could pass while generated diagram state failed to hydrate. The
+  same review found the matrix JSON marked browser proof as passed for cases
+  where browser proof never ran because post-confirm create failed. The forward
+  fix adds Atlas generated-state assertions for rendered diagram buttons,
+  generated count, active diagram ID, title, and loaded SVG/PNG assets; adds
+  invalid Atlas diagram recovery; and moves browser-proof summary custody into
+  a separate owner that reports unattempted proof as skipped and failed when
+  browser proof was requested. This preserves the failed mechanism: heading-only
+  shell checks are not release proof for generated Atlas state.
+  Final rebuilt proof from dist
+  `odylith-local-release-0.1.15-atlas-state-proof` passed the installed
+  twelve-case standard matrix with per-case generated browser state proof:
+  all standard cases scored 10/10, every browser proof was attempted and
+  passed, zero browser issues were reported, create times were 20.660-23.125s
+  with a 21.439s average, each case produced six rendered surfaces, twelve
+  surface payloads, and twelve Atlas rendered assets, and the synthetic
+  wiring-only rescue smoke passed in 27.280s. Matrix-owned temp directories
+  were empty after the run, and the proof JSON was persisted as
+  `greenfield-post-confirm-matrix.v1.json` in the local release dist.
 
 - Prevention: Keep high-variance installed simulations in release proof; require failure stderr/blocker retention for any matrix failure before cleanup; do not rely on standard-domain passes alone. Release proof must include the installed standard matrix and the installed CLI auto-rescue smoke by default; `RESCUE_SMOKE=0` is local debugging only and cannot support release-readiness claims. The shared release proof function itself must invoke the matrix, persist the matrix JSON proof artifact, and fail closed when standard cases, expert lenses, strict domain-anchor coverage, governed writes, rendered artifact checks, cleanup, or the wiring-only rescue smoke fail. Standalone matrix runs must persist the same proof payload instead of becoming stdout-only evidence. Expert-lens failures must carry typed Tribunal lens evidence at the point of judgment: source-map target, semantic node, projection, repairability, and owner. Failed mechanisms recorded here must not be repeated: broad proof-control rejection of product-result noun phrases, action extraction inside hyphenated noun compounds, passive object-state tails promoted to actors, rendered-string cleanup after Radar files are already written, blank Codex structured model inheritance under ignored user config, unsupported automatic model ladder rungs, model-facing patch-plan schema holes, raw first-path fallback after cleaned projection, source-only rescue proof substituted for built-dist rescue evidence, release-lane smoke substituted for installed matrix proof, opt-in rescue smoke silently under-proving the default matrix, synthetic installed-engine probes substituted for packaged CLI auto-rescue, semantic/plan repairs omitted from manifest repaired issue codes, or internal rescue-probe environment wired to standard matrix cases while rescue smoke runs without it.
+  Updated prevention on 2026-06-28: release proof must include Casebook in the
+  generated visible-surface set, must reject stale asset subpaths and malformed
+  shell payload globals, and must run headless generated browser state proof
+  for every generated standard matrix repo when the maintained release wrapper
+  is used. That proof must cover Atlas generated diagram state, not only Atlas
+  shell routing, and the persisted matrix proof must distinguish skipped browser
+  proof from passed browser proof. `BROWSER_PROOF=0` is local debugging only and
+  cannot support release readiness. Project tab implementation prompts must
+  preserve the accepted first-path contract directly instead of relying on
+  loose semantic overlap between a selected workstream title and the confirmed
+  path.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: 0.1.15 local release dist c6286f0a passed the expanded twelve-case installed standard matrix and CLI auto-rescue smoke with hard 10/10 standard scores before release-gate wiring was tightened; final release posture now requires a rebuilt dist from the post-fix commit to pass local release smoke plus the canonical release-gated matrix artifact.
+- Version/Build: 0.1.15 local release dist `odylith-local-release-0.1.15-atlas-state-proof` passed the expanded twelve-case installed standard matrix and CLI auto-rescue smoke with hard 10/10 standard scores, per-case generated browser state proof, and persisted matrix evidence after release-gate wiring and Atlas-state proof were tightened. Full natural rescue quality remains unclaimed because the rescue proof is still synthetic wiring-only.
 
 - Related Incidents/Bugs: CB-208
 

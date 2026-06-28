@@ -2125,7 +2125,7 @@
         "dashboard",
         "compass"
       ],
-      "render_source_fingerprint": "a7957813c088512b2ece2d501335596765b93e233643136c80b3df7a7a5b774d",
+      "render_source_fingerprint": "3e46418e1962414a8a0d092cc2ff785d4a1b6377b41b017975aed5af825d7424",
       "reviewed_watch_fingerprints": {
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md": "b2c2bccbc97ccb9118d5797620c445f2bf2de15e078f97c18c34058e59139509",
         "odylith/technical-plans/done/2026-03/2026-03-27-odylith-self-hosting-posture-hardening.md": "80cf2bdc962fa85bd01669160077496daed2d380c32608196e96fc8e28e32616",
@@ -2230,9 +2230,9 @@
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/technical-plans/done/2026-03/2026-03-27-odylith-canonical-release-version-session-and-maintainer-runbook.md": "144394af246ee71229fa52513abfdce9f6321b0eaa4173cd154b0b45b13e1e01",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "19ab9190f680a1d9a59ec3ccf50e8ebafbb4479e5bdd7ef3720ba261f0bef66f",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md": "da1387fcdb5a68c9aefbbf0cd3f9682bc174c725b30217909a199c08e3eb2e86",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md": "ca7db36189742f372e6805701564d96de6dcc442e9d34a9401390e05b7073cc0",
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
-        "odylith/MAINTAINER_RELEASE_RUNBOOK.md": "82493e3cd57d016ba32b797ca0e374bef3116ae4697c385e398172a984e964e5",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md": "0ffc1a93516f0817f5525184cf8069fc0d47570d74912c4f9b92688daf3b56c5",
         "Makefile": "adb5813fe7fb99618f77058859e3f74043d6f7173c5f372bf9211d39f8f01729",
         "bin/release-version-preview": "fc1b937e0b154d25d56f2f1070f1f5768e6309382899019c67be1e1d6ac2769d",
         "bin/release-version-show": "d77ec747310bc4cd35b5578dd44e3d5af367c4d90e27959e8985172fb50ae562",
@@ -2243,7 +2243,7 @@
         "bin/dogfood-activate": "1c3f9c9d0db6e6bdba0310fc699931b1c870beebf44def7259d226c7bf104bd5",
         "bin/consumer-rehearsal": "41b239bd29fb6b7756baacc3c3d6ef47dd74ab5ed8e68d96c977b226d3c751f1",
         "bin/ga-gate": "39d1b7cd04c6d47a9332704e750309abb29e7a5fc729983f428e9342b33d93a5",
-        "bin/_odylith.sh": "d319be30f82da193ebdcb1b61358becbf2fec71ec722bfdbae426d4a023adeac",
+        "bin/_odylith.sh": "f284b4e6eed8fa1cfd310ce33b67c5373370c2f3caffdea9fabd8cbd8f9f3774",
         ".github/workflows/release.yml": "5f57d160c119782bd031fd5f427c0cdefcf25b17b0150d77942aa6139a8da207",
         "src/odylith/runtime/governance/validate_self_host_posture.py": "f6cd337a472e23c8b3e300326610e12a329c4707f67c2da8ae0eda2ca94dfeb7"
       }
@@ -2325,12 +2325,12 @@
         "README.md": "7f0e76e7f18fc003bbc06aab03591d4f34d21190668cd13b269b09ca27aafbc7",
         "odylith/INSTALL.md": "eebc88d9db5c7cac2be2ad4fe6909e9c04a67c72020e598c19670b6e4bd9888a",
         "odylith/INSTALL_AND_UPGRADE_RUNBOOK.md": "24bb4c333407124a37a9ecf187eb1dcbfcfb74e43fc4ad5ea866d240c1ad953d",
-        "odylith/MAINTAINER_RELEASE_RUNBOOK.md": "82493e3cd57d016ba32b797ca0e374bef3116ae4697c385e398172a984e964e5",
+        "odylith/MAINTAINER_RELEASE_RUNBOOK.md": "0ffc1a93516f0817f5525184cf8069fc0d47570d74912c4f9b92688daf3b56c5",
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md": "1f23b5b159f92612c4dd52b7fe1e077d5842a9e6439b59b6c42c617111ccf45b",
         "odylith/casebook/bugs/2026-03-28-public-consumer-install-depends-on-machine-python.md": "892477de3906a35157275d8aaa2f9cfc259dd2efb76222fa7247461d011a1ea6",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "19ab9190f680a1d9a59ec3ccf50e8ebafbb4479e5bdd7ef3720ba261f0bef66f",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md": "da1387fcdb5a68c9aefbbf0cd3f9682bc174c725b30217909a199c08e3eb2e86",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md": "ca7db36189742f372e6805701564d96de6dcc442e9d34a9401390e05b7073cc0",
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "src/odylith/install/manager.py": "b6f21986f0e068eb956d255eb3f3d89f972f325ce3026a782537a2c12075fb30",
         "src/odylith/install/managed_runtime.py": "1d7b3b567eca6ed0e57646dac1f10a87435060d30874ecfd537d47de8a276c42",
@@ -3344,7 +3344,7 @@
         "src/odylith/install/manager.py": "b6f21986f0e068eb956d255eb3f3d89f972f325ce3026a782537a2c12075fb30",
         "scripts/release/publish_release_assets.py": "1a2ac45862297f839c72d98a4d6ff43d667d207d19f400f50380b185d3f42682",
         "tests/unit/install/test_agents.py": "edff1fc2943eda16a77be79d039b6042c0b78f4fa55ec176094f50b2a7de0f6c",
-        "tests/unit/install/test_release_bootstrap.py": "e48d9262cb5547ffb768503903d8cb21c09e146a69b03252894d4b22e94b5b14",
+        "tests/unit/install/test_release_bootstrap.py": "25d246e5019b7cfaebd036b6393e35e42374cfa6c342ee0547fc64110ea649e4",
         "tests/unit/install/test_manager.py": "d6284aefe68c26cbbdfa159bc879c84495050f5c3cd46694f1d54c38654fde53",
         "tests/integration/install/test_bundle.py": "06747e0c9f4c469f60c5bd7a167eb8bbf670560c26fc949bdbce208564a5cc3e",
         "tests/integration/install/test_manager.py": "c747ae8da0b721942277b475434b9995977c687428881a76dfa46c49aca27c1d",
@@ -4267,12 +4267,12 @@
         "src/odylith/runtime/project_intelligence/source_launch.py": "638ef65eda61d4eb06eb924b788975622af2319788f1cda94e7ad4cbe66ab46b",
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "57664efd8a6b44694eb2157bc99405c7bf261808b3becfa920fa2049dadc180f",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "e3d2ba5ed182d33b636a8381d3c1c1b992597deef6ff3c0c8c62504a5a49fc46",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "d31d873f7e1d30d383c7c0b85b01d54572fb173bf5a72e76c73c61f66386a98a",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "19f07ddfda21d61fb60009938c12791137ed0d1690637b83361c98629aac9aea",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "57919b8bd779b3ff1c429572d57b5d9c8a50019a338435ac06ad2bb445af301b"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "cb16b2ee78b5a6fe225c8d6dce4ad81f9b28999ea2819e3936744673dfbc636a"
       },
-      "render_source_fingerprint": "d9d6787855c06f70365f5dbc30b48ed9b777d464322fbe7cf3e04e936bf96ebd"
+      "render_source_fingerprint": "a6c33ba1f7a3f837bac192ea8a4998abb95df42d819339712be42e783cb9d7aa"
     },
     {
       "diagram_id": "D-044",

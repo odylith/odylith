@@ -95,6 +95,8 @@ def _full_counts(module) -> object:
         trace_nodes=12,
         trace_workstreams=4,
         rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
+        rendered_surface_payloads=len(module.SURFACE_PAYLOAD_CONTRACTS) * 2,
+        atlas_rendered_assets=8,
         domain_term_hits=3,
         project_implementation_prompts=5,
     )
@@ -119,12 +121,41 @@ def _passing_manifest() -> dict[str, object]:
     }
 
 
+def _passing_matrix_result(module) -> object:
+    return module.GreenfieldMatrixResult(
+        name="matrix case",
+        status="passed",
+        create_seconds=18.0,
+        counts=_full_counts(module),
+        quality=module.GreenfieldQualityVerdict(
+            passed=True,
+            issues=(),
+            lenses={lens: True for lens in ("product_manager", "architect", "engineer", "domain_expert")},
+            scores={dimension: 10 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
+            score=10,
+            score_explanation=("all brutal release-quality dimensions scored 10",),
+        ),
+        browser_surface_proof_attempted=True,
+    )
+
+
+def _passing_rescue_result(module) -> object:
+    return module.GreenfieldRescueSmokeResult(
+        status="passed",
+        cli_create_seconds=44.0,
+        counts=_full_counts(module),
+        issues=(),
+        manifest={"repair_tier": "rescue"},
+    )
+
+
 def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     create_envs: list[dict[str, str]] = []
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
     monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         if "create" in command:
@@ -161,6 +192,7 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
     monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         commands.append(list(command))
@@ -201,6 +233,7 @@ def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: 
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
     monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         if "create" in command:
@@ -493,6 +526,8 @@ def test_quality_verdict_requires_all_case_domain_terms() -> None:
         trace_nodes=12,
         trace_workstreams=4,
         rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
+        rendered_surface_payloads=len(module.SURFACE_PAYLOAD_CONTRACTS) * 2,
+        atlas_rendered_assets=8,
         domain_term_hits=3,
         required_domain_terms=4,
         project_implementation_prompts=5,
@@ -510,6 +545,99 @@ def test_quality_verdict_requires_all_case_domain_terms() -> None:
     assert "domain term coverage too low: expected at least 4, found 3" in quality.issues
 
 
+def test_rendered_surface_health_requires_payload_assets_and_shell_contract(tmp_path: Path) -> None:
+    module = _module()
+    for relative, assets in module.SURFACE_PAYLOAD_CONTRACTS.items():
+        body = "\n".join(f'<script src="{asset}?v=123"></script>' for asset in assets)
+        _write(tmp_path / relative, f"<!doctype html><html><head>{body}</head><body>ready</body></html>")
+        for asset in assets:
+            _write(tmp_path / Path(relative).parent / asset, "window.__payload = true;\n")
+    shell_payload = {
+        payload_key: f"{expected_href}?v=123"
+        for _tab, (_frame_id, payload_key, expected_href) in module.INDEX_SHELL_TAB_CONTRACTS.items()
+    }
+    _write(
+        tmp_path / "odylith/tooling-payload.v1.js",
+        f'window["__ODYLITH_TOOLING_DATA__"] = {json.dumps(shell_payload, sort_keys=True)};\n',
+    )
+    tab_markup = "\n".join(
+        f'<button type="button" data-tab="{tab}" role="tab">{tab}</button>'
+        for tab in module.INDEX_SHELL_TAB_CONTRACTS
+    )
+    frame_markup = "\n".join(
+        f'<iframe id="{frame_id}"></iframe>'
+        for frame_id, _payload_key, _expected_href in module.INDEX_SHELL_TAB_CONTRACTS.values()
+    )
+    _write(
+        tmp_path / "odylith/index.html",
+        "\n".join(
+            (
+                '<script id="toolingDashboardData" src="tooling-payload.v1.js?v=123"></script>',
+                '<script src="tooling-app.v1.js?v=123"></script>',
+                tab_markup,
+                frame_markup,
+            )
+        ),
+    )
+    _write(tmp_path / "odylith/atlas/source/sample-flow.mmd", "flowchart TD\n  A[Start] --> B[Done]\n")
+    _write(tmp_path / "odylith/atlas/source/sample-flow.svg", "<svg></svg>\n")
+    _write(tmp_path / "odylith/atlas/source/sample-flow.png", "png bytes\n")
+
+    assert module.rendered_surface_health_issues(repo_root=tmp_path) == ()
+
+    (tmp_path / "odylith/radar/radar.html").write_text(
+        (
+            '<script src="stale/backlog-app.v1.js"></script>\n'
+            '<script src="backlog-payload.v1.js"></script>\n'
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "odylith/tooling-payload.v1.js").write_text(
+        f"window.__WRONG_TOOLING_DATA__ = {json.dumps(shell_payload, sort_keys=True)};\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "odylith/registry/registry-payload.v1.js").unlink()
+    (tmp_path / "odylith/atlas/source/sample-flow.png").unlink()
+    (tmp_path / "odylith/index.html").write_text(
+        "\n".join(
+            (
+                '<script id="toolingDashboardData" src="tooling-payload.v1.js?v=123"></script>',
+                '<script src="tooling-app.v1.js?v=123"></script>',
+                '<button type="button" data-tab="radar" role="tab">radar</button>',
+                '<iframe id="frame-radar"></iframe>',
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    issues = module.rendered_surface_health_issues(repo_root=tmp_path)
+
+    assert "rendered surface odylith/radar/radar.html does not load backlog-app.v1.js" in issues
+    assert "rendered surface payload odylith/registry/registry-payload.v1.js is missing or empty" in issues
+    assert "Atlas diagram odylith/atlas/source/sample-flow.mmd is missing rendered png output" in issues
+    assert "odylith/index.html shell payload is missing or invalid" in issues
+    assert "odylith/index.html is missing shell tab registry" in issues
+    assert "odylith/index.html is missing shell frame frame-registry" in issues
+
+
+def test_quality_verdict_rejects_surface_health_findings() -> None:
+    module = _module()
+
+    verdict = module.build_quality_verdict(
+        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        package=_empty_package(),
+        counts=_full_counts(module),
+        surface_issues=("rendered surface odylith/radar/radar.html does not load backlog-payload.v1.js",),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score == 6
+    assert verdict.scores["copy_semantic_clarity"] == 8
+    assert "rendered surface odylith/radar/radar.html does not load backlog-payload.v1.js" in verdict.issues
+
+
 def test_main_includes_rescue_smoke_by_default(monkeypatch, tmp_path: Path, capsys) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
@@ -517,34 +645,9 @@ def test_main_includes_rescue_smoke_by_default(monkeypatch, tmp_path: Path, caps
     monkeypatch.setattr(
         module,
         "run_matrix",
-        lambda **_kwargs: (
-            module.GreenfieldMatrixResult(
-                name="matrix case",
-                status="passed",
-                create_seconds=18.0,
-                counts=_full_counts(module),
-                quality=module.GreenfieldQualityVerdict(
-                    passed=True,
-                    issues=(),
-                    lenses={lens: True for lens in ("product_manager", "architect", "engineer", "domain_expert")},
-                    scores={dimension: 10 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
-                    score=10,
-                    score_explanation=("all brutal release-quality dimensions scored 10",),
-                ),
-            ),
-        ),
+        lambda **_kwargs: (_passing_matrix_result(module),),
     )
-    monkeypatch.setattr(
-        module,
-        "run_rescue_smoke",
-        lambda **_kwargs: module.GreenfieldRescueSmokeResult(
-            status="passed",
-            cli_create_seconds=44.0,
-            counts=_full_counts(module),
-            issues=(),
-            manifest={"repair_tier": "rescue"},
-        ),
-    )
+    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
 
     exit_code = module.main(
         [
@@ -572,3 +675,114 @@ def test_main_includes_rescue_smoke_by_default(monkeypatch, tmp_path: Path, caps
     assert payload["rescue_smoke"]["proof_scope"] == "synthetic_typed_probe_wiring_only"
     assert payload["rescue_smoke"]["natural_rescue_quality_proven"] is False
     assert "engine_manifest" not in payload["rescue_smoke"]
+    assert payload["browser_surface_proof"]["status"] == "skipped"
+
+
+def test_main_runs_browser_surface_proof_when_requested(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    matrix_kwargs: dict[str, object] = {}
+
+    def fake_run_matrix(**kwargs):  # noqa: ANN001
+        matrix_kwargs.update(kwargs)
+        return (_passing_matrix_result(module),)
+
+    monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
+    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--include-browser-proof",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "passed"
+    assert matrix_kwargs["include_browser_proof"] is True
+    assert payload["proof_scope"]["browser_surface_proof"] == "per_case_headless_generated_surface_state_matrix"
+    assert payload["browser_surface_proof"]["status"] == "passed"
+    assert payload["browser_surface_proof"]["case_count"] == 1
+
+
+def test_main_fails_when_requested_browser_surface_proof_fails(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    failing_result = module.GreenfieldMatrixResult(
+        name="matrix case",
+        status="passed",
+        create_seconds=18.0,
+        counts=_full_counts(module),
+        quality=module.GreenfieldQualityVerdict(
+            passed=True,
+            issues=(),
+            lenses={lens: True for lens in ("product_manager", "architect", "engineer", "domain_expert")},
+            scores={dimension: 10 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
+            score=10,
+            score_explanation=("all brutal release-quality dimensions scored 10",),
+        ),
+        browser_surface_issues=("browser surface casebook failed routed render",),
+        browser_surface_proof_attempted=True,
+    )
+    monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (failing_result,))
+    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--include-browser-proof",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert payload["status"] == "failed"
+    assert payload["browser_surface_proof"]["issues"] == [
+        "matrix case: browser surface casebook failed routed render"
+    ]
+
+
+def test_browser_surface_proof_summary_marks_unattempted_case_as_skipped() -> None:
+    module = _module()
+    result = module.GreenfieldMatrixResult(
+        name="failed create case",
+        status="failed",
+        create_seconds=3.0,
+        counts=module.GreenfieldArtifactCounts(),
+        quality=module.GreenfieldQualityVerdict(
+            passed=False,
+            issues=("post-confirm create exited with code 2",),
+            lenses={lens: False for lens in ("product_manager", "architect", "engineer", "domain_expert")},
+            scores={dimension: 0 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
+            score=0,
+            score_explanation=("completion scored 0/10",),
+        ),
+        create_returncode=2,
+    )
+
+    summary = module.browser_proof_summary((result,), include_browser_proof=True)
+
+    assert summary["status"] == "failed"
+    assert summary["cases"] == [
+        {
+            "name": "failed create case",
+            "status": "skipped",
+            "attempted": False,
+            "issues": ["browser proof skipped because post-confirm create did not pass"],
+        }
+    ]

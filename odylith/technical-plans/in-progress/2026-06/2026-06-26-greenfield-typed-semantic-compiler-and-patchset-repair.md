@@ -956,6 +956,48 @@ vocabulary, or degraded packages.
       (`100 passed`). Final proof still needs a rebuilt dist from the
       post-fix commit plus local release smoke and the twelve-case installed
       matrix against that exact dist.
+- [x] Hardened the generated-surface proof after brutal review found that the
+      first tightened matrix still under-proved release readiness. Greenfield
+      post-confirm now refreshes Casebook alongside Radar, Registry, Atlas,
+      Compass, and the tooling shell; local release smoke and matrix static
+      health checks require Casebook HTML, app, payload, shell tab, shell
+      frame, and shell payload hrefs. Static surface health now rejects stale
+      asset subpaths and malformed tooling-payload globals instead of only
+      matching script basenames. The browser proof lane moved from a separate
+      single generated repo to a per-case matrix option, and the maintained
+      `greenfield-post-confirm-matrix` plus shared release-candidate proof
+      wrappers request that browser lane by default. Project tab
+      implementation prompts now include the accepted first-path contract
+      directly so the operator-visible prompt cannot pass by workstream-title
+      overlap alone. Focused proof passed 23 checks covering matrix scoring,
+      release-wrapper wiring, stale surface detection, browser fail-closed
+      behavior, and first-path prompt fidelity. Final release proof still
+      requires a rebuilt dist and an environment with Playwright available so
+      the per-case browser lane can run rather than fail closed as unavailable.
+- [x] Closed the next browser-proof overclaim before accepting the rebuilt
+      dist. Independent review found the renamed state proof still treated
+      Atlas as a heading-only route check and allowed persisted matrix JSON to
+      mark browser proof passed for cases where post-confirm create failed
+      before browser proof ran. The release proof now checks Atlas generated
+      state in browser: generated diagram buttons, stat count, active diagram
+      ID, selected title, loaded generated SVG/PNG asset, and invalid diagram
+      recovery. Browser-proof summary moved to a dedicated owner that marks
+      requested-but-unattempted browser proof as skipped and failed. Focused
+      proof passed 24 checks, the live source browser proof reported zero
+      issues, and the matrix runner stayed below the 1200-line hard guard after
+      extraction. Final release proof still requires a rebuilt dist and full
+      installed matrix rerun against this checkpoint.
+- [x] Rebuilt and proved the local release dist after the Atlas-state proof
+      fix. Dist `odylith-local-release-0.1.15-atlas-state-proof` passed the
+      twelve-case installed post-confirm matrix with per-case generated browser
+      state proof. All standard cases scored 10/10 with zero issues, every
+      browser proof was attempted and passed, create timings were
+      20.660-23.125s with a 21.439s average, rendered surface counts were
+      stable at six surfaces, twelve payload assets, and twelve Atlas rendered
+      assets, matrix-owned temp directories were empty after cleanup, and the
+      proof JSON was persisted into the dist as
+      `greenfield-post-confirm-matrix.v1.json`. The installed auto-rescue smoke
+      passed in 27.280s and remains explicitly synthetic wiring-only evidence.
 - [ ] Remaining full-rescue release blocker: the installed auto-rescue smoke still proves
       rescue wiring through an exact internal probe, not a naturally occurring
       repairable package or semantic failure. Do not claim full release

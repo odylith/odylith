@@ -378,7 +378,7 @@ def test_greenfield_create_cli_applies_confirmed_prompt(tmp_path, monkeypatch, c
     assert rc == 0
     assert apply_ready_flags == [True]
     assert dashboard_calls
-    assert dashboard_calls[-1]["surfaces"] == ("radar", "registry", "atlas", "compass", "tooling_shell")
+    assert dashboard_calls[-1]["surfaces"] == ("radar", "registry", "atlas", "compass", "casebook", "tooling_shell")
     assert dashboard_calls[-1]["operation_label"] == "Greenfield apply dashboard visibility"
     assert "atlas_sync" not in dashboard_calls[-1]
     assert "greenfield create wrote confirmed proposal" in out
@@ -642,6 +642,9 @@ First version proves load a recipe, run its steps with closed-loop control, hit 
     assert "A finished safe state" not in first_path
     assert not re.search(r"\bOperator\b", first_path)
     assert "generic actor label" not in rendered
+    assert "Preserve this accepted first path:" in output
+    assert "Home cook picks a recipe" in output
+    assert "safe finished state" in output
 
 
 def test_greenfield_create_cli_bootstraps_missing_indexes_and_repairs_scaffold_language(
@@ -829,7 +832,7 @@ def test_greenfield_apply_json_output_is_machine_clean(tmp_path, monkeypatch, ca
     assert "tribunal" not in payload
     assert all("tribunal" not in line.casefold() for line in payload["atlas_scaffold_logs"])
     assert all("validation_gate" in row and "tribunal" not in row for row in payload["components"])
-    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"]
     assert payload["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
     assert payload["release_target"]["release_id"] == "release-commerce-launch-first"
     assert payload["operator_output"] == [

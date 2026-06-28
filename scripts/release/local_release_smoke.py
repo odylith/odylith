@@ -306,6 +306,7 @@ def _require_greenfield_surfaces(*, repo_root: Path, label: str) -> None:
         "odylith/registry/registry.html",
         "odylith/atlas/atlas.html",
         "odylith/compass/compass.html",
+        "odylith/casebook/casebook.html",
     ):
         if not (repo_root / relative_path).is_file():
             raise RuntimeError(f"{label} did not render {relative_path}")

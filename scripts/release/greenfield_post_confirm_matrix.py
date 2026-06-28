@@ -28,6 +28,14 @@ from local_release_smoke import _serve_directory  # noqa: E402
 from greenfield_rescue_smoke import POST_CONFIRM_RESCUE_BUDGET_SECONDS  # noqa: E402
 from greenfield_rescue_smoke import installed_auto_rescue_env  # noqa: E402
 from greenfield_rescue_smoke import rescue_cli_issues  # noqa: E402
+from greenfield_browser_proof_summary import browser_proof_summary  # noqa: E402
+from greenfield_browser_surface_proof import BROWSER_SURFACE_PROOF_SCOPE, browser_surface_proof_issues  # noqa: E402
+from greenfield_surface_health import INDEX_SHELL_TAB_CONTRACTS  # noqa: E402
+from greenfield_surface_health import REQUIRED_RENDERED_SURFACES  # noqa: E402
+from greenfield_surface_health import SURFACE_PAYLOAD_CONTRACTS  # noqa: E402
+from greenfield_surface_health import atlas_rendered_asset_count  # noqa: E402
+from greenfield_surface_health import rendered_surface_health_issues  # noqa: E402
+from greenfield_surface_health import rendered_surface_payload_count  # noqa: E402
 from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 from greenfield_post_confirm_matrix_cases import default_cases  # noqa: E402
 from odylith.runtime.artifact_quality.greenfield_package_quality import (  # noqa: E402
@@ -42,13 +50,6 @@ QUALITY_MATRIX_VERSION = "greenfield-post-confirm-installed-matrix-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 GENERATED_TEXT_SUFFIXES = {".html", ".js", ".json", ".jsonl", ".md", ".mmd"}
 RADAR_WORKSTREAM_SKIP_FILES = {"AGENTS.md", "INDEX.md", "README.md"}
-REQUIRED_RENDERED_SURFACES = (
-    "odylith/radar/radar.html",
-    "odylith/registry/registry.html",
-    "odylith/atlas/atlas.html",
-    "odylith/compass/compass.html",
-    "odylith/index.html",
-)
 
 @dataclass(frozen=True)
 class GreenfieldArtifactCounts:
@@ -62,6 +63,8 @@ class GreenfieldArtifactCounts:
     trace_nodes: int = 0
     trace_workstreams: int = 0
     rendered_surfaces: int = 0
+    rendered_surface_payloads: int = 0
+    atlas_rendered_assets: int = 0
     domain_term_hits: int = 0
     required_domain_terms: int = 0
     project_implementation_prompts: int = 0
@@ -97,6 +100,8 @@ class GreenfieldMatrixResult:
     create_seconds: float
     counts: GreenfieldArtifactCounts
     quality: GreenfieldQualityVerdict
+    browser_surface_issues: tuple[str, ...] = ()
+    browser_surface_proof_attempted: bool = False
     create_returncode: int = 0
 
     def to_dict(self) -> dict[str, Any]:
@@ -107,6 +112,8 @@ class GreenfieldMatrixResult:
             "create_returncode": self.create_returncode,
             "counts": self.counts.to_dict(),
             "quality": self.quality.to_dict(),
+            "browser_surface_issues": list(self.browser_surface_issues),
+            "browser_surface_proof_attempted": self.browser_surface_proof_attempted,
         }
 
 
@@ -144,6 +151,7 @@ def run_matrix(
     version: str,
     temp_parent: Path,
     cases: Sequence[GreenfieldMatrixCase] = (),
+    include_browser_proof: bool = False,
 ) -> tuple[GreenfieldMatrixResult, ...]:
     """Run the real installed greenfield create path for each matrix case."""
 
@@ -165,6 +173,7 @@ def run_matrix(
                 install_script=install_script,
                 base_url=base_url,
                 version=version,
+                include_browser_proof=include_browser_proof,
             )
             results.append(result)
             _cleanup_repo_before_next(repo_root)
@@ -213,6 +222,7 @@ def _run_case(
     install_script: Path,
     base_url: str,
     version: str,
+    include_browser_proof: bool = False,
 ) -> GreenfieldMatrixResult:
     repo_root.mkdir(parents=True)
     env = _local_release_env(base_url=base_url, version=version)
@@ -259,10 +269,16 @@ def _run_case(
     payload = _parse_json_object(create.stdout)
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    surface_issues = rendered_surface_health_issues(repo_root=repo_root)
+    browser_surface_proof_attempted = bool(include_browser_proof and create.returncode == 0)
+    browser_surface_issues = (
+        browser_surface_proof_issues(repo_root=repo_root) if browser_surface_proof_attempted else ()
+    )
     quality = build_quality_verdict(
         create_payload=payload,
         package=package,
         counts=counts,
+        surface_issues=(*surface_issues, *browser_surface_issues),
         create_returncode=create.returncode,
         create_seconds=create_seconds,
     )
@@ -272,6 +288,8 @@ def _run_case(
         create_seconds=create_seconds,
         counts=counts,
         quality=quality,
+        browser_surface_issues=browser_surface_issues,
+        browser_surface_proof_attempted=browser_surface_proof_attempted,
         create_returncode=create.returncode,
     )
 
@@ -346,6 +364,7 @@ def _run_rescue_smoke_case(
     payload = _parse_json_object(create.stdout)
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    surface_issues = rendered_surface_health_issues(repo_root=repo_root)
     issues = list(
         rescue_cli_issues(
             manifest=_as_mapping(payload.get("post_confirm_quality_manifest")),
@@ -362,6 +381,7 @@ def _run_rescue_smoke_case(
             expected_requested_tier="auto",
         )
     )
+    issues.extend(surface_issues)
     return _rescue_smoke_result(
         create_payload=payload,
         counts=counts,
@@ -442,6 +462,8 @@ def collect_artifact_counts(
         trace_nodes=len(trace.get("nodes") or []) if isinstance(trace.get("nodes"), list) else 0,
         trace_workstreams=len(trace.get("workstreams") or []) if isinstance(trace.get("workstreams"), list) else 0,
         rendered_surfaces=sum(1 for path in REQUIRED_RENDERED_SURFACES if _nonempty(repo_root / path)),
+        rendered_surface_payloads=rendered_surface_payload_count(repo_root),
+        atlas_rendered_assets=atlas_rendered_asset_count(repo_root),
         domain_term_hits=sum(1 for term in required_terms if term.casefold() in rendered_text),
         required_domain_terms=len(tuple(dict.fromkeys(term.casefold() for term in required_terms if str(term).strip()))),
         project_implementation_prompts=len(
@@ -449,18 +471,29 @@ def collect_artifact_counts(
         ),
     )
 
-
 def build_quality_verdict(
     *,
     create_payload: Mapping[str, Any],
     package: Any,
     counts: GreenfieldArtifactCounts,
+    surface_issues: Sequence[str] = (),
     create_returncode: int,
     create_seconds: float,
 ) -> GreenfieldQualityVerdict:
     manifest = _as_mapping(create_payload.get("post_confirm_quality_manifest"))
     manifest_lenses = _manifest_lenses(manifest)
-    rendered_issues = tuple(greenfield_rendered_package_quality_issues(package)) if create_returncode == 0 else ()
+    rendered_issues = (
+        tuple(
+            dict.fromkeys(
+                (
+                    *tuple(greenfield_rendered_package_quality_issues(package)),
+                    *tuple(str(issue).strip() for issue in surface_issues if str(issue).strip()),
+                )
+            )
+        )
+        if create_returncode == 0
+        else ()
+    )
     prompt_issues = tuple(issue for issue in rendered_issues if issue.startswith("Project implementation prompt "))
     issues = [
         *rendered_issues,
@@ -665,6 +698,8 @@ def _completion_issues(
         "trace nodes": counts.trace_nodes,
         "trace workstreams": counts.trace_workstreams,
         "rendered surfaces": counts.rendered_surfaces,
+        "rendered surface payloads": counts.rendered_surface_payloads,
+        "Atlas rendered diagram assets": counts.atlas_rendered_assets,
         "Project implementation prompts": counts.project_implementation_prompts,
     }
     minimums = _required_count_minimums()
@@ -862,6 +897,8 @@ def _required_count_minimums() -> dict[str, int]:
         "trace nodes": 12,
         "trace workstreams": 4,
         "rendered surfaces": len(REQUIRED_RENDERED_SURFACES),
+        "rendered surface payloads": len(SURFACE_PAYLOAD_CONTRACTS) * 2,
+        "Atlas rendered diagram assets": 8,
         "Project implementation prompts": 5,
     }
 
@@ -895,6 +932,8 @@ def _count_key(label: str) -> str:
         "trace nodes": "trace_nodes",
         "trace workstreams": "trace_workstreams",
         "rendered surfaces": "rendered_surfaces",
+        "rendered surface payloads": "rendered_surface_payloads",
+        "Atlas rendered diagram assets": "atlas_rendered_assets",
         "Project implementation prompts": "project_implementation_prompts",
     }.get(label, label)
 
@@ -1062,6 +1101,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         dest="include_rescue_smoke",
         help="Skip rescue smoke for local debugging only; this is not release proof.",
     )
+    parser.add_argument(
+        "--include-browser-proof",
+        action="store_true",
+        help="Run headless generated browser state proof against every generated matrix repo.",
+    )
     parser.add_argument("--json", action="store_true", dest="json_output")
     parser.add_argument(
         "--output-json",
@@ -1077,6 +1121,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         dist_dir=Path(args.dist_dir),
         version=str(args.version),
         temp_parent=Path(args.temp_parent),
+        include_browser_proof=bool(args.include_browser_proof),
     )
     rescue = (
         run_rescue_smoke(
@@ -1087,7 +1132,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         if bool(args.include_rescue_smoke)
         else None
     )
-    passed = all(result.quality.passed for result in results) and (rescue is None or rescue.passed)
+    browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
+    passed = (
+        all(result.quality.passed for result in results)
+        and (rescue is None or rescue.passed)
+        and browser_proof.get("status") != "failed"
+    )
     payload = {
         "version": QUALITY_MATRIX_VERSION,
         "status": "passed" if passed else "failed",
@@ -1095,8 +1145,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             "standard_path": "real_installed_greenfield_post_confirm_quality_matrix",
             "rescue_path": "synthetic_typed_probe_wiring_only",
             "natural_rescue_quality_proven": False,
+            "browser_surface_proof": (
+                BROWSER_SURFACE_PROOF_SCOPE if bool(args.include_browser_proof) else "not_requested"
+            ),
         },
         "results": [result.to_dict() for result in results],
+        "browser_surface_proof": browser_proof,
     }
     if rescue is not None:
         payload["rescue_smoke"] = rescue.to_dict()

@@ -1149,12 +1149,12 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert len(result["components"]) == 3
     assert len(result["diagrams"]) == 2
     assert result["validation_gate"]["status"] == "passed"
-    assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
+    assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"]
     assert result["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
     assert refresh_calls == [
         {
             "repo_root": tmp_path.resolve(),
-            "surfaces": ("radar", "registry", "atlas", "compass", "tooling_shell"),
+            "surfaces": ("radar", "registry", "atlas", "compass", "casebook", "tooling_shell"),
             "operation_label": "Greenfield apply dashboard visibility",
         }
     ]

@@ -264,10 +264,15 @@ Run the targets in this order.
 - `make release-preflight` must also fail closed unless the built local dist
   passes the installed greenfield post-confirm release matrix. That matrix is
   part of shared release proof, must cover at least ten high-variance standard
-  cases under the 60 second budget, must persist
+  cases under the 60 second budget, must run per-case headless generated
+  browser state proof for Radar, Registry, Atlas, Compass, Casebook, and
+  tooling-shell surfaces, including normal shell routes, invalid-query
+  recovery, and Casebook empty/filter fallback, must provision Playwright
+  Chromium through the maintained proof wrapper, must persist
   `greenfield-post-confirm-matrix.v1.json` in the dist directory, and must label
   installed rescue smoke as wiring-only unless a natural non-internal rescue
-  scenario is also proven.
+  scenario is also proven. `BROWSER_PROOF=0` is local debugging only and cannot
+  support release readiness.
 - `make release-preflight` also fails closed when release-facing security docs
   drift from the candidate version, including the repo-root GitHub security
   overview file and bundled security-posture mirrors.

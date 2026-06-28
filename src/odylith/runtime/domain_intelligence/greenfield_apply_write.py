@@ -245,7 +245,7 @@ def write_greenfield_proposal(
     }
 
 
-_GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "tooling_shell")
+_GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "casebook", "tooling_shell")
 
 
 def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
