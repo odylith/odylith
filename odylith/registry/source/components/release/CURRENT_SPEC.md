@@ -524,6 +524,14 @@ This section captures synchronized requirement and contract signals derived from
   high-variance creates scored hard 10/10 under 23s, and release readiness
   remains blocked until the rebuilt installable dist reruns the installed
   matrix with browser proof.
+- 2026-06-29: Proved the hardened matrix on fresh installed dist `a4ede761`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043)
+  Local release dist `odylith-local-release-0.1.15-a4ede761` passed the
+  maintained installed matrix with 13/13 standard cases at hard 10/10, zero
+  quality issues, per-case generated browser-state proof attempted and passed,
+  max create time 27.078s, clean temp cleanup, persisted matrix JSON, and
+  synthetic typed-probe rescue wiring smoke passing in 33.430s. This proves the
+  standard installed release matrix for this checkpoint; it does not convert
+  the synthetic rescue smoke into natural host-model semantic rescue proof.
 - 2026-06-29: Reopened greenfield release readiness after fresh installed variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`)
   Despite the earlier `13b796e9` installed matrix pass, a fresh ten-case installed variance run
   against the same dist failed three cases and cleaned its temp root: one

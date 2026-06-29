@@ -62,6 +62,14 @@ This section captures synchronized requirement and contract signals derived from
   scores, complete governed counts, zero issues, and temp cleanup. Installed
   consumer-lane proof from a rebuilt dist remains required before release
   readiness.
+- 2026-06-29: Proved the semantic-custody checkpoint in the installed consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043, D-045)
+  Fresh local dist `odylith-local-release-0.1.15-a4ede761` passed all 13
+  maintained standard greenfield post-confirm cases in 22.726-27.078s with
+  hard 10/10 scores, zero issues, per-case headless generated-surface browser
+  proof passing, complete governed artifacts, 5 Project implementation
+  prompts, all expert lenses passing, and clean temp cleanup. Synthetic
+  typed-probe rescue wiring smoke passed in 33.430s; natural host-model
+  semantic rescue quality remains a separate proof class.
 - 2026-06-29: Reopened installed release readiness after fresh recursive variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`)
   A fresh recursive variance pass against
   `odylith-local-release-0.1.15-13b796e9` ran ten

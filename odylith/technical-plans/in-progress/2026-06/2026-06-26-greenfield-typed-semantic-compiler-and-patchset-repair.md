@@ -322,6 +322,17 @@ vocabulary, or degraded packages.
   governance all completed under 23s with hard 10/10 scores, zero issues,
   complete Radar/Registry/Atlas/release/trace counts, and temp cleanup.
   Installed dist proof remains the release blocker.
+- 2026-06-29 installed checkpoint from pushed commit `a4ede761`: fresh local
+  dist `odylith-local-release-0.1.15-a4ede761` passed the maintained installed
+  greenfield post-confirm matrix. All 13 standard cases completed in
+  22.726-27.078s with hard 10/10 scores, zero quality issues, 4 Radar
+  workstreams, at least 3 Registry specs, 6 Atlas diagrams, project brief
+  evidence, 18+ trace nodes, 5 Project implementation prompts, and all
+  product-manager, architect, engineer, and domain-expert lenses passing.
+  Per-case headless generated-surface browser proof attempted and passed for
+  all 13 cases with zero browser issues, temp cleanup was clean, and synthetic
+  typed-probe rescue wiring smoke passed in 33.430s. Natural host-model
+  semantic rescue quality remains separate from this wiring proof.
 
 ## Implementation Slices
 
@@ -484,6 +495,11 @@ vocabulary, or degraded packages.
       10/10 scores, all expert lenses passing, governed writes, and temp
       cleanup. Fresh installed-dist proof is still pending before release
       readiness.
+- [x] Installed consumer-lane proof from pushed commit `a4ede761`: fresh dist
+      `odylith-local-release-0.1.15-a4ede761` passed 13 maintained standard
+      cases with hard 10/10 scores, zero issues, per-case browser proof
+      passing, clean temp cleanup, and synthetic rescue wiring smoke at
+      33.430s.
 - [ ] Unit tests for semantic IR construction, ambiguity decision ledger,
       rejected interpretations, projection isolation, and source-map targets.
 - [x] Unit tests proving typed findings classify failures and feed repair

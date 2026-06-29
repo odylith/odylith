@@ -10,7 +10,7 @@
     "explicit_event_count": 201,
     "mapped_workstream_evidence_count": 185,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 175,
+    "spec_history_event_count": 176,
     "status": "forensic_coverage_present",
     "timeline_event_count": 202
   },
@@ -22,23 +22,18 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_actor_led_prefix.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_actor_roles.py"
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 696,
+      "event_index": 697,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_actor_led_prefix.py +4 more",
-      "ts_iso": "2026-06-29T05:16:11-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-29T05:48:19-07:00",
       "workstreams": []
     },
     {

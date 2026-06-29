@@ -622,6 +622,18 @@
   comment response, apprenticeship credential readiness, and port berth carbon
   tariff. Release readiness remains blocked until a fresh built dist proves the
   same behavior in the installed consumer lane with browser proof.
+  Installed proof from pushed commit `a4ede761` then passed from fresh local
+  dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a4ede761`:
+  all 13 maintained standard cases passed with hard 10/10 scores, zero issues,
+  per-case headless generated-surface browser proof attempted and passed,
+  complete Radar/Registry/Atlas/project-brief/trace evidence, and clean temp
+  cleanup. Create timings were 22.726-27.078s, including the retained sparse
+  disclosure and quantum communication lab cases. Synthetic typed-probe rescue
+  wiring smoke passed in 33.430s with zero issues. This closes the installed
+  proof obligation for this checkpoint while preserving the existing guardrail
+  that natural host-model semantic rescue quality is not proven by synthetic
+  wiring smoke.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
 

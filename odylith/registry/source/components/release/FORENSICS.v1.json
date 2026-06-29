@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 131,
+    "explicit_event_count": 132,
     "mapped_workstream_evidence_count": 96,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 20,
+    "spec_history_event_count": 21,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 132
+    "timeline_event_count": 133
   },
   "name": "Release",
   "path_prefixes": [
@@ -47,6 +47,40 @@
     {
       "artifacts": [],
       "confidence": "high",
+      "event_index": 696,
+      "explicit_components": [
+        "odylith",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "odylith",
+        "release"
+      ],
+      "meaningful": false,
+      "summary": "B-142 installed proof passed from dist odylith-local-release-0.1.15-a4ede761: 13/13 standard greenfield creates scored 10/10 with zero issues, max create 27.078s, per-case browser proof passed, temp cleanup clean, and synthetic rescue wiring smoke passed in 33.430s.",
+      "ts_iso": "2026-06-29T05:48:45-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 698,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-29T05:48:19-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
       "event_index": 695,
       "explicit_components": [
         "release"
@@ -58,22 +92,6 @@
       "meaningful": false,
       "summary": "B-142 source-local greenfield checkpoint fixed actorless action-chain subject carry, shared actor-role custody, proof-ledger release-scope polarity, and matrix scorer public-artifact evidence; focused 95-test bundle, 52-test artifact-quality suite, and six source-local high-variance creates passed under 23s; rebuilt installed dist proof remains pending.",
       "ts_iso": "2026-06-29T05:16:31-07:00",
-      "workstreams": []
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/release/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 697,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "release"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T05:16:11-07:00",
       "workstreams": []
     },
     {
