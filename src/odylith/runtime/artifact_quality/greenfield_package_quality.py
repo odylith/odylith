@@ -21,7 +21,8 @@ from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import uniqu
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.value_coercion import normalize_string
-from odylith.runtime.domain_intelligence.greenfield_canonical_projection_facts import canonical_projection_text_values
+from odylith.runtime.domain_intelligence.greenfield_canonical_projection_facts import CanonicalProjectionFact
+from odylith.runtime.domain_intelligence.greenfield_canonical_projection_facts import canonical_projection_facts
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -494,18 +495,26 @@ def _has_clipped_terminal_key_label(chunk: str, tokens: Sequence[str]) -> bool:
 
 
 def _package_repetition_issues(package: Any, artifacts: list[RenderedArtifact]) -> list[str]:
-    allowed = _allowed_repetition_keys(package)
+    generic_allowed, canonical_allowed = _allowed_repetition_keys(package)
     occurrences: dict[str, list[tuple[RenderedArtifact, str]]] = {}
     for artifact in artifacts:
         chunks = _mermaid_label_chunks(artifact.text) if artifact.kind == "mermaid" else _repetition_chunks(artifact.text)
         for chunk in chunks:
             key = _sentence_key(chunk)
-            if key and not _allowed_repetition_chunk(chunk, key, allowed) and not _allowed_structured_repetition_key(key):
+            if (
+                key
+                and not _allowed_repetition_chunk(chunk, key, generic_allowed, canonical_allowed, artifact)
+                and not _allowed_structured_repetition_key(key)
+            ):
                 occurrences.setdefault(key, []).append((artifact, normalize_string(chunk)))
         if artifact.kind != "mermaid":
             for chunk in _markdown_section_body_chunks(artifact.text):
                 key = _repetition_key(chunk)
-                if key and not _allowed_repetition_chunk(chunk, key, allowed) and not _allowed_structured_repetition_key(key):
+                if (
+                    key
+                    and not _allowed_repetition_chunk(chunk, key, generic_allowed, canonical_allowed, artifact)
+                    and not _allowed_structured_repetition_key(key)
+                ):
                     occurrences.setdefault(key, []).append((artifact, normalize_string(chunk)))
     issues: list[str] = []
     for key, rows in occurrences.items():
@@ -601,14 +610,37 @@ def _allowed_structured_repetition_key(key: str) -> bool:
     )
 
 
-def _allowed_repetition_chunk(chunk: str, key: str, allowed: set[str]) -> bool:
-    if key in allowed:
+def _allowed_repetition_chunk(
+    chunk: str,
+    key: str,
+    generic_allowed: set[str],
+    canonical_allowed: Mapping[str, tuple[CanonicalProjectionFact, ...]],
+    artifact: RenderedArtifact,
+) -> bool:
+    if key in generic_allowed or _canonical_repetition_allowed(key, canonical_allowed, artifact):
         return True
     body = _section_body_for_repetition(chunk)
     if not body:
         return False
     body_key = _repetition_key(body)
-    return bool(body_key and body_key in allowed)
+    return bool(
+        body_key
+        and (
+            body_key in generic_allowed
+            or _canonical_repetition_allowed(body_key, canonical_allowed, artifact)
+        )
+    )
+
+
+def _canonical_repetition_allowed(
+    key: str,
+    canonical_allowed: Mapping[str, tuple[CanonicalProjectionFact, ...]],
+    artifact: RenderedArtifact,
+) -> bool:
+    for fact in canonical_allowed.get(key, ()):
+        if artifact.projection_id in fact.allowed_projection_ids:
+            return True
+    return False
 
 
 def _section_body_for_repetition(chunk: str) -> str:
@@ -643,7 +675,7 @@ def _package_component_identity_issues(package: Any) -> list[str]:
     return issues
 
 
-def _allowed_repetition_keys(package: Any) -> set[str]:
+def _allowed_repetition_keys(package: Any) -> tuple[set[str], dict[str, tuple[CanonicalProjectionFact, ...]]]:
     proposal = _as_mapping(getattr(package, "proposal", None))
     intent = _as_mapping(proposal.get("intent"))
     semantic_model = _as_mapping(proposal.get("semantic_model"))
@@ -662,7 +694,6 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
     values = [
         intent.get("title"),
         _actor_label_summary(text_values(intent.get("human_actors"))),
-        *canonical_projection_text_values(proposal),
         *_semantic_label_repetition_values(first_path),
         *[
             f"{component.get('component_id', '')} {component.get('label', '')}"
@@ -681,7 +712,17 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
             key = _repetition_key(chunk)
             if key:
                 keys.add(key)
-    return keys
+    return keys, _canonical_repetition_keys(proposal)
+
+
+def _canonical_repetition_keys(proposal: Mapping[str, Any]) -> dict[str, tuple[CanonicalProjectionFact, ...]]:
+    rows: dict[str, list[CanonicalProjectionFact]] = {}
+    for fact in canonical_projection_facts(proposal):
+        for chunk in _repetition_chunks(fact.text):
+            key = _repetition_key(chunk)
+            if key:
+                rows.setdefault(key, []).append(fact)
+    return {key: tuple(facts) for key, facts in rows.items()}
 
 
 def _semantic_label_repetition_values(first_path: Mapping[str, Any]) -> list[str]:

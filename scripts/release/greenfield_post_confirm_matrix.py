@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict, dataclass
 import json
 import os
 from pathlib import Path
@@ -35,6 +34,10 @@ from greenfield_surface_health import rendered_surface_payload_count  # noqa: E4
 from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 from greenfield_post_confirm_matrix_cases import default_cases  # noqa: E402
 from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
+from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
+from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
+from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
+from greenfield_matrix_types import GreenfieldRescueSmokeResult  # noqa: E402
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import (  # noqa: E402
     tribunal_visible_actor_quality_issues,
 )
@@ -54,98 +57,6 @@ QUALITY_MATRIX_VERSION = "greenfield-post-confirm-installed-matrix-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 GENERATED_TEXT_SUFFIXES = {".html", ".js", ".json", ".jsonl", ".md", ".mmd"}
 RADAR_WORKSTREAM_SKIP_FILES = {"AGENTS.md", "INDEX.md", "README.md"}
-@dataclass(frozen=True)
-class GreenfieldArtifactCounts:
-    radar_workstreams: int = 0
-    registry_component_specs: int = 0
-    atlas_mermaid_sources: int = 0
-    compass_records: int = 0
-    release_records: int = 0
-    program_records: int = 0
-    project_brief_records: int = 0
-    trace_nodes: int = 0
-    trace_workstreams: int = 0
-    rendered_surfaces: int = 0
-    rendered_surface_payloads: int = 0
-    atlas_rendered_assets: int = 0
-    domain_term_hits: int = 0
-    required_domain_terms: int = 0
-    project_implementation_prompts: int = 0
-
-    def to_dict(self) -> dict[str, int]:
-        return asdict(self)
-
-
-@dataclass(frozen=True)
-class GreenfieldQualityVerdict:
-    passed: bool
-    issues: tuple[str, ...]
-    lenses: Mapping[str, bool]
-    scores: Mapping[str, int]
-    score: int
-    score_explanation: tuple[str, ...]
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "passed": self.passed,
-            "issues": list(self.issues),
-            "lenses": dict(self.lenses),
-            "scores": dict(self.scores),
-            "score": self.score,
-            "score_explanation": list(self.score_explanation),
-        }
-
-
-@dataclass(frozen=True)
-class GreenfieldMatrixResult:
-    name: str
-    status: str
-    create_seconds: float
-    counts: GreenfieldArtifactCounts
-    quality: GreenfieldQualityVerdict
-    browser_surface_issues: tuple[str, ...] = ()
-    browser_surface_proof_attempted: bool = False
-    create_returncode: int = 0
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "name": self.name,
-            "status": self.status,
-            "create_seconds": self.create_seconds,
-            "create_returncode": self.create_returncode,
-            "counts": self.counts.to_dict(),
-            "quality": self.quality.to_dict(),
-            "browser_surface_issues": list(self.browser_surface_issues),
-            "browser_surface_proof_attempted": self.browser_surface_proof_attempted,
-        }
-
-
-@dataclass(frozen=True)
-class GreenfieldRescueSmokeResult:
-    status: str
-    cli_create_seconds: float
-    counts: GreenfieldArtifactCounts
-    issues: tuple[str, ...]
-    manifest: Mapping[str, Any]
-    proof_scope: str = "synthetic_typed_probe_wiring_only"
-    natural_rescue_quality_proven: bool = False
-    create_returncode: int = 0
-
-    @property
-    def passed(self) -> bool:
-        return self.status == "passed" and not self.issues
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "status": self.status,
-            "cli_create_seconds": self.cli_create_seconds,
-            "create_returncode": self.create_returncode,
-            "counts": self.counts.to_dict(),
-            "issues": list(self.issues),
-            "manifest": dict(self.manifest),
-            "proof_scope": self.proof_scope,
-            "natural_rescue_quality_proven": self.natural_rescue_quality_proven,
-        }
 
 
 def run_matrix(
@@ -183,7 +94,7 @@ def run_matrix(
     finally:
         server.shutdown()
         server.server_close()
-        _cleanup_smoke_temp_root(run_root)
+        _cleanup_run_root(run_root)
     return tuple(results)
 
 
@@ -215,7 +126,7 @@ def run_rescue_smoke(
     finally:
         server.shutdown()
         server.server_close()
-        _cleanup_smoke_temp_root(run_root)
+        _cleanup_run_root(run_root)
 
 
 def _run_case(
@@ -284,6 +195,7 @@ def _run_case(
         surface_issues=(*surface_issues, *browser_surface_issues),
         create_returncode=create.returncode,
         create_seconds=create_seconds,
+        create_detail=create.stderr or create.stdout,
     )
     return GreenfieldMatrixResult(
         name=case.name,
@@ -294,6 +206,9 @@ def _run_case(
         browser_surface_issues=browser_surface_issues,
         browser_surface_proof_attempted=browser_surface_proof_attempted,
         create_returncode=create.returncode,
+        failure_detail=_command_excerpt(create.stderr or create.stdout) if create.returncode else "",
+        create_stdout_excerpt=_command_excerpt(create.stdout) if create.returncode else "",
+        create_stderr_excerpt=_command_excerpt(create.stderr) if create.returncode else "",
     )
 
 
@@ -483,6 +398,7 @@ def build_quality_verdict(
     surface_issues: Sequence[str] = (),
     create_returncode: int,
     create_seconds: float,
+    create_detail: str = "",
 ) -> GreenfieldQualityVerdict:
     manifest = _as_mapping(create_payload.get("post_confirm_quality_manifest"))
     manifest_lenses = _manifest_lenses(manifest)
@@ -505,6 +421,7 @@ def build_quality_verdict(
     prompt_issues = tuple(issue for issue in rendered_issues if issue.startswith("Project implementation prompt "))
     issues = [
         *rendered_issues,
+        *_create_failure_detail_issues(create_returncode=create_returncode, create_detail=create_detail),
         *_manifest_issues(manifest),
         *_completion_issues(counts=counts, create_returncode=create_returncode, create_seconds=create_seconds),
     ]
@@ -601,6 +518,7 @@ def _failed_case(
         counts=counts,
         quality=quality,
         create_returncode=returncode,
+        failure_detail=_command_excerpt(detail),
     )
 
 
@@ -610,6 +528,14 @@ def _cleanup_repo_before_next(repo_root: Path) -> None:
         shutil.rmtree(repo_root, ignore_errors=True)
     if repo_root.exists():
         raise RuntimeError(f"temporary greenfield simulation repo was not removed: {repo_root}")
+
+
+def _cleanup_run_root(run_root: Path) -> None:
+    _cleanup_smoke_temp_root(run_root)
+    if run_root.exists():
+        shutil.rmtree(run_root, ignore_errors=True)
+    if run_root.exists():
+        raise RuntimeError(f"temporary greenfield matrix root was not removed: {run_root}")
 
 
 def _read_radar_workstreams(repo_root: Path) -> dict[str, str]:
@@ -703,6 +629,20 @@ def _completion_issues(
             f"domain term coverage too low: expected at least {domain_term_minimum}, found {counts.domain_term_hits}"
         )
     return tuple(issues)
+
+
+def _create_failure_detail_issues(*, create_returncode: int, create_detail: str) -> tuple[str, ...]:
+    if create_returncode == 0:
+        return ()
+    detail = _command_excerpt(create_detail)
+    return (f"post-confirm create failure detail: {detail}",) if detail else ()
+
+
+def _command_excerpt(value: str, limit: int = 4000) -> str:
+    text = str(value or "").strip()
+    if len(text) <= limit:
+        return text
+    return f"{text[:limit].rstrip()}...[truncated]"
 
 
 _QUALITY_SCORE_DIMENSIONS = (

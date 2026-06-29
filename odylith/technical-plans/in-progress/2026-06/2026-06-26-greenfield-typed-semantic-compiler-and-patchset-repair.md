@@ -1190,14 +1190,26 @@ vocabulary, or degraded packages.
       one high-variance source-local proof, not installed release readiness;
       broader high-variance source-local and rebuilt installed matrix proof
       remain required.
-- [ ] Typed projection provenance follow-up. Independent review found the
-      current canonical projection layer still flattens facts into allowed text
-      strings and permits raw accepted-intent repetition instead of validating
-      repeated copy against typed semantic node IDs, source paths, projection
-      IDs, and sanctioned surface roles. Do not extend that string allowance
-      pattern. The next architecture slice must preserve ProjectionFactIR
-      provenance into package quality and route unsanctioned projection repeats
-      as typed custody findings.
+- [x] Typed projection provenance follow-up. The retained quantum installed
+      matrix failure proved that flattened string allowance could reject a
+      legitimate source-grounded visible-result projection across sanctioned
+      surfaces. `CanonicalProjectionFact` now preserves source layer, semantic
+      node ID, source path, repair owner, and allowed projection IDs through
+      compact supporting-tail variants; package repetition scoring checks the
+      artifact projection against those typed facts instead of blindly allowing
+      accepted-intent text. The release matrix also persists failed-create
+      stdout/stderr/blocker excerpts before temp cleanup, keeps passed-case
+      failure evidence empty, suppresses local-server client-disconnect noise,
+      and asserts matrix root removal. Focused proof passed the
+      package-repetition suite (`10 passed`), installed-matrix unit suite
+      (`28 passed`), local-release smoke suite (`20 passed`), retained quantum
+      confirmed-create integration (`1 passed in 27.92s`), and the four rerun
+      transaction tests that exposed stale refresh-stub custody (`4 passed in
+      108.87s`). Fresh installed dist matrix proof passed afterward: thirteen
+      high-variance standard cases scored hard 10/10 in 22.615-28.216s with
+      browser proof passing for all thirteen, zero quality issues, clean temp
+      cleanup, quantum passing in 27.015s, sparse intent passing at 10/10, and
+      auto-rescue wiring smoke passing in 35.012s.
 - [x] Closed Tribunal visible-role scoring false positives without role-label
       regex stacking. Clinical-trial and biobank source-local simulations proved
       two distinct escapes: generated judgment roles could collapse to one proof
@@ -1262,8 +1274,10 @@ vocabulary, or degraded packages.
       first path, state object, proof boundary, and systems, then carry domain
       anchors as projection obligations. Do not repair this with
       disclosure-specific terms, keyword stuffing, or regex scoring.
-- [ ] Release posture remains unclaimed until these source-local fixes are
-      checked into governance, generated Atlas/Registry/Compass surfaces are
-      refreshed, and a fresh built installed dist passes the maintained
-      high-variance matrix with persisted readback proof under the standard and
-      rescue time budgets.
+- [x] Release posture for the CB-209 canonical-projection/sparse-intent
+      blockers is backed by a fresh installed matrix. The current working-tree
+      dist `odylith-local-release-0.1.15-typed-custody-test` passed the
+      maintained high-variance matrix with persisted readback proof under the
+      standard and rescue time budgets. This does not end broader greenfield
+      quality work; it clears the specific failure classes represented in this
+      matrix.

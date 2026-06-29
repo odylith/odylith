@@ -372,6 +372,74 @@
   confirmed-intent/matrix guard pack passed 27 tests in 14.07s. Release
   readiness is still not claimed until an installed high-variance matrix and
   fresh local dist proof pass with persisted readback.
+  Installed release-gate failure on 2026-06-29 from fresh dist
+  `odylith-local-release-0.1.15-b81deed4`: the maintained thirteen-case
+  installed matrix passed twelve standard cases with hard 10/10 scores in
+  22.600-27.724s and synthetic auto-rescue smoke in 34.547s, but quantum
+  communication lab failed before governed writes in 13.503s. A controlled
+  retained repro deleted after evidence capture reproduced the exact blocker:
+  `greenfield rendered package repeats noncanonical prose across 3 artifact(s)
+  and 3 occurrence(s): A researcher ends with a completed run that reports
+  whether the Bell inequality was violated, the QBER, and the established key`.
+  This is a generic canonical-projection custody failure: a source-grounded
+  first-path visible result can be repeated across sanctioned artifacts yet be
+  classified as noncanonical because the package repetition gate still reasons
+  over flattened strings rather than typed fact identity, semantic node,
+  projection role, and sanctioned surface. Do not fix this with quantum terms
+  or more phrase allowlists; fix the package readback to preserve canonical
+  semantic fact provenance through artifact collection and repetition scoring.
+  The same matrix exposed a release-proof failure mechanism: the persisted
+  JSON did not retain create stdout/stderr or final blockers for the failed
+  quantum case before deleting the temp repo, so failure diagnosis required a
+  manual repro. Future matrix failures must persist bounded blocker evidence
+  while still deleting temp repos.
+  The generic repair keeps semantic projection custody typed instead of adding
+  quantum wording or a repetition allowlist. `CanonicalProjectionFact` variants
+  now preserve source layer, semantic node ID, source path, repair owner, and
+  allowed projection IDs through compact supporting-tail variants; package
+  repetition scoring admits a repeated chunk only when the rendered artifact's
+  projection ID is sanctioned for that canonical fact. The release matrix now
+  persists bounded failed-create stdout/stderr/blocker excerpts and asserts
+  matrix-root cleanup after best-effort deletion. Source proof passed focused
+  package repetition (`10 passed`), installed-matrix unit proof (`27 passed`),
+  retained quantum confirmed-create integration (`1 passed in 27.92s`), and
+  the four transaction tests rerun after stale refresh-stub custody was made
+  explicit (`4 passed in 108.87s`). Release readiness remains unclaimed until
+  rebuilt installed matrix proof passes.
+  A follow-up JSON proof review found the first fix still populated
+  `failure_detail` for passed cases by copying create stdout unconditionally.
+  That proof-noise mechanism is now pinned so passed matrix cases keep
+  failure fields empty while failed cases retain blocker excerpts. The same
+  installed run exposed local HTTP server broken-pipe tracebacks from client
+  disconnects; `_QuietHandler` now suppresses broken-pipe/connection-reset
+  disconnect noise without swallowing CLI failures. Added proof:
+  installed-matrix unit suite `28 passed` and local-release smoke suite
+  `20 passed`.
+  Final rebuilt installed proof for the current working tree passed against
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-typed-custody-test`.
+  The maintained matrix produced `status=passed` with thirteen standard
+  high-variance cases at hard 10/10, browser proof passed for all thirteen,
+  no quality issues, no persisted failure excerpts on passed cases, and no
+  remaining Odylith temp repos under `/Users/freedom/mock`. Create timings
+  stayed under the standard budget at 22.615-28.216s; the retained quantum
+  case passed in 27.015s with five Radar workstreams, four Registry specs,
+  six Atlas diagrams, nineteen trace nodes, five Project implementation
+  prompts, and all PM/architect/engineer/domain-expert lenses passing. The
+  sparse confirmed-intent replay also passed at 10/10 with complete counts.
+  Auto-rescue wiring smoke passed in 35.012s. This proof clears the specific
+  CB-209 escaped blockers covered by this matrix, while broader quality work
+  continues to require fresh high-variance simulations for new failure classes.
+  Independent harness review on the same checkpoint found false-confidence
+  risks that must be fixed before any release-readiness claim: release-matrix
+  quality lenses still use producer-owned create payload previews for
+  validation, component, next-step, program, prewrite-safety, and release
+  judgments; domain-expert depth still relies heavily on lexical overlap;
+  Project prompt scoring can still award 10/10 from count plus structural
+  phrase gates; non-Atlas browser proof mostly checks shell routing and
+  headings instead of generated state; matrix-root cleanup is not asserted
+  after best-effort cleanup; and latency scoring times only create, not the
+  wider proof/readback/cleanup loop. These are proof architecture defects, not
+  generated-project defects.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout.
 

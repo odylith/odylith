@@ -438,6 +438,63 @@ def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -
     assert all(passed is False for passed in verdict.lenses.values())
 
 
+def test_quality_verdict_retains_post_confirm_failure_detail() -> None:
+    module = _module()
+
+    verdict = module.build_quality_verdict(
+        create_payload={},
+        package=_empty_package(),
+        counts=module.GreenfieldArtifactCounts(),
+        create_returncode=2,
+        create_seconds=14.0,
+        create_detail="greenfield post-confirm completion failed with 1 issue: repeated canonical projection",
+    )
+
+    assert not verdict.passed
+    assert (
+        "post-confirm create failure detail: greenfield post-confirm completion failed with 1 issue: "
+        "repeated canonical projection"
+    ) in verdict.issues
+
+
+def test_matrix_result_json_carries_bounded_failure_evidence() -> None:
+    module = _module()
+
+    result = module.GreenfieldMatrixResult(
+        name="failed case",
+        status="failed",
+        create_seconds=14.0,
+        counts=module.GreenfieldArtifactCounts(),
+        quality=module.GreenfieldQualityVerdict(
+            passed=False,
+            issues=("post-confirm create exited with code 2",),
+            lenses={lens: False for lens in ("product_manager", "architect", "engineer", "domain_expert")},
+            scores={dimension: 0 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
+            score=0,
+            score_explanation=("score forced to 0 because post-confirm did not commit governed records",),
+        ),
+        create_returncode=2,
+        failure_detail="typed blocker",
+        create_stdout_excerpt='{"error":"typed blocker"}',
+        create_stderr_excerpt="",
+    )
+
+    payload = result.to_dict()
+
+    assert payload["failure_detail"] == "typed blocker"
+    assert payload["create_stdout_excerpt"] == '{"error":"typed blocker"}'
+
+
+def test_matrix_result_json_keeps_passed_case_failure_evidence_empty() -> None:
+    module = _module()
+
+    payload = _passing_matrix_result(module).to_dict()
+
+    assert payload["failure_detail"] == ""
+    assert payload["create_stdout_excerpt"] == ""
+    assert payload["create_stderr_excerpt"] == ""
+
+
 def test_quality_verdict_requires_committed_write_transaction() -> None:
     module = _module()
     manifest = _passing_manifest()

@@ -100,6 +100,12 @@ def _previous_release_is_published(*, version: str) -> bool:
 
 
 class _QuietHandler(http.server.SimpleHTTPRequestHandler):
+    def handle(self) -> None:
+        try:
+            super().handle()
+        except (BrokenPipeError, ConnectionResetError):
+            return
+
     def log_message(self, format: str, *args) -> None:  # noqa: A003
         del format, args
 

@@ -196,6 +196,43 @@ def test_repetition_gate_allows_section_qualified_first_path_event_custody() -> 
     assert "repeats noncanonical prose" not in "\n".join(issues)
 
 
+def test_repetition_gate_allows_compact_visible_result_projection_from_semantic_custody() -> None:
+    raw_path = (
+        "A researcher opens the lab, defines a new E91 run, launches it against the hardware, "
+        "watches coincidences and the live CHSH value stream in, and ends with a completed run "
+        "that reports whether the Bell inequality was violated, the QBER, and the key established, "
+        "saved and viewable alongside prior runs."
+    )
+    compact_result = (
+        "A researcher ends with a completed run that reports whether the Bell inequality was violated, "
+        "the QBER, and the established key"
+    )
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {"state_object": "Communication run"},
+                "first_path_contract": {
+                    "raw_path": raw_path,
+                    "visible_result": (
+                        "the Bell inequality was violated, the QBER, and the established key, "
+                        "saved and viewable with prior runs"
+                    ),
+                },
+            }
+        },
+        backlog_result={},
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_preview={"first_path": compact_result},
+        next_steps_preview={"implementation_prompt": compact_result},
+        accepted_project_preview={"source_launch": {"implementation_prompt": compact_result}},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" not in "\n".join(issues)
+
+
 def test_repetition_gate_still_rejects_first_path_event_without_semantic_custody() -> None:
     event = "Publish a reviewed evacuation readiness state with accountable assignments"
     package = SimpleNamespace(
