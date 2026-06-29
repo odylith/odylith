@@ -2347,6 +2347,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   6 Atlas sources, and rendered the terminal node as `Record learner progress
   evidence`; the temp repo was deleted. Installed release proof remains pending
   on a rebuilt dist.
+- 2026-06-29 rebuilt installed proof on dist `597e5ca7` closed the terminal
+  sequence-label custody failure pending release. The exact failed
+  indigenous-language replay passed with hard 10/10 score, zero issues, complete
+  governed records, browser surface proof, and 24.223s create timing. The
+  maintained 13-case installed matrix passed 13/13 with hard 10/10 scores, zero
+  issues, browser proof, complete governed records, 21.790-26.657s create
+  timings, and synthetic typed-probe rescue smoke at 32.401s. A fresh 10-domain
+  variance matrix then passed 10/10 with hard 10/10 scores, zero issues, browser
+  proof, complete governed records, and 23.264-25.210s create timings, including
+  the previously failing indigenous-language case at 23.714s. Temp cleanup was
+  verified clean after the installed runs. Natural host-model semantic rescue
+  quality remains a separate unproven class; do not collapse that risk into the
+  synthetic rescue smoke result.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

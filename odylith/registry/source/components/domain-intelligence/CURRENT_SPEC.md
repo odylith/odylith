@@ -30,6 +30,9 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Source-fixed terminal sequence-label custody: flowchart terminal labels now fall back to the first-path action clause when result-object compaction drops distinctive accepted-event tail terms, Mermaid connector balancing keeps short noun heads readable, focused sequence proof passed, and the exact failed prompt replay wrote governed records in about 20s with temp cleanup.
   - Scope: B-142
   - Evidence: src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_terminal_labels.py, src/odylith/runtime/common/mermaid_text.py, tests/unit/runtime/test_greenfield_confirmed_diagrams.py, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
+- **2026-06-29 · Validation:** Rebuilt dist 597e5ca7 passed installed release proof after terminal sequence-label custody repair: exact failed-case replay passed, the maintained 13-case matrix passed 13/13, the fresh 10-domain variance matrix passed 10/10, browser proof passed, standard creates stayed under 27s, and synthetic typed-probe rescue passed in 32.401s; natural host-model rescue remains unproven separately.
+  - Scope: B-142
+  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-indigenous-replay-20260629-597e5ca7.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-matrix-20260629-597e5ca7.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-fresh-variance-20260629-597e5ca7.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
 - **2026-06-29 · Validation:** Fresh dist 21ed5b0a passed rebuilt installed proof after actor-boundary cleanup: 13/13 maintained cases and 4/4 custom closure cases scored hard 10/10 with zero issues, browser proof, complete governed readback, strict temp cleanup, and 22.975-28.762s maintained plus 25.191-27.711s custom create timings; synthetic typed-probe rescue wiring passed in 34.408s.
   - Scope: B-142
   - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-matrix.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-custom-variance-20260629-21ed5b0a.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
@@ -85,6 +88,13 @@ This section captures synchronized requirement and contract signals derived from
   and source-local create writes governed records in about 20s with temp
   cleanup. Mermaid connector balancing was also tightened so short noun heads
   do not create connector-led lines.
+  The rebuilt 597e5ca7 dist then passed the exact failed replay, the maintained
+  13-case installed matrix, and a fresh 10-domain installed variance matrix.
+  All standard creates stayed under 27s, all cases scored hard 10/10 with zero
+  issues and browser proof, synthetic typed-probe rescue stayed under 90s at
+  32.401s, and temp cleanup was verified clean. This validates the terminal
+  label custody fix for the tested standard path, while natural host-model
+  semantic rescue remains a distinct unproven proof class.
 - 2026-06-29: Source-fixed fresh custom installed actor-boundary failures. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
   A custom installed matrix against `odylith-local-release-0.1.15-72c100d1`
   passed eight non-reused domains but failed AI-eval red-team and airport

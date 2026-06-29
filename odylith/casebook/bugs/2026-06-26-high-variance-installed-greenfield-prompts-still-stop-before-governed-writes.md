@@ -1,6 +1,6 @@
 - Bug ID: CB-209
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-06-26
 
@@ -22,6 +22,8 @@
 
 - Environment Update: 2026-06-29 fresh variance after governance checkpoint 31cc84ef used the same rebuilt dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a and persisted proof at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-fresh-variance-20260629-31cc84ef.v1.json.
 
+- Environment Update: 2026-06-29 rebuilt local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7 installed into non-reused temporary consumer repos under /Users/freedom/mock. The maintained matrix proof is /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-matrix-20260629-597e5ca7.v1.json, the fresh variance proof is /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-fresh-variance-20260629-597e5ca7.v1.json, and the exact failed-case replay proof is /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-indigenous-replay-20260629-597e5ca7.v1.json.
+
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
 - Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts. The 3d13f434 installed matrix reopened the release gate again: 12 of 13 cases passed with hard 10/10 scores, browser proof, and complete records, but sparse disclosure confirmation scored 0/10 after governed writes because it produced only two Registry component specs, carried only three of four required domain anchors, and failed architect, engineer, and domain-expert matrix lenses.
@@ -34,7 +36,7 @@
 
 - Blast Radius: Any consumer greenfield prompt with overloaded safety/state/agent/model/release language that deterministic completion cannot safely normalize before final writes
 
-- SLO/SLA Impact: Reopened after the 31cc84ef fresh variance run. Nine new domains completed under 26s with governed records, but `indigenous language curriculum evidence circle` failed before governed writes in 21.296s with no Radar, Registry, Atlas, release, program, project brief, traceability, or browser proof records. Synthetic typed-probe rescue remained under the 90s rescue budget in the prior rebuilt proof; natural host-model semantic rescue remains a separate proof class.
+- SLO/SLA Impact: Fixed pending release by rebuilt dist 597e5ca7. The maintained installed matrix completed 13/13 standard cases with hard 10/10 scores, browser proof, zero issues, complete governed records, and 21.790-26.657s create timings. The fresh ten-domain variance matrix completed 10/10 cases with hard 10/10 scores, browser proof, zero issues, complete governed records, and 23.264-25.210s create timings, including the previously failing indigenous language curriculum evidence circle at 23.714s. The exact failed-case replay also passed at 24.223s. Synthetic typed-probe rescue passed in 32.401s under the 90s rescue budget; natural host-model semantic rescue remains a separate proof class.
 
 - Data Risk: Low: governed records are not written after failed create; product intent can remain in runtime files
 
@@ -816,8 +818,8 @@
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: Reopened after
-  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a`.
+- Version/Build: Fixed pending release in
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7`.
   The source fix splits actor path-role cleanup into a dedicated owner,
   preserves direct gerund actor-role rejection while allowing title-compound
   user roles, trims preposition/action-led actor fragments before projection,
@@ -845,8 +847,14 @@
   replay of the indigenous-language prompt returned 0 in about 20s, wrote
   4 Radar workstreams, 3 Registry specs, 6 Atlas sources, and rendered the
   First Path Sequence terminal node as `Record learner progress evidence`.
-  The source-local replay repo was deleted. Installed release readiness remains
-  blocked until a rebuilt dist reruns the fresh variance and maintained matrix.
+  The source-local replay repo was deleted. Rebuilt installed proof on
+  597e5ca7 passed the exact failed-case replay, the maintained 13-case matrix,
+  and a fresh 10-domain variance matrix. All standard creates stayed under 27s,
+  all cases scored hard 10/10 with zero issues, browser proof passed, synthetic
+  rescue smoke passed in 32.401s, and no matching temp roots remained under
+  `/Users/freedom/mock` after the runs. Natural host-model semantic rescue
+  quality is still not proven by this synthetic rescue smoke and must stay a
+  separate release-risk class.
 
 - Related Incidents/Bugs: CB-208
 
