@@ -5,6 +5,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import con
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
+from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import carried_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
@@ -18,6 +19,11 @@ FLOOD_SHELTER_PROMPT = (
     "Residents request beds, coordinators verify accessibility needs, shelters publish accepted assignments, "
     "and public officials track capacity evidence without exposing private details. "
     "The first release should handle one region, keep a clear audit trail, and defer predictive routing."
+)
+
+DECISION_EVIDENCE_PROMPT = (
+    "Create a greenfield proposal for a decision evidence room where multiple teams bring requests, "
+    "review supporting facts, decide what is ready, preserve rationale, and publish proof for later governance review."
 )
 
 
@@ -51,6 +57,39 @@ def test_first_path_steps_preserve_plural_actor_can_base_form() -> None:
     assert sequence_event_steps(steps[0]) == [steps[0]]
     assert not any("patients logs" in step.casefold() for step in steps)
     assert not [phrase for step in steps for phrase in modal_base_form_drift_phrases(step)]
+
+
+def test_first_path_steps_do_not_absorb_unknown_action_into_plural_actor_subject() -> None:
+    steps = first_path_steps(
+        "Multiple teams bring requests, review supporting facts, decide what is ready, "
+        "preserve rationale, and publish proof for later governance review."
+    )
+
+    assert carried_subject_prefix("Multiple teams bring requests") == "Multiple teams"
+    assert steps == (
+        "Multiple teams bring requests",
+        "Multiple teams review supporting facts",
+        "Multiple teams decide what is ready",
+        "Multiple teams preserve rationale",
+        "Multiple teams publish proof for later governance review",
+    )
+    assert not [
+        phrase
+        for step in steps
+        for phrase in modal_base_form_drift_phrases(step)
+    ]
+
+
+def test_first_path_steps_split_carried_subject_finite_group_action() -> None:
+    steps = first_path_steps(
+        "A case board member opens one agenda item, reviews the parcel map and zoning overlays, "
+        "reads the staff recommendation and impact summary, groups public comments by concern, "
+        "saves questions for staff, and sees claim-source traceability for the public record."
+    )
+
+    assert "A case board member reads the staff recommendation and impact summary" in steps
+    assert "A case board member groups public comments by concern" in steps
+    assert not any("summary, groups public comments" in step for step in steps)
 
 
 def test_subjectless_action_chains_do_not_invent_carried_subjects() -> None:
@@ -101,6 +140,43 @@ def test_confirmed_completion_repairs_modal_drift_from_recovered_host_guidance_i
     assert str(confirmed_intent["first_path"]).startswith("Residents request beds.")
     assert any(str(row).startswith("Residents:") for row in confirmed_intent["human_actors"])
 
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=str(confirmed_intent["prompt"]),
+        title=str(confirmed_intent["title"]),
+        observed_source={"source_posture": "confirmed_intent_only"},
+        release_selector="0.0.1",
+        confirmed_intent=confirmed_intent,
+    )
+    proposal = normalize_host_reasoned_proposal(proposal)
+    proposal = complete_confirmed_proposal(proposal, release_selector="0.0.1")
+
+    modal_issues = [
+        issue
+        for issue in generated_semantic_slop_issues(proposal, root="proposal")
+        if "modal/base-form grammar drift" in issue
+    ]
+    assert modal_issues == []
+
+
+def test_confirmed_completion_preserves_plural_actor_for_ambiguous_decision_evidence_prompt() -> None:
+    confirmation = build_product_intent_confirmation(
+        prompt=DECISION_EVIDENCE_PROMPT,
+        title="Decision Evidence Room",
+        repo_name="decision-evidence-room",
+        observed_source={"source_posture": "confirmed_intent_only"},
+    )
+    confirmation_text = format_product_intent_confirmation_text(confirmation)
+
+    assert "Multiple teams bring decides" not in confirmation_text
+    assert "Multiple teams bring preserves" not in confirmation_text
+    assert "Multiple teams bring publishes" not in confirmation_text
+    assert "Multiple teams decide what is ready" in confirmation_text
+
+    confirmed_intent = parse_confirmed_intent_text(
+        confirmation_text,
+        prompt=DECISION_EVIDENCE_PROMPT,
+        fallback_title="Decision Evidence Room",
+    )
     proposal = build_confirmed_greenfield_proposal(
         prompt=str(confirmed_intent["prompt"]),
         title=str(confirmed_intent["title"]),

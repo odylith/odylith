@@ -18,6 +18,8 @@
 
 - Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-33bdb122, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-265cc0cf, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e7bc3be3
 
+- Environment Update: 2026-06-29 fresh local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-af4117d8 installed into non-reused temporary consumer repos under /Users/freedom/mock.
+
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
 - Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts. The 3d13f434 installed matrix reopened the release gate again: 12 of 13 cases passed with hard 10/10 scores, browser proof, and complete records, but sparse disclosure confirmation scored 0/10 after governed writes because it produced only two Registry component specs, carried only three of four required domain anchors, and failed architect, engineer, and domain-expert matrix lenses.
@@ -676,12 +678,57 @@
   `. Or` fragment, and temp cleanup. Related unit-fixture hardening also made
   no-refresh create tests explicitly bypass rendered-surface custody; live
   source-local create still exercises the real rendered-custody path.
+  Fresh current-head installed variance on 2026-06-29 reopened release quality
+  again. The custom ten-case matrix against dist
+  `odylith-local-release-0.1.15-af4117d8` passed nine non-reused domains with
+  hard 10/10 scores and browser proof under 25 seconds, then failed the
+  intentionally ambiguous `decision evidence room` prompt before governed
+  writes in 25.708s. The no-write Product Intent Confirmation had already
+  malformed the accepted first path as `Multiple teams bring reviews supporting
+  facts`, `Multiple teams bring decides what is ready`, `Multiple teams bring
+  preserves rationale`, and `Multiple teams bring publishes proof...`.
+  Post-confirm correctly blocked those strings as modal/base-form grammar drift
+  at fourteen proposal paths and wrote no Radar, Registry, Atlas, release,
+  traceability, Project Brief, or implementation-prompt records. The failed
+  mechanism is generic subject-boundary custody: first-path subject carry
+  treated an unknown leading action as part of the actor phrase when a later
+  object token also looked like a known action verb. The fix must repair actor
+  subject boundary selection in the semantic parser, not weaken modal/base
+  gates, add rendered-prose repair, or add domain-specific vocabulary.
+  Source fix on 2026-06-29 repaired this failure class generically. The
+  carried-subject owner now trims a trailing unowned action-like tail only when
+  the remaining head is an actor-role subject, so `Multiple teams bring
+  requests` carries `Multiple teams` rather than `Multiple teams bring`.
+  Common action morphology now recognizes `bring/brings` and `group/groups`,
+  preventing accepted action chains from collapsing separate events into one
+  oversized semantic fact. Confirmed-intent completion also stops adding a
+  synthesized proof ledger when the operator already supplied two explicit
+  internal systems, because that previous padding could turn proof-boundary
+  prose into malformed component names. Focused proof passed the targeted
+  13-test subset in 78.18s, and the wider greenfield quality pack passed
+  201 tests in 242.43s. An exact source-local replay of the `decision evidence
+  room` prompt completed confirmed create in about 21s with final manifest
+  passed, zero issues, 4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams,
+  6 SVG renders, 6 PNG renders, accepted-project truth written, and verified
+  temp cleanup. Installed release readiness remains unclaimed until a fresh
+  rebuilt dist reruns the maintained and adversarial installed matrices.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: Latest recursive installed variance proof is red. Local release dist `odylith-local-release-0.1.15-13b796e9` still passed release smoke and the maintained thirteen-case matrix, but a fresh non-reused ten-case installed matrix failed three cases: one domain-anchor readback miss, one prewrite no-write semantic-slop failure, and one two-spec Registry topology failure. Treat the earlier green matrix as superseded for release-readiness claims until the platform and scorer fixes rerun under hardened proof. Synthetic rescue wiring remains proven at 34.261s, but natural host-model semantic rescue quality remains unclaimed because the rescue proof is a typed-probe wiring smoke, not an organically triggered model repair.
+- Version/Build: Latest installed proof is still red until rebuilt. Local
+  release dist `odylith-local-release-0.1.15-af4117d8` passed nine of ten
+  custom non-reused installed cases but failed `decision evidence room` before
+  governed writes. Current source now fixes the subject-boundary, finite-action
+  event split, explicit-system overcompletion, and no-refresh fixture custody
+  issues, with focused and broad source tests green plus exact source-local
+  replay green. Treat all earlier green installed matrices as superseded for
+  release-readiness claims until a fresh dist proves the fix under maintained
+  and adversarial installed matrices with browser proof and strict temp
+  cleanup. Synthetic rescue wiring remains proven at 34.261s, but natural
+  host-model semantic rescue quality remains unclaimed because the rescue proof
+  is a typed-probe wiring smoke, not an organically triggered model repair.
 
 - Related Incidents/Bugs: CB-208
 

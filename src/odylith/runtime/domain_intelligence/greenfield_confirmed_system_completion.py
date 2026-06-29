@@ -44,7 +44,7 @@ def completed_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
     completed = [row for row in completed if row]
     if not completed:
         completed = _derived_system_rows(intent, title=title)
-    elif len(completed) < 3:
+    elif len(completed) < 3 and len(rows) < 2:
         completed = _complete_sparse_system_topology(completed, intent, title=title)
     return list(unique_text(completed))[:8]
 

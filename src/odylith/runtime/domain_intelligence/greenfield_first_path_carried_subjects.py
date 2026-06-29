@@ -7,6 +7,7 @@ import re
 from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import third_person_action_verb
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import ACTOR_ROLE_NOUNS
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE
@@ -14,6 +15,28 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_common import cle
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
 
 _SPLIT_ACTION_VERB_PATTERN = action_verb_pattern(exclude={"keep", "keeps"})
+_SUBJECT_PREFIX_BOUNDARY_WORDS = frozenset(
+    {
+        "at",
+        "by",
+        "for",
+        "from",
+        "if",
+        "in",
+        "of",
+        "on",
+        "that",
+        "through",
+        "to",
+        "via",
+        "when",
+        "where",
+        "which",
+        "while",
+        "with",
+        "without",
+    }
+)
 
 
 def carried_subject_prefix(value: str) -> str:
@@ -29,8 +52,9 @@ def carried_subject_prefix(value: str) -> str:
         return ""
     for action in MATERIAL_ACTION_RE.finditer(text):
         prefix = text[: action.start()].strip(" .,;:")
-        if len(label_terms(prefix)) >= 2 and looks_like_actor_led_subject_prefix(prefix, text):
-            return prefix
+        subject = _actor_subject_prefix_candidate(prefix, full_text=text)
+        if subject:
+            return subject
     actor_action = re.match(
         rf"^(?P<subject>(?:(?:a|an|the|one|this|that|each|another)\s+)?"
         rf"[A-Za-z][A-Za-z0-9'-]*(?:\s+[A-Za-z][A-Za-z0-9'-]*){{1,5}}?)\s+"
@@ -44,6 +68,31 @@ def carried_subject_prefix(value: str) -> str:
     if match and MATERIAL_ACTION_RE.match(match.group("tail")):
         return match.group("subject")
     return ""
+
+
+def _actor_subject_prefix_candidate(prefix: str, *, full_text: str) -> str:
+    raw = clean_first_path_text(prefix).strip(" .,;:")
+    if not raw:
+        return ""
+    candidates = tuple(dict.fromkeys((_trim_trailing_unowned_action_tail(raw), raw)))
+    for candidate in candidates:
+        if len(label_terms(candidate)) >= 2 and looks_like_actor_led_subject_prefix(candidate, full_text):
+            return candidate
+    return ""
+
+
+def _trim_trailing_unowned_action_tail(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .,;:")
+    words = [word.strip(".,:;()[]{}") for word in text.split() if word.strip(".,:;()[]{}")]
+    if len(words) < 3:
+        return text
+    tail = words[-1].casefold()
+    if tail in ACTOR_ROLE_NOUNS or tail in _SUBJECT_PREFIX_BOUNDARY_WORDS:
+        return text
+    head_words = words[:-1]
+    if head_words[-1].casefold() not in ACTOR_ROLE_NOUNS:
+        return text
+    return " ".join(head_words).strip(" .,;:")
 
 
 def carried_subject_action_verb(subject_prefix: str, verb: str) -> str:

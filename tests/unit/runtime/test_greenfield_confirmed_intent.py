@@ -838,6 +838,11 @@ def test_confirmed_create_preserves_title_actors_and_domain_local_artifacts(tmp_
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
 
     intent = parse_confirmed_intent_text(
         """Civic Case Review Workbench — Product Intent Confirmation
@@ -956,6 +961,11 @@ def test_confirmed_create_self_repairs_multi_gate_evidence_review_shape(tmp_path
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
     intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(
@@ -1588,6 +1598,11 @@ def test_confirmed_greenfield_create_lifts_one_line_intent_file_before_post_conf
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
     prompt = (
         "Build a customer recovery desk for support leads to triage delayed orders, assign owners, "
         "repair customer trust, and prove every response path before launch."

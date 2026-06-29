@@ -4292,7 +4292,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_actor_roles.py": "bde742fb699761b7ef39a2ce75295a21472ef32ba99eb503ba32c6b532a317e6",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py": "08f7de03175dad43129cc5024f057e7d7e186e1de1cf59333b31ec9876cc3c03",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py": "de21b228c3daa14e176fa50cf7044869ca20d96738bbfee06fdb263cdd44e45e",
-        "src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py": "967b995aa271e3a4e2d8a197967eb7eb22d85deadbf24aea96e10fe1fb9d8388",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py": "fdc452b7c22bfbdef246ab83c31ff906e9ad57507923f6440085e4dd5e616513",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py": "7d52850d39fd7b3c91544c289a0dcc79674beb2abd74fd5a317b01cc658252b2",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_semantics.py": "700d01d85b4203b1792e06b991f1caee19779dbe631520e16101a59618bf7182",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py": "75b9d15062d79f4a280235eb4255b4fb6b4bd69be8195c2a686360221e7577ff",
@@ -4320,10 +4320,10 @@
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "57664efd8a6b44694eb2157bc99405c7bf261808b3becfa920fa2049dadc180f",
         "scripts/release/greenfield_post_confirm_matrix.py": "fc51ab23af93a06a8e68fd9580043ab8b59e9076bbcc649d78338994206dd9b3",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "aaa9419a4e7f7e2f89c41b78018378e74bb0fbc6e4ee177e294795a906177530",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "4521e329ec505b21943baf08b443e92b67e87d5a1acb3a02c3f66114e442e540",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "19f07ddfda21d61fb60009938c12791137ed0d1690637b83361c98629aac9aea",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "b323877001333c452f3c6811bd985a645d3a364d74ff3dcac1b8709413c53439",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "21ee51dddf2a0e938fc13e9792a7c6344428fcbcadfb55d165a34a348976798b"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "9feca0d5e32e450cada0ecc84b95a34331fbeeb145193848641d6ac411ab179c"
       },
       "render_source_fingerprint": "6922a00e760c0c77977a7e6e591a4a38da0ce9552adc68e6bdc911e47a74891b"
     },
@@ -4440,8 +4440,8 @@
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py"
       ],
-      "summary": "Shows how confirmed greenfield first-path text becomes semantic events, shared actor-role facts, explicit-subject action chains, external-boundary facts, connector-led object-tail custody, sequence-step canonical facts, action-complement and object-list tail custody, modal actor capability steps, provenance-aware Tribunal visible actors, Mermaid label custody, clause-local prose-shape checks with actor-role head custody, Radar state-boundary titles without pronoun tails, canonical projection fact custody, package repetition decisions, exact-path draft cleanup, and Project next-step prompts without rendered-prose semantic repair.",
-      "read_guide": "Start with the accepted first path, then follow it through shared actor-role custody, explicit-subject carried-action parsing, semantic event derivation, connector-led object-tail custody, sequence-step canonical fact projection, external-boundary custody, compact tail custody, Tribunal visible actor provenance, Mermaid label custody, clause-local prose-shape checks, state-boundary title projection, canonical projection facts, repetition gates, and exact artifact-draft cleanup. The diagram separates semantic or projection defects from mechanical duplicate/tail cleanup so repair authority stays with the source owner and scoring requires persisted readback.",
+      "summary": "Shows how confirmed greenfield first-path text becomes semantic events, shared actor-role facts, explicit-subject action chains, action-boundary custody for unknown leading actions and finite sibling actions, external-boundary facts, connector-led object-tail custody, sequence-step canonical facts, action-complement and object-list tail custody, modal actor capability steps, provenance-aware Tribunal visible actors, Mermaid label custody, clause-local prose-shape checks with actor-role head custody, Radar state-boundary titles without pronoun tails, canonical projection fact custody, package repetition decisions, exact-path draft cleanup, and Project next-step prompts without rendered-prose semantic repair.",
+      "read_guide": "Start with the accepted first path, then follow it through shared actor-role custody, explicit-subject carried-action parsing, action-boundary ownership for unknown leading actions and finite sibling action splits, semantic event derivation, connector-led object-tail custody, sequence-step canonical fact projection, external-boundary custody, compact tail custody, Tribunal visible actor provenance, Mermaid label custody, clause-local prose-shape checks, state-boundary title projection, canonical projection facts, repetition gates, and exact artifact-draft cleanup. The diagram separates semantic or projection defects from mechanical duplicate/tail cleanup so repair authority stays with the source owner and scoring requires persisted readback.",
       "components": [
         {
           "name": "Domain Intelligence",
@@ -4488,7 +4488,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py": "b6e2fb2ec193e6e57d007173056db8ee5555710bb6b6d47c057458930e1f5f5c",
         "src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py": "8b476a76d02e3b9af9148bfd58e203a3955b0a592cbae2e5377cef2e029b7ea0",
         "src/odylith/runtime/domain_intelligence/greenfield_actor_roles.py": "bde742fb699761b7ef39a2ce75295a21472ef32ba99eb503ba32c6b532a317e6",
-        "src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py": "967b995aa271e3a4e2d8a197967eb7eb22d85deadbf24aea96e10fe1fb9d8388",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py": "fdc452b7c22bfbdef246ab83c31ff906e9ad57507923f6440085e4dd5e616513",
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py": "75b9d15062d79f4a280235eb4255b4fb6b4bd69be8195c2a686360221e7577ff",
         "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py": "c04a4aace651840c97a7e1225c125bcfd0d29c8620772bffd08b3028f5ae34d0",
         "src/odylith/runtime/domain_intelligence/greenfield_first_path_step_roles.py": "d5814981f2ff10ce071bf7379613d5266140414acecd8cf6e5896c42094a2640",
@@ -4505,7 +4505,7 @@
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py": "595c6f27303766773011d61a8abc9630ac2f19d7ab5d510975a49ea41c14349f",
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py": "99bf357a12a505495fd64f842facc227df3ca789c0adcd32591e9f5dab731aff"
       },
-      "render_source_fingerprint": "73ae820da61072676ede2d5b66018d53e4b7d3407c052c5f4effb722f05cddb1"
+      "render_source_fingerprint": "9705143bd24701b260e42a434330601753cf06a7b9a91ff9c37f2c4da4d23768"
     },
     {
       "diagram_id": "D-046",

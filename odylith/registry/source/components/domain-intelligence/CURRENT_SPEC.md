@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Source-fixed the fresh `decision evidence room` post-confirm failure with generic first-path subject-boundary and finite-action event custody; targeted proof passed, the broader greenfield pack passed 201 tests, and exact source-local confirmed create wrote complete governed records in about 21s with zero manifest issues and temp cleanup.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py +4 more
 - **2026-06-29 · Implementation:** Extended canonical first-path projection custody to sequence-step variants after the request-handoff replay exposed repeated noncanonical prose blockers; focused package/sequence proof passed and live source-local create wrote 4 Radar, 3 Registry, 6 Atlas records in 19.609s with zero issues and no Or-fragment copy.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py +2 more
@@ -46,6 +49,21 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-29: Source-fixed the fresh ambiguous first-path subject-boundary failure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-045)
+  A custom installed matrix against `odylith-local-release-0.1.15-af4117d8`
+  passed nine cases, then failed `decision evidence room` before governed
+  writes because the first-path parser carried `Multiple teams bring` as the
+  actor and rendered sibling actions as `Multiple teams bring decides...`. The
+  source fix keeps plural actor heads separate from trailing unowned action
+  tails, recognizes general `bring/brings` and `group/groups` action
+  morphology, and preserves explicit two-system accepted intent without
+  padding it with a malformed proof-ledger row. Targeted proof passed
+  13 tests in 78.18s, the wider greenfield pack passed 201 tests in 242.43s,
+  compile proof passed, and exact source-local create completed in about 21s
+  with zero manifest issues, 4 Radar workstreams, 3 Registry specs, 6 Atlas
+  diagrams, SVG/PNG renders, accepted-project truth, and verified temp cleanup.
+  Installed release readiness remains unclaimed until a rebuilt dist reruns the
+  maintained and adversarial installed matrices.
 - 2026-06-29: Fixed three generic greenfield post-confirm failure classes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043, D-045)
   Fresh installed variance exposed three general platform defects. First-path
   carried-subject parsing no

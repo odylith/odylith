@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-06-29T14:37:16Z",
+  "generated_utc": "2026-06-29T15:36:07Z",
   "release_summary": {
     "catalog": [
       {
@@ -296,17 +296,17 @@
         "plan": {
           "created": "2026-06-26",
           "updated": "2026-06-29",
-          "all_total_tasks": 113,
-          "all_done_tasks": 92,
-          "total_tasks": 105,
-          "done_tasks": 92,
-          "progress_ratio": 0.8762,
+          "all_total_tasks": 115,
+          "all_done_tasks": 93,
+          "total_tasks": 107,
+          "done_tasks": 93,
+          "progress_ratio": 0.8692,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.8762,
-          "display_progress_label": "88% progress",
+          "display_progress_ratio": 0.8692,
+          "display_progress_label": "87% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 92/105",
+          "checklist_label": "Checklist 93/107",
           "next_tasks": [
             "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
             "Replace rendered-prose package repair with semantic or plan patch",
@@ -319,18 +319,18 @@
         "activity": {
           "24h": {
             "commit_count": 14,
-            "local_change_count": 0,
+            "local_change_count": 4,
             "file_touch_count": 199
           },
           "48h": {
             "commit_count": 28,
-            "local_change_count": 0,
+            "local_change_count": 4,
             "file_touch_count": 305
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-29T07:34:17-07:00",
+          "last_activity_iso": "2026-06-29T08:36:06-07:00",
           "age_days": 3,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -29739,17 +29739,17 @@
         "plan": {
           "created": "2026-06-26",
           "updated": "2026-06-29",
-          "all_total_tasks": 113,
-          "all_done_tasks": 92,
-          "total_tasks": 105,
-          "done_tasks": 92,
-          "progress_ratio": 0.8762,
+          "all_total_tasks": 115,
+          "all_done_tasks": 93,
+          "total_tasks": 107,
+          "done_tasks": 93,
+          "progress_ratio": 0.8692,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.8762,
-          "display_progress_label": "88% progress",
+          "display_progress_ratio": 0.8692,
+          "display_progress_label": "87% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 92/105",
+          "checklist_label": "Checklist 93/107",
           "next_tasks": [
             "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
             "Replace rendered-prose package repair with semantic or plan patch",
@@ -29762,18 +29762,18 @@
         "activity": {
           "24h": {
             "commit_count": 14,
-            "local_change_count": 0,
+            "local_change_count": 4,
             "file_touch_count": 199
           },
           "48h": {
             "commit_count": 28,
-            "local_change_count": 0,
+            "local_change_count": 4,
             "file_touch_count": 305
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-29T07:34:17-07:00",
+          "last_activity_iso": "2026-06-29T08:36:06-07:00",
           "age_days": 3,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -59183,17 +59183,17 @@
       "plan": {
         "created": "2026-06-26",
         "updated": "2026-06-29",
-        "all_total_tasks": 113,
-        "all_done_tasks": 92,
-        "total_tasks": 105,
-        "done_tasks": 92,
-        "progress_ratio": 0.8762,
+        "all_total_tasks": 115,
+        "all_done_tasks": 93,
+        "total_tasks": 107,
+        "done_tasks": 93,
+        "progress_ratio": 0.8692,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.8762,
-        "display_progress_label": "88% progress",
+        "display_progress_ratio": 0.8692,
+        "display_progress_label": "87% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 92/105",
+        "checklist_label": "Checklist 93/107",
         "next_tasks": [
           "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
           "Replace rendered-prose package repair with semantic or plan patch",
@@ -59206,18 +59206,18 @@
       "activity": {
         "24h": {
           "commit_count": 14,
-          "local_change_count": 0,
+          "local_change_count": 4,
           "file_touch_count": 199
         },
         "48h": {
           "commit_count": 28,
-          "local_change_count": 0,
+          "local_change_count": 4,
           "file_touch_count": 305
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-29T07:34:17-07:00",
+        "last_activity_iso": "2026-06-29T08:36:06-07:00",
         "age_days": 3,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -93314,17 +93314,17 @@
       "plan": {
         "created": "2026-06-26",
         "updated": "2026-06-29",
-        "all_total_tasks": 113,
-        "all_done_tasks": 92,
-        "total_tasks": 105,
-        "done_tasks": 92,
-        "progress_ratio": 0.8762,
+        "all_total_tasks": 115,
+        "all_done_tasks": 93,
+        "total_tasks": 107,
+        "done_tasks": 93,
+        "progress_ratio": 0.8692,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.8762,
-        "display_progress_label": "88% progress",
+        "display_progress_ratio": 0.8692,
+        "display_progress_label": "87% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 92/105",
+        "checklist_label": "Checklist 93/107",
         "next_tasks": [
           "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
           "Replace rendered-prose package repair with semantic or plan patch",
@@ -93337,18 +93337,18 @@
       "activity": {
         "24h": {
           "commit_count": 14,
-          "local_change_count": 0,
+          "local_change_count": 4,
           "file_touch_count": 199
         },
         "48h": {
           "commit_count": 28,
-          "local_change_count": 0,
+          "local_change_count": 4,
           "file_touch_count": 305
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-29T07:34:17-07:00",
+        "last_activity_iso": "2026-06-29T08:36:06-07:00",
         "age_days": 3,
         "eta_days": 1,
         "eta_confidence": "high"

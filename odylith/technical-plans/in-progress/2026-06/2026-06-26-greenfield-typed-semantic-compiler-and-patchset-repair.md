@@ -1488,3 +1488,26 @@ vocabulary, or degraded packages.
       proof is skipped. Fix the platform and proof harness generally, then
       rerun fresh non-reused installed simulations under the hardened scorer
       before any release-ready claim.
+- [x] Source-fixed the 2026-06-29 `decision evidence room` installed failure
+      without domain vocabulary or rendered-prose repair.
+      The failure was generic first-path subject-boundary and event-split
+      custody: `Multiple teams bring requests` was misread as actor phrase
+      `Multiple teams bring`, then sibling actions rendered as `Multiple teams
+      bring decides...`; a separate civic first-path case showed
+      `groups public comments` being absorbed into the prior `reads...`
+      semantic event. The source fix keeps plural actor heads separate from
+      trailing unowned action tails, adds only general action morphology for
+      `bring/brings` and `group/groups`, and stops sparse system completion
+      from synthesizing a proof ledger when two explicit internal systems are
+      already accepted. Targeted proof passed 13 tests in 78.18s, the broader
+      greenfield pack passed 201 tests in 242.43s, compile proof passed for
+      the touched runtime modules, and an exact source-local propose plus
+      confirmed-create replay completed in about 21 seconds with zero manifest
+      issues, 4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams, rendered
+      SVG/PNG assets, accepted-project truth, and verified temp cleanup.
+- [ ] Rebuild the installable dist from the current source and rerun installed
+      maintained plus adversarial high-variance simulations.
+      Do not claim release readiness from the source-local proof alone. The
+      rebuilt installed proof must show complete governed writes, hard 10/10
+      scores, browser proof, zero final quality issues, strict temp cleanup,
+      and standard-path latency under 60s for normal cases.

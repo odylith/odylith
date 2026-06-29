@@ -530,7 +530,7 @@ def _expanded_system_description(candidate: str, *, context_text: str, rationale
     subject = _clean(candidate).strip(" .").lower()
     clause = _best_context_clause(candidate, context_text)
     if clause:
-        return f"Owns {subject} and keeps relevant behavior visible: {_brief_clause(clause, limit=240)}"
+        return f"Owns {subject}. Relevant behavior: {_brief_clause(clause, limit=240)}"
     if rationale:
         return f"Defines how {subject} receives input, changes state, produces output, and exposes review evidence"
     return f"Defines how {subject} receives input, changes state, produces output, and exposes review evidence"
