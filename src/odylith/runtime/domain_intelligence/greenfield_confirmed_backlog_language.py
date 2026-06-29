@@ -389,6 +389,41 @@ def _trim_incomplete_terminal_phrase(value: str) -> str:
     words = text.split()
     while words:
         tail = words[-1].casefold().strip(".,;:'")
+        previous = words[-2].casefold().strip(".,;:'") if len(words) >= 2 else ""
+        if tail in {"accepted", "complete", "safe", "trusted", "visible"} and previous in {
+            "is",
+            "are",
+            "be",
+            "being",
+            "been",
+            "was",
+            "were",
+        }:
+            break
+        if tail not in _INCOMPLETE_TERMINAL_WORDS and tail not in _INCOMPLETE_TERMINAL_MODIFIERS:
+            break
+        words.pop()
+    text = " ".join(words).strip(" .,;:")
+    text = re.sub(
+        r"\b(?:result|proof|record|state|decision|status|output|handoff|review)\s+(?:is|are|was|were|be|being|been)$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .,;:")
+    words = text.split()
+    while words:
+        tail = words[-1].casefold().strip(".,;:'")
+        previous = words[-2].casefold().strip(".,;:'") if len(words) >= 2 else ""
+        if tail in {"accepted", "complete", "safe", "trusted", "visible"} and previous in {
+            "is",
+            "are",
+            "be",
+            "being",
+            "been",
+            "was",
+            "were",
+        }:
+            break
         if tail not in _INCOMPLETE_TERMINAL_WORDS and tail not in _INCOMPLETE_TERMINAL_MODIFIERS:
             break
         words.pop()

@@ -4,7 +4,8 @@ flowchart LR
       accepted_path["Accepted first path<br/>operator-confirmed behavior"]
       semantic_contract["SemanticModelIR first-path contract<br/>events, visible result,<br/>proof obligations"]
       external_boundary["External boundary facts<br/>explicit system rows,<br/>inferred interaction,<br/>or deferred fixture/manual boundary"]
-      sequence_owner["Sequence step owner<br/>keeps coordinated object lists<br/>on the prior action"]
+      sequence_owner["Sequence step owner<br/>keeps object-list tails,<br/>evidence noun compounds,<br/>and named result-view steps distinct"]
+      visible_result_owner["Visible-result owner<br/>quoted/bounded result objects<br/>outrank broad display lists"]
       modal_owner["Modal actor owner<br/>plural actors keep can<br/>plus base action"]
     end
 
@@ -37,7 +38,8 @@ flowchart LR
     accepted_path --> semantic_contract
     semantic_contract --> external_boundary
     external_boundary --> sequence_owner
-    sequence_owner --> modal_owner
+    sequence_owner --> visible_result_owner
+    visible_result_owner --> modal_owner
     modal_owner --> radar_projection
     modal_owner --> atlas_projection
     modal_owner --> next_step_prompts
@@ -60,7 +62,7 @@ flowchart LR
     classDef prose fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;
     classDef projection fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;
     classDef repair fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;
-    class accepted_path,semantic_contract,external_boundary,sequence_owner,modal_owner intent;
+    class accepted_path,semantic_contract,external_boundary,sequence_owner,visible_result_owner,modal_owner intent;
     class shape_checks,gerund_owner,structural_filter,repetition_gate prose;
     class radar_projection,atlas_projection,mermaid_label_custody,next_step_prompts,tribunal_actors,package_findings projection;
     class semantic_plan_patch,exact_draft_cleanup,final_gate,governed_write repair;

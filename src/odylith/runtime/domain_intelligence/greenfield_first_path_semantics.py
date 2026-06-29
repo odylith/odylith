@@ -17,6 +17,15 @@ from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
+    carried_subject_action_verb as _carried_subject_action_verb,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
+    carried_subject_prefix as _carried_subject_prefix,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
+    looks_like_plural_subject as _looks_like_plural_subject,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment as _action_chain_fragment
@@ -44,6 +53,12 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import drop_release_proof_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
+from odylith.runtime.domain_intelligence.greenfield_first_path_visible_results import (
+    prefer_visible_result_object as _prefer_visible_result_object,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_visible_results import (
+    starts_with_result_object_modifier as _starts_with_result_object_modifier,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language as _normalize_visible_result_language
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -287,14 +302,21 @@ def _visible_outcome(steps: Sequence[str]) -> str:
             continue
         if _looks_like_visible_result(step):
             cleaned = _clean_visible_result_phrase(step) or step
+            action_visible = _visible_action_clause(cleaned)
+            object_visible = _visible_result_object(cleaned)
+            visible_choice = (
+                object_visible
+                if _prefer_visible_result_object(object_visible, action_visible)
+                else action_visible or object_visible or cleaned
+            )
             if re.search(r"\b(?:compare|compares|display|displays|find|finds|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|update|updates|view|views|receive|receives)\b", cleaned, flags=re.IGNORECASE) and not re.search(
                 r"\b(?:accept|accepts|click|clicks|choose|chooses|dismiss|dismisses)\b",
                 cleaned,
                 flags=re.IGNORECASE,
             ):
-                preferred.append(_visible_action_clause(cleaned) or _visible_result_object(cleaned) or cleaned)
+                preferred.append(visible_choice)
             else:
-                fallback.append(_visible_action_clause(cleaned) or _visible_result_object(cleaned) or cleaned)
+                fallback.append(visible_choice)
     if preferred:
         return _sentence_case(_normalize_visible_result_language(preferred[0]) or preferred[0])
     if fallback:
@@ -650,6 +672,8 @@ def _continues_subject_object_list(value: str, current: str) -> bool:
     core = " ".join(words[1:]).strip()
     if not core:
         return False
+    if _starts_new_action_clause(core):
+        return False
     if _leading_subject_prefix(core) or _carried_subject_prefix(core):
         return False
     if _connector_core_starts_action_clause(core):
@@ -682,39 +706,11 @@ def _connector_core_starts_action_clause(value: str) -> bool:
     }
 
 
-def _carried_subject_action_verb(subject_prefix: str, verb: str) -> str:
-    subject = _clean(subject_prefix).casefold()
-    if subject in {"they", "we"} or _looks_like_plural_subject(subject):
-        return base_action_clause(verb)
-    return third_person_action_verb(verb)
-
-
-def _looks_like_plural_subject(value: str) -> bool:
-    words = [word.strip(".,:;").casefold() for word in _clean(value).split() if word.strip(".,:;")]
-    if not words:
-        return False
-    head = words[-1]
-    return len(head) > 3 and head.endswith("s") and not head.endswith(("ics", "ss", "us"))
-
-
-def _carried_subject_prefix(value: str) -> str:
-    subject = _leading_subject_prefix(value)
-    if subject:
-        return subject
-    text = _clean(value).strip()
-    pronoun = re.match(r"^(?P<subject>they|we|he|she|it)\s+(?P<tail>.+)$", text, flags=re.IGNORECASE)
-    if pronoun and _MATERIAL_ACTION_RE.match(pronoun.group("tail")):
-        raw_subject = pronoun.group("subject").casefold()
-        return raw_subject[:1].upper() + raw_subject[1:]
-    match = re.match(r"^(?P<subject>[A-Z][A-Za-z0-9_-]{2,})\s+(?P<tail>.+)$", text)
-    if match and _MATERIAL_ACTION_RE.match(match.group("tail")):
-        return match.group("subject")
-    return ""
-
-
 def _starts_new_action_clause(value: str) -> bool:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not text:
+        return False
+    if _starts_with_result_object_modifier(text):
         return False
     temporal_action = re.match(
         r"^(?:at|after|before|during|on|when)\s+[A-Za-z0-9][A-Za-z0-9 '/-]{1,40}?\s+"
@@ -795,9 +791,4 @@ def _sentence_case(value: str) -> str:
 def _unique(values: Sequence[str]) -> list[str]:
     return list(unique_text(_clean(value) for value in values))
 
-__all__ = [
-    "FirstPathModel",
-    "first_path_model",
-    "first_path_steps",
-    "material_first_path_action",
-]
+__all__ = ["FirstPathModel", "first_path_model", "first_path_steps", "material_first_path_action"]

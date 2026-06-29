@@ -410,7 +410,8 @@ def _description(row: Mapping[str, Any]) -> str:
 def _scrub_description_scaffold(value: str) -> str:
     text = _clean(value)
     text = re.sub(r"\bRelevant\s+behavior\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
-    text = re.sub(r"\bRationale(?:\s*:\s*.+)?$", "", text, flags=re.IGNORECASE).strip()
+    text = re.sub(r"(?:^|(?<=[.;])\s*)Rationale\s*:\s*.+$", "", text, flags=re.IGNORECASE).strip()
+    text = re.sub(r"^Rationale$", "", text, flags=re.IGNORECASE).strip()
     return text.rstrip(" .")
 
 

@@ -130,18 +130,26 @@ def _rebalance_dangling_line_breaks(lines: list[str], *, width: int) -> list[str
         words = rebalanced[index].split()
         if len(words) < 2:
             continue
-        tail = words[-1].casefold().strip(".,;:")
-        if tail not in _DANGLING_LINE_TAILS:
+        split_index = _dangling_tail_start(words)
+        if split_index >= len(words):
             continue
-        head = " ".join(words[:-1]).strip(" ,;:")
+        head = " ".join(words[:split_index]).strip(" ,;:")
         if not head:
             continue
-        next_line = f"{words[-1]} {rebalanced[index + 1]}".strip()
+        tail_phrase = " ".join(words[split_index:]).strip()
+        next_line = f"{tail_phrase} {rebalanced[index + 1]}".strip()
         if len(next_line) > max(width + 12, len(rebalanced[index + 1])):
             continue
         rebalanced[index] = head
         rebalanced[index + 1] = next_line
     return rebalanced
+
+
+def _dangling_tail_start(words: Sequence[str]) -> int:
+    index = len(words)
+    while index > 0 and words[index - 1].casefold().strip(".,;:") in _DANGLING_LINE_TAILS:
+        index -= 1
+    return index
 
 
 def wrap_sequence_participant(value: object) -> str:

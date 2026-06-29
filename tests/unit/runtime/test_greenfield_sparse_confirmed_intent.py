@@ -94,6 +94,16 @@ Evidence custody and embargo decision.
     manifest = payload["post_confirm_quality_manifest"]
     assert manifest["status"] == "passed"
     assert manifest["write_transaction"]["status"] == "committed"
+    structured_intent = json.loads(
+        (tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json").read_text(encoding="utf-8")
+    )
+    assert "embargo" in structured_intent["proof_boundary"].casefold()
+    assert "trusted" in structured_intent["proof_boundary"].casefold()
+    assert not structured_intent["proof_boundary"].casefold().endswith(("result is.", "before."))
+    assert len(structured_intent["internal_systems"]) >= 3
+    assert any("embargo" in row.casefold() for row in structured_intent["internal_systems"])
+    assert len(payload["components"]) >= 3
+    assert any("embargo" in str(row.get("label", "")).casefold() for row in payload["components"])
     accepted = json.loads((tmp_path / "odylith/runtime/source/accepted-project.v1.json").read_text(encoding="utf-8"))
     encoded = json.dumps(accepted)
     assert "understand Report" not in encoded
@@ -104,6 +114,7 @@ Evidence custody and embargo decision.
         if "review-log" in str(path)
     ]
     assert review_specs
+    assert len(list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))) >= 3
     rendered_review_log = "\n".join(review_specs)
     assert "owns review log.." not in rendered_review_log
     assert "Relevant behavior." not in rendered_review_log

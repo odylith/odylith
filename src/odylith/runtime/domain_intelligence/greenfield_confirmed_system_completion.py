@@ -44,6 +44,8 @@ def completed_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
     completed = [row for row in completed if row]
     if not completed:
         completed = _derived_system_rows(intent, title=title)
+    elif len(completed) < 3:
+        completed = _complete_sparse_system_topology(completed, intent, title=title)
     return list(unique_text(completed))[:8]
 
 
@@ -181,6 +183,74 @@ def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     return [f"{_title_case_system_name(name)} — {description.rstrip('.')}" for name, description in zip(names, descriptions)]
 
 
+def _complete_sparse_system_topology(rows: list[str], intent: Mapping[str, Any], *, title: str) -> list[str]:
+    """Add semantic obligations when explicit systems under-model the first release."""
+
+    completed = list(rows)
+    candidates = _sparse_system_obligation_rows(intent, title=title)
+    for candidate in candidates:
+        if len(completed) >= 3:
+            break
+        if not _system_obligation_duplicates(candidate, completed):
+            completed.append(candidate)
+    return completed
+
+
+def _sparse_system_obligation_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
+    state = state_label(_clean(intent.get("state_object")), title=title)
+    proof = _clean(intent.get("proof_boundary"))
+    first_path = _clean(intent.get("first_path"))
+    proof_clause = _short(proof, fallback="release proof", limit=160).rstrip(".")
+    path_clause = _short(first_path, fallback=f"the accepted {title.lower()} path", limit=180).rstrip(".")
+    rows: list[str] = []
+    if proof_clause:
+        rows.append(
+            f"{_proof_system_name(proof_clause, title=title)} — maintains reviewable proof covering {_definite_clause(proof_clause)} for the accepted first path, including decision status, blocked reason, evidence source, and handoff context"
+        )
+    if state:
+        rows.append(
+            f"{_title_case_system_name(state)} State Ledger — maintains {state.lower()} status, ownership, evidence links, version history, and recovery context for {path_clause}"
+        )
+    rows.append(
+        f"{_focus_system_name(_focus_label(title), 'release guardrail')} — confirms the accepted path result, unresolved blockers, and first-release limits before broader rollout"
+    )
+    return rows
+
+
+def _proof_system_name(proof_clause: str, *, title: str) -> str:
+    proof = _clean(proof_clause).strip(" .")
+    if not proof:
+        return _focus_system_name(_focus_label(title), "proof ledger")
+    name = _title_case_system_name(_short(proof, fallback="release proof", limit=80).rstrip("."))
+    if re.search(r"\b(?:proof|evidence|ledger|log|record|review|decision|custody)\b", name, flags=re.IGNORECASE):
+        return name
+    return f"{name} Proof Ledger"
+
+
+def _definite_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "the accepted proof boundary"
+    first = text.split(maxsplit=1)[0].strip(".,;:").casefold()
+    if first in {"a", "an", "the", "this", "that", "their", "one"}:
+        return text
+    return f"the {text}"
+
+
+def _system_obligation_duplicates(candidate: str, rows: list[str]) -> bool:
+    candidate_terms = _semantic_terms(candidate.split("—", 1)[0])
+    if not candidate_terms:
+        return True
+    for row in rows:
+        row_terms = _semantic_terms(row.split("—", 1)[0])
+        if not row_terms:
+            continue
+        overlap = candidate_terms & row_terms
+        if len(overlap) >= min(3, len(candidate_terms)):
+            return True
+    return False
+
+
 def _focus_system_name(focus: str, suffix: str) -> str:
     focus_text = _clean(focus)
     focus_terms = {term.casefold().strip(".,;:") for term in focus_text.split() if term.strip(".,;:")}
@@ -246,7 +316,7 @@ def _system_label(row: str, *, title: str) -> str:
 
 
 def _title_case_system_name(value: str) -> str:
-    text = _clean(value)
+    text = _clean(value).strip(" .,:;")
     text = re.sub(
         r"^Reviewer\s+(?=(?:Dashboard|Export|Surface|View|Portal|Report|Package)\b)",
         "Review ",

@@ -1135,6 +1135,14 @@ This section captures synchronized requirement and contract signals derived from
   active host model supplies the reasoning in host sessions.
 - Apply must require `--confirm` and write only through owned Radar, Registry,
   Atlas, and release-targeting paths.
+- First-path visible-result custody is split from the parser into focused
+  owners: carried-subject helpers preserve actor-led action chains, visible
+  result disambiguation keeps adjective/noun result objects from becoming
+  actions, sequence steps carry evidence/proof/record noun compounds on the
+  prior action, and named view/readout/report tails become their own Atlas
+  result steps. Radar rationale and Project source-launch prompts must compose
+  punctuation-neutral fragments instead of joining modal actor capabilities to
+  finite product follow-up clauses.
 
 ## Research Basis
 
@@ -1171,6 +1179,12 @@ confirmation gates, topology requirements, apply schema, and durable memory.
 - `tests/unit/runtime/test_greenfield_host_routing.py`
 - `tests/unit/runtime/test_greenfield_intelligence_schema.py`
 - `tests/unit/runtime/test_greenfield_atlas_contract.py`
+- `tests/unit/runtime/test_greenfield_sparse_confirmed_intent.py`
+- `tests/unit/runtime/test_greenfield_confirmed_surfaces.py`
+- `tests/unit/runtime/test_greenfield_general_artifact_quality.py`
+- `tests/unit/runtime/test_greenfield_post_confirm_slop_regressions.py`
+- `tests/unit/runtime/test_greenfield_live_simulation_regressions.py`
+- `tests/unit/install/test_greenfield_post_confirm_matrix.py`
 - `tests/unit/runtime/test_tribunal_patch_planner.py`
 - `tests/unit/runtime/test_odylith_reasoning.py`
 - `tests/unit/runtime/test_tribunal_engine.py`

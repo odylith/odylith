@@ -136,7 +136,7 @@ def build_source_launch_handoff(
 
     context = source_launch_context if isinstance(source_launch_context, Mapping) else {}
     product = _clean_title(title)
-    path = _first_path_phrase(first_path)
+    path = _prompt_clause(_first_path_phrase(first_path), fallback="the accepted first product path", limit=360)
     actor = _primary_actor(actors)
     participant = _secondary_actor(actors)
     capabilities = _capability_phrase(components=components, first_path=first_path)

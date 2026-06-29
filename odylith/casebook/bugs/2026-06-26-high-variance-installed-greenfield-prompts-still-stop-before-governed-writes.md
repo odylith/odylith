@@ -332,6 +332,46 @@
   from actor, first-path, state-object, proof-boundary, and system facts, and
   carry required domain anchors as auditable projection obligations rather than
   substring afterthoughts.
+  Follow-up source-local repair on 2026-06-29 fixed the sparse topology escape
+  without disclosure-specific terms: terse proof boundaries are now preserved as
+  grammatical definite proof clauses, explicit two-system confirmations are
+  topped up by generic state/proof/release obligations, and component labels
+  trim terminal punctuation before Registry projection. Focused sparse proof
+  passed, including governed writes, at least three Registry component specs,
+  retained `embargo` proof language, and no clipped `result is` / `before`
+  tails. The same pass deliberately widened validation and found the release
+  posture is still not green: the component/general quality pack failed 10
+  tests and the post-confirm slop/live pack failed 3 tests. Durable failure
+  classes now visible before the next release claim are: platform helper
+  domain-vocabulary leakage, first-path sequence labels drifting from expected
+  action fragments, clipped public copy in quantum-lab Atlas previews, repeated
+  noncanonical release prose, rendered Atlas custody mismatch in a test path,
+  source file size pressure in `greenfield_first_path_semantics.py`, a
+  component-contract phrase normalization regression, and Project
+  host-handoff prompt quality not being rejected by position. These are not
+  reasons to weaken gates or add domain regex; they prove the next fix must
+  stay in typed semantic projection, sequence-step ownership, prompt-quality
+  collection, and governed surface custody owners before rebuilding a dist.
+  Follow-up source-local repair on 2026-06-29 resolved that widened failure
+  bundle without project-domain vocabulary or rendered-prose semantic repair.
+  The durable failed mechanisms were: carried-subject parsing lost middle
+  actor actions such as legal review, sparse result-object tails such as
+  progress evidence were conjugated as verbs, quoted visible-result clauses
+  such as clear "what changed" insights lost priority to broad dashboard
+  lists, Radar rationale joined modal actor capability and finite product
+  follow-up in one comma chain, Project handoff prompts treated sentence
+  fragments as already-punctuated sentences, and Atlas sequence labels either
+  swallowed named result-view tails or rendered dangling connector fragments.
+  The fix moved carried-subject and visible-result disambiguation into focused
+  first-path owners, made sequence projection distinguish evidence noun
+  compounds from named view/readout/report result steps, rendered Radar
+  follow-up as separate clauses, and normalized source-launch prompt paths as
+  punctuation-neutral fragments. Proof after the repair: the full
+  post-confirm slop/live pack passed 119 tests in 260.92s, the component and
+  general artifact-quality pack passed 91 tests in 521.34s, and the sparse
+  confirmed-intent/matrix guard pack passed 27 tests in 14.07s. Release
+  readiness is still not claimed until an installed high-variance matrix and
+  fresh local dist proof pass with persisted readback.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout.
 

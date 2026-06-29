@@ -301,13 +301,44 @@ def _complete_core_fields(intent: dict[str, Any], *, title: str) -> None:
             f"{primary} {_modal_action_clause(action)}. The product uses the accepted information to return {outcome}, explains any missing input, and leaves the result reviewable."
         )
     if _word_count(proof) < CORE_FIELD_MIN_WORDS["proof_boundary"]:
-        action = first_path_action_phrase(first_path or story, fallback="complete the first useful product action", max_fragments=1)
-        outcome = _visible_outcome_phrase(first_path or story, proof=proof).rstrip(" .") or "a clear, useful result"
-        outcome_action = _outcome_action_phrase(outcome)
-        intent["proof_boundary"] = _sentence(
-            f"The first release works when a representative user can {action}, the product confirms the user can {outcome_action}, and missing or invalid information leaves a clear correction path instead of a misleading result. "
-            f"It must not claim live integrations, broad automation, regulated correctness, or production-scale operation beyond the confirmed {title.lower()} boundary."
-        )
+        if _concise_proof_boundary_is_meaningful(proof):
+            intent["proof_boundary"] = _sentence(_completed_concise_proof_boundary(proof, title=title))
+        else:
+            action = first_path_action_phrase(first_path or story, fallback="complete the first useful product action", max_fragments=1)
+            outcome = _visible_outcome_phrase(first_path or story, proof=proof).rstrip(" .") or "a clear, useful result"
+            outcome_action = _outcome_action_phrase(outcome)
+            intent["proof_boundary"] = _sentence(
+                f"The first release works when a representative user can {action}, the product confirms the user can {outcome_action}, and missing or invalid information leaves a clear correction path instead of a misleading result. "
+                f"It must not claim live integrations, broad automation, regulated correctness, or production-scale operation beyond the confirmed {title.lower()} boundary."
+            )
+
+
+def _concise_proof_boundary_is_meaningful(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text:
+        return False
+    if _word_count(text) < 3 or _word_count(text) > 12:
+        return False
+    return len(_semantic_terms(text)) >= 3
+
+
+def _completed_concise_proof_boundary(value: str, *, title: str) -> str:
+    proof = _clean(value).strip(" .")
+    proof_clause = _definite_proof_clause(proof[:1].lower() + proof[1:] if proof else "")
+    return (
+        f"Reviewable proof covers {proof_clause} for the accepted {title.lower()} path, "
+        "and missing or invalid information is resolved before the result is trusted."
+    )
+
+
+def _definite_proof_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "the accepted proof boundary"
+    first = text.split(maxsplit=1)[0].strip(".,;:").casefold()
+    if first in {"a", "an", "the", "this", "that", "their", "one"}:
+        return text
+    return f"the {text}"
 
 
 def _first_path_is_complete_enough(value: str) -> bool:

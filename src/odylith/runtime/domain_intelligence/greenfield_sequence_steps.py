@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
+from odylith.runtime.domain_intelligence.greenfield_first_path_visible_results import starts_with_result_object_modifier
 from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import drop_release_proof_control_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_steps
@@ -26,6 +27,38 @@ ACTION_VERB_PATTERN = action_verb_pattern()
 _SPLIT_ACTION_VERB_PATTERN = action_verb_pattern(
     exclude={"keep", "keeps", "schedule", "schedules", "surface", "surfaces"}
 )
+_SUBJECT_ACTION_PREFIX = (
+    rf"(?:(?:the|a|an|this|that|one)\s+)?"
+    rf"(?:[A-Za-z][A-Za-z0-9/-]*\s+){{1,5}}(?:{ACTION_VERB_PATTERN})\b"
+)
+_VISIBLE_RESULT_ACTION_BASES = {
+    "accepted": "Accept",
+    "approved": "Approve",
+    "captured": "Capture",
+    "confirmed": "Confirm",
+    "created": "Create",
+    "generated": "Generate",
+    "published": "Publish",
+    "recorded": "Record",
+    "saved": "Save",
+    "submitted": "Submit",
+    "verified": "Verify",
+}
+_VISIBLE_RESULT_OBJECT_NOUNS = {
+    "decision",
+    "evidence",
+    "history",
+    "proof",
+    "readout",
+    "record",
+    "report",
+    "result",
+    "results",
+    "status",
+    "summary",
+    "timeline",
+    "view",
+}
 
 
 def sequence_event_steps(
@@ -63,7 +96,8 @@ def _semantic_event_steps(semantic_model: Mapping[str, Any] | None) -> list[str]
             text = _normalize_event_step(text)
             text = _anchor_visible_result_step(text, visible_result)
             steps.append(text)
-    return _dedupe_steps(drop_release_proof_control_steps(_expand_compound_steps(steps)))
+    rows = _dedupe_steps(drop_release_proof_control_steps(_expand_compound_steps(steps)))
+    return _ensure_concise_visible_result_step(rows, visible_result)
 
 
 def _is_generated_floor_event(value: str, visible_result: str) -> bool:
@@ -77,6 +111,80 @@ def _is_generated_floor_event(value: str, visible_result: str) -> bool:
         f"confirm proof for {target}".casefold(),
         f"keep {target} visible for review".casefold(),
     }
+
+
+def _ensure_concise_visible_result_step(steps: list[str], visible_result: str) -> list[str]:
+    rows = list(steps)
+    if len(rows) >= 3:
+        return rows
+    candidate = _concise_visible_result_step(_terminal_result_object_phrase(rows)) or _concise_visible_result_step(visible_result)
+    if not candidate:
+        return rows
+    candidate_key = _step_key(candidate)
+    if any(_step_key(row) == candidate_key for row in rows):
+        return rows
+    if len(rows) == 1:
+        rows.append("Review blockers, evidence, and next step")
+    rows.append(candidate)
+    return rows
+
+
+def _terminal_result_object_phrase(steps: list[str]) -> str:
+    if not steps:
+        return ""
+    tail = _visible_result_tail_object(steps[-1])
+    if not tail:
+        return ""
+    return tail if _step_key(tail) != _step_key(steps[-1]) else ""
+
+
+def _concise_visible_result_step(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return ""
+    first, separator, rest = text.partition(" ")
+    action = _VISIBLE_RESULT_ACTION_BASES.get(first.casefold().strip(".,;:"))
+    if not action and separator:
+        action = _default_visible_result_action(text)
+        rest = text
+    if not action or not separator:
+        return ""
+    result_object = _visible_result_tail_object(rest)
+    return f"{action} {result_object}".strip() if result_object else ""
+
+
+def _default_visible_result_action(value: str) -> str:
+    tail = _visible_result_tail_object(value)
+    if not tail:
+        return ""
+    words = [word.strip(".,:;()[]{}").casefold() for word in tail.split() if word.strip(".,:;()[]{}")]
+    if not words:
+        return ""
+    if words[-1] in {"evidence", "history", "proof", "record"}:
+        return "Record"
+    if words[-1] in {"readout", "report", "result", "results", "status", "summary", "timeline", "view"}:
+        return "Show"
+    return ""
+
+
+def _visible_result_tail_object(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return ""
+    parts = [
+        part.strip(" .,;:")
+        for part in re.split(r",\s+(?:and\s+)?|\s+and\s+(?=[^,]{1,80}$)", text)
+        if part.strip(" .,;:")
+    ]
+    for part in reversed(parts or [text]):
+        words = [word.strip(".,:;()[]{}").casefold() for word in part.split() if word.strip(".,:;()[]{}")]
+        if words and words[-1] in _VISIBLE_RESULT_OBJECT_NOUNS:
+            return part
+    return text if len(label_terms(text)) <= 5 else ""
+
+
+def _step_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", _compact_text(value).casefold()).strip()
 
 
 def _drop_launcher_only_steps(values: list[str]) -> list[str]:
@@ -207,7 +315,7 @@ def _first_path_steps(value: str) -> list[str]:
         split_steps.extend(
             part.strip(" .")
             for part in re.split(
-                rf",\s+(?=(?:and\s+)?(?:(?:{_SPLIT_ACTION_VERB_PATTERN})\b|(?:(?:the|a|an)\s+)?[A-Za-z][A-Za-z0-9/-]*\s+(?:{ACTION_VERB_PATTERN})\b))",
+                rf",\s+(?=(?:and\s+)?(?:(?:{_SPLIT_ACTION_VERB_PATTERN})\b|{_SUBJECT_ACTION_PREFIX}))",
                 step,
                 flags=re.IGNORECASE,
             )
@@ -219,7 +327,7 @@ def _first_path_steps(value: str) -> list[str]:
         expanded_steps.extend(
             part.strip(" .")
             for part in re.split(
-                rf"\s+and\s+(?=(?:(?:{_SPLIT_ACTION_VERB_PATTERN})\b|(?:(?:the|a|an)\s+)?[A-Za-z][A-Za-z0-9/-]*\s+(?:{ACTION_VERB_PATTERN})\b))",
+                rf"\s+and\s+(?=(?:(?:{_SPLIT_ACTION_VERB_PATTERN})\b|{_SUBJECT_ACTION_PREFIX}))",
                 step,
                 flags=re.IGNORECASE,
             )
@@ -238,7 +346,7 @@ def _expand_compound_steps(values: list[str]) -> list[str]:
         parts = [
             part.strip(" .")
             for part in re.split(
-                rf",\s+(?=(?:and\s+)?(?:(?:{_SPLIT_ACTION_VERB_PATTERN})\b|(?:(?:the|a|an|this|that)\s+)?[A-Za-z][A-Za-z0-9/-]*\s+(?:{ACTION_VERB_PATTERN})\b))",
+                rf",\s+(?=(?:and\s+)?(?:(?:{_SPLIT_ACTION_VERB_PATTERN})\b|{_SUBJECT_ACTION_PREFIX}))",
                 _compact_text(value),
                 flags=re.IGNORECASE,
             )
@@ -249,7 +357,7 @@ def _expand_compound_steps(values: list[str]) -> list[str]:
             split_parts.extend(
                 segment.strip(" .")
                 for segment in re.split(
-                    rf"\s+and\s+(?=(?:(?:{_SPLIT_ACTION_VERB_PATTERN})\b|(?:(?:the|a|an|this|that)\s+)?[A-Za-z][A-Za-z0-9/-]*\s+(?:{ACTION_VERB_PATTERN})\b))",
+                    rf"\s+and\s+(?=(?:(?:{_SPLIT_ACTION_VERB_PATTERN})\b|{_SUBJECT_ACTION_PREFIX}))",
                     part,
                     flags=re.IGNORECASE,
                 )
@@ -277,6 +385,9 @@ def _carry_subject_across_parts(values: list[str]) -> list[str]:
         if subject:
             current_subject = subject
             current_action = _leading_base_action(text)
+        elif current_action in {"display", "show", "view"} and starts_with_result_object_modifier(core):
+            rows.append(_result_object_step(core))
+            continue
         elif current_action and _looks_like_carried_object_fragment(core, has_connector=has_connector):
             if rows:
                 rows[-1] = _append_carried_object_fragment(rows[-1], core, has_connector=has_connector)
@@ -288,6 +399,11 @@ def _carry_subject_across_parts(values: list[str]) -> list[str]:
             text = f"{current_subject} {_subject_action_clause(current_subject, text)}"
         rows.append(text)
     return rows
+
+
+def _result_object_step(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    return text[:1].upper() + text[1:] if text else ""
 
 
 def _append_carried_object_fragment(previous: str, fragment: str, *, has_connector: bool) -> str:
@@ -344,8 +460,12 @@ def _looks_like_carried_object_fragment(value: str, *, has_connector: bool) -> b
     if leading_subject_prefix(text):
         return False
     words = [word.strip(".,:;()[]{}").casefold() for word in text.split() if word.strip(".,:;()[]{}")]
+    if words and words[-1] in _VISIBLE_RESULT_OBJECT_NOUNS and len(words) <= 5:
+        return True
     if _looks_like_coordinated_object_tail(words):
         return True
+    if _starts_with_subject_action_clause(text):
+        return False
     if looks_like_finite_action(text):
         return False
     if has_connector and _connector_core_starts_action_clause(words):
@@ -395,6 +515,10 @@ def _connector_core_starts_action_clause(words: list[str]) -> bool:
         "when",
         "with",
     }
+
+
+def _starts_with_subject_action_clause(value: str) -> bool:
+    return bool(re.match(rf"^{_SUBJECT_ACTION_PREFIX}", _compact_text(value), flags=re.IGNORECASE))
 
 
 def _dedupe_steps(values: list[str]) -> list[str]:

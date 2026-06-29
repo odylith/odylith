@@ -549,17 +549,17 @@ def test_greenfield_atlas_uses_first_path_events_and_evidence_owner(tmp_path: Pa
     assert "S1 --> C1" in sequence
     assert 'S2["Check the context evidence"]' in sequence
     assert "S2 --> C2" in sequence
-    assert "Compare recommendation with<br/>feedback" in sequence
+    assert "Compare recommendation<br/>with feedback" in sequence
     assert "S4 --> C5" in sequence
-    assert "Save follow-up questions for<br/>preparers" in sequence
+    assert "Save follow-up questions<br/>for preparers" in sequence
     assert "S5 --> C4" in sequence
-    assert "Record rationale after the<br/>final outcome" in sequence
+    assert "Record rationale after<br/>the final outcome" in sequence
     assert "S7 --> C6" in sequence
-    assert "Publish a decision packet with<br/>attachments and audit history" in sequence
+    assert "Publish a decision packet<br/>with attachments and audit history" in sequence
     assert "sequenceDiagram" not in sequence
     assert "C4-" not in sequence
-    assert "Source-backed Audit Trail Adapter" in boundary
-    assert "Source-backed Audit Trail Adapter Proof Record" in proof
+    assert "Source-backed Audit Trail" in boundary
+    assert "Source-backed Audit Trail Proof Record" in proof
     assert "Release 0.0.1 succeeds when a representative" not in proof
 
 
@@ -686,7 +686,7 @@ def test_greenfield_health_tracking_defers_later_scope_and_keeps_atlas_implement
     assert "Shareable Visit Summary Generation Service" not in active_labels
 
     assert sequence.startswith("flowchart LR")
-    assert "Log a pain entry with" in sequence
+    assert "Log a pain entry<br/>with" in sequence
     assert "S1 --> C1" in sequence
     assert "Persist the entry" in sequence
     assert "Show it on a timeline" in sequence
@@ -811,9 +811,9 @@ def test_greenfield_protocol_effect_tracker_uses_protocol_measurement_and_timeli
     assert "Record a baseline measurement" in sequence
     assert "S3 --> C2" in sequence
     assert "Add a follow-up measurement" in sequence
-    assert "Show both points on the<br/>metric's timeline" in sequence
+    assert "Show both points<br/>on the metric's timeline" in sequence
     assert "S5 --> C3" in sequence
-    assert "See both interventions and<br/>measurements aligned on a<br/>single timeline" in sequence
+    assert "See both interventions<br/>and measurements aligned<br/>on a single timeline" in sequence
     assert "A2->>" not in sequence
     assert "A3->>" not in sequence
     assert "Proof checkpoint<br/>Both interventions and measurements aligned on a single timeline" in proof
@@ -1370,11 +1370,6 @@ def test_greenfield_apply_fails_closed_when_renderer_keeps_emitting_malformed_co
 
 def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:
     rows = [row for row in proposal.get("backlog", []) if isinstance(row, dict)]
-    assumptions = "\n".join(
-        f"- {row.get('statement', '')}"
-        for row in proposal.get("assumptions", [])
-        if isinstance(row, dict) and str(row.get("tier", "")) == "user_intent"
-    )
     created = [
         {
             "idea_id": f"B-{index:03d}",
@@ -1386,17 +1381,29 @@ def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:
     return {
         "created": created,
         "idea_files": {
-            f"/tmp/test-{index}.md": (
-                f"# {row['title']}\n\n"
-                f"{proposal['intent']['first_path']}\n\n"
-                f"{proposal['intent']['proof_boundary']}\n\n"
-                f"{assumptions}\n"
-            )
-            for index, row in enumerate(created, start=1)
+            str(created_row["idea_path"]): _prewrite_idea_file(created_row, source_row)
+            for created_row, source_row in zip(created, rows)
         },
         "backlog_index_text": "\n".join(str(row["title"]) for row in created),
         "validation_gate": {"status": "passed"},
     }
+
+
+def _prewrite_idea_file(created_row: dict[str, object], source_row: dict[str, object]) -> str:
+    metrics = source_row.get("success_metrics")
+    metric_lines = "\n".join(f"- {item}" for item in metrics if isinstance(item, str)) if isinstance(metrics, list) else ""
+    return "\n".join(
+        value
+        for value in (
+            f"# {created_row['title']}",
+            f"Problem: {source_row.get('problem', '')}",
+            f"Opportunity: {source_row.get('opportunity', '')}",
+            f"First slice: {source_row.get('recommended_first_slice', '')}",
+            f"Success metrics:\n{metric_lines}" if metric_lines else "",
+            f"Validation: {source_row.get('validation', '')}",
+        )
+        if str(value).strip()
+    )
 
 
 def _prewrite_atlas_sources(proposal: dict[str, object]) -> dict[str, str]:
@@ -1450,6 +1457,11 @@ def test_greenfield_apply_keeps_deferred_components_out_of_first_release_registr
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped_in_unit_test"},
+    )
     proposal = _pain_relief_tracking_proposal(tmp_path)
 
     result = greenfield_proposals.apply_greenfield_proposal(
@@ -1500,7 +1512,7 @@ def test_greenfield_service_goal_governance_preserves_intent_and_avoids_cross_do
     diagrams = {str(row["title"]): str(row["mermaid_source"]) for row in proposal["diagrams"]}  # type: ignore[index]
     sequence = diagrams["First Path Sequence"]
     assert sequence.startswith("flowchart LR")
-    assert "Complete onboarding and<br/>acknowledgement" in sequence
+    assert "Complete onboarding<br/>and acknowledgement" in sequence
     assert "S1 --> C1" in sequence
     assert "Enter baseline capacity" in sequence
     assert "S2 --> C2" in sequence
@@ -1575,7 +1587,7 @@ def test_greenfield_ranking_engine_and_review_surface_stay_distinct(tmp_path: Pa
     assert "S4 --> C4" in sequence
     assert "Highlight the lowest-cost<br/>acceptable route" in sequence
     assert "S5 --> C5" in sequence
-    assert "Let the traveler choose an<br/>option" in sequence
+    assert "Let the traveler choose<br/>an option" in sequence
     assert "Store the comparison evidence" in sequence
     assert "A1->>" not in sequence
     assert 'input1["External input<br/>Transit schedule feed"] --> boundary2' in boundary
@@ -1812,5 +1824,8 @@ def test_greenfield_package_quality_checks_project_prompt_roles_by_position_not_
 
     issues = greenfield_rendered_package_quality_issues(package)
 
-    assert any("Create implementation boundary" in issue and "governed workstream" in issue for issue in issues)
+    assert any(
+        "Create implementation boundary" in issue and "accepted first-release work item" in issue
+        for issue in issues
+    )
     assert any("Create implementation boundary" in issue and "source boundary, files, and proof gates" in issue for issue in issues)

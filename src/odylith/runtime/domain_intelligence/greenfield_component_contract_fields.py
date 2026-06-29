@@ -53,7 +53,7 @@ def contract_focus(
         support = _supporting_artifacts(focus, exclude_terms=set(content_terms(adjustment)))
         if role == "input":
             return f"{adjustment} request, {support}, prior state, and explanation context"
-        rationale_terms = set(content_terms(focus)) | set(contract_terms)
+        rationale_terms = set(content_terms(focus)) | set(content_terms(_clean(object_list))) | set(contract_terms)
         rationale = "adjustment rationale" if "rationale" in rationale_terms else "review rationale"
         return f"{_result_output_artifact(adjustment)}, {rationale}, blocked-state detail, and next-step context"
     recommendation = (

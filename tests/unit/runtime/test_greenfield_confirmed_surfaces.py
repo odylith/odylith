@@ -507,6 +507,18 @@ def test_mermaid_label_wrapping_carries_dangling_connector_to_next_line() -> Non
     assert "history with<br/>date" not in wrapped
     assert "history<br/>with date" in wrapped
     assert all(not part.endswith(" with") for part in wrapped.split("<br/>"))
+    anchored = mermaid_text.wrap_mermaid_label(
+        "Show both points on the metric's timeline with the intervention overlaid",
+        width=30,
+        max_lines=5,
+        limit=168,
+    )
+    assert "points on<br/>the metric" not in anchored
+    assert "points<br/>on the metric" in anchored
+    assert all(
+        not part.casefold().endswith((" on", " the", " with"))
+        for part in anchored.split("<br/>")
+    )
 
 
 def test_mermaid_quality_extracts_visible_labels_from_compact_flowchart_source() -> None:

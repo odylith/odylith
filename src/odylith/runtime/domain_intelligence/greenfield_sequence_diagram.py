@@ -561,7 +561,25 @@ def _compress_step_action_label(value: str) -> str:
         flags=re.IGNORECASE,
     )
     text = re.sub(r"\s+", " ", text).strip(" .")
+    text = _title_named_result_tail(text)
     return _strip_dangling_tail(text)
+
+
+def _title_named_result_tail(value: str) -> str:
+    text = _compact_text(value).strip(" .")
+    if not text:
+        return ""
+    heads = {"trend", "timeline", "summary", "status", "report", "readout", "result"}
+    nouns = {"readout", "report", "result", "status", "summary", "timeline", "view"}
+    words = text.split()
+    for index in range(0, max(0, len(words) - 2)):
+        if words[index].casefold().strip(".,:;") != "and":
+            continue
+        head = words[index + 1].casefold().strip(".,:;")
+        noun = words[index + 2].casefold().strip(".,:;")
+        if head in heads and noun in nouns:
+            words[index + 1] = words[index + 1][:1].upper() + words[index + 1][1:]
+    return " ".join(words)
 
 def _third_person_verb(value: str) -> str:
     verb = str(value or "").strip()

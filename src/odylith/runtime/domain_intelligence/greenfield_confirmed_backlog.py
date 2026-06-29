@@ -539,8 +539,8 @@ def confirmed_backlog_rows(
         ),
         customer=workflow_actor_label,
         opportunity=(
-            f"Prove the first actor-owned action can complete with reviewable follow-up: {metric_actor_inline} can {workflow_action}, "
-            f"the product preserves the saved context, and {workflow_followup_clause}."
+            f"Prove the first actor-owned action can complete with reviewable follow-up: {metric_actor_inline} can {workflow_action}. "
+            f"Follow-up evidence remains reviewable because the product preserves the saved context: {workflow_followup_clause}."
         ),
         product_view=(
             f"{metric_actor} can {workflow_action}. The product checks the details, explains missing information before returning a result, "
