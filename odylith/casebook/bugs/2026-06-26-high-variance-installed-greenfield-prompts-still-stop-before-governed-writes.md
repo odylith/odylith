@@ -738,23 +738,34 @@
   the touched runtime modules. Installed release readiness remains blocked
   until a new dist proves this source fix in the maintained and adversarial
   installed matrices.
+  Fresh installed proof from pushed commit `db69b062` then passed against
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-db69b062`.
+  The maintained matrix produced status `passed`: all thirteen standard cases
+  scored hard 10/10 with zero issues, generated browser proof passed for all
+  thirteen cases, and no `odylith-greenfield-matrix-*` temp directories
+  remained under `/Users/freedom/mock`. Standard create timings were
+  21.927-26.698s, including the retained sparse disclosure confirmation
+  passing with 4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams,
+  18 trace nodes, 5 Project implementation prompts, all expert lenses passing,
+  and zero prompt findings. The retained quantum communication lab case passed
+  in 26.698s with 5 Registry specs and 20 trace nodes. Synthetic typed-probe
+  rescue wiring passed in 32.728s with zero issues; natural host-model semantic
+  rescue quality remains a separate proof class.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: Latest installed proof is still red until rebuilt. Local
-  release dist `odylith-local-release-0.1.15-f5fef9e6` passed twelve of
-  thirteen maintained installed cases but failed sparse disclosure topology
-  readback with only two Registry specs. Current source now fixes the
-  sparse/generated two-system completion boundary and strips compiler-only
-  system-row labels from public Registry copy, with focused and broad source
-  tests green. Treat all earlier green installed matrices as superseded for
-  release-readiness claims until a fresh dist proves the fix under maintained
-  and adversarial installed matrices with browser proof and strict temp
-  cleanup. Synthetic rescue wiring remains proven, but natural host-model
-  semantic rescue quality remains unclaimed because the rescue proof is a
-  typed-probe wiring smoke, not an organically triggered model repair.
+- Version/Build: Current installed proof for this checkpoint is green. Local
+  release dist `odylith-local-release-0.1.15-db69b062` passed the maintained
+  thirteen-case installed matrix with browser proof, strict temp cleanup, hard
+  10/10 standard scores, zero issues, complete governed readback, and
+  standard-path create timings of 21.927-26.698s. Synthetic rescue wiring
+  passed in 32.728s, but natural host-model semantic rescue quality remains
+  unclaimed because the rescue proof is a typed-probe wiring smoke, not an
+  organically triggered model repair. Keep this bug open for future
+  high-variance escaped post-confirm failures; this checkpoint closes the
+  `f5fef9e6` sparse-topology regression class.
 
 - Related Incidents/Bugs: CB-208
 

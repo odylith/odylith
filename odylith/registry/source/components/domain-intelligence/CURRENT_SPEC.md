@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Validation:** Fresh dist db69b062 passed the maintained installed greenfield matrix after sparse-topology repair: 13/13 standard cases scored hard 10/10 with zero issues, browser proof, complete governed readback, strict temp cleanup, and 21.927-26.698s create times; synthetic typed-probe rescue wiring passed in 32.728s.
+  - Scope: B-142
+  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-db69b062/greenfield-post-confirm-matrix.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
 - **2026-06-29 · Implementation:** Source-fixed the follow-up sparse-topology installed proof failure from dist f5fef9e6: sparse/generated two-row confirmed systems now receive generic proof/state topology completion, rich explicit two-system narratives remain unpadded, and compiler-only system-row labels no longer leak into public Registry descriptions; focused and broad source proof passed, rebuilt installed proof remains required.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py +2 more
@@ -52,6 +55,19 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-29: Proved the sparse-topology checkpoint in the installed consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
+  Fresh local dist `odylith-local-release-0.1.15-db69b062` passed the
+  maintained installed greenfield matrix after the sparse topology repair. All
+  thirteen standard cases scored hard 10/10 with zero issues, generated browser
+  proof passed for all thirteen cases, no matrix temp directories remained
+  under `/Users/freedom/mock`, and create times were 21.927-26.698s. The
+  retained sparse disclosure case passed in 21.927s with 4 Radar workstreams,
+  3 Registry specs, 6 Atlas diagrams, 18 trace nodes, 5 Project implementation
+  prompts, zero prompt findings, and all PM/architect/engineer/domain-expert
+  lenses passing. The retained quantum case passed in 26.698s with 5 Registry
+  specs and 20 trace nodes. Synthetic typed-probe rescue wiring passed in
+  32.728s; natural host-model semantic rescue quality remains separate from
+  this wiring proof.
 - 2026-06-29: Source-fixed the follow-up sparse-topology installed proof failure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
   Fresh dist `odylith-local-release-0.1.15-f5fef9e6` passed twelve maintained
   standard cases but `sparse disclosure confirmation` scored 0/10 after

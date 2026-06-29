@@ -347,6 +347,18 @@ vocabulary, or degraded packages.
   system descriptions without compiler labels. Focused proof passed 3 tests in
   13.41s, the broad affected greenfield pack passed 202 tests in 250.95s, and
   compile proof passed. Installed proof from a rebuilt dist remains required.
+- 2026-06-29 installed proof from pushed commit `db69b062` passed the
+  maintained release matrix for the sparse-topology checkpoint. Fresh local
+  release dist `odylith-local-release-0.1.15-db69b062` passed all thirteen
+  standard installed cases with hard 10/10 scores, zero quality issues,
+  generated browser proof for all cases, strict temp cleanup, 4 Radar
+  workstreams per case, at least 3 Registry specs per case, 6 Atlas diagrams,
+  5 Project implementation prompts, all PM/architect/engineer/domain-expert
+  lenses passing, and standard create times of 21.927-26.698s. The retained
+  sparse disclosure case passed in 21.927s with 3 Registry specs and
+  18 trace nodes; the retained quantum case passed in 26.698s with 5 Registry
+  specs and 20 trace nodes. Synthetic typed-probe rescue wiring passed in
+  32.728s; natural host-model semantic rescue quality remains separate.
 
 ## Implementation Slices
 
@@ -1533,9 +1545,17 @@ vocabulary, or degraded packages.
       Focused sparse/confirmed-intent proof passed 3 tests in 13.41s, the
       broad affected greenfield pack passed 202 tests in 250.95s, and compile
       proof passed for the touched runtime modules.
-- [ ] Rebuild the installable dist from the current source and rerun installed
+- [x] Rebuild the installable dist from the current source and rerun installed
       maintained plus adversarial high-variance simulations.
       Do not claim release readiness from the source-local proof alone. The
       rebuilt installed proof must show complete governed writes, hard 10/10
       scores, browser proof, zero final quality issues, strict temp cleanup,
       and standard-path latency under 60s for normal cases.
+      Completed on 2026-06-29 with dist
+      `odylith-local-release-0.1.15-db69b062`: all thirteen maintained
+      standard cases passed with hard 10/10 scores, zero issues, browser proof,
+      complete governed readback, and standard create times of 21.927-26.698s.
+      Synthetic rescue wiring passed in 32.728s. This closes the sparse
+      topology checkpoint; the broader goal continues to require fresh
+      high-variance simulations and natural rescue-quality proof for new
+      failure classes.
