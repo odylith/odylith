@@ -439,7 +439,7 @@ def _next_steps_preview_issues(
         issues.append("operator next-steps implementation prompt must mention the first implementation workstream title")
     semantic = package.proposal.get("semantic_model") if isinstance(package.proposal.get("semantic_model"), Mapping) else {}
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
-    first_path_text = clean_text(" ".join(text_values(first_path)))
+    first_path_text = _next_step_first_path_overlap_text(first_path)
     if first_path_text and _semantic_overlap_ratio(first_path_text, prompt) < 0.08:
         issues.append("operator next-steps implementation prompt must overlap the accepted first path")
     operator_sequence = text_values(next_steps_preview.get("operator_sequence"))
@@ -457,6 +457,26 @@ def _next_steps_preview_issues(
 
 def _operator_next_step_copy_issues(next_steps_preview: Mapping[str, Any]) -> list[str]:
     return list(generated_public_copy_issues("operator next-steps preview", next_steps_preview))
+
+
+def _next_step_first_path_overlap_text(first_path: Mapping[str, Any]) -> str:
+    """Return the semantic first-path projection that operator handoff copy must preserve."""
+
+    values: list[str] = []
+    for key in ("raw_path", "capability", "visible_result", "mutation", "action", "entity"):
+        text = clean_text(first_path.get(key))
+        if text:
+            values.append(text)
+    events = first_path.get("events")
+    if isinstance(events, Sequence) and not isinstance(events, (str, bytes)):
+        for event in events:
+            if not isinstance(event, Mapping):
+                continue
+            for key in ("text", "mutation", "action", "target_entity"):
+                text = clean_text(event.get(key))
+                if text:
+                    values.append(text)
+    return clean_text(" ".join(values))
 
 
 def _require_preview_text(

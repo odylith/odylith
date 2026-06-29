@@ -170,6 +170,31 @@ def test_relative_actor_confirmation_does_not_promote_outcome_terms_to_people(tm
     assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
 
 
+def test_sparse_model_lab_notebook_post_confirm_package_stays_clean(tmp_path: Path) -> None:
+    prompt = "model lab notebook"
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    actor_labels = [str(row).split(":", 1)[0] for row in proposal["intent"]["human_actors"]]
+    public_payload = json.dumps(
+        {
+            "intent": proposal.get("intent"),
+            "project_brief": prewrite.package.project_brief_preview,
+            "next_steps": prewrite.package.next_steps_preview,
+        },
+        sort_keys=True,
+    )
+    report = build_greenfield_package_report(prewrite.package)
+
+    assert actor_labels == ["Representative User"]
+    assert "Records" not in actor_labels
+    assert "Sees" not in actor_labels
+    assert "people and teams: Teams" not in public_payload
+    assert "teams Teams" not in public_payload
+    assert "Preserve this accepted first path:" in public_payload
+    assert report.issues == ()
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+
+
 def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tmp_path: Path) -> None:
     prompt = (
         "Create a greenfield product for digestive health patients who log meals, symptoms, medications, "
@@ -488,7 +513,7 @@ The first proof is a working one-dimensional quantum tunneling lab for a rectang
     actor_section = proposal["project_brief"]["blueprint_sections"][4]["must_capture"]
     first_user_option = proposal["project_brief"]["customization_options"][0]["recommended"]
     assert actor_section.startswith("Actors include Physics Learner and Instructor.")
-    assert first_user_option == "Confirm the first people and teams: Physics Learner and Instructor."
+    assert first_user_option == "Confirm who participates in the first path: Physics Learner and Instructor."
 
 
 def test_review_and_adjustment_prompts_avoid_generic_handoff_and_recommendation_drift(tmp_path: Path) -> None:

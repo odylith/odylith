@@ -709,7 +709,7 @@ def _starts_with_action_without_actor(clause: str) -> bool:
     leading_terms = {term.casefold() for term in label_terms(words[0])}
     if leading_terms & _HUMAN_ACTOR_TERMS:
         return False
-    if _looks_plural(words[0]) and not contains_finite_action(words[0]):
+    if _looks_plural(words[0]) and not looks_like_finite_action_token(words[0]) and not contains_finite_action(words[0]):
         return False
     return True
 

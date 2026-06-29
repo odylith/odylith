@@ -1322,3 +1322,46 @@ vocabulary, or degraded packages.
       remains a separate proof obligation because the rescue lane in this
       matrix is synthetic typed-probe wiring, not an organically triggered
       host-model semantic repair.
+- [x] Fixed the latest installed matrix escape in source before any release-ready
+      claim.
+      A fresh non-reused high-variance installed matrix against final local dist
+      `odylith-local-release-0.1.15-a0dae6b7` passed eleven standard cases with
+      hard 10/10 scores, zero quality issues, browser proof, complete
+      governance counts, and create timings of 24.065-26.756s across regulated,
+      operational, legal, scientific, cultural, environmental, financial, and
+      technical domains. The twelfth ambiguous broad prompt, `model lab
+      notebook`, failed before governed writes in 24.549s because the project
+      brief preview and operator next steps repeated adjacent words as
+      `teams Teams`; no Radar, Registry, Atlas, release/program, traceability,
+      or Project implementation prompt records were written. Synthetic rescue
+      smoke still passed in 35.170s, and temp cleanup left no
+      `odylith-greenfield-*` directories under `/Users/freedom/mock`. Failed
+      mechanism: broad prompts whose accepted title or actor phrase begins with
+      the same semantic head as an actor/object can duplicate that head across
+      surface composition boundaries. Fix this in semantic title, actor, and
+      projection composition custody without domain-specific vocabulary,
+      domain-term stuffing, weakened repetition gates, or rendered-string
+      patching.
+      Source fix: finite action leads such as `records`, `sees`, `reviews`, and
+      `launches` now stay actorless action fragments during sparse intent
+      recovery; project-brief actor-choice copy uses neutral participant wording
+      instead of echoing people/team categories; and the operator next-step
+      overlap gate compares against sanctioned first-path projection fields
+      instead of flattened contract metadata, persistence, and deferred-scope
+      prose. Focused regressions passed 6 selected tests in 36.44s, and a
+      source-local CLI create for `model lab notebook` completed in 19.708s with
+      governed writes, 4 Radar records, 3 Registry specs, 6 Atlas diagrams,
+      project records, and temp cleanup.
+      Follow-up proof moved the new sparse regressions into the dedicated
+      90-line `test_greenfield_sparse_recovery_regressions.py` module instead
+      of growing the pre-existing oversized slop-regression file. The sparse
+      tests passed, the focused next-step/slop checks passed, the full
+      live-simulation regression file passed 14 tests in 188.05s, and a fresh
+      source-local CLI create for `model lab notebook` completed in 19.232s.
+      The final post-confirm manifest stayed on the standard 60s tier,
+      completed its fixpoint pass in 5.149s, reported zero issues, passed the
+      validation gate, wrote 4 Radar workstreams, rendered 3 Registry specs,
+      rendered 6 Atlas sources, and produced project-brief and
+      operator-next-step previews. The temp repo was deleted after proof.
+- [ ] Rebuild the installable dist and rerun the high-variance installed matrix
+      before claiming release readiness for this fix.

@@ -166,7 +166,7 @@ def confirmed_project_brief(
             _brief_option(
                 "D1",
                 "First user",
-                f"Confirm the first people and teams: {actor_summary}.",
+                f"Confirm who participates in the first path: {actor_summary}.",
                 "Changes path steps and permission expectations.",
             ),
             _brief_option(

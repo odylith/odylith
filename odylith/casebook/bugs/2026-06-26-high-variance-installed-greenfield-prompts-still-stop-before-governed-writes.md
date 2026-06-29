@@ -497,6 +497,51 @@
   passed in 34.942s. Natural rescue quality remains separately unproven because
   this matrix's rescue proof is a typed-probe wiring smoke, not a naturally
   occurring host-model semantic repair.
+  A fresh non-reused high-variance installed matrix against final local dist
+  `odylith-local-release-0.1.15-a0dae6b7` reopened the post-confirm gate on
+  2026-06-29. Eleven new standard cases passed with hard 10/10 scores, zero
+  issues, browser proof, and create timings of 24.065-26.756s across transplant
+  cold-chain exceptions, rural microgrid restoration, public defender discovery
+  deadlines, fermentation contamination holds, special-education appeals,
+  music clearance, hazardous rail inspection, API deprecation exceptions, coral
+  permit review, auction provenance disputes, and bank fraud reimbursement.
+  The twelfth ambiguous broad prompt, `model lab notebook`, failed before
+  governed writes in 24.549s because the project brief preview and operator
+  next steps repeated adjacent words as `teams Teams`. No Radar, Registry,
+  Atlas, release/program, traceability, or Project implementation prompt records
+  were written for that case. Synthetic rescue smoke still passed in 35.170s,
+  and temp cleanup left no `odylith-greenfield-*` directories under
+  `/Users/freedom/mock`. Failed mechanism: broad prompts whose accepted title
+  or actor phrase begins with the same word as the actor/object can duplicate a
+  semantic head across surface composition boundaries. Fix this at semantic
+  title/actor/projection composition custody, not by adding domain-specific
+  model/notebook vocabulary or weakening adjacent-repetition gates.
+  Source fix checkpoint: finite action leads such as `records`, `sees`,
+  `reviews`, and `launches` now remain actorless action fragments during sparse
+  intent recovery instead of becoming plural actor labels; project-brief actor
+  choice copy now asks who participates in the first path instead of echoing
+  people/team categories; and the operator next-step overlap gate compares the
+  implementation prompt against sanctioned first-path projection fields rather
+  than flattened contract metadata, persistence text, and deferred-scope prose.
+  Focused regressions passed 6 selected tests in 36.44s, the package-level
+  `model lab notebook` regression passed, and a source-local CLI create for the
+  same prompt completed in 19.708s with governed writes, 4 Radar records, 3
+  Registry specs, 6 Atlas diagrams, project records, and temp cleanup. Remaining
+  release obligation: rebuild the installable dist and rerun the high-variance
+  installed matrix before claiming release readiness.
+  Final source-local proof after code-hygiene cleanup moved the new sparse
+  regressions out of the oversized slop-regression file and into
+  `tests/unit/runtime/test_greenfield_sparse_recovery_regressions.py`. The
+  sparse-recovery tests passed, the focused next-step/slop checks passed, the
+  full live-simulation regression file passed 14 tests in 188.05s, and the
+  `model lab notebook` source-local CLI create completed in 19.232s. Its final
+  post-confirm manifest stayed on the standard 60s tier, completed the
+  fixpoint pass in 5.149s, reported zero issues, passed the validation gate,
+  wrote 4 Radar workstreams, rendered 3 Registry component specs, rendered 6
+  Atlas sources, and produced project-brief and operator-next-step previews.
+  The temp repo was deleted after proof. Remaining release obligation is still
+  unchanged: rebuild the installable dist and rerun the high-variance installed
+  matrix before claiming release readiness.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout.
 
