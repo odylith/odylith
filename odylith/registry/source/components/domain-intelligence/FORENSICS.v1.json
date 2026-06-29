@@ -7,9 +7,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 205,
-    "mapped_workstream_evidence_count": 189,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 206,
+    "mapped_workstream_evidence_count": 190,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 178,
     "status": "forensic_coverage_present",
     "timeline_event_count": 206
@@ -21,26 +21,36 @@
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py"
-      ],
+      "artifacts": [],
       "confidence": "high",
       "event_index": 701,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
       "mapped_components": [
-        "domain-intelligence"
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py +5 more",
-      "ts_iso": "2026-06-29T07:11:23-07:00",
-      "workstreams": []
+      "summary": "Fresh local release dist 0.1.15-c1fc18d8 passed the installed greenfield post-confirm matrix: 13/13 high-variance cases scored 10/10, max create time 26.581s, browser proof passed, rescue smoke passed, and temp repos cleaned.",
+      "ts_iso": "2026-06-29T07:34:17-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
