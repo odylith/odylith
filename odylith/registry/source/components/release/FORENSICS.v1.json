@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 141,
-    "mapped_workstream_evidence_count": 105,
-    "recent_path_match_count": 0,
-    "spec_history_event_count": 23,
+    "explicit_event_count": 142,
+    "mapped_workstream_evidence_count": 106,
+    "recent_path_match_count": 1,
+    "spec_history_event_count": 24,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 141
+    "timeline_event_count": 143
   },
   "name": "Release",
   "path_prefixes": [
@@ -44,6 +44,54 @@
   ],
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 721,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-29T16:19:40-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 719,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Broadened platform domain-leakage release guard: .codex/docs source custody, historical sentinel terms, and Odylith runtime tarball payload scanning now pass 49-term source+dist proof with zero findings.",
+      "ts_iso": "2026-06-29T16:19:13-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md"

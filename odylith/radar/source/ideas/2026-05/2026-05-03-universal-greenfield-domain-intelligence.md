@@ -2418,6 +2418,14 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   `artifact_draft_cleaner`. Focused proof passed 41 artifact-plan and
   quality-repair tests, and the widened post-confirm engine/projection set
   passed 76 tests in 50.17s with independent reviewer confirmation.
+- 2026-06-29 platform domain-leakage custody was broadened after a follow-up
+  audit found no actual project-domain leak but did find the standalone guard
+  too narrow for release claims. The guard now scans root `.codex`, public
+  `docs/`, historical escaped-domain sentinels, and Odylith runtime tarball
+  payloads while keeping selected matrix preflight selected-case-only. Focused
+  proof passed 52 install tests, and source plus dist
+  `odylith-local-release-0.1.15-cd6cf643` passed the strengthened 49-term
+  leakage check with zero protected-custody findings.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

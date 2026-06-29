@@ -950,6 +950,26 @@
   tests plus py_compile; the current `a46ef6cc` source/dist scan now covers 44
   explicit fixture terms, reports zero missing cases, and reports zero protected
   custody findings.
+  Follow-up custody audit on 2026-06-29 found no actual project-domain leakage
+  in current source or dist custody, but found the guard too narrow as a
+  standalone release claim: it covered matrix terms, source runtime/guidance,
+  top-level dist text, and the wheel, while omitting root `.codex` guidance,
+  public `docs/`, historical consumer-domain sentinels, and Odylith payloads
+  inside runtime tarballs. The forward fix keeps domain examples in release
+  proof vocabulary only and broadens the guard generically: source scanning now
+  includes `.codex` and `docs`, default release proof adds historical sentinels
+  for prior escaped consumer domains, dist scanning recurses into runtime
+  tarballs for Odylith launchers/runtime/guidance while skipping third-party
+  packages and governed evidence, and line tokenization is cached once per
+  line so archive proof stays bounded. Focused proof passed
+  `tests/unit/install/test_platform_domain_leakage_check.py` and
+  `tests/unit/install/test_greenfield_post_confirm_matrix.py` together:
+  52 tests passed in 0.24s. Source plus dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cd6cf643`
+  then passed the strengthened platform domain-leakage check across 49
+  distinctive fixture terms with zero protected-custody findings. The matrix
+  selected-case preflight remains selected-case-only; the standalone release
+  leakage guard owns the broader historical sentinel proof.
 
 - Related Incidents/Bugs: CB-208
 

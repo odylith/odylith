@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 388,
-    "mapped_workstream_evidence_count": 309,
+    "explicit_event_count": 389,
+    "mapped_workstream_evidence_count": 310,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 388
+    "timeline_event_count": 389
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,38 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 719,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Broadened platform domain-leakage release guard: .codex/docs source custody, historical sentinel terms, and Odylith runtime tarball payload scanning now pass 49-term source+dist proof with zero findings.",
+      "ts_iso": "2026-06-29T16:19:13-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",

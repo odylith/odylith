@@ -111,7 +111,7 @@ def _raise_for_platform_domain_leakage(release_dir: Path, cases: Sequence[Greenf
             "platform domain leakage check cannot prove selected greenfield matrix case vocabulary; "
             f"declare leakage_terms for: {names}"
         )
-    terms = platform_domain_leakage.domain_leakage_terms(cases)
+    terms = platform_domain_leakage.domain_leakage_terms(cases, include_historical=False)
     if not terms:
         return
     findings = platform_domain_leakage.scan_platform_custody(

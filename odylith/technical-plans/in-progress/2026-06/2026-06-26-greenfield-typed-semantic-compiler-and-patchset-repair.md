@@ -1601,6 +1601,19 @@ vocabulary, or degraded packages.
       py_compile, a selected explicit platform-word phrase scan, and the
       current `a46ef6cc` source/dist scan over 44 explicit terms with zero
       missing cases and zero findings.
+- [x] Broaden platform domain-leakage release custody beyond selected matrix terms.
+      A follow-up custody audit found no actual project-domain leakage, but
+      found the standalone guard too narrow for a release claim because it did
+      not scan root `.codex`, public `docs/`, historical escaped-domain
+      sentinels, or Odylith payloads inside runtime tarballs. The guard now
+      keeps historical project vocabulary only as release-proof sentinels,
+      scans source `.codex` and `docs`, recurses into runtime tarballs for
+      Odylith launchers/runtime/guidance while skipping third-party packages
+      and governed evidence, and caches per-line tokens so archive proof stays
+      bounded. Focused proof passed 52 install tests, and source plus dist
+      `odylith-local-release-0.1.15-cd6cf643` passed the strengthened leakage
+      check across 49 distinctive fixture terms with zero protected-custody
+      findings.
 - [x] Remove broad rendered-preview package repair authority.
       Safe artifact-draft cleanup now requires exact source-owned leaf paths
       from the shared ArtifactPlanIR contract. The repair executor no longer

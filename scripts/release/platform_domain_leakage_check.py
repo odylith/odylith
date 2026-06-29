@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Fail release proof when matrix fixture vocabulary leaks into platform code."""
+"""Fail release proof when project-domain fixture vocabulary leaks into platform code."""
 
 from __future__ import annotations
 
 import argparse
 from collections.abc import Iterable
 import sys
+import tarfile
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -39,8 +40,10 @@ SOURCE_SCAN_PATHS = (
     "README.md",
     "AGENTS.md",
     "pyproject.toml",
+    "docs",
     "odylith/agents-guidelines",
     "odylith/skills",
+    ".codex",
     ".agents",
     ".claude",
 )
@@ -124,6 +127,13 @@ PLATFORM_NATIVE_TERMS = frozenset(
         "workflow",
     }
 )
+HISTORICAL_DOMAIN_SENTINEL_TERMS = (
+    "anger management",
+    "digestive health",
+    "fifa tracker",
+    "quantum tunneling",
+    "wearable app",
+)
 
 
 @dataclass(frozen=True)
@@ -133,14 +143,22 @@ class LeakageFinding:
     line: int
 
 
-def domain_leakage_terms(cases: Iterable[object] | None = None) -> tuple[str, ...]:
-    """Return distinctive matrix terms that must not enter platform custody."""
+def domain_leakage_terms(
+    cases: Iterable[object] | None = None,
+    *,
+    include_historical: bool = True,
+) -> tuple[str, ...]:
+    """Return distinctive project-domain terms that must not enter platform custody."""
 
-    return domain_leakage_terms_from_terms(
+    selected_cases = tuple(cases) if cases is not None else default_cases()
+    selected_terms = domain_leakage_terms_from_terms(
         term
-        for case in (tuple(cases) if cases is not None else default_cases())
+        for case in selected_cases
         for term in case_leakage_terms(case)
     )
+    if not include_historical:
+        return selected_terms
+    return tuple(sorted(set(selected_terms).union(historical_domain_leakage_terms())))
 
 
 def domain_leakage_terms_from_terms(terms: Iterable[str]) -> tuple[str, ...]:
@@ -152,6 +170,12 @@ def domain_leakage_terms_from_terms(terms: Iterable[str]) -> tuple[str, ...]:
         if normalized and normalized not in GENERIC_PRODUCT_TERMS and normalized not in PLATFORM_NATIVE_TERMS:
             leakage_terms.add(normalized)
     return tuple(sorted(leakage_terms))
+
+
+def historical_domain_leakage_terms() -> tuple[str, ...]:
+    """Return historical consumer-domain sentinels used as release proof vocabulary."""
+
+    return domain_leakage_terms_from_terms(HISTORICAL_DOMAIN_SENTINEL_TERMS)
 
 
 def case_leakage_terms(case: object) -> tuple[str, ...]:
@@ -209,6 +233,8 @@ def scan_dist(dist_dir: Path, terms: tuple[str, ...] | None = None) -> tuple[Lea
     for file_path in sorted(dist_dir.iterdir()):
         if file_path.is_file() and file_path.name.endswith(".whl"):
             findings.extend(_scan_wheel(file_path, terms=scan_terms))
+        elif file_path.is_file() and file_path.name.endswith(".tar.gz"):
+            findings.extend(_scan_tar(file_path, terms=scan_terms))
         elif file_path.is_file() and _should_scan_dist_text_file(file_path):
             findings.extend(_scan_file(file_path, repo_root=dist_dir, location_prefix="dist:", terms=scan_terms))
     return tuple(findings)
@@ -225,6 +251,23 @@ def _scan_wheel(wheel: Path, *, terms: tuple[str, ...]) -> tuple[LeakageFinding,
             except UnicodeDecodeError:
                 continue
             findings.extend(_scan_text(text, location=f"wheel:{wheel.name}:{name}", terms=terms))
+    return tuple(findings)
+
+
+def _scan_tar(archive: Path, *, terms: tuple[str, ...]) -> tuple[LeakageFinding, ...]:
+    findings: list[LeakageFinding] = []
+    with tarfile.open(archive) as tf:
+        for member in sorted(tf.getmembers(), key=lambda item: item.name):
+            if not member.isfile() or not _should_scan_tar_member(member.name):
+                continue
+            extracted = tf.extractfile(member)
+            if extracted is None:
+                continue
+            try:
+                text = extracted.read().decode("utf-8")
+            except UnicodeDecodeError:
+                continue
+            findings.extend(_scan_text(text, location=f"tar:{archive.name}:{member.name}", terms=terms))
     return tuple(findings)
 
 
@@ -245,15 +288,16 @@ def _scan_file(
 
 def _scan_text(text: str, *, location: str, terms: tuple[str, ...]) -> tuple[LeakageFinding, ...]:
     findings: list[LeakageFinding] = []
+    term_token_pairs = tuple((term, _tokens(term)) for term in terms)
     lowered_lines = text.casefold().splitlines()
     for line_number, line in enumerate(lowered_lines, start=1):
-        line_tokens = set(_tokens(line))
-        for term in terms:
-            term_tokens = _tokens(term)
+        line_token_tuple = _tokens(line)
+        line_token_set = set(line_token_tuple)
+        for term, term_tokens in term_token_pairs:
             if len(term_tokens) == 1:
-                if term_tokens[0] in line_tokens:
+                if term_tokens[0] in line_token_set:
                     findings.append(LeakageFinding(location=location, term=term, line=line_number))
-            elif _contains_phrase(line, term_tokens):
+            elif _contains_phrase(line_token_tuple, term_tokens):
                 findings.append(LeakageFinding(location=location, term=term, line=line_number))
     return tuple(findings)
 
@@ -273,7 +317,7 @@ def _should_scan_source_file(path: Path, repo_root: Path) -> bool:
         return False
     if "tests" in parts:
         return False
-    if parts & GOVERNANCE_EVIDENCE_PARTS and "agents-guidelines" not in parts and "skills" not in parts:
+    if _is_governance_evidence_path(parts):
         return False
     return True
 
@@ -286,6 +330,22 @@ def _should_scan_wheel_member(name: str) -> bool:
     if "tests" in parts or "__pycache__" in parts:
         return False
     return name.startswith("odylith/") or name.endswith(".dist-info/METADATA")
+
+
+def _should_scan_tar_member(name: str) -> bool:
+    path = Path(name)
+    if path.as_posix().endswith("/bin/odylith"):
+        return True
+    if path.suffix.lower() not in TEXT_SUFFIXES:
+        return False
+    parts = set(path.parts)
+    if "tests" in parts or "__pycache__" in parts:
+        return False
+    if _is_governance_evidence_path(parts):
+        return False
+    if "odylith" in parts:
+        return True
+    return path.name == "METADATA" and any(part.startswith("odylith-") and part.endswith(".dist-info") for part in parts)
 
 
 def _should_scan_dist_text_file(path: Path) -> bool:
@@ -312,12 +372,15 @@ def _tokens(text: str) -> tuple[str, ...]:
     return tuple(tokens)
 
 
-def _contains_phrase(line: str, term_tokens: tuple[str, ...]) -> bool:
-    line_tokens = _tokens(line)
+def _contains_phrase(line_tokens: tuple[str, ...], term_tokens: tuple[str, ...]) -> bool:
     if len(term_tokens) > len(line_tokens):
         return False
     width = len(term_tokens)
     return any(line_tokens[index : index + width] == term_tokens for index in range(len(line_tokens) - width + 1))
+
+
+def _is_governance_evidence_path(parts: set[str]) -> bool:
+    return bool(parts & GOVERNANCE_EVIDENCE_PARTS and "agents-guidelines" not in parts and "skills" not in parts)
 
 
 def _case_required_terms(case: object) -> tuple[str, ...]:

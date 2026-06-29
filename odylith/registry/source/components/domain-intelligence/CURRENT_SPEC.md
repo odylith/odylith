@@ -74,6 +74,21 @@ This section captures synchronized requirement and contract signals derived from
   scan over 44 explicit fixture terms with zero missing cases and zero
   protected-custody findings.
 
+- 2026-06-29: Broadened platform domain-leakage release custody beyond selected matrix terms. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-043)
+  A follow-up audit found no actual project-domain leakage in current source or
+  dist custody, but found the standalone release guard too narrow for a
+  release-quality claim. `platform_domain_leakage_check.py` now includes root
+  `.codex` guidance and public `docs/` in source custody, carries historical
+  consumer-domain sentinels as release-proof vocabulary, scans Odylith
+  launchers/runtime/guidance inside runtime tarballs while skipping
+  third-party packages and governed evidence, and caches per-line tokens so
+  broader archive proof remains bounded. The maintained matrix preflight stays
+  selected-case-only; the standalone release guard owns broader historical
+  sentinel proof. Focused install proof passed 52 tests, and source plus dist
+  `odylith-local-release-0.1.15-cd6cf643` passed the strengthened leakage
+  check across 49 distinctive fixture terms with zero protected-custody
+  findings.
+
 - 2026-06-29: Source-fixed workstream-title preservation constraint custody after focused reviewer proof found the runtime quality-repair suite red. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   `greenfield_confirmed_backlog_actions.py` now reattaches useful
   `while keeping ...` first-path constraints to compact workflow-title action
