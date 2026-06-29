@@ -969,7 +969,10 @@
   then passed the strengthened platform domain-leakage check across 49
   distinctive fixture terms with zero protected-custody findings. The matrix
   selected-case preflight remains selected-case-only; the standalone release
-  leakage guard owns the broader historical sentinel proof.
+  leakage guard owns the broader historical sentinel proof. Fresh local release
+  dist `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-14f5102a`
+  then rebuilt from the committed checkpoint and passed the same strengthened
+  49-term platform domain-leakage build gate.
 
 - Related Incidents/Bugs: CB-208
 

@@ -1613,7 +1613,9 @@ vocabulary, or degraded packages.
       bounded. Focused proof passed 52 install tests, and source plus dist
       `odylith-local-release-0.1.15-cd6cf643` passed the strengthened leakage
       check across 49 distinctive fixture terms with zero protected-custody
-      findings.
+      findings. Fresh local release dist
+      `odylith-local-release-0.1.15-14f5102a` rebuilt after the committed guard
+      hardening and passed the same 49-term platform leakage build gate.
 - [x] Remove broad rendered-preview package repair authority.
       Safe artifact-draft cleanup now requires exact source-owned leaf paths
       from the shared ArtifactPlanIR contract. The repair executor no longer

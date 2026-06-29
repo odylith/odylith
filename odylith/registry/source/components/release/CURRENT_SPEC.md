@@ -528,7 +528,9 @@ This section captures synchronized requirement and contract signals derived from
   archive custody remains bounded. Focused install proof passed 52 tests, and
   source plus local dist `odylith-local-release-0.1.15-cd6cf643` passed the
   strengthened leakage check across 49 distinctive fixture terms with zero
-  protected-custody findings.
+  protected-custody findings. Fresh local release dist
+  `odylith-local-release-0.1.15-14f5102a` then rebuilt from the committed
+  checkpoint and passed the same 49-term platform domain-leakage build gate.
 - 2026-06-29: Proved release package `odylith-local-release-0.1.15-3fbacb91` after adding the platform domain-leakage gate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`) The build gate passed across
   19 distinctive fixture terms, the maintained installed matrix passed 13/13
   standard cases with hard 10/10 scores and browser proof in 24.230-28.677s,

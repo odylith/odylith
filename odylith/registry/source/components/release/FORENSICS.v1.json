@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 142,
-    "mapped_workstream_evidence_count": 106,
+    "explicit_event_count": 143,
+    "mapped_workstream_evidence_count": 107,
     "recent_path_match_count": 1,
     "spec_history_event_count": 24,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 143
+    "timeline_event_count": 144
   },
   "name": "Release",
   "path_prefixes": [
@@ -45,11 +45,43 @@
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 720,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh local release dist odylith-local-release-0.1.15-14f5102a rebuilt from commit 14f5102a and passed the strengthened 49-term platform domain-leakage build gate.",
+      "ts_iso": "2026-06-29T16:28:07-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
       "artifacts": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 721,
+      "event_index": 722,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -57,7 +89,7 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T16:19:40-07:00",
+      "ts_iso": "2026-06-29T16:27:43-07:00",
       "workstreams": []
     },
     {

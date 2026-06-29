@@ -2425,7 +2425,9 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   payloads while keeping selected matrix preflight selected-case-only. Focused
   proof passed 52 install tests, and source plus dist
   `odylith-local-release-0.1.15-cd6cf643` passed the strengthened 49-term
-  leakage check with zero protected-custody findings.
+  leakage check with zero protected-custody findings. Fresh local release dist
+  `odylith-local-release-0.1.15-14f5102a` then rebuilt from the committed
+  checkpoint and passed the same 49-term platform domain-leakage build gate.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

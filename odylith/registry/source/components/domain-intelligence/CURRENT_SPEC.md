@@ -87,7 +87,9 @@ This section captures synchronized requirement and contract signals derived from
   sentinel proof. Focused install proof passed 52 tests, and source plus dist
   `odylith-local-release-0.1.15-cd6cf643` passed the strengthened leakage
   check across 49 distinctive fixture terms with zero protected-custody
-  findings.
+  findings. Fresh local release dist `odylith-local-release-0.1.15-14f5102a`
+  then rebuilt from this committed checkpoint and passed the same 49-term
+  platform domain-leakage build gate.
 
 - 2026-06-29: Source-fixed workstream-title preservation constraint custody after focused reviewer proof found the runtime quality-repair suite red. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   `greenfield_confirmed_backlog_actions.py` now reattaches useful
