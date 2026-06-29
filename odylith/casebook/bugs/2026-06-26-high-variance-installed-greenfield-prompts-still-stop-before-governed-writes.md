@@ -484,6 +484,19 @@
   custody/type and exclude guidance/catalog companions consistently; do not
   repair this by weakening product-manager quality gates or accepting
   guidance-file false positives as generated project evidence.
+  Verification after the custody-boundary fix is green. Fresh dist
+  `odylith-local-release-0.1.15-e1dd08d6` passed the maintained installed
+  matrix under the hardened scorer: all thirteen standard real consumer-lane
+  creates passed with hard 10/10 scores, zero issues, per-case generated
+  browser-state proof, and strict temp cleanup. Standard create timings were
+  22.581-27.010s. Each non-quantum case produced four Radar workstreams, three
+  Registry specs, six Atlas diagrams, twelve rendered-surface payload/assets,
+  five Project implementation prompts, eighteen trace nodes, and passed PM,
+  architect, engineer, and domain-expert lenses; the quantum case produced four
+  Registry specs and nineteen trace nodes. Synthetic rescue wiring smoke also
+  passed in 34.942s. Natural rescue quality remains separately unproven because
+  this matrix's rescue proof is a typed-probe wiring smoke, not a naturally
+  occurring host-model semantic repair.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout.
 

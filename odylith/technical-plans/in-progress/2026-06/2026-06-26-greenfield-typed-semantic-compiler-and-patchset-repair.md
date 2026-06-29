@@ -1310,3 +1310,15 @@ vocabulary, or degraded packages.
       proves guidance files neither become Radar workstreams nor inflate domain
       term coverage. Focused release-matrix proof passed 31 tests; a fresh dist
       and installed matrix rerun are still required for release closure.
+- [x] Fresh installed proof after the guidance-readback custody fix is green.
+      Local release dist `odylith-local-release-0.1.15-e1dd08d6` passed the
+      maintained installed matrix under the hardened scorer. All thirteen
+      standard real consumer-lane creates scored hard 10/10 with zero issues,
+      per-case generated browser-state proof, and strict temp cleanup. Standard
+      create timings were 22.581-27.010s; every case produced complete
+      Radar/Registry/Atlas/project/release/program/rendered-surface/trace
+      evidence and passed PM, architect, engineer, and domain-expert lenses.
+      Synthetic rescue wiring smoke passed in 34.942s. Natural rescue quality
+      remains a separate proof obligation because the rescue lane in this
+      matrix is synthetic typed-probe wiring, not an organically triggered
+      host-model semantic repair.
