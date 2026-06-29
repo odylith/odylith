@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 191,
-    "mapped_workstream_evidence_count": 175,
+    "explicit_event_count": 192,
+    "mapped_workstream_evidence_count": 176,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 167,
+    "spec_history_event_count": 168,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 192
+    "timeline_event_count": 193
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -20,6 +20,58 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 682,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh installed dist odylith-local-release-0.1.15-3d13f434 failed the maintained thirteen-case greenfield matrix: 12 cases passed hard 10/10, synthetic rescue smoke passed, but sparse disclosure confirmation scored 0/10 from two Registry specs, three of four domain anchors, and failed architect/engineer/domain-expert lenses; release readiness remains blocked pending typed sparse-intent topology and domain-anchor obligations.",
+      "ts_iso": "2026-06-28T20:03:03-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 683,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-28T20:02:41-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [],
       "confidence": "high",
@@ -53,33 +105,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_apply_write.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
-        "src/odylith/runtime/domain_intelligence/proposal_tribunal.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py"
-      ],
-      "confidence": "high",
-      "event_index": 684,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py +10 more",
-      "ts_iso": "2026-06-28T19:22:08-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

@@ -16,11 +16,11 @@
 
 - Components Affected: domain-intelligence
 
-- Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-33bdb122, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-265cc0cf
+- Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-33bdb122, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-265cc0cf, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434
 
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
-- Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts.
+- Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts. The 3d13f434 installed matrix reopened the release gate again: 12 of 13 cases passed with hard 10/10 scores, browser proof, and complete records, but sparse disclosure confirmation scored 0/10 after governed writes because it produced only two Registry component specs, carried only three of four required domain anchors, and failed architect, engineer, and domain-expert matrix lenses.
 
 - Trigger Path: scripts/release/greenfield_post_confirm_matrix.py custom cases using greenfield propose followed by greenfield create --confirm --release 0.0.1 --json
 
@@ -317,12 +317,27 @@
   integration then passed post-confirm in 20.34s as part of a three-test
   focused proof, and the broader affected source-local pack passed 85 tests in
   70.23s.
+  Additional installed release-gate failure on 2026-06-29 from dist
+  `odylith-local-release-0.1.15-3d13f434`: the fresh maintained installed
+  matrix failed sparse disclosure confirmation while all other standard cases
+  passed. The failed case completed create in 21.474s with browser proof and
+  governed records, but independent readback found only two Registry component
+  specs, 17 trace nodes, and three of four required domain anchors. The expert
+  failures were architect, engineer, and domain expert. Root learning: sparse
+  accepted intents can satisfy final write custody while still underfilling the
+  semantic topology and domain-anchor obligations needed for premium artifacts.
+  This must not be fixed with disclosure/council/embargo keywords or another
+  regex layer. The platform needs typed sparse-intent obligations in the
+  semantic/artifact plan: derive enough distinct component responsibilities
+  from actor, first-path, state-object, proof-boundary, and system facts, and
+  carry required domain anchors as auditable projection obligations rather than
+  substring afterthoughts.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: 0.1.15 local release dist `odylith-local-release-0.1.15-prompt-quality-proof` passed the expanded thirteen-case installed standard matrix and CLI auto-rescue smoke with hard 10/10 standard scores, per-case generated browser state proof, zero prompt findings, persisted matrix evidence, and retained package supply-chain prompt-quality regression coverage. Full natural rescue quality remains unclaimed because the rescue proof is still synthetic wiring-only.
+- Version/Build: 0.1.15 local release dist `odylith-local-release-0.1.15-3d13f434` failed the expanded thirteen-case installed standard matrix. Twelve standard cases passed with hard 10/10 scores in 23.410-26.861s and installed rescue smoke passed in 33.936s as synthetic wiring-only proof, but sparse disclosure confirmation failed the release gate with score 0/10 because component depth and domain-anchor coverage were insufficient. Full release readiness and natural rescue quality remain unclaimed.
 
 - Related Incidents/Bugs: CB-208
 

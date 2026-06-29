@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 306,
-    "mapped_workstream_evidence_count": 276,
+    "explicit_event_count": 307,
+    "mapped_workstream_evidence_count": 277,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 306
+    "timeline_event_count": 307
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,42 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 682,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh installed dist odylith-local-release-0.1.15-3d13f434 failed the maintained thirteen-case greenfield matrix: 12 cases passed hard 10/10, synthetic rescue smoke passed, but sparse disclosure confirmation scored 0/10 from two Registry specs, three of four domain anchors, and failed architect/engineer/domain-expert lenses; release readiness remains blocked pending typed sparse-intent topology and domain-anchor obligations.",
+      "ts_iso": "2026-06-28T20:03:03-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",

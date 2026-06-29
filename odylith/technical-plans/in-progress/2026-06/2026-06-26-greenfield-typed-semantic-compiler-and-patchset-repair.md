@@ -1249,6 +1249,19 @@ vocabulary, or degraded packages.
       release/program/rendered-surface counts, reported zero quality issues,
       and deleted its repo plus the parent temp root. Create timings were
       22.072-23.827s; whole-project timings were 15.521-16.534s.
+- [ ] Fix sparse-intent topology and domain-anchor obligations before release
+      readiness can be claimed. Fresh installed dist
+      `odylith-local-release-0.1.15-3d13f434` failed the maintained
+      thirteen-case matrix after governed writes: twelve cases passed with hard
+      10/10 scores, browser proof, and complete records, but sparse disclosure
+      confirmation scored 0/10 in 21.474s because independent readback saw only
+      two Registry specs, 17 trace nodes, three of four required domain anchors,
+      and failed architect/engineer/domain-expert lenses. The prescribed fix is
+      generic: sparse confirmed intents need typed semantic/artifact-plan
+      obligations that derive a minimum useful topology from accepted actors,
+      first path, state object, proof boundary, and systems, then carry domain
+      anchors as projection obligations. Do not repair this with
+      disclosure-specific terms, keyword stuffing, or regex scoring.
 - [ ] Release posture remains unclaimed until these source-local fixes are
       checked into governance, generated Atlas/Registry/Compass surfaces are
       refreshed, and a fresh built installed dist passes the maintained
