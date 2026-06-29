@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 import re
-import shlex
 from typing import Any
 
-from odylith.runtime.common.mermaid_text import visible_mermaid_label_quality_texts
+from odylith.runtime.artifact_quality.generated_copy_quality_units import raw_text_units
+from odylith.runtime.artifact_quality.generated_copy_quality_units import text_quality_units
 from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import actor_led_finite_action_inside_user_can
 from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import gerund_actor_role_finite_action_splice
-from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -90,10 +89,16 @@ def generated_public_copy_findings(scope: str, value: Any) -> tuple[GeneratedCop
     """Return public-copy failures classified by generated-prose shape."""
 
     findings: list[GeneratedCopyFinding] = []
-    for text in _raw_text_values(value):
+    for unit in raw_text_units(value):
+        if unit.text_kind in {"metadata"}:
+            continue
+        text = unit.text
         if _has_malformed_punctuation_sequence(text):
             findings.append(GeneratedCopyFinding("malformed_punctuation", f"{scope} leaked malformed punctuation"))
-    for text in _text_quality_units(value):
+    for unit in text_quality_units(value):
+        if unit.text_kind in {"command", "metadata"}:
+            continue
+        text = unit.text
         tokens = _word_tokens(text)
         token_rows = _word_token_rows(text)
         lowered = tuple(token.casefold() for token in tokens)
@@ -704,95 +709,6 @@ def _word_token_rows(value: str) -> tuple[_WordToken, ...]:
                 )
             )
     return tuple(rows)
-
-
-def _text_quality_units(value: Any) -> tuple[str, ...]:
-    units: list[str] = []
-    _append_text_quality_units(units, value)
-    return unique_text(units)
-
-
-def _raw_text_values(value: Any) -> tuple[str, ...]:
-    units: list[str] = []
-    _append_raw_text_values(units, value)
-    return unique_text(units)
-
-
-def _append_raw_text_values(units: list[str], value: Any) -> None:
-    _append_raw_text_values_for_key(units, value, key="")
-
-
-def _append_raw_text_values_for_key(units: list[str], value: Any, *, key: str) -> None:
-    if value is None:
-        return
-    if isinstance(value, Mapping):
-        for nested_key, nested in value.items():
-            _append_raw_text_values_for_key(units, nested, key=str(nested_key))
-        return
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        for nested in value:
-            _append_raw_text_values_for_key(units, nested, key=key)
-        return
-    text = clean_text(value)
-    if text and not structural_copy_value(key=key, value=text):
-        units.append(text)
-
-
-def _append_text_quality_units(units: list[str], value: Any) -> None:
-    _append_text_quality_units_for_key(units, value, key="")
-
-
-def _append_text_quality_units_for_key(units: list[str], value: Any, *, key: str) -> None:
-    if value is None:
-        return
-    if isinstance(value, Mapping):
-        for nested_key, nested in value.items():
-            _append_text_quality_units_for_key(units, nested, key=str(nested_key))
-        return
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        for nested in value:
-            _append_text_quality_units_for_key(units, nested, key=key)
-        return
-    if structural_copy_value(key=key, value=clean_text(value)):
-        return
-    mermaid_units = visible_mermaid_label_quality_texts(value)
-    if mermaid_units:
-        for unit in mermaid_units:
-            _append_text_quality_units_for_key(units, unit, key=key)
-        return
-    if _looks_like_shell_command(str(value or "")):
-        units.append(clean_text(value))
-        return
-    current: list[str] = []
-    for char in str(value or ""):
-        if char in ".!?\n\r;":
-            _append_quality_chunk(units, current)
-            current = []
-        else:
-            current.append(char)
-    _append_quality_chunk(units, current)
-
-
-def _append_quality_chunk(units: list[str], chars: list[str]) -> None:
-    text = clean_text("".join(chars)).strip(" -#*_`|")
-    if text:
-        units.append(text)
-
-
-def _looks_like_shell_command(value: str) -> bool:
-    text = clean_text(value)
-    if not text:
-        return False
-    try:
-        tokens = shlex.split(text)
-    except ValueError:
-        return False
-    if len(tokens) < 2:
-        return False
-    executable = tokens[0]
-    if executable in {"odylith", "bash", "curl", "git", "node", "npm", "pnpm", "python", "python3", "pytest", "yarn"}:
-        return True
-    return executable.startswith(("./", "../", "/", ".venv/")) or any(token.startswith("--") for token in tokens[1:])
 
 
 _ABSTRACT_INPUT_CONCEPTS = (

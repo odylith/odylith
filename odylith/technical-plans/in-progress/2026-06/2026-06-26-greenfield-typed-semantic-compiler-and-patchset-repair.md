@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-06-27
+Updated: 2026-06-29
 
 Backlog: B-142
 
@@ -1281,3 +1281,18 @@ vocabulary, or degraded packages.
       standard and rescue time budgets. This does not end broader greenfield
       quality work; it clears the specific failure classes represented in this
       matrix.
+- [x] Hardened matrix scoring against shallow 10/10 false positives without
+      lowering gates. Independent release-proof review found that producer-owned
+      payloads, stubbed lens reports, count floors, and position-based Project
+      prompt checks could still make a package look premium without enough
+      artifact readback. The fix adds independent package-evidence checks for
+      project brief, Radar, Registry, Atlas, prewrite-safety, Project prompts,
+      and domain carry-through; generated-copy inspection now walks typed
+      `ArtifactQualityUnit` leaves so metadata, commands, Mermaid labels,
+      prompt fields, semantic facts, and free prose keep separate custody; and
+      source-launch prompts carry stable `step_id` values. Focused proof passed
+      49 tests in 1.97s, the broad affected pack passed 228 tests in 579.08s
+      after decomposition, and the earlier six-domain installed adversarial run
+      remains pre-hardening evidence rather than release closure. A rebuilt dist
+      matrix under the hardened scorer is still required before release-ready
+      claims.

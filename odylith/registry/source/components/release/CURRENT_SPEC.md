@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-06-28
+Last updated: 2026-06-29
 
 
 Last updated (UTC): 2026-04-09
@@ -493,6 +493,15 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Hardened greenfield matrix scoring with independent package readback, typed artifact-quality units, and step-id Project prompt custody; source proof passed 49 focused tests plus the 228-test affected pack, while rebuilt installed proof remains required before release readiness.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
+- **2026-06-28 · Implementation:** B-142 installed matrix proof passed after typed canonical projection custody and matrix evidence cleanup: 13 standard high-variance cases scored 10/10 under 60s, browser proof passed for all, quantum passed in 27.015s, sparse intent passed, rescue smoke passed in 35.012s, and temp cleanup was clean.
+  - Scope: B-142
+  - Evidence: Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-typed-custody-test/greenfield-post-confirm-matrix.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +1 more
+- **2026-06-28 · Implementation:** B-142 canonical projection repetition custody now preserves typed fact provenance, release matrix keeps failed-create blocker evidence, and focused source proof is green; installed release readiness still awaits rebuilt matrix proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +2 more
 - **2026-06-28 · Implementation:** Release proof now treats the installed greenfield matrix as a canonical release gate: the default standard catalog is twelve domains, the matrix persists proof JSON, strict domain-anchor scoring is enforced, and rescue smoke is labeled wiring-only.
   - Scope: B-142
   - Evidence: bin/_odylith.sh, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
@@ -502,9 +511,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-04-17 · Implementation:** Implemented and hardened B-126 conditional release-targeted backlog authoring with --release selector preflight, batch release events, queued-status preservation, Radar/Compass refresh reporting, and focused QA coverage.
   - Scope: B-126
   - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, src/odylith/runtime/governance/backlog_authoring.py +3 more
-- **2026-04-17 · Decision:** Queued B-126 Conditional Release-Targeted Backlog Authoring for v0.1.12 next release targeting; status remains queued and implementation is intentionally deferred out of the v0.1.11 lane.
-  - Scope: B-126
-  - Evidence: odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md, odylith/radar/source/releases/release-assignment-events.v1.jsonl
 <!-- registry-requirements:end -->
 
 ## Feature History

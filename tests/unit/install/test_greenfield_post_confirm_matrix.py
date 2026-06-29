@@ -114,6 +114,292 @@ def _empty_package() -> SimpleNamespace:
     )
 
 
+def _substantive_project_brief() -> dict[str, object]:
+    return {
+        "purpose": "Coordinate permit readiness from submitted evidence through reviewable approval without bypassing human judgment.",
+        "operating_principle": (
+            "Keep every permit state transition tied to source evidence, reviewer ownership, blocked-path proof, "
+            "and explicit release scope."
+        ),
+        "project_outcome": (
+            "Release 0.0.1 proves one accepted permit path where intake, evidence review, decision rationale, "
+            "and readiness proof stay connected."
+        ),
+        "blueprint_sections": [
+            {
+                "section": f"Blueprint section {index}",
+                "must_capture": "The accepted actor, state change, evidence source, and release boundary.",
+                "why_it_matters": "The implementation plan needs a concrete proof target before source work starts.",
+            }
+            for index in range(1, 5)
+        ],
+        "customization_options": [
+            {
+                "id": f"option-{index}",
+                "decision": "Review depth",
+                "recommended": "Keep the first release focused on one governed permit path.",
+                "choices": ["single path", "expanded routing"],
+                "impact": "Changes the amount of evidence and review routing required before coding.",
+            }
+            for index in range(1, 6)
+        ],
+        "customization_prompts": [
+            "Prioritize reviewer evidence before adding additional notification channels.",
+            "Keep the first release bounded to one permit path.",
+            "Treat missing evidence as a blocked path requiring explanation.",
+        ],
+        "pre_coding_checkpoints": [
+            {
+                "checkpoint": f"Checkpoint {index}",
+                "operator_question": "Is the accepted path still concrete and reviewable?",
+                "done_when": "The workstream, component, diagram, and validation proof agree.",
+            }
+            for index in range(1, 5)
+        ],
+        "coding_readiness_gates": [
+            "The first path has accepted actors, state changes, and visible result.",
+            "The component boundary identifies source files and proof ownership.",
+            "The validation plan covers valid input, missing input, and replay.",
+            "The excluded scope remains explicit before implementation begins.",
+        ],
+        "host_independent_paths": [
+            {
+                "path": f"Path {index}",
+                "command": "./.odylith/bin/odylith validate plan-workstream-binding --repo-root .",
+                "works_in": "Codex, Claude Code, and installed consumer repositories.",
+                "use_when": "Use it before claiming the governed package is ready for source work.",
+            }
+            for index in range(1, 4)
+        ],
+    }
+
+
+def _substantive_workstream_text(title: str) -> str:
+    return f"""# {title}
+
+## Problem
+Permit staff need one reliable path from submitted evidence to a reviewable readiness decision.
+
+## Customer
+Review coordinators, permit operators, and evidence owners who must explain blocked or accepted permit states.
+
+## Opportunity
+Connect intake, evidence review, decision rationale, and release proof before implementation expands.
+
+## Product View
+The product helps an operator open the accepted permit path, review evidence, block missing inputs, and publish readiness proof.
+
+## Success Metrics
+- A valid permit request reaches a reviewable readiness decision with evidence, owner, and explanation.
+- A missing evidence request stops before release movement and shows the recovery path.
+
+## Validation
+- Prove valid input, missing input, replay evidence, and source-boundary traceability before release.
+"""
+
+
+def _substantive_registry_spec(label: str) -> str:
+    return f"""# {label}
+
+> Planned from user intent. Source boundary: src/app/{label.casefold().replace(' ', '-')}. Trace links for {label}: workstreams B-001.
+
+{label} owns one permit state transition, source evidence, reviewer explanation, and blocked-path recovery.
+
+Successful path evidence for {label}: accepted permit input, reviewer decision, visible readiness result, and persisted explanation.
+Blocked input evidence for {label}: missing or malformed evidence stops before a trusted result and records recovery guidance.
+Replay evidence for {label}: actor, input facts, status, explanation, and proof trail remain reviewable.
+"""
+
+
+def _substantive_prompt(position: int, label: str) -> dict[str, str]:
+    step_ids = {
+        1: "choose_language",
+        2: "create_plan",
+        3: "build_slice",
+        4: "prove_behavior",
+        5: "refresh_governance",
+    }
+    base = {
+        "step_id": step_ids.get(position, ""),
+        "label": label,
+        "when": "Use after accepting the governed permit readiness direction.",
+        "position": str(position),
+    }
+    if position == 1:
+        base.update(
+            {
+                "prompt": (
+                    "From the accepted product direction, choose the runtime, test tool, source layout, and first "
+                    "implementation boundary for the permit readiness path before writing source code."
+                ),
+                "result": "Runtime, test command, and source boundary are explicit.",
+                "stop": "Stop if runtime or test proof cannot be named.",
+            }
+        )
+    elif position == 2:
+        base.update(
+            {
+                "prompt": (
+                    "Plan the accepted first-release work item with source boundary, target files, proof gates for "
+                    "reviewing permit evidence, validation commands, and excluded scope before implementation."
+                ),
+                "result": "A governed target and proof plan are ready.",
+                "stop": "Stop if the plan omits source boundary, proof, validation, or excluded scope.",
+            }
+        )
+    elif position == 3:
+        base.update(
+            {
+                "prompt": (
+                    "Implement the accepted first-release work item only in target files, build only the permit "
+                    "readiness slice, add input validation, return a structured result, and preserve risk and excluded scope."
+                ),
+                "result": "Implemented behavior is bounded to the governed target.",
+                "stop": "Stop if work expands outside the slice or loses structured proof.",
+            }
+        )
+    elif position == 4:
+        base.update(
+            {
+                "prompt": (
+                    "Prove the accepted first-release work item with valid input, missing evidence, validation "
+                    "commands, replay evidence, source-boundary traceability, visible result inspection, and "
+                    "reviewer explanation before any release claim."
+                ),
+                "result": "Validation evidence covers accepted and blocked paths.",
+                "stop": "Stop if validation fails or missing-input proof is absent.",
+            }
+        )
+    else:
+        base.update(
+            {
+                "prompt": (
+                    "Refresh governed records for the accepted first-release work item after implemented behavior "
+                    "passes validation, then link source proof, workstream evidence, component ownership, and "
+                    "operator readiness back to the project artifacts."
+                ),
+                "result": "Governed records reflect implemented behavior and validation proof.",
+                "stop": "Stop before claiming release readiness if governed records and source proof disagree.",
+            }
+        )
+    return base
+
+
+def _substantive_package() -> SimpleNamespace:
+    project_brief = _substantive_project_brief()
+    proposal = {
+        "write_policy": "confirmed_intent_before_confirmed_create",
+        "intent": {
+            "reasoning_mode": "odylith_confirmed_governed_proposal",
+            "title": "Permit Readiness Workspace",
+            "state_object": "A permit request records submitted evidence, reviewer decision, blocked inputs, and readiness status.",
+        },
+        "semantic_model": {
+            "first_path_contract": {
+                "capability": "An operator submits permit evidence, reviewer checks it, and readiness proof is published.",
+                "visible_result": "Permit readiness proof with reviewer decision and blocked-path evidence.",
+                "events": [{"action": "submit"}, {"action": "review"}, {"action": "publish"}],
+            },
+            "domain_ontology": {
+                "state_object": "Permit request",
+                "proof_boundary": "Readiness proof is valid only when evidence, reviewer decision, and blocked-path replay are visible.",
+                "internal_systems": [
+                    "Permit Intake Register",
+                    "Evidence Review Ledger",
+                    "Readiness Proof Publisher",
+                ],
+                "external_systems": ["Municipal permit filing portal"],
+            },
+        },
+        "backlog": [
+            {
+                "title": f"Permit readiness slice {index}",
+                "success_metrics": [
+                    "Accepted permit evidence reaches a reviewer decision with visible readiness proof.",
+                    "Missing permit evidence stops before release movement and records recovery guidance.",
+                ],
+            }
+            for index in range(1, 5)
+        ],
+        "components": [
+            {"component_id": "permit-intake-register", "label": "Permit Intake Register Service", "release_scope": "first_path_required"},
+            {"component_id": "evidence-review-ledger", "label": "Evidence Review Ledger Service", "release_scope": "first_path_required"},
+            {"component_id": "readiness-proof-publisher", "label": "Readiness Proof Publisher", "release_scope": "first_path_required"},
+        ],
+        "diagrams": [{"title": f"Permit readiness diagram {index}"} for index in range(1, 5)],
+        "assumptions": [
+            {"tier": "user_intent", "statement": "Human reviewers keep final permit judgment."},
+            {"tier": "user_intent", "statement": "Missing evidence blocks readiness until recovery is recorded."},
+        ],
+        "open_questions": [{"question": "Which permit evidence source is authoritative for the first release?"}],
+        "project_brief": project_brief,
+    }
+    return SimpleNamespace(
+        proposal=proposal,
+        backlog_result={
+            "idea_files": {f"B-00{index}.md": _substantive_workstream_text(f"Permit readiness slice {index}") for index in range(1, 5)},
+            "backlog_index_text": "# Backlog Index\n\nB-001 through B-004 cover the accepted permit readiness path.\n",
+            "validation_gate": {"status": "passed"},
+        },
+        rendered_component_specs={
+            "Permit Intake Register Service": _substantive_registry_spec("Permit Intake Register Service"),
+            "Evidence Review Ledger Service": _substantive_registry_spec("Evidence Review Ledger Service"),
+            "Readiness Proof Publisher": _substantive_registry_spec("Readiness Proof Publisher"),
+        },
+        rendered_atlas_sources={
+            f"permit-readiness-{index}.mmd": (
+                "flowchart TD\n"
+                '  intake["Permit intake"] --> review["Evidence review"]\n'
+                '  review --> proof["Readiness proof"]\n'
+            )
+            for index in range(1, 5)
+        },
+        component_registry_preview=(
+            {"component_id": "permit-intake-register", "validation_gate": {"status": "passed"}},
+            {"component_id": "evidence-review-ledger", "validation_gate": {"status": "passed"}},
+            {"component_id": "readiness-proof-publisher", "validation_gate": {"status": "passed"}},
+        ),
+        project_brief_preview=project_brief,
+        accepted_project_preview={"validation_gate": {"visible_actors": _passing_visible_actors()}},
+        project_dashboard_preview={"host_handoff_prompts": [_substantive_prompt(index, label) for index, label in enumerate(
+            (
+                "Choose runtime and test harness",
+                "Create first implementation plan",
+                "Build smallest runnable slice",
+                "Prove accepted and blocked paths",
+                "Refresh governed records",
+            ),
+            start=1,
+        )]},
+        compass_memory_preview={},
+        next_steps_preview={
+            "start_workstream_id": "B-001",
+            "implementation_prompt": "Start B-001 from the accepted permit readiness model and prove valid, missing, replay, and source-boundary evidence.",
+            "verification_commands": ["pytest tests/unit/test_permit.py", "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ."],
+            "coding_readiness_gates": [
+                "Semantic contract accepted.",
+                "Release boundary accepted.",
+                "Proof commands identified.",
+                "Excluded scope preserved.",
+            ],
+            "operator_sequence": ["Review the project brief.", "Open B-001.", "Author the first technical plan."],
+        },
+        program_result={"dry_run": "true"},
+        prewrite_safety_preview={
+            "status": "passed",
+            "checks": {
+                "program_dry_run": True,
+                "validation_gate_passed": True,
+                "release_target_dry_run": True,
+                "release_assignment_dry_run": True,
+            },
+        },
+        release_target_result={},
+        release_assignment_result={},
+        release_workstream_ids=("B-001",),
+    )
+
+
 def _full_counts(module) -> object:
     return module.GreenfieldArtifactCounts(
         radar_workstreams=4,
@@ -226,7 +512,7 @@ def _passing_rescue_result(module) -> object:
 def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     create_envs: list[dict[str, str]] = []
-    monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
+    monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _substantive_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
     monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
     monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
@@ -264,7 +550,7 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
     module = _module()
     commands: list[list[str]] = []
     create_envs: list[dict[str, str]] = []
-    monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
+    monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _substantive_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
     monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
     monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
@@ -539,7 +825,7 @@ def test_quality_verdict_scores_premium_only_when_every_dimension_is_clean(monke
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
-        package=_empty_package(),
+        package=_substantive_package(),
         counts=_full_counts(module),
         create_returncode=0,
         create_seconds=20.0,
@@ -549,6 +835,68 @@ def test_quality_verdict_scores_premium_only_when_every_dimension_is_clean(monke
     assert verdict.score == 10
     assert all(score == 10 for score in verdict.scores.values())
     assert "all brutal release-quality dimensions scored 10" in verdict.score_explanation
+
+
+def test_quality_verdict_rejects_count_only_package_even_when_lenses_are_stubbed(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score < 10
+    assert verdict.scores["governance_depth"] == 0
+    assert verdict.scores["operator_usefulness"] == 0
+    assert verdict.scores["implementation_prompts"] == 0
+    assert any("independent package evidence missing project brief readback" in issue for issue in verdict.issues)
+    assert any("independent Radar readback has only 0 workstream" in issue for issue in verdict.issues)
+
+
+def test_quality_verdict_rejects_dry_run_only_prewrite_safety(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    package = _substantive_package()
+    package.prewrite_safety_preview = {}
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=package,
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.scores["engineer"] == 0
+    assert "independent package evidence missing explicit prewrite safety checks" in verdict.issues
+
+
+def test_quality_verdict_rejects_stub_atlas_diagrams(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    package = _substantive_package()
+    package.rendered_atlas_sources = {f"stub-{index}.mmd": "flowchart TD\n  A[Placeholder]\n" for index in range(1, 5)}
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=package,
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.scores["architect"] == 0
+    assert any("has no visible topology edge" in issue for issue in verdict.issues)
 
 
 def test_quality_verdict_rejects_collapsed_tribunal_judgment_roles(monkeypatch) -> None:
@@ -643,7 +991,7 @@ def test_quality_verdict_caps_score_when_rendered_artifacts_have_copy_findings(m
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
-        package=_empty_package(),
+        package=_substantive_package(),
         counts=_full_counts(module),
         create_returncode=0,
         create_seconds=20.0,
@@ -868,7 +1216,7 @@ def test_quality_verdict_rejects_surface_health_findings(monkeypatch) -> None:
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
-        package=_empty_package(),
+        package=_substantive_package(),
         counts=_full_counts(module),
         surface_issues=("rendered surface odylith/radar/radar.html does not load backlog-payload.v1.js",),
         create_returncode=0,

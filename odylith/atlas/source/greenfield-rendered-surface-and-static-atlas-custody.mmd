@@ -21,6 +21,8 @@ flowchart LR
     subgraph surface_lane["Generated Surface Package"]
       direction TB
       rendered_package["Rendered package collector<br/>Radar, Registry, Atlas,<br/>Compass, Casebook, Project"]
+      typed_units["Typed artifact-quality units<br/>projection id, source path,<br/>surface role, text kind"]
+      evidence_readback["Independent package evidence<br/>brief depth, Radar sections,<br/>Registry proof text,<br/>Atlas labels, prewrite safety,<br/>Project prompts, domain terms"]
       surface_health["Surface health checks<br/>HTML, payload, routes,<br/>asset references"]
       browser_state["Generated browser state proof<br/>normal, fallback,<br/>invalid-query recovery"]
       hard_score["Brutal release score<br/>weakest dimension wins"]
@@ -47,7 +49,9 @@ flowchart LR
     static_renderer --> rendered_assets
     rendered_assets --> freshness_gate
     freshness_gate --> rendered_package
-    rendered_package --> surface_health
+    rendered_package --> typed_units
+    typed_units --> evidence_readback
+    evidence_readback --> surface_health
     surface_health --> browser_state
     browser_state --> hard_score
     hard_score --> proof_checkpoint
@@ -61,7 +65,7 @@ flowchart LR
     classDef blocker fill:#FFF1F0,stroke:#F7B4AE,color:#17233A,stroke-width:1px;
     class final_manifest,prewrite_safety,governed_write,rollback_guard,dashboard_refresh,brand_assets write;
     class catalog_truth,mermaid_worker,static_renderer,rendered_assets,freshness_gate atlas;
-    class rendered_package,surface_health,browser_state,hard_score surface;
+    class rendered_package,typed_units,evidence_readback,surface_health,browser_state,hard_score surface;
     class exact_blockers,no_release_claim,proof_checkpoint blocker;
 
     style write_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155

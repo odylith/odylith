@@ -227,6 +227,7 @@ def _language_prompt(*, product: str, path: str, language: _LanguageSignal | Non
         stop = "Do not edit source yet. Stop after recommending the best default and asking me to confirm the language."
         result = "A language recommendation, package-shape options, runtime assumptions, and test strategy."
     return {
+        "step_id": "choose_language",
         "label": "Choose implementation language",
         "when": "Use this first when the accepted project does not already have a confirmed implementation language.",
         "prompt": prompt,
@@ -265,6 +266,7 @@ def _plan_prompt(
         f"proof gates for {proof_clause}, and excluded scope: {excluded_clause}.{target_clause}{readiness_clause}{command_clause}"
     )
     return {
+        "step_id": "create_plan",
         "label": "Create first implementation plan",
         "when": "Use this after the language and runtime are confirmed.",
         "prompt": prompt,
@@ -297,6 +299,7 @@ def _implementation_prompt(
         f"actually required, explain why and stop before editing.{target_clause}{readiness_clause}"
     )
     return {
+        "step_id": "build_slice",
         "label": "Build smallest runnable slice",
         "when": "Use this only after the first implementation plan is accepted.",
         "prompt": prompt,
@@ -326,6 +329,7 @@ def _proof_prompt(
         f"risk is controlled by the tests: {risk_clause}. Run the validation commands from the plan.{target_clause}{validation_clause}{command_clause}"
     )
     return {
+        "step_id": "prove_behavior",
         "label": "Add tests and proof",
         "when": "Use this after the first runnable slice exists.",
         "prompt": prompt,
@@ -344,6 +348,7 @@ def _refresh_prompt(*, product: str, path: str, capabilities: str, target: str, 
         f"match the implemented behavior from the accepted path: {path}. Keep capability records centered on these responsibilities: {capabilities}.{target_clause}{command_clause}"
     )
     return {
+        "step_id": "refresh_governance",
         "label": "Refresh governed records",
         "when": "Use this only after tests and validation pass.",
         "prompt": prompt,

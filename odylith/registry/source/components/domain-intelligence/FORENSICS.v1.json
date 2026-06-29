@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 192,
-    "mapped_workstream_evidence_count": 176,
+    "explicit_event_count": 197,
+    "mapped_workstream_evidence_count": 181,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 168,
+    "spec_history_event_count": 170,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 193
+    "timeline_event_count": 198
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -20,6 +20,195 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/artifact_quality/generated_copy_quality_units.py"
+      ],
+      "confidence": "high",
+      "event_index": 687,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield matrix scoring with independent package readback, typed artifact-quality units, and step-id Project prompt custody; source proof passed 49 focused tests plus the 228-test affected pack, while rebuilt installed proof remains required before release readiness.",
+      "ts_iso": "2026-06-29T00:39:39-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 688,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-29T00:36:30-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-typed-custody-test/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 686,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "B-142 installed matrix proof passed after typed canonical projection custody and matrix evidence cleanup: 13 standard high-variance cases scored 10/10 under 60s, browser proof passed for all, quantum passed in 27.015s, sparse intent passed, rescue smoke passed in 35.012s, and temp cleanup was clean.",
+      "ts_iso": "2026-06-28T23:40:46-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py"
+      ],
+      "confidence": "high",
+      "event_index": 685,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "B-142 canonical projection repetition custody now preserves typed fact provenance, release matrix keeps failed-create blocker evidence, and focused source proof is green; installed release readiness still awaits rebuilt matrix proof.",
+      "ts_iso": "2026-06-28T23:03:43-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 684,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield first-path visible-result and sequence custody repair is source-local broad-green: slop/live 119 passed in 260.92s, component/general artifact quality 91 passed in 521.34s, and sparse/matrix guards 27 passed in 14.07s; installed release readiness remains pending fresh matrix/dist proof.",
+      "ts_iso": "2026-06-28T22:03:10-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 683,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Sparse greenfield topology repair is source-local focused-green, but widened greenfield quality packs remain red; release readiness stays blocked pending typed sequence, prompt, and surface-custody fixes.",
+      "ts_iso": "2026-06-28T20:29:15-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434/greenfield-post-confirm-matrix.v1.json",
@@ -55,22 +244,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 683,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-28T20:02:41-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [],

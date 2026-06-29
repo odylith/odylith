@@ -38,6 +38,9 @@ from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
 from greenfield_matrix_types import GreenfieldQualityVerdict  # noqa: E402
 from greenfield_matrix_types import GreenfieldRescueSmokeResult  # noqa: E402
+from greenfield_matrix_package_evidence import evidence_blocks_dimension  # noqa: E402
+from greenfield_matrix_package_evidence import evidence_finding_messages  # noqa: E402
+from greenfield_matrix_package_evidence import package_evidence_findings  # noqa: E402
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import (  # noqa: E402
     tribunal_visible_actor_quality_issues,
 )
@@ -404,12 +407,14 @@ def build_quality_verdict(
     manifest_lenses = _manifest_lenses(manifest)
     package_lens_report = _as_mapping(build_greenfield_quality_lens_report(package)) if create_returncode == 0 else {}
     package_lenses = _package_lenses(package_lens_report)
+    evidence_findings = tuple(package_evidence_findings(package)) if create_returncode == 0 else ()
     rendered_issues = (
         tuple(
             dict.fromkeys(
                 (
                     *tuple(greenfield_rendered_package_quality_issues(package)),
                     *tuple(_package_lens_issues(package_lens_report)),
+                    *tuple(evidence_finding_messages(evidence_findings)),
                     *tuple(_validation_gate_actor_issues(create_payload=create_payload, package=package)),
                     *tuple(str(issue).strip() for issue in surface_issues if str(issue).strip()),
                 )
@@ -429,6 +434,7 @@ def build_quality_verdict(
         "product_manager": (
             _lens_passed(manifest_lenses, "product_manager")
             and _lens_passed(package_lenses, "product_manager")
+            and not evidence_blocks_dimension(evidence_findings, "product_manager")
             and counts.radar_workstreams >= 4
             and counts.release_records >= 1
             and counts.project_brief_records >= 1
@@ -436,6 +442,7 @@ def build_quality_verdict(
         "architect": (
             _lens_passed(manifest_lenses, "architect")
             and _lens_passed(package_lenses, "architect")
+            and not evidence_blocks_dimension(evidence_findings, "architect")
             and counts.registry_component_specs >= 3
             and counts.atlas_mermaid_sources >= 4
             and counts.trace_nodes >= 12
@@ -444,6 +451,7 @@ def build_quality_verdict(
         "engineer": (
             _lens_passed(manifest_lenses, "engineer")
             and _lens_passed(package_lenses, "engineer")
+            and not evidence_blocks_dimension(evidence_findings, "engineer")
             and counts.registry_component_specs >= 3
             and counts.program_records >= 1
             and create_returncode == 0
@@ -452,6 +460,7 @@ def build_quality_verdict(
         "domain_expert": (
             _lens_passed(manifest_lenses, "domain_expert")
             and _lens_passed(package_lenses, "domain_expert")
+            and not evidence_blocks_dimension(evidence_findings, "domain_expert")
             and counts.domain_term_hits >= _required_domain_term_hits(counts)
         ),
     }
@@ -467,6 +476,7 @@ def build_quality_verdict(
         rendered_issues=rendered_issues,
         prompt_issues=prompt_issues,
         lenses=lenses,
+        evidence_findings=evidence_findings,
     )
     final_score = _final_quality_score(
         scores=scores,
@@ -670,9 +680,14 @@ def _quality_scores(
     rendered_issues: Sequence[str],
     prompt_issues: Sequence[str],
     lenses: Mapping[str, bool],
+    evidence_findings: Sequence[Any] = (),
 ) -> dict[str, int]:
     return {
-        "completion": _completion_score(manifest=manifest, counts=counts, create_returncode=create_returncode),
+        "completion": (
+            0
+            if evidence_blocks_dimension(evidence_findings, "completion")
+            else _completion_score(manifest=manifest, counts=counts, create_returncode=create_returncode)
+        ),
         "latency": _latency_score(create_returncode=create_returncode, create_seconds=create_seconds),
         "semantic_manifest": _semantic_manifest_score(manifest),
         "copy_semantic_clarity": _copy_semantic_clarity_score(
@@ -680,13 +695,20 @@ def _quality_scores(
             create_returncode=create_returncode,
             rendered_issues=rendered_issues,
         ),
-        "governance_depth": _governance_depth_score(counts),
+        "governance_depth": (
+            0 if evidence_blocks_dimension(evidence_findings, "governance_depth") else _governance_depth_score(counts)
+        ),
         "traceability": _traceability_score(counts),
-        "operator_usefulness": _operator_usefulness_score(counts=counts, create_returncode=create_returncode),
+        "operator_usefulness": (
+            0
+            if evidence_blocks_dimension(evidence_findings, "operator_usefulness")
+            else _operator_usefulness_score(counts=counts, create_returncode=create_returncode)
+        ),
         "implementation_prompts": _implementation_prompt_score(
             counts=counts,
             create_returncode=create_returncode,
             prompt_issues=prompt_issues,
+            evidence_findings=evidence_findings,
         ),
         "product_manager": 10 if lenses.get("product_manager") else 0,
         "architect": 10 if lenses.get("architect") else 0,
@@ -763,8 +785,9 @@ def _implementation_prompt_score(
     counts: GreenfieldArtifactCounts,
     create_returncode: int,
     prompt_issues: Sequence[str],
+    evidence_findings: Sequence[Any] = (),
 ) -> int:
-    if create_returncode != 0 or prompt_issues:
+    if create_returncode != 0 or prompt_issues or evidence_blocks_dimension(evidence_findings, "implementation_prompts"):
         return 0
     return 10 if counts.project_implementation_prompts >= 5 else 0
 

@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-06-29T06:41:26Z",
+  "generated_utc": "2026-06-29T07:41:45Z",
   "release_summary": {
     "catalog": [
       {
@@ -295,18 +295,18 @@
         "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
         "plan": {
           "created": "2026-06-26",
-          "updated": "2026-06-27",
-          "all_total_tasks": 102,
-          "all_done_tasks": 82,
-          "total_tasks": 94,
-          "done_tasks": 82,
-          "progress_ratio": 0.8723,
+          "updated": "2026-06-29",
+          "all_total_tasks": 103,
+          "all_done_tasks": 83,
+          "total_tasks": 95,
+          "done_tasks": 83,
+          "progress_ratio": 0.8737,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.8723,
+          "display_progress_ratio": 0.8737,
           "display_progress_label": "87% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 82/94",
+          "checklist_label": "Checklist 83/95",
           "next_tasks": [
             "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
             "Replace rendered-prose package repair with semantic or plan patch",
@@ -319,19 +319,19 @@
         "activity": {
           "24h": {
             "commit_count": 8,
-            "local_change_count": 8,
-            "file_touch_count": 208
+            "local_change_count": 13,
+            "file_touch_count": 209
           },
           "48h": {
             "commit_count": 22,
-            "local_change_count": 8,
-            "file_touch_count": 303
+            "local_change_count": 13,
+            "file_touch_count": 302
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-28T23:40:46-07:00",
-          "age_days": 2,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 3,
           "eta_days": 1,
           "eta_confidence": "high"
         },
@@ -564,7 +564,7 @@
         "timeline": {
           "start_date": "2026-05-01",
           "last_activity_iso": "2026-06-25T22:00:41-07:00",
-          "age_days": 58,
+          "age_days": 59,
           "eta_days": 1,
           "eta_confidence": "high"
         },
@@ -758,15 +758,15 @@
             "file_touch_count": 201
           },
           "48h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 3,
             "file_touch_count": 241
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-06-28T20:05:25-07:00",
-          "age_days": 79,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 80,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -929,15 +929,15 @@
             "file_touch_count": 201
           },
           "48h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 3,
             "file_touch_count": 237
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-06-28T20:05:25-07:00",
-          "age_days": 92,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -1101,15 +1101,15 @@
             "file_touch_count": 201
           },
           "48h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 3,
             "file_touch_count": 241
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-06-28T20:05:25-07:00",
-          "age_days": 81,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -1275,15 +1275,15 @@
             "file_touch_count": 201
           },
           "48h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 3,
             "file_touch_count": 241
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-06-28T20:05:25-07:00",
-          "age_days": 80,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -1445,7 +1445,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -1685,7 +1685,7 @@
         "timeline": {
           "start_date": "2026-03-26",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 94,
+          "age_days": 95,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -1845,7 +1845,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 93,
+          "age_days": 94,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -2057,7 +2057,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -2277,7 +2277,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 82,
+          "age_days": 83,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -2505,7 +2505,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 82,
+          "age_days": 83,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -2689,7 +2689,7 @@
         "timeline": {
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 72,
+          "age_days": 73,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -2867,7 +2867,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "2026-06-28T04:07:31-07:00",
-          "age_days": 89,
+          "age_days": 90,
           "eta_days": 10,
           "eta_confidence": "high"
         },
@@ -3045,7 +3045,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 13,
           "eta_confidence": "high"
         },
@@ -3219,7 +3219,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "2026-06-28T04:07:31-07:00",
-          "age_days": 89,
+          "age_days": 90,
           "eta_days": 10,
           "eta_confidence": "high"
         },
@@ -3447,7 +3447,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -3610,7 +3610,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-06-28T04:07:31-07:00",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -3794,7 +3794,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -4985,7 +4985,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -5890,7 +5890,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -6795,7 +6795,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -7980,7 +7980,7 @@
         "timeline": {
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 72,
+          "age_days": 73,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -8143,7 +8143,7 @@
         "timeline": {
           "start_date": "2026-04-27",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 62,
+          "age_days": 63,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8315,7 +8315,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-06-28T00:46:59-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8518,7 +8518,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8718,7 +8718,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -8910,7 +8910,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -9102,7 +9102,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -9326,7 +9326,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -9510,7 +9510,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-06-28T00:46:59-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -9704,8 +9704,8 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-04-09T10:38:07-07:00",
-          "age_days": 91,
-          "eta_days": 39,
+          "age_days": 92,
+          "eta_days": 40,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -9886,7 +9886,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-04-15T23:17:55-07:00",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 34,
           "eta_confidence": "high"
         },
@@ -10056,8 +10056,8 @@
         "timeline": {
           "start_date": "2026-04-01",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
-          "age_days": 88,
-          "eta_days": 2376,
+          "age_days": 89,
+          "eta_days": 2403,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -10226,8 +10226,8 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "2026-04-05T22:15:26-07:00",
-          "age_days": 85,
-          "eta_days": 1360,
+          "age_days": 86,
+          "eta_days": 1376,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -10396,8 +10396,8 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "2026-04-10T09:39:13-07:00",
-          "age_days": 83,
-          "eta_days": 249,
+          "age_days": 84,
+          "eta_days": 252,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -10570,8 +10570,8 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-04-09T17:44:39-07:00",
-          "age_days": 82,
-          "eta_days": 56,
+          "age_days": 83,
+          "eta_days": 57,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -10732,7 +10732,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -10935,8 +10935,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:09:12-07:00",
-          "age_days": 78,
-          "eta_days": 30,
+          "age_days": 79,
+          "eta_days": 31,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -11169,8 +11169,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T10:45:08-07:00",
-          "age_days": 78,
-          "eta_days": 35,
+          "age_days": 79,
+          "eta_days": 36,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -11324,7 +11324,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-15T23:39:21-07:00",
-          "age_days": 78,
+          "age_days": 79,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -11519,7 +11519,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:18:23-07:00",
-          "age_days": 78,
+          "age_days": 79,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -11714,8 +11714,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-14T10:30:13-07:00",
-          "age_days": 78,
-          "eta_days": 375,
+          "age_days": 79,
+          "eta_days": 380,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -11880,7 +11880,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T17:40:14-07:00",
-          "age_days": 78,
+          "age_days": 79,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -12039,7 +12039,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-11T19:44:39-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -12234,7 +12234,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-12T16:26:24-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -12429,7 +12429,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 65,
           "eta_confidence": "high"
         },
@@ -12662,7 +12662,7 @@
         "timeline": {
           "start_date": "2026-04-15",
           "last_activity_iso": "2026-04-15T09:38:42-07:00",
-          "age_days": 74,
+          "age_days": 75,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -12846,7 +12846,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-04-17T22:57:33-07:00",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -13033,7 +13033,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 93,
+          "age_days": 94,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -13188,7 +13188,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 93,
+          "age_days": 94,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -13364,7 +13364,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 93,
+          "age_days": 94,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -13523,7 +13523,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 92,
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -13683,7 +13683,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 92,
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -13851,7 +13851,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 92,
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14015,7 +14015,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "2026-03-28T21:05:40-07:00",
-          "age_days": 92,
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14179,7 +14179,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14339,7 +14339,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14523,7 +14523,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14679,7 +14679,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -14845,7 +14845,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 7,
           "eta_confidence": "high"
         },
@@ -15009,7 +15009,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15181,7 +15181,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15353,7 +15353,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15517,7 +15517,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15673,7 +15673,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -15853,7 +15853,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16005,7 +16005,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16161,7 +16161,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16313,7 +16313,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16477,7 +16477,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-04-27T15:19:58-07:00",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16645,7 +16645,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -16809,7 +16809,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -16972,7 +16972,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -17135,7 +17135,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -17298,7 +17298,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -17457,7 +17457,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "",
-          "age_days": 89,
+          "age_days": 90,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -17622,7 +17622,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 87,
+          "age_days": 88,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -17787,7 +17787,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 87,
+          "age_days": 88,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -17956,7 +17956,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 87,
+          "age_days": 88,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -18121,7 +18121,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 87,
+          "age_days": 88,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -18282,7 +18282,7 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "",
-          "age_days": 85,
+          "age_days": 86,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -18451,7 +18451,7 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "",
-          "age_days": 85,
+          "age_days": 86,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -18606,7 +18606,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -18762,7 +18762,7 @@
         "timeline": {
           "start_date": "2026-04-27",
           "last_activity_iso": "2026-04-27T21:33:02-07:00",
-          "age_days": 62,
+          "age_days": 63,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -18918,7 +18918,7 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "",
-          "age_days": 83,
+          "age_days": 84,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19074,7 +19074,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19230,7 +19230,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19386,7 +19386,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19542,7 +19542,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19698,7 +19698,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -19858,7 +19858,7 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "",
-          "age_days": 83,
+          "age_days": 84,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -20025,7 +20025,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "",
-          "age_days": 82,
+          "age_days": 83,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -20181,7 +20181,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -20345,7 +20345,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -20503,7 +20503,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -20659,7 +20659,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -20848,7 +20848,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -21033,7 +21033,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -21217,7 +21217,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -21409,7 +21409,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -21593,7 +21593,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -21781,7 +21781,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -21977,7 +21977,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -22165,7 +22165,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-06-25T21:21:10-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -22333,7 +22333,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -22495,7 +22495,7 @@
         "timeline": {
           "start_date": "2026-04-10",
           "last_activity_iso": "",
-          "age_days": 79,
+          "age_days": 80,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -22688,7 +22688,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -22844,7 +22844,7 @@
         "timeline": {
           "start_date": "2026-04-13",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 76,
+          "age_days": 77,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -22999,7 +22999,7 @@
         "timeline": {
           "start_date": "2026-04-13",
           "last_activity_iso": "",
-          "age_days": 76,
+          "age_days": 77,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -23154,7 +23154,7 @@
         "timeline": {
           "start_date": "2026-04-15",
           "last_activity_iso": "",
-          "age_days": 74,
+          "age_days": 75,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -23346,7 +23346,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -23538,7 +23538,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -23730,7 +23730,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -23922,7 +23922,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -24114,7 +24114,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -24298,7 +24298,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -24523,7 +24523,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -24748,7 +24748,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -24973,7 +24973,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -25198,7 +25198,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -25891,7 +25891,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26109,7 +26109,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26325,7 +26325,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26541,7 +26541,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26757,7 +26757,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -26973,7 +26973,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -27189,7 +27189,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -27405,7 +27405,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -27556,7 +27556,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -27707,7 +27707,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -27858,7 +27858,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28009,7 +28009,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28160,7 +28160,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28311,7 +28311,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28462,7 +28462,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28613,7 +28613,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28764,7 +28764,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -28915,7 +28915,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -29066,7 +29066,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -29217,7 +29217,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -29368,7 +29368,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-05-02T11:10:14-07:00",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -29562,7 +29562,7 @@
         "timeline": {
           "start_date": "2026-06-03",
           "last_activity_iso": "",
-          "age_days": 25,
+          "age_days": 26,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -29737,18 +29737,18 @@
         "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
         "plan": {
           "created": "2026-06-26",
-          "updated": "2026-06-27",
-          "all_total_tasks": 102,
-          "all_done_tasks": 82,
-          "total_tasks": 94,
-          "done_tasks": 82,
-          "progress_ratio": 0.8723,
+          "updated": "2026-06-29",
+          "all_total_tasks": 103,
+          "all_done_tasks": 83,
+          "total_tasks": 95,
+          "done_tasks": 83,
+          "progress_ratio": 0.8737,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.8723,
+          "display_progress_ratio": 0.8737,
           "display_progress_label": "87% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 82/94",
+          "checklist_label": "Checklist 83/95",
           "next_tasks": [
             "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
             "Replace rendered-prose package repair with semantic or plan patch",
@@ -29761,19 +29761,19 @@
         "activity": {
           "24h": {
             "commit_count": 8,
-            "local_change_count": 8,
-            "file_touch_count": 208
+            "local_change_count": 13,
+            "file_touch_count": 209
           },
           "48h": {
             "commit_count": 22,
-            "local_change_count": 8,
-            "file_touch_count": 303
+            "local_change_count": 13,
+            "file_touch_count": 302
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-28T23:40:46-07:00",
-          "age_days": 2,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 3,
           "eta_days": 1,
           "eta_confidence": "high"
         },
@@ -30006,7 +30006,7 @@
         "timeline": {
           "start_date": "2026-05-01",
           "last_activity_iso": "2026-06-25T22:00:41-07:00",
-          "age_days": 58,
+          "age_days": 59,
           "eta_days": 1,
           "eta_confidence": "high"
         },
@@ -30200,15 +30200,15 @@
             "file_touch_count": 201
           },
           "48h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 3,
             "file_touch_count": 241
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-06-28T20:05:25-07:00",
-          "age_days": 79,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 80,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -30371,15 +30371,15 @@
             "file_touch_count": 201
           },
           "48h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 3,
             "file_touch_count": 237
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-06-28T20:05:25-07:00",
-          "age_days": 92,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -30543,15 +30543,15 @@
             "file_touch_count": 201
           },
           "48h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 3,
             "file_touch_count": 241
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-06-28T20:05:25-07:00",
-          "age_days": 81,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -30717,15 +30717,15 @@
             "file_touch_count": 201
           },
           "48h": {
-            "commit_count": 14,
+            "commit_count": 15,
             "local_change_count": 3,
             "file_touch_count": 241
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-06-28T20:05:25-07:00",
-          "age_days": 80,
+          "last_activity_iso": "2026-06-29T00:39:51-07:00",
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -30887,7 +30887,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -31127,7 +31127,7 @@
         "timeline": {
           "start_date": "2026-03-26",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 94,
+          "age_days": 95,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -31287,7 +31287,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 93,
+          "age_days": 94,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -31499,7 +31499,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -31719,7 +31719,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 82,
+          "age_days": 83,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -31947,7 +31947,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 82,
+          "age_days": 83,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -32131,7 +32131,7 @@
         "timeline": {
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 72,
+          "age_days": 73,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -32309,7 +32309,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "2026-06-28T04:07:31-07:00",
-          "age_days": 89,
+          "age_days": 90,
           "eta_days": 10,
           "eta_confidence": "high"
         },
@@ -32487,7 +32487,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 13,
           "eta_confidence": "high"
         },
@@ -32661,7 +32661,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "2026-06-28T04:07:31-07:00",
-          "age_days": 89,
+          "age_days": 90,
           "eta_days": 10,
           "eta_confidence": "high"
         },
@@ -32889,7 +32889,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -33052,7 +33052,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-06-28T04:07:31-07:00",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -33236,7 +33236,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -34427,7 +34427,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -35332,7 +35332,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -36237,7 +36237,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -37422,7 +37422,7 @@
         "timeline": {
           "start_date": "2026-04-17",
           "last_activity_iso": "2026-06-28T19:27:41-07:00",
-          "age_days": 72,
+          "age_days": 73,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -37585,7 +37585,7 @@
         "timeline": {
           "start_date": "2026-04-27",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 62,
+          "age_days": 63,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -37757,7 +37757,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-06-28T00:46:59-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -37960,7 +37960,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38160,7 +38160,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38352,7 +38352,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38544,7 +38544,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38768,7 +38768,7 @@
         "timeline": {
           "start_date": "2026-04-14",
           "last_activity_iso": "2026-06-28T15:50:04-07:00",
-          "age_days": 75,
+          "age_days": 76,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -38952,7 +38952,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-06-28T00:46:59-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -39146,8 +39146,8 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "2026-04-09T10:38:07-07:00",
-          "age_days": 91,
-          "eta_days": 39,
+          "age_days": 92,
+          "eta_days": 40,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -39328,7 +39328,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-04-15T23:17:55-07:00",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 34,
           "eta_confidence": "high"
         },
@@ -39498,8 +39498,8 @@
         "timeline": {
           "start_date": "2026-04-01",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
-          "age_days": 88,
-          "eta_days": 2376,
+          "age_days": 89,
+          "eta_days": 2403,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -39668,8 +39668,8 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "2026-04-05T22:15:26-07:00",
-          "age_days": 85,
-          "eta_days": 1360,
+          "age_days": 86,
+          "eta_days": 1376,
           "eta_confidence": "low"
         },
         "lineage": {
@@ -39838,8 +39838,8 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "2026-04-10T09:39:13-07:00",
-          "age_days": 83,
-          "eta_days": 249,
+          "age_days": 84,
+          "eta_days": 252,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -40012,8 +40012,8 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "2026-04-09T17:44:39-07:00",
-          "age_days": 82,
-          "eta_days": 56,
+          "age_days": 83,
+          "eta_days": 57,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -40174,7 +40174,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "2026-04-12T10:37:07-07:00",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -40377,8 +40377,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:09:12-07:00",
-          "age_days": 78,
-          "eta_days": 30,
+          "age_days": 79,
+          "eta_days": 31,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -40611,8 +40611,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T10:45:08-07:00",
-          "age_days": 78,
-          "eta_days": 35,
+          "age_days": 79,
+          "eta_days": 36,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -40766,7 +40766,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-15T23:39:21-07:00",
-          "age_days": 78,
+          "age_days": 79,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -40961,7 +40961,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-12T10:18:23-07:00",
-          "age_days": 78,
+          "age_days": 79,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -41156,8 +41156,8 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-14T10:30:13-07:00",
-          "age_days": 78,
-          "eta_days": 375,
+          "age_days": 79,
+          "eta_days": 380,
           "eta_confidence": "high"
         },
         "lineage": {
@@ -41322,7 +41322,7 @@
         "timeline": {
           "start_date": "2026-04-11",
           "last_activity_iso": "2026-04-11T17:40:14-07:00",
-          "age_days": 78,
+          "age_days": 79,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -41481,7 +41481,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-11T19:44:39-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -41676,7 +41676,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-12T16:26:24-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -41871,7 +41871,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-04-28T14:07:28-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 65,
           "eta_confidence": "high"
         },
@@ -42104,7 +42104,7 @@
         "timeline": {
           "start_date": "2026-04-15",
           "last_activity_iso": "2026-04-15T09:38:42-07:00",
-          "age_days": 74,
+          "age_days": 75,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -42288,7 +42288,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "2026-04-17T22:57:33-07:00",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -42475,7 +42475,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 93,
+          "age_days": 94,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -42630,7 +42630,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 93,
+          "age_days": 94,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -42806,7 +42806,7 @@
         "timeline": {
           "start_date": "2026-03-27",
           "last_activity_iso": "",
-          "age_days": 93,
+          "age_days": 94,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -42965,7 +42965,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 92,
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -43125,7 +43125,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 92,
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -43293,7 +43293,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "",
-          "age_days": 92,
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -43457,7 +43457,7 @@
         "timeline": {
           "start_date": "2026-03-28",
           "last_activity_iso": "2026-03-28T21:05:40-07:00",
-          "age_days": 92,
+          "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -43621,7 +43621,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -43781,7 +43781,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -43965,7 +43965,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44121,7 +44121,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44287,7 +44287,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 7,
           "eta_confidence": "high"
         },
@@ -44451,7 +44451,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44623,7 +44623,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44795,7 +44795,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -44959,7 +44959,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45115,7 +45115,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45295,7 +45295,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45447,7 +45447,7 @@
         "timeline": {
           "start_date": "2026-03-29",
           "last_activity_iso": "",
-          "age_days": 91,
+          "age_days": 92,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45603,7 +45603,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45755,7 +45755,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -45919,7 +45919,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "2026-04-27T15:19:58-07:00",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -46087,7 +46087,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -46251,7 +46251,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -46414,7 +46414,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -46577,7 +46577,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -46740,7 +46740,7 @@
         "timeline": {
           "start_date": "2026-03-30",
           "last_activity_iso": "",
-          "age_days": 90,
+          "age_days": 91,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -46899,7 +46899,7 @@
         "timeline": {
           "start_date": "2026-03-31",
           "last_activity_iso": "",
-          "age_days": 89,
+          "age_days": 90,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -47064,7 +47064,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 87,
+          "age_days": 88,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -47229,7 +47229,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 87,
+          "age_days": 88,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -47398,7 +47398,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 87,
+          "age_days": 88,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -47563,7 +47563,7 @@
         "timeline": {
           "start_date": "2026-04-02",
           "last_activity_iso": "",
-          "age_days": 87,
+          "age_days": 88,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -47724,7 +47724,7 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "",
-          "age_days": 85,
+          "age_days": 86,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -47893,7 +47893,7 @@
         "timeline": {
           "start_date": "2026-04-04",
           "last_activity_iso": "",
-          "age_days": 85,
+          "age_days": 86,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -48048,7 +48048,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48204,7 +48204,7 @@
         "timeline": {
           "start_date": "2026-04-27",
           "last_activity_iso": "2026-04-27T21:33:02-07:00",
-          "age_days": 62,
+          "age_days": 63,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48360,7 +48360,7 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "",
-          "age_days": 83,
+          "age_days": 84,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48516,7 +48516,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48672,7 +48672,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48828,7 +48828,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -48984,7 +48984,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -49140,7 +49140,7 @@
         "timeline": {
           "start_date": "2026-04-28",
           "last_activity_iso": "",
-          "age_days": 61,
+          "age_days": 62,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -49300,7 +49300,7 @@
         "timeline": {
           "start_date": "2026-04-06",
           "last_activity_iso": "",
-          "age_days": 83,
+          "age_days": 84,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -49467,7 +49467,7 @@
         "timeline": {
           "start_date": "2026-04-07",
           "last_activity_iso": "",
-          "age_days": 82,
+          "age_days": 83,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -49623,7 +49623,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -49787,7 +49787,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -49945,7 +49945,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -50101,7 +50101,7 @@
         "timeline": {
           "start_date": "2026-04-08",
           "last_activity_iso": "",
-          "age_days": 81,
+          "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -50290,7 +50290,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -50475,7 +50475,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -50659,7 +50659,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -50851,7 +50851,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -51035,7 +51035,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -51223,7 +51223,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -51419,7 +51419,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -51607,7 +51607,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "2026-06-25T21:21:10-07:00",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -51775,7 +51775,7 @@
         "timeline": {
           "start_date": "2026-04-09",
           "last_activity_iso": "",
-          "age_days": 80,
+          "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -51937,7 +51937,7 @@
         "timeline": {
           "start_date": "2026-04-10",
           "last_activity_iso": "",
-          "age_days": 79,
+          "age_days": 80,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -52130,7 +52130,7 @@
         "timeline": {
           "start_date": "2026-04-12",
           "last_activity_iso": "",
-          "age_days": 77,
+          "age_days": 78,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -52286,7 +52286,7 @@
         "timeline": {
           "start_date": "2026-04-13",
           "last_activity_iso": "2026-03-23T17:32:23-07:00",
-          "age_days": 76,
+          "age_days": 77,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -52441,7 +52441,7 @@
         "timeline": {
           "start_date": "2026-04-13",
           "last_activity_iso": "",
-          "age_days": 76,
+          "age_days": 77,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -52596,7 +52596,7 @@
         "timeline": {
           "start_date": "2026-04-15",
           "last_activity_iso": "",
-          "age_days": 74,
+          "age_days": 75,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -52788,7 +52788,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -52980,7 +52980,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -53172,7 +53172,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -53364,7 +53364,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -53556,7 +53556,7 @@
         "timeline": {
           "start_date": "2026-04-16",
           "last_activity_iso": "2026-04-16T14:54:04-07:00",
-          "age_days": 73,
+          "age_days": 74,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -53740,7 +53740,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -53965,7 +53965,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -54190,7 +54190,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -54415,7 +54415,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -54640,7 +54640,7 @@
         "timeline": {
           "start_date": "2026-04-25",
           "last_activity_iso": "2026-04-17T16:27:58-07:00",
-          "age_days": 64,
+          "age_days": 65,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -55333,7 +55333,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -55551,7 +55551,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -55767,7 +55767,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -55983,7 +55983,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -56199,7 +56199,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -56415,7 +56415,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -56631,7 +56631,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -56847,7 +56847,7 @@
         "timeline": {
           "start_date": "2026-04-18",
           "last_activity_iso": "",
-          "age_days": 71,
+          "age_days": 72,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -56998,7 +56998,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57149,7 +57149,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57300,7 +57300,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57451,7 +57451,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57602,7 +57602,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57753,7 +57753,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -57904,7 +57904,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58055,7 +58055,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58206,7 +58206,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58357,7 +58357,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58508,7 +58508,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58659,7 +58659,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -58810,7 +58810,7 @@
         "timeline": {
           "start_date": "2026-04-29",
           "last_activity_iso": "2026-05-02T11:10:14-07:00",
-          "age_days": 60,
+          "age_days": 61,
           "eta_days": 0,
           "eta_confidence": "high"
         },
@@ -59004,7 +59004,7 @@
         "timeline": {
           "start_date": "2026-06-03",
           "last_activity_iso": "",
-          "age_days": 25,
+          "age_days": 26,
           "eta_days": null,
           "eta_confidence": "low"
         },
@@ -59180,18 +59180,18 @@
       "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "plan": {
         "created": "2026-06-26",
-        "updated": "2026-06-27",
-        "all_total_tasks": 102,
-        "all_done_tasks": 82,
-        "total_tasks": 94,
-        "done_tasks": 82,
-        "progress_ratio": 0.8723,
+        "updated": "2026-06-29",
+        "all_total_tasks": 103,
+        "all_done_tasks": 83,
+        "total_tasks": 95,
+        "done_tasks": 83,
+        "progress_ratio": 0.8737,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.8723,
+        "display_progress_ratio": 0.8737,
         "display_progress_label": "87% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 82/94",
+        "checklist_label": "Checklist 83/95",
         "next_tasks": [
           "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
           "Replace rendered-prose package repair with semantic or plan patch",
@@ -59204,19 +59204,19 @@
       "activity": {
         "24h": {
           "commit_count": 8,
-          "local_change_count": 8,
-          "file_touch_count": 208
+          "local_change_count": 13,
+          "file_touch_count": 209
         },
         "48h": {
           "commit_count": 22,
-          "local_change_count": 8,
-          "file_touch_count": 303
+          "local_change_count": 13,
+          "file_touch_count": 302
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-28T23:40:46-07:00",
-        "age_days": 2,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 3,
         "eta_days": 1,
         "eta_confidence": "high"
       },
@@ -59449,7 +59449,7 @@
       "timeline": {
         "start_date": "2026-05-01",
         "last_activity_iso": "2026-06-25T22:00:41-07:00",
-        "age_days": 58,
+        "age_days": 59,
         "eta_days": 1,
         "eta_confidence": "high"
       },
@@ -59643,15 +59643,15 @@
           "file_touch_count": 201
         },
         "48h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 3,
           "file_touch_count": 241
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-06-28T20:05:25-07:00",
-        "age_days": 79,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 80,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -59814,15 +59814,15 @@
           "file_touch_count": 201
         },
         "48h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 3,
           "file_touch_count": 237
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-06-28T20:05:25-07:00",
-        "age_days": 92,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -59986,15 +59986,15 @@
           "file_touch_count": 201
         },
         "48h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 3,
           "file_touch_count": 241
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-06-28T20:05:25-07:00",
-        "age_days": 81,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -60160,15 +60160,15 @@
           "file_touch_count": 201
         },
         "48h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 3,
           "file_touch_count": 241
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-06-28T20:05:25-07:00",
-        "age_days": 80,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -60330,7 +60330,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -60570,7 +60570,7 @@
       "timeline": {
         "start_date": "2026-03-26",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 94,
+        "age_days": 95,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -60730,7 +60730,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 93,
+        "age_days": 94,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -60942,7 +60942,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -61162,7 +61162,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 82,
+        "age_days": 83,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -61390,7 +61390,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 82,
+        "age_days": 83,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -61574,7 +61574,7 @@
       "timeline": {
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 72,
+        "age_days": 73,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -61752,7 +61752,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "2026-06-28T04:07:31-07:00",
-        "age_days": 89,
+        "age_days": 90,
         "eta_days": 10,
         "eta_confidence": "high"
       },
@@ -61930,7 +61930,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 13,
         "eta_confidence": "high"
       },
@@ -62104,7 +62104,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "2026-06-28T04:07:31-07:00",
-        "age_days": 89,
+        "age_days": 90,
         "eta_days": 10,
         "eta_confidence": "high"
       },
@@ -62332,7 +62332,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -62495,7 +62495,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-06-28T04:07:31-07:00",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -62679,7 +62679,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -63870,7 +63870,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -64775,7 +64775,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -65680,7 +65680,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -66865,7 +66865,7 @@
       "timeline": {
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 72,
+        "age_days": 73,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -67028,7 +67028,7 @@
       "timeline": {
         "start_date": "2026-04-27",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 62,
+        "age_days": 63,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67200,7 +67200,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-06-28T00:46:59-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67403,7 +67403,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67603,7 +67603,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67795,7 +67795,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -67987,7 +67987,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -68211,7 +68211,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -68395,7 +68395,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-06-28T00:46:59-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -68589,8 +68589,8 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-04-09T10:38:07-07:00",
-        "age_days": 91,
-        "eta_days": 39,
+        "age_days": 92,
+        "eta_days": 40,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -68771,7 +68771,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-04-15T23:17:55-07:00",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 34,
         "eta_confidence": "high"
       },
@@ -68941,8 +68941,8 @@
       "timeline": {
         "start_date": "2026-04-01",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
-        "age_days": 88,
-        "eta_days": 2376,
+        "age_days": 89,
+        "eta_days": 2403,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -69111,8 +69111,8 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "2026-04-05T22:15:26-07:00",
-        "age_days": 85,
-        "eta_days": 1360,
+        "age_days": 86,
+        "eta_days": 1376,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -69281,8 +69281,8 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "2026-04-10T09:39:13-07:00",
-        "age_days": 83,
-        "eta_days": 249,
+        "age_days": 84,
+        "eta_days": 252,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -69455,8 +69455,8 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-04-09T17:44:39-07:00",
-        "age_days": 82,
-        "eta_days": 56,
+        "age_days": 83,
+        "eta_days": 57,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -69617,7 +69617,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -69820,8 +69820,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:09:12-07:00",
-        "age_days": 78,
-        "eta_days": 30,
+        "age_days": 79,
+        "eta_days": 31,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -70054,8 +70054,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T10:45:08-07:00",
-        "age_days": 78,
-        "eta_days": 35,
+        "age_days": 79,
+        "eta_days": 36,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -70209,7 +70209,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-15T23:39:21-07:00",
-        "age_days": 78,
+        "age_days": 79,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -70404,7 +70404,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:18:23-07:00",
-        "age_days": 78,
+        "age_days": 79,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -70599,8 +70599,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-14T10:30:13-07:00",
-        "age_days": 78,
-        "eta_days": 375,
+        "age_days": 79,
+        "eta_days": 380,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -70765,7 +70765,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T17:40:14-07:00",
-        "age_days": 78,
+        "age_days": 79,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -70924,7 +70924,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-11T19:44:39-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -71119,7 +71119,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-12T16:26:24-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -71314,7 +71314,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 65,
         "eta_confidence": "high"
       },
@@ -71547,7 +71547,7 @@
       "timeline": {
         "start_date": "2026-04-15",
         "last_activity_iso": "2026-04-15T09:38:42-07:00",
-        "age_days": 74,
+        "age_days": 75,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -71731,7 +71731,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-04-17T22:57:33-07:00",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -71918,7 +71918,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 93,
+        "age_days": 94,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -72073,7 +72073,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 93,
+        "age_days": 94,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -72249,7 +72249,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 93,
+        "age_days": 94,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -72408,7 +72408,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 92,
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -72568,7 +72568,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 92,
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -72736,7 +72736,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 92,
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -72900,7 +72900,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "2026-03-28T21:05:40-07:00",
-        "age_days": 92,
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73064,7 +73064,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73224,7 +73224,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73408,7 +73408,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73564,7 +73564,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -73730,7 +73730,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 7,
         "eta_confidence": "high"
       },
@@ -73894,7 +73894,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74066,7 +74066,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74238,7 +74238,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74402,7 +74402,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74558,7 +74558,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74738,7 +74738,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -74890,7 +74890,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75046,7 +75046,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75198,7 +75198,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75362,7 +75362,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-04-27T15:19:58-07:00",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75530,7 +75530,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -75694,7 +75694,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -75857,7 +75857,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -76020,7 +76020,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -76183,7 +76183,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -76342,7 +76342,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "",
-        "age_days": 89,
+        "age_days": 90,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -76507,7 +76507,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 87,
+        "age_days": 88,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -76672,7 +76672,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 87,
+        "age_days": 88,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -76841,7 +76841,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 87,
+        "age_days": 88,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -77006,7 +77006,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 87,
+        "age_days": 88,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -77167,7 +77167,7 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "",
-        "age_days": 85,
+        "age_days": 86,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -77336,7 +77336,7 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "",
-        "age_days": 85,
+        "age_days": 86,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -77491,7 +77491,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -77647,7 +77647,7 @@
       "timeline": {
         "start_date": "2026-04-27",
         "last_activity_iso": "2026-04-27T21:33:02-07:00",
-        "age_days": 62,
+        "age_days": 63,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -77803,7 +77803,7 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "",
-        "age_days": 83,
+        "age_days": 84,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -77959,7 +77959,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78115,7 +78115,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78271,7 +78271,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78427,7 +78427,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78583,7 +78583,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -78743,7 +78743,7 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "",
-        "age_days": 83,
+        "age_days": 84,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -78910,7 +78910,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "",
-        "age_days": 82,
+        "age_days": 83,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -79066,7 +79066,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -79230,7 +79230,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -79388,7 +79388,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -79544,7 +79544,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -79733,7 +79733,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -79918,7 +79918,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -80102,7 +80102,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -80294,7 +80294,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -80478,7 +80478,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -80666,7 +80666,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -80862,7 +80862,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -81050,7 +81050,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-06-25T21:21:10-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -81218,7 +81218,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -81380,7 +81380,7 @@
       "timeline": {
         "start_date": "2026-04-10",
         "last_activity_iso": "",
-        "age_days": 79,
+        "age_days": 80,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -81573,7 +81573,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -81729,7 +81729,7 @@
       "timeline": {
         "start_date": "2026-04-13",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 76,
+        "age_days": 77,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -81884,7 +81884,7 @@
       "timeline": {
         "start_date": "2026-04-13",
         "last_activity_iso": "",
-        "age_days": 76,
+        "age_days": 77,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -82039,7 +82039,7 @@
       "timeline": {
         "start_date": "2026-04-15",
         "last_activity_iso": "",
-        "age_days": 74,
+        "age_days": 75,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82231,7 +82231,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82423,7 +82423,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82615,7 +82615,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82807,7 +82807,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -82999,7 +82999,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -83183,7 +83183,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -83408,7 +83408,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -83633,7 +83633,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -83858,7 +83858,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -84083,7 +84083,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -84776,7 +84776,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -84994,7 +84994,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -85210,7 +85210,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -85426,7 +85426,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -85642,7 +85642,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -85858,7 +85858,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86074,7 +86074,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86290,7 +86290,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86441,7 +86441,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86592,7 +86592,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86743,7 +86743,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -86894,7 +86894,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87045,7 +87045,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87196,7 +87196,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87347,7 +87347,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87498,7 +87498,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87649,7 +87649,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87800,7 +87800,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -87951,7 +87951,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -88102,7 +88102,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -88253,7 +88253,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-05-02T11:10:14-07:00",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -88447,7 +88447,7 @@
       "timeline": {
         "start_date": "2026-06-03",
         "last_activity_iso": "",
-        "age_days": 25,
+        "age_days": 26,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -88639,8 +88639,8 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-04-09T10:38:07-07:00",
-        "age_days": 91,
-        "eta_days": 39,
+        "age_days": 92,
+        "eta_days": 40,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -88813,7 +88813,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "2026-06-28T04:07:31-07:00",
-        "age_days": 89,
+        "age_days": 90,
         "eta_days": 10,
         "eta_confidence": "high"
       },
@@ -88991,7 +88991,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 13,
         "eta_confidence": "high"
       },
@@ -89173,7 +89173,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-04-15T23:17:55-07:00",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 34,
         "eta_confidence": "high"
       },
@@ -89347,7 +89347,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "2026-06-28T04:07:31-07:00",
-        "age_days": 89,
+        "age_days": 90,
         "eta_days": 10,
         "eta_confidence": "high"
       },
@@ -89566,8 +89566,8 @@
       "timeline": {
         "start_date": "2026-04-01",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
-        "age_days": 88,
-        "eta_days": 2376,
+        "age_days": 89,
+        "eta_days": 2403,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -89736,8 +89736,8 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "2026-04-05T22:15:26-07:00",
-        "age_days": 85,
-        "eta_days": 1360,
+        "age_days": 86,
+        "eta_days": 1376,
         "eta_confidence": "low"
       },
       "lineage": {
@@ -89906,8 +89906,8 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "2026-04-10T09:39:13-07:00",
-        "age_days": 83,
-        "eta_days": 249,
+        "age_days": 84,
+        "eta_days": 252,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -90080,8 +90080,8 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-04-09T17:44:39-07:00",
-        "age_days": 82,
-        "eta_days": 56,
+        "age_days": 83,
+        "eta_days": 57,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -90242,7 +90242,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-04-12T10:37:07-07:00",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -90421,7 +90421,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -90612,15 +90612,15 @@
           "file_touch_count": 201
         },
         "48h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 3,
           "file_touch_count": 241
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-06-28T20:05:25-07:00",
-        "age_days": 79,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 80,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -90823,8 +90823,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:09:12-07:00",
-        "age_days": 78,
-        "eta_days": 30,
+        "age_days": 79,
+        "eta_days": 31,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -91057,8 +91057,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T10:45:08-07:00",
-        "age_days": 78,
-        "eta_days": 35,
+        "age_days": 79,
+        "eta_days": 36,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -91212,7 +91212,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-15T23:39:21-07:00",
-        "age_days": 78,
+        "age_days": 79,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -91407,7 +91407,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-12T10:18:23-07:00",
-        "age_days": 78,
+        "age_days": 79,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -91602,8 +91602,8 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-14T10:30:13-07:00",
-        "age_days": 78,
-        "eta_days": 375,
+        "age_days": 79,
+        "eta_days": 380,
         "eta_confidence": "high"
       },
       "lineage": {
@@ -91768,7 +91768,7 @@
       "timeline": {
         "start_date": "2026-04-11",
         "last_activity_iso": "2026-04-11T17:40:14-07:00",
-        "age_days": 78,
+        "age_days": 79,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -91927,7 +91927,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-11T19:44:39-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -92098,7 +92098,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-06-28T00:46:59-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -92293,7 +92293,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-12T16:26:24-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -92488,7 +92488,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-04-28T14:07:28-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 65,
         "eta_confidence": "high"
       },
@@ -92721,7 +92721,7 @@
       "timeline": {
         "start_date": "2026-04-15",
         "last_activity_iso": "2026-04-15T09:38:42-07:00",
-        "age_days": 74,
+        "age_days": 75,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -92905,7 +92905,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "2026-04-17T22:57:33-07:00",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -93134,7 +93134,7 @@
       "timeline": {
         "start_date": "2026-05-01",
         "last_activity_iso": "2026-06-25T22:00:41-07:00",
-        "age_days": 58,
+        "age_days": 59,
         "eta_days": 1,
         "eta_confidence": "high"
       },
@@ -93310,18 +93310,18 @@
       "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "plan": {
         "created": "2026-06-26",
-        "updated": "2026-06-27",
-        "all_total_tasks": 102,
-        "all_done_tasks": 82,
-        "total_tasks": 94,
-        "done_tasks": 82,
-        "progress_ratio": 0.8723,
+        "updated": "2026-06-29",
+        "all_total_tasks": 103,
+        "all_done_tasks": 83,
+        "total_tasks": 95,
+        "done_tasks": 83,
+        "progress_ratio": 0.8737,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.8723,
+        "display_progress_ratio": 0.8737,
         "display_progress_label": "87% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 82/94",
+        "checklist_label": "Checklist 83/95",
         "next_tasks": [
           "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
           "Replace rendered-prose package repair with semantic or plan patch",
@@ -93334,19 +93334,19 @@
       "activity": {
         "24h": {
           "commit_count": 8,
-          "local_change_count": 8,
-          "file_touch_count": 208
+          "local_change_count": 13,
+          "file_touch_count": 209
         },
         "48h": {
           "commit_count": 22,
-          "local_change_count": 8,
-          "file_touch_count": 303
+          "local_change_count": 13,
+          "file_touch_count": 302
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-28T23:40:46-07:00",
-        "age_days": 2,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 3,
         "eta_days": 1,
         "eta_confidence": "high"
       },
@@ -93589,7 +93589,7 @@
       "timeline": {
         "start_date": "2026-03-26",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 94,
+        "age_days": 95,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -93777,7 +93777,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 93,
+        "age_days": 94,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -93932,7 +93932,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 93,
+        "age_days": 94,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94092,7 +94092,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 93,
+        "age_days": 94,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94256,15 +94256,15 @@
           "file_touch_count": 201
         },
         "48h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 3,
           "file_touch_count": 237
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-06-28T20:05:25-07:00",
-        "age_days": 92,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94440,7 +94440,7 @@
       "timeline": {
         "start_date": "2026-03-27",
         "last_activity_iso": "",
-        "age_days": 93,
+        "age_days": 94,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -94599,7 +94599,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 92,
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94759,7 +94759,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 92,
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -94927,7 +94927,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "",
-        "age_days": 92,
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95091,7 +95091,7 @@
       "timeline": {
         "start_date": "2026-03-28",
         "last_activity_iso": "2026-03-28T21:05:40-07:00",
-        "age_days": 92,
+        "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95255,7 +95255,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95415,7 +95415,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95599,7 +95599,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95755,7 +95755,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -95921,7 +95921,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 7,
         "eta_confidence": "high"
       },
@@ -96085,7 +96085,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96257,7 +96257,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96429,7 +96429,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96593,7 +96593,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96757,7 +96757,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "2026-06-28T04:07:31-07:00",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -96913,7 +96913,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97093,7 +97093,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97245,7 +97245,7 @@
       "timeline": {
         "start_date": "2026-03-29",
         "last_activity_iso": "",
-        "age_days": 91,
+        "age_days": 92,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97405,7 +97405,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97561,7 +97561,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97713,7 +97713,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -97877,7 +97877,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-04-27T15:19:58-07:00",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -98089,7 +98089,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -98257,7 +98257,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -98421,7 +98421,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -98584,7 +98584,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -98747,7 +98747,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -98910,7 +98910,7 @@
       "timeline": {
         "start_date": "2026-03-30",
         "last_activity_iso": "",
-        "age_days": 90,
+        "age_days": 91,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99069,7 +99069,7 @@
       "timeline": {
         "start_date": "2026-03-31",
         "last_activity_iso": "",
-        "age_days": 89,
+        "age_days": 90,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99234,7 +99234,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 87,
+        "age_days": 88,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99399,7 +99399,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 87,
+        "age_days": 88,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99568,7 +99568,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 87,
+        "age_days": 88,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99733,7 +99733,7 @@
       "timeline": {
         "start_date": "2026-04-02",
         "last_activity_iso": "",
-        "age_days": 87,
+        "age_days": 88,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -99894,7 +99894,7 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "",
-        "age_days": 85,
+        "age_days": 86,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -100063,7 +100063,7 @@
       "timeline": {
         "start_date": "2026-04-04",
         "last_activity_iso": "",
-        "age_days": 85,
+        "age_days": 86,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -100218,7 +100218,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100374,7 +100374,7 @@
       "timeline": {
         "start_date": "2026-04-27",
         "last_activity_iso": "2026-04-27T21:33:02-07:00",
-        "age_days": 62,
+        "age_days": 63,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100530,7 +100530,7 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "",
-        "age_days": 83,
+        "age_days": 84,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100686,7 +100686,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100842,7 +100842,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -100998,7 +100998,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -101154,7 +101154,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -101310,7 +101310,7 @@
       "timeline": {
         "start_date": "2026-04-28",
         "last_activity_iso": "",
-        "age_days": 61,
+        "age_days": 62,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -101470,7 +101470,7 @@
       "timeline": {
         "start_date": "2026-04-06",
         "last_activity_iso": "",
-        "age_days": 83,
+        "age_days": 84,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -101689,7 +101689,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 82,
+        "age_days": 83,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -101917,7 +101917,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 82,
+        "age_days": 83,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102085,7 +102085,7 @@
       "timeline": {
         "start_date": "2026-04-07",
         "last_activity_iso": "",
-        "age_days": 82,
+        "age_days": 83,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102269,7 +102269,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102489,15 +102489,15 @@
           "file_touch_count": 201
         },
         "48h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 3,
           "file_touch_count": 241
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-06-28T20:05:25-07:00",
-        "age_days": 81,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102655,7 +102655,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102819,7 +102819,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -102977,7 +102977,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -103133,7 +103133,7 @@
       "timeline": {
         "start_date": "2026-04-08",
         "last_activity_iso": "",
-        "age_days": 81,
+        "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -103297,15 +103297,15 @@
           "file_touch_count": 201
         },
         "48h": {
-          "commit_count": 14,
+          "commit_count": 15,
           "local_change_count": 3,
           "file_touch_count": 241
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-06-28T20:05:25-07:00",
-        "age_days": 80,
+        "last_activity_iso": "2026-06-29T00:39:51-07:00",
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -103496,7 +103496,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -104632,7 +104632,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -104816,7 +104816,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105000,7 +105000,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105192,7 +105192,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105376,7 +105376,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105564,7 +105564,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105760,7 +105760,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -105948,7 +105948,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "2026-06-25T21:21:10-07:00",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -106116,7 +106116,7 @@
       "timeline": {
         "start_date": "2026-04-09",
         "last_activity_iso": "",
-        "age_days": 80,
+        "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -106278,7 +106278,7 @@
       "timeline": {
         "start_date": "2026-04-10",
         "last_activity_iso": "",
-        "age_days": 79,
+        "age_days": 80,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -106471,7 +106471,7 @@
       "timeline": {
         "start_date": "2026-04-12",
         "last_activity_iso": "",
-        "age_days": 77,
+        "age_days": 78,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -106627,7 +106627,7 @@
       "timeline": {
         "start_date": "2026-04-13",
         "last_activity_iso": "2026-03-23T17:32:23-07:00",
-        "age_days": 76,
+        "age_days": 77,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -106782,7 +106782,7 @@
       "timeline": {
         "start_date": "2026-04-13",
         "last_activity_iso": "",
-        "age_days": 76,
+        "age_days": 77,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -107686,7 +107686,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -107842,7 +107842,7 @@
       "timeline": {
         "start_date": "2026-04-15",
         "last_activity_iso": "",
-        "age_days": 74,
+        "age_days": 75,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -108747,7 +108747,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -108939,7 +108939,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109131,7 +109131,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109323,7 +109323,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109515,7 +109515,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109707,7 +109707,7 @@
       "timeline": {
         "start_date": "2026-04-16",
         "last_activity_iso": "2026-04-16T14:54:04-07:00",
-        "age_days": 73,
+        "age_days": 74,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -109911,7 +109911,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -110111,7 +110111,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -110303,7 +110303,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -110495,7 +110495,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -110719,7 +110719,7 @@
       "timeline": {
         "start_date": "2026-04-14",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 75,
+        "age_days": 76,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -111904,7 +111904,7 @@
       "timeline": {
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 72,
+        "age_days": 73,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112091,7 +112091,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112316,7 +112316,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112541,7 +112541,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112766,7 +112766,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -112991,7 +112991,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-06-28T00:46:59-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -113178,7 +113178,7 @@
       "timeline": {
         "start_date": "2026-04-25",
         "last_activity_iso": "2026-04-17T16:27:58-07:00",
-        "age_days": 64,
+        "age_days": 65,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -113403,7 +113403,7 @@
       "timeline": {
         "start_date": "2026-04-17",
         "last_activity_iso": "2026-06-28T19:27:41-07:00",
-        "age_days": 72,
+        "age_days": 73,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114058,7 +114058,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114276,7 +114276,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114492,7 +114492,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114708,7 +114708,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -114924,7 +114924,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -115140,7 +115140,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -115356,7 +115356,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -115572,7 +115572,7 @@
       "timeline": {
         "start_date": "2026-04-18",
         "last_activity_iso": "",
-        "age_days": 71,
+        "age_days": 72,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -115731,7 +115731,7 @@
       "timeline": {
         "start_date": "2026-04-27",
         "last_activity_iso": "2026-06-28T15:50:04-07:00",
-        "age_days": 62,
+        "age_days": 63,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -115883,7 +115883,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116034,7 +116034,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116185,7 +116185,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116336,7 +116336,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116487,7 +116487,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116638,7 +116638,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116789,7 +116789,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -116940,7 +116940,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117091,7 +117091,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117242,7 +117242,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117393,7 +117393,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117544,7 +117544,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": null,
         "eta_confidence": "low"
       },
@@ -117695,7 +117695,7 @@
       "timeline": {
         "start_date": "2026-04-29",
         "last_activity_iso": "2026-05-02T11:10:14-07:00",
-        "age_days": 60,
+        "age_days": 61,
         "eta_days": 0,
         "eta_confidence": "high"
       },
@@ -117889,7 +117889,7 @@
       "timeline": {
         "start_date": "2026-06-03",
         "last_activity_iso": "",
-        "age_days": 25,
+        "age_days": 26,
         "eta_days": null,
         "eta_confidence": "low"
       },

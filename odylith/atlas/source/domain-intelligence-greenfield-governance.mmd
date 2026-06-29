@@ -23,10 +23,12 @@ flowchart LR
       next_steps["Operator next steps<br/>governed start workstream,<br/>readiness gates, validation commands"]
       project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>from accepted project context"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
+      artifact_units["ArtifactQualityUnit stream<br/>projection id, source path,<br/>surface role, text kind,<br/>semantic node"]
       visible_actor_projection["Tribunal visible actor projection<br/>actor_source provenance,<br/>explicit many-hat allowance,<br/>role-specific generated labels"]
-      validators["Deterministic validators<br/>schema, traceability,<br/>grammar, typed canonical repetition,<br/>topology, Project prompt quality,<br/>clipped terminal labels"]
+      validators["Deterministic validators<br/>schema, traceability,<br/>grammar, typed canonical repetition,<br/>topology, Project prompt quality,<br/>typed generated-copy units,<br/>clipped terminal labels"]
       expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer typed owner contract<br/>coverage over accepted systems,<br/>including deferred topology"]
       persisted_readback["Persisted artifact readback<br/>create payload and accepted-project preview<br/>must agree before scoring"]
+      evidence_readback["Independent package evidence<br/>project brief, Radar sections,<br/>Registry proof contracts,<br/>Atlas topology labels,<br/>prewrite safety, Project prompts,<br/>domain-term readback"]
       typed_findings["Source-owned typed findings<br/>target layer, target path,<br/>semantic node, no proposal-repair lane"]
       legacy_blockers["Legacy/raw issue strings<br/>diagnostic blockers only,<br/>no repair authority"]
       final_manifest{"Final manifest passes?"}
@@ -56,12 +58,12 @@ flowchart LR
       blockers["Exact final blockers<br/>operator sees actionable failure"]
       proof_log["Compass proof checkpoint"]
       surface_custody["Rendered surface custody<br/>Casebook included,<br/>Atlas static fallback,<br/>browser state proof"]
-      release_matrix["Installed release proof<br/>12-case standard matrix,<br/>Casebook surface included,<br/>per-case generated browser state proof,<br/>Atlas diagram state checked,<br/>persisted matrix JSON<br/>failed-create blocker excerpts,<br/>strict temp-root cleanup,<br/>plus rescue wiring smoke<br/>natural rescue proof still required"]
+      release_matrix["Installed release proof<br/>13-case standard matrix,<br/>Casebook surface included,<br/>per-case generated browser state proof,<br/>Atlas diagram state checked,<br/>independent artifact readback scoring,<br/>persisted matrix JSON,<br/>failed-create blocker excerpts,<br/>strict temp-root cleanup,<br/>plus rescue wiring smoke<br/>natural rescue proof still required"]
     end
 
     visible_intent --> confirmable_stdout --> confirm --> source_guard --> confirmed_ir
     confirmed_ir --> apply_input --> compiler --> semantic_ir --> external_boundary --> sequence_owner --> result_language --> artifact_plan --> canonical_facts --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
-    draft_set --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> typed_findings --> final_manifest
+    draft_set --> artifact_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> evidence_readback --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> release_matrix
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
@@ -85,7 +87,7 @@ flowchart LR
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirmable_stdout,confirm,source_guard,confirmed_ir intent;
-    class apply_input,compiler,semantic_ir,external_boundary,sequence_owner,result_language,artifact_plan,canonical_facts,projection_contract,projections,next_steps,project_dashboard,draft_set,visible_actor_projection,validators,expert_lenses,persisted_readback,typed_findings,legacy_blockers,final_manifest standard;
+    class apply_input,compiler,semantic_ir,external_boundary,sequence_owner,result_language,artifact_plan,canonical_facts,projection_contract,projections,next_steps,project_dashboard,draft_set,artifact_units,visible_actor_projection,validators,expert_lenses,persisted_readback,evidence_readback,typed_findings,legacy_blockers,final_manifest standard;
     class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
     class writes,rollback,blockers,proof_log,surface_custody,release_matrix write;
 

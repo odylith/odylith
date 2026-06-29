@@ -426,3 +426,26 @@ def test_greenfield_project_prompt_quality_accepts_noun_heavy_covering_results()
     )
 
     assert project_implementation_prompt_issues(artifact) == []
+
+
+def test_greenfield_project_prompt_quality_uses_step_id_before_position() -> None:
+    artifact = RenderedArtifact(
+        "Project implementation prompt",
+        "Add tests and proof",
+        "",
+        fields={
+            "step_id": "prove_behavior",
+            "label": "Add tests and proof",
+            "when": "Use this after the first runnable slice exists.",
+            "prompt": (
+                "Odylith, add behavior proof for the accepted product source slice. Test valid input, "
+                "missing required input, blocked outcomes, and validation evidence. Bind the proof to "
+                "accepted first-release work item B-002."
+            ),
+            "result": "Tests and validation evidence covering valid input, missing input, and replay proof.",
+            "stop": "Stop if validation fails.",
+            "position": "1",
+        },
+    )
+
+    assert project_implementation_prompt_issues(artifact) == []

@@ -1,0 +1,332 @@
+"""Independent package evidence checks for greenfield release scoring."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from typing import Any
+
+from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import (
+    project_implementation_prompt_issues,
+)
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import (
+    collect_rendered_package_artifacts,
+)
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_mapping
+from odylith.runtime.common.mermaid_text import visible_mermaid_label_quality_texts
+from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
+
+
+@dataclass(frozen=True)
+class PackageEvidenceFinding:
+    dimension: str
+    message: str
+
+
+_RADAR_REQUIRED_SECTIONS = (
+    "## Problem",
+    "## Customer",
+    "## Opportunity",
+    "## Product View",
+    "## Success Metrics",
+    "## Validation",
+)
+_REGISTRY_REQUIRED_PROOF = (
+    "Source boundary",
+    "Trace links",
+    "Successful path evidence",
+    "Blocked input evidence",
+    "Replay evidence",
+)
+_TERM_STOPWORDS = frozenset(
+    {
+        "accepted",
+        "action",
+        "artifact",
+        "component",
+        "complete",
+        "evidence",
+        "first",
+        "governance",
+        "greenfield",
+        "implementation",
+        "operator",
+        "path",
+        "product",
+        "project",
+        "proof",
+        "record",
+        "release",
+        "review",
+        "state",
+        "system",
+        "user",
+        "workstream",
+    }
+)
+
+
+def package_evidence_findings(package: Any) -> tuple[PackageEvidenceFinding, ...]:
+    """Return independent readback findings that should block premium scores."""
+
+    artifacts = collect_rendered_package_artifacts(package)
+    proposal = package_mapping(getattr(package, "proposal", None))
+    findings: list[PackageEvidenceFinding] = []
+    findings.extend(_project_brief_findings(package=package, proposal=proposal))
+    findings.extend(_radar_findings(package=package, artifacts=artifacts, proposal=proposal))
+    findings.extend(_registry_findings(package=package, artifacts=artifacts, proposal=proposal))
+    findings.extend(_atlas_findings(artifacts=artifacts, proposal=proposal))
+    findings.extend(_next_step_findings(package))
+    findings.extend(_prewrite_safety_findings(package))
+    findings.extend(_project_prompt_findings(artifacts))
+    findings.extend(_domain_readback_findings(package=package, artifacts=artifacts, proposal=proposal))
+    return _unique_findings(findings)
+
+
+def evidence_finding_messages(findings: Sequence[PackageEvidenceFinding]) -> tuple[str, ...]:
+    return tuple(unique_text(finding.message for finding in findings if finding.message.strip()))
+
+
+def evidence_blocks_dimension(findings: Sequence[PackageEvidenceFinding], dimension: str) -> bool:
+    return any(finding.dimension == dimension for finding in findings)
+
+
+def _project_brief_findings(*, package: Any, proposal: Mapping[str, Any]) -> list[PackageEvidenceFinding]:
+    brief = package_mapping(getattr(package, "project_brief_preview", None)) or package_mapping(
+        proposal.get("project_brief")
+    )
+    if not brief:
+        return [_finding("product_manager", "independent package evidence missing project brief readback")]
+    return [
+        _finding("product_manager", f"independent project brief evidence failed: {issue}")
+        for issue in project_brief_issues(brief)
+    ]
+
+
+def _radar_findings(
+    *,
+    package: Any,
+    artifacts: Sequence[RenderedArtifact],
+    proposal: Mapping[str, Any],
+) -> list[PackageEvidenceFinding]:
+    findings: list[PackageEvidenceFinding] = []
+    workstreams = [artifact for artifact in artifacts if artifact.surface == "Radar workstream"]
+    if len(workstreams) < 4:
+        findings.append(
+            _finding("governance_depth", f"independent Radar readback has only {len(workstreams)} workstream artifact(s)")
+        )
+    for artifact in workstreams:
+        missing = [section for section in _RADAR_REQUIRED_SECTIONS if section not in artifact.text]
+        if missing:
+            findings.append(
+                _finding("product_manager", f"{artifact.identity} is missing release-quality sections: {', '.join(missing)}")
+            )
+        if word_count(artifact.text) < 80:
+            findings.append(_finding("product_manager", f"{artifact.identity} is too shallow for release-quality review"))
+    for index, row in enumerate(mapping_rows(proposal.get("backlog")), start=1):
+        metrics = [normalize_string(item) for item in text_values(row.get("success_metrics")) if normalize_string(item)]
+        if len(metrics) < 2:
+            findings.append(_finding("product_manager", f"proposal backlog row {index} has fewer than two success metrics"))
+            continue
+        shallow = [metric for metric in metrics if word_count(metric) < 6 or len(_terms(metric)) < 3]
+        if shallow:
+            findings.append(_finding("product_manager", f"proposal backlog row {index} has shallow success metrics"))
+    backlog_result = package_mapping(getattr(package, "backlog_result", None))
+    if _gate_status(package_mapping(backlog_result.get("validation_gate"))) != "passed":
+        findings.append(_finding("engineer", "independent Radar readback missing passed validation gate"))
+    return findings
+
+
+def _registry_findings(
+    *,
+    package: Any,
+    artifacts: Sequence[RenderedArtifact],
+    proposal: Mapping[str, Any],
+) -> list[PackageEvidenceFinding]:
+    findings: list[PackageEvidenceFinding] = []
+    specs = [artifact for artifact in artifacts if artifact.surface == "Registry component spec"]
+    active_components = _active_components(proposal)
+    if len(specs) < max(3, len(active_components)):
+        findings.append(
+            _finding("architect", f"independent Registry readback has only {len(specs)} component spec artifact(s)")
+        )
+    for artifact in specs:
+        missing = [phrase for phrase in _REGISTRY_REQUIRED_PROOF if phrase not in artifact.text]
+        if missing:
+            findings.append(_finding("engineer", f"{artifact.identity} is missing proof contract text: {', '.join(missing)}"))
+        if word_count(artifact.text) < 70:
+            findings.append(_finding("engineer", f"{artifact.identity} is too shallow for implementation ownership"))
+    return findings
+
+
+def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[str, Any]) -> list[PackageEvidenceFinding]:
+    findings: list[PackageEvidenceFinding] = []
+    diagrams = [artifact for artifact in artifacts if artifact.surface == "Atlas Mermaid"]
+    if len(diagrams) < 4:
+        findings.append(_finding("architect", f"independent Atlas readback has only {len(diagrams)} diagram artifact(s)"))
+    source_terms = _proposal_topology_terms(proposal)
+    for artifact in diagrams:
+        labels = visible_mermaid_label_quality_texts(artifact.text)
+        if len(labels) < 2:
+            findings.append(_finding("architect", f"{artifact.identity} has too few visible topology labels"))
+        if not any(operator in artifact.text for operator in ("-->", "-->>", "-.->", "==>", "->>")):
+            findings.append(_finding("architect", f"{artifact.identity} has no visible topology edge"))
+        label_terms = set().union(*(_terms(label) for label in labels)) if labels else set()
+        if source_terms and label_terms and not (source_terms & label_terms):
+            findings.append(_finding("architect", f"{artifact.identity} is not grounded in component or first-path terms"))
+    return findings
+
+
+def _next_step_findings(package: Any) -> list[PackageEvidenceFinding]:
+    next_steps = package_mapping(getattr(package, "next_steps_preview", None))
+    if not next_steps:
+        return [_finding("operator_usefulness", "independent package evidence missing operator next steps")]
+    findings: list[PackageEvidenceFinding] = []
+    prompt = normalize_string(next_steps.get("implementation_prompt"))
+    start_id = normalize_string(next_steps.get("start_workstream_id"))
+    if not prompt or not start_id or start_id.upper() not in prompt.upper():
+        findings.append(_finding("operator_usefulness", "operator next steps do not bind to a governed workstream"))
+    if len(text_values(next_steps.get("verification_commands"))) < 2:
+        findings.append(_finding("engineer", "operator next steps do not include at least two verification commands"))
+    if len(text_values(next_steps.get("coding_readiness_gates"))) < 4:
+        findings.append(_finding("engineer", "operator next steps do not include four coding-readiness gates"))
+    if len(text_values(next_steps.get("operator_sequence"))) < 3:
+        findings.append(_finding("operator_usefulness", "operator next steps do not include a usable action sequence"))
+    return findings
+
+
+def _prewrite_safety_findings(package: Any) -> list[PackageEvidenceFinding]:
+    prewrite_safety = package_mapping(getattr(package, "prewrite_safety_preview", None))
+    checks = package_mapping(prewrite_safety.get("checks"))
+    if _gate_status(prewrite_safety) != "passed" or not checks or not all(bool(value) for value in checks.values()):
+        return [_finding("engineer", "independent package evidence missing explicit prewrite safety checks")]
+    return []
+
+
+def _project_prompt_findings(artifacts: Sequence[RenderedArtifact]) -> list[PackageEvidenceFinding]:
+    prompts = [artifact for artifact in artifacts if artifact.surface == "Project implementation prompt"]
+    findings: list[PackageEvidenceFinding] = []
+    if len(prompts) < 5:
+        findings.append(_finding("implementation_prompts", f"independent Project readback has only {len(prompts)} prompt(s)"))
+    for prompt in prompts:
+        findings.extend(_finding("implementation_prompts", issue) for issue in project_implementation_prompt_issues(prompt))
+    return findings
+
+
+def _domain_readback_findings(
+    *,
+    package: Any,
+    artifacts: Sequence[RenderedArtifact],
+    proposal: Mapping[str, Any],
+) -> list[PackageEvidenceFinding]:
+    source_terms = _domain_source_terms(proposal)
+    if len(source_terms) < 4:
+        return [_finding("domain_expert", "semantic source has too few domain terms for independent review")]
+    rendered_text = " ".join(artifact.text for artifact in artifacts)
+    rendered_text += " " + " ".join(text_values(getattr(package, "accepted_project_preview", None)))
+    rendered_terms = _terms(rendered_text)
+    required = min(5, max(3, len(source_terms) // 4))
+    if len(source_terms & rendered_terms) < required:
+        return [
+            _finding(
+                "domain_expert",
+                f"independent domain readback carried {len(source_terms & rendered_terms)} of {required} required semantic terms",
+            )
+        ]
+    return []
+
+
+def _active_components(proposal: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
+    rows = tuple(mapping_rows(proposal.get("components")))
+    active = tuple(
+        row
+        for row in rows
+        if normalize_string(row.get("component_id"))
+        and normalize_string(row.get("release_scope")).casefold() not in {"deferred", "external", "out_of_scope"}
+    )
+    return active or tuple(row for row in rows if normalize_string(row.get("component_id")))
+
+
+def _proposal_topology_terms(proposal: Mapping[str, Any]) -> set[str]:
+    semantic = package_mapping(proposal.get("semantic_model"))
+    first_path = package_mapping(semantic.get("first_path_contract"))
+    return _terms(
+        " ".join(
+            text_values(
+                [
+                    proposal.get("components"),
+                    first_path.get("capability"),
+                    first_path.get("visible_result"),
+                ]
+            )
+        )
+    )
+
+
+def _domain_source_terms(proposal: Mapping[str, Any]) -> set[str]:
+    intent = package_mapping(proposal.get("intent"))
+    semantic = package_mapping(proposal.get("semantic_model"))
+    first_path = package_mapping(semantic.get("first_path_contract"))
+    domain = package_mapping(semantic.get("domain_ontology"))
+    return _terms(
+        " ".join(
+            text_values(
+                [
+                    intent.get("state_object"),
+                    first_path.get("capability"),
+                    first_path.get("visible_result"),
+                    domain.get("proof_boundary"),
+                    domain.get("external_systems"),
+                    domain.get("internal_systems"),
+                ]
+            )
+        )
+    )
+
+
+def _terms(value: str) -> set[str]:
+    return set(
+        ordered_terms(
+            value,
+            stopwords=_TERM_STOPWORDS,
+            minimum=4,
+            preserve_terms={"ai", "api", "ev", "glp", "ml", "sms", "ui", "ux"},
+            stem_ing=True,
+            stem_ing_minimum_length=5,
+        )
+    )
+
+
+def _gate_status(value: Mapping[str, Any]) -> str:
+    return normalize_string(value.get("status")).casefold()
+
+
+def _finding(dimension: str, message: str) -> PackageEvidenceFinding:
+    return PackageEvidenceFinding(dimension=dimension, message=message)
+
+
+def _unique_findings(findings: Sequence[PackageEvidenceFinding]) -> tuple[PackageEvidenceFinding, ...]:
+    seen: set[tuple[str, str]] = set()
+    result: list[PackageEvidenceFinding] = []
+    for finding in findings:
+        key = (finding.dimension, finding.message.casefold())
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(finding)
+    return tuple(result)
+
+
+__all__ = [
+    "PackageEvidenceFinding",
+    "evidence_blocks_dimension",
+    "evidence_finding_messages",
+    "package_evidence_findings",
+]

@@ -23,6 +23,7 @@ flowchart LR
       atlas_projection["Atlas event projection<br/>sequence and flow labels"]
       mermaid_label_custody["Mermaid label custody<br/>visible line breaks avoid<br/>dangling connector words"]
       next_step_prompts["Project next-step prompts<br/>accepted first path preserved,<br/>no Radar slice echo"]
+      artifact_units["ArtifactQualityUnit collector<br/>keeps metadata, commands,<br/>prompt fields, Mermaid labels,<br/>and free prose separate"]
       tribunal_actors["Tribunal visible actors<br/>actor_source provenance,<br/>human judgment roles,<br/>persisted readback checked"]
       package_findings["Typed package findings<br/>source path, projection id,<br/>repair owner"]
     end
@@ -46,7 +47,8 @@ flowchart LR
     radar_projection --> shape_checks
     atlas_projection --> mermaid_label_custody
     mermaid_label_custody --> shape_checks
-    next_step_prompts --> tribunal_actors
+    next_step_prompts --> artifact_units
+    artifact_units --> tribunal_actors
     tribunal_actors --> shape_checks
     shape_checks --> gerund_owner
     gerund_owner --> structural_filter
@@ -64,7 +66,7 @@ flowchart LR
     classDef repair fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;
     class accepted_path,semantic_contract,external_boundary,sequence_owner,visible_result_owner,modal_owner intent;
     class shape_checks,gerund_owner,structural_filter,repetition_gate prose;
-    class radar_projection,atlas_projection,mermaid_label_custody,next_step_prompts,tribunal_actors,package_findings projection;
+    class radar_projection,atlas_projection,mermaid_label_custody,next_step_prompts,artifact_units,tribunal_actors,package_findings projection;
     class semantic_plan_patch,exact_draft_cleanup,final_gate,governed_write repair;
 
     style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155

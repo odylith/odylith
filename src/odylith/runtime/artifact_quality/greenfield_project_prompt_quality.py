@@ -66,15 +66,15 @@ def project_implementation_prompt_issues(artifact: RenderedArtifact) -> list[str
 
 
 def _source_launch_prompt_scope_issues(artifact: RenderedArtifact, fields: Mapping[str, str]) -> list[str]:
-    position = _prompt_position(fields)
+    step_id = _prompt_step_id(fields)
     prompt = fields.get("prompt", "").casefold()
     stop = fields.get("stop", "").casefold()
     result = fields.get("result", "").casefold()
     combined = " ".join((prompt, stop, result))
     issues: list[str] = []
-    if position == 1 and not _contains_all(combined, ("runtime", "test")):
+    if step_id == "choose_language" and not _contains_all(combined, ("runtime", "test")):
         issues.append(f"{artifact.identity} does not make language/runtime/test tradeoffs explicit")
-    if position == 2:
+    if step_id == "create_plan":
         if not _binds_first_release_work_item(combined):
             issues.append(f"{artifact.identity} does not bind the plan to the accepted first-release work item")
         if not _contains_all(combined, ("source boundary", "files", "proof")):
@@ -83,21 +83,21 @@ def _source_launch_prompt_scope_issues(artifact: RenderedArtifact, fields: Mappi
             issues.append(f"{artifact.identity} does not require validation commands")
         if "excluded" not in combined:
             issues.append(f"{artifact.identity} does not preserve excluded scope")
-    if position == 3:
+    if step_id == "build_slice":
         if not _binds_first_release_work_item(combined):
             issues.append(f"{artifact.identity} does not bind implementation to the accepted first-release work item")
         if not _contains_all(combined, ("target files", "build only", "input validation", "structured result")):
             issues.append(f"{artifact.identity} does not bound the implementation slice tightly")
         if "risk" not in combined or ("outside the slice" not in combined and "excluded" not in combined):
             issues.append(f"{artifact.identity} does not carry risk and excluded-scope controls")
-    if position == 4:
+    if step_id == "prove_behavior":
         if not _binds_first_release_work_item(combined):
             issues.append(f"{artifact.identity} does not bind proof to the accepted first-release work item")
         if not _contains_all(combined, ("valid input", "missing", "validation")):
             issues.append(f"{artifact.identity} does not require valid, missing-input, and validation proof")
         if "fails" not in stop:
             issues.append(f"{artifact.identity} does not stop on failed validation")
-    if position == 5:
+    if step_id == "refresh_governance":
         if not _binds_first_release_work_item(combined):
             issues.append(f"{artifact.identity} does not bind refresh to the accepted first-release work item")
         if "governed records" not in combined or "implemented behavior" not in combined:
@@ -105,6 +105,34 @@ def _source_launch_prompt_scope_issues(artifact: RenderedArtifact, fields: Mappi
         if "release readiness" not in stop:
             issues.append(f"{artifact.identity} can imply release readiness without source proof")
     return issues
+
+
+def _prompt_step_id(fields: Mapping[str, str]) -> str:
+    explicit = normalize_string(fields.get("step_id") or fields.get("id") or fields.get("kind")).casefold()
+    if explicit:
+        return explicit.replace("-", "_").replace(" ", "_")
+    label = normalize_string(fields.get("label")).casefold()
+    if "language" in label or "runtime" in label:
+        return "choose_language"
+    if "plan" in label:
+        return "create_plan"
+    if "build" in label or "slice" in label:
+        return "build_slice"
+    if "test" in label or "proof" in label:
+        return "prove_behavior"
+    if "refresh" in label or "governed" in label:
+        return "refresh_governance"
+    return _prompt_step_from_position(_prompt_position(fields))
+
+
+def _prompt_step_from_position(position: int) -> str:
+    return {
+        1: "choose_language",
+        2: "create_plan",
+        3: "build_slice",
+        4: "prove_behavior",
+        5: "refresh_governance",
+    }.get(position, "")
 
 
 def _binds_first_release_work_item(value: str) -> bool:

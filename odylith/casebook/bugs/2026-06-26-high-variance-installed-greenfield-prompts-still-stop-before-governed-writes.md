@@ -440,6 +440,35 @@
   after best-effort cleanup; and latency scoring times only create, not the
   wider proof/readback/cleanup loop. These are proof architecture defects, not
   generated-project defects.
+  Follow-up source checkpoint on 2026-06-29 closed the most urgent false-score
+  mechanism without weakening gates. Independent review found the release
+  matrix could still award hard 10/10 scores when producer-owned payloads,
+  stubbed lens reports, count floors, and position-based Project prompt
+  checks looked complete even if governed artifact readback was shallow. The
+  fix adds an independent package-evidence readback owner for project brief
+  quality, Radar section/depth checks, Registry proof-contract text, Atlas
+  topology labels, prewrite-safety evidence, Project implementation prompts,
+  and domain-term carry-through; those findings now block the corresponding
+  premium score dimensions. Generated-copy quality now consumes typed
+  `ArtifactQualityUnit` leaves so metadata, shell commands, Mermaid labels,
+  prompt fields, semantic facts, and free prose keep separate custody instead
+  of being flattened into one text stream. Source-launch prompts now carry
+  explicit `step_id` values, and prompt-quality checks prefer those IDs over
+  positional inference. The failed mechanism is preserved: future release
+  scoring must not accept count-only artifacts, dry-run-only prewrite safety,
+  stub Atlas diagrams, producer-only lens payloads, or position-only prompt
+  identity as premium evidence.
+  Proof after the source fix: focused artifact/source-launch/matrix proof
+  passed 49 tests in 1.97s, the affected broad greenfield quality suite passed
+  228 tests in 579.08s after a small typed-unit decomposition, and
+  `generated_copy_quality.py` was reduced below the 800-line soft limit by
+  moving typed unit traversal into `generated_copy_quality_units.py`. A fresh
+  six-domain installed adversarial run against the earlier
+  `odylith-local-release-0.1.15-c259177b` dist passed in 17.365-43.304s with
+  governed writes, browser proof, zero old-scorer issues, and temp cleanup,
+  but that evidence predated the independent readback gates and therefore is
+  not sufficient release closure. A rebuilt dist must rerun installed matrix
+  proof under the hardened scorer before release readiness can be claimed.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout.
 

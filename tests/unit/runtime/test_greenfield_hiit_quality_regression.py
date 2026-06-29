@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import ArtifactQualityUnit
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
@@ -97,3 +98,27 @@ def test_generated_copy_quality_allows_structured_memory_context_delimiters() ->
     )
 
     assert generated_public_copy_issues("memory context", context) == ()
+
+
+def test_generated_copy_quality_uses_typed_units_to_skip_metadata_not_free_prose() -> None:
+    metadata = ArtifactQualityUnit(
+        projection_id="test",
+        surface="Project dashboard",
+        source_path="project.metadata.status",
+        surface_role="status",
+        text_kind="metadata",
+        text="ready., malformed but not public prose",
+    )
+    prose = ArtifactQualityUnit(
+        projection_id="test",
+        surface="Project dashboard",
+        source_path="project.summary",
+        surface_role="summary",
+        text_kind="free_prose",
+        text="The accepted path is ready., but punctuation is malformed.",
+    )
+
+    assert generated_public_copy_issues("metadata unit", metadata) == ()
+    assert generated_public_copy_issues("free prose unit", prose) == (
+        "free prose unit leaked malformed punctuation",
+    )
