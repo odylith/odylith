@@ -636,6 +636,10 @@ def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_p
     module = _module()
     _write(tmp_path / "odylith/radar/source/AGENTS.md", "Guidance that is not a generated workstream and may end with of.\n")
     _write(
+        tmp_path / "odylith/radar/source/CLAUDE.md",
+        "Companion host guidance that is not a generated workstream and mentions claudeonly.\n",
+    )
+    _write(
         tmp_path / "odylith/radar/source/ideas/B-001.md",
         "# Flood shelter intake\n\nCity staff register residents and prepare placement readiness evidence.\n",
     )
@@ -664,10 +668,11 @@ def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_p
     counts = module.collect_artifact_counts(
         repo_root=tmp_path,
         package=package,
-        required_terms=("flood", "shelter", "resident", "placement"),
+        required_terms=("flood", "shelter", "resident", "placement", "claudeonly"),
     )
 
     assert "odylith/radar/source/AGENTS.md" not in package.backlog_result["idea_files"]
+    assert "odylith/radar/source/CLAUDE.md" not in package.backlog_result["idea_files"]
     assert counts.radar_workstreams == 1
     assert counts.registry_component_specs == 1
     assert counts.atlas_mermaid_sources == 1

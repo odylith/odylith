@@ -1122,6 +1122,11 @@ This section captures synchronized requirement and contract signals derived from
   catalog owner contains only high-variance project scenarios and any
   confirmed-intent override text needed to replay escaped operator-input
   shapes.
+- Installed release matrix artifact collection must preserve record custody:
+  generated Radar workstream readback includes governed workstream records, not
+  host guidance, catalog, or companion Markdown such as `AGENTS.md`,
+  `CLAUDE.md`, `INDEX.md`, or `README.md`. Guidance files must not create false
+  product-manager failures or inflate domain-term carry-through.
 - Prompt-source recovery must preserve infinitive `use to` action chains while
   still modalizing human-role purpose clauses into `can` capability prose. This
   owner must stay regex-free and must not use project-domain vocabularies to

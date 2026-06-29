@@ -59,7 +59,7 @@ COMMAND_TIMEOUT_SECONDS = 300
 QUALITY_MATRIX_VERSION = "greenfield-post-confirm-installed-matrix-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 GENERATED_TEXT_SUFFIXES = {".html", ".js", ".json", ".jsonl", ".md", ".mmd"}
-RADAR_WORKSTREAM_SKIP_FILES = {"AGENTS.md", "INDEX.md", "README.md"}
+NON_ARTIFACT_MARKDOWN_FILES = {"AGENTS.md", "CLAUDE.md", "INDEX.md", "README.md"}
 
 
 def run_matrix(
@@ -554,7 +554,7 @@ def _read_radar_workstreams(repo_root: Path) -> dict[str, str]:
         return {}
     records: dict[str, str] = {}
     for path in sorted(source.rglob("*.md")):
-        if path.name in RADAR_WORKSTREAM_SKIP_FILES:
+        if path.name in NON_ARTIFACT_MARKDOWN_FILES:
             continue
         records[str(path.relative_to(repo_root))] = _read_text(path)
     return records
@@ -598,7 +598,7 @@ def _generated_text(*, repo_root: Path, package: Any) -> str:
     chunks.extend(_as_mapping(package.rendered_component_specs).values())
     chunks.extend(_as_mapping(package.rendered_atlas_sources).values())
     for path in (repo_root / "odylith").rglob("*") if (repo_root / "odylith").exists() else ():
-        if path.is_file() and path.suffix in GENERATED_TEXT_SUFFIXES and path.name != "AGENTS.md":
+        if path.is_file() and path.suffix in GENERATED_TEXT_SUFFIXES and path.name not in NON_ARTIFACT_MARKDOWN_FILES:
             chunks.append(_read_text(path))
     return "\n".join(str(item) for item in chunks).casefold()
 

@@ -469,6 +469,21 @@
   but that evidence predated the independent readback gates and therefore is
   not sufficient release closure. A rebuilt dist must rerun installed matrix
   proof under the hardened scorer before release readiness can be claimed.
+  Installed proof against rebuilt dist `odylith-local-release-0.1.15-def2f783`
+  exposed a new proof-harness defect before release closure: all thirteen
+  standard scenarios completed governed writes in 22.566-27.824s, with the
+  synthetic rescue smoke passing in 34.916s, but the hardened release matrix
+  scored every standard scenario 0/10 because independent readback classified
+  `odylith/radar/source/CLAUDE.md` as a Radar workstream and required product
+  workstream sections on a cross-host guidance file. Root cause: the readback
+  scorer selected generated governance records by broad folder/suffix shape
+  and only excluded `AGENTS.md`, so the newer `CLAUDE.md` companion guidance
+  surface crossed the custody boundary into generated artifact evidence. This
+  is a failed mechanism in the proof architecture, not a generated-project
+  content failure. Future readback must select governed records by record
+  custody/type and exclude guidance/catalog companions consistently; do not
+  repair this by weakening product-manager quality gates or accepting
+  guidance-file false positives as generated project evidence.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout.
 

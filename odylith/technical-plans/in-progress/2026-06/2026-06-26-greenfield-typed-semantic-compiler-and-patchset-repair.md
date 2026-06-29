@@ -1296,3 +1296,17 @@ vocabulary, or degraded packages.
       remains pre-hardening evidence rather than release closure. A rebuilt dist
       matrix under the hardened scorer is still required before release-ready
       claims.
+- [x] Captured and fixed the first hardened-scorer installed proof defect
+      before claiming release readiness. Fresh dist
+      `odylith-local-release-0.1.15-def2f783` completed all thirteen standard
+      confirmed creates in 22.566-27.824s and passed synthetic rescue smoke in
+      34.916s, but every standard case scored 0/10 because release-matrix
+      readback treated `odylith/radar/source/CLAUDE.md` as a generated Radar
+      workstream. The failed mechanism is a custody-boundary error in the proof
+      harness: broad folder/suffix collection excluded `AGENTS.md` but not the
+      cross-host `CLAUDE.md` companion, so host guidance polluted generated
+      artifact scoring. The fix centralizes non-artifact Markdown exclusion for
+      `AGENTS.md`, `CLAUDE.md`, `INDEX.md`, and `README.md`, and the regression
+      proves guidance files neither become Radar workstreams nor inflate domain
+      term coverage. Focused release-matrix proof passed 31 tests; a fresh dist
+      and installed matrix rerun are still required for release closure.

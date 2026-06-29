@@ -22,6 +22,22 @@
   "timeline": [
     {
       "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 688,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-29T01:07:48-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
         "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
         "odylith/registry/source/components/release/CURRENT_SPEC.md",
         "src/odylith/runtime/artifact_quality/generated_copy_quality_units.py"
@@ -55,22 +71,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 688,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T00:36:30-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [
