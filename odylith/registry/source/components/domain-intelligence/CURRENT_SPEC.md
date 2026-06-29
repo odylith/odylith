@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Source-fixed greenfield workstream-title preservation constraint custody after focused reviewer proof found the quality-repair suite red; 44 focused tests now pass, rebuilt installed proof remains pending.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py
 - **2026-06-29 · Implementation:** Source-fixed CB-209 terminal sequence-label custody: terminal flowchart labels fall back to first-path action clauses when result-object compaction drops distinctive tail terms; exact indigenous-language prompt replay now writes governed records in about 20s with Record learner progress evidence, and temp cleanup succeeded.
   - Scope: B-142
   - Evidence: src/odylith/runtime/common/mermaid_text.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py +2 more
@@ -39,12 +42,18 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Live source-local warehouse near-miss replay verified the staged gerund actor-role and state-boundary title fix: confirmed create wrote 4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams in 20.872s with zero manifest issues and no changes-it title copy; temp repo was deleted after proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py +2 more
-- **2026-06-29 · Implementation:** Source-fixed adversarial greenfield gerund actor-role false positive and state-boundary pronoun-tail copy: focused tests passed and exact source-local replay wrote 4 Radar, 3 Registry, 6 Atlas records with zero manifest issues in 19.192s; rebuilt installed adversarial matrix remains required.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +4 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-06-29: Source-fixed workstream-title preservation constraint custody after focused reviewer proof found the runtime quality-repair suite red. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  `greenfield_confirmed_backlog_actions.py` now reattaches useful
+  `while keeping ...` first-path constraints to compact workflow-title action
+  heads before final title projection, using shared semantic-word extraction
+  and string partitioning instead of domain terms, post-render title repair, or
+  a new regex parser. Focused proof passed 44 quality-repair/backlog-title
+  tests; rebuilt installed matrix proof remains pending because dist `2308795e`
+  predates this source fix.
 
 - 2026-06-29: Proved the post-domain-leakage-guard installed package checkpoint. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   Local release dist `odylith-local-release-0.1.15-3fbacb91` passed the

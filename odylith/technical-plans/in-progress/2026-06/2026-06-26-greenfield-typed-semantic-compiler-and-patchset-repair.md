@@ -1559,3 +1559,21 @@ vocabulary, or degraded packages.
       topology checkpoint; the broader goal continues to require fresh
       high-variance simulations and natural rescue-quality proof for new
       failure classes.
+- [x] Source-fixed the focused workstream-title preservation regression found
+      by independent review.
+      `test_workstream_titles_compact_while_keeping_clauses` was red because
+      first-path fragmentation separated an accepted `while keeping ...`
+      preservation constraint from the selected workflow-title action. The
+      source fix recovers useful preservation constraints from the full first
+      path, attaches them to a compact action head before final title
+      projection, and avoids domain vocabulary, post-render repair, or a new
+      regex parser. Focused proof passed
+      `tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py` and
+      `tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py` together:
+      44/44.
+- [ ] Rebuild the installable dist after the workstream-title source fix and
+      rerun installed maintained plus fresh non-reused high-variance proof.
+      Dist `2308795e` predates this source change. Release readiness remains
+      unclaimed until the rebuilt package passes domain-leakage guard,
+      maintained matrix, strict artifact readback, browser proof, cleanup
+      assertion, and fresh variance under the hardened scorer.

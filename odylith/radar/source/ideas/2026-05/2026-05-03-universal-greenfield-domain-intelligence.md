@@ -2381,6 +2381,16 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   improves eval brutality without adding domain allowlists or generator regex
   rules, but full installed matrix proof must be rerun under the stricter scorer
   before release closure.
+- 2026-06-29 focused reviewer regression found a red source test after scorer
+  hardening: workstream title action selection could drop an accepted
+  preservation constraint such as `while keeping legal signoff separate from
+  evidence collection` when first-path fragmentation split it away from the
+  first action. The source fix keeps the repair in semantic title-action
+  ownership, preserving a compact `with ... separate` constraint through title
+  projection without adding domain vocabulary, post-render title repair, or a
+  new regex parser. Focused proof passed the quality-repair and backlog-title
+  tests together (44/44). Rebuilt installed matrix proof remains pending for
+  this source delta.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

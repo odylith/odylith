@@ -889,6 +889,32 @@
   retained quantum prompt at 28.487s with hard 10/10 scores and zero issues.
   The full installed matrix still must be rerun before claiming this stricter
   scorer is release-green.
+  Focused reviewer regression on 2026-06-29 found the runtime quality-repair
+  suite red after the scorer-hardening checkpoint:
+  `test_workstream_titles_compact_while_keeping_clauses` rendered the workflow
+  title as `Let Case Preparation Workspace User Organize Client Statements,
+  Country Condition Evidence, Deadline Risk, Interpreter Needs`, losing the
+  accepted `while keeping legal signoff separate from evidence collection`
+  constraint before title projection. Root cause: first-path step extraction
+  split the preservation constraint into a later fragment, while
+  `workflow_title_action` chose only the first action/fallback fragment for the
+  workstream title. The forward fix stays in action-title semantic ownership:
+  it recovers useful preservation constraints from the full first path, attaches
+  them to a compact action head before final title rendering, and uses shared
+  semantic-word extraction plus string partitioning instead of adding a new
+  regex parser. Focused proof now passes
+  `tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py` and
+  `tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py` together:
+  44 tests passed in 6.46s. Installed matrix proof against the rebuilt package
+  remains required because this source fix landed after dist `2308795e`.
+  In parallel, prior dist `odylith-local-release-0.1.15-2308795e` did pass the
+  maintained installed matrix under the stricter current scorer:
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2308795e/greenfield-post-confirm-matrix-20260629-2308795e.v1.json`
+  reports status `passed`, 13/13 standard cases, all hard 10/10 scores, zero
+  quality issues, generated browser proof for 13/13 cases, 24.156-29.311s
+  standard create timings, and synthetic typed-probe rescue wiring at 33.109s.
+  This is valid maintained-matrix evidence for the previous package, not final
+  release evidence for the current source delta.
 
 - Related Incidents/Bugs: CB-208
 

@@ -41,18 +41,19 @@ def workflow_title_action(*, first_path: str, actor: str, fallback: str) -> str:
     if terminal:
         action = backlog_text.capability_action_clause(backlog_text.sentence_fragment(terminal))
         if action:
-            return action
+            return _action_with_preservation_constraint(action, first_path=first_path)
     if len(fragments) > 1 and ("," in fragments[0] or "(" in fragments[0]):
         action = backlog_text.capability_action_clause(f"{fragments[0]}, {fragments[1]}")
         if action:
-            return action
+            return _action_with_preservation_constraint(action, first_path=first_path)
     selected = _preferred_title_fragment(fragments)
     if selected:
-        action = backlog_text.capability_action_clause(backlog_text.sentence_fragment(selected))
+        action = backlog_text.capability_action_clause(_title_action_fragment(selected))
         if action:
-            return action
+            return _action_with_preservation_constraint(action, first_path=first_path)
     if fallback:
-        return backlog_text.capability_action_clause(backlog_text.sentence_fragment(fallback))
+        action = backlog_text.capability_action_clause(_title_action_fragment(fallback))
+        return _action_with_preservation_constraint(action, first_path=first_path)
     return ""
 
 
@@ -291,6 +292,91 @@ def _preferred_title_fragment(values: list[str]) -> str:
         if not _skip_title_setup_fragment(fragment):
             return fragment
     return first
+
+
+def _title_action_fragment(value: str) -> str:
+    text = backlog_text.sentence_fragment(value).strip(" .")
+    constrained = _compact_preservation_constraint(text)
+    return constrained or text
+
+
+def _action_with_preservation_constraint(action: str, *, first_path: str) -> str:
+    text = str(action or "").strip(" .")
+    constraint = _preservation_constraint(first_path)
+    if not text or not constraint or constraint.casefold() in text.casefold():
+        return text
+    head = _compact_action_head_for_constraint(text)
+    return f"{head or text} with {constraint}"
+
+
+def _compact_preservation_constraint(value: str) -> str:
+    text = str(value or "").strip(" .")
+    constraint = _preservation_constraint(text)
+    if not constraint:
+        return ""
+    if not _useful_preservation_constraint(constraint):
+        return ""
+    marker = "while keeping "
+    index = text.casefold().find(marker)
+    if index < 0:
+        return ""
+    before = text[:index].strip(" ,.")
+    action_head = _compact_action_head_for_constraint(before)
+    if not action_head:
+        return ""
+    return f"{action_head} with {constraint}"
+
+
+def _preservation_constraint(value: str) -> str:
+    text = str(value or "")
+    marker = "while keeping "
+    index = text.casefold().find(marker)
+    if index < 0:
+        return ""
+    tail = text[index + len(marker) :]
+    constraint = backlog_text.sentence_fragment(_until_boundary(tail)).strip(" ,.")
+    return constraint if _useful_preservation_constraint(constraint) else ""
+
+
+def _useful_preservation_constraint(value: str) -> bool:
+    words = backlog_text.semantic_words(value)
+    if len(words) < 2 or len(words) > 8:
+        return False
+    return bool(words & {"clear", "separate", "trusted", "visible", "reviewable", "limited", "bounded"})
+
+
+def _compact_action_head_for_constraint(value: str) -> str:
+    pieces = [
+        backlog_text.sentence_fragment(piece).strip(" .")
+        for piece in _action_head_pieces(value)
+    ]
+    for piece in pieces:
+        if piece and not _skip_title_setup_fragment(piece):
+            return piece
+    return next((piece for piece in pieces if piece), "")
+
+
+def _action_head_pieces(value: str) -> tuple[str, ...]:
+    text = str(value or "")
+    pieces: list[str] = []
+    for comma_part in text.split(","):
+        remaining = comma_part.strip()
+        while True:
+            index = remaining.casefold().find(" and ")
+            if index < 0:
+                break
+            pieces.append(remaining[:index])
+            remaining = remaining[index + len(" and ") :]
+        pieces.append(remaining)
+    return tuple(piece for piece in pieces if piece.strip())
+
+
+def _until_boundary(value: str) -> str:
+    text = str(value or "")
+    indexes = [index for mark in ".;" if (index := text.find(mark)) >= 0]
+    if not indexes:
+        return text
+    return text[: min(indexes)]
 
 
 def _preferred_terminal_fragment(values: list[str]) -> str:
