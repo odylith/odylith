@@ -19,6 +19,8 @@ if [[ ! -f "$dist_dir/install.sh" ]]; then
   die "local release dist is missing install.sh: $dist_dir"
 fi
 
+"$odylith_python" scripts/release/platform_domain_leakage_check.py --repo-root "$odylith_repo_root" --dist-dir "$dist_dir"
+
 proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-post-confirm-matrix.v1.json}"
 
 extra_args=(--include-rescue-smoke)

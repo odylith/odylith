@@ -24,33 +24,12 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-29 · Failure:** Fresh variance after checkpoint 31cc84ef reopened CB-209: 9/10 new installed domains passed, but `indigenous language curriculum evidence circle` failed before governed writes because the First Path Sequence terminal flowchart label compressed the accepted final event to `Progress evidence`, dropping distinctive tail terms; parallel review found remaining 10/10 scorer false-confidence risk.
+- **2026-06-29 · Implementation:** Source-fixed CB-209 terminal sequence-label custody: terminal flowchart labels fall back to first-path action clauses when result-object compaction drops distinctive tail terms; exact indigenous-language prompt replay now writes governed records in about 20s with Record learner progress evidence, and temp cleanup succeeded.
   - Scope: B-142
-  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-fresh-variance-20260629-31cc84ef.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
-- **2026-06-29 · Implementation:** Source-fixed terminal sequence-label custody: flowchart terminal labels now fall back to the first-path action clause when result-object compaction drops distinctive accepted-event tail terms, Mermaid connector balancing keeps short noun heads readable, focused sequence proof passed, and the exact failed prompt replay wrote governed records in about 20s with temp cleanup.
+  - Evidence: src/odylith/runtime/common/mermaid_text.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py +2 more
+- **2026-06-29 · Implementation:** Fresh custom installed greenfield variance reopened CB-209; source fix split actor path-role custody, preserved title-compound user roles, trimmed preposition/action-led actor fragments, moved non-goal derivation to its own owner, and left rebuilt installed matrix proof pending.
   - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_terminal_labels.py, src/odylith/runtime/common/mermaid_text.py, tests/unit/runtime/test_greenfield_confirmed_diagrams.py, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
-- **2026-06-29 · Validation:** Rebuilt dist 597e5ca7 passed installed release proof after terminal sequence-label custody repair: exact failed-case replay passed, the maintained 13-case matrix passed 13/13, the fresh 10-domain variance matrix passed 10/10, browser proof passed, standard creates stayed under 27s, and synthetic typed-probe rescue passed in 32.401s; natural host-model rescue remains unproven separately.
-  - Scope: B-142
-  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-indigenous-replay-20260629-597e5ca7.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-matrix-20260629-597e5ca7.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-fresh-variance-20260629-597e5ca7.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
-- **2026-06-29 · Implementation:** Hardened the greenfield release scorer against global term-soup false positives: independent domain readback now requires local semantic grounding across Radar, Registry, Atlas, and Project prompt surfaces, and a regression rejects generic Registry proof boilerplate even when other surfaces carry accepted source terms.
-  - Scope: B-142
-  - Evidence: scripts/release/greenfield_matrix_package_evidence.py, tests/unit/install/test_greenfield_post_confirm_matrix.py, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-stricter-scorer-smoke-20260629.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
-- **2026-06-29 · Validation:** Fresh dist 21ed5b0a passed rebuilt installed proof after actor-boundary cleanup: 13/13 maintained cases and 4/4 custom closure cases scored hard 10/10 with zero issues, browser proof, complete governed readback, strict temp cleanup, and 22.975-28.762s maintained plus 25.191-27.711s custom create timings; synthetic typed-probe rescue wiring passed in 34.408s.
-  - Scope: B-142
-  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-matrix.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-custom-variance-20260629-21ed5b0a.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
-- **2026-06-29 · Implementation:** Source-fixed the fresh custom installed variance failures from dist 72c100d1: title-compound user roles no longer trip the gerund actor-role slop gate, preposition/action-led actor fragments are trimmed before Project prompt projection, and non-goal derivation now has a dedicated owner; focused proof and exact source replays passed, rebuilt installed proof remains required.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_path_role.py +4 more
-- **2026-06-29 · Validation:** Fresh dist db69b062 passed the maintained installed greenfield matrix after sparse-topology repair: 13/13 standard cases scored hard 10/10 with zero issues, browser proof, complete governed readback, strict temp cleanup, and 21.927-26.698s create times; synthetic typed-probe rescue wiring passed in 32.728s.
-  - Scope: B-142
-  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-db69b062/greenfield-post-confirm-matrix.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
-- **2026-06-29 · Implementation:** Source-fixed the follow-up sparse-topology installed proof failure from dist f5fef9e6: sparse/generated two-row confirmed systems now receive generic proof/state topology completion, rich explicit two-system narratives remain unpadded, and compiler-only system-row labels no longer leak into public Registry descriptions; focused and broad source proof passed, rebuilt installed proof remains required.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py +2 more
-- **2026-06-29 · Implementation:** Source-fixed the fresh `decision evidence room` post-confirm failure with generic first-path subject-boundary and finite-action event custody; targeted proof passed, the broader greenfield pack passed 201 tests, and exact source-local confirmed create wrote complete governed records in about 21s with zero manifest issues and temp cleanup.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py +4 more
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +1 more
 - **2026-06-29 · Implementation:** Extended canonical first-path projection custody to sequence-step variants after the request-handoff replay exposed repeated noncanonical prose blockers; focused package/sequence proof passed and live source-local create wrote 4 Radar, 3 Registry, 6 Atlas records in 19.609s with zero issues and no Or-fragment copy.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py +2 more
@@ -63,12 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Source-fixed adversarial greenfield gerund actor-role false positive and state-boundary pronoun-tail copy: focused tests passed and exact source-local replay wrote 4 Radar, 3 Registry, 6 Atlas records with zero manifest issues in 19.192s; rebuilt installed adversarial matrix remains required.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +4 more
-- **2026-06-29 · Implementation:** Fixed the sparse model-lab post-confirm source escape: finite action leads stay action fragments, actor-choice copy avoids category echo, next-step overlap uses sanctioned first-path projections, focused regressions passed, and source CLI create wrote governed records in 19.708s; rebuilt installed matrix proof remains required.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +4 more
-- **2026-06-28 · Implementation:** B-142 canonical projection repetition custody now preserves typed fact provenance, release matrix keeps failed-create blocker evidence, and focused source proof is green; installed release readiness still awaits rebuilt matrix proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -1331,6 +1304,12 @@ This section captures synchronized requirement and contract signals derived from
   host guidance, catalog, or companion Markdown such as `AGENTS.md`,
   `CLAUDE.md`, `INDEX.md`, or `README.md`. Guidance files must not create false
   product-manager failures or inflate domain-term carry-through.
+- Domain Intelligence release proof must run the platform domain-leakage guard
+  before claiming installed matrix quality. The guard derives distinctive
+  high-variance fixture terms from the matrix case catalog and fails if those
+  terms appear in runtime code or shipped guidance surfaces. Tests, governed
+  learning records, evaluation corpora, and release notes may retain domain
+  terms as evidence; those surfaces must not become generation defaults.
 - Prompt-source recovery must preserve infinitive `use to` action chains while
   still modalizing human-role purpose clauses into `can` capability prose. This
   owner must stay regex-free and must not use project-domain vocabularies to

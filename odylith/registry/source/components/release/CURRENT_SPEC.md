@@ -463,6 +463,12 @@ governed subsystem.
   invoke, and probe-env leakage into the wrong matrix leg do not substitute for
   this installed release proof. The rescue-smoke result is wiring proof unless a
   natural non-internal repairable failure also passes under the 90 second tier.
+- The local release asset builder, standalone greenfield matrix target, and
+  shared release proof lane must run the platform domain-leakage guard against
+  current runtime/source guidance and the built wheel before accepting a release
+  proof. Distinctive fixture vocabulary belongs in tests, governed evidence,
+  evaluation corpora, and release notes; it must not leak into runtime code,
+  shipped agent guidance, or bundled default behavior.
 - The standalone `make greenfield-post-confirm-matrix` maintainer target must
   write `greenfield-post-confirm-matrix.v1.json` by default, with
   `GREENFIELD_MATRIX_OUTPUT_JSON` as the explicit override. A stdout-only
@@ -493,6 +499,12 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Added platform domain-leakage guard to local release build, standalone greenfield matrix, and shared release proof; guard derives distinctive fixture terms from the high-variance matrix and keeps domain vocabulary out of runtime and shipped guidance while allowing governed/evaluation evidence.
+  - Scope: B-142
+  - Evidence: bin/_odylith.sh, bin/greenfield-post-confirm-matrix +2 more
+- **2026-06-29 · Implementation:** Hardened greenfield release scoring against global domain-term soup by requiring local semantic grounding across Radar, Registry, Atlas, and Project prompt surfaces; focused scorer tests passed 36/36.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, tests/unit/install/test_greenfield_post_confirm_matrix.py
 - **2026-06-29 · Implementation:** Captured and fixed hardened release-matrix proof defect: rebuilt dist def2f783 completed thirteen standard greenfield creates under 28s plus rescue smoke at 34.916s, but scorer falsely treated odylith/radar/source/CLAUDE.md as a Radar workstream. Casebook, Registry, Atlas, and plan now record the custody-boundary failure; collector excludes guidance/catalog Markdown and focused matrix proof passed 49 tests.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
@@ -505,12 +517,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-28 · Implementation:** B-142 canonical projection repetition custody now preserves typed fact provenance, release matrix keeps failed-create blocker evidence, and focused source proof is green; installed release readiness still awaits rebuilt matrix proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +2 more
-- **2026-06-28 · Implementation:** Release proof now treats the installed greenfield matrix as a canonical release gate: the default standard catalog is twelve domains, the matrix persists proof JSON, strict domain-anchor scoring is enforced, and rescue smoke is labeled wiring-only.
-  - Scope: B-142
-  - Evidence: bin/_odylith.sh, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
-- **2026-06-27 · Implementation:** Greenfield post-confirm hard-min scoring now reports brutal 10/10 release dimensions; action-chain actor recovery rejects embedded action prefixes after the water-rights no-write repro, and the final ten-domain source-local cleanup-proof matrix passed with min score 10/10, max 16.935s, and all temp repos deleted.
-  - Scope: B-142
-  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/common/prose_grammar.py +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History

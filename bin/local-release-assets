@@ -31,6 +31,8 @@ mkdir -p "$dist_dir"
   --dist-dir "$dist_dir" \
   --allow-local
 
+"$odylith_python" scripts/release/platform_domain_leakage_check.py --repo-root "$odylith_repo_root" --dist-dir "$dist_dir"
+
 cat <<EOF
 local release assets ready
 - version: ${requested_version}

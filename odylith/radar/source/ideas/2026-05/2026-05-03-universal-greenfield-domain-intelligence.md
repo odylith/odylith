@@ -174,7 +174,7 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
   parsing, tokenization, and formatting behind named owners; it must not own
   product meaning, domain classification, ambiguity resolution, or premium
   quality judgment.
-- The proof suite must include adversarial greenfield fixtures across unrelated domains and must assert zero leakage between fixture term signatures.
+- The proof suite must include adversarial greenfield fixtures across unrelated domains and must assert zero leakage between fixture term signatures. Release custody now requires a platform domain-leakage gate before local-release build completion, standalone installed-matrix proof, and shared release proof; fixture terms may live in tests, governed evidence, evaluation corpora, and release notes, but not in runtime or shipped guidance defaults.
 - Completion requires an end-to-end `greenfield create --confirm` proof that produces premium, domain-specific Radar workstreams, Registry component contracts, Atlas diagrams, project story, release assignment, and Tribunal evidence without adding project-specific logic to Odylith product code.
 
 ## Validation

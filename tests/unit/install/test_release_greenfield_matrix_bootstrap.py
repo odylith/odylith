@@ -21,6 +21,8 @@ def test_local_release_assets_target_builds_maintainer_installable_assets() -> N
     assert '--tag "v${requested_version}"' in text
     assert '--dist-dir "$dist_dir"' in text
     assert "--allow-local" in text
+    assert "scripts/release/platform_domain_leakage_check.py" in text
+    assert '--repo-root "$odylith_repo_root" --dist-dir "$dist_dir"' in text
     assert "ODYLITH_RELEASE_BASE_URL=http://127.0.0.1:8123" in text
     assert 'ODYLITH_RELEASE_MAINTAINER_ROOT="${odylith_repo_root}"' in text
     assert "make local-release-assets" in help_text
@@ -45,6 +47,8 @@ def test_greenfield_post_confirm_matrix_target_runs_installed_release_gate() -> 
     assert 'ensure_playwright_chromium' in text
     assert '"$odylith_python" -m playwright install chromium >/dev/null' in shared
     assert 'proof_json="${GREENFIELD_MATRIX_OUTPUT_JSON:-$dist_dir/greenfield-post-confirm-matrix.v1.json}"' in text
+    assert "scripts/release/platform_domain_leakage_check.py" in text
+    assert '--repo-root "$odylith_repo_root" --dist-dir "$dist_dir"' in text
     assert '--dist-dir "$dist_dir"' in text
     assert '--version "$requested_version"' in text
     assert '--temp-parent "$temp_parent"' in text
@@ -73,6 +77,7 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     assert "tracked maintainer override marks benchmark proof advisory for this exact release" in text
     assert 'benchmark compare --repo-root . --baseline last-shipped' in text
     assert 'scripts/release/greenfield_post_confirm_matrix.py \\' in shared
+    assert "scripts/release/platform_domain_leakage_check.py" in shared
     assert 'ensure_playwright_chromium' in shared
     assert '--include-browser-proof' in shared
     assert '--output-json "$dist_dir/greenfield-post-confirm-matrix.v1.json"' in shared

@@ -304,6 +304,7 @@ run_release_proof_steps() {
   odylith_cli validate self-host-posture --repo-root . --mode release --expected-tag "$tag"
   "$odylith_python" -m hatch build --target wheel "$dist_dir"
   "$odylith_python" scripts/release/publish_release_assets.py --repo odylith/odylith --tag "$tag" --dist-dir "$dist_dir" --allow-local
+  "$odylith_python" scripts/release/platform_domain_leakage_check.py --repo-root . --dist-dir "$dist_dir"
 
   ODYLITH_RELEASE_PREFLIGHT_DIST_DIR="$dist_dir" "$odylith_python" - <<'PY'
 from __future__ import annotations

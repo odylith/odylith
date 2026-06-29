@@ -24,6 +24,8 @@
 
 - Environment Update: 2026-06-29 rebuilt local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7 installed into non-reused temporary consumer repos under /Users/freedom/mock. The maintained matrix proof is /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-matrix-20260629-597e5ca7.v1.json, the fresh variance proof is /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-fresh-variance-20260629-597e5ca7.v1.json, and the exact failed-case replay proof is /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-indigenous-replay-20260629-597e5ca7.v1.json.
 
+- Environment Update: 2026-06-29 source checkpoint after `e86b2b82` added a platform domain-leakage release gate before rebuilding the final dist. The guard derives distinctive fixture vocabulary from the maintained high-variance matrix, scans runtime/source guidance and the built wheel, excludes tests/governance/evaluation evidence, and is called by `local-release-assets`, `greenfield-post-confirm-matrix`, and the shared release proof lane. Source plus the previous `e86b2b82` dist passed the guard across 19 distinctive fixture terms; a rebuilt post-guard dist and installed matrix proof are still required before release readiness can be claimed for this checkpoint.
+
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
 - Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts. The 3d13f434 installed matrix reopened the release gate again: 12 of 13 cases passed with hard 10/10 scores, browser proof, and complete records, but sparse disclosure confirmation scored 0/10 after governed writes because it produced only two Registry component specs, carried only three of four required domain anchors, and failed architect, engineer, and domain-expert matrix lenses.
@@ -93,6 +95,14 @@
   of a longer source sentence, the brief owner must drop incomplete comma-list
   tails instead of adding a terminal period, and persisted readback tests must
   assert no readiness gate ends with an orphaned list fragment.
+  Release Guard Fix on 2026-06-29: domain-leakage assurance moved from manual
+  review into the maintained release custody path. `platform_domain_leakage_check.py`
+  now uses the release matrix's fixture-owned distinctive terms to fail the
+  build, standalone matrix, and shared release proof when project vocabulary
+  appears in runtime or shipped guidance surfaces. The guard intentionally
+  allows tests, Casebook/Radar/Compass/technical-plan evidence, evaluation
+  corpora, and release notes so Odylith can learn from domain-heavy repros
+  without letting those terms become generator or guidance defaults.
 
 - Rollback/Forward Fix: Forward fix only
 
