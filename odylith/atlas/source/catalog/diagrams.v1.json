@@ -4330,9 +4330,9 @@
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "57664efd8a6b44694eb2157bc99405c7bf261808b3becfa920fa2049dadc180f",
         "scripts/release/greenfield_post_confirm_matrix.py": "fc51ab23af93a06a8e68fd9580043ab8b59e9076bbcc649d78338994206dd9b3",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "8c87298a85ef12b07a98c5df7eadb8bffdd9f694cad036ed62b21fdccc31e6aa",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "ba9474cc09cc58247d71576b40280b27b73ec29af5e6d8a114864ee392fbe751",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "19f07ddfda21d61fb60009938c12791137ed0d1690637b83361c98629aac9aea",
-        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "928cd1e8b2d379101f96b3b21f2302a1cd82247ac2d01155fbba62984f3dff8f",
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "890c37b5a62b3c79e976f0f73be971f79242bb5c6ab0b9fee8feaa52182640d9",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "646eda442fc7b7f65b7221bdffc20897f00e8e3ae082588e622096cabc611a52"
       },
       "render_source_fingerprint": "83120e6dbefcc94c2de4af28f4a81961df63a34fec37d5ddc884543f9519dea7"
@@ -4604,7 +4604,7 @@
         "src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py": "bfac58e827e4e7da324072bbebaf79dba7160a436c6b1cecd40b0a18f7066d59",
         "src/odylith/runtime/surfaces/brand_assets.py": "5d4bf43d949b73253557aa0cddc83225fa2117f8a1542bfcf90d298aefb012fb",
         "src/odylith/runtime/surfaces/generated_flowchart_assets.py": "c315df0368589839444c953622e12c60222fc24f6151bf59b55250f59c4507ea",
-        "tests/unit/install/test_greenfield_post_confirm_matrix.py": "aea9a47970a08cb9dcc9af35fc24a4f2826d46d49bea01aea3765bfa1c31a59a",
+        "tests/unit/install/test_greenfield_post_confirm_matrix.py": "7701e7369d2b5d2810de237ba5089a1ee046c76da2113adba27d4483a0409653",
         "tests/unit/runtime/test_brand_assets.py": "7b63445e99f63182f94ac66a192f1ce5bcb933d7801efad1f024eaf4245f6d7e",
         "tests/unit/runtime/test_auto_update_mermaid_diagrams.py": "e56cbb86063ed485629606d71531cb5d668f531dbf42729293a1c6c00d135477",
         "tests/unit/runtime/test_greenfield_cli_paths.py": "021e60d730c25cdef076ec7d4e172898b7c4c09b83bdf8b754e8a2d0fdecb277"

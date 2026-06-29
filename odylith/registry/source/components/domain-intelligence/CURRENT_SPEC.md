@@ -33,6 +33,9 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Validation:** Rebuilt dist 597e5ca7 passed installed release proof after terminal sequence-label custody repair: exact failed-case replay passed, the maintained 13-case matrix passed 13/13, the fresh 10-domain variance matrix passed 10/10, browser proof passed, standard creates stayed under 27s, and synthetic typed-probe rescue passed in 32.401s; natural host-model rescue remains unproven separately.
   - Scope: B-142
   - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-indigenous-replay-20260629-597e5ca7.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-matrix-20260629-597e5ca7.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-fresh-variance-20260629-597e5ca7.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
+- **2026-06-29 · Implementation:** Hardened the greenfield release scorer against global term-soup false positives: independent domain readback now requires local semantic grounding across Radar, Registry, Atlas, and Project prompt surfaces, and a regression rejects generic Registry proof boilerplate even when other surfaces carry accepted source terms.
+  - Scope: B-142
+  - Evidence: scripts/release/greenfield_matrix_package_evidence.py, tests/unit/install/test_greenfield_post_confirm_matrix.py, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-597e5ca7/greenfield-post-confirm-stricter-scorer-smoke-20260629.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
 - **2026-06-29 · Validation:** Fresh dist 21ed5b0a passed rebuilt installed proof after actor-boundary cleanup: 13/13 maintained cases and 4/4 custom closure cases scored hard 10/10 with zero issues, browser proof, complete governed readback, strict temp cleanup, and 22.975-28.762s maintained plus 25.191-27.711s custom create timings; synthetic typed-probe rescue wiring passed in 34.408s.
   - Scope: B-142
   - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-matrix.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-custom-variance-20260629-21ed5b0a.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
@@ -95,6 +98,16 @@ This section captures synchronized requirement and contract signals derived from
   32.401s, and temp cleanup was verified clean. This validates the terminal
   label custody fix for the tested standard path, while natural host-model
   semantic rescue remains a distinct unproven proof class.
+  Follow-up scorer hardening closes one false-confidence mechanism from that
+  review: domain-expert readback is now distributed across the major generated
+  surfaces instead of unioned across the whole package. Generic Registry specs
+  can no longer pass premium scoring merely because Radar, Atlas, or Project
+  prompts repeat the accepted product terms. This keeps domain vocabulary in
+  test/proof evidence while preventing the scorer from treating global term
+  presence as surface-local semantic quality. Focused scorer tests passed
+  36/36, and a two-case installed smoke under the stricter local scorer passed
+  the previously failing indigenous prompt plus the retained quantum prompt
+  with hard 10/10 scores and zero issues.
 - 2026-06-29: Source-fixed fresh custom installed actor-boundary failures. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
   A custom installed matrix against `odylith-local-release-0.1.15-72c100d1`
   passed eight non-reused domains but failed AI-eval red-team and airport

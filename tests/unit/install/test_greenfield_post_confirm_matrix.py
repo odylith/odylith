@@ -743,6 +743,30 @@ def test_domain_readback_excludes_accepted_project_source_launch_runtime_text() 
     )
 
 
+def test_domain_readback_requires_semantic_terms_on_each_major_surface() -> None:
+    module = _module()
+    package = _substantive_package()
+    package.proposal["intent"]["state_object"] = "Zephyr lattice attestation queue."
+    semantic = package.proposal["semantic_model"]
+    semantic["first_path_contract"].update({"capability": "Review zephyr lattice attestation evidence", "visible_result": "Zephyr lattice attestation readiness"})
+    semantic["domain_ontology"].update({"proof_boundary": "Zephyr lattice attestation proof is visible.", "internal_systems": ["Zephyr lattice attestation ledger"], "external_systems": ["Zephyr lattice source"]})
+    package.backlog_result["idea_files"] = {
+        key: f"{text}\nZephyr lattice attestation readiness stays reviewable.\n" for key, text in package.backlog_result["idea_files"].items()
+    }
+    package.rendered_atlas_sources = {
+        key: 'flowchart TD\n  A["Zephyr lattice attestation"] --> B["Attestation readiness"]\n' for key in package.rendered_atlas_sources
+    }
+    package.project_dashboard_preview["host_handoff_prompts"] = [
+        {**row, "prompt": f"{row['prompt']} Zephyr lattice attestation readiness."} for row in package.project_dashboard_preview["host_handoff_prompts"]
+    ]
+    generic_spec = "# Generic Component\n\nSource boundary and Trace links are present. Successful path evidence, Blocked input evidence, and Replay evidence are present. " + "Ownership keeps operators aligned with controls, logs, recovery, routing, status, and audit notes. " * 8
+    package.rendered_component_specs = {key: generic_spec for key in package.rendered_component_specs}
+
+    findings = module.package_evidence_findings(package)
+
+    assert any("semantic terms on Registry" in finding.message for finding in findings)
+
+
 def test_collect_artifact_package_prefers_accepted_project_proposal_over_confirmed_intent(tmp_path: Path) -> None:
     module = _module()
     _write(

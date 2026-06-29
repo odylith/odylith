@@ -805,6 +805,13 @@
   mechanism is false confidence from count/threshold proof; future claims need
   negative fixtures, mutation tests, richer cross-field invariants, degraded UI
   browser states, and adversarial prompt fuzzing.
+  Follow-up scorer hardening started from that review: independent domain
+  readback can no longer prove premium quality only by finding accepted terms
+  somewhere in the rendered package. The release scorer now requires the major
+  generated surfaces to carry semantic source terms themselves, so a generic
+  Registry or Atlas surface cannot hide behind domain words repeated in Radar,
+  Project prompts, or runtime previews. This is a generic evidence-distribution
+  gate, not a domain allowlist or generator rule.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
   2026-06-29 guardrail: do not "fix" title-compound user roles by adding
@@ -855,6 +862,16 @@
   `/Users/freedom/mock` after the runs. Natural host-model semantic rescue
   quality is still not proven by this synthetic rescue smoke and must stay a
   separate release-risk class.
+  Post-proof scorer hardening evidence: `greenfield_matrix_package_evidence.py`
+  now checks domain semantic term distribution across Radar, Registry, Atlas,
+  and Project prompt surfaces. The regression fixture proves a globally
+  domain-rich package with generic Registry specs is rejected. Focused
+  scorer tests passed 36/36, and the touched test file remains under the
+  1500-line ceiling. A two-case installed smoke under the stricter local scorer
+  passed the previously failing indigenous-language prompt at 25.898s and the
+  retained quantum prompt at 28.487s with hard 10/10 scores and zero issues.
+  The full installed matrix still must be rerun before claiming this stricter
+  scorer is release-green.
 
 - Related Incidents/Bugs: CB-208
 

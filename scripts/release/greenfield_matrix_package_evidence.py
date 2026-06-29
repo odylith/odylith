@@ -50,6 +50,12 @@ _DOMAIN_READBACK_EXCLUDED_SURFACES = frozenset(
         "Accepted project source launch",
     }
 )
+_DOMAIN_DISTRIBUTION_SURFACES = (
+    ("Radar", ("Radar workstream",)),
+    ("Registry", ("Registry component spec",)),
+    ("Atlas", ("Atlas Mermaid",)),
+    ("Project prompts", ("Project implementation prompt",)),
+)
 _TERM_STOPWORDS = frozenset(
     {
         "accepted",
@@ -249,7 +255,30 @@ def _domain_readback_findings(
                 f"independent domain readback carried {len(source_terms & rendered_terms)} of {required} required semantic terms",
             )
         ]
-    return []
+    return _domain_surface_distribution_findings(artifacts=artifacts, source_terms=source_terms)
+
+
+def _domain_surface_distribution_findings(
+    *,
+    artifacts: Sequence[RenderedArtifact],
+    source_terms: set[str],
+) -> list[PackageEvidenceFinding]:
+    findings: list[PackageEvidenceFinding] = []
+    required = min(2, len(source_terms))
+    for label, surfaces in _DOMAIN_DISTRIBUTION_SURFACES:
+        surface_artifacts = [artifact for artifact in artifacts if artifact.surface in surfaces]
+        if not surface_artifacts:
+            continue
+        surface_terms = _terms(" ".join(artifact.text for artifact in surface_artifacts))
+        carried = len(source_terms & surface_terms)
+        if carried < required:
+            findings.append(
+                _finding(
+                    "domain_expert",
+                    f"independent domain readback carried only {carried} of {required} semantic terms on {label}",
+                )
+            )
+    return findings
 
 
 def _active_components(proposal: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:

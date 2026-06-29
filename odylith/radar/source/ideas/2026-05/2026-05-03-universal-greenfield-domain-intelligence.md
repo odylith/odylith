@@ -2360,6 +2360,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   verified clean after the installed runs. Natural host-model semantic rescue
   quality remains a separate unproven class; do not collapse that risk into the
   synthetic rescue smoke result.
+- 2026-06-29 scorer-hardening follow-up addressed one concrete
+  false-confidence gap from the independent review. The installed release
+  scorer no longer lets a package pass domain-expert readback by carrying source
+  terms somewhere in the overall rendered package; Radar, Registry, Atlas, and
+  Project prompt surfaces each need local semantic grounding. A regression now
+  rejects a package whose Registry specs are generic proof boilerplate even
+  when Radar, Atlas, and Project prompts carry the accepted source terms.
+  Focused matrix-scorer tests passed 36/36, and a two-case installed smoke
+  under the stricter local scorer passed the previously failing indigenous
+  prompt and the retained quantum prompt at hard 10/10 with zero issues. This
+  improves eval brutality without adding domain allowlists or generator regex
+  rules, but full installed matrix proof must be rerun under the stricter scorer
+  before release closure.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
