@@ -46,6 +46,19 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-29: Hardened selected-case domain-leakage proof for recursive custom simulations. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  `GreenfieldMatrixCase` now carries explicit `leakage_terms` for maintained
+  simulations, `platform_domain_leakage_check.py` derives per-case forbidden
+  vocabulary from that contract, and `greenfield_post_confirm_matrix.py`
+  requires every selected case to contribute at least one distinctive term
+  before serving a local release or creating temp repos. Custom cases may still
+  fall back to required terms when they produce distinctive coverage, and
+  explicit phrases can contain platform words without being filtered. Focused
+  proof passed 50 install/bootstrap tests, py_compile, a selected
+  platform-word phrase scan, and the current `a46ef6cc` source/dist leakage
+  scan over 44 explicit fixture terms with zero missing cases and zero
+  protected-custody findings.
+
 - 2026-06-29: Source-fixed workstream-title preservation constraint custody after focused reviewer proof found the runtime quality-repair suite red. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   `greenfield_confirmed_backlog_actions.py` now reattaches useful
   `while keeping ...` first-path constraints to compact workflow-title action

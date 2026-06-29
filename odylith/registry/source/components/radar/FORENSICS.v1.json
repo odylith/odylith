@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 337,
-    "mapped_workstream_evidence_count": 292,
+    "explicit_event_count": 339,
+    "mapped_workstream_evidence_count": 294,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 337
+    "timeline_event_count": 339
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,75 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 717,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Strengthened greenfield leakage proof from selected required-term mining to explicit per-case leakage terms; maintained matrix now scans 44 terms with zero missing cases and zero protected-custody findings.",
+      "ts_iso": "2026-06-29T15:20:35-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 716,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield matrix domain-leakage custody so selected custom simulation terms scan protected source, shipped guidance, and wheel custody before temp repos are created.",
+      "ts_iso": "2026-06-29T15:12:43-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a46ef6cc/greenfield-post-confirm-fresh-variance-20260629-a46ef6cc.v1.json",

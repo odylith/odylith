@@ -933,6 +933,23 @@
   autonomous vehicle map-update safety, and agent tool-permission governance.
   Natural host-model semantic rescue quality remains unclaimed; this proof
   covers standard path and synthetic typed-probe rescue wiring.
+  Follow-up leakage-proof hardening on 2026-06-29 closed a proof-custody gap
+  in fresh/custom variance simulations. The maintained shell wrapper already
+  ran `platform_domain_leakage_check.py`, but programmatic `run_matrix(...)`
+  calls with custom `GreenfieldMatrixCase` rows reused only the default fixture
+  vocabulary. A fresh variance pass could therefore prove completion and
+  artifact quality without proving that its own distinctive project terms were
+  absent from protected Odylith runtime, shipped guidance, and wheel custody.
+  Independent review then found the first selected-case fix still too thin:
+  required-term-only mining left some maintained cases with zero or weak
+  distinctive coverage. The final forward fix gives maintained cases explicit
+  `leakage_terms`, requires every selected case to contribute at least one
+  distinctive term before simulation begins, filters platform-native words only
+  when they appear as standalone terms, and still lets explicit phrases such as
+  `agent tool permission tribunal` be scanned. Focused proof passed 50 install
+  tests plus py_compile; the current `a46ef6cc` source/dist scan now covers 44
+  explicit fixture terms, reports zero missing cases, and reports zero protected
+  custody findings.
 
 - Related Incidents/Bugs: CB-208
 

@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
     RESCUE_PROBE_ENV,
 )
@@ -62,6 +64,66 @@ def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
     assert "CHSH" in quantum_case.confirmed_intent_markdown
     assert "QBER" in quantum_case.confirmed_intent_markdown
     assert quantum_case.required_terms == ("quantum", "e91", "qber", "chsh")
+
+
+def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\n")
+    captured_terms: list[tuple[str, ...]] = []
+
+    def fake_scan_platform_custody(*, repo_root: Path, dist_dir: Path, terms: tuple[str, ...]):
+        captured_terms.append(terms)
+        return (
+            module.platform_domain_leakage.LeakageFinding(
+                location="src/odylith/runtime/example.py",
+                term="xenobot",
+                line=1,
+            ),
+        )
+
+    monkeypatch.setattr(module.platform_domain_leakage, "scan_platform_custody", fake_scan_platform_custody)
+
+    with pytest.raises(RuntimeError, match="selected greenfield matrix case vocabulary"):
+        module.run_matrix(
+            dist_dir=dist_dir,
+            version="0.1.15",
+            temp_parent=tmp_path,
+            cases=(
+                module.GreenfieldMatrixCase(
+                    name="xenobot custody",
+                    prompt="Create a greenfield proposal for xenobot custody.",
+                    required_terms=("xenobot", "agent"),
+                ),
+            ),
+        )
+
+    assert captured_terms == [("xenobot",)]
+    assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
+
+
+def test_run_matrix_rejects_custom_cases_without_distinctive_leakage_terms(tmp_path: Path) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\n")
+
+    with pytest.raises(RuntimeError, match="declare leakage_terms"):
+        module.run_matrix(
+            dist_dir=dist_dir,
+            version="0.1.15",
+            temp_parent=tmp_path,
+            cases=(
+                module.GreenfieldMatrixCase(
+                    name="platform-native only",
+                    prompt="Create a greenfield proposal for an agent tool tribunal.",
+                    required_terms=("agent", "tool", "permission", "tribunal"),
+                ),
+            ),
+        )
+
+    assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
 
 def _write(path: Path, text: str) -> None:

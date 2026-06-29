@@ -41,6 +41,7 @@ from greenfield_matrix_types import GreenfieldRescueSmokeResult  # noqa: E402
 from greenfield_matrix_package_evidence import evidence_blocks_dimension  # noqa: E402
 from greenfield_matrix_package_evidence import evidence_finding_messages  # noqa: E402
 from greenfield_matrix_package_evidence import package_evidence_findings  # noqa: E402
+import platform_domain_leakage_check as platform_domain_leakage  # noqa: E402
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import (  # noqa: E402
     tribunal_visible_actor_quality_issues,
 )
@@ -77,6 +78,7 @@ def run_matrix(
     install_script = release_dir / "install.sh"
     if not install_script.is_file():
         raise FileNotFoundError(f"missing local release install script: {install_script}")
+    _raise_for_platform_domain_leakage(release_dir, selected_cases)
     run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-matrix-{uuid.uuid4().hex[:8]}"
     run_root.mkdir(parents=True, exist_ok=False)
     server, base_url = _serve_directory(release_dir)
@@ -99,6 +101,35 @@ def run_matrix(
         server.server_close()
         _cleanup_run_root(run_root)
     return tuple(results)
+
+
+def _raise_for_platform_domain_leakage(release_dir: Path, cases: Sequence[GreenfieldMatrixCase]) -> None:
+    missing_cases = platform_domain_leakage.cases_missing_leakage_terms(cases)
+    if missing_cases:
+        names = ", ".join(missing_cases)
+        raise RuntimeError(
+            "platform domain leakage check cannot prove selected greenfield matrix case vocabulary; "
+            f"declare leakage_terms for: {names}"
+        )
+    terms = platform_domain_leakage.domain_leakage_terms(cases)
+    if not terms:
+        return
+    findings = platform_domain_leakage.scan_platform_custody(
+        repo_root=REPO_ROOT,
+        dist_dir=release_dir,
+        terms=terms,
+    )
+    if not findings:
+        return
+    preview = "\n".join(
+        f"- {finding.location}:{finding.line}: leaked `{finding.term}`" for finding in findings[:20]
+    )
+    remaining = len(findings) - 20
+    suffix = f"\n- ... {remaining} additional finding(s)" if remaining > 0 else ""
+    raise RuntimeError(
+        "platform domain leakage check failed for selected greenfield matrix case vocabulary\n"
+        f"{preview}{suffix}"
+    )
 
 
 def run_rescue_smoke(
@@ -230,6 +261,7 @@ def _run_rescue_smoke_case(
             "without claiming personalized notification delivery in the first release."
         ),
         required_terms=("disclosure", "council", "embargo", "evidence"),
+        leakage_terms=("disclosure council", "embargo status", "personalized notification delivery"),
     )
     repo_root.mkdir(parents=True)
     env = _local_release_env(base_url=base_url, version=version)

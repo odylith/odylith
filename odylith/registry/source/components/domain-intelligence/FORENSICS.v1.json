@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 220,
-    "mapped_workstream_evidence_count": 204,
+    "explicit_event_count": 222,
+    "mapped_workstream_evidence_count": 206,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 185,
+    "spec_history_event_count": 186,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 221
+    "timeline_event_count": 223
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -20,6 +20,91 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 717,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Strengthened greenfield leakage proof from selected required-term mining to explicit per-case leakage terms; maintained matrix now scans 44 terms with zero missing cases and zero protected-custody findings.",
+      "ts_iso": "2026-06-29T15:20:35-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 718,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-29T15:20:26-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 716,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Hardened greenfield matrix domain-leakage custody so selected custom simulation terms scan protected source, shipped guidance, and wheel custody before temp repos are created.",
+      "ts_iso": "2026-06-29T15:12:43-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a46ef6cc/greenfield-post-confirm-fresh-variance-20260629-a46ef6cc.v1.json",
@@ -52,22 +137,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 716,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T15:00:20-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [

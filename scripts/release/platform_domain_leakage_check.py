@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterable
 import sys
 import zipfile
 from dataclasses import dataclass
@@ -102,6 +103,27 @@ GENERIC_PRODUCT_TERMS = frozenset(
         "waiver",
     }
 )
+PLATFORM_NATIVE_TERMS = frozenset(
+    {
+        "agent",
+        "atlas",
+        "casebook",
+        "codex",
+        "compass",
+        "governance",
+        "matrix",
+        "model",
+        "odylith",
+        "permission",
+        "proof",
+        "radar",
+        "registry",
+        "release",
+        "tool",
+        "tribunal",
+        "workflow",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -111,16 +133,58 @@ class LeakageFinding:
     line: int
 
 
-def domain_leakage_terms() -> tuple[str, ...]:
-    """Return distinctive release-matrix terms that must not enter platform custody."""
+def domain_leakage_terms(cases: Iterable[object] | None = None) -> tuple[str, ...]:
+    """Return distinctive matrix terms that must not enter platform custody."""
 
-    terms: set[str] = set()
-    for case in default_cases():
-        for term in case.required_terms:
-            normalized = _normalize_term(term)
-            if normalized and normalized not in GENERIC_PRODUCT_TERMS:
-                terms.add(normalized)
-    return tuple(sorted(terms))
+    return domain_leakage_terms_from_terms(
+        term
+        for case in (tuple(cases) if cases is not None else default_cases())
+        for term in case_leakage_terms(case)
+    )
+
+
+def domain_leakage_terms_from_terms(terms: Iterable[str]) -> tuple[str, ...]:
+    """Return distinctive domain terms from an explicit simulation term stream."""
+
+    leakage_terms: set[str] = set()
+    for term in terms:
+        normalized = _normalize_term(str(term))
+        if normalized and normalized not in GENERIC_PRODUCT_TERMS and normalized not in PLATFORM_NATIVE_TERMS:
+            leakage_terms.add(normalized)
+    return tuple(sorted(leakage_terms))
+
+
+def case_leakage_terms(case: object) -> tuple[str, ...]:
+    """Return distinctive leakage terms for one simulation case."""
+
+    declared = _case_declared_leakage_terms(case)
+    source_terms = declared if declared else _case_required_terms(case)
+    return domain_leakage_terms_from_terms(source_terms)
+
+
+def cases_missing_leakage_terms(cases: Iterable[object]) -> tuple[str, ...]:
+    """Return case names whose contract cannot prove project-term leakage."""
+
+    missing: list[str] = []
+    for case in cases:
+        if not case_leakage_terms(case):
+            missing.append(str(getattr(case, "name", "unnamed case")).strip() or "unnamed case")
+    return tuple(missing)
+
+
+def scan_platform_custody(
+    *,
+    repo_root: Path,
+    dist_dir: Path | None = None,
+    terms: tuple[str, ...] | None = None,
+) -> tuple[LeakageFinding, ...]:
+    """Scan source and optional dist custody for forbidden project vocabulary."""
+
+    scan_terms = terms or domain_leakage_terms()
+    findings = list(scan_repo(repo_root.resolve(), terms=scan_terms))
+    if dist_dir is not None:
+        findings.extend(scan_dist(dist_dir.resolve(), terms=scan_terms))
+    return tuple(findings)
 
 
 def scan_repo(repo_root: Path, terms: tuple[str, ...] | None = None) -> tuple[LeakageFinding, ...]:
@@ -256,6 +320,24 @@ def _contains_phrase(line: str, term_tokens: tuple[str, ...]) -> bool:
     return any(line_tokens[index : index + width] == term_tokens for index in range(len(line_tokens) - width + 1))
 
 
+def _case_required_terms(case: object) -> tuple[str, ...]:
+    value = getattr(case, "required_terms", ())
+    if isinstance(value, (str, bytes)):
+        return (str(value),)
+    if not isinstance(value, Iterable):
+        return ()
+    return tuple(str(term) for term in value)
+
+
+def _case_declared_leakage_terms(case: object) -> tuple[str, ...]:
+    value = getattr(case, "leakage_terms", ())
+    if isinstance(value, (str, bytes)):
+        return (str(value),)
+    if not isinstance(value, Iterable):
+        return ()
+    return tuple(str(term) for term in value)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, required=True)
@@ -263,9 +345,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     terms = domain_leakage_terms()
-    findings = list(scan_repo(args.repo_root.resolve(), terms=terms))
-    if args.dist_dir is not None:
-        findings.extend(scan_dist(args.dist_dir.resolve(), terms=terms))
+    findings = list(scan_platform_custody(repo_root=args.repo_root, dist_dir=args.dist_dir, terms=terms))
 
     if findings:
         print("platform domain leakage check failed", file=sys.stderr)

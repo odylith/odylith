@@ -10,6 +10,7 @@ class GreenfieldMatrixCase:
     name: str
     prompt: str
     required_terms: tuple[str, ...]
+    leakage_terms: tuple[str, ...] = ()
     confirmed_intent_markdown: str = ""
 
     @property
@@ -29,6 +30,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "constraints, preserve consent evidence, and produce a daily placement readiness report."
             ),
             required_terms=("flood", "shelter", "resident", "placement"),
+            leakage_terms=("flood shelter", "shelter capacity", "displaced residents"),
         ),
         GreenfieldMatrixCase(
             name="pediatric agency practice",
@@ -38,6 +40,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "and exception review for children served across multiple schools."
             ),
             required_terms=("pediatric", "therapy", "guardian", "care"),
+            leakage_terms=("pediatric therapy", "guardian consent", "therapist assignment"),
         ),
         GreenfieldMatrixCase(
             name="semiconductor lab custody",
@@ -47,6 +50,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "tracks failed stress runs, and prepares release readiness proof for engineering review."
             ),
             required_terms=("semiconductor", "wafer", "custody", "reliability"),
+            leakage_terms=("semiconductor", "wafer lot", "chamber exposure"),
         ),
         GreenfieldMatrixCase(
             name="port berth carbon tariff",
@@ -56,6 +60,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "exceptions, and operator signoff before publishing a daily berth plan."
             ),
             required_terms=("port", "berth", "tariff", "emissions"),
+            leakage_terms=("port berth", "carbon tariff", "shore power", "emissions"),
         ),
         GreenfieldMatrixCase(
             name="security disclosure council",
@@ -66,6 +71,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "in the first release."
             ),
             required_terms=("security", "disclosure", "embargo", "evidence"),
+            leakage_terms=("security disclosure council", "embargo decisions", "public advisory"),
         ),
         GreenfieldMatrixCase(
             name="open source security embargo",
@@ -75,6 +81,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "approvals, and shows advisory readiness without sending public announcements in the first release."
             ),
             required_terms=("open", "source", "security", "embargo"),
+            leakage_terms=("open source security embargo", "vulnerability reports", "advisory readiness"),
         ),
         GreenfieldMatrixCase(
             name="package supply chain exception desk",
@@ -84,6 +91,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "preserves release readiness proof, and blocks shipment until exceptions are approved."
             ),
             required_terms=("package", "dependency", "provenance", "waiver"),
+            leakage_terms=("supply chain exception desk", "vulnerable dependency", "package manager review"),
         ),
         GreenfieldMatrixCase(
             name="credit union fair lending exception",
@@ -94,6 +102,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "without automating final credit decisions in the first release."
             ),
             required_terms=("credit", "union", "lending", "underwriting"),
+            leakage_terms=("credit union", "fair lending", "underwriting evidence"),
         ),
         GreenfieldMatrixCase(
             name="apprenticeship credential readiness",
@@ -104,6 +113,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "review by a workforce board."
             ),
             required_terms=("apprenticeship", "credential", "mentor", "certification"),
+            leakage_terms=("apprenticeship", "credential readiness", "mentor signoff"),
         ),
         GreenfieldMatrixCase(
             name="film archive rights clearance",
@@ -113,6 +123,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "evidence, and publish screening readiness without claiming automated legal clearance."
             ),
             required_terms=("film", "archive", "rights", "screening"),
+            leakage_terms=("film archive", "rights clearance", "donated reels"),
         ),
         GreenfieldMatrixCase(
             name="developer incident runbook readiness",
@@ -122,6 +133,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "track follow-up exceptions, and publish release-readiness proof before the next deployment window."
             ),
             required_terms=("developer", "incident", "runbook", "deployment"),
+            leakage_terms=("developer incident runbook", "mitigation steps", "deployment window"),
         ),
         GreenfieldMatrixCase(
             name="sparse disclosure confirmation",
@@ -130,6 +142,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
                 "coordinates review, records evidence custody, decides embargo status, and publishes release readiness proof."
             ),
             required_terms=("disclosure", "council", "evidence", "embargo"),
+            leakage_terms=("disclosure council", "embargo decision", "personalized notification delivery"),
             confirmed_intent_markdown="""
 # Product Intent Confirmation
 
@@ -165,6 +178,15 @@ Evidence custody and embargo decision.
             name="quantum communication lab",
             prompt="Draft a greenfield proposal for a lab app where we are building quantum communication",
             required_terms=("quantum", "e91", "qber", "chsh"),
+            leakage_terms=(
+                "quantum communication",
+                "entangled photon",
+                "coincidence counts",
+                "bell inequality",
+                "e91",
+                "qber",
+                "chsh",
+            ),
             confirmed_intent_markdown="""
 # Quantum Link Lab
 

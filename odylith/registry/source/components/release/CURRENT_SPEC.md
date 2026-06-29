@@ -499,6 +499,12 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Strengthened greenfield leakage proof from selected required-term mining to explicit per-case leakage terms; maintained matrix now scans 44 terms with zero missing cases and zero protected-custody findings.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md
+- **2026-06-29 · Implementation:** Hardened greenfield matrix domain-leakage custody so selected custom simulation terms scan protected source, shipped guidance, and wheel custody before temp repos are created.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md
 - **2026-06-29 · Implementation:** Captured and fixed domain-leakage guard false positive: persisted greenfield matrix proof JSON in the dist is evidence, not install payload; guard now excludes greenfield-post-confirm proof JSON while still scanning runtime wheel and text install assets.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, tests/unit/install/test_platform_domain_leakage_check.py
@@ -511,12 +517,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Captured and fixed hardened release-matrix proof defect: rebuilt dist def2f783 completed thirteen standard greenfield creates under 28s plus rescue smoke at 34.916s, but scorer falsely treated odylith/radar/source/CLAUDE.md as a Radar workstream. Casebook, Registry, Atlas, and plan now record the custody-boundary failure; collector excludes guidance/catalog Markdown and focused matrix proof passed 49 tests.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
-- **2026-06-29 · Implementation:** Hardened greenfield matrix scoring with independent package readback, typed artifact-quality units, and step-id Project prompt custody; source proof passed 49 focused tests plus the 228-test affected pack, while rebuilt installed proof remains required before release readiness.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
-- **2026-06-28 · Implementation:** B-142 installed matrix proof passed after typed canonical projection custody and matrix evidence cleanup: 13 standard high-variance cases scored 10/10 under 60s, browser proof passed for all, quantum passed in 27.015s, sparse intent passed, rescue smoke passed in 35.012s, and temp cleanup was clean.
-  - Scope: B-142
-  - Evidence: Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-typed-custody-test/greenfield-post-confirm-matrix.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

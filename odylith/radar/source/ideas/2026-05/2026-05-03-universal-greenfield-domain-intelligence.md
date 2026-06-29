@@ -2400,6 +2400,15 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   scores, zero issues, browser proof for every case, complete governed
   readback, 24.258-26.624s timings, and clean temp cleanup. Natural host-model
   semantic rescue quality remains unclaimed.
+- 2026-06-29 leakage-proof custody now follows selected simulation cases, not
+  only the maintained default matrix vocabulary. Programmatic fresh-variance
+  calls to `run_matrix(...)` require every selected case to contribute
+  distinctive leakage terms, prefer explicit `GreenfieldMatrixCase.leakage_terms`
+  over scoring anchors, filter standalone platform-native words, scan protected
+  source plus local-release dist custody before creating temp repos, and fail
+  closed on leakage. Focused install tests passed 50/50, release matrix
+  bootstrap checks passed, and the current maintained corpus scans 44 explicit
+  terms with zero missing cases and zero source/dist findings.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

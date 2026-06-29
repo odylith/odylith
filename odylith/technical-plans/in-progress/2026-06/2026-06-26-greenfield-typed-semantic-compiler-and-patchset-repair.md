@@ -1585,3 +1585,19 @@ vocabulary, or degraded packages.
       24.258-26.624s create timings, and clean temp cleanup. Natural
       host-model semantic rescue quality remains a separate unclaimed proof
       class.
+- [x] Harden selected-case leakage custody for recursive custom simulations.
+      The previous release wrapper proved the maintained matrix terms, but
+      direct `run_matrix(...)` calls used by fresh variance passes did not
+      propagate their selected case vocabulary into the platform leakage scan.
+      Independent review then found the first pass still too weak because
+      required-term-only mining left some cases with zero or thin distinctive
+      coverage. `platform_domain_leakage_check.py` now accepts explicit
+      per-case `leakage_terms`, falls back to required terms only for custom
+      cases that still produce distinctive coverage, filters standalone generic
+      product/platform-native words, and exposes a shared source/dist custody
+      scan. `greenfield_post_confirm_matrix.py` requires every selected case to
+      contribute at least one distinctive leakage term before serving the dist
+      or creating temp repos. Focused proof passed 50 install/bootstrap tests,
+      py_compile, a selected explicit platform-word phrase scan, and the
+      current `a46ef6cc` source/dist scan over 44 explicit terms with zero
+      missing cases and zero findings.
