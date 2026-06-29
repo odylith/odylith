@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Validation:** Fresh dist 21ed5b0a passed rebuilt installed proof after actor-boundary cleanup: 13/13 maintained cases and 4/4 custom closure cases scored hard 10/10 with zero issues, browser proof, complete governed readback, strict temp cleanup, and 22.975-28.762s maintained plus 25.191-27.711s custom create timings; synthetic typed-probe rescue wiring passed in 34.408s.
+  - Scope: B-142
+  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-matrix.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-custom-variance-20260629-21ed5b0a.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
 - **2026-06-29 · Implementation:** Source-fixed the fresh custom installed variance failures from dist 72c100d1: title-compound user roles no longer trip the gerund actor-role slop gate, preposition/action-led actor fragments are trimmed before Project prompt projection, and non-goal derivation now has a dedicated owner; focused proof and exact source replays passed, rebuilt installed proof remains required.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_path_role.py +4 more
@@ -71,10 +74,15 @@ This section captures synchronized requirement and contract signals derived from
   the direct actor-role splice rejection while accepting title-compound user
   roles, and `greenfield_confirmed_non_goals.py` owns non-goal derivation
   outside the completion parent. Focused proof passed, the affected greenfield
-  pack passed 133 tests in 73.16s, and exact source-local replays wrote
-  complete governed records for both failures. Installed release readiness
-  remains unclaimed until a rebuilt dist proves maintained and custom
-  high-variance matrices.
+  pack passed 136 tests in 70.79s, and exact source-local replays wrote
+  complete governed records for both failures. Rebuilt dist
+  `odylith-local-release-0.1.15-21ed5b0a` then passed the maintained installed
+  matrix (13/13 cases, hard 10/10 scores, zero issues, browser proof,
+  22.975-28.762s create timings, temp cleanup) and the custom closure matrix
+  (4/4 cases, hard 10/10 scores, zero issues, browser proof, 25.191-27.711s
+  create timings, temp cleanup). Synthetic typed-probe rescue wiring passed in
+  34.408s; natural host-model semantic rescue quality remains a separate proof
+  class.
 - 2026-06-29: Proved the sparse-topology checkpoint in the installed consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
   Fresh local dist `odylith-local-release-0.1.15-db69b062` passed the
   maintained installed greenfield matrix after the sparse topology repair. All

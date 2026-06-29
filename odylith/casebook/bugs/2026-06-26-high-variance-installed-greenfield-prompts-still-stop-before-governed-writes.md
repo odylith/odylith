@@ -1,6 +1,6 @@
 - Bug ID: CB-209
 
-- Status: Open
+- Status: FixedPendingRelease
 
 - Created: 2026-06-26
 
@@ -18,7 +18,7 @@
 
 - Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-33bdb122, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-265cc0cf, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e7bc3be3
 
-- Environment Update: 2026-06-29 fresh local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-af4117d8 installed into non-reused temporary consumer repos under /Users/freedom/mock. Later fresh custom variance used /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-72c100d1 with non-reused temporary consumer repos and persisted proof at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-72c100d1/greenfield-post-confirm-custom-variance-20260629.v1.json.
+- Environment Update: 2026-06-29 fresh local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-af4117d8 installed into non-reused temporary consumer repos under /Users/freedom/mock. Later fresh custom variance used /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-72c100d1 with non-reused temporary consumer repos and persisted proof at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-72c100d1/greenfield-post-confirm-custom-variance-20260629.v1.json. The rebuilt dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a passed the maintained installed matrix at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-matrix.v1.json and the custom variance closure matrix at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-custom-variance-20260629-21ed5b0a.v1.json.
 
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
@@ -32,7 +32,7 @@
 
 - Blast Radius: Any consumer greenfield prompt with overloaded safety/state/agent/model/release language that deterministic completion cannot safely normalize before final writes
 
-- SLO/SLA Impact: Reopened by 33bdb122. Passing cases stayed under the 60s standard budget, but failing cases did not commit governed records at any latency, so release readiness is blocked until a rebuilt dist passes the installed matrix.
+- SLO/SLA Impact: Fixed pending release by rebuilt dist 21ed5b0a. The maintained installed standard path completed in 22.975-28.762s across thirteen cases, and the custom variance closure path completed in 25.191-27.711s across four cases, all under the 60s standard budget with governed records committed. Synthetic typed-probe rescue wiring completed in 34.408s under the 90s rescue budget; natural host-model semantic rescue remains a separate proof class.
 
 - Data Risk: Low: governed records are not written after failed create; product intent can remain in runtime files
 
@@ -762,6 +762,21 @@
   preposition-led actor label (`for For Duty Manager`). This is a platform
   actor-boundary and generated-prose-shape precision defect, not a project
   content defect.
+  Rebuilt installed proof from pushed commit `21ed5b0a` then passed against
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a`.
+  The maintained matrix produced status `passed`: all thirteen standard cases
+  scored hard 10/10 with zero issues, generated browser proof passed for all
+  thirteen cases, and no `odylith-greenfield-matrix-*` temp directories
+  remained under `/Users/freedom/mock`. Standard create timings were
+  22.975-28.762s. The custom variance closure matrix also produced status
+  `passed`: AI-eval red-team finding board, airport runway closure readiness,
+  museum accession record-owner review, and battery materials release evidence
+  desk all scored 10/10 with zero issues, browser proof passed, governed records
+  were written, and create timings were 25.191-27.711s. This closes the
+  title-compound actor false-positive and preposition-led actor duplicate-copy
+  failure classes for the current installable dist. Synthetic typed-probe rescue
+  wiring passed in 34.408s with zero issues; natural host-model semantic rescue
+  quality remains a separate proof class.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
   2026-06-29 guardrail: do not "fix" title-compound user roles by adding
@@ -775,22 +790,21 @@
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: Current installed release readiness is not green. The prior
-  `odylith-local-release-0.1.15-db69b062` checkpoint passed its maintained
-  matrix, but the later `odylith-local-release-0.1.15-72c100d1` custom
-  variance reopened the bug with two no-write failures. Current source-local
-  fix splits actor path-role cleanup into a dedicated owner, preserves direct
-  gerund actor-role rejection while allowing title-compound user roles, trims
-  preposition/action-led actor fragments before projection, strips longer
-  title-suffix subjects from accepted-path actor descriptions, and moves
-  non-goal derivation out of the confirmed-intent completion parent. Focused
-  regression proof passed 3 tests, the affected greenfield pack passed
-  133 tests in 73.16s, and exact source-local replays of the AI-eval and runway
-  failures returned 0 while writing 5 Radar workstreams, 3 Registry specs,
-  6 Atlas sources, and 18 trace nodes. Release readiness remains blocked until
-  a rebuilt installable dist reruns the maintained and custom high-variance
-  installed matrices with browser proof, expert lenses, prompt readback, and
-  temp cleanup.
+- Version/Build: Fixed pending release in
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a`.
+  The source fix splits actor path-role cleanup into a dedicated owner,
+  preserves direct gerund actor-role rejection while allowing title-compound
+  user roles, trims preposition/action-led actor fragments before projection,
+  strips longer title-suffix subjects from accepted-path actor descriptions,
+  and moves non-goal derivation out of the confirmed-intent completion parent.
+  Focused regression proof passed, the affected greenfield pack passed
+  136 tests in 70.79s, exact source-local replays of the AI-eval and runway
+  failures returned 0 while writing governed records, the rebuilt maintained
+  installed matrix passed 13/13 standard cases with hard 10/10 scores, browser
+  proof, zero issues, and 22.975-28.762s create timings, and the rebuilt custom
+  variance closure matrix passed 4/4 cases with hard 10/10 scores, browser
+  proof, zero issues, and 25.191-27.711s create timings. No matching temp
+  project roots remained under `/Users/freedom/mock` after the installed runs.
 
 - Related Incidents/Bugs: CB-208
 

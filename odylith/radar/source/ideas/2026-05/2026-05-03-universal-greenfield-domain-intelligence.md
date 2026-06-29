@@ -2316,9 +2316,15 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   generated prose-shape accepts title-compound user roles while preserving the
   direct actor-role splice rejection, and non-goal derivation moved out of the
   confirmed-intent parent. Focused regressions passed, the affected greenfield
-  pack passed 133 tests, and exact source-local replays wrote complete governed
-  records for both failures. Installed release readiness remains blocked until
-  a rebuilt dist reruns maintained plus custom high-variance matrices.
+  pack passed 136 tests, and exact source-local replays wrote complete governed
+  records for both failures. Rebuilt dist `21ed5b0a` then passed the maintained
+  installed matrix (13/13 cases, hard 10/10 scores, zero issues, browser proof,
+  complete governed readback, 22.975-28.762s create timings, temp cleanup) and
+  a custom closure matrix covering the AI-eval, runway, museum accession, and
+  battery materials prompts (4/4 cases, hard 10/10 scores, zero issues, browser
+  proof, 25.191-27.711s create timings, temp cleanup). Synthetic typed-probe
+  rescue wiring passed in 34.408s; natural host-model semantic rescue quality
+  remains a separate proof class.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
