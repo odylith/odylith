@@ -65,6 +65,9 @@ EVALUATION_EVIDENCE_FILES = frozenset(
         "optimization-evaluation-corpus.v1.json",
     }
 )
+DIST_EVIDENCE_PREFIXES = (
+    "greenfield-post-confirm-",
+)
 GENERIC_PRODUCT_TERMS = frozenset(
     {
         "archive",
@@ -142,7 +145,7 @@ def scan_dist(dist_dir: Path, terms: tuple[str, ...] | None = None) -> tuple[Lea
     for file_path in sorted(dist_dir.iterdir()):
         if file_path.is_file() and file_path.name.endswith(".whl"):
             findings.extend(_scan_wheel(file_path, terms=scan_terms))
-        elif file_path.is_file() and file_path.suffix.lower() in TEXT_SUFFIXES:
+        elif file_path.is_file() and _should_scan_dist_text_file(file_path):
             findings.extend(_scan_file(file_path, repo_root=dist_dir, location_prefix="dist:", terms=scan_terms))
     return tuple(findings)
 
@@ -219,6 +222,12 @@ def _should_scan_wheel_member(name: str) -> bool:
     if "tests" in parts or "__pycache__" in parts:
         return False
     return name.startswith("odylith/") or name.endswith(".dist-info/METADATA")
+
+
+def _should_scan_dist_text_file(path: Path) -> bool:
+    if path.suffix.lower() not in TEXT_SUFFIXES:
+        return False
+    return not any(path.name.startswith(prefix) for prefix in DIST_EVIDENCE_PREFIXES)
 
 
 def _normalize_term(term: str) -> str:

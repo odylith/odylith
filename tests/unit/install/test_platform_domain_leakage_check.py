@@ -54,6 +54,13 @@ def test_scan_dist_blocks_fixture_terms_inside_runtime_wheel(tmp_path: Path) -> 
     )
 
 
+def test_scan_dist_allows_matrix_proof_json_as_evidence(tmp_path: Path) -> None:
+    proof = tmp_path / "greenfield-post-confirm-matrix-20260629.v1.json"
+    proof.write_text('{"case": "quantum communication lab"}\\n', encoding="utf-8")
+
+    assert leakage.scan_dist(tmp_path, terms=("quantum",)) == ()
+
+
 def test_main_returns_failed_status_for_platform_leak(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     platform_file = tmp_path / "src" / "odylith" / "runtime" / "example.py"
     platform_file.parent.mkdir(parents=True)

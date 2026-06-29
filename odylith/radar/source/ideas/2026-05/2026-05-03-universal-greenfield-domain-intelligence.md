@@ -184,6 +184,14 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
 - Browser proof for refreshed Radar, Registry, Atlas, Casebook, and Compass surfaces after generated assets update.
 
 ## Validation Evidence
+- 2026-06-29 post-domain-leakage-guard installed proof passed on local release
+  dist `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91`:
+  build-time platform domain-leakage gate passed across 19 distinctive fixture
+  terms; maintained installed matrix proof passed 13/13 cases at hard 10/10
+  with browser proof and max create time 28.677s; synthetic typed-probe rescue
+  smoke passed in 35.129s; fresh ten-domain non-reused variance proof passed
+  10/10 cases at hard 10/10 with browser proof and max create time 29.269s;
+  all matrix temp roots were deleted after proof.
 - `PYTHONPATH=src python -m pytest -q tests/unit/runtime/test_greenfield_proposals.py tests/unit/runtime/test_greenfield_host_routing.py tests/unit/runtime/test_component_authoring.py tests/unit/runtime/test_compass_transaction_runtime.py tests/unit/runtime/test_show_capabilities.py tests/unit/test_cli.py` passed with 200 tests.
 - `PYTHONPATH=src python -m pytest -q tests/unit/install/test_agents.py tests/unit/install/test_codex_project_assets.py tests/unit/install/test_claude_effective_settings.py tests/unit/runtime/test_source_bundle_mirror.py tests/unit/runtime/test_hygiene.py tests/unit/runtime/test_validate_backlog_contract.py tests/unit/runtime/test_casebook_source_validation.py tests/unit/runtime/test_casebook_bug_index.py tests/unit/runtime/test_validate_guidance_behavior.py tests/unit/runtime/test_validate_discipline.py tests/unit/install/test_migration_runtime.py tests/unit/install/test_casebook_metadata_migration.py tests/integration/install/test_lifecycle_simulator.py tests/integration/runtime/test_governance_sync_performance.py` passed with 269 tests.
 - Full browser proof passed with 185 tests and 1 skipped case across Atlas, Casebook, Compass, Radar, Registry, intervention visibility, filter audit, onboarding, and regression surfaces.

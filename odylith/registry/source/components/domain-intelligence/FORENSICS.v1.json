@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 216,
-    "mapped_workstream_evidence_count": 200,
+    "explicit_event_count": 218,
+    "mapped_workstream_evidence_count": 202,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 183,
+    "spec_history_event_count": 184,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 217
+    "timeline_event_count": 219
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -22,10 +22,80 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_platform_domain_leakage_check.py"
+      ],
+      "confidence": "high",
+      "event_index": 713,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Captured and fixed domain-leakage guard false positive: persisted greenfield matrix proof JSON in the dist is evidence, not install payload; guard now excludes greenfield-post-confirm proof JSON while still scanning runtime wheel and text install assets.",
+      "ts_iso": "2026-06-29T14:03:06-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91/greenfield-post-confirm-fresh-variance-20260629-3fbacb91.v1.json",
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91/greenfield-post-confirm-matrix-20260629-3fbacb91.v1.json"
       ],
       "confidence": "high",
       "event_index": 712,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Release dist 0.1.15-3fbacb91 passed platform domain-leakage build gate, maintained installed greenfield matrix, browser proof, synthetic rescue smoke, fresh ten-domain variance, and temp cleanup; max standard create 28.677s, max fresh variance create 29.269s.",
+      "ts_iso": "2026-06-29T14:00:33-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 714,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -33,7 +103,7 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T13:23:25-07:00",
+      "ts_iso": "2026-06-29T13:58:00-07:00",
       "workstreams": []
     },
     {

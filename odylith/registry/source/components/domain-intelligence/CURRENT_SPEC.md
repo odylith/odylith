@@ -46,6 +46,15 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-29: Proved the post-domain-leakage-guard installed package checkpoint. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  Local release dist `odylith-local-release-0.1.15-3fbacb91` passed the
+  platform domain-leakage build gate across 19 distinctive fixture terms. The
+  maintained installed matrix then passed 13/13 standard cases with hard 10/10
+  scores, browser proof, zero issues, complete governed records, and max create
+  time 28.677s; synthetic typed-probe rescue smoke passed in 35.129s. A fresh
+  ten-domain non-reused variance matrix then passed 10/10 domains with hard
+  10/10 scores, browser proof, zero issues, complete governed records, max
+  create time 29.269s, and clean temp cleanup.
 - 2026-06-29: Reopened installed proof on terminal sequence-label custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
   A fresh ten-domain installed variance after checkpoint `31cc84ef` passed nine
   domains with hard 10/10 scores, zero issues, browser proof, and complete

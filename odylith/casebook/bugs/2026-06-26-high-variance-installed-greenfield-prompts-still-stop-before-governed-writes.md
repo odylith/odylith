@@ -26,6 +26,8 @@
 
 - Environment Update: 2026-06-29 source checkpoint after `e86b2b82` added a platform domain-leakage release gate before rebuilding the final dist. The guard derives distinctive fixture vocabulary from the maintained high-variance matrix, scans runtime/source guidance and the built wheel, excludes tests/governance/evaluation evidence, and is called by `local-release-assets`, `greenfield-post-confirm-matrix`, and the shared release proof lane. Source plus the previous `e86b2b82` dist passed the guard across 19 distinctive fixture terms; a rebuilt post-guard dist and installed matrix proof are still required before release readiness can be claimed for this checkpoint.
 
+- Environment Update: 2026-06-29 rebuilt local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91 passed the platform domain-leakage build gate across 19 distinctive fixture terms. Maintained installed matrix proof persisted at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91/greenfield-post-confirm-matrix-20260629-3fbacb91.v1.json: 13/13 standard cases passed, every case scored 10/10, max create time 28.677s, browser proof passed, synthetic typed-probe rescue smoke passed in 35.129s, and temp cleanup was clean. Fresh non-reused variance proof persisted at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91/greenfield-post-confirm-fresh-variance-20260629-3fbacb91.v1.json: 10/10 new domains passed, every case scored 10/10, max create time 29.269s, browser proof passed, and temp cleanup was clean.
+
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
 - Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts. The 3d13f434 installed matrix reopened the release gate again: 12 of 13 cases passed with hard 10/10 scores, browser proof, and complete records, but sparse disclosure confirmation scored 0/10 after governed writes because it produced only two Registry component specs, carried only three of four required domain anchors, and failed architect, engineer, and domain-expert matrix lenses.
@@ -38,7 +40,7 @@
 
 - Blast Radius: Any consumer greenfield prompt with overloaded safety/state/agent/model/release language that deterministic completion cannot safely normalize before final writes
 
-- SLO/SLA Impact: Fixed pending release by rebuilt dist 597e5ca7. The maintained installed matrix completed 13/13 standard cases with hard 10/10 scores, browser proof, zero issues, complete governed records, and 21.790-26.657s create timings. The fresh ten-domain variance matrix completed 10/10 cases with hard 10/10 scores, browser proof, zero issues, complete governed records, and 23.264-25.210s create timings, including the previously failing indigenous language curriculum evidence circle at 23.714s. The exact failed-case replay also passed at 24.223s. Synthetic typed-probe rescue passed in 32.401s under the 90s rescue budget; natural host-model semantic rescue remains a separate proof class.
+- SLO/SLA Impact: Fixed pending release by rebuilt dist 3fbacb91. The maintained installed matrix completed 13/13 standard cases with hard 10/10 scores, browser proof, zero issues, complete governed records, and 24.230-28.677s create timings. The fresh ten-domain variance matrix completed 10/10 new domains with hard 10/10 scores, browser proof, zero issues, complete governed records, and 25.483-29.269s create timings, including the retained indigenous language curriculum evidence circle at 28.013s. Synthetic typed-probe rescue passed in 35.129s under the 90s rescue budget; natural host-model semantic rescue remains a separate proof class.
 
 - Data Risk: Low: governed records are not written after failed create; product intent can remain in runtime files
 
@@ -102,7 +104,12 @@
   appears in runtime or shipped guidance surfaces. The guard intentionally
   allows tests, Casebook/Radar/Compass/technical-plan evidence, evaluation
   corpora, and release notes so Odylith can learn from domain-heavy repros
-  without letting those terms become generator or guidance defaults.
+  without letting those terms become generator or guidance defaults. Failed
+  guard mechanism captured after proof: the first pass scanned persisted
+  `greenfield-post-confirm-*` matrix JSON as if it were install payload and
+  therefore flagged valid proof evidence as domain leakage. The guard now treats
+  matrix proof JSON in the dist as evidence while still scanning the built wheel
+  and text install payloads.
 
 - Rollback/Forward Fix: Forward fix only
 

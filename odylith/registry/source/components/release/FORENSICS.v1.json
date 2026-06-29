@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 137,
-    "mapped_workstream_evidence_count": 101,
+    "explicit_event_count": 139,
+    "mapped_workstream_evidence_count": 103,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 22,
+    "spec_history_event_count": 23,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 138
+    "timeline_event_count": 140
   },
   "name": "Release",
   "path_prefixes": [
@@ -46,20 +46,89 @@
   "timeline": [
     {
       "artifacts": [
-        "bin/_odylith.sh",
         "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 713,
+      "event_index": 715,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "release"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: bin/_odylith.sh, odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T13:23:25-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-29T14:03:34-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_platform_domain_leakage_check.py"
+      ],
+      "confidence": "high",
+      "event_index": 713,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Captured and fixed domain-leakage guard false positive: persisted greenfield matrix proof JSON in the dist is evidence, not install payload; guard now excludes greenfield-post-confirm proof JSON while still scanning runtime wheel and text install assets.",
+      "ts_iso": "2026-06-29T14:03:06-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91/greenfield-post-confirm-fresh-variance-20260629-3fbacb91.v1.json",
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91/greenfield-post-confirm-matrix-20260629-3fbacb91.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 712,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Release dist 0.1.15-3fbacb91 passed platform domain-leakage build gate, maintained installed greenfield matrix, browser proof, synthetic rescue smoke, fresh ten-domain variance, and temp cleanup; max standard create 28.677s, max fresh variance create 29.269s.",
+      "ts_iso": "2026-06-29T14:00:33-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

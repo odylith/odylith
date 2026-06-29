@@ -499,6 +499,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Captured and fixed domain-leakage guard false positive: persisted greenfield matrix proof JSON in the dist is evidence, not install payload; guard now excludes greenfield-post-confirm proof JSON while still scanning runtime wheel and text install assets.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, tests/unit/install/test_platform_domain_leakage_check.py
 - **2026-06-29 · Implementation:** Added platform domain-leakage guard to local release build, standalone greenfield matrix, and shared release proof; guard derives distinctive fixture terms from the high-variance matrix and keeps domain vocabulary out of runtime and shipped guidance while allowing governed/evaluation evidence.
   - Scope: B-142
   - Evidence: bin/_odylith.sh, bin/greenfield-post-confirm-matrix +2 more
@@ -514,12 +517,15 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-28 · Implementation:** B-142 installed matrix proof passed after typed canonical projection custody and matrix evidence cleanup: 13 standard high-variance cases scored 10/10 under 60s, browser proof passed for all, quantum passed in 27.015s, sparse intent passed, rescue smoke passed in 35.012s, and temp cleanup was clean.
   - Scope: B-142
   - Evidence: Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-typed-custody-test/greenfield-post-confirm-matrix.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +1 more
-- **2026-06-28 · Implementation:** B-142 canonical projection repetition custody now preserves typed fact provenance, release matrix keeps failed-create blocker evidence, and focused source proof is green; installed release readiness still awaits rebuilt matrix proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-06-29: Proved release package `odylith-local-release-0.1.15-3fbacb91` after adding the platform domain-leakage gate. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`) The build gate passed across
+  19 distinctive fixture terms, the maintained installed matrix passed 13/13
+  standard cases with hard 10/10 scores and browser proof in 24.230-28.677s,
+  synthetic typed-probe rescue smoke passed in 35.129s, the fresh ten-domain
+  variance matrix passed with hard 10/10 scores and browser proof in
+  25.483-29.269s, and temp cleanup was clean.
 - 2026-06-29: Hardened the greenfield installed-matrix scorer. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043)
   Fresh variance exposed shallow 10/10 evidence. Domain readback now uses rendered
   public artifacts rather than runtime custody JSON or accepted-project source
