@@ -7,6 +7,7 @@ from dataclasses import dataclass, replace
 import re
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_exact_repair_path
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_repair_projection
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
@@ -39,6 +40,9 @@ class GreenfieldPackageRepairResult:
 class _ArtifactDraftRepairOperation:
     projection: str
     target_path: str
+
+
+_PathSegment = str | int
 
 
 def repair_greenfield_package_until_clean(
@@ -122,27 +126,7 @@ def _safe_package_repair_operations(patchset_request: Mapping[str, Any]) -> tupl
 
 
 def _exact_artifact_draft_target_path(value: str) -> bool:
-    if value in {
-        "prewrite_package.backlog_result.backlog_index_text",
-        "prewrite_package.project_brief_preview",
-        "prewrite_package.next_steps_preview",
-    }:
-        return True
-    if value.startswith(
-        (
-            "prewrite_package.accepted_project_preview.source_launch.",
-            "prewrite_package.project_dashboard_preview.host_handoff_prompts[",
-            "prewrite_package.next_steps.",
-        )
-    ):
-        return True
-    return value.startswith(
-        (
-            "prewrite_package.rendered_component_specs::",
-            "prewrite_package.rendered_atlas_sources::",
-            "prewrite_package.backlog_result.idea_files::",
-        )
-    )
+    return artifact_draft_exact_repair_path(value)
 
 
 def _apply_artifact_draft_repair(
@@ -171,24 +155,41 @@ def _apply_artifact_draft_repair(
         current = updates.get("backlog_result", package.backlog_result)
         updates["backlog_result"] = _repair_mapping_entry(current, "backlog_index_text")
         return
-    if operation.projection == "project_brief" and target_path == "prewrite_package.project_brief_preview":
-        updates["project_brief_preview"] = _repair_optional_mapping(
-            updates.get("project_brief_preview", package.project_brief_preview)
+    if operation.projection == "project_brief" and target_path.startswith("prewrite_package.project_brief_preview."):
+        current = updates.get("project_brief_preview", package.project_brief_preview)
+        updates["project_brief_preview"] = _repair_mapping_path(
+            current,
+            target_path.removeprefix("prewrite_package.project_brief_preview."),
         )
         return
-    if operation.projection == "next_steps" and target_path.startswith("prewrite_package.next_steps"):
-        updates["next_steps_preview"] = _repair_optional_mapping(
-            updates.get("next_steps_preview", package.next_steps_preview)
+    if operation.projection == "next_steps" and target_path.startswith("prewrite_package.next_steps_preview."):
+        current = updates.get("next_steps_preview", package.next_steps_preview)
+        updates["next_steps_preview"] = _repair_mapping_path(
+            current,
+            target_path.removeprefix("prewrite_package.next_steps_preview."),
         )
         return
-    if operation.projection == "accepted_project" and target_path.startswith("prewrite_package.accepted_project"):
-        updates["accepted_project_preview"] = _repair_optional_mapping(
-            updates.get("accepted_project_preview", package.accepted_project_preview)
+    if operation.projection == "accepted_project" and target_path.startswith("prewrite_package.accepted_project_preview."):
+        current = updates.get("accepted_project_preview", package.accepted_project_preview)
+        updates["accepted_project_preview"] = _repair_mapping_path(
+            current,
+            target_path.removeprefix("prewrite_package.accepted_project_preview."),
         )
         return
-    if operation.projection == "project_dashboard" and target_path.startswith("prewrite_package.project_dashboard"):
-        updates["project_dashboard_preview"] = _repair_optional_mapping(
-            updates.get("project_dashboard_preview", package.project_dashboard_preview)
+    if operation.projection == "compass" and target_path.startswith("prewrite_package.compass_memory_preview."):
+        current = updates.get("compass_memory_preview", package.compass_memory_preview)
+        updates["compass_memory_preview"] = _repair_mapping_path(
+            current,
+            target_path.removeprefix("prewrite_package.compass_memory_preview."),
+        )
+        return
+    if operation.projection == "project_dashboard" and target_path.startswith(
+        "prewrite_package.project_dashboard_preview."
+    ):
+        current = updates.get("project_dashboard_preview", package.project_dashboard_preview)
+        updates["project_dashboard_preview"] = _repair_mapping_path(
+            current,
+            target_path.removeprefix("prewrite_package.project_dashboard_preview."),
         )
 
 
@@ -217,11 +218,85 @@ def _repair_nested_mapping_entry(
     return repaired
 
 
-def _repair_optional_mapping(value: Mapping[str, Any] | None) -> Mapping[str, Any] | None:
+def _repair_mapping_path(value: Mapping[str, Any] | None, relative_path: str) -> Mapping[str, Any] | None:
     if value is None:
         return None
-    repaired = _repair_tree(value)
-    return repaired if isinstance(repaired, Mapping) else value
+    segments = _parse_artifact_draft_path(relative_path)
+    if not segments:
+        return value
+    repaired, changed = _repair_value_at_path(value, segments, leaf_key=_leaf_key(segments))
+    return repaired if changed and isinstance(repaired, Mapping) else value
+
+
+def _parse_artifact_draft_path(value: str) -> tuple[_PathSegment, ...]:
+    text = str(value or "").strip()
+    if not text:
+        return ()
+    segments: list[_PathSegment] = []
+    token: list[str] = []
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if char == ".":
+            if not token:
+                return ()
+            segments.append("".join(token))
+            token = []
+            index += 1
+            continue
+        if char == "[":
+            if token:
+                segments.append("".join(token))
+                token = []
+            end_index = text.find("]", index + 1)
+            if end_index < 0:
+                return ()
+            raw_index = text[index + 1 : end_index]
+            if not raw_index.isdigit():
+                return ()
+            segments.append(int(raw_index))
+            index = end_index + 1
+            continue
+        token.append(char)
+        index += 1
+    if token:
+        segments.append("".join(token))
+    return tuple(segments)
+
+
+def _repair_value_at_path(value: Any, segments: tuple[_PathSegment, ...], *, leaf_key: str) -> tuple[Any, bool]:
+    if not segments:
+        if not isinstance(value, str) or structural_copy_value(key=leaf_key, value=value):
+            return value, False
+        repaired = _repair_public_copy(value)
+        return repaired, repaired != value
+    segment = segments[0]
+    if isinstance(segment, str):
+        if not isinstance(value, Mapping) or segment not in value:
+            return value, False
+        nested, changed = _repair_value_at_path(value[segment], segments[1:], leaf_key=leaf_key)
+        if not changed:
+            return value, False
+        repaired = dict(value)
+        repaired[segment] = nested
+        return repaired, True
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return value, False
+    if segment < 0 or segment >= len(value):
+        return value, False
+    nested, changed = _repair_value_at_path(value[segment], segments[1:], leaf_key=leaf_key)
+    if not changed:
+        return value, False
+    repaired_items = list(value)
+    repaired_items[segment] = nested
+    return tuple(repaired_items) if isinstance(value, tuple) else repaired_items, True
+
+
+def _leaf_key(segments: Sequence[_PathSegment]) -> str:
+    for segment in reversed(tuple(segments)):
+        if isinstance(segment, str):
+            return segment
+    return ""
 
 
 def _repair_tree(value: Any, *, key: str = "") -> Any:

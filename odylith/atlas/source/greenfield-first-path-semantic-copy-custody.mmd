@@ -42,7 +42,7 @@ flowchart LR
     subgraph repair_lane["Repair Custody"]
       direction TB
       semantic_plan_patch["Semantic or plan patch<br/>source fact repair only"]
-      exact_draft_cleanup["Exact-path draft cleanup<br/>duplicate words and dangling tails<br/>on collected public-copy leaves"]
+      exact_draft_cleanup["Exact-leaf draft cleanup<br/>duplicate words and dangling tails<br/>on source-owned public-copy leaves;<br/>whole previews are not repair targets"]
       final_gate["Final package gate<br/>same validators, no lowered bar"]
       governed_write["Governed writes<br/>only after manifest passes"]
     end

@@ -14,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import bu
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import contrastive_domain_drift_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import build_greenfield_package_report
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_package_findings import package_artifact_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_once
@@ -311,7 +312,7 @@ def test_package_repair_does_not_mutate_rendered_copy_for_plan_patch() -> None:
     assert repaired == package
 
 
-def test_package_repair_only_mutates_patchset_affected_projection() -> None:
+def test_package_repair_rejects_whole_preview_tree_targets() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
@@ -332,8 +333,102 @@ def test_package_repair_only_mutates_patchset_affected_projection() -> None:
     )
 
     assert repaired.rendered_component_specs == package.rendered_component_specs
+    assert repaired.next_steps_preview == package.next_steps_preview
+
+
+def test_package_repair_only_mutates_exact_preview_leaf() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        next_steps_preview={
+            "implementation_prompt": "The next step stays attached attached to the accepted state.",
+            "operator_sequence": [
+                "Review the accepted accepted brief.",
+                "Open the first workstream.",
+            ],
+        },
+    )
+
+    repaired = repair_greenfield_package_once(
+        package,
+        patchset_request={
+            "status": "repairable",
+            "operations": [
+                _mechanical_copy_operation(
+                    "next_steps",
+                    target_path="prewrite_package.next_steps_preview.operator_sequence[0]",
+                )
+            ],
+        },
+    )
+
     assert repaired.next_steps_preview == {
-        "implementation_prompt": "The next step stays attached to the accepted state."
+        "implementation_prompt": package.next_steps_preview["implementation_prompt"],
+        "operator_sequence": [
+            "Review the accepted brief.",
+            "Open the first workstream.",
+        ],
+    }
+
+
+def test_package_quality_findings_emit_exact_preview_leaf_repair_path() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        next_steps_preview={
+            "implementation_prompt": "The next step stays attached attached to the accepted state.",
+            "verification_commands": ["./.odylith/bin/odylith validate plan-workstream-binding --repo-root ."],
+        },
+    )
+
+    findings = package_artifact_findings(package)
+    generated = [item for item in findings if item.code == "generated_copy_quality"]
+
+    assert [item.target_path for item in generated] == [
+        "prewrite_package.next_steps_preview.implementation_prompt"
+    ]
+    patchset = patchset_request_from_findings(tuple(generated)).to_dict()
+    assert patchset["operations"][0]["target_path"] == "prewrite_package.next_steps_preview.implementation_prompt"
+
+
+def test_package_report_suppresses_legacy_broad_repair_target_when_exact_leaf_exists() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        next_steps_preview={
+            "implementation_prompt": "The next step stays attached attached to the accepted state.",
+        },
+    )
+
+    report = build_greenfield_package_report(package)
+    generated = [item for item in report.findings if item.code == "generated_copy_quality"]
+
+    assert [item.target_path for item in generated] == [
+        "prewrite_package.next_steps_preview.implementation_prompt"
+    ]
+    assert all("prewrite_package.next_steps." not in item.target_path for item in generated)
+    assert all(item.repairability == "safe_package_repair" for item in generated)
+
+
+def test_package_repair_handles_exact_compass_preview_leaf() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        compass_memory_preview={
+            "summary": "The accepted state state remains visible.",
+            "proof": "Release proof stays attached attached to the decision.",
+        },
+    )
+
+    report = build_greenfield_package_report(package)
+    generated = [item for item in report.findings if item.code == "generated_copy_quality"]
+    assert [item.target_path for item in generated] == [
+        "prewrite_package.compass_memory_preview.summary",
+        "prewrite_package.compass_memory_preview.proof",
+    ]
+
+    patchset = patchset_request_from_findings(tuple(generated)).to_dict()
+    repaired = repair_greenfield_package_once(package, patchset_request=patchset)
+
+    assert repaired.compass_memory_preview == {
+        "summary": "The accepted state remains visible.",
+        "proof": "Release proof stays attached to the decision.",
     }
 
 

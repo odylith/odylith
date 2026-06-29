@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Removed broad rendered-preview repair authority from greenfield post-confirm package cleanup; exact source-owned artifact-draft leaf paths now gate safe mechanical repair, Compass memory leaves are covered, and legacy broad generated-copy findings no longer create safe repair operations. Focused proof passed 41 tests and widened post-confirm proof passed 76 tests in 50.17s.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +5 more
 - **2026-06-29 · Implementation:** Source-fixed greenfield workstream-title preservation constraint custody after focused reviewer proof found the quality-repair suite red; 44 focused tests now pass, rebuilt installed proof remains pending.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py
@@ -39,12 +42,24 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Fixed proof-review sequence projection failure: connector-led and short non-finite object tails now stay attached to the prior first-path action, preventing Project Brief fragments such as Required request context and Or more-info request; focused sequence/create proof passed 5 tests in 50.46s.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py +2 more
-- **2026-06-29 · Implementation:** Live source-local warehouse near-miss replay verified the staged gerund actor-role and state-boundary title fix: confirmed create wrote 4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams in 20.872s with zero manifest issues and no changes-it title copy; temp repo was deleted after proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-06-29: Removed broad rendered-preview repair authority from post-confirm package cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagrams: D-043, D-045)
+  Safe artifact-draft repair now depends on exact leaf target paths owned by
+  the shared ArtifactPlanIR contract. `greenfield_post_confirm_repair.py`
+  updates only the addressed scalar leaf for project brief, next steps,
+  accepted-project, project-dashboard, Compass, Radar, Registry, and Atlas
+  draft artifacts; whole preview roots and broad category paths no longer
+  carry repair authority. `greenfield_post_confirm_package_findings.py` emits
+  source-owned exact public-copy leaf findings, including Compass memory
+  preview leaves, and `greenfield_post_confirm_findings.py` suppresses stale
+  broad generated-copy findings when exact package findings exist. Focused
+  proof passed 41 artifact-plan/quality-repair tests, the widened
+  post-confirm engine/projection group passed 76 tests in 50.17s, compile proof
+  passed for the changed modules, and independent reviewer repro verified exact
+  Compass cleanup plus removal of broad `next_steps` safe-repair operations.
 
 - 2026-06-29: Hardened selected-case domain-leakage proof for recursive custom simulations. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   `GreenfieldMatrixCase` now carries explicit `leakage_terms` for maintained

@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from collections.abc import Sequence
 import re
 from typing import Any
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_findings
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import ArtifactQualityUnit
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_findings
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_exact_repair_path
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import dedupe_review_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
@@ -18,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe im
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
 
 
 def package_artifact_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
@@ -235,12 +240,32 @@ def _release_package_findings(package: Any) -> tuple[GreenfieldReviewFinding, ..
 
 def _mechanical_package_quality_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
     findings: list[GreenfieldReviewFinding] = []
+    for unit in _artifact_draft_public_copy_units(package):
+        for copy_finding in generated_public_copy_findings(unit.surface, unit):
+            if not _mechanical_package_quality_issue(copy_finding.message):
+                continue
+            findings.append(
+                review_finding(
+                    code="generated_copy_quality",
+                    surface=unit.projection_id,
+                    target_path=unit.source_path,
+                    projection_id=unit.projection_id,
+                    semantic_node_id=unit.semantic_node_id or f"ArtifactDraftSet.{unit.projection_id}",
+                    severity="medium",
+                    repairability="safe_package_repair",
+                    owner="artifact_draft_cleaner",
+                    source="package_quality",
+                    message=copy_finding.message,
+                )
+            )
     for quality_finding in greenfield_rendered_package_quality_findings(package):
         message = quality_finding.message
         if not _mechanical_package_quality_issue(message):
             continue
         projection = quality_finding.projection_id
         if projection == "artifact_draft_set":
+            continue
+        if not artifact_draft_exact_repair_path(quality_finding.target_path):
             continue
         findings.append(
             review_finding(
@@ -257,6 +282,105 @@ def _mechanical_package_quality_findings(package: Any) -> tuple[GreenfieldReview
             )
         )
     return tuple(findings)
+
+
+def _artifact_draft_public_copy_units(package: Any) -> tuple[ArtifactQualityUnit, ...]:
+    units: list[ArtifactQualityUnit] = []
+    _append_public_copy_units(
+        units,
+        getattr(package, "project_brief_preview", None),
+        root_path="prewrite_package.project_brief_preview",
+        projection_id="project_brief",
+        surface="project brief preview",
+    )
+    _append_public_copy_units(
+        units,
+        getattr(package, "next_steps_preview", None),
+        root_path="prewrite_package.next_steps_preview",
+        projection_id="next_steps",
+        surface="operator next-steps preview",
+    )
+    _append_public_copy_units(
+        units,
+        getattr(package, "accepted_project_preview", None),
+        root_path="prewrite_package.accepted_project_preview",
+        projection_id="accepted_project",
+        surface="accepted-project memory preview",
+    )
+    _append_public_copy_units(
+        units,
+        getattr(package, "compass_memory_preview", None),
+        root_path="prewrite_package.compass_memory_preview",
+        projection_id="compass",
+        surface="Compass memory preview",
+    )
+    _append_public_copy_units(
+        units,
+        getattr(package, "project_dashboard_preview", None),
+        root_path="prewrite_package.project_dashboard_preview",
+        projection_id="project_dashboard",
+        surface="project dashboard preview",
+    )
+    return tuple(dict.fromkeys(units))
+
+
+def _append_public_copy_units(
+    units: list[ArtifactQualityUnit],
+    value: Any,
+    *,
+    root_path: str,
+    projection_id: str,
+    surface: str,
+    role: str = "",
+) -> None:
+    if value is None:
+        return
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            text_key = str(key)
+            _append_public_copy_units(
+                units,
+                nested,
+                root_path=f"{root_path}.{text_key}",
+                projection_id=projection_id,
+                surface=surface,
+                role=text_key,
+            )
+        return
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        for index, nested in enumerate(value):
+            _append_public_copy_units(
+                units,
+                nested,
+                root_path=f"{root_path}[{index}]",
+                projection_id=projection_id,
+                surface=surface,
+                role=role,
+            )
+        return
+    text = clean_text(value)
+    if not text or structural_copy_value(key=role, value=text):
+        return
+    units.append(
+        ArtifactQualityUnit(
+            projection_id=projection_id,
+            surface=surface,
+            source_path=root_path,
+            surface_role=role or "body",
+            text_kind=_artifact_draft_text_kind(role),
+            text=text,
+            semantic_node_id=f"ArtifactDraftSet.{projection_id}",
+        )
+    )
+
+
+def _artifact_draft_text_kind(role: str) -> str:
+    normalized = clean_text(role).casefold()
+    if normalized in {"command", "commands", "verification_commands"}:
+        return "command"
+    if normalized in {"id", "key", "position", "schema_version", "status", "version"}:
+        return "metadata"
+    return "free_prose"
 
 
 def _plan_package_quality_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:

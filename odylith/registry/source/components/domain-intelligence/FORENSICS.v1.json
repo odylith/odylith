@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 222,
-    "mapped_workstream_evidence_count": 206,
+    "explicit_event_count": 223,
+    "mapped_workstream_evidence_count": 207,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 186,
+    "spec_history_event_count": 187,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 223
+    "timeline_event_count": 224
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -20,6 +20,64 @@
   ],
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py"
+      ],
+      "confidence": "high",
+      "event_index": 719,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py +3 more",
+      "ts_iso": "2026-06-29T15:51:42-07:00",
+      "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py"
+      ],
+      "confidence": "high",
+      "event_index": 718,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Removed broad rendered-preview repair authority from greenfield post-confirm package cleanup; exact source-owned artifact-draft leaf paths now gate safe mechanical repair, Compass memory leaves are covered, and legacy broad generated-copy findings no longer create safe repair operations. Focused proof passed 41 tests and widened post-confirm proof passed 76 tests in 50.17s.",
+      "ts_iso": "2026-06-29T15:50:16-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/registry/source/components/release/CURRENT_SPEC.md"
@@ -53,22 +111,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
-      ],
-      "confidence": "high",
-      "event_index": 718,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "domain-intelligence"
-      ],
-      "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T15:20:26-07:00",
-      "workstreams": []
     },
     {
       "artifacts": [

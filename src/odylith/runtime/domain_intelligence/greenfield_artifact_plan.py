@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string_list
+from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
 
 
@@ -71,6 +72,23 @@ _PROJECTION_DEPENDENCIES = {
     "program": ("accepted_project", "compass", "next_steps", "release"),
 }
 _FULL_PREWRITE_PROJECTIONS = frozenset({"radar", "program"})
+_ARTIFACT_DRAFT_EXACT_TARGETS = frozenset(
+    {
+        "prewrite_package.backlog_result.backlog_index_text",
+    }
+)
+_ARTIFACT_DRAFT_EXACT_PREFIXES = (
+    "prewrite_package.rendered_component_specs::",
+    "prewrite_package.rendered_atlas_sources::",
+    "prewrite_package.backlog_result.idea_files::",
+    "prewrite_package.accepted_project_preview.",
+    "prewrite_package.compass_memory_preview.",
+    "prewrite_package.project_brief_preview.",
+    "prewrite_package.next_steps_preview.",
+)
+_ARTIFACT_DRAFT_INDEXED_LEAF_PREFIXES = (
+    "prewrite_package.project_dashboard_preview.host_handoff_prompts[",
+)
 
 
 def artifact_plan_canonical_root(value: Any) -> str:
@@ -191,11 +209,29 @@ def artifact_draft_repair_projection(value: Any) -> str:
     return projection or artifact_plan_projection_for_path(value)
 
 
+def artifact_draft_exact_repair_path(value: Any) -> bool:
+    """Return true only for artifact-draft paths that identify one repair leaf."""
+
+    target = normalize_string(value)
+    if not target:
+        return False
+    if target in _ARTIFACT_DRAFT_EXACT_TARGETS:
+        return True
+    for prefix in _ARTIFACT_DRAFT_EXACT_PREFIXES:
+        if target.startswith(prefix):
+            return bool(target[len(prefix) :])
+    for prefix in _ARTIFACT_DRAFT_INDEXED_LEAF_PREFIXES:
+        if target.startswith(prefix):
+            return "]." in target[len(prefix) :]
+    return False
+
+
 __all__ = [
     "ARTIFACT_PLAN_DICT_ROOTS",
     "ARTIFACT_PLAN_IR_VERSION",
     "ARTIFACT_PLAN_LIST_ROOTS",
     "ARTIFACT_PLAN_ROW_ROOTS",
+    "artifact_draft_exact_repair_path",
     "artifact_draft_repair_projection",
     "artifact_plan_affected_projections",
     "artifact_plan_canonical_root",

@@ -364,7 +364,7 @@ def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() ->
             review_finding(
                 code="generated_copy_quality",
                 surface="registry",
-                target_path="rendered_component_specs",
+                target_path="prewrite_package.rendered_component_specs::spec.md",
                 severity="medium",
                 repairability="safe_package_repair",
                 owner="artifact_draft_cleaner",
@@ -378,8 +378,8 @@ def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() ->
 
     assert by_path["next_steps"]["target_layer"] == "artifact_plan"
     assert by_path["next_steps"]["affected_projections"] == ("next_steps",)
-    assert by_path["rendered_component_specs"]["target_layer"] == "artifact_draft_set"
-    assert by_path["rendered_component_specs"]["affected_projections"] == ("registry",)
+    assert by_path["prewrite_package.rendered_component_specs::spec.md"]["target_layer"] == "artifact_draft_set"
+    assert by_path["prewrite_package.rendered_component_specs::spec.md"]["affected_projections"] == ("registry",)
 
 
 def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() -> None:

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import ARTIFACT_PLAN_IR_VERSION
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_exact_repair_path
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_repair_projection
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_affected_projections
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_canonical_root
@@ -60,6 +61,22 @@ def test_artifact_plan_ir_normalizes_artifact_draft_repair_projection_ids() -> N
     assert artifact_draft_repair_projection("rendered_atlas_sources") == "atlas"
     assert artifact_draft_repair_projection("artifact_draft_set") == "artifact_draft_set"
     assert artifact_draft_repair_projection("unknown_projection") == ""
+
+
+def test_artifact_plan_ir_requires_exact_artifact_draft_repair_paths() -> None:
+    assert artifact_draft_exact_repair_path("prewrite_package.rendered_component_specs::spec.md") is True
+    assert artifact_draft_exact_repair_path("prewrite_package.rendered_component_specs::") is False
+    assert artifact_draft_exact_repair_path("prewrite_package.project_brief_preview") is False
+    assert artifact_draft_exact_repair_path("prewrite_package.project_brief_preview.project_outcome") is True
+    assert artifact_draft_exact_repair_path("prewrite_package.next_steps_preview") is False
+    assert artifact_draft_exact_repair_path("prewrite_package.next_steps_preview.operator_sequence[0]") is True
+    assert artifact_draft_exact_repair_path("prewrite_package.compass_memory_preview.summary") is True
+    assert artifact_draft_exact_repair_path("prewrite_package.compass_memory_preview") is False
+    assert artifact_draft_exact_repair_path("prewrite_package.project_dashboard_preview.host_handoff_prompts[0]") is False
+    assert (
+        artifact_draft_exact_repair_path("prewrite_package.project_dashboard_preview.host_handoff_prompts[0].prompt")
+        is True
+    )
 
 
 def test_artifact_plan_ir_expands_projection_dependencies_without_prose_routing() -> None:

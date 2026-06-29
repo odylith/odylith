@@ -119,8 +119,8 @@ def completion_review_findings(
             projection_id="registry",
             semantic_node_id="ArtifactDraftSet.registry",
             severity="medium",
-            repairability="safe_package_repair",
-            owner="artifact_draft_cleaner",
+            repairability="plan_patch",
+            owner="registry_renderer",
             source="rendered_component_spec_quality",
         )
         _extend_review_findings(
@@ -158,8 +158,17 @@ def package_review_findings(
     """Collect typed findings from the prewrite artifact package."""
 
     copy_findings = _generated_copy_quality_findings(package)
-    copy_messages = {finding.message for finding in copy_findings}
     typed_package_findings = tuple(finding for finding in package_findings if isinstance(finding, GreenfieldReviewFinding))
+    typed_package_message_keys = {
+        (finding.message.casefold(), finding.projection_id)
+        for finding in typed_package_findings
+    }
+    copy_findings = tuple(
+        finding
+        for finding in copy_findings
+        if (finding.message.casefold(), finding.projection_id) not in typed_package_message_keys
+    )
+    copy_messages = {finding.message for finding in copy_findings}
     typed_package_messages = {finding.message for finding in typed_package_findings}
     return dedupe_review_findings(
         [
@@ -226,7 +235,7 @@ def _generated_copy_quality_findings(package: Any) -> tuple[GreenfieldReviewFind
                     semantic_node_id=route["semantic_node_id"],
                     severity="medium",
                     repairability=repairability,
-                    owner="artifact_draft_cleaner" if repairability == "safe_package_repair" else route["owner"],
+                    owner=route["owner"],
                     source="generated_copy_quality",
                     message=copy_finding.message,
                 )
@@ -335,8 +344,6 @@ def _copy_route(
 
 
 def _generated_copy_repairability(category: str) -> str:
-    if clean_text(category) in {"adjacent_duplicate_word", "clipped_public_copy"}:
-        return "safe_package_repair"
     return "plan_patch" if clean_text(category) else "unrepairable"
 
 

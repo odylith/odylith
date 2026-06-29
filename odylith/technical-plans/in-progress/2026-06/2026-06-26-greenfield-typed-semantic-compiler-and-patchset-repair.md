@@ -1601,3 +1601,17 @@ vocabulary, or degraded packages.
       py_compile, a selected explicit platform-word phrase scan, and the
       current `a46ef6cc` source/dist scan over 44 explicit terms with zero
       missing cases and zero findings.
+- [x] Remove broad rendered-preview package repair authority.
+      Safe artifact-draft cleanup now requires exact source-owned leaf paths
+      from the shared ArtifactPlanIR contract. The repair executor no longer
+      walks whole project brief, operator next-step, accepted-project,
+      project-dashboard, or Compass preview trees; it repairs only the named
+      scalar leaf, preserving structural metadata and sibling copy. Legacy
+      generated-copy findings no longer emit broad safe-repair targets when
+      exact package findings exist, and broad completion-level generated-copy
+      findings route to plan/projection ownership rather than
+      `artifact_draft_cleaner`. Focused proof passed 41 artifact-plan and
+      quality-repair tests, the widened post-confirm engine/projection group
+      passed 76 tests in 50.17s, compile proof passed for the changed modules,
+      and independent review verified exact Compass memory repair plus
+      suppression of stale broad `next_steps` safe-repair paths.

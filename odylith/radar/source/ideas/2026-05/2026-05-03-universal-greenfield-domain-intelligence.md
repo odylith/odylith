@@ -2409,6 +2409,15 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   closed on leakage. Focused install tests passed 50/50, release matrix
   bootstrap checks passed, and the current maintained corpus scans 44 explicit
   terms with zero missing cases and zero source/dist findings.
+- 2026-06-29 post-confirm repair custody no longer permits whole rendered
+  preview tree mutation. Safe mechanical cleanup requires exact
+  artifact-draft leaf paths from source-owned package findings; Compass memory
+  preview leaves are covered, broad `prewrite_package.<surface>.<category>`
+  generated-copy findings are suppressed when exact package findings exist, and
+  remaining broad completion findings route to projection repair rather than
+  `artifact_draft_cleaner`. Focused proof passed 41 artifact-plan and
+  quality-repair tests, and the widened post-confirm engine/projection set
+  passed 76 tests in 50.17s with independent reviewer confirmation.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

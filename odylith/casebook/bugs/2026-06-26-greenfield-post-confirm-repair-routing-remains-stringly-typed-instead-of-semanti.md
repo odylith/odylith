@@ -1104,6 +1104,21 @@
   and the parent matrix root were deleted. This is strong source-local standard
   proof, but installed release readiness remains unclaimed until the fresh dist
   matrix and rescue proof pass.
+  A later exact-leaf artifact-draft checkpoint removed the broad rendered
+  preview repair authority that still survived in package cleanup. Safe
+  mechanical cleanup now requires an exact artifact-draft target path owned by
+  `greenfield_artifact_plan.py`; `project_brief_preview`, `next_steps_preview`,
+  `compass_memory_preview`, accepted-project preview, and project-dashboard
+  prompt leaves can be repaired only at the named scalar leaf. Whole preview
+  roots and row-level dashboard prompts fail closed. Legacy generated-copy
+  findings no longer create `safe_package_repair` operations from
+  category-suffixed broad paths such as `prewrite_package.next_steps.*`; when a
+  source-owned exact finding exists, the stale broad finding is suppressed, and
+  remaining legacy generated-copy findings route to plan/projection ownership.
+  Independent reviewer follow-up reproduced exact Compass memory repair and
+  confirmed no broad `next_steps` safe-repair target remained. Focused proof
+  passed 41 artifact-plan and quality-repair tests, and the widened
+  post-confirm repair/engine/projection-rerender set passed 76 tests in 50.17s.
 
 - Related Incidents/Bugs: CB-207
 
