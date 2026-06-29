@@ -8,6 +8,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_findings
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
+from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.prose_grammar import modal_base_form_drift_phrases
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
@@ -220,18 +221,25 @@ def release_scope_for_component(
         return "supporting"
     deferred_text = _scope_text(proof_boundary, *non_goals)
     path_terms = _terms(" ".join((first_path, material_first_path_action(first_path))))
+    affirmative_proof_terms = _affirmative_scope_terms(proof_boundary)
     proof_terms = _terms(proof_boundary)
     visible_terms = _terms(first_path_outcome_phrase(first_path, proof_boundary=proof_boundary))
+    out_of_scope_match = _scope_context_matches(deferred_text, terms, markers=_OUT_OF_SCOPE_MARKERS)
+    deferred_match = _scope_context_matches(deferred_text, terms, markers=_DEFERRED_MARKERS)
     if _material_overlap(terms, visible_terms) >= 2:
         return "first_path_required"
-    if _scope_context_matches(deferred_text, terms, markers=_OUT_OF_SCOPE_MARKERS):
+    if _material_overlap(terms, affirmative_proof_terms) >= 2 and (out_of_scope_match or deferred_match):
+        return "supporting"
+    if out_of_scope_match:
         return "out_of_scope"
-    if _scope_context_matches(deferred_text, terms, markers=_DEFERRED_MARKERS):
+    if deferred_match:
         return "deferred"
     if _material_overlap(terms, path_terms) >= 2:
         return "first_path_required"
     if len(terms) == 1 and terms & path_terms:
         return "first_path_required"
+    if _material_overlap(terms, affirmative_proof_terms) >= 2:
+        return "supporting"
     if _ambiguous_first_release_scope_matches(deferred_text, terms):
         return "deferred"
     if terms & proof_terms:
@@ -239,6 +247,39 @@ def release_scope_for_component(
     if _scope_context_matches(_scope_text(*non_goals), terms, markers=_DEFERRED_MARKERS + _OUT_OF_SCOPE_MARKERS):
         return "deferred"
     return "supporting"
+
+
+def _affirmative_scope_terms(value: Any) -> set[str]:
+    """Return proof terms after bounded negative-scope clauses are removed."""
+
+    text = _clean(value)
+    sentences = re.split(r"(?<=[.!?])\s+|;\s+|\n+", text)
+    cleaned = [_remove_negative_scope_segments(sentence) for sentence in sentences]
+    return _terms(". ".join(part for part in cleaned if part.strip()))
+
+
+def _remove_negative_scope_segments(value: str) -> str:
+    text = _clean(value)
+    lowered = text.casefold()
+    for marker in sorted(_DEFERRED_MARKERS + _OUT_OF_SCOPE_MARKERS, key=len, reverse=True):
+        index = lowered.find(marker)
+        if index < 0:
+            continue
+        head = text[:index].strip(" ,")
+        tail = text[index + len(marker) :].strip(" ,")
+        retained_tail = _tail_after_negative_scope_phrase(tail)
+        text = f"{head}. {retained_tail}".strip(" .")
+        lowered = text.casefold()
+    return text
+
+
+def _tail_after_negative_scope_phrase(value: str) -> str:
+    segments = [segment.strip(" ,") for segment in _clean(value).split(",")]
+    for index, segment in enumerate(segments):
+        if index == 0 or not looks_like_finite_action(segment):
+            continue
+        return ", ".join(segments[index:]).strip(" ,")
+    return ""
 
 
 def active_release_components(components: Sequence[Mapping[str, Any]]) -> list[Mapping[str, Any]]:

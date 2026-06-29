@@ -4,6 +4,12 @@ from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_apply_components import (
+    first_release_component_rows,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_components import (
+    confirmed_components,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import (
     release_scope_for_component,
     sentence_overlap_ratio,
@@ -70,3 +76,53 @@ def test_semantic_quality_terms_use_shared_index_aliases() -> None:
         )
         == "out_of_scope"
     )
+
+
+def test_release_scope_keeps_affirmative_proof_owner_despite_negative_claim_boundary() -> None:
+    first_path = (
+        "Project operators upload monitoring evidence, independent verifiers record validation decisions, "
+        "registry reviewers resolve exceptions, and buyers inspect issuance readiness without claiming financial settlement."
+    )
+    proof_boundary = (
+        "Release 0.0.1 succeeds when project operators upload monitoring evidence, independent verifiers record "
+        "validation decisions, registry reviewers resolve exceptions, and buyers inspect issuance readiness without "
+        "claiming financial settlement. The product shows issuance readiness without claiming financial settlement, "
+        "handles missing input with a clear blocker, and keeps replayable evidence for review."
+    )
+
+    scope = release_scope_for_component(
+        {
+            "label": "Attestation Proof Ledger",
+            "source_system_description": (
+                "keeps validation results, release decisions, failure reasons, and replayable evidence for review"
+            ),
+            "responsibility": (
+                "Keeps validation results, release decisions, failure reasons, and replayable evidence for review"
+            ),
+            "boundary": "Attestation Proof Ledger owns validation evidence and local handoff decisions.",
+        },
+        first_path=first_path,
+        proof_boundary=proof_boundary,
+        non_goals=[],
+    )
+
+    assert scope == "supporting"
+
+    rows = confirmed_components(
+        label="Carbon Removal MRV",
+        label_slug="carbon-removal-mrv",
+        internal_systems=[
+            "Intake register — records source input, current status, owner, blocker, handoff, and version history.",
+            "Review workspace — presents current state, missing input, user-facing confirmation, and next action.",
+            "Proof ledger — keeps validation results, release decisions, failure reasons, and replayable evidence for review.",
+        ],
+        first_path=first_path,
+        state_object="attestation readiness record",
+        proof_boundary=proof_boundary,
+        external_systems=[],
+        non_goals=[],
+    )
+    scopes = {str(row["label"]): str(row["release_scope"]) for row in rows}
+
+    assert any("Proof Ledger" in label and scope != "out_of_scope" for label, scope in scopes.items())
+    assert len(first_release_component_rows({"components": rows})) == 3

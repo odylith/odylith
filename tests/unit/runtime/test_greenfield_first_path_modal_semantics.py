@@ -53,6 +53,37 @@ def test_first_path_steps_preserve_plural_actor_can_base_form() -> None:
     assert not [phrase for step in steps for phrase in modal_base_form_drift_phrases(step)]
 
 
+def test_subjectless_action_chains_do_not_invent_carried_subjects() -> None:
+    steps = first_path_steps(
+        "ingests observation runs, records instrument state, tracks calibration exceptions, "
+        "routes science lead review, and publishes release readiness for validated image products"
+    )
+
+    assert steps == (
+        "Ingest observation runs",
+        "Record instrument state",
+        "Track calibration exceptions",
+        "Route science lead review",
+        "Publish release readiness for validated image products",
+    )
+    assert sequence_event_steps(", ".join(steps), dedupe=True) == [
+        "Ingest observation runs",
+        "Record instrument state",
+        "Track calibration exceptions",
+        "Route science lead review",
+        "Publish release readiness for validated image products",
+    ]
+
+    carried_steps = first_path_steps(
+        "the app records it, advances them along their titration schedule, and shows the next due date"
+    )
+    assert carried_steps == (
+        "The app records it",
+        "The app advances them along their titration schedule",
+        "The app shows the next due date",
+    )
+
+
 def test_confirmed_completion_repairs_modal_drift_from_recovered_host_guidance_intent() -> None:
     confirmation = build_product_intent_confirmation(
         prompt=FLOOD_SHELTER_PROMPT,

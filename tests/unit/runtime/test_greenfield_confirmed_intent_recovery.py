@@ -248,6 +248,26 @@ def test_operator_intent_recovery_visible_confirmation_keeps_sequence_and_actor_
     assert "then show a clear change explanation without making diagnosis claims" in text
 
 
+def test_operator_intent_recovery_does_not_canonize_actorless_action_chain_as_subject() -> None:
+    prompt = (
+        "Create a greenfield proposal for a space telescope calibration anomaly review tool that ingests "
+        "observation runs, records instrument state, tracks calibration exceptions, routes science lead review, "
+        "and publishes release readiness for validated image products."
+    )
+
+    text = confirmation_from_operator_intent(prompt, prefer_product_title=True)
+    lowered = text.casefold()
+
+    assert "record instrument state" in lowered
+    assert "track calibration exceptions" in lowered
+    assert "route science lead review" in lowered
+    assert "publish release readiness for validated image products" in lowered
+    assert "ingest observation records" not in lowered
+    assert "ingest observation tracks" not in lowered
+    assert "ingest observation routes" not in lowered
+    assert "routes science lead publishes" not in lowered
+
+
 def test_prompt_title_source_recognizes_generic_product_containers() -> None:
     assert (
         prompt_project_title_source(

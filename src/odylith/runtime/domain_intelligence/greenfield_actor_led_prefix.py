@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import ACTOR_ROLE_NOUNS
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
@@ -11,43 +12,6 @@ from odylith.runtime.domain_intelligence.greenfield_text import plain_title_phra
 
 _SUBJECT_PREFIX_PREPOSITIONS = frozenset({"at", "by", "for", "from", "in", "of", "on", "through", "to", "via", "with", "without"})
 _SUBORDINATE_SUBJECT_MARKERS = frozenset({"if", "that", "when", "where", "whether", "which", "while"})
-_ROLE_NOUNS = frozenset(
-    {
-        "actor",
-        "actors",
-        "applicant",
-        "applicants",
-        "coordinator",
-        "coordinators",
-        "customer",
-        "customers",
-        "lead",
-        "leads",
-        "manager",
-        "managers",
-        "officer",
-        "officers",
-        "operator",
-        "operators",
-        "owner",
-        "owners",
-        "participant",
-        "participants",
-        "person",
-        "people",
-        "planner",
-        "planners",
-        "reviewer",
-        "reviewers",
-        "staff",
-        "supervisor",
-        "supervisors",
-        "team",
-        "teams",
-        "user",
-        "users",
-    }
-)
 
 
 def looks_like_actor_led_subject_prefix(prefix: str, full_text: str = "") -> bool:
@@ -57,7 +21,7 @@ def looks_like_actor_led_subject_prefix(prefix: str, full_text: str = "") -> boo
     if not text:
         return False
     words = [word.casefold().strip(".,:;") for word in text.split() if word.strip(".,:;")]
-    has_role_noun = bool(set(words) & _ROLE_NOUNS)
+    has_role_noun = bool(set(words) & ACTOR_ROLE_NOUNS)
     if _has_unowned_action_tail(words):
         return False
     if (looks_like_action_clause(f"{text} placeholder") or base_gerund_clause(f"{text} placeholder")) and not has_role_noun:
@@ -79,11 +43,11 @@ def _contains_subordinate_subject_marker(words: list[str]) -> bool:
 def _has_unowned_action_tail(words: list[str]) -> bool:
     for index in range(1, len(words)):
         token = words[index]
-        if token in _ROLE_NOUNS:
+        if token in ACTOR_ROLE_NOUNS:
             continue
         if not looks_like_action_clause(f"{token} placeholder"):
             continue
-        if set(words[index + 1 :]) & _ROLE_NOUNS:
+        if set(words[index + 1 :]) & ACTOR_ROLE_NOUNS:
             continue
         return True
     return False

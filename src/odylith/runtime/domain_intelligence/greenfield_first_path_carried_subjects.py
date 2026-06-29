@@ -25,6 +25,8 @@ def carried_subject_prefix(value: str) -> str:
     if pronoun and MATERIAL_ACTION_RE.match(pronoun.group("tail")):
         raw_subject = pronoun.group("subject").casefold()
         return raw_subject[:1].upper() + raw_subject[1:]
+    if MATERIAL_ACTION_RE.match(text):
+        return ""
     for action in MATERIAL_ACTION_RE.finditer(text):
         prefix = text[: action.start()].strip(" .,;:")
         if len(label_terms(prefix)) >= 2 and looks_like_actor_led_subject_prefix(prefix, text):

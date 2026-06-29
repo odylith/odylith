@@ -304,6 +304,24 @@ vocabulary, or degraded packages.
   tail custody when surfaces render the tail without the leading action/object.
   Fix the semantic projection custody; do not add disclosure/security
   vocabulary, regex towers, or weaker repetition gates.
+- 2026-06-29 source-local recovery after the `13b796e9` fresh-variance
+  failures: root-cause review found three general platform defects rather than
+  project-specific bad data. Actorless comma action chains could invent a
+  carried subject because subject carry trusted a reverse action-word fallback;
+  proof/evidence components could be demoted by negative proof-boundary tails
+  before affirmative proof ownership was considered; and matrix scoring could
+  over-credit runtime custody artifacts, accepted-project source text, and
+  skipped browser proof. The repair keeps semantic custody generic: shared
+  actor-role ownership, explicit-subject carried-action parsing, affirmative
+  proof/evidence release-scope polarity, public-artifact-only matrix readback,
+  real project-brief/next-step artifact counts, and fail-closed browser-proof
+  defaults. Focused proof passed 95 tests in 89.90s; the full general
+  artifact-quality suite passed 52 tests in 499.18s; and six fresh
+  source-local simulations across space science, climate MRV, public
+  infrastructure, civic response, workforce credentials, and port tariff
+  governance all completed under 23s with hard 10/10 scores, zero issues,
+  complete Radar/Registry/Atlas/release/trace counts, and temp cleanup.
+  Installed dist proof remains the release blocker.
 
 ## Implementation Slices
 
@@ -458,6 +476,14 @@ vocabulary, or degraded packages.
 
 ## Validation
 
+- [x] Source-local root-cause proof after the fresh installed variance
+      failures: first-path carried-subject parsing, shared actor-role custody,
+      release-scope proof polarity, and matrix public-artifact scoring passed
+      the focused 95-test bundle, the 52-test general artifact-quality suite,
+      and six fresh source-local high-variance creates under 23s with hard
+      10/10 scores, all expert lenses passing, governed writes, and temp
+      cleanup. Fresh installed-dist proof is still pending before release
+      readiness.
 - [ ] Unit tests for semantic IR construction, ambiguity decision ledger,
       rejected interpretations, projection isolation, and source-map targets.
 - [x] Unit tests proving typed findings classify failures and feed repair
@@ -1426,3 +1452,23 @@ vocabulary, or degraded packages.
       host-model semantic rescue quality remains a separate proof obligation
       because this proof uses a typed rescue probe rather than an organically
       triggered model repair.
+- [ ] Fresh recursive installed variance pass reopened release readiness after
+      the `13b796e9` proof.
+      Ten non-reused installed consumer-lane simulations against
+      `odylith-local-release-0.1.15-13b796e9` produced seven passes and three
+      failures while cleaning the matrix temp root. `lead service line
+      replacement equity` wrote governed records in 24.809s but failed domain
+      readback with only three of four required anchors. `space telescope
+      calibration anomaly` failed before governed writes in 34.656s because
+      proposal summary, validation, release gate, and promotion criteria text
+      tripped the semantic-slop gate for actor-led finite action inside
+      user-can clauses. `carbon removal mrv attestation` wrote records in
+      23.131s but produced only two Registry component specs, failing architect
+      and engineer lenses. Independent review also found remaining proof
+      false-positive risks: domain expertise can still be credited from
+      runtime/accepted-project JSON, operator usefulness can be inflated by
+      custody files counted as project brief records, count-only dimensions are
+      partly duplicated, and the Python matrix entrypoint can pass when browser
+      proof is skipped. Fix the platform and proof harness generally, then
+      rerun fresh non-reused installed simulations under the hardened scorer
+      before any release-ready claim.

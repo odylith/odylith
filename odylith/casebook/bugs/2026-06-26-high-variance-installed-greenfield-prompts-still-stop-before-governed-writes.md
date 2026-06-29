@@ -584,12 +584,50 @@
   readiness gate persisted `external vulnerability reports, affected.`. The
   root cause is source-level summary clipping in
   `greenfield_confirmed_project_brief.py`, not a consumer-project defect.
+  Fresh recursive installed variance on 2026-06-29 reopened the release gate
+  after the `13b796e9` proof. Ten non-reused projects produced seven passes and
+  three failures with temp cleanup: `lead service line replacement equity`
+  wrote records in 24.809s but missed one required domain anchor, `space
+  telescope calibration anomaly` failed before governed writes in 34.656s on
+  actor-led finite action inside user-can clauses across proposal summary,
+  validation, release-gate, and promotion criteria text, and `carbon removal
+  mrv attestation` wrote records in 23.131s but generated only two Registry
+  specs. A parallel review found the matrix scorer can still overstate 10/10
+  because domain readback can include internal runtime JSON, operator
+  usefulness can count custody files as project brief evidence, count-only
+  dimensions overlap, and the Python entrypoint can pass with skipped browser
+  proof.
+
+  Source-local checkpoint after the 2026-06-29 root-cause fixes: the telescope
+  failure came from a generic carried-subject bug, where an actorless
+  comma-chained first path could seed a fake subject from a later action word
+  and then project malformed sibling actions. The fix stops bare
+  material-action clauses from seeding carried subjects and consolidates
+  actor-role nouns behind `greenfield_actor_roles.py` so recovery, fragments,
+  and actor signatures share one role source. The carbon Registry
+  under-provisioning came from release-scope polarity, where negative
+  proof-boundary language was applied before affirmative proof/evidence
+  ownership, dropping a proof ledger even though it was required as supporting
+  release custody. The fix separates affirmative proof terms from negative
+  scope tails and keeps proof/evidence owners as supporting components unless a
+  stronger explicit exclusion applies. The scorer fix excludes runtime custody
+  JSON and accepted-project source launch text from rendered domain readback,
+  counts real project-brief and next-step preview artifacts instead of custody
+  files, and fails the Python matrix entrypoint when browser proof is skipped
+  outside an explicit debug flag. Focused proof passed 95 focused regression
+  tests and the full 52-test general artifact-quality suite. Six fresh
+  source-local simulations then passed under 23 seconds with hard 10/10 scores,
+  zero issues, complete governed counts, and explicit temp cleanup: space
+  telescope calibration, carbon removal MRV, lead service line equity, public
+  comment response, apprenticeship credential readiness, and port berth carbon
+  tariff. Release readiness remains blocked until a fresh built dist proves the
+  same behavior in the installed consumer lane with browser proof.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: Latest installed proof is 0.1.15 local release dist `odylith-local-release-0.1.15-13b796e9`. Local release smoke exited 0. The maintained thirteen-case installed matrix passed flood shelter intake, pediatric agency practice, semiconductor lab custody, port berth carbon tariff, security disclosure council, open source security embargo, package supply chain exception desk, credit union fair lending exception, apprenticeship credential readiness, film archive rights clearance, developer incident runbook readiness, sparse disclosure confirmation, and quantum communication lab in 22.477-26.930s. Every standard case wrote governed records, passed browser surface proof, scored hard 10/10 across completion, latency, semantic manifest, copy/semantic clarity, governance depth, traceability, operator usefulness, Project implementation prompts, and PM/architect/engineer/domain-expert lenses, and the matrix temp root was cleaned. Synthetic rescue wiring smoke passed in 34.261s. Natural host-model semantic rescue quality remains unclaimed because the rescue proof is a typed-probe wiring smoke, not an organically triggered model repair.
+- Version/Build: Latest recursive installed variance proof is red. Local release dist `odylith-local-release-0.1.15-13b796e9` still passed release smoke and the maintained thirteen-case matrix, but a fresh non-reused ten-case installed matrix failed three cases: one domain-anchor readback miss, one prewrite no-write semantic-slop failure, and one two-spec Registry topology failure. Treat the earlier green matrix as superseded for release-readiness claims until the platform and scorer fixes rerun under hardened proof. Synthetic rescue wiring remains proven at 34.261s, but natural host-model semantic rescue quality remains unclaimed because the rescue proof is a typed-probe wiring smoke, not an organically triggered model repair.
 
 - Related Incidents/Bugs: CB-208
 

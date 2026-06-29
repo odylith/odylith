@@ -45,6 +45,11 @@ _REGISTRY_REQUIRED_PROOF = (
     "Blocked input evidence",
     "Replay evidence",
 )
+_DOMAIN_READBACK_EXCLUDED_SURFACES = frozenset(
+    {
+        "Accepted project source launch",
+    }
+)
 _TERM_STOPWORDS = frozenset(
     {
         "accepted",
@@ -229,8 +234,12 @@ def _domain_readback_findings(
     source_terms = _domain_source_terms(proposal)
     if len(source_terms) < 4:
         return [_finding("domain_expert", "semantic source has too few domain terms for independent review")]
-    rendered_text = " ".join(artifact.text for artifact in artifacts)
-    rendered_text += " " + " ".join(text_values(getattr(package, "accepted_project_preview", None)))
+    del package
+    rendered_text = " ".join(
+        artifact.text
+        for artifact in artifacts
+        if artifact.surface not in _DOMAIN_READBACK_EXCLUDED_SURFACES
+    )
     rendered_terms = _terms(rendered_text)
     required = min(5, max(3, len(source_terms) // 4))
     if len(source_terms & rendered_terms) < required:

@@ -680,6 +680,69 @@ def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_p
     assert counts.domain_term_hits == 4
 
 
+def test_collect_artifact_counts_excludes_runtime_custody_from_domain_terms(tmp_path: Path) -> None:
+    module = _module()
+    package = _empty_package()
+    package.accepted_project_preview = {
+        "source_launch": {
+            "implementation_prompt": "Runtime-only zephyr lattice attestation evidence should not count."
+        }
+    }
+    _write(tmp_path / "odylith/radar/traceability-graph.v1.json", json.dumps({"nodes": [], "workstreams": []}))
+
+    counts = module.collect_artifact_counts(
+        repo_root=tmp_path,
+        package=package,
+        required_terms=("zephyr", "lattice", "attestation"),
+    )
+
+    assert counts.domain_term_hits == 0
+
+
+def test_project_brief_record_count_excludes_runtime_custody_files(tmp_path: Path) -> None:
+    module = _module()
+    package = _empty_package()
+    _write(tmp_path / "odylith/runtime/source/accepted-project.v1.json", "{}\n")
+    _write(tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json", "{}\n")
+    _write(tmp_path / "odylith/radar/traceability-graph.v1.json", json.dumps({"nodes": [], "workstreams": []}))
+
+    counts = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
+
+    assert counts.project_brief_records == 0
+
+
+def test_domain_readback_excludes_accepted_project_source_launch_runtime_text() -> None:
+    module = _module()
+    package = _empty_package()
+    package.proposal = {
+        "intent": {"state_object": "Zephyr lattice attestation queue"},
+        "semantic_model": {
+            "first_path_contract": {
+                "capability": "Review zephyr lattice attestation evidence",
+                "visible_result": "Zephyr lattice attestation readiness",
+            },
+            "domain_ontology": {
+                "proof_boundary": "Zephyr lattice attestation proof stays reviewer-owned.",
+                "external_systems": ["Zephyr lattice source"],
+                "internal_systems": ["Attestation queue"],
+            },
+        },
+    }
+    package.accepted_project_preview = {
+        "source_launch": {
+            "implementation_prompt": "Zephyr lattice attestation evidence appears only inside runtime custody."
+        },
+        "validation_gate": {"visible_actors": _passing_visible_actors()},
+    }
+
+    findings = module.package_evidence_findings(package)
+
+    assert any(
+        finding.dimension == "domain_expert" and "independent domain readback carried" in finding.message
+        for finding in findings
+    )
+
+
 def test_collect_artifact_package_prefers_accepted_project_proposal_over_confirmed_intent(tmp_path: Path) -> None:
     module = _module()
     _write(
@@ -1234,7 +1297,7 @@ def test_quality_verdict_rejects_surface_health_findings(monkeypatch) -> None:
     assert "rendered surface odylith/radar/radar.html does not load backlog-payload.v1.js" in verdict.issues
 
 
-def test_main_includes_rescue_smoke_by_default(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_main_requires_browser_surface_proof_by_default(monkeypatch, tmp_path: Path, capsys) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
@@ -1261,8 +1324,8 @@ def test_main_includes_rescue_smoke_by_default(monkeypatch, tmp_path: Path, caps
     payload = json.loads(capsys.readouterr().out)
     persisted = json.loads((tmp_path / "matrix-proof.json").read_text(encoding="utf-8"))
 
-    assert exit_code == 0
-    assert payload["status"] == "passed"
+    assert exit_code == 1
+    assert payload["status"] == "failed"
     assert payload == persisted
     assert payload["proof_scope"]["standard_path"] == "real_installed_greenfield_post_confirm_quality_matrix"
     assert payload["proof_scope"]["rescue_path"] == "synthetic_typed_probe_wiring_only"
@@ -1271,6 +1334,32 @@ def test_main_includes_rescue_smoke_by_default(monkeypatch, tmp_path: Path, caps
     assert payload["rescue_smoke"]["proof_scope"] == "synthetic_typed_probe_wiring_only"
     assert payload["rescue_smoke"]["natural_rescue_quality_proven"] is False
     assert "engine_manifest" not in payload["rescue_smoke"]
+    assert payload["browser_surface_proof"]["status"] == "skipped"
+
+
+def test_main_allows_skipped_browser_surface_proof_only_for_debug(monkeypatch, tmp_path: Path, capsys) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (_passing_matrix_result(module),))
+    monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+
+    exit_code = module.main(
+        [
+            "--dist-dir",
+            str(dist_dir),
+            "--version",
+            "0.1.15",
+            "--temp-parent",
+            str(tmp_path),
+            "--allow-skipped-browser-proof",
+            "--json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload["status"] == "passed"
     assert payload["browser_surface_proof"]["status"] == "skipped"
 
 

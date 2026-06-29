@@ -46,6 +46,36 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-29: Fixed three generic greenfield post-confirm failure classes. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043, D-045)
+  Fresh installed variance exposed three general platform defects. First-path
+  carried-subject parsing no
+  longer lets actorless action chains invent a subject from a later verb-like
+  object; only explicit subject evidence can seed sibling action carry.
+  Actor-role nouns now live in `greenfield_actor_roles.py` so recovery,
+  fragment filtering, and actor signatures share one custody source instead of
+  drifting independently. Release-scope classification now separates
+  affirmative proof/evidence support from negative proof-boundary tails, so a
+  proof ledger remains a supporting release component unless an explicit
+  stronger exclusion applies. Focused proof passed 95 tests, the general
+  artifact-quality suite passed 52 tests, and six fresh source-local
+  simulations across unrelated domains completed under 23s with hard 10/10
+  scores, complete governed counts, zero issues, and temp cleanup. Installed
+  consumer-lane proof from a rebuilt dist remains required before release
+  readiness.
+- 2026-06-29: Reopened installed release readiness after fresh recursive variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`)
+  A fresh recursive variance pass against
+  `odylith-local-release-0.1.15-13b796e9` ran ten
+  non-reused installed projects produced seven passes and three failures:
+  public-infrastructure domain readback missed one required anchor, a telescope
+  calibration prompt failed before governed writes on actor-led finite action
+  inside user-can clauses, and carbon-removal MRV generated only two Registry
+  specs after governed writes. Independent scoring review also found remaining
+  proof-custody debt: domain expertise must come from rendered/governed
+  artifacts rather than internal runtime JSON, operator usefulness must require
+  real project-brief/next-step artifacts instead of custody-file counts,
+  count-only dimensions must not masquerade as independent quality evidence,
+  and the Python matrix entrypoint must fail closed when browser proof is not
+  requested outside explicit debug mode.
 - 2026-06-29: Kept installed release readiness blocked after fresh dist `odylith-local-release-0.1.15-e7bc3be3` exposed a generic first-path tail custody miss. The maintained thirteen-case installed matrix passed twelve standard cases at hard 10/10 and under 28s, but `security disclosure council` failed before governed writes in 12.96s because the package repetition gate saw the repeated object-list tail beginning `Affected partner review, embargo decisions, evidence custody, legal signoff, and public advisory release readiness...` as noncanonical. Domain Intelligence must preserve typed canonical projection custody for action-complement and object-list tails rendered without their lead action/object, then prove the rebuilt dist without disclosure/security vocabulary, regex allowlists, or weaker gates. Synthetic rescue smoke passed in 34.393s and temp matrix dirs were cleaned. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-207`, `CB-209`)
 - 2026-06-29: Follow-up source-local proof found a second quality miss after the tail-custody fix: `security disclosure council` governed create completed in 22.633s with 4 Radar records, 3 Registry specs, 6 Atlas sources, release/program records, and backlog-contract validation passing, but Project Brief persisted a coding-readiness gate clipped to `external vulnerability reports, affected.`. The brief owner now treats clipped-prefix summaries as incomplete unless they end on a sentence-safe or comma-list-safe boundary, dropping orphaned comma-list tails before terminal punctuation. Focused Project Brief and live security-disclosure proof passed; rebuilt installed matrix proof remains required before release readiness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
 - 2026-06-29: Fixed the latest sparse-prompt post-confirm escape without weakening final gates or adding domain vocabulary. Actor recovery now treats leading finite action verbs such as `records`, `sees`, `reviews`, and `launches` as actorless action fragments instead of plural actor subjects; project-brief actor-choice copy uses neutral participant wording so category labels like teams/staff/operators do not echo into adjacent duplicate words; and the operator next-step overlap gate compares prompts against sanctioned first-path projection fields instead of flattened contract metadata, persistence text, and deferred-scope prose. The new sparse regressions live in their own focused test module instead of growing the oversized slop-regression file. Focused sparse/slop checks passed, the full live-simulation regression file passed 14 tests in 188.05s, and a source-local `model lab notebook` CLI create completed in 19.232s with standard-tier fixpoint time of 5.149s, zero manifest issues, validation-gate pass, 4 Radar workstreams, 3 rendered Registry specs, 6 rendered Atlas sources, project-brief/operator-next-step previews, governed writes, and temp cleanup. Installed release readiness remains unclaimed until a rebuilt dist reruns the high-variance matrix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)

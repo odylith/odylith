@@ -45,6 +45,7 @@ from odylith.runtime.domain_intelligence.artifact_tribunal_actors import (  # no
     tribunal_visible_actor_quality_issues,
 )
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_text import text_values  # noqa: E402
 from odylith.runtime.artifact_quality.greenfield_package_quality import (  # noqa: E402
     greenfield_rendered_package_quality_issues,
 )
@@ -58,7 +59,6 @@ POST_CONFIRM_BUDGET_SECONDS = 60.0
 COMMAND_TIMEOUT_SECONDS = 300
 QUALITY_MATRIX_VERSION = "greenfield-post-confirm-installed-matrix-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
-GENERATED_TEXT_SUFFIXES = {".html", ".js", ".json", ".jsonl", ".md", ".mmd"}
 NON_ARTIFACT_MARKDOWN_FILES = {"AGENTS.md", "CLAUDE.md", "INDEX.md", "README.md"}
 
 
@@ -329,8 +329,6 @@ def _rescue_smoke_result(
         manifest=_as_mapping(create_payload.get("post_confirm_quality_manifest")),
         create_returncode=create_returncode,
     )
-
-
 def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, Any]) -> Any:
     """Collect generated records in the shape understood by artifact quality gates."""
 
@@ -363,8 +361,6 @@ def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, An
         release_assignment_result=_as_mapping(create_payload.get("release_target")),
         release_workstream_ids=tuple(_release_workstream_ids(create_payload)),
     )
-
-
 def collect_artifact_counts(
     *,
     repo_root: Path,
@@ -581,25 +577,24 @@ def _read_atlas_sources(repo_root: Path) -> dict[str, str]:
 
 
 def _project_brief_record_count(*, repo_root: Path, package: Any) -> int:
+    del repo_root
     count = 0
     if _as_mapping(getattr(package, "project_brief_preview", None)):
-        count += 1
-    if _nonempty(repo_root / "odylith/runtime/source/accepted-project.v1.json"):
-        count += 1
-    if _nonempty(repo_root / ".odylith/runtime/greenfield/confirmed-intent.json"):
         count += 1
     return count
 
 
 def _generated_text(*, repo_root: Path, package: Any) -> str:
+    del repo_root
     chunks: list[str] = []
     chunks.extend(_as_mapping(package.backlog_result.get("idea_files")).values())
     chunks.append(str(package.backlog_result.get("backlog_index_text") or ""))
     chunks.extend(_as_mapping(package.rendered_component_specs).values())
     chunks.extend(_as_mapping(package.rendered_atlas_sources).values())
-    for path in (repo_root / "odylith").rglob("*") if (repo_root / "odylith").exists() else ():
-        if path.is_file() and path.suffix in GENERATED_TEXT_SUFFIXES and path.name not in NON_ARTIFACT_MARKDOWN_FILES:
-            chunks.append(_read_text(path))
+    chunks.extend(text_values(getattr(package, "project_brief_preview", None)))
+    chunks.extend(text_values(getattr(package, "next_steps_preview", None)))
+    for row in _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts")):
+        chunks.extend(text_values(row))
     return "\n".join(str(item) for item in chunks).casefold()
 
 
@@ -1130,6 +1125,11 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         action="store_true",
         help="Run headless generated browser state proof against every generated matrix repo.",
     )
+    parser.add_argument(
+        "--allow-skipped-browser-proof",
+        action="store_true",
+        help="Allow omitted browser proof for local debugging only; this is not release proof.",
+    )
     parser.add_argument("--json", action="store_true", dest="json_output")
     parser.add_argument(
         "--output-json",
@@ -1157,10 +1157,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         else None
     )
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
+    browser_status = str(browser_proof.get("status") or "").strip()
+    browser_passed = browser_status == "passed" or (
+        browser_status == "skipped" and bool(args.allow_skipped_browser_proof)
+    )
     passed = (
         all(result.quality.passed for result in results)
         and (rescue is None or rescue.passed)
-        and browser_proof.get("status") != "failed"
+        and browser_passed
     )
     payload = {
         "version": QUALITY_MATRIX_VERSION,
@@ -1188,7 +1192,5 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_human_summary(results)
         _print_rescue_summary(rescue)
     return 0 if payload["status"] == "passed" else 1
-
-
 if __name__ == "__main__":
     raise SystemExit(main())

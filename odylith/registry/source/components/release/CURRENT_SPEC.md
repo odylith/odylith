@@ -514,6 +514,24 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-06-29: Hardened the greenfield installed-matrix scorer. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043)
+  Fresh variance exposed shallow 10/10 evidence. Domain readback now uses rendered
+  public artifacts rather than runtime custody JSON or accepted-project source
+  launch text, operator usefulness requires real project-brief and next-step
+  preview artifacts rather than custody-file counts, and the Python matrix
+  entrypoint fails when browser proof is skipped unless an explicit debug flag
+  allows that posture. Focused release-matrix proof passed, six source-local
+  high-variance creates scored hard 10/10 under 23s, and release readiness
+  remains blocked until the rebuilt installable dist reruns the installed
+  matrix with browser proof.
+- 2026-06-29: Reopened greenfield release readiness after fresh installed variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`)
+  Despite the earlier `13b796e9` installed matrix pass, a fresh ten-case installed variance run
+  against the same dist failed three cases and cleaned its temp root: one
+  domain-readback anchor miss after governed writes, one no-write semantic-slop
+  blocker, and one Registry under-provisioning failure after governed writes.
+  Release proof must now harden the matrix scorer so public/rendered artifacts,
+  real project-brief/next-step evidence, distinct governance dimensions, and
+  mandatory browser proof are required before a 10/10 claim.
 - 2026-06-29: Release proof correctly failed the fresh `odylith-local-release-0.1.15-3d13f434` installed matrix. Twelve of thirteen standard greenfield cases passed with hard 10/10 scores and browser proof, and synthetic wiring-only rescue smoke passed in 33.936s, but sparse disclosure confirmation failed the release gate with score 0/10 because generated governance depth and domain-anchor coverage were insufficient. Release remains blocked until a rebuilt dist passes the maintained installed matrix from the current commit; older passing dist evidence cannot be reused as release readiness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
 - 2026-05-03: Added the v0.1.14 release-planning target and made `next` point to `release-0-1-14`; B-141 and B-142 are active there, while B-140 is recorded as completed release history for migration-observer proof. Greenfield project proposals now default omitted consumer project release selectors to `0.0.1` so first-release planning does not borrow Odylith's own `next` alias. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-03-27: Added a first-class maintainer release subsystem with sticky version sessions, stable semver auto-tagging, canonical commit-bound release dispatch, and a dedicated release runbook. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))

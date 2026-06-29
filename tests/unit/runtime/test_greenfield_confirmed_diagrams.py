@@ -243,8 +243,8 @@ def test_confirmed_diagrams_keep_deferred_scope_and_proof_record_labels_readable
     rendered = json.dumps(rows)
     status_component = next(row for row in boundary["components"] if row["name"] == "Public Coordination Status View Service")
 
-    assert "notification automation or<br/>external updates" in boundary["mermaid_source"]
-    assert "notification automation or<br/>external updates" in proof_review["mermaid_source"]
+    assert "notification automation<br/>or external updates" in boundary["mermaid_source"]
+    assert "notification automation<br/>or external updates" in proof_review["mermaid_source"]
     assert "or receives" not in rendered
     assert status_component["description"].startswith("Presents public coordination status")
     assert "Owns product responsibility to present" not in rendered

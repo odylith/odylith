@@ -12,6 +12,7 @@ from odylith.runtime.common.prose_grammar import (
     looks_like_action_clause,
     looks_like_finite_action,
 )
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE, clean_first_path_text
@@ -544,7 +545,7 @@ def modal_action_fragment(value: str) -> str:
 def _looks_like_actor_prefix(value: str) -> bool:
     text = clean_first_path_text(value).strip(" .")
     terms = {term.casefold() for term in label_terms(value)}
-    return bool(terms and len(terms) <= 6 and (not terms & _SYSTEM_SUBJECT_TERMS or _has_actor_role_word(text)))
+    return bool(terms and len(terms) <= 6 and (not terms & _SYSTEM_SUBJECT_TERMS or has_actor_role_word(text)))
 
 def _looks_like_actor_subject_prefix(value: str) -> bool:
     text = clean_first_path_text(value).strip(" .")
@@ -556,24 +557,20 @@ def _looks_like_actor_subject_prefix(value: str) -> bool:
         return False
     if re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", text, flags=re.IGNORECASE):
         return False
-    if _has_actor_role_word(text):
+    if has_actor_role_word(text):
         return True
     terms = [term.casefold() for term in label_terms(text)]
     return len(terms) == 1 and _looks_like_plural_actor_term(terms[0])
-
-def _has_actor_role_word(value: str) -> bool:
-    return bool(re.search(r"\b(?:actors?|applicants?|coordinators?|customers?|inspectors?|leads?|liaisons?|makers?|managers?|officers?|operators?|owners?|participants?|people|persons?|planners?|preparers?|recipients?|requesters?|reviewers?|supervisors?|travelers?|users?)\b", value, flags=re.IGNORECASE))
-
 
 def _has_unowned_action_tail(value: str) -> bool:
     words = [word.casefold().strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
     for index in range(1, len(words)):
         token = words[index]
-        if _has_actor_role_word(token):
+        if has_actor_role_word(token):
             continue
         if not looks_like_action_clause(f"{token} placeholder"):
             continue
-        if _has_actor_role_word(" ".join(words[index + 1 :])):
+        if has_actor_role_word(" ".join(words[index + 1 :])):
             continue
         return True
     return False
