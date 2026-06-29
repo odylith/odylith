@@ -8,7 +8,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-28",
+      "last_reviewed_utc": "2026-06-29",
       "source_mmd": "odylith/atlas/source/odylith-product-governance-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-governance-loop.svg",
       "source_png": "odylith/atlas/source/odylith-product-governance-loop.png",
@@ -90,7 +90,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "19ab9190f680a1d9a59ec3ccf50e8ebafbb4479e5bdd7ef3720ba261f0bef66f",
-        "odylith/radar/source/INDEX.md": "6c0c187374058429028c0e4eb1c13401e1eb2bf76755e50e12ac76a67dcc6bf1",
+        "odylith/radar/source/INDEX.md": "768ba173748e458e984804c36b69f88570f56b3eb56ac9053474bb4ba3081083",
         "odylith/technical-plans/INDEX.md": "6a7a4d6de0e4efad4bea49962ca4873b45a836c87eba1072d701cf44bd5a327d"
       }
     },
@@ -4302,10 +4302,10 @@
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "57664efd8a6b44694eb2157bc99405c7bf261808b3becfa920fa2049dadc180f",
         "scripts/release/greenfield_post_confirm_matrix.py": "2db1fa2d3e650db2be52b13cf45219a0606aa0895ac7f3657b58ed4ca8404b3b",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "267510c0653b8d81922b0112e01ccf25dd0f73a8fba88ec08f8b3b1838404eb9",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "237f944281e2fef94372ec9aedf007e03e940ffec51219ea1f162cebd8e2cd62",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "19f07ddfda21d61fb60009938c12791137ed0d1690637b83361c98629aac9aea",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "15f32619281bb347c5a847b9e4db58f170c6d3061edd6922e077f67da8755ca2"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "571e49bd55b56ff96485eff1ea6b659e046ed244d4f25a92ccd44f482aff0fee"
       },
       "render_source_fingerprint": "12ccf23d9e0705830a0ea50e5321bb72529c326dcc550da77bfee710ca1b0040"
     },

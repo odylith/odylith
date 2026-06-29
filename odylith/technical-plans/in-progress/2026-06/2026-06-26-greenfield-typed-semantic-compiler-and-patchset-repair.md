@@ -1405,10 +1405,24 @@ vocabulary, or degraded packages.
       sentence-safe or comma-list-safe boundary, and drops orphaned comma-list
       tails before adding terminal punctuation. Focused Project Brief proof
       passed 12 tests including the retained security-disclosure prompt.
-- [ ] Rerun source-local CLI create for `security disclosure council`, assert the
+- [x] Rerun source-local CLI create for `security disclosure council`, assert the
       persisted Project Brief has no clipped readiness gate, delete the temp
       repo, then rebuild the installable dist and rerun the installed
       thirteen-case matrix plus synthetic rescue smoke. Do not claim release
       readiness until installed proof is green with complete governed writes,
       hard 10/10 standard scores, browser proof, zero quality issues, and temp
       cleanup.
+      Completed proof on 2026-06-29: source-local `security disclosure council`
+      replay completed governed writes in 22.5006s after the brief clipping fix
+      and persisted no `reports, affected.` readiness tail. Fresh local release
+      dist `odylith-local-release-0.1.15-13b796e9` passed local release smoke
+      and the maintained thirteen-case installed matrix with browser proof for
+      every generated repo. Standard creates finished in 22.477-26.930s, every
+      case wrote complete Radar, Registry, Atlas, Project Brief, release,
+      program, rendered-surface, traceability, and Project implementation
+      prompt evidence, every hard matrix dimension scored 10/10, all PM,
+      architect, engineer, and domain-expert lenses passed, and the matrix temp
+      root was cleaned. Synthetic rescue wiring smoke passed in 34.261s; natural
+      host-model semantic rescue quality remains a separate proof obligation
+      because this proof uses a typed rescue probe rather than an organically
+      triggered model repair.

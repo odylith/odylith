@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-06-29T10:21:27Z",
+  "generated_utc": "2026-06-29T10:49:10Z",
   "release_summary": {
     "catalog": [
       {
@@ -297,16 +297,16 @@
           "created": "2026-06-26",
           "updated": "2026-06-29",
           "all_total_tasks": 110,
-          "all_done_tasks": 89,
+          "all_done_tasks": 90,
           "total_tasks": 102,
-          "done_tasks": 89,
-          "progress_ratio": 0.8725,
+          "done_tasks": 90,
+          "progress_ratio": 0.8824,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.8725,
-          "display_progress_label": "87% progress",
+          "display_progress_ratio": 0.8824,
+          "display_progress_label": "88% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 89/102",
+          "checklist_label": "Checklist 90/102",
           "next_tasks": [
             "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
             "Replace rendered-prose package repair with semantic or plan patch",
@@ -318,19 +318,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 11,
-            "local_change_count": 6,
-            "file_touch_count": 202
+            "commit_count": 12,
+            "local_change_count": 2,
+            "file_touch_count": 203
           },
           "48h": {
             "commit_count": 24,
-            "local_change_count": 6,
-            "file_touch_count": 304
+            "local_change_count": 2,
+            "file_touch_count": 302
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-29T03:14:39-07:00",
+          "last_activity_iso": "2026-06-29T03:48:59-07:00",
           "age_days": 3,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -753,19 +753,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 9,
+            "local_change_count": 0,
+            "file_touch_count": 194
           },
           "48h": {
-            "commit_count": 17,
-            "local_change_count": 1,
-            "file_touch_count": 243
+            "commit_count": 18,
+            "local_change_count": 0,
+            "file_touch_count": 244
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-06-29T03:09:12-07:00",
+          "last_activity_iso": "2026-06-29T03:24:12-07:00",
           "age_days": 80,
           "eta_days": null,
           "eta_confidence": "low"
@@ -924,19 +924,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 9,
+            "local_change_count": 0,
+            "file_touch_count": 194
           },
           "48h": {
-            "commit_count": 17,
-            "local_change_count": 1,
-            "file_touch_count": 239
+            "commit_count": 18,
+            "local_change_count": 0,
+            "file_touch_count": 240
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-06-29T03:09:12-07:00",
+          "last_activity_iso": "2026-06-29T03:24:12-07:00",
           "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1096,19 +1096,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 9,
+            "local_change_count": 0,
+            "file_touch_count": 194
           },
           "48h": {
-            "commit_count": 17,
-            "local_change_count": 1,
-            "file_touch_count": 243
+            "commit_count": 18,
+            "local_change_count": 0,
+            "file_touch_count": 244
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-06-29T03:09:12-07:00",
+          "last_activity_iso": "2026-06-29T03:24:12-07:00",
           "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1270,19 +1270,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 9,
+            "local_change_count": 0,
+            "file_touch_count": 194
           },
           "48h": {
-            "commit_count": 17,
-            "local_change_count": 1,
-            "file_touch_count": 243
+            "commit_count": 18,
+            "local_change_count": 0,
+            "file_touch_count": 244
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-06-29T03:09:12-07:00",
+          "last_activity_iso": "2026-06-29T03:24:12-07:00",
           "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -29739,16 +29739,16 @@
           "created": "2026-06-26",
           "updated": "2026-06-29",
           "all_total_tasks": 110,
-          "all_done_tasks": 89,
+          "all_done_tasks": 90,
           "total_tasks": 102,
-          "done_tasks": 89,
-          "progress_ratio": 0.8725,
+          "done_tasks": 90,
+          "progress_ratio": 0.8824,
           "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.8725,
-          "display_progress_label": "87% progress",
+          "display_progress_ratio": 0.8824,
+          "display_progress_label": "88% progress",
           "display_progress_state": "percent",
           "progress_classification": "tracked",
-          "checklist_label": "Checklist 89/102",
+          "checklist_label": "Checklist 90/102",
           "next_tasks": [
             "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
             "Replace rendered-prose package repair with semantic or plan patch",
@@ -29760,19 +29760,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 11,
-            "local_change_count": 6,
-            "file_touch_count": 202
+            "commit_count": 12,
+            "local_change_count": 2,
+            "file_touch_count": 203
           },
           "48h": {
             "commit_count": 24,
-            "local_change_count": 6,
-            "file_touch_count": 304
+            "local_change_count": 2,
+            "file_touch_count": 302
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-29T03:14:39-07:00",
+          "last_activity_iso": "2026-06-29T03:48:59-07:00",
           "age_days": 3,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -30195,19 +30195,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 9,
+            "local_change_count": 0,
+            "file_touch_count": 194
           },
           "48h": {
-            "commit_count": 17,
-            "local_change_count": 1,
-            "file_touch_count": 243
+            "commit_count": 18,
+            "local_change_count": 0,
+            "file_touch_count": 244
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-06-29T03:09:12-07:00",
+          "last_activity_iso": "2026-06-29T03:24:12-07:00",
           "age_days": 80,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30366,19 +30366,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 9,
+            "local_change_count": 0,
+            "file_touch_count": 194
           },
           "48h": {
-            "commit_count": 17,
-            "local_change_count": 1,
-            "file_touch_count": 239
+            "commit_count": 18,
+            "local_change_count": 0,
+            "file_touch_count": 240
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-06-29T03:09:12-07:00",
+          "last_activity_iso": "2026-06-29T03:24:12-07:00",
           "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30538,19 +30538,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 9,
+            "local_change_count": 0,
+            "file_touch_count": 194
           },
           "48h": {
-            "commit_count": 17,
-            "local_change_count": 1,
-            "file_touch_count": 243
+            "commit_count": 18,
+            "local_change_count": 0,
+            "file_touch_count": 244
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-06-29T03:09:12-07:00",
+          "last_activity_iso": "2026-06-29T03:24:12-07:00",
           "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30712,19 +30712,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 8,
-            "local_change_count": 1,
-            "file_touch_count": 192
+            "commit_count": 9,
+            "local_change_count": 0,
+            "file_touch_count": 194
           },
           "48h": {
-            "commit_count": 17,
-            "local_change_count": 1,
-            "file_touch_count": 243
+            "commit_count": 18,
+            "local_change_count": 0,
+            "file_touch_count": 244
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-06-29T03:09:12-07:00",
+          "last_activity_iso": "2026-06-29T03:24:12-07:00",
           "age_days": 81,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -59182,16 +59182,16 @@
         "created": "2026-06-26",
         "updated": "2026-06-29",
         "all_total_tasks": 110,
-        "all_done_tasks": 89,
+        "all_done_tasks": 90,
         "total_tasks": 102,
-        "done_tasks": 89,
-        "progress_ratio": 0.8725,
+        "done_tasks": 90,
+        "progress_ratio": 0.8824,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.8725,
-        "display_progress_label": "87% progress",
+        "display_progress_ratio": 0.8824,
+        "display_progress_label": "88% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 89/102",
+        "checklist_label": "Checklist 90/102",
         "next_tasks": [
           "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
           "Replace rendered-prose package repair with semantic or plan patch",
@@ -59203,19 +59203,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 11,
-          "local_change_count": 6,
-          "file_touch_count": 202
+          "commit_count": 12,
+          "local_change_count": 2,
+          "file_touch_count": 203
         },
         "48h": {
           "commit_count": 24,
-          "local_change_count": 6,
-          "file_touch_count": 304
+          "local_change_count": 2,
+          "file_touch_count": 302
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-29T03:14:39-07:00",
+        "last_activity_iso": "2026-06-29T03:48:59-07:00",
         "age_days": 3,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -59638,19 +59638,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 194
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 243
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 244
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-06-29T03:09:12-07:00",
+        "last_activity_iso": "2026-06-29T03:24:12-07:00",
         "age_days": 80,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59809,19 +59809,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 194
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 239
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 240
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-06-29T03:09:12-07:00",
+        "last_activity_iso": "2026-06-29T03:24:12-07:00",
         "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -59981,19 +59981,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 194
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 243
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 244
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-06-29T03:09:12-07:00",
+        "last_activity_iso": "2026-06-29T03:24:12-07:00",
         "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60155,19 +60155,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 194
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 243
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 244
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-06-29T03:09:12-07:00",
+        "last_activity_iso": "2026-06-29T03:24:12-07:00",
         "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -90607,19 +90607,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 194
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 243
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 244
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-06-29T03:09:12-07:00",
+        "last_activity_iso": "2026-06-29T03:24:12-07:00",
         "age_days": 80,
         "eta_days": null,
         "eta_confidence": "low"
@@ -93312,16 +93312,16 @@
         "created": "2026-06-26",
         "updated": "2026-06-29",
         "all_total_tasks": 110,
-        "all_done_tasks": 89,
+        "all_done_tasks": 90,
         "total_tasks": 102,
-        "done_tasks": 89,
-        "progress_ratio": 0.8725,
+        "done_tasks": 90,
+        "progress_ratio": 0.8824,
         "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.8725,
-        "display_progress_label": "87% progress",
+        "display_progress_ratio": 0.8824,
+        "display_progress_label": "88% progress",
         "display_progress_state": "percent",
         "progress_classification": "tracked",
-        "checklist_label": "Checklist 89/102",
+        "checklist_label": "Checklist 90/102",
         "next_tasks": [
           "Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,",
           "Replace rendered-prose package repair with semantic or plan patch",
@@ -93333,19 +93333,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 11,
-          "local_change_count": 6,
-          "file_touch_count": 202
+          "commit_count": 12,
+          "local_change_count": 2,
+          "file_touch_count": 203
         },
         "48h": {
           "commit_count": 24,
-          "local_change_count": 6,
-          "file_touch_count": 304
+          "local_change_count": 2,
+          "file_touch_count": 302
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-29T03:14:39-07:00",
+        "last_activity_iso": "2026-06-29T03:48:59-07:00",
         "age_days": 3,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -94251,19 +94251,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 194
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 239
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 240
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-06-29T03:09:12-07:00",
+        "last_activity_iso": "2026-06-29T03:24:12-07:00",
         "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -102484,19 +102484,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 194
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 243
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 244
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-06-29T03:09:12-07:00",
+        "last_activity_iso": "2026-06-29T03:24:12-07:00",
         "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -103292,19 +103292,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 8,
-          "local_change_count": 1,
-          "file_touch_count": 192
+          "commit_count": 9,
+          "local_change_count": 0,
+          "file_touch_count": 194
         },
         "48h": {
-          "commit_count": 17,
-          "local_change_count": 1,
-          "file_touch_count": 243
+          "commit_count": 18,
+          "local_change_count": 0,
+          "file_touch_count": 244
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-06-29T03:09:12-07:00",
+        "last_activity_iso": "2026-06-29T03:24:12-07:00",
         "age_days": 81,
         "eta_days": 0,
         "eta_confidence": "high"

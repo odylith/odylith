@@ -1166,6 +1166,13 @@ This section captures synchronized requirement and contract signals derived from
   of a longer accepted sentence, the brief owner must drop orphaned list tails
   and persist a grammatical boundary in `project-brief.v1.md`; package-create
   success alone is not sufficient proof of premium Project Brief quality.
+- Installed release proof for this contract must include persisted readback, not
+  producer manifests alone. Dist `odylith-local-release-0.1.15-13b796e9`
+  passed local release smoke and the maintained thirteen-case installed matrix
+  in 22.477-26.930s per standard create with hard 10/10 scores, browser proof,
+  complete governed records, Project implementation prompt evidence, and clean
+  temp-root cleanup; synthetic rescue wiring passed in 34.261s but does not
+  prove organically triggered host-model semantic rescue quality.
 
 ## Research Basis
 
