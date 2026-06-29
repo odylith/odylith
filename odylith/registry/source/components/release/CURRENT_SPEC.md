@@ -532,6 +532,15 @@ This section captures synchronized requirement and contract signals derived from
   synthetic typed-probe rescue wiring smoke passing in 33.430s. This proves the
   standard installed release matrix for this checkpoint; it does not convert
   the synthetic rescue smoke into natural host-model semantic rescue proof.
+- 2026-06-29: Reopened installed release readiness after a fresh twelve-case adversarial matrix against `a4ede761`. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043, D-045)
+  Eleven non-reused cases passed with hard 10/10 scores and browser proof, but
+  one valid proof-action list failed before governed writes on an over-broad
+  gerund actor-role splice finding. Source now fixes the detector with shared
+  actor-role head custody and clause-local scanning, removes mechanical
+  `changes it` copy from generated state-boundary artifacts, and proves the
+  exact source-local repro in 19.192s with complete records and a passed
+  manifest. Release remains blocked until a rebuilt installable dist reruns the
+  adversarial installed matrix and browser proof from the current commit.
 - 2026-06-29: Reopened greenfield release readiness after fresh installed variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`)
   Despite the earlier `13b796e9` installed matrix pass, a fresh ten-case installed variance run
   against the same dist failed three cases and cleaned its temp root: one

@@ -12,6 +12,7 @@ from odylith.runtime.common.prose_grammar import gerund_action_verb
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
+from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -290,7 +291,13 @@ def _first_path_step_values(value: Any) -> list[str]:
     raw = normalize_string(value)
     if not raw:
         return []
-    return [step for step in first_path_model(raw).steps if normalize_string(step)]
+    return list(
+        unique_text(
+            step
+            for step in (*first_path_model(raw).steps, *sequence_event_steps(raw))
+            if normalize_string(step)
+        )
+    )
 
 
 def _canonical_projection_variants(

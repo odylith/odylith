@@ -388,7 +388,10 @@ def _carry_subject_across_parts(values: list[str]) -> list[str]:
         elif current_action in {"display", "show", "view"} and starts_with_result_object_modifier(core):
             rows.append(_result_object_step(core))
             continue
-        elif current_action and _looks_like_carried_object_fragment(core, has_connector=has_connector):
+        elif current_action and (
+            _looks_like_carried_object_fragment(core, has_connector=has_connector)
+            or _looks_like_short_nonfinite_object_tail(core)
+        ):
             if rows:
                 rows[-1] = _append_carried_object_fragment(rows[-1], core, has_connector=has_connector)
                 continue
@@ -464,13 +467,25 @@ def _looks_like_carried_object_fragment(value: str, *, has_connector: bool) -> b
         return True
     if _looks_like_coordinated_object_tail(words):
         return True
-    if _starts_with_subject_action_clause(text):
+    if not has_connector and _starts_with_subject_action_clause(text):
         return False
     if looks_like_finite_action(text):
         return False
     if has_connector and _connector_core_starts_action_clause(words):
         return False
     if looks_like_action_clause(text) and not has_connector:
+        return False
+    return True
+
+
+def _looks_like_short_nonfinite_object_tail(value: str) -> bool:
+    text = _compact_text(value).strip(" .")
+    terms = label_terms(text)
+    if len(terms) < 2 or len(terms) > 6:
+        return False
+    if leading_subject_prefix(text):
+        return False
+    if looks_like_finite_action(text):
         return False
     return True
 

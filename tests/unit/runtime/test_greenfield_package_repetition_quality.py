@@ -281,6 +281,47 @@ def test_repetition_gate_allows_action_complement_tail_from_first_path_custody()
     assert "repeats noncanonical prose" not in "\n".join(issues)
 
 
+def test_repetition_gate_allows_sequence_step_tail_projection_from_first_path_custody() -> None:
+    raw_path = (
+        "A source coordinator creates a draft request, attaches subject identity and required request context, "
+        "validates uploaded documents, sends the packet to a destination team, sees received status, "
+        "handles an accept, decline, or more-info request, schedules the request when accepted, "
+        "and reviews the completed status history."
+    )
+    required_context_step = "A source coordinator attaches subject identity, required request context"
+    request_decision_step = "A source coordinator handles an accept, decline and more-info request"
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {"state_object": "Request handoff record"},
+                "first_path_contract": {
+                    "raw_path": raw_path,
+                    "events": [{"text": raw_path}],
+                },
+            }
+        },
+        backlog_result={
+            "idea_files": {
+                "B-001.md": f"## First path\n- {required_context_step}.\n",
+                "B-002.md": f"## First path\n- {request_decision_step}.\n",
+            }
+        },
+        rendered_component_specs={
+            "request-lifecycle.md": (
+                f"## Successful Path Evidence\n- {required_context_step}.\n"
+                f"- {request_decision_step}.\n"
+            ),
+        },
+        rendered_atlas_sources={},
+        project_brief_preview={"first_path": f"{required_context_step}. {request_decision_step}."},
+        next_steps_preview={"implementation_prompt": f"{required_context_step}. {request_decision_step}."},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" not in "\n".join(issues)
+
+
 def test_repetition_gate_still_rejects_first_path_event_without_semantic_custody() -> None:
     event = "Publish a reviewed evacuation readiness state with accountable assignments"
     package = SimpleNamespace(

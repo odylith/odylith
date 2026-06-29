@@ -5,6 +5,7 @@ from pathlib import Path
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import (
     _proof_focus_summary,
     confirmed_backlog_rows,
+    confirmed_workstream_titles,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
     looks_mechanical_summary,
@@ -145,6 +146,32 @@ def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generi
     assert "scope scope" not in rendered.casefold()
     source = BACKLOG_TEXT_MODEL_PATH.read_text(encoding="utf-8")
     assert 'replace("scope scope"' not in source
+
+
+def test_confirmed_workstream_titles_compact_long_state_changer_without_pronoun_tail() -> None:
+    components = [
+        {"label": "Warehouse Robot Near-miss Investigation Workspace Intake Register Service"},
+        {"label": "Warehouse Robot Near-miss Investigation Workspace Review Workspace"},
+        {"label": "Warehouse Robot Near-miss Investigation Workspace Proof Ledger"},
+    ]
+
+    _workflow, boundary, _proof = confirmed_workstream_titles(
+        label="Warehouse Robot Near-miss",
+        components=components,
+        internal_systems=[],
+        first_path=(
+            "Safety leads capture incident telemetry. Safety leads preserve operator statements. "
+            "Safety leads map zone controls. Safety leads route maintenance review. "
+            "Safety leads publish restart readiness proof before robots return to service."
+        ),
+        state_object="A maintenance review record tracks actor, source input, status, owner, blocker, and handoff.",
+        proof_boundary="Release succeeds when one restart readiness path is reviewable.",
+        human_actors=["Safety Leads"],
+    )
+
+    assert boundary == "Keep Maintenance Review Record Clear During Review Workflow"
+    assert "Changes It" not in boundary
+    assert "Investigation Workspace Review Workspace" not in boundary
 
 
 def test_greenfield_quality_gate_allows_product_evidence_packet_language() -> None:

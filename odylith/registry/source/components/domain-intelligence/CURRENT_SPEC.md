@@ -24,24 +24,24 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Extended canonical first-path projection custody to sequence-step variants after the request-handoff replay exposed repeated noncanonical prose blockers; focused package/sequence proof passed and live source-local create wrote 4 Radar, 3 Registry, 6 Atlas records in 19.609s with zero issues and no Or-fragment copy.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py +2 more
+- **2026-06-29 · Implementation:** Fixed proof-review sequence projection failure: connector-led and short non-finite object tails now stay attached to the prior first-path action, preventing Project Brief fragments such as Required request context and Or more-info request; focused sequence/create proof passed 5 tests in 50.46s.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py +2 more
+- **2026-06-29 · Implementation:** Live source-local warehouse near-miss replay verified the staged gerund actor-role and state-boundary title fix: confirmed create wrote 4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams in 20.872s with zero manifest issues and no changes-it title copy; temp repo was deleted after proof.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py +2 more
+- **2026-06-29 · Implementation:** Source-fixed adversarial greenfield gerund actor-role false positive and state-boundary pronoun-tail copy: focused tests passed and exact source-local replay wrote 4 Radar, 3 Registry, 6 Atlas records with zero manifest issues in 19.192s; rebuilt installed adversarial matrix remains required.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +4 more
 - **2026-06-29 · Implementation:** Fixed the sparse model-lab post-confirm source escape: finite action leads stay action fragments, actor-choice copy avoids category echo, next-step overlap uses sanctioned first-path projections, focused regressions passed, and source CLI create wrote governed records in 19.708s; rebuilt installed matrix proof remains required.
   - Scope: B-142
   - Evidence: odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +4 more
 - **2026-06-28 · Implementation:** B-142 canonical projection repetition custody now preserves typed fact provenance, release matrix keeps failed-create blocker evidence, and focused source proof is green; installed release readiness still awaits rebuilt matrix proof.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +2 more
-- **2026-06-28 · Implementation:** Captured greenfield Tribunal actor provenance, persisted readback scoring, external-boundary semantic input, and simulation cleanup learning after clinical and biobank source-local false positives; source-local proof passed but installed release readiness remains unclaimed until rebuilt matrix proof.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +3 more
-- **2026-06-27 · Implementation:** Fresh local release odylith-local-release-0.1.15-7e548d40 passed release smoke and the installed greenfield matrix: eight standard cases scored 10/10 in 19.887-22.399s with zero issues, quantum passed in 21.296s, and rescue smoke passed in 26.587s as wiring proof.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +1 more
-- **2026-06-27 · Implementation:** Narrowed greenfield result-status and terminal-label repair after broad artifact-quality regressions: artifact-tail cleanup remains conservative, terminal Atlas semantic-result labels apply only to long clipping-risk wrappers, component kinds moved to a dedicated owner, and source proof passed 36 focused plus 61 artifact-quality tests.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +2 more
-- **2026-06-27 · Implementation:** Fixed packaged quantum post-confirm Atlas clipping by keeping result-state modifiers in semantic result language, separating result-status vocabulary from artifact-tail cleanup, and proving the retained source replay in 16.573s before rebuilt installed proof.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -70,6 +70,36 @@ This section captures synchronized requirement and contract signals derived from
   prompts, all expert lenses passing, and clean temp cleanup. Synthetic
   typed-probe rescue wiring smoke passed in 33.430s; natural host-model
   semantic rescue quality remains a separate proof class.
+- 2026-06-29: Reopened and source-fixed a fresh adversarial post-confirm proof failure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-043, D-045)
+  A non-reused twelve-case installed matrix against the `a4ede761` dist passed
+  eleven cases but failed one investigation/restart-readiness prompt before
+  governed writes in 30.707s because the gerund actor-role detector scanned
+  across a valid comma-separated proof-action list and treated an object noun
+  containing an actor-role word as an actor subject. The detector now scans
+  clause-local windows and requires the normalized prefix to end in a shared
+  actor-role head from `greenfield_actor_roles.py`; the true corrupted
+  `intaking coordinator records...` splice remains rejected. The same pass
+  removed mechanical `changes it` pronoun tails from state-boundary workstream
+  titles and SemanticModelIR persistence copy. Focused proof passed 18
+  prose-shape/backlog/semantic tests plus 10 affected semantic/source-launch
+  tests, and the exact source-local repro wrote 4 Radar workstreams, 3 Registry
+  specs, 6 Atlas drafts, and a passed manifest in 19.192s with no `changes it`
+  or review-workspace title slop. Installed release readiness remains
+  unclaimed until a rebuilt dist reruns the adversarial matrix.
+- 2026-06-29: Tightened first-path sequence projection after proof review found a Project Brief connector-splice failure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagrams: D-045)
+  `first_path_steps` preserved the accepted semantic path, but
+  `sequence_event_steps` expanded connector-led object tails into standalone
+  projection fragments, allowing `Required request context` and `Or more-info
+  request` to appear as separate steps and making the Project Brief emit
+  `handles an accept, decline. Or more-info request.` The sequence owner now
+  keeps connector-led and short non-finite object tails attached to the prior
+  action while preserving true finite actor/action splits. Canonical projection
+  facts now include sequence-step variants so the repetition gate treats their
+  sanctioned cross-surface reuse as typed first-path custody, not noncanonical
+  prose. Focused sequence/create proof passed 5 tests in 50.46s, focused
+  repetition/sequence proof passed, and the request-handoff source-local CLI
+  replay wrote 4 Radar records, 3 Registry specs, 6 Atlas diagrams, zero issues,
+  and no `. Or` fragment in 19.609s with temp cleanup.
 - 2026-06-29: Reopened installed release readiness after fresh recursive variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`)
   A fresh recursive variance pass against
   `odylith-local-release-0.1.15-13b796e9` ran ten

@@ -83,6 +83,26 @@ _ACTOR_LABEL_EVENT_TAILS = frozenset(
         "status",
     }
 )
+_STATE_BOUNDARY_FOCUS_WORDS = frozenset(
+    {
+        "approval",
+        "assessment",
+        "check",
+        "comparison",
+        "decision",
+        "eligibility",
+        "evaluation",
+        "quality",
+        "review",
+        "risk",
+        "rule",
+        "scoring",
+        "validation",
+    }
+)
+_STATE_BOUNDARY_GENERIC_NEIGHBORS = frozenset(
+    {"app", "component", "platform", "product", "service", "system", "tool", "workspace"}
+)
 
 
 def join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
@@ -151,6 +171,25 @@ def state_changer_label(labels: Sequence[str], *, state_label: str) -> str:
             continue
         return cleaned
     return ""
+
+
+def state_boundary_focus(value: str) -> str:
+    """Return a compact review/action focus for state-boundary workstream titles."""
+
+    text = sentence_fragment(value).strip(" .")
+    words = text.split()
+    if len(words) <= 5:
+        return text
+    lowered = [word.casefold().strip(".,;:") for word in words]
+    for index, token in enumerate(lowered):
+        if token not in _STATE_BOUNDARY_FOCUS_WORDS:
+            continue
+        start = index
+        if index > 0 and lowered[index - 1] not in _STATE_BOUNDARY_GENERIC_NEIGHBORS:
+            start = index - 1
+        focus = " ".join(words[start : index + 1]).strip(" .")
+        return f"{focus} workflow" if len(focus.split()) == 1 else focus
+    return text
 
 
 def lead_actor_label(values: list[str]) -> str:
@@ -624,6 +663,7 @@ __all__ = [
     "semantic_words",
     "sentence_fragment",
     "shares_product_terms",
+    "state_boundary_focus",
     "state_changer_label",
     "strip_actor_prefix",
     "supporting_actor_label",

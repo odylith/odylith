@@ -938,7 +938,7 @@ def test_semantic_model_persistence_uses_state_label_instead_of_raw_state_senten
     )
 
     assert model.first_path_contract.persistence == (
-        "the venue inspection record must remain replayable after the accepted first path changes it."
+        "the venue inspection record must remain replayable after the accepted first path updates the saved state."
     )
     assert ". must remain replayable" not in model.first_path_contract.persistence
 

@@ -7,41 +7,7 @@ import re
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
-
-_ACTOR_ROLE_TERMS = frozenset(
-    {
-        "actor",
-        "actors",
-        "applicant",
-        "applicants",
-        "coordinator",
-        "coordinators",
-        "customer",
-        "customers",
-        "lead",
-        "leads",
-        "manager",
-        "managers",
-        "officer",
-        "officers",
-        "operator",
-        "operators",
-        "owner",
-        "owners",
-        "participant",
-        "participants",
-        "person",
-        "people",
-        "planner",
-        "planners",
-        "reviewer",
-        "reviewers",
-        "staff",
-        "team",
-        "user",
-        "users",
-    }
-)
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import ACTOR_ROLE_NOUNS
 
 
 def actor_led_finite_action_inside_user_can(value: str) -> bool:
@@ -69,7 +35,7 @@ def gerund_actor_role_finite_action_splice(value: str) -> bool:
                 normalized_prefix = base_gerund_clause(prefix).strip(" .")
                 if not normalized_prefix or normalized_prefix.casefold() == prefix.casefold():
                     continue
-                if not _has_actor_role_term(normalized_prefix):
+                if not _has_actor_role_head(normalized_prefix):
                     continue
                 candidate = " ".join(window[split_index:]).strip(" .")
                 if _candidate_starts_with_stative_ownership(candidate):
@@ -95,11 +61,12 @@ def _word_tokens(value: str) -> list[str]:
 
 
 def _token_segments(value: str) -> list[list[str]]:
-    return [tokens for part in re.split(r"[.!?;:]+", str(value or "")) if (tokens := _word_tokens(part))]
+    return [tokens for part in re.split(r"[.!?;:,]+", str(value or "")) if (tokens := _word_tokens(part))]
 
 
-def _has_actor_role_term(value: str) -> bool:
-    return bool({token.casefold() for token in _word_tokens(value)} & _ACTOR_ROLE_TERMS)
+def _has_actor_role_head(value: str) -> bool:
+    tokens = [token.casefold() for token in _word_tokens(value)]
+    return bool(tokens and tokens[-1] in ACTOR_ROLE_NOUNS)
 
 
 def _candidate_starts_with_stative_ownership(value: str) -> bool:

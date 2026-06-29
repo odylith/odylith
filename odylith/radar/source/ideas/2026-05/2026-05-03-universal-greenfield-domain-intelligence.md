@@ -2268,6 +2268,42 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   0.12s`); wider greenfield artifact proof passed (`194 passed in 200.15s`);
   and confirmed-create performance proof passed (`1 passed in 11.01s`),
   recording a stricter historical standard-path timing snapshot.
+- 2026-06-29 adversarial installed variance reopened the post-confirm release
+  gate after the `a4ede761` installed matrix pass. A fresh twelve-case
+  installed matrix produced eleven hard 10/10 passes and one no-write failure
+  in 30.707s where a valid comma-separated proof-action list was rejected as a
+  gerundized actor-role splice. The source fix keeps the gate fail-closed while
+  moving detection closer to semantic custody: `greenfield_generated_prose_shape.py`
+  now scans clause-local windows and requires the normalized prefix to end in a
+  shared actor-role head from `greenfield_actor_roles.py`, preserving the true
+  `intaking coordinator records...` rejection without domain vocabulary or
+  whole-text prompt scanning. The same pass replaced mechanical state-boundary
+  titles of the form `... changes it` with compact review/action-focus titles
+  and changed SemanticModelIR persistence copy to avoid pronoun tails. Focused
+  proof passed 18 prose-shape/backlog/semantic tests and 10 affected semantic
+  and Project-prompt tests. Exact source-local replay of the failed prompt wrote
+  4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams, zero manifest issues,
+  and no `changes it` readback in 19.192s. The next release proof must rebuild
+  the installable dist and rerun the fresh adversarial installed matrix with
+  browser proof and temp cleanup before any release-readiness claim.
+- 2026-06-29 proof review found and fixed a related sequence-projection quality
+  miss before commit. An existing request-handoff create fixture failed the
+  Project Brief public-copy gate because `sequence_event_steps` expanded a
+  valid accepted first path into orphan fragments: `Required request context`
+  and `Or more-info request`, producing `handles an accept, decline. Or
+  more-info request.` in `project_brief.blueprint_sections.1.must_capture`.
+  The fix stays generic: connector-led and short non-finite object tails remain
+  attached to the previous action in the sequence-step owner, while true
+  finite actor/action clauses still split. The live replay then exposed the
+  next custody layer: those sequence-step variants must be typed canonical
+  first-path projection facts, or the package repetition gate correctly rejects
+  them as repeated noncanonical prose across surfaces. Canonical projection
+  facts now include sequence-step variants, focused repetition/sequence proof
+  passed, and the request-handoff source-local CLI replay wrote 4 Radar
+  records, 3 Registry specs, 6 Atlas diagrams, zero issues, and no `. Or`
+  fragment in 19.609s with temp cleanup. No-refresh unit fixtures now
+  explicitly bypass rendered-custody enforcement when they also bypass surface
+  refresh; live source-local create remains the real rendered-custody proof.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

@@ -85,7 +85,8 @@ def confirmed_workstream_titles(
         workflow = f"Make {label} usable in the first path"
     state_changer = backlog_text.state_changer_label(labels, state_label=state_label)
     if state_changer:
-        boundary = f"Keep {state_label} clear after {state_changer} changes it"
+        boundary_focus = backlog_text.state_boundary_focus(state_changer)
+        boundary = f"Keep {state_label} clear during {boundary_focus}"
     else:
         boundary = f"Keep {state_label} clear and reviewable"
     proof_subject = state_label or backlog_text.proof_title_object(proof_boundary) or proof_label

@@ -578,6 +578,11 @@ def test_confirmed_create_generates_component_specific_document_and_status_specs
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
 
     intent = parse_confirmed_intent_text(
         """Request Handoff Workspace — Product Intent Confirmation
@@ -695,6 +700,11 @@ def test_confirmed_create_repairs_overlapping_structured_review_components(tmp_p
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
     intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(
@@ -1460,6 +1470,11 @@ def test_confirmed_greenfield_create_completes_thin_intent_before_governed_recor
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped"},
+    )
     intent_path = tmp_path / ".odylith/runtime/greenfield/confirmed-intent.md"
     intent_path.parent.mkdir(parents=True, exist_ok=True)
     intent_path.write_text(
@@ -1523,15 +1538,16 @@ Release 0.0.1 succeeds when one decision record can be inspected from source obs
     assert titles == [
         "Prove One Complete Decision Review Workspace Path",
         "Let Coordinator Review the Final Status with Source Evidence",
-        "Keep Decision Record Clear After Quality Review Changes It",
+        "Keep Decision Record Clear During Quality Review",
         "Show Why Decision Record Can Be Trusted",
     ]
+    assert "Changes It" not in encoded
     assert not any(title.startswith(("Build ", "Implement ", "Ship ")) for title in titles)
     assert "Useful for One Complete Outcome" not in encoded
     assert "Ship one complete outcome" not in encoded
     rows_by_title = {str(row["title"]): row for row in accepted["proposal"]["backlog"]}
     first_path_row = rows_by_title["Let Coordinator Review the Final Status with Source Evidence"]
-    state_row = rows_by_title["Keep Decision Record Clear After Quality Review Changes It"]
+    state_row = rows_by_title["Keep Decision Record Clear During Quality Review"]
     proof_row = rows_by_title["Show Why Decision Record Can Be Trusted"]
 
     assert "final status with source evidence" in first_path_row["problem"]

@@ -634,6 +634,48 @@
   proof obligation for this checkpoint while preserving the existing guardrail
   that natural host-model semantic rescue quality is not proven by synthetic
   wiring smoke.
+  Fresh adversarial installed variance after that checkpoint reopened the gate:
+  a non-reused twelve-case matrix against the same `a4ede761` dist passed eleven
+  cases with hard 10/10 scores and browser proof, but `warehouse robot near miss
+  investigation` failed before governed writes in 30.707s. The exact prompt was
+  a generic near-miss investigation workspace where safety leads capture incident
+  telemetry, preserve operator statements, map zone controls, route maintenance
+  review, and publish restart readiness proof. Confirmed create rejected its own
+  output with `semantic slop: gerundized actor-role action leaked` at
+  `proposal.validation_strategy.0`, `proposal.validation_strategy.8`, and
+  `proposal.semantic_model.first_path_contract.capability`, leaving no Radar,
+  Registry, Atlas, release, traceability, or quality-manifest records. An exact
+  disposable installed repro reproduced the same blockers and deleted the temp
+  repo. A near-equivalent passing repro showed a separate artifact-quality smell:
+  generated workstream/component names can still inflate into unreadable labels
+  such as review-workspace changes-it titles. The failed mechanism is generic:
+  the guard that is supposed to catch real gerundized actor/action splices still
+  fires on valid noun/action facts after generated confirmation text weakens an
+  action phrase into `safety leads route maintenance review`; the fix must
+  improve semantic phrase custody and detector precision without domain
+  vocabulary, whole-text prompt scanning, or weaker gates.
+  Follow-up proof review then exposed another generic post-confirm quality
+  failure inside an existing create fixture: `sequence_event_steps` preserved
+  the accepted semantic first path, but its projection expander split
+  connector-led object tails into standalone fragments. The Project Brief
+  rendered `handles an accept, decline. Or more-info request.` at
+  `project_brief.blueprint_sections.1.must_capture`, and the final public-copy
+  gate correctly blocked `sentence connector splice` before governed writes.
+  The failed mechanism was over-broad subject/action detection on short noun
+  tails such as `required request context` and `more-info request`, not a
+  request-handoff domain issue. The source fix keeps connector-led and short
+  non-finite object tails attached to the prior action in the sequence-step
+  owner, preserving real actor/action splits while preventing orphaned `. Or`
+  or standalone object fragments in Project Brief and Atlas projections. That
+  exposed the next required custody layer: the package repetition gate then
+  correctly rejected the newly preserved sequence-step variants as repeated
+  noncanonical prose until `greenfield_canonical_projection_facts.py` began
+  carrying sequence-step projections as typed first-path facts. The request
+  handoff source-local CLI replay then completed governed create in 19.609s
+  with 4 Radar records, 3 Registry specs, 6 Atlas diagrams, zero issues, no
+  `. Or` fragment, and temp cleanup. Related unit-fixture hardening also made
+  no-refresh create tests explicitly bypass rendered-surface custody; live
+  source-local create still exercises the real rendered-custody path.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
 

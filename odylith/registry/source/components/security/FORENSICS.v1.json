@@ -3,12 +3,12 @@
   "diagrams": [],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 14,
+    "explicit_event_count": 15,
     "mapped_workstream_evidence_count": 4,
     "recent_path_match_count": 0,
     "spec_history_event_count": 1,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 14
+    "timeline_event_count": 15
   },
   "name": "Security",
   "path_prefixes": [
@@ -24,6 +24,22 @@
   ],
   "spec_ref": "odylith/registry/source/components/security/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 692,
+      "explicit_components": [
+        "security"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "security"
+      ],
+      "meaningful": false,
+      "summary": "Greenfield security-disclosure source fixes passed: canonical first-path object-list tail custody plus Project Brief clipped-readiness repair; focused proof passed 23 tests, slop Project Brief proof passed 4 tests, full live simulation regression passed 15 tests in 200.98s, and source-local create completed under 23s with temp cleanup.",
+      "ts_iso": "2026-06-29T03:21:26-07:00",
+      "workstreams": []
+    },
     {
       "artifacts": [
         "github/workflows/release.yml",

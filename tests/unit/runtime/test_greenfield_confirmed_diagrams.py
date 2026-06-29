@@ -475,3 +475,18 @@ def test_sequence_event_steps_keep_coordinated_object_lists_with_prior_action() 
         "The applicant submits one revision",
         "A supervisor reviews the decision package with traceable documents, comments, checks, and final status",
     ]
+
+
+def test_sequence_event_steps_keep_connector_led_object_tails_with_prior_action() -> None:
+    steps = sequence_event_steps(
+        "A coordinator creates a draft request, attaches subject identity and required request context, "
+        "validates uploaded documents, sends the packet to a destination team, sees received status, "
+        "handles an accept, decline, or more-info request, schedules the request when accepted, "
+        "and reviews the completed status history.",
+        dedupe=True,
+    )
+
+    assert "Required request context" not in steps
+    assert "Or more-info request" not in steps
+    assert any("attaches subject identity" in step and "required request context" in step for step in steps)
+    assert any("handles an accept" in step and "more-info request" in step for step in steps)

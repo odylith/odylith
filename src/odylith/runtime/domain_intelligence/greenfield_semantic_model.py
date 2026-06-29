@@ -297,7 +297,7 @@ def _first_path_contract(
         entity=state_object,
         mutation=material,
         required_fields=required_fields,
-        persistence=f"{state_reference} must remain replayable after the accepted first path changes it.",
+        persistence=f"{state_reference} must remain replayable after the accepted first path updates the saved state.",
         visible_result=visible_result or "the first-path result",
         recovery_path=_clean(model.recovery_action) or "Blocked or corrected path state stays visible.",
         deferred_scope=tuple(_clean(row) for row in non_goals if _clean(row)),
