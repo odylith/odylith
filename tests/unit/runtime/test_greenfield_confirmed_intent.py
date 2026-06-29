@@ -1192,7 +1192,7 @@ def test_confirmed_intent_parser_accepts_internal_external_heading_and_prose_sys
     internal_systems = intent["internal_systems"]
     assert len(internal_systems) >= 6
     assert any("Calibration Controller" in row for row in internal_systems)
-    assert any("Battery Enclosure Module — Owns battery enclosure module. Relevant behavior" in row for row in internal_systems)
+    assert any("Battery Enclosure Module — Owns battery enclosure module for accepted behavior where" in row for row in internal_systems)
     assert any("battery level" in row for row in internal_systems)
     assert not any("Owns the accepted" in row for row in internal_systems)
     assert all("—" in row for row in internal_systems)

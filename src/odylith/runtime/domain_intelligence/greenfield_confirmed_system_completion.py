@@ -22,6 +22,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import (
     confirmed_system_name,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import (
+    looks_generated_system_description,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -44,7 +47,7 @@ def completed_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]
     completed = [row for row in completed if row]
     if not completed:
         completed = _derived_system_rows(intent, title=title)
-    elif len(completed) < 3 and len(rows) < 2:
+    elif len(completed) < 3 and _needs_sparse_system_topology(rows):
         completed = _complete_sparse_system_topology(completed, intent, title=title)
     return list(unique_text(completed))[:8]
 
@@ -167,6 +170,26 @@ def _system_description_is_enough(value: str) -> bool:
             re.IGNORECASE,
         )
     )
+
+
+def _needs_sparse_system_topology(rows: list[str]) -> bool:
+    if len(rows) < 2:
+        return True
+    if len(rows) >= 3:
+        return False
+    return any(_raw_system_row_is_sparse(row) for row in rows)
+
+
+def _raw_system_row_is_sparse(value: str) -> bool:
+    text = _clean(value)
+    if not text:
+        return True
+    if re.search(r"\s+—\s+|\s+-\s+|:", text):
+        name, description = re.split(r"\s+—\s+|\s+-\s+|:\s*", text, maxsplit=1)
+        return not (_clean(name) and _system_description_is_enough(description)) or looks_generated_system_description(
+            description
+        )
+    return _word_count(text) <= 4
 
 
 def _derived_system_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:

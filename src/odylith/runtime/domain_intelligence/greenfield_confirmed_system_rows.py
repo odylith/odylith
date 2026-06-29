@@ -184,7 +184,7 @@ def expand_internal_system_rows(rows: list[str], *, context_text: str = "") -> l
     for candidate in candidates:
         description = _expanded_system_description(candidate, context_text=context_text, rationale=rationale)
         if rationale:
-            description = f"{description}. Rationale: {rationale.rstrip('.')}"
+            description = f"{description}. It {rationale.rstrip('.')}"
         expanded.append(f"{_title_case_phrase(candidate)} — {description}")
     return expanded
 
@@ -305,6 +305,10 @@ def contains_generic_system_scaffold(system_rows: list[str]) -> bool:
     return _GENERIC_SYSTEM_NAME_KEYS.issubset(keys)
 
 
+def looks_generated_system_description(value: str) -> bool:
+    return _looks_generated_system_description(value)
+
+
 def _normalize_system_description(value: str) -> str:
     text = normalize_visible_result_language(_clean(value))
     relation = reference_relation_description(text)
@@ -322,6 +326,9 @@ def _looks_generated_system_description(value: str) -> bool:
         or "required inputs" in text
         or "blocked-case evidence links" in text
         or "handoff boundaries for the confirmed first path" in text
+        or "receives input, changes state, produces output, and exposes review evidence" in text
+        or "keeps the accepted first path, product state, evidence, and proof boundary connected" in text
+        or "for accepted behavior where" in text
         or re.search(r"\bkeeps? .+ state, validation result, blocker state, and handoff evidence together\b", text)
     )
 
@@ -530,7 +537,7 @@ def _expanded_system_description(candidate: str, *, context_text: str, rationale
     subject = _clean(candidate).strip(" .").lower()
     clause = _best_context_clause(candidate, context_text)
     if clause:
-        return f"Owns {subject}. Relevant behavior: {_brief_clause(clause, limit=240)}"
+        return f"Owns {subject} for accepted behavior where {_lower_first(_brief_clause(clause, limit=240))}"
     if rationale:
         return f"Defines how {subject} receives input, changes state, produces output, and exposes review evidence"
     return f"Defines how {subject} receives input, changes state, produces output, and exposes review evidence"
@@ -576,6 +583,15 @@ def _brief_clause(value: str, *, limit: int) -> str:
         limit=limit,
         dangling_words={"a", "an", "and", "for", "from", "of", "or", "the", "to", "with"},
     )
+
+
+def _lower_first(value: str) -> str:
+    text = _clean(value)
+    if not text:
+        return ""
+    if len(text) > 1 and text[:2].isupper():
+        return text
+    return f"{text[:1].lower()}{text[1:]}"
 
 
 def _extract_internal_system_candidates(paragraph: str) -> list[str]:

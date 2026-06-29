@@ -4158,6 +4158,8 @@
         "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py",
         "src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py",
         "src/odylith/runtime/domain_intelligence/greenfield_actor_roles.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py",
@@ -4194,8 +4196,8 @@
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
-      "summary": "Shows the current confirmed greenfield post-confirm architecture: accepted intent becomes a typed source-mapped semantic input, shared actor-role and carried-subject owners keep action chains grammatical, sequence custody keeps connector-led object tails attached to their action, canonical projection facts carry sequence-step variants for sanctioned repetition, clause-local prose-shape guards accept valid gerund action lists while rejecting actor-role splices, release-scope proof polarity keeps evidence ledgers in scope, ArtifactPlanIR routing uses a shared projection-contract owner, Radar state-boundary titles use compact review/action focus, Project dashboard source-launch prompts are part of prewrite evidence, persisted artifact readback must agree with the create payload, only source-owned typed findings can drive bounded rescue, legacy raw issue strings fail closed, and governed records write only after the final manifest passes.",
-      "read_guide": "Start with Product Intent Confirmation and follow it through ConfirmedIntentIR into the typed apply-semantic input, deterministic SemanticModelIR compiler, shared actor-role custody, explicit-subject action-chain parsing, connector-led object-tail custody, sequence-step canonical projection facts, external-boundary facts, clause-local prose-shape checks, release-scope proof polarity, and shared ArtifactPlanIR projection contract. Read the standard lane as the custody boundary: Radar, Registry, Atlas, Compass, release proof, operator next steps, Project dashboard source-launch prompts, Tribunal visible actor rows, and persisted accepted-project readback all become reviewed prewrite evidence before writes. Typed findings carry repair authority, while legacy raw strings become blockers. The rescue lane is optional and budgeted; a structured Tribunal planner may fill only replacement facts, custody validation rejects moved targets, and semantic or artifact-plan executors patch IR facts before rerendering impacted projections through the same final gates.",
+      "summary": "Shows the current confirmed greenfield post-confirm architecture: accepted intent becomes a typed source-mapped semantic input, shared actor-role and carried-subject owners keep action chains grammatical, sequence custody keeps connector-led object tails attached to their action, sparse/generated confirmed-system rows gain generic proof or state topology while rich explicit rows stay unpadded, public Registry system copy strips compiler-only labels, canonical projection facts carry sequence-step variants for sanctioned repetition, clause-local prose-shape guards accept valid gerund action lists while rejecting actor-role splices, release-scope proof polarity keeps evidence ledgers in scope, ArtifactPlanIR routing uses a shared projection-contract owner, Radar state-boundary titles use compact review/action focus, Project dashboard source-launch prompts are part of prewrite evidence, persisted artifact readback must agree with the create payload, only source-owned typed findings can drive bounded rescue, legacy raw issue strings fail closed, and governed records write only after the final manifest passes.",
+      "read_guide": "Start with Product Intent Confirmation and follow it through ConfirmedIntentIR into the typed apply-semantic input, deterministic SemanticModelIR compiler, shared actor-role custody, explicit-subject action-chain parsing, sparse-system topology completion, public system-row copy cleanup, connector-led object-tail custody, sequence-step canonical projection facts, external-boundary facts, clause-local prose-shape checks, release-scope proof polarity, and shared ArtifactPlanIR projection contract. Read the standard lane as the custody boundary: Radar, Registry, Atlas, Compass, release proof, operator next steps, Project dashboard source-launch prompts, Tribunal visible actor rows, and persisted accepted-project readback all become reviewed prewrite evidence before writes. Typed findings carry repair authority, while legacy raw strings become blockers. The rescue lane is optional and budgeted; a structured Tribunal planner may fill only replacement facts, custody validation rejects moved targets, and semantic or artifact-plan executors patch IR facts before rerendering impacted projections through the same final gates.",
       "components": [
         {
           "name": "Domain Intelligence",
@@ -4289,6 +4291,8 @@
         "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py": "91da7601a9a94e16bb5ad5ab2d11f87886760e90ce59792da81616ecac15c2af",
         "src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py": "3b55955a4a11dc0ab48bfb0e2068883dd125cdff758effad3bc48400de0c8cb7",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py": "5f76b900f7d3c2b0954040935de0f4ec7ea9bef9a3e633ae172012695cfc3400",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py": "780b5004b07bcd0385cee59a610027448c5ff315bc95e8f41f20c5b3d0b40544",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_rows.py": "53b76cb8b3853bffe6b9ee8ff8a8824c8250ce9ef44dfc310d3d1ced15624c07",
         "src/odylith/runtime/domain_intelligence/greenfield_actor_roles.py": "bde742fb699761b7ef39a2ce75295a21472ef32ba99eb503ba32c6b532a317e6",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py": "08f7de03175dad43129cc5024f057e7d7e186e1de1cf59333b31ec9876cc3c03",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py": "de21b228c3daa14e176fa50cf7044869ca20d96738bbfee06fdb263cdd44e45e",
@@ -4320,12 +4324,12 @@
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "57664efd8a6b44694eb2157bc99405c7bf261808b3becfa920fa2049dadc180f",
         "scripts/release/greenfield_post_confirm_matrix.py": "fc51ab23af93a06a8e68fd9580043ab8b59e9076bbcc649d78338994206dd9b3",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "4521e329ec505b21943baf08b443e92b67e87d5a1acb3a02c3f66114e442e540",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "3d4070fcd6e1816842d9b2796a2ad4fe9d12738ddb03051f69152bf8b00ebb4d",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "19f07ddfda21d61fb60009938c12791137ed0d1690637b83361c98629aac9aea",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "b323877001333c452f3c6811bd985a645d3a364d74ff3dcac1b8709413c53439",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "9feca0d5e32e450cada0ecc84b95a34331fbeeb145193848641d6ac411ab179c"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "90bcd8467f56de99a375145f9eee4e1641ea90b7461176522c976f2800c098b7"
       },
-      "render_source_fingerprint": "6922a00e760c0c77977a7e6e591a4a38da0ce9552adc68e6bdc911e47a74891b"
+      "render_source_fingerprint": "95b7e85ab0bb8a2faaa893961037c87ffee76a277e927600fdb35cbb043ed90a"
     },
     {
       "diagram_id": "D-044",

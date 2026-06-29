@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Source-fixed the follow-up sparse-topology installed proof failure from dist f5fef9e6: sparse/generated two-row confirmed systems now receive generic proof/state topology completion, rich explicit two-system narratives remain unpadded, and compiler-only system-row labels no longer leak into public Registry descriptions; focused and broad source proof passed, rebuilt installed proof remains required.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py +2 more
 - **2026-06-29 · Implementation:** Source-fixed the fresh `decision evidence room` post-confirm failure with generic first-path subject-boundary and finite-action event custody; targeted proof passed, the broader greenfield pack passed 201 tests, and exact source-local confirmed create wrote complete governed records in about 21s with zero manifest issues and temp cleanup.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_first_path_carried_subjects.py +4 more
@@ -49,6 +52,19 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-29: Source-fixed the follow-up sparse-topology installed proof failure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
+  Fresh dist `odylith-local-release-0.1.15-f5fef9e6` passed twelve maintained
+  standard cases but `sparse disclosure confirmation` scored 0/10 after
+  governed writes with only two Registry specs and 17 trace nodes. The earlier
+  explicit two-system guard was too broad: it preserved rich accepted
+  two-system narratives, but also suppressed generic state/proof topology for
+  terse or generated two-row confirmed systems. `greenfield_confirmed_system_completion.py`
+  now tops up only sparse/generated two-row topology, while
+  `greenfield_confirmed_system_rows.py` strips compiler-only labels from public
+  Registry descriptions. Focused sparse proof passed 3 tests in 13.41s, the
+  broad affected greenfield pack passed 202 tests in 250.95s, and compile proof
+  passed. Installed release readiness remains unclaimed until a rebuilt dist
+  proves the maintained and adversarial installed matrices.
 - 2026-06-29: Source-fixed the fresh ambiguous first-path subject-boundary failure. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-045)
   A custom installed matrix against `odylith-local-release-0.1.15-af4117d8`
   passed nine cases, then failed `decision evidence room` before governed
@@ -1199,6 +1215,14 @@ This section captures synchronized requirement and contract signals derived from
   deferred component rows; first-release scope is a release/readiness concern,
   while architect topology is complete when every accepted system has a
   component-owned place in the proposal.
+- Confirmed-system completion must distinguish sparse/generated topology from
+  rich explicit accepted topology. Terse labels, empty rows, or generated
+  fallback descriptions may be completed with generic state, proof, or release
+  responsibilities so Registry/Atlas/traceability remain useful, but explicit
+  two-system narratives with concrete responsibilities must not be padded
+  solely to hit a count. Compiler-only labels such as `Relevant behavior` and
+  `Rationale` are internal derivation aids and must not appear as public
+  Registry component prose.
 - Release proof scoring must be structured and punitive. Matrix proof inspects
   collected artifact-package values, not raw JSON serialization, and the final
   score is the weakest quality dimension after no-write and artifact-defect

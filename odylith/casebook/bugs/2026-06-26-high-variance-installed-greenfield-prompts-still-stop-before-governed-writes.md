@@ -712,23 +712,49 @@
   6 SVG renders, 6 PNG renders, accepted-project truth written, and verified
   temp cleanup. Installed release readiness remains unclaimed until a fresh
   rebuilt dist reruns the maintained and adversarial installed matrices.
+  Fresh installed proof from rebuilt dist
+  `odylith-local-release-0.1.15-f5fef9e6` then reopened the sparse-topology
+  class before release could be claimed. The maintained matrix passed twelve
+  of thirteen standard cases with hard 10/10 scores in 18.441-43.304s and
+  synthetic rescue smoke passed, but `sparse disclosure confirmation` scored
+  0/10 after governed writes in 20.591s: independent readback found only two
+  Registry specs and 17 trace nodes, so architect and engineer lenses failed.
+  Root cause: the previous source fix suppressed proof/state topology padding
+  for every two-system accepted intent. That protected rich explicit
+  two-system narratives, but it also blocked the generic completion needed when
+  accepted systems are terse labels or generated fallback rows. The same
+  investigation found a public-copy defect: internal compiler labels such as
+  `Relevant behavior:` and `Rationale:` could leak into rendered Registry
+  component specs as clipped public fragments. The forward fix must distinguish
+  sparse/generated rows from rich explicit rows and strip compiler-only labels
+  before public Registry projection; it must not add disclosure terms, keyword
+  stuffing, rendered-string semantic repair, or weaker expert gates.
+  Source-local follow-up on 2026-06-29 now implements that generic boundary.
+  Sparse confirmed-system completion tops up terse/generated two-row topology
+  while preserving rich explicit two-system intents, and confirmed system-row
+  expansion renders public descriptions without compiler labels. Focused
+  sparse/confirmed-intent proof passed 3 tests in 13.41s, the broad affected
+  greenfield pack passed 202 tests in 250.95s, and compile proof passed for
+  the touched runtime modules. Installed release readiness remains blocked
+  until a new dist proves this source fix in the maintained and adversarial
+  installed matrices.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
 - Version/Build: Latest installed proof is still red until rebuilt. Local
-  release dist `odylith-local-release-0.1.15-af4117d8` passed nine of ten
-  custom non-reused installed cases but failed `decision evidence room` before
-  governed writes. Current source now fixes the subject-boundary, finite-action
-  event split, explicit-system overcompletion, and no-refresh fixture custody
-  issues, with focused and broad source tests green plus exact source-local
-  replay green. Treat all earlier green installed matrices as superseded for
+  release dist `odylith-local-release-0.1.15-f5fef9e6` passed twelve of
+  thirteen maintained installed cases but failed sparse disclosure topology
+  readback with only two Registry specs. Current source now fixes the
+  sparse/generated two-system completion boundary and strips compiler-only
+  system-row labels from public Registry copy, with focused and broad source
+  tests green. Treat all earlier green installed matrices as superseded for
   release-readiness claims until a fresh dist proves the fix under maintained
   and adversarial installed matrices with browser proof and strict temp
-  cleanup. Synthetic rescue wiring remains proven at 34.261s, but natural
-  host-model semantic rescue quality remains unclaimed because the rescue proof
-  is a typed-probe wiring smoke, not an organically triggered model repair.
+  cleanup. Synthetic rescue wiring remains proven, but natural host-model
+  semantic rescue quality remains unclaimed because the rescue proof is a
+  typed-probe wiring smoke, not an organically triggered model repair.
 
 - Related Incidents/Bugs: CB-208
 

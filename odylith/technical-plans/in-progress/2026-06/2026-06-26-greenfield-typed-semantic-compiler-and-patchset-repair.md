@@ -333,6 +333,20 @@ vocabulary, or degraded packages.
   all 13 cases with zero browser issues, temp cleanup was clean, and synthetic
   typed-probe rescue wiring smoke passed in 33.430s. Natural host-model
   semantic rescue quality remains separate from this wiring proof.
+- 2026-06-29 fresh installed proof from pushed commit `f5fef9e6` reopened the
+  sparse-topology release gate before any release-ready claim. The maintained
+  matrix passed twelve of thirteen standard cases with hard 10/10 scores in
+  18.441-43.304s, but `sparse disclosure confirmation` scored 0/10 after
+  governed writes in 20.591s because readback found only two Registry specs and
+  17 trace nodes. The root cause is generic: the previous explicit two-system
+  guard suppressed completion for both rich accepted narratives and terse or
+  generated two-row topology. The same diagnosis found internal compiler
+  labels such as `Relevant behavior:` and `Rationale:` leaking into public
+  Registry copy. Source now distinguishes sparse/generated system rows from
+  rich explicit rows, tops up only the sparse topology, and renders confirmed
+  system descriptions without compiler labels. Focused proof passed 3 tests in
+  13.41s, the broad affected greenfield pack passed 202 tests in 250.95s, and
+  compile proof passed. Installed proof from a rebuilt dist remains required.
 
 ## Implementation Slices
 
@@ -1505,6 +1519,20 @@ vocabulary, or degraded packages.
       confirmed-create replay completed in about 21 seconds with zero manifest
       issues, 4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams, rendered
       SVG/PNG assets, accepted-project truth, and verified temp cleanup.
+- [x] Source-fixed the follow-up sparse-topology installed proof failure from
+      the `f5fef9e6` dist without weakening gates.
+      The maintained matrix passed twelve standard cases but failed sparse
+      disclosure confirmation at 0/10 because readback saw only two Registry
+      specs and 17 trace nodes. The failed mechanism was the earlier broad
+      `len(rows) < 2` guard: it protected rich explicit two-system intents, but
+      it also suppressed generic state/proof topology completion for terse or
+      generated two-row intents. The source fix adds sparse-row detection for
+      empty, terse, and generated fallback rows, preserves rich explicit
+      two-system narratives unpadded, and removes compiler-only `Relevant
+      behavior` / `Rationale` labels from public Registry system descriptions.
+      Focused sparse/confirmed-intent proof passed 3 tests in 13.41s, the
+      broad affected greenfield pack passed 202 tests in 250.95s, and compile
+      proof passed for the touched runtime modules.
 - [ ] Rebuild the installable dist from the current source and rerun installed
       maintained plus adversarial high-variance simulations.
       Do not claim release readiness from the source-local proof alone. The
