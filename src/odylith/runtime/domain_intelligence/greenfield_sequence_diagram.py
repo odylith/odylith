@@ -11,18 +11,13 @@ from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
-from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import compact_result_object_label as _compact_result_object_label
-from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import strip_actor_role_subject as _strip_actor_role_subject
-from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import compact_text as _compact_text
-from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label as _flow_label
-from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import node_id as _node_id
-from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import strip_dangling_tail as _strip_dangling_tail
-from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import trim as _trim
-from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import without_ellipsis as _without_ellipsis
+from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import compact_result_object_label as _compact_result_object_label, strip_actor_role_subject as _strip_actor_role_subject
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import compact_text as _compact_text, flow_label as _flow_label, node_id as _node_id, strip_dangling_tail as _strip_dangling_tail, trim as _trim, without_ellipsis as _without_ellipsis
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import ACTION_VERB_PATTERN as _ACTION_VERB_PATTERN
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
-from odylith.runtime.domain_intelligence.greenfield_sequence_terminal_labels import terminal_step_prefers_visible_result
+from odylith.runtime.domain_intelligence.greenfield_sequence_terminal_labels import terminal_step_loses_distinctive_tail, terminal_step_prefers_visible_result
 
 _BASE_ACTION_VERB_PATTERN = action_base_verb_pattern()
 
@@ -51,7 +46,6 @@ _SEQUENCE_TERM_STOPWORDS = {
     "through",
     "with",
 }
-
 def sequence_mermaid(
     *,
     label: str,
@@ -194,7 +188,13 @@ def _lower_leading_possessive_fragment(value: str) -> str:
 def _terminal_step_label(step: str, visible_result: str) -> str:
     outcome = _compact_text(visible_result).strip(" .")
     action_label = _step_action_label(step)
+    step_terms = _sequence_terms(step)
     action_terms = _sequence_terms(action_label)
+    if terminal_step_loses_distinctive_tail(step_terms=step_terms, label_terms=action_terms):
+        candidate = _compress_step_action_label(_imperative_handoff_focus(strip_action_subject(step)))
+        if not terminal_step_loses_distinctive_tail(step_terms=step_terms, label_terms=_sequence_terms(candidate)):
+            action_label = candidate[:1].upper() + candidate[1:] if candidate else action_label
+            action_terms = _sequence_terms(action_label)
     outcome_terms = _sequence_terms(outcome)
     if outcome and terminal_step_prefers_visible_result(
         action_label,
@@ -705,9 +705,11 @@ def _imperative_handoff_focus(value: str) -> str:
         "links": "link",
         "logs": "log",
         "displays": "display",
+        "offers": "offer",
         "opens": "open",
         "orders": "order",
         "persists": "persist",
+        "plays": "play",
         "produces": "produce",
         "publishes": "publish",
         "ranks": "rank",
@@ -729,6 +731,7 @@ def _imperative_handoff_focus(value: str) -> str:
         "schedules": "schedule",
         "stores": "store",
         "submits": "submit",
+        "taps": "tap",
         "tracks": "track",
         "validates": "validate",
         "verifies": "verify",

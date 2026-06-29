@@ -2325,6 +2325,28 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   proof, 25.191-27.711s create timings, temp cleanup). Synthetic typed-probe
   rescue wiring passed in 34.408s; natural host-model semantic rescue quality
   remains a separate proof class.
+- 2026-06-29 fresh recursive variance reopened B-142 again after the 31cc84ef
+  governance checkpoint. The same rebuilt dist `21ed5b0a` passed nine of ten
+  new installed domains with hard 10/10 scores, browser proof, complete
+  governed counts, zero issues, and 23.221-25.678s create timings, but
+  `indigenous language curriculum evidence circle` failed before governed
+  writes in 21.296s. The blocker was generic Atlas sequence custody: the
+  semantic model preserved all three accepted first-path events, but the First
+  Path Sequence terminal flowchart node compressed `Coordinators record learner
+  progress evidence` to `Progress evidence`, dropping the distinctive accepted
+  tail terms and tripping the tail-preservation gate. A parallel validator
+  review found remaining false-confidence risk in the 10/10 scorer: several
+  dimensions still prove thresholds/self-consistency more than independent
+  semantic correctness. Next work must fix terminal sequence-label custody and
+  strengthen validation with negative/mutation/adversarial proof rather than
+  adding domain vocabulary, prose patching, or weaker gates.
+  Source-local repair now caps terminal flowchart label compaction when the
+  rendered node loses distinctive accepted-event tail terms, using the
+  first-path action clause as the fallback label. The exact failed prompt
+  replay returned 0 in about 20s, wrote 4 Radar workstreams, 3 Registry specs,
+  6 Atlas sources, and rendered the terminal node as `Record learner progress
+  evidence`; the temp repo was deleted. Installed release proof remains pending
+  on a rebuilt dist.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

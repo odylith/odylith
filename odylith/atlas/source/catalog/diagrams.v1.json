@@ -4320,8 +4320,8 @@
         "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py": "3056d20df91354bc48e715d494eda7cefb20a56be036518e8b6f01eee555271a",
         "src/odylith/runtime/domain_intelligence/greenfield_gerund_actions.py": "cf1f93d4bc2038cd56947c01a7925db1b6f37f4df7e13f90881c2eced9126071",
         "src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py": "3f76bfa22396619014fb40a45f4469f4fe9d1a10e9b21a1030947fd2f14b4f15",
-        "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py": "06578ca897d4d086c6055f7354e80d08fa639a1e79e4439f051f37fc43dfb678",
-        "src/odylith/runtime/domain_intelligence/greenfield_sequence_terminal_labels.py": "08dd5ddb2dd3061b1dcb87d3f56751b73f3eb8ce48c8bb4533113c6748028df6",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py": "5cf6bcb7f48d37efaa0cbdc70975372309e2146cf1414072c6947ec24b1a9538",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_terminal_labels.py": "e05817ceb36de543ef6bef3a4a394581f26b226f969dae0ecf2759752d57c11a",
         "src/odylith/runtime/domain_intelligence/greenfield_status_modifiers.py": "b821d2bfa914f45377acb382798a4ef044ad3a122928aab2d131ee3624d9df62",
         "src/odylith/runtime/domain_intelligence/greenfield_text.py": "a45cd09917eb4d1b5701a2467fe25f632f081419c1f48d4e424162d846357f83",
         "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py": "5cef3256b2540eb2e7f8481a48208f9ea507e7cf0c0707ceefb3683b6ad183a5",
@@ -4330,12 +4330,12 @@
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "57664efd8a6b44694eb2157bc99405c7bf261808b3becfa920fa2049dadc180f",
         "scripts/release/greenfield_post_confirm_matrix.py": "fc51ab23af93a06a8e68fd9580043ab8b59e9076bbcc649d78338994206dd9b3",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "d29509aa0ca5880cea826ed709ba4f6b6e726919b72df9c311b3806c543a880b",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "e96eafafa1366d9762e5d3411757bcaebe0e0230b52f690e5b3b77297397e82f",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "19f07ddfda21d61fb60009938c12791137ed0d1690637b83361c98629aac9aea",
-        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "85e30cd582c900530b6b690697291349dfdf7a37a1ea527c4167b9d091895df4",
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "530fc30d98094cfee2945198307a0406c76047bc5081c02bcfbcdf5aef2edf85",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "646eda442fc7b7f65b7221bdffc20897f00e8e3ae082588e622096cabc611a52"
       },
-      "render_source_fingerprint": "424da6ed35f5f1180f9cffc7d5e60d15c4120c951230671d021154d0e5974d83"
+      "render_source_fingerprint": "83120e6dbefcc94c2de4af28f4a81961df63a34fec37d5ddc884543f9519dea7"
     },
     {
       "diagram_id": "D-044",
@@ -4516,12 +4516,12 @@
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py": "83fcb96e165887ee460f53a44fc01387f52e0d371d44c8dfda79f5dad98819d6",
         "src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py": "3f76bfa22396619014fb40a45f4469f4fe9d1a10e9b21a1030947fd2f14b4f15",
         "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py": "38766a315fd64e0a9373d5f1f4232c0d63622992ecde38cfe6838cb0c46d0a97",
-        "src/odylith/runtime/common/mermaid_text.py": "179cc06e68b750781d6e45ff37f7877bf6a00a0985f39968821e7cf31f6af3ff",
+        "src/odylith/runtime/common/mermaid_text.py": "c8a2e2c19210d88568b0c9e2b035c36367a0ed81a25626f84e55e682e4db5ba8",
         "src/odylith/runtime/artifact_quality/generated_copy_quality.py": "da6337cada43c3592fb6c9ab2f740f3f0bba73abefcd5f0ee463c6c7324640fd",
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py": "595c6f27303766773011d61a8abc9630ac2f19d7ab5d510975a49ea41c14349f",
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py": "99bf357a12a505495fd64f842facc227df3ca789c0adcd32591e9f5dab731aff"
       },
-      "render_source_fingerprint": "6325744eecca8b4f5e358a649bf81f477349efdfd24098751bc0a6e8e3e9d8e0"
+      "render_source_fingerprint": "2a67fc06f9647d780a3b2b07a83664796f3eab12970018e5561e3567abba9de4"
     },
     {
       "diagram_id": "D-046",

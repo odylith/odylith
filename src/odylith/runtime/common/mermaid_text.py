@@ -137,6 +137,12 @@ def _rebalance_dangling_line_breaks(lines: list[str], *, width: int) -> list[str
         if not head:
             continue
         tail_phrase = " ".join(words[split_index:]).strip()
+        if (
+            tail_phrase.casefold().strip(".,;:") == "and"
+            and len(head.split()) <= 2
+            and len(rebalanced[index + 1].split()) > 1
+        ):
+            continue
         next_line = f"{tail_phrase} {rebalanced[index + 1]}".strip()
         if len(next_line) > max(width + 12, len(rebalanced[index + 1])):
             continue

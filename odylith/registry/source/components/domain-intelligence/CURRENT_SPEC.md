@@ -24,6 +24,12 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Failure:** Fresh variance after checkpoint 31cc84ef reopened CB-209: 9/10 new installed domains passed, but `indigenous language curriculum evidence circle` failed before governed writes because the First Path Sequence terminal flowchart label compressed the accepted final event to `Progress evidence`, dropping distinctive tail terms; parallel review found remaining 10/10 scorer false-confidence risk.
+  - Scope: B-142
+  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-fresh-variance-20260629-31cc84ef.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
+- **2026-06-29 · Implementation:** Source-fixed terminal sequence-label custody: flowchart terminal labels now fall back to the first-path action clause when result-object compaction drops distinctive accepted-event tail terms, Mermaid connector balancing keeps short noun heads readable, focused sequence proof passed, and the exact failed prompt replay wrote governed records in about 20s with temp cleanup.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_terminal_labels.py, src/odylith/runtime/common/mermaid_text.py, tests/unit/runtime/test_greenfield_confirmed_diagrams.py, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
 - **2026-06-29 · Validation:** Fresh dist 21ed5b0a passed rebuilt installed proof after actor-boundary cleanup: 13/13 maintained cases and 4/4 custom closure cases scored hard 10/10 with zero issues, browser proof, complete governed readback, strict temp cleanup, and 22.975-28.762s maintained plus 25.191-27.711s custom create timings; synthetic typed-probe rescue wiring passed in 34.408s.
   - Scope: B-142
   - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-matrix.v1.json, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-custom-variance-20260629-21ed5b0a.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
@@ -61,6 +67,24 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-29: Reopened installed proof on terminal sequence-label custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
+  A fresh ten-domain installed variance after checkpoint `31cc84ef` passed nine
+  domains with hard 10/10 scores, zero issues, browser proof, and complete
+  governed readback, but `indigenous language curriculum evidence circle`
+  failed before governed writes in 21.296s. The semantic model retained the
+  accepted three-event first path, yet the First Path Sequence flowchart
+  terminal node compressed `Coordinators record learner progress evidence` to
+  `Progress evidence`, dropping enough tail terms for the Atlas preservation
+  gate to fail. This must be fixed in generic terminal sequence-label custody,
+  not with domain vocabulary or weaker gates. Independent review also found the
+  hard 10/10 scorer still needs negative/mutation/adversarial proof before a
+  release-quality claim can be treated as human-grade semantic correctness.
+  The source fix keeps the decision generic: terminal labels that lose
+  distinctive accepted-event tail terms fall back to the first-path action
+  clause, so the failed prompt now renders `Record learner progress evidence`
+  and source-local create writes governed records in about 20s with temp
+  cleanup. Mermaid connector balancing was also tightened so short noun heads
+  do not create connector-led lines.
 - 2026-06-29: Source-fixed fresh custom installed actor-boundary failures. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
   A custom installed matrix against `odylith-local-release-0.1.15-72c100d1`
   passed eight non-reused domains but failed AI-eval red-team and airport

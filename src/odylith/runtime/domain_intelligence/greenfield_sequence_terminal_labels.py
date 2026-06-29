@@ -48,6 +48,16 @@ def terminal_step_prefers_visible_result(
     return bool(_label_words(text) & _RESULT_WRAPPER_ACTION_TERMS) and len(text) > 96
 
 
+def terminal_step_loses_distinctive_tail(
+    *,
+    step_terms: AbstractSet[str],
+    label_terms: AbstractSet[str],
+) -> bool:
+    if len(step_terms) < 2:
+        return False
+    return len(step_terms & label_terms) < min(2, len(step_terms))
+
+
 def _label_words(value: object) -> set[str]:
     return {
         word.strip(".,:;()[]{}").casefold()
@@ -56,4 +66,4 @@ def _label_words(value: object) -> set[str]:
     }
 
 
-__all__ = ["terminal_step_prefers_visible_result"]
+__all__ = ["terminal_step_loses_distinctive_tail", "terminal_step_prefers_visible_result"]

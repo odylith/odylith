@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import 
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
+from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 
 
@@ -343,6 +344,38 @@ def test_release_proof_frame_does_not_collapse_first_path_events() -> None:
     assert model.visible_outcome == "See the run finish in a safe-to-serve state with emergency stop available throughout"
     assert len(steps) == 5
     assert steps[-1].startswith("A home cook sees the run finish")
+
+
+def test_first_path_flowchart_terminal_label_preserves_distinctive_tail_terms() -> None:
+    first_path = (
+        "Educators submit lesson plans. Elders review cultural context. "
+        "Coordinators record learner progress evidence."
+    )
+    components = [
+        {"component_id": "intake", "label": "Lesson Plan Intake Register", "release_scope": "first_path_required"},
+        {"component_id": "review", "label": "Cultural Context Review Workspace", "release_scope": "first_path_required"},
+        {"component_id": "evidence", "label": "Learner Progress Evidence Ledger", "release_scope": "first_path_required"},
+    ]
+    semantic_model = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Curriculum Evidence Circle",
+            first_path=first_path,
+            state_object="Lesson plan record",
+            proof_boundary="Release succeeds when learner progress evidence is reviewable.",
+            components=components,
+        )
+    )
+
+    mermaid = first_path_flowchart_mermaid(
+        label="Curriculum Evidence Circle",
+        actors=["Educators", "Elders", "Coordinators"],
+        components=components,
+        first_path=first_path,
+        semantic_model=semantic_model,
+    )
+
+    assert "Record learner progress<br/>evidence" in mermaid
+    assert 'S3["Progress evidence"]' not in mermaid
 
 
 def test_release_proof_control_does_not_render_as_first_path_step() -> None:

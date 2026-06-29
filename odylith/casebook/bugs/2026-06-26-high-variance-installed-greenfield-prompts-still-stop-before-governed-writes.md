@@ -1,6 +1,6 @@
 - Bug ID: CB-209
 
-- Status: FixedPendingRelease
+- Status: Open
 
 - Created: 2026-06-26
 
@@ -20,6 +20,8 @@
 
 - Environment Update: 2026-06-29 fresh local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-af4117d8 installed into non-reused temporary consumer repos under /Users/freedom/mock. Later fresh custom variance used /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-72c100d1 with non-reused temporary consumer repos and persisted proof at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-72c100d1/greenfield-post-confirm-custom-variance-20260629.v1.json. The rebuilt dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a passed the maintained installed matrix at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-matrix.v1.json and the custom variance closure matrix at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-custom-variance-20260629-21ed5b0a.v1.json.
 
+- Environment Update: 2026-06-29 fresh variance after governance checkpoint 31cc84ef used the same rebuilt dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a and persisted proof at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a/greenfield-post-confirm-fresh-variance-20260629-31cc84ef.v1.json.
+
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
 - Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts. The 3d13f434 installed matrix reopened the release gate again: 12 of 13 cases passed with hard 10/10 scores, browser proof, and complete records, but sparse disclosure confirmation scored 0/10 after governed writes because it produced only two Registry component specs, carried only three of four required domain anchors, and failed architect, engineer, and domain-expert matrix lenses.
@@ -32,7 +34,7 @@
 
 - Blast Radius: Any consumer greenfield prompt with overloaded safety/state/agent/model/release language that deterministic completion cannot safely normalize before final writes
 
-- SLO/SLA Impact: Fixed pending release by rebuilt dist 21ed5b0a. The maintained installed standard path completed in 22.975-28.762s across thirteen cases, and the custom variance closure path completed in 25.191-27.711s across four cases, all under the 60s standard budget with governed records committed. Synthetic typed-probe rescue wiring completed in 34.408s under the 90s rescue budget; natural host-model semantic rescue remains a separate proof class.
+- SLO/SLA Impact: Reopened after the 31cc84ef fresh variance run. Nine new domains completed under 26s with governed records, but `indigenous language curriculum evidence circle` failed before governed writes in 21.296s with no Radar, Registry, Atlas, release, program, project brief, traceability, or browser proof records. Synthetic typed-probe rescue remained under the 90s rescue budget in the prior rebuilt proof; natural host-model semantic rescue remains a separate proof class.
 
 - Data Risk: Low: governed records are not written after failed create; product intent can remain in runtime files
 
@@ -777,6 +779,30 @@
   failure classes for the current installable dist. Synthetic typed-probe rescue
   wiring passed in 34.408s with zero issues; natural host-model semantic rescue
   quality remains a separate proof class.
+  Fresh recursive variance after governance checkpoint `31cc84ef` reopened the
+  release gate again. Ten non-reused installed projects were simulated against
+  `odylith-local-release-0.1.15-21ed5b0a`; nine passed with hard 10/10 scores,
+  zero issues, browser proof, complete governed counts, and 23.221-25.678s
+  create timings. `Indigenous language curriculum evidence circle` failed
+  before governed writes in 21.296s because confirmed Atlas flowchart `First
+  Path Sequence` omitted the tail of the accepted first path. A source-local
+  repro confirmed the accepted first path was three events: educators submit
+  lesson plans, elders review cultural context, and coordinators record learner
+  progress evidence. The semantic model retained all three events, but the
+  rendered flowchart terminal node compressed `Coordinators record learner
+  progress evidence` to `Progress evidence`, dropping enough distinctive tail
+  terms for the Atlas tail-preservation gate to fail. This is a generic
+  terminal sequence-label custody defect, not an indigenous-language or
+  curriculum-specific failure.
+  Independent validator review on the same checkpoint also found the hard 10/10
+  score still overstates what is proven: several dimensions remain threshold or
+  self-consistency driven, domain-term coverage is lexical rather than causal,
+  role lenses are not equivalent to independent semantic expert approval,
+  browser proof still focuses on successful generated-state paths, and natural
+  rescue quality is not proven by synthetic typed-probe wiring. The failed
+  mechanism is false confidence from count/threshold proof; future claims need
+  negative fixtures, mutation tests, richer cross-field invariants, degraded UI
+  browser states, and adversarial prompt fuzzing.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
   2026-06-29 guardrail: do not "fix" title-compound user roles by adding
@@ -790,7 +816,7 @@
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: Fixed pending release in
+- Version/Build: Reopened after
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-21ed5b0a`.
   The source fix splits actor path-role cleanup into a dedicated owner,
   preserves direct gerund actor-role rejection while allowing title-compound
@@ -805,6 +831,22 @@
   variance closure matrix passed 4/4 cases with hard 10/10 scores, browser
   proof, zero issues, and 25.191-27.711s create timings. No matching temp
   project roots remained under `/Users/freedom/mock` after the installed runs.
+  The subsequent fresh variance run passed nine of ten domains but failed the
+  indigenous language curriculum evidence circle before governed writes on
+  Atlas first-path tail preservation; current source work must fix terminal
+  sequence label custody and then rebuild/rerun installed variance before any
+  release-readiness claim.
+  Source-local fix evidence: terminal flowchart labels now cap lossy compaction
+  when the rendered terminal node drops distinctive accepted-event tail terms,
+  and the fallback label is rebuilt from the first-path action clause instead
+  of a vague result-object phrase. Mermaid label balancing also preserves short
+  noun heads such as `Audio Capture and` instead of moving `and` to the next
+  line. Focused sequence/connector tests passed, and an exact source-local
+  replay of the indigenous-language prompt returned 0 in about 20s, wrote
+  4 Radar workstreams, 3 Registry specs, 6 Atlas sources, and rendered the
+  First Path Sequence terminal node as `Record learner progress evidence`.
+  The source-local replay repo was deleted. Installed release readiness remains
+  blocked until a rebuilt dist reruns the fresh variance and maintained matrix.
 
 - Related Incidents/Bugs: CB-208
 
