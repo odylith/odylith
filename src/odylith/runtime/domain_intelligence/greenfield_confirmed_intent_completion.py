@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description, completed_actor_rows as _completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_release_actor_rows as _first_release_actor_rows, proof_claim_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import inline_result_phrase as _inline_result_phrase, outcome_action_phrase as _outcome_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_confirmed_non_goals import non_goal_rows as _non_goal_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_completion import completed_system_rows as _completed_system_rows, state_label as _state_label, system_labels as _system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item as _boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
@@ -677,65 +678,6 @@ def _nominal_visible_outcome_phrase(value: str) -> str:
     if re.match(r"^(?:accepted|approved|completed|confirmed|persisted|recorded|saved)\b", text, flags=re.I):
         return f"the {text[:1].lower() + text[1:]}"
     return text
-
-
-def _non_goal_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
-    candidates: list[str] = []
-    for value in text_values(
-        [
-            intent.get("proof_boundary"),
-            intent.get("assumptions"),
-            intent.get("ambiguities"),
-        ]
-    ):
-        for sentence in re.split(r"(?<=[.!?])\s+|;\s+", _clean(value)):
-            row = _non_goal_row_from_sentence(sentence)
-            if row:
-                candidates.append(row)
-    rows = [row for row in unique_text(candidates) if _word_count(row) >= 5]
-    return rows[:4]
-
-
-def _non_goal_row_from_sentence(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return ""
-    lowered = text.casefold()
-    for marker in ("without claiming", "without claim"):
-        index = lowered.find(marker)
-        if index >= 0:
-            tail = text[index + len(marker) :].strip(" ,.;:")
-            return _sentence(f"Do not claim {tail}") if tail else ""
-    for marker in ("not claim", "not cover"):
-        index = lowered.find(marker)
-        if index >= 0:
-            tail = text[index + len(marker) :].strip(" ,.;:")
-            verb = "claim" if "claim" in marker else "cover"
-            return _sentence(f"Do not {verb} {tail}") if tail else ""
-    if _sentence_declares_deferred_scope(lowered):
-        return _sentence(text)
-    return ""
-
-
-def _sentence_declares_deferred_scope(lowered: str) -> bool:
-    if not lowered:
-        return False
-    if re.search(r"\bnot\s+later\b", lowered) and not re.search(
-        r"\b(?:out\s+of\s+scope|deferred?|future|beyond\s+the\s+first|not\s+included|not\s+claim|without\s+claim)\b",
-        lowered,
-    ):
-        return False
-    if any(marker in lowered for marker in ("out of scope", "deferred", "defer ", "future", "beyond the first")):
-        return True
-    if re.search(r"\bnot\s+(?:required|needed|necessary)\b", lowered) and re.search(
-        r"\b(?:first|release|path|scope|proof|live|integration|sync)\b",
-        lowered,
-    ):
-        return True
-    return bool(
-        re.search(r"\b(?:later|future)\b", lowered)
-        and re.search(r"\b(?:can|could|should|must|will|would|may|might|wait|outside|separate|after|until)\b", lowered)
-    )
 
 
 def _proof_boundary_metric(proof_boundary: str, *, outcome: str = "") -> str:

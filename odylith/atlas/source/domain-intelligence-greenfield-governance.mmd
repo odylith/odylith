@@ -6,6 +6,7 @@ flowchart LR
       confirm["Single operator confirmation"]
       source_guard["Intent source boundary guard<br/>Original user intent block only,<br/>no host guidance or CLI envelope"]
       confirmed_ir["ConfirmedIntentIR<br/>section IDs, source spans,<br/>hash, provenance,<br/>grammatical object phrases"]
+      non_goal_owner["Non-goal derivation owner<br/>proof, assumption, and ambiguity exclusions<br/>outside the completion parent"]
       sparse_systems["Sparse system topology<br/>terse/generated rows gain proof or state owner,<br/>rich explicit rows stay unpadded"]
       public_system_copy["Public system-row copy<br/>compiler labels stripped before<br/>Registry component prose"]
     end
@@ -16,11 +17,12 @@ flowchart LR
       compiler["Deterministic semantic compiler<br/>provider-free common path"]
       semantic_ir["SemanticModelIR<br/>first-path contract,<br/>ontology, event graph,<br/>proof obligations"]
       actor_role_owner["Shared actor-role owner<br/>role nouns feed recovery,<br/>fragments, and actor signatures"]
+      actor_path_role["Actor path-role owner<br/>accepted-path descriptions,<br/>suffix-subject stripping,<br/>preposition/action-led role cleanup"]
       external_boundary["External boundary semantics<br/>explicit systems, inferred first-path boundary,<br/>or typed deferred manual/fixture boundary"]
       sequence_owner["First-path sequence owner<br/>modal actor chains,<br/>connector-led object tails,<br/>evidence noun compounds,<br/>named result-view steps"]
       subject_carry_guard["Carried-subject guard<br/>only explicit subjects seed carry<br/>for sibling action clauses"]
       result_language["Result-language owner<br/>quoted/bounded visible results,<br/>result-object modifiers,<br/>grammatical item order"]
-      prose_shape_guard["Clause-local prose-shape guard<br/>shared actor-role heads only,<br/>valid gerund action lists pass"]
+      prose_shape_guard["Clause-local prose-shape guard<br/>shared actor-role heads only,<br/>valid gerund action lists and<br/>title-compound user roles pass"]
       artifact_plan["ArtifactPlanIR<br/>sanctioned projection fields"]
       release_scope["Release-scope classifier<br/>affirmative proof and evidence support<br/>survives unrelated negative scope tails"]
       canonical_facts["CanonicalProjectionFactIR<br/>source layer, semantic node,<br/>source path, repair owner,<br/>allowed projection IDs,<br/>sequence-step and supporting-tail variants"]
@@ -69,8 +71,8 @@ flowchart LR
       release_matrix["Installed release proof<br/>13-case standard matrix,<br/>Casebook surface included,<br/>per-case generated browser state proof,<br/>Atlas diagram state checked,<br/>independent artifact readback scoring,<br/>persisted matrix JSON,<br/>failed-create blocker excerpts,<br/>strict temp-root cleanup,<br/>plus rescue wiring smoke<br/>natural rescue proof still required"]
     end
 
-    visible_intent --> confirmable_stdout --> confirm --> source_guard --> confirmed_ir --> sparse_systems --> public_system_copy
-    public_system_copy --> apply_input --> compiler --> semantic_ir --> actor_role_owner --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> projections --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
+    visible_intent --> confirmable_stdout --> confirm --> source_guard --> confirmed_ir --> non_goal_owner --> sparse_systems --> public_system_copy
+    public_system_copy --> apply_input --> compiler --> semantic_ir --> actor_role_owner --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> projections --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
     draft_set --> artifact_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> evidence_readback --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> matrix_scorer --> release_matrix
@@ -94,8 +96,8 @@ flowchart LR
     classDef standard fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1.2px;
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
-    class visible_intent,confirmable_stdout,confirm,source_guard,confirmed_ir,sparse_systems,public_system_copy intent;
-    class apply_input,compiler,semantic_ir,actor_role_owner,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,visible_actor_projection,validators,expert_lenses,persisted_readback,evidence_readback,typed_findings,legacy_blockers,final_manifest standard;
+    class visible_intent,confirmable_stdout,confirm,source_guard,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
+    class apply_input,compiler,semantic_ir,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,visible_actor_projection,validators,expert_lenses,persisted_readback,evidence_readback,typed_findings,legacy_blockers,final_manifest standard;
     class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
     class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix write;
 

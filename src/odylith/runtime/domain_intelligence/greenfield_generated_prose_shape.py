@@ -35,6 +35,8 @@ def gerund_actor_role_finite_action_splice(value: str) -> bool:
                 normalized_prefix = base_gerund_clause(prefix).strip(" .")
                 if not normalized_prefix or normalized_prefix.casefold() == prefix.casefold():
                     continue
+                if _looks_like_title_compound_actor(prefix, normalized_prefix):
+                    continue
                 if not _has_actor_role_head(normalized_prefix):
                     continue
                 candidate = " ".join(window[split_index:]).strip(" .")
@@ -67,6 +69,23 @@ def _token_segments(value: str) -> list[list[str]]:
 def _has_actor_role_head(value: str) -> bool:
     tokens = [token.casefold() for token in _word_tokens(value)]
     return bool(tokens and tokens[-1] in ACTOR_ROLE_NOUNS)
+
+
+def _looks_like_title_compound_actor(prefix: str, normalized_prefix: str) -> bool:
+    """Distinguish product-title compounds from direct gerund-role splices."""
+
+    original = _word_tokens(prefix)
+    normalized = _word_tokens(normalized_prefix)
+    if len(original) != len(normalized) or len(original) < 3:
+        return False
+    changed = [
+        index
+        for index, (raw, repaired) in enumerate(zip(original, normalized))
+        if raw.casefold() != repaired.casefold()
+    ]
+    if changed != [0]:
+        return False
+    return normalized[-1].casefold() in {"user", "users"} and len(normalized) >= 3
 
 
 def _candidate_starts_with_stative_ownership(value: str) -> bool:

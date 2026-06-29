@@ -15,19 +15,16 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_descriptions
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_descriptions import (
     readable_actor_description,
 )
-from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import capability_action_clause
+from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_path_role import actor_path_role
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import is_deferred_actor
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label as _focus_label
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms as _semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms as _label_terms
-from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
-from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 _DANGLING_ACTOR_LABEL_TAILS = frozenset(
@@ -149,7 +146,7 @@ def _actor_row_is_meta(value: str) -> bool:
 
 def _actor_description(*, label: str, index: int, title: str, first_path: str, state: str) -> str:
     label_text = label.casefold()
-    path_role = _actor_path_role(label=label, first_path=first_path, state=state)
+    path_role = actor_path_role(label=label, first_path=first_path, state=state)
     if path_role:
         return f"{label}: {path_role}."
     if re.search(r"\b(public\s+figure|public\s+person|tracked|being\s+tracked|subject|official|executive|creator)\b", label_text):
@@ -177,215 +174,6 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
             "supplies context, reviews the result, or takes the next step named by the first release"
         )
     return f"{label}: {body}."
-
-
-def _actor_path_role(*, label: str, first_path: str, state: str) -> str:
-    """Prefer accepted-path language over generic role templates."""
-
-    terms = _actor_path_terms(label)
-    if not terms:
-        return ""
-    sources = [(first_path, 12)]
-    if not any(_clean(value) for value, _bonus in sources):
-        return ""
-    scored: list[tuple[int, int, int, str]] = []
-    for source, source_bonus in sources:
-        clauses = _path_clauses(source)
-        for index, clause in enumerate(clauses):
-            if source_bonus <= 0 and _state_definition_clause(clause):
-                continue
-            if not _clause_subject_matches_actor(clause, label=label):
-                continue
-            overlap = len(terms & _actor_match_terms(clause))
-            if overlap <= 0:
-                continue
-            scored.append((overlap * 10 + source_bonus, overlap, -index, clause))
-    if not scored:
-        return ""
-    scored.sort(reverse=True)
-    clause = _short(scored[0][3], limit=170)
-    if not clause:
-        return ""
-    clause = _focus_clause_on_actor_label(clause, label=label)
-    clause = re.sub(r"^(?:a|an|the)\s+", "", clause, flags=re.IGNORECASE)
-    clause = _strip_actor_subject_from_clause(clause, label=label)
-    clause = _trim_following_actor_transition(clause)
-    if not clause:
-        return ""
-    action = _sentence_action_fragment(
-        readable_action_chain_phrase(clause, fallback=capability_action_clause(clause), limit=170, max_steps=3)
-    )
-    return f"uses the product to {action}; the outcome stays clear enough to choose the next step"
-
-
-def _sentence_action_fragment(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if len(text) >= 2 and text[:1].isupper() and not text[:2].isupper():
-        return f"{text[:1].casefold()}{text[1:]}"
-    return text
-
-
-def _trim_following_actor_transition(value: str) -> str:
-    text = _clean(value).strip(" .,;:")
-    if not text:
-        return ""
-    split = re.split(
-        r",\s+(?:and\s+)?(?:a|an|the)\s+[a-z][a-z0-9'/-]*(?:\s+[a-z][a-z0-9'/-]*){0,5}\s+"
-        r"(?:adds?|approves?|assigns?|checks?|chooses?|closes?|confirms?|creates?|enters?|intakes?|opens?|picks?|"
-        r"records?|reviews?|routes?|saves?|selects?|signs?|submits?|updates?|uses?)\b",
-        text,
-        maxsplit=1,
-        flags=re.IGNORECASE,
-    )[0]
-    return split.strip(" .,;:") or text
-
-
-def _clause_subject_matches_actor(value: str, *, label: str) -> bool:
-    """Reject object-term overlap when another actor owns the clause."""
-
-    subject = leading_subject_prefix(value) or _explicit_clause_subject(value)
-    if not subject:
-        return True
-    subject_terms = _actor_match_terms(subject)
-    actor_terms = _actor_path_terms(label)
-    generic_subject = subject_terms & {"person", "user", "participant", "customer", "client"}
-    if generic_subject and re.search(r"\b(person|user|participant|customer|client)\b", label, re.IGNORECASE):
-        return True
-    overlap = subject_terms & actor_terms
-    if not overlap:
-        return False
-    subject_specific = subject_terms - _ROLE_WORDS
-    actor_specific = actor_terms - _ROLE_WORDS
-    if subject_specific and actor_specific and not (subject_specific & actor_specific):
-        return False
-    return True
-
-
-def _explicit_clause_subject(value: str) -> str:
-    words = [word.strip(".,;:") for word in _clean(value).split() if word.strip(".,;:")]
-    if len(words) < 2:
-        return ""
-    for index, word in enumerate(words):
-        if not looks_like_finite_action_token(word):
-            continue
-        subject_words = words[:index]
-        if not subject_words:
-            return ""
-        subject = " ".join(subject_words).strip(" .,;:")
-        subject = re.sub(
-            r"^(?:a|an|the|one|this|that|each|another)\s+",
-            "",
-            subject,
-            flags=re.IGNORECASE,
-        )
-        if len(subject.split()) > 6:
-            return ""
-        if re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", subject, re.IGNORECASE):
-            return ""
-        return subject
-    return ""
-
-
-def _state_definition_clause(value: str) -> bool:
-    text = _clean(value).casefold()
-    return bool(
-        re.search(r"\b(?:central|core|main|primary)\s+(?:thing|object|record|state)\s+the\s+product\s+tracks\b", text)
-        or re.search(r"\b(?:unit\s+of\s+truth|state\s+object|central\s+state)\b", text)
-        or re.search(r"\bthe\s+product\s+(?:tracks|keeps|stores|records)\s+(?:is\s+)?(?:a|an|the)\b", text)
-    )
-
-
-def _actor_path_terms(label: str) -> set[str]:
-    return _actor_match_terms(label) - {
-        "actor",
-        "client",
-        "customer",
-        "individual",
-        "manage",
-        "manager",
-        "managing",
-        "owner",
-        "participant",
-        "people",
-        "person",
-        "track",
-        "tracking",
-        "user",
-    }
-
-
-def _actor_match_terms(value: str) -> set[str]:
-    terms = set(_semantic_terms(value))
-    expanded = set(terms)
-    for term in terms:
-        for part in re.split(r"[-_]+", term):
-            if len(part) >= 3:
-                expanded.add(part)
-    return expanded
-
-def _focus_clause_on_actor_label(value: str, *, label: str) -> str:
-    """Focus a multi-actor clause on the actor label being described."""
-
-    text = _clean(value).strip(" .")
-    if not text:
-        return ""
-    role_words = _actor_path_terms(label) & _ROLE_WORDS
-    if not role_words:
-        return text
-    words = text.split()
-    for index, raw_word in enumerate(words):
-        token = raw_word.strip(".,;:()").casefold()
-        if token not in role_words:
-            continue
-        start = max(0, index - 1)
-        return " ".join(words[start:]).strip(" .,;:")
-    return text
-
-
-def _strip_actor_subject_from_clause(value: str, *, label: str) -> str:
-    """Remove a role label when it was copied into a clause as the subject."""
-
-    text = _clean(value).strip(" .")
-    if not text:
-        return ""
-    label_surface = _clean(label).strip(" .")
-    if label_surface:
-        surface_pattern = r"\s+".join(re.escape(word) for word in label_surface.split())
-        text = re.sub(
-            rf"^(?:a|an|the|one)?\s*{surface_pattern}\s+",
-            "",
-            text,
-            count=1,
-            flags=re.IGNORECASE,
-        ).strip(" .")
-    label_terms = sorted(_semantic_terms(label), key=len, reverse=True)
-    if label_terms:
-        lead = r"(?:a|an|the|one)?\s*(?:" + "|".join(re.escape(term) for term in label_terms) + r")"
-        for _ in range(4):
-            cleaned = re.sub(rf"^{lead}\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
-            if cleaned == text:
-                break
-            text = cleaned
-    if re.search(r"\b(person|user|participant|customer|client)\b", label, re.IGNORECASE):
-        text = re.sub(
-            r"^(?:a|an|the|one)\s+(?:new\s+)?(?:person|user|participant|customer|client)\s+",
-            "",
-            text,
-            count=1,
-            flags=re.IGNORECASE,
-        ).strip(" .")
-    text = re.sub(
-        r"^(?:signs?|opens?|starts?)\s+(?:in|into|the\s+app|the\s+product|the\s+site|the\s+web\s+app)\b[,.]?\s*",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    )
-    return text.strip(" .")
-
-
-def _path_clauses(value: str) -> list[str]:
-    rows = [_clean(step).strip(" .") for step in first_path_steps(value)]
-    return [row for row in rows if _word_count(row) >= 4]
 
 
 def _actor_row_has_usable_description(value: str) -> bool:
@@ -595,11 +383,13 @@ def _trim_non_actor_lead_words(value: str) -> str:
         "after",
         "before",
         "because",
+        "by",
         "displays",
         "decision",
         "detail",
         "details",
         "evidence",
+        "for",
         "gives",
         "history",
         "in",
@@ -624,6 +414,7 @@ def _trim_non_actor_lead_words(value: str) -> str:
         "summary",
         "the",
         "then",
+        "to",
         "when",
         "where",
         "which",
@@ -631,9 +422,22 @@ def _trim_non_actor_lead_words(value: str) -> str:
     }
     while len(words) > 1 and words[0].casefold().strip(".,;:") in non_actor_leads:
         words.pop(0)
+    while len(words) > 1 and _leading_action_token_with_role_tail(words):
+        words.pop(0)
     if len(words) > 1 and words[-2].casefold().strip(".,;:") in non_actor_leads:
         words = words[-1:]
     return " ".join(words)
+
+
+def _leading_action_token_with_role_tail(words: Sequence[str]) -> bool:
+    if len(words) < 2:
+        return False
+    lead = words[0].casefold().strip(".,;:")
+    if not lead or _word_has_role_signal(lead):
+        return False
+    if not (looks_like_base_action_token(lead) or looks_like_finite_action_token(lead)):
+        return False
+    return any(_word_has_role_signal(word.casefold().strip(".,;:")) for word in words[1:])
 
 
 def _actor_label_has_clause_lead(value: str) -> bool:

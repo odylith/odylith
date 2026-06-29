@@ -18,7 +18,7 @@
 
 - Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-33bdb122, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-265cc0cf, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e7bc3be3
 
-- Environment Update: 2026-06-29 fresh local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-af4117d8 installed into non-reused temporary consumer repos under /Users/freedom/mock.
+- Environment Update: 2026-06-29 fresh local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-af4117d8 installed into non-reused temporary consumer repos under /Users/freedom/mock. Later fresh custom variance used /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-72c100d1 with non-reused temporary consumer repos and persisted proof at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-72c100d1/greenfield-post-confirm-custom-variance-20260629.v1.json.
 
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
@@ -751,21 +751,46 @@
   in 26.698s with 5 Registry specs and 20 trace nodes. Synthetic typed-probe
   rescue wiring passed in 32.728s with zero issues; natural host-model semantic
   rescue quality remains a separate proof class.
+  Fresh custom installed variance against
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-72c100d1`
+  reopened the gate again with two failures across ten non-reused domains. Eight
+  cases passed in 17.365-43.304s, but `ai eval red team finding board` failed
+  before governed writes in 39.491s with forty-four typed semantic slop findings
+  for gerundized actor-role action leakage, and `airport runway closure
+  readiness` failed before governed writes in 20.325s because Project
+  implementation prompt copy contained adjacent duplicate prose from a
+  preposition-led actor label (`for For Duty Manager`). This is a platform
+  actor-boundary and generated-prose-shape precision defect, not a project
+  content defect.
 
 - Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
+  2026-06-29 guardrail: do not "fix" title-compound user roles by adding
+  domain allowlists or weakening the gerundized actor-role gate. The gate must
+  keep rejecting direct malformed actor-action splices such as a lowercase role
+  subject followed by a finite verb, while accepting product-title compounds
+  where only the first token normalizes from gerund form and the suffix is a
+  valid user role. Do not repair adjacent duplicate `for For` style defects by
+  string-patching rendered Project prompts; actor completion must remove
+  preposition-led and action-led role fragments before projection.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: Current installed proof for this checkpoint is green. Local
-  release dist `odylith-local-release-0.1.15-db69b062` passed the maintained
-  thirteen-case installed matrix with browser proof, strict temp cleanup, hard
-  10/10 standard scores, zero issues, complete governed readback, and
-  standard-path create timings of 21.927-26.698s. Synthetic rescue wiring
-  passed in 32.728s, but natural host-model semantic rescue quality remains
-  unclaimed because the rescue proof is a typed-probe wiring smoke, not an
-  organically triggered model repair. Keep this bug open for future
-  high-variance escaped post-confirm failures; this checkpoint closes the
-  `f5fef9e6` sparse-topology regression class.
+- Version/Build: Current installed release readiness is not green. The prior
+  `odylith-local-release-0.1.15-db69b062` checkpoint passed its maintained
+  matrix, but the later `odylith-local-release-0.1.15-72c100d1` custom
+  variance reopened the bug with two no-write failures. Current source-local
+  fix splits actor path-role cleanup into a dedicated owner, preserves direct
+  gerund actor-role rejection while allowing title-compound user roles, trims
+  preposition/action-led actor fragments before projection, strips longer
+  title-suffix subjects from accepted-path actor descriptions, and moves
+  non-goal derivation out of the confirmed-intent completion parent. Focused
+  regression proof passed 3 tests, the affected greenfield pack passed
+  133 tests in 73.16s, and exact source-local replays of the AI-eval and runway
+  failures returned 0 while writing 5 Radar workstreams, 3 Registry specs,
+  6 Atlas sources, and 18 trace nodes. Release readiness remains blocked until
+  a rebuilt installable dist reruns the maintained and custom high-variance
+  installed matrices with browser proof, expert lenses, prompt readback, and
+  temp cleanup.
 
 - Related Incidents/Bugs: CB-208
 
@@ -781,6 +806,10 @@
 - src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py
 - src/odylith/runtime/artifact_quality/greenfield_package_quality.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_path_role.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_non_goals.py
+- src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py
 - tests/unit/runtime/test_greenfield_confirmed_surfaces.py
 - tests/unit/runtime/test_greenfield_project_brief_rendering.py
 - tests/integration/runtime/test_greenfield_hiit_post_confirm_quality.py

@@ -2304,6 +2304,21 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   fragment in 19.609s with temp cleanup. No-refresh unit fixtures now
   explicitly bypass rendered-custody enforcement when they also bypass surface
   refresh; live source-local create remains the real rendered-custody proof.
+- 2026-06-29 fresh custom installed variance reopened B-142 after a prior
+  maintained-matrix pass. The `72c100d1` local dist passed eight of ten
+  non-reused custom projects, but failed AI-eval red-team finding board before
+  governed writes with gerundized actor-role false positives on valid
+  title-compound user roles, and failed airport runway closure readiness before
+  governed writes with adjacent duplicate Project prompt copy from a
+  preposition-led actor label. The source fix stays general-purpose: actor
+  path-role cleanup is now a separate owner, actor completion trims
+  preposition/action-led role fragments and strips longer title-suffix subjects,
+  generated prose-shape accepts title-compound user roles while preserving the
+  direct actor-role splice rejection, and non-goal derivation moved out of the
+  confirmed-intent parent. Focused regressions passed, the affected greenfield
+  pack passed 133 tests, and exact source-local replays wrote complete governed
+  records for both failures. Installed release readiness remains blocked until
+  a rebuilt dist reruns maintained plus custom high-variance matrices.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

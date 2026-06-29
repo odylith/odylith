@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Source-fixed the fresh custom installed variance failures from dist 72c100d1: title-compound user roles no longer trip the gerund actor-role slop gate, preposition/action-led actor fragments are trimmed before Project prompt projection, and non-goal derivation now has a dedicated owner; focused proof and exact source replays passed, rebuilt installed proof remains required.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_path_role.py +4 more
 - **2026-06-29 · Validation:** Fresh dist db69b062 passed the maintained installed greenfield matrix after sparse-topology repair: 13/13 standard cases scored hard 10/10 with zero issues, browser proof, complete governed readback, strict temp cleanup, and 21.927-26.698s create times; synthetic typed-probe rescue wiring passed in 32.728s.
   - Scope: B-142
   - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-db69b062/greenfield-post-confirm-matrix.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
@@ -55,6 +58,23 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-29: Source-fixed fresh custom installed actor-boundary failures. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
+  A custom installed matrix against `odylith-local-release-0.1.15-72c100d1`
+  passed eight non-reused domains but failed AI-eval red-team and airport
+  runway readiness before governed writes. The failure class was generic actor
+  custody: valid title-compound user roles were treated like malformed
+  gerundized actor-action splices, and a preposition-led actor fragment reached
+  Project prompt copy as `for For`. `greenfield_confirmed_actor_path_role.py`
+  now owns accepted-path role focusing and suffix-subject stripping,
+  `greenfield_confirmed_actor_completion.py` trims preposition/action-led role
+  fragments before projection, `greenfield_generated_prose_shape.py` preserves
+  the direct actor-role splice rejection while accepting title-compound user
+  roles, and `greenfield_confirmed_non_goals.py` owns non-goal derivation
+  outside the completion parent. Focused proof passed, the affected greenfield
+  pack passed 133 tests in 73.16s, and exact source-local replays wrote
+  complete governed records for both failures. Installed release readiness
+  remains unclaimed until a rebuilt dist proves maintained and custom
+  high-variance matrices.
 - 2026-06-29: Proved the sparse-topology checkpoint in the installed consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`; Diagram: D-043)
   Fresh local dist `odylith-local-release-0.1.15-db69b062` passed the
   maintained installed greenfield matrix after the sparse topology repair. All

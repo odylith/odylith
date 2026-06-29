@@ -162,6 +162,45 @@ def test_confirmed_actor_completion_role_candidates_use_shared_label_terms() -> 
     assert "Source-backed Reviewer" in labels
 
 
+def test_confirmed_actor_completion_trims_preposition_and_action_led_role_fragments() -> None:
+    runway_intent = {
+        "title": "Airport Runway Maintenance Closure Readiness Tool",
+        "product_story": (
+            "Operations staff record pavement inspection findings, coordinate airline and tower constraints, "
+            "preserve NOTAM evidence, track weather windows, and publish reopening readiness for duty manager review."
+        ),
+        "state_object": "Runway closure readiness record tracks pavement findings, constraints, evidence, and review status.",
+        "first_path": (
+            "Operations staff record pavement inspection findings. Operations staff coordinates airline and tower constraints. "
+            "Operations staff preserves NOTAM evidence. Operations staff tracks weather windows. "
+            "Operations staff publishes reopening readiness for duty manager review."
+        ),
+        "human_actors": [],
+    }
+    ai_eval_intent = {
+        "title": "AI Evaluation Red Team Finding Board",
+        "product_story": (
+            "The board receives model behavior reports, links reproduction evidence, groups safety policy impacts, "
+            "tracks mitigation owner signoff, and publishes model release readiness proof before deployment review."
+        ),
+        "state_object": "Finding record tracks model behavior, reproduction evidence, mitigation signoff, and readiness proof.",
+        "first_path": (
+            "An AI Evaluation Red Team Finding Board User can receive model behavior reports. Link reproduction evidence. "
+            "Group safety policy impacts. Track mitigation owner signoff. Publish model release readiness proof before a deployment review."
+        ),
+        "human_actors": [],
+    }
+
+    runway_rows = completed_actor_rows(runway_intent, title=runway_intent["title"])
+    ai_eval_rows = completed_actor_rows(ai_eval_intent, title=ai_eval_intent["title"])
+
+    assert "Duty Manager: keeps the product outcome aligned" in " ".join(runway_rows)
+    assert "For Duty Manager" not in " ".join(runway_rows)
+    assert "Finding Board User: uses the product to receive model behavior reports" in " ".join(ai_eval_rows)
+    assert "uses the product to AI Evaluation Red Team Finding Board User receives" not in " ".join(ai_eval_rows)
+    assert "Mitigation Owner: uses the product to track mitigation owner signoff" in " ".join(ai_eval_rows)
+
+
 def test_confirmed_system_completion_does_not_repeat_focus_words_in_fallback_labels() -> None:
     completed = complete_confirmed_intent(
         {
