@@ -1571,9 +1571,17 @@ vocabulary, or degraded packages.
       `tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py` and
       `tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py` together:
       44/44.
-- [ ] Rebuild the installable dist after the workstream-title source fix and
+- [x] Rebuild the installable dist after the workstream-title source fix and
       rerun installed maintained plus fresh non-reused high-variance proof.
-      Dist `2308795e` predates this source change. Release readiness remains
-      unclaimed until the rebuilt package passes domain-leakage guard,
-      maintained matrix, strict artifact readback, browser proof, cleanup
-      assertion, and fresh variance under the hardened scorer.
+      Completed on 2026-06-29 with dist
+      `odylith-local-release-0.1.15-a46ef6cc`. The local release build and
+      matrix start both passed the platform domain-leakage guard across 19
+      distinctive fixture terms. The maintained installed matrix passed 13/13
+      standard cases with hard 10/10 scores, zero issues, browser proof for
+      every case, complete governed readback, 21.980-26.653s standard create
+      timings, clean temp cleanup, and synthetic typed-probe rescue wiring at
+      32.990s. Fresh non-reused installed variance then passed 10/10 domains
+      with hard 10/10 scores, zero issues, browser proof for every case,
+      24.258-26.624s create timings, and clean temp cleanup. Natural
+      host-model semantic rescue quality remains a separate unclaimed proof
+      class.

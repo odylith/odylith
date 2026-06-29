@@ -52,8 +52,13 @@ This section captures synchronized requirement and contract signals derived from
   heads before final title projection, using shared semantic-word extraction
   and string partitioning instead of domain terms, post-render title repair, or
   a new regex parser. Focused proof passed 44 quality-repair/backlog-title
-  tests; rebuilt installed matrix proof remains pending because dist `2308795e`
-  predates this source fix.
+  tests. Rebuilt installed proof on dist `odylith-local-release-0.1.15-a46ef6cc`
+  passed the domain-leakage guard, the maintained 13-case matrix with hard
+  10/10 scores, browser proof, zero issues, and 21.980-26.653s create timings,
+  and a fresh 10-domain variance matrix with hard 10/10 scores, browser proof,
+  zero issues, and 24.258-26.624s create timings. Synthetic typed-probe rescue
+  wiring passed in 32.990s; natural host-model semantic rescue quality remains
+  unclaimed.
 
 - 2026-06-29: Proved the post-domain-leakage-guard installed package checkpoint. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   Local release dist `odylith-local-release-0.1.15-3fbacb91` passed the

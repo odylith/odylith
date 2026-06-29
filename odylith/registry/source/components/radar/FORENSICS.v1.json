@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 336,
-    "mapped_workstream_evidence_count": 291,
+    "explicit_event_count": 337,
+    "mapped_workstream_evidence_count": 292,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 336
+    "timeline_event_count": 337
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,39 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a46ef6cc/greenfield-post-confirm-fresh-variance-20260629-a46ef6cc.v1.json",
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a46ef6cc/greenfield-post-confirm-matrix-20260629-a46ef6cc.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 715,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Rebuilt dist a46ef6cc passed domain-leakage guard, maintained installed greenfield matrix, fresh ten-domain variance, browser proof, and synthetic rescue wiring under latency budgets.",
+      "ts_iso": "2026-06-29T15:00:33-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",

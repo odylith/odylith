@@ -2391,6 +2391,15 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   new regex parser. Focused proof passed the quality-repair and backlog-title
   tests together (44/44). Rebuilt installed matrix proof remains pending for
   this source delta.
+- 2026-06-29 rebuilt installed proof on dist `a46ef6cc` closed the
+  workstream-title preservation checkpoint. The maintained matrix passed 13/13
+  standard cases with hard 10/10 scores, zero quality issues, generated browser
+  proof for every case, complete governed readback, and 21.980-26.653s standard
+  create timings; synthetic typed-probe rescue wiring passed in 32.990s. A
+  fresh ten-domain non-reused variance matrix then passed with hard 10/10
+  scores, zero issues, browser proof for every case, complete governed
+  readback, 24.258-26.624s timings, and clean temp cleanup. Natural host-model
+  semantic rescue quality remains unclaimed.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

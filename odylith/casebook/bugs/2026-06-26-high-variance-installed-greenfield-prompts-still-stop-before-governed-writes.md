@@ -915,6 +915,24 @@
   standard create timings, and synthetic typed-probe rescue wiring at 33.109s.
   This is valid maintained-matrix evidence for the previous package, not final
   release evidence for the current source delta.
+  Rebuilt installed proof after the source fix then passed on dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a46ef6cc`.
+  The maintained matrix proof at
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a46ef6cc/greenfield-post-confirm-matrix-20260629-a46ef6cc.v1.json`
+  reports status `passed`, 13/13 standard cases, all hard 10/10 scores, zero
+  quality issues, browser proof for 13/13 cases, 21.980-26.653s standard
+  create timings, clean temp cleanup, and synthetic typed-probe rescue wiring
+  passed in 32.990s. Fresh non-reused variance proof at
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a46ef6cc/greenfield-post-confirm-fresh-variance-20260629-a46ef6cc.v1.json`
+  passed 10/10 new domains with hard 10/10 scores, zero issues, browser proof
+  for 10/10 cases, 24.258-26.624s standard create timings, and clean temp
+  cleanup. The fresh domains covered transplant cold-chain exception review,
+  algorithmic hiring appeal audit, nuclear canister inspection, tribal water
+  compact hearings, robotics lockout/tagout, synthetic biology strain release,
+  disaster cash assistance fraud review, digital repatriation consent,
+  autonomous vehicle map-update safety, and agent tool-permission governance.
+  Natural host-model semantic rescue quality remains unclaimed; this proof
+  covers standard path and synthetic typed-probe rescue wiring.
 
 - Related Incidents/Bugs: CB-208
 
