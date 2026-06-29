@@ -233,6 +233,54 @@ def test_repetition_gate_allows_compact_visible_result_projection_from_semantic_
     assert "repeats noncanonical prose" not in "\n".join(issues)
 
 
+def test_repetition_gate_allows_action_complement_tail_from_first_path_custody() -> None:
+    raw_path = (
+        "A multi-party security disclosure council workspace user can coordinate external vulnerability reports, "
+        "affected partner review, embargo decisions, evidence custody, legal signoff, and public advisory release "
+        "readiness without personalized notification campaigns in the first release."
+    )
+    repeated_tail = (
+        "Affected partner review, embargo decisions, evidence custody, legal signoff, and public advisory release "
+        "readiness without personalized notification campaigns in the first release"
+    )
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {"state_object": "Disclosure council workspace"},
+                "first_path_contract": {
+                    "raw_path": raw_path,
+                    "action": "coordinate",
+                    "capability": (
+                        "coordinating external vulnerability reports, affected partner review, embargo decisions, "
+                        "evidence custody, legal signoff and public advisory release readiness"
+                    ),
+                    "visible_result": (
+                        "The council coordinates external vulnerability reports, affected partner review, embargo "
+                        "decisions, evidence custody, legal signoff, and public advisory release readiness"
+                    ),
+                    "events": [
+                        {
+                            "text": raw_path,
+                            "action": "coordinates",
+                            "target_entity": "external vulnerability reports",
+                        }
+                    ],
+                },
+            }
+        },
+        backlog_result={},
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_preview={"first_path": repeated_tail},
+        next_steps_preview={"implementation_prompt": repeated_tail},
+        accepted_project_preview={"source_launch": {"implementation_prompt": repeated_tail}},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert "repeats noncanonical prose" not in "\n".join(issues)
+
+
 def test_repetition_gate_still_rejects_first_path_event_without_semantic_custody() -> None:
     event = "Publish a reviewed evacuation readiness state with accountable assignments"
     package = SimpleNamespace(

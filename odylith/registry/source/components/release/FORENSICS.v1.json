@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 125,
-    "mapped_workstream_evidence_count": 93,
+    "explicit_event_count": 128,
+    "mapped_workstream_evidence_count": 96,
     "recent_path_match_count": 1,
     "spec_history_event_count": 18,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 126
+    "timeline_event_count": 129
   },
   "name": "Release",
   "path_prefixes": [
@@ -49,7 +49,7 @@
         "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 689,
+      "event_index": 693,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -57,8 +57,113 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T00:39:51-07:00",
+      "ts_iso": "2026-06-29T03:09:12-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 691,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield sparse model-lab escape fixed in source: dedicated sparse tests passed, live simulation suite passed 14 tests, source-local create passed in 19.232s with zero manifest issues and governed records; rebuilt installed matrix still required before release readiness.",
+      "ts_iso": "2026-06-29T02:23:29-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e1dd08d6/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
+      ],
+      "confidence": "high",
+      "event_index": 689,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh local release dist e1dd08d6 passed the installed greenfield post-confirm matrix under the hardened scorer: 13/13 standard real consumer-lane creates scored 10/10 with zero issues, browser proof clean, strict temp cleanup, timings 22.581-27.010s; synthetic rescue wiring smoke passed in 34.942s. Natural rescue quality remains separate from this wiring proof.",
+      "ts_iso": "2026-06-29T01:29:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+      ],
+      "confidence": "high",
+      "event_index": 688,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Captured and fixed hardened release-matrix proof defect: rebuilt dist def2f783 completed thirteen standard greenfield creates under 28s plus rescue smoke at 34.916s, but scorer falsely treated odylith/radar/source/CLAUDE.md as a Radar workstream. Casebook, Registry, Atlas, and plan now record the custody-boundary failure; collector excludes guidance/catalog Markdown and focused matrix proof passed 49 tests.",
+      "ts_iso": "2026-06-29T01:09:40-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

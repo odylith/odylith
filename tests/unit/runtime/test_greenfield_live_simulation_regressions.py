@@ -195,6 +195,38 @@ def test_sparse_model_lab_notebook_post_confirm_package_stays_clean(tmp_path: Pa
     assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
 
 
+def test_security_disclosure_council_object_list_projection_stays_canonical(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield proposal for a multi-party security disclosure council that coordinates "
+        "external vulnerability reports, affected partner review, embargo decisions, evidence custody, "
+        "legal signoff, and public advisory release readiness without personalized notification campaigns "
+        "in the first release."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path, prompt)
+    report = build_greenfield_package_report(prewrite.package)
+    rendered = json.dumps(
+        {
+            "proposal": proposal,
+            "project_brief": prewrite.package.project_brief_preview,
+            "next_steps": prewrite.package.next_steps_preview,
+            "accepted_project": prewrite.package.accepted_project_preview,
+        },
+        sort_keys=True,
+        default=str,
+    )
+
+    assert "affected partner review" in rendered.casefold()
+    assert "embargo decisions" in rendered.casefold()
+    assert "personalized notification campaigns" in rendered.casefold()
+    assert "reports, affected." not in json.dumps(
+        proposal["project_brief"]["coding_readiness_gates"],
+        sort_keys=True,
+    )
+    assert report.issues == ()
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+
+
 def test_health_followup_recovery_keeps_adjectival_result_terms_out_of_actors(tmp_path: Path) -> None:
     prompt = (
         "Create a greenfield product for digestive health patients who log meals, symptoms, medications, "

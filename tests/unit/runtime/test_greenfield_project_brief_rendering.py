@@ -173,6 +173,40 @@ def test_confirmed_project_brief_does_not_clip_article_modifier_tail_from_broad_
     assert generated_public_copy_issues("training roster project brief", brief) == ()
 
 
+def test_confirmed_project_brief_drops_clipped_comma_list_tail_from_readiness_gate() -> None:
+    brief = confirmed_project_brief(
+        label="Multi-party Security Disclosure Council Workspace",
+        prompt="Create a security disclosure council.",
+        release="0.0.1",
+        state_object="Disclosure council result record",
+        evidence_record="Disclosure proof record",
+        product_story=(
+            "Multi-party Security Disclosure Council Workspace helps a multi-party security disclosure council "
+            "workspace user complete a first path where a multi-party security disclosure council workspace user "
+            "can coordinate external vulnerability reports, affected partner review, embargo decisions, evidence "
+            "custody, legal signoff, and public advisory release readiness without personalized notification "
+            "campaigns in the first release."
+        ),
+        first_path=(
+            "A multi-party security disclosure council workspace user can coordinate external vulnerability "
+            "reports, affected partner review, embargo decisions, evidence custody, legal signoff, and public "
+            "advisory release readiness without personalized notification campaigns in the first release."
+        ),
+        proof_boundary=(
+            "Release 0.0.1 succeeds when the disclosure council can review the release path with evidence, "
+            "legal signoff, and replayable proof."
+        ),
+        human_actors=["Multi-party Security Disclosure Council Workspace User"],
+        internal_systems=["Disclosure intake register", "Disclosure review workspace", "Disclosure proof ledger"],
+    )
+    readiness_copy = json.dumps(brief["coding_readiness_gates"], sort_keys=True)
+
+    assert "reports, affected." not in readiness_copy
+    assert "external vulnerability reports." in readiness_copy
+    assert "affected partner review." not in readiness_copy
+    assert generated_public_copy_issues("security disclosure project brief", brief) == ()
+
+
 def test_confirmed_project_brief_skips_short_scope_preface_for_project_outcome() -> None:
     intent = {
         "title": "Project Coordination Workspace",

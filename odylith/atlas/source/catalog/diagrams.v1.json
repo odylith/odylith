@@ -2230,7 +2230,7 @@
         "odylith/radar/source/ideas/2026-03/2026-03-27-odylith-public-release-dogfood-activation-and-consumer-rehearsal.md": "da20bb2c778974ea69ef1474dbe41a4b42de3617d4ef1875a493543786b02175",
         "odylith/technical-plans/done/2026-03/2026-03-27-odylith-canonical-release-version-session-and-maintainer-runbook.md": "144394af246ee71229fa52513abfdce9f6321b0eaa4173cd154b0b45b13e1e01",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "19ab9190f680a1d9a59ec3ccf50e8ebafbb4479e5bdd7ef3720ba261f0bef66f",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md": "111fc6cbdb44670bc273855b085c75e557fe3c80317dfe87a1c5cebedf51122c",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md": "58cf41d1d96a2d5652af4aa57a6556d995feedb7981e33c183a1868a7a6ab06f",
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "odylith/MAINTAINER_RELEASE_RUNBOOK.md": "0ffc1a93516f0817f5525184cf8069fc0d47570d74912c4f9b92688daf3b56c5",
         "Makefile": "adb5813fe7fb99618f77058859e3f74043d6f7173c5f372bf9211d39f8f01729",
@@ -2330,7 +2330,7 @@
         "odylith/technical-plans/done/2026-03/2026-03-28-odylith-managed-runtime-bundles-and-supported-platform-contract.md": "1f23b5b159f92612c4dd52b7fe1e077d5842a9e6439b59b6c42c617111ccf45b",
         "odylith/casebook/bugs/2026-03-28-public-consumer-install-depends-on-machine-python.md": "892477de3906a35157275d8aaa2f9cfc259dd2efb76222fa7247461d011a1ea6",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "19ab9190f680a1d9a59ec3ccf50e8ebafbb4479e5bdd7ef3720ba261f0bef66f",
-        "odylith/registry/source/components/release/CURRENT_SPEC.md": "111fc6cbdb44670bc273855b085c75e557fe3c80317dfe87a1c5cebedf51122c",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md": "58cf41d1d96a2d5652af4aa57a6556d995feedb7981e33c183a1868a7a6ab06f",
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "src/odylith/install/manager.py": "b6f21986f0e068eb956d255eb3f3d89f972f325ce3026a782537a2c12075fb30",
         "src/odylith/install/managed_runtime.py": "1d7b3b567eca6ed0e57646dac1f10a87435060d30874ecfd537d47de8a276c42",
@@ -4302,10 +4302,10 @@
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "57664efd8a6b44694eb2157bc99405c7bf261808b3becfa920fa2049dadc180f",
         "scripts/release/greenfield_post_confirm_matrix.py": "2db1fa2d3e650db2be52b13cf45219a0606aa0895ac7f3657b58ed4ca8404b3b",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "98c5d7202eac81d98dd2fa56e79bef1105264fb3075d2119261a7f3fda4063bd",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "267510c0653b8d81922b0112e01ccf25dd0f73a8fba88ec08f8b3b1838404eb9",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "19f07ddfda21d61fb60009938c12791137ed0d1690637b83361c98629aac9aea",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "54eef0420d675fb1de3bdb0a6b899a55963bc66e4d47d177b1f57aab154b8754",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "82ce75906bd1db368744208a9f761ea847869b5c26781352592e492aa26eae98"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "15f32619281bb347c5a847b9e4db58f170c6d3061edd6922e077f67da8755ca2"
       },
       "render_source_fingerprint": "12ccf23d9e0705830a0ea50e5321bb72529c326dcc550da77bfee710ca1b0040"
     },
@@ -4413,13 +4413,14 @@
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py",
         "src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py",
         "src/odylith/runtime/common/mermaid_text.py",
         "src/odylith/runtime/artifact_quality/generated_copy_quality.py",
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py"
       ],
-      "summary": "Shows how confirmed greenfield first-path text becomes semantic events, external-boundary facts, modal actor capability steps, provenance-aware Tribunal visible actors, Mermaid label custody, prose-shape checks, package repetition decisions, exact-path draft cleanup, and Project next-step prompts without rendered-prose semantic repair.",
-      "read_guide": "Start with the accepted first path, then follow it through semantic event derivation, external-boundary custody, sequence-step custody, Tribunal visible actor provenance, Mermaid label custody, prose-shape checks, repetition gates, and exact artifact-draft cleanup. The diagram separates semantic or projection defects from mechanical duplicate/tail cleanup so repair authority stays with the source owner and scoring requires persisted readback.",
+      "summary": "Shows how confirmed greenfield first-path text becomes semantic events, external-boundary facts, action-complement and object-list tail custody, modal actor capability steps, provenance-aware Tribunal visible actors, Mermaid label custody, prose-shape checks, canonical projection fact custody, package repetition decisions, exact-path draft cleanup, and Project next-step prompts without rendered-prose semantic repair.",
+      "read_guide": "Start with the accepted first path, then follow it through semantic event derivation, external-boundary custody, sequence-step and compact tail custody, Tribunal visible actor provenance, Mermaid label custody, prose-shape checks, canonical projection facts, repetition gates, and exact artifact-draft cleanup. The diagram separates semantic or projection defects from mechanical duplicate/tail cleanup so repair authority stays with the source owner and scoring requires persisted readback.",
       "components": [
         {
           "name": "Domain Intelligence",
@@ -4452,6 +4453,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py",
         "src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py",
         "src/odylith/runtime/common/mermaid_text.py",
         "src/odylith/runtime/artifact_quality/generated_copy_quality.py",
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
@@ -4466,16 +4468,17 @@
         "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py": "c5425d2b264db991e13b85ba34855a8f902f448a93bbb24e92e9e32d94a26029",
         "src/odylith/runtime/domain_intelligence/greenfield_gerund_actions.py": "cf1f93d4bc2038cd56947c01a7925db1b6f37f4df7e13f90881c2eced9126071",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py": "bd124affb7d6d1c33d4a71be3f75e9ad9d05f2e59f856082e89c2e62000f8d89",
-        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py": "dcb9cc9466c117156b460287d13aec45e6a6c763360dd6e2740f37e21a44197f",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py": "2d4cde4fe3f39dbbc0991096b6ad739b0cecbc0c2d955340eb7514a7660b26ef",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py": "8701d4b504ad73188faea07fcdc368c9ca7020a283eb650ca752b3896f797b87",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py": "83fcb96e165887ee460f53a44fc01387f52e0d371d44c8dfda79f5dad98819d6",
         "src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py": "3f76bfa22396619014fb40a45f4469f4fe9d1a10e9b21a1030947fd2f14b4f15",
+        "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py": "2350ba42b6f04f6e3c019fcc9f228181907c8a56000e9d60ffdaeb0c4f4861c3",
         "src/odylith/runtime/common/mermaid_text.py": "179cc06e68b750781d6e45ff37f7877bf6a00a0985f39968821e7cf31f6af3ff",
         "src/odylith/runtime/artifact_quality/generated_copy_quality.py": "da6337cada43c3592fb6c9ab2f740f3f0bba73abefcd5f0ee463c6c7324640fd",
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py": "595c6f27303766773011d61a8abc9630ac2f19d7ab5d510975a49ea41c14349f",
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py": "99bf357a12a505495fd64f842facc227df3ca789c0adcd32591e9f5dab731aff"
       },
-      "render_source_fingerprint": "5c786b37325e75eb4e77b73e9defc06717e11192a36afa10e92e137857097fbf"
+      "render_source_fingerprint": "e9daa4d805f2b60bc562e09b7f6e0b1313a6dfbe6f3c838a823e15cebda90cf1"
     },
     {
       "diagram_id": "D-046",

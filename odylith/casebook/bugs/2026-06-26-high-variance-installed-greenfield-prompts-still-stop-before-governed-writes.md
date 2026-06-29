@@ -16,7 +16,7 @@
 
 - Components Affected: domain-intelligence
 
-- Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-33bdb122, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-265cc0cf, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434
+- Environment(s): v0.1.15 local release dists installed into fresh consumer repos under /Users/freedom/mock, including /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-17e8a6f6, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-cedafc79, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-b0713a0a, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-33bdb122, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-265cc0cf, /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434, and /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e7bc3be3
 
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
@@ -57,9 +57,36 @@
   reports, feeds, and constraint sources named in the accepted first path must
   become explicit external boundary facts or an exact ambiguity, not an empty
   `External systems` section that fails only at the final package lens.
+  Installed object-list canonical-custody root cause on 2026-06-29: fresh dist
+  `odylith-local-release-0.1.15-e7bc3be3` proved the previous typed projection
+  custody still missed compact action-complement/object-list tails. First-path
+  canonical projection facts preserve full actor/action/object facts, but the
+  package can render a repeated tail without the lead action/object. Without
+  typed tail custody, the repetition gate classifies legitimate sanctioned
+  first-path reuse as noncanonical. The repair must stay in semantic projection
+  custody, not disclosure/security vocabulary, regex towers, or weaker gates.
+  Source-local quality blind spot on 2026-06-29: after the semantic projection
+  custody repair, the same `security disclosure council` prompt completed
+  source-local governed writes in 22.633s with 4 Radar records, 3 Registry
+  specs, 6 Atlas sources, release/program records, and backlog-contract
+  validation passing, but the generated Project Brief still contained a clipped
+  coding-readiness gate ending `external vulnerability reports, affected.`.
+  Root cause: Project Brief summary composition punctuated a `short_summary`
+  comma-list fragment as if it were a complete sentence, and the existing
+  package/public-copy gates did not catch this persisted readback defect.
 
 - Solution: Fix Odylith generally in semantic/projection ownership rather than domain-specific terms or rendered-string repair. Confirmed-intent recovery now localizes role-only actors to the project, keeps object modifiers out of actor labels, treats state-review predicates as review targets, rejects passive object-state subjects as human actors, and uses article-safe actor references. Outcome-action projection now converts system-generated results into modal-safe `review` or `see` actions before `user can` prose is composed. The role-can normalizer now preserves interrogative/modal clauses such as `what can be released`. First-path visible-result extraction now respects token boundaries inside hyphenated noun compounds, and semantic proof-control detection no longer rejects first-path `release readiness for ...` noun results while still rejecting control claims such as `release readiness requires ...`. Artifact-plan PatchSet row repair now refuses untargeted row mutations. A shared Tribunal lens contract now lets PM, architect, engineer, and domain-expert checks emit source-map target paths, semantic-node IDs, projection IDs, repairability, and repair owner at judgment time instead of reconstructing repair custody from check-name prose. The structured reasoning adapter now supplies an explicit live-proven Codex model for general structured repair when config is blank, maps the legacy Spark alias to the live CLI model, avoids the unsupported Codex ladder rung, and keeps user-config bypass reproducible. Tribunal patch planning now uses strict structured-output schemas for decision ledger, proof deltas, and replacement facts, then materializes the typed fact envelope back into caller-owned semantic or artifact-plan replacements after custody validation.
   Current Source Fix: Source-launch prompt composition now emits embedded prompt facts as fragments instead of sentences, strips dangling subordinate tails, uses generic material-term containment plus semantic overlap scoring to suppress outcomes that merely restate the action object, and routes proof fallback through the same cleaned first-path projection instead of copying raw confirmed text. Operator next-step preview trimming now detects incomplete subordinate tails near the end of clipped fragments, removing tails like `when required information` while preserving complete clauses such as `when required information is missing`. Release proof now runs installed rescue smoke by default from the canonical matrix wrapper. The smoke uses the packaged CLI in `--repair-tier auto`, injects one maintainer-only typed post-confirm finding through an exact internal release-proof token, requires the engine to auto-escalate to rescue, applies a typed semantic PatchSet marker, writes governed records, and fails unless the final manifest records `post_confirm_rescue_probe` as repaired under the 90s budget. The matrix harness now keeps normal standard cases on a clean environment and applies the internal probe environment only to the rescue-smoke create subprocess, with unit coverage for both sides of the boundary.
+  Next Required Fix: extend canonical projection facts so action-complement and
+  object-list tail variants carry fact identity, semantic node/source path,
+  projection id, and sanctioned surface roles through package quality. Rebuilt
+  installed proof must show the security disclosure council tail is accepted
+  only through typed custody, while unsanctioned repeated prose remains blocked.
+  Additional Required Fix: Project Brief readiness-gate summaries must clip at
+  sentence-safe or comma-list-safe boundaries. If a summary is a clipped prefix
+  of a longer source sentence, the brief owner must drop incomplete comma-list
+  tails instead of adding a terminal period, and persisted readback tests must
+  assert no readiness gate ends with an orphaned list fragment.
 
 - Rollback/Forward Fix: Forward fix only
 
@@ -542,12 +569,27 @@
   The temp repo was deleted after proof. Remaining release obligation is still
   unchanged: rebuild the installable dist and rerun the high-variance installed
   matrix before claiming release readiness.
+  Fresh installed release-gate failure on 2026-06-29 from dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e7bc3be3`:
+  the maintained thirteen-case standard matrix passed twelve cases at hard
+  10/10 and under 28s, but `security disclosure council` failed before governed
+  writes in 12.96s with `greenfield rendered package repeats noncanonical prose
+  across 3 artifact(s)` for the repeated object-list tail beginning `Affected
+  partner review, embargo decisions, evidence custody, legal signoff, and public
+  advisory release readiness...`. Synthetic rescue smoke passed in 34.393s, and
+  temp matrix dirs were cleaned. This is a release-blocking semantic projection
+  custody failure, not a domain-specific disclosure/content failure.
+  Follow-up source-local proof for that prompt then exposed a second release
+  quality blocker even after governed writes succeeded: the Project Brief
+  readiness gate persisted `external vulnerability reports, affected.`. The
+  root cause is source-level summary clipping in
+  `greenfield_confirmed_project_brief.py`, not a consumer-project defect.
 
-- Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout.
+- Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout. Canonical projection fixes must preserve typed custody for compact first-path tails; do not add domain vocabulary, regex towers, or gate weakening for repeated object-list prose. Project Brief readiness gates must be audited from persisted readback for clipped comma-list fragments, not only package create status.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
-- Version/Build: 0.1.15 local release dist `odylith-local-release-0.1.15-3d13f434` failed the expanded thirteen-case installed standard matrix. Twelve standard cases passed with hard 10/10 scores in 23.410-26.861s and installed rescue smoke passed in 33.936s as synthetic wiring-only proof, but sparse disclosure confirmation failed the release gate with score 0/10 because component depth and domain-anchor coverage were insufficient. Full release readiness and natural rescue quality remain unclaimed.
+- Version/Build: Latest release-blocking proof is 0.1.15 local release dist `odylith-local-release-0.1.15-e7bc3be3`: twelve of thirteen standard installed cases passed with hard 10/10 scores under 28s and synthetic rescue smoke passed in 34.393s, but `security disclosure council` failed before governed writes in 12.96s on noncanonical repeated object-list prose. Earlier `odylith-local-release-0.1.15-3d13f434` failed sparse disclosure confirmation after governed writes. Full release readiness and natural rescue quality remain unclaimed.
 
 - Related Incidents/Bugs: CB-208
 
@@ -560,5 +602,9 @@
 - scripts/release/greenfield_rescue_smoke.py
 - src/odylith/runtime/project_intelligence/source_launch.py
 - src/odylith/runtime/domain_intelligence/greenfield_experience.py
+- src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py
+- src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py
+- src/odylith/runtime/artifact_quality/greenfield_package_quality.py
 - tests/unit/runtime/test_greenfield_confirmed_surfaces.py
+- tests/unit/runtime/test_greenfield_project_brief_rendering.py
 - tests/integration/runtime/test_greenfield_hiit_post_confirm_quality.py

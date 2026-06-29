@@ -7,6 +7,9 @@ from dataclasses import dataclass
 from dataclasses import replace
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import gerund_action_verb
+from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -41,6 +44,9 @@ _SUPPORTING_PROJECTION_TAIL_TERMS = frozenset(
         "viewable",
     }
 )
+_BASE_ACTION_CONTEXTS = frozenset(
+    {"can", "could", "may", "might", "must", "shall", "should", "to", "will", "would"}
+)
 
 
 @dataclass(frozen=True)
@@ -54,6 +60,13 @@ class CanonicalProjectionFact:
     allowed_projection_ids: tuple[str, ...]
     allowed_surface_roles: tuple[str, ...]
     repair_owner: str
+
+
+@dataclass(frozen=True)
+class _FirstPathActionTerms:
+    base: frozenset[str]
+    finite: frozenset[str]
+    gerund: frozenset[str]
 
 
 def canonical_projection_facts(proposal: Mapping[str, Any]) -> tuple[CanonicalProjectionFact, ...]:
@@ -74,17 +87,22 @@ def canonical_projection_text_values(proposal: Mapping[str, Any]) -> list[str]:
 
 
 def _first_path_facts(first_path: Mapping[str, Any]) -> list[CanonicalProjectionFact]:
+    action_terms = _first_path_action_terms(first_path)
     values: list[str] = []
     for key in ("raw_path", "capability", "visible_result", "mutation", "recovery_path"):
-        values.extend(text_values(first_path.get(key)))
-    values.extend(_first_path_step_values(first_path.get("raw_path")))
+        values.extend(_first_path_projection_values(first_path.get(key), action_terms))
+    values.extend(
+        value
+        for step in _first_path_step_values(first_path.get("raw_path"))
+        for value in _first_path_projection_values(step, action_terms)
+    )
     events = first_path.get("events")
     if isinstance(events, Sequence) and not isinstance(events, (str, bytes, bytearray)):
         for item in events:
             if not isinstance(item, Mapping):
                 continue
             for key in ("text", "mutation", "target_entity", "action"):
-                values.extend(text_values(item.get(key)))
+                values.extend(_first_path_projection_values(item.get(key), action_terms))
     return [
         CanonicalProjectionFact(
             text=value,
@@ -98,6 +116,143 @@ def _first_path_facts(first_path: Mapping[str, Any]) -> list[CanonicalProjection
         for value in values
         if normalize_string(value)
     ]
+
+
+def _first_path_projection_values(value: Any, action_terms: _FirstPathActionTerms) -> list[str]:
+    rows: list[str] = []
+    for text in text_values(value):
+        normalized = normalize_string(text)
+        if not normalized:
+            continue
+        rows.append(normalized)
+        rows.extend(_action_complement_projection_variants(normalized, action_terms))
+    return list(unique_text(rows))
+
+
+def _first_path_action_terms(first_path: Mapping[str, Any]) -> _FirstPathActionTerms:
+    raw_terms: list[str] = []
+    raw_terms.extend(text_values(first_path.get("action")))
+    events = first_path.get("events")
+    if isinstance(events, Sequence) and not isinstance(events, (str, bytes, bytearray)):
+        for item in events:
+            if isinstance(item, Mapping):
+                raw_terms.extend(text_values(item.get("action")))
+    base_terms: set[str] = set()
+    finite_terms: set[str] = set()
+    gerund_terms: set[str] = set()
+    for raw_term in raw_terms:
+        token = _first_word_token(raw_term).casefold()
+        if not token:
+            continue
+        base = _first_word_token(base_action_clause(token)).casefold()
+        if not base:
+            continue
+        finite = _first_word_token(third_person_action_verb(base)).casefold()
+        gerund = _first_word_token(gerund_action_verb(base)).casefold()
+        base_terms.add(base)
+        if finite:
+            finite_terms.add(finite)
+        if gerund:
+            gerund_terms.add(gerund)
+    return _FirstPathActionTerms(
+        base=frozenset(base_terms),
+        finite=frozenset(finite_terms),
+        gerund=frozenset(gerund_terms),
+    )
+
+
+def _action_complement_projection_variants(value: str, action_terms: _FirstPathActionTerms) -> list[str]:
+    """Return coordinated object-list projections owned by a first-path action."""
+
+    text = normalize_string(value).strip(" .")
+    if not text or not (action_terms.base or action_terms.finite or action_terms.gerund):
+        return []
+    variants: list[str] = []
+    for complement in _action_complement_candidates(text, action_terms):
+        variants.extend(_coordinated_complement_projection_variants(complement))
+    return list(unique_text(variants))
+
+
+def _action_complement_candidates(value: str, action_terms: _FirstPathActionTerms) -> list[str]:
+    rows: list[str] = []
+    tokens = _word_token_spans(value)
+    for index, (token, _start, end) in enumerate(tokens):
+        if not _token_starts_action_complement(tokens, index, action_terms):
+            continue
+        complement = value[end:].strip(" ,.;:-")
+        if complement:
+            rows.append(complement)
+    return list(unique_text(rows))
+
+
+def _token_starts_action_complement(
+    tokens: Sequence[tuple[str, int, int]],
+    index: int,
+    action_terms: _FirstPathActionTerms,
+) -> bool:
+    token = tokens[index][0].casefold()
+    if token in action_terms.finite or token in action_terms.gerund:
+        return True
+    if token not in action_terms.base:
+        return False
+    previous = tokens[index - 1][0].casefold() if index > 0 else ""
+    if previous in _BASE_ACTION_CONTEXTS:
+        return True
+    return index == 0 and not _next_token_looks_like_title_continuation(tokens, index)
+
+
+def _next_token_looks_like_title_continuation(tokens: Sequence[tuple[str, int, int]], index: int) -> bool:
+    if index + 1 >= len(tokens):
+        return False
+    token = tokens[index + 1][0]
+    return bool(token[:1].isupper() and not token.isupper())
+
+
+def _coordinated_complement_projection_variants(value: str) -> list[str]:
+    text = normalize_string(value).strip(" .")
+    if not _meaningful_projection_prefix(text) or not _looks_like_coordinated_projection(text):
+        return []
+    variants = [text]
+    _head, separator, tail = text.partition(",")
+    if separator:
+        tail = tail.strip(" ,.;:-")
+        if _meaningful_projection_prefix(tail) and _looks_like_coordinated_projection(tail):
+            variants.append(tail)
+    return list(unique_text(variants))
+
+
+def _looks_like_coordinated_projection(value: str) -> bool:
+    text = normalize_string(value)
+    return "," in text or " and " in text.casefold()
+
+
+def _first_word_token(value: Any) -> str:
+    tokens = _word_tokens(value)
+    return tokens[0] if tokens else ""
+
+
+def _word_tokens(value: Any) -> list[str]:
+    return [token for token, _start, _end in _word_token_spans(str(value or ""))]
+
+
+def _word_token_spans(value: str) -> list[tuple[str, int, int]]:
+    text = str(value or "")
+    rows: list[tuple[str, int, int]] = []
+    start: int | None = None
+    current: list[str] = []
+    for index, char in enumerate(text):
+        if char.isalnum() or char in {"'", "-"}:
+            if start is None:
+                start = index
+            current.append(char)
+            continue
+        if current and start is not None:
+            rows.append(("".join(current).strip("-'"), start, index))
+            current = []
+            start = None
+    if current and start is not None:
+        rows.append(("".join(current).strip("-'"), start, len(text)))
+    return [(token, start, end) for token, start, end in rows if token]
 
 
 def _component_facts(value: Any) -> list[CanonicalProjectionFact]:

@@ -35,12 +35,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 263,
-    "mapped_workstream_evidence_count": 225,
+    "explicit_event_count": 267,
+    "mapped_workstream_evidence_count": 229,
     "recent_path_match_count": 0,
     "spec_history_event_count": 4,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 263
+    "timeline_event_count": 267
   },
   "name": "Registry",
   "path_prefixes": [
@@ -50,6 +50,148 @@
   ],
   "spec_ref": "odylith/registry/source/components/registry/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 691,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield sparse model-lab escape fixed in source: dedicated sparse tests passed, live simulation suite passed 14 tests, source-local create passed in 19.232s with zero manifest issues and governed records; rebuilt installed matrix still required before release readiness.",
+      "ts_iso": "2026-06-29T02:23:29-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py"
+      ],
+      "confidence": "high",
+      "event_index": 690,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Fixed the sparse model-lab post-confirm source escape: finite action leads stay action fragments, actor-choice copy avoids category echo, next-step overlap uses sanctioned first-path projections, focused regressions passed, and source CLI create wrote governed records in 19.708s; rebuilt installed matrix proof remains required.",
+      "ts_iso": "2026-06-29T02:08:55-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e1dd08d6/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
+      ],
+      "confidence": "high",
+      "event_index": 689,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh local release dist e1dd08d6 passed the installed greenfield post-confirm matrix under the hardened scorer: 13/13 standard real consumer-lane creates scored 10/10 with zero issues, browser proof clean, strict temp cleanup, timings 22.581-27.010s; synthetic rescue wiring smoke passed in 34.942s. Natural rescue quality remains separate from this wiring proof.",
+      "ts_iso": "2026-06-29T01:29:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
+      ],
+      "confidence": "high",
+      "event_index": 688,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Captured and fixed hardened release-matrix proof defect: rebuilt dist def2f783 completed thirteen standard greenfield creates under 28s plus rescue smoke at 34.916s, but scorer falsely treated odylith/radar/source/CLAUDE.md as a Radar workstream. Casebook, Registry, Atlas, and plan now record the custody-boundary failure; collector excludes guidance/catalog Markdown and focused matrix proof passed 49 tests.",
+      "ts_iso": "2026-06-29T01:09:40-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",

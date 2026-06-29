@@ -290,6 +290,20 @@ vocabulary, or degraded packages.
   governed records, produced at least five Radar records, three Registry
   records, six Atlas diagrams, 18 trace nodes, and the harness deleted
   temporary repos after the cases.
+- 2026-06-29 fresh installed release-gate failure from dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e7bc3be3`:
+  the maintained thirteen-case standard matrix passed twelve cases at hard
+  10/10 and under 28 seconds, but `security disclosure council` failed before
+  governed writes in 12.96 seconds with `greenfield rendered package repeats
+  noncanonical prose across 3 artifact(s)` for the repeated object-list tail
+  beginning `Affected partner review, embargo decisions, evidence custody,
+  legal signoff, and public advisory release readiness...`. Synthetic rescue
+  smoke passed in 34.393 seconds and temp matrix dirs were cleaned. The root
+  cause is generic: canonical first-path projection facts carry full
+  actor/action/object custody but not typed action-complement or object-list
+  tail custody when surfaces render the tail without the leading action/object.
+  Fix the semantic projection custody; do not add disclosure/security
+  vocabulary, regex towers, or weaker repetition gates.
 
 ## Implementation Slices
 
@@ -1363,5 +1377,38 @@ vocabulary, or degraded packages.
       validation gate, wrote 4 Radar workstreams, rendered 3 Registry specs,
       rendered 6 Atlas sources, and produced project-brief and
       operator-next-step previews. The temp repo was deleted after proof.
-- [ ] Rebuild the installable dist and rerun the high-variance installed matrix
-      before claiming release readiness for this fix.
+- [x] Rebuilt the installable dist and reran the high-variance installed matrix
+      after the `model lab notebook` source fix; the rerun exposed a new
+      release-blocking semantic projection custody failure instead of release
+      readiness. Dist `odylith-local-release-0.1.15-e7bc3be3` passed twelve of
+      thirteen standard installed cases at hard 10/10 and under 28s, while
+      `security disclosure council` failed before governed writes in 12.96s on
+      repeated object-list tail prose. Synthetic rescue smoke passed in
+      34.393s and temp matrix dirs were cleaned.
+- [x] Fixed action-complement and object-list canonical projection custody in
+      source before the next release-readiness claim.
+      `greenfield_canonical_projection_facts.py` now derives compact
+      action-complement/object-list projection variants from typed
+      `first_path_contract.action` and event actions, preserving fact identity,
+      semantic source, projection id, repair owner, and sanctioned surface roles
+      instead of weakening the package repetition gate. Focused package
+      repetition proof passed, and the maintained `security disclosure council`
+      live simulation now reports zero package issues.
+- [x] Captured the follow-up Project Brief clipped-readiness quality miss before
+      rebuilding the dist.
+      A real source-local create for `security disclosure council` completed in
+      22.633s with governed writes, 4 Radar records, 3 Registry specs, 6 Atlas
+      sources, release/program records, and backlog-contract validation passing,
+      but persisted `project-brief.v1.md` still contained a coding-readiness
+      gate ending `external vulnerability reports, affected.`. The brief owner
+      now treats clipped-prefix summaries as incomplete unless they end on a
+      sentence-safe or comma-list-safe boundary, and drops orphaned comma-list
+      tails before adding terminal punctuation. Focused Project Brief proof
+      passed 12 tests including the retained security-disclosure prompt.
+- [ ] Rerun source-local CLI create for `security disclosure council`, assert the
+      persisted Project Brief has no clipped readiness gate, delete the temp
+      repo, then rebuild the installable dist and rerun the installed
+      thirteen-case matrix plus synthetic rescue smoke. Do not claim release
+      readiness until installed proof is green with complete governed writes,
+      hard 10/10 standard scores, browser proof, zero quality issues, and temp
+      cleanup.

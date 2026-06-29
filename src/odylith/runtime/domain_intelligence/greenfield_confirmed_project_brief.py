@@ -327,6 +327,7 @@ def _command_first_path_summary(value: str) -> str:
 
 
 def _brief_clause(value: str, *, limit: int = 180) -> str:
+    source = compact_text(value).strip(" .")
     text = short_summary(value, limit=limit).strip(" .")
     for phrase in ("the first complete path to prove should be", "first complete path to prove should be"):
         lowered = text.casefold()
@@ -340,37 +341,63 @@ def _brief_clause(value: str, *, limit: int = 180) -> str:
             text = text[len(prefix) :].strip(" .")
             break
     text = _repair_show_actor_artifact(text)
-    text = _polish_brief_clause(text)
+    text = _polish_brief_clause(text, clipped=_summary_is_clipped_prefix(text, source, limit=limit))
     if len(text) <= limit:
         return text
     clipped = clip_text_at_word_boundary(text, limit=limit)
-    return _polish_brief_clause(clipped)
+    return _polish_brief_clause(clipped, clipped=True)
 
 
-def _polish_brief_clause(value: str) -> str:
+def _summary_is_clipped_prefix(summary: str, source: str, *, limit: int) -> bool:
+    if len(source) <= limit:
+        return False
+    summary_text = compact_text(summary).strip(" .")
+    source_text = compact_text(source).strip()
+    if not summary_text or not source_text.casefold().startswith(summary_text.casefold()):
+        return False
+    remainder = source_text[len(summary_text) :].lstrip()
+    return bool(remainder and not remainder.startswith((".", "!", "?")))
+
+
+def _polish_brief_clause(value: str, *, clipped: bool = False) -> str:
     text = strip_dangling_tail(compact_text(value).rstrip(" ,;:"))
-    text = _repair_incomplete_clause_tail(text)
+    text = _repair_incomplete_clause_tail(text, clipped=clipped)
     return _remove_orphan_without_it_tail(text)
 
 
-def _repair_incomplete_clause_tail(value: str) -> str:
+def _repair_incomplete_clause_tail(value: str, *, clipped: bool = False) -> str:
     text = compact_text(value).rstrip(" ,;:.")
     while True:
         words = text.split()
         if len(words) < 3:
             return text
-        last = words[-1].strip(".,;:").casefold()
-        previous = words[-2].strip(".,;:").casefold()
-        if previous in {"a", "an", "the"} and _looks_like_unfinished_modifier(last):
-            repaired = _drop_trailing_clause_or_words(text, drop_words=2)
-        elif _looks_like_incomplete_terminal_verb(last):
-            repaired = _drop_trailing_clause_or_words(text, drop_words=1)
-        else:
-            return text
+        repaired = _drop_clipped_list_tail(text) if clipped else ""
+        if not repaired:
+            last = words[-1].strip(".,;:").casefold()
+            previous = words[-2].strip(".,;:").casefold()
+            if previous in {"a", "an", "the"} and _looks_like_unfinished_modifier(last):
+                repaired = _drop_trailing_clause_or_words(text, drop_words=2)
+            elif _looks_like_incomplete_terminal_verb(last):
+                repaired = _drop_trailing_clause_or_words(text, drop_words=1)
+            else:
+                return text
         repaired = strip_dangling_tail(repaired).rstrip(" ,;:.")
         if not repaired or repaired == text:
             return text
         text = repaired
+
+
+def _drop_clipped_list_tail(value: str) -> str:
+    head, separator, tail = compact_text(value).rstrip(" ,;:.").rpartition(",")
+    if not separator:
+        return ""
+    tail_words = tail.strip().split()
+    if not 1 <= len(tail_words) <= 3:
+        return ""
+    if any(word.strip(".,;:").casefold() in {"and", "or"} for word in tail_words):
+        return ""
+    prefix = head.rstrip(" ,;:.")
+    return prefix if _word_count(prefix) >= 6 else ""
 
 
 def _looks_like_unfinished_modifier(value: str) -> bool:
