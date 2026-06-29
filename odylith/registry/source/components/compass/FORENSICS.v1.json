@@ -42,12 +42,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 351,
-    "mapped_workstream_evidence_count": 272,
+    "explicit_event_count": 356,
+    "mapped_workstream_evidence_count": 277,
     "recent_path_match_count": 0,
     "spec_history_event_count": 34,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 351
+    "timeline_event_count": 356
   },
   "name": "Compass",
   "path_prefixes": [
@@ -57,6 +57,176 @@
   ],
   "spec_ref": "odylith/registry/source/components/compass/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 681,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Post-governance validation: fixed Tribunal audit-reviewer overcorrection, 5 targeted tests passed, 121-test greenfield/matrix/local-release pack passed, and governed surfaces refreshed.",
+      "ts_iso": "2026-06-28T19:25:03-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 680,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield source-local post-confirm hardening: fixed generic Mermaid label custody, passed HIIT integration, passed 85-test affected pack, and passed ten fresh high-variance source-local simulations with hard 10/10 scores and temp cleanup.",
+      "ts_iso": "2026-06-28T19:15:52-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 679,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Captured greenfield Tribunal actor provenance, persisted readback scoring, external-boundary semantic input, and simulation cleanup learning after clinical and biobank source-local false positives; source-local proof passed but installed release readiness remains unclaimed until rebuilt matrix proof.",
+      "ts_iso": "2026-06-28T18:33:14-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 678,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield source-local wildfire QA failed on missing managed brand assets and missing independent prewrite-safety evidence, then passed after platform-owned asset seeding, rollback custody, explicit prewrite_safety evidence, static asset health checks, 94 focused tests, and a 23.205s 10/10 browser-proved replay.",
+      "ts_iso": "2026-06-28T17:26:31-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/catalog/diagrams.v1.json",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "src/odylith/runtime/surfaces/render_mermaid_catalog.py",
+        "tests/unit/runtime/test_render_mermaid_catalog.py"
+      ],
+      "confidence": "high",
+      "event_index": 677,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Fixed Atlas workstream navigation visibility for backlog-derived diagram ownership: D-045 now remains owned by B-142 in diagram_related_workstreams after render attachment, with Atlas source-local check-only proof at 46 fresh / 0 stale.",
+      "ts_iso": "2026-06-28T16:28:57-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",

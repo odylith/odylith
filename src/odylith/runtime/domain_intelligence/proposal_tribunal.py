@@ -13,6 +13,7 @@ from typing import Any, Mapping, Sequence
 
 from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_visible_actor_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import collect_text_values
@@ -424,6 +425,7 @@ def _check_visible_tribunal_actors(
             "Tribunal visible actors must be project-specific, not stable-role placeholders: "
             + ", ".join(generic)
         )
+    issues.extend(tribunal_visible_actor_quality_issues(visible_actors))
 
 
 def _project_title_slugs(proposal: Mapping[str, Any]) -> set[str]:

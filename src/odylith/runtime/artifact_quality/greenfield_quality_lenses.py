@@ -207,7 +207,7 @@ def _product_manager_checks(
         row for row in diagram_graph.get("events", []) if isinstance(row, Mapping)
     ]
     capability = normalize_string(first_path.get("capability")) or normalize_string(intent.get("first_path"))
-    visible_result = normalize_string(first_path.get("visible_result")) or normalize_string(intent.get("proof_boundary"))
+    visible_result = normalize_string(first_path.get("visible_result"))
     backlog_rows = mapping_rows(proposal.get("backlog"))
     assumptions = _rows_or_text_values(proposal.get("assumptions"))
     ambiguities = _rows_or_text_values(proposal.get("open_questions"))
@@ -268,7 +268,7 @@ def _architect_checks(
     external_systems = _rows_or_text_values(domain.get("external_systems")) or _rows_or_text_values(
         intent.get("external_systems")
     )
-    external_boundary_known = "external_systems" in domain or "external_systems" in intent
+    external_boundary_known = bool(external_systems)
     state_object = normalize_string(intent.get("state_object")) or normalize_string(domain.get("state_object"))
     component_topology_complete = _component_topology_covers_internal_systems(
         internal_systems,
@@ -310,6 +310,7 @@ def _engineer_checks(package: Any, proposal: Mapping[str, Any]) -> list[dict[str
     next_steps = _as_mapping(getattr(package, "next_steps_preview", None))
     backlog_result = _as_mapping(getattr(package, "backlog_result", None))
     program_result = _as_mapping(getattr(package, "program_result", None))
+    prewrite_safety = _as_mapping(getattr(package, "prewrite_safety_preview", None))
     component_specs_complete = bool(components) and component_spec_evidence_count >= len(components)
     return [
         _check(
@@ -337,9 +338,9 @@ def _engineer_checks(package: Any, proposal: Mapping[str, Any]) -> list[dict[str
             "quality lens engineer missing passed validation evidence",
         ),
         _check(
-            not program_result or normalize_string(program_result.get("dry_run")).casefold() in {"true", "1"},
+            _prewrite_safety_passed(program_result=program_result, prewrite_safety=prewrite_safety),
             "prewrite_safety",
-            "prewrite program dry-run evidence inspected",
+            _prewrite_safety_evidence_summary(program_result=program_result, prewrite_safety=prewrite_safety),
             "quality lens engineer missing prewrite dry-run safety evidence",
         ),
     ]
@@ -572,6 +573,31 @@ def _high_risk_statement(value: str) -> bool:
 
 def _gate_status(value: Mapping[str, Any]) -> str:
     return normalize_string(value.get("status")).casefold()
+
+
+def _prewrite_safety_passed(
+    *,
+    program_result: Mapping[str, Any],
+    prewrite_safety: Mapping[str, Any],
+) -> bool:
+    if normalize_string(prewrite_safety.get("status")).casefold() == "passed":
+        checks = _as_mapping(prewrite_safety.get("checks"))
+        return bool(checks) and all(bool(value) for value in checks.values())
+    return bool(program_result) and normalize_string(program_result.get("dry_run")).casefold() in {"true", "1"}
+
+
+def _prewrite_safety_evidence_summary(
+    *,
+    program_result: Mapping[str, Any],
+    prewrite_safety: Mapping[str, Any],
+) -> str:
+    if prewrite_safety:
+        checks = _as_mapping(prewrite_safety.get("checks"))
+        passed = sum(1 for value in checks.values() if bool(value))
+        return f"{passed} of {len(checks)} prewrite safety check(s) passed"
+    if program_result:
+        return "prewrite program dry-run evidence inspected"
+    return "0 prewrite safety check(s) present"
 
 
 def _as_mapping(value: Any) -> Mapping[str, Any]:

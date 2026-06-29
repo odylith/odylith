@@ -1164,3 +1164,93 @@ vocabulary, or degraded packages.
       launch degraded, and the rendered Atlas payload verifies D-040, D-043,
       D-045, and D-046 as fresh with SVG and PNG present. Atlas render reports
       46 diagrams, 46 fresh, 0 stale.
+- [ ] Release-matrix false-positive hardening after the 2026-06-28 brutal
+      audit. The current matrix can still trust producer-reported
+      `post_confirm_quality_manifest` lenses plus count floors too much. The
+      next implementation must recompute package quality lenses from collected
+      generated artifacts, fail closed when independent readback is missing or
+      disagrees with the manifest, and tighten PM/Architect/Engineer lens
+      evidence around explicit SemanticModelIR and prewrite artifacts rather
+      than proof-boundary fallback, empty external-system keys, or absent
+      program dry-run data. This is release-proof hardening, not a generated
+      project repair.
+- [x] 2026-06-29 source-local brutal QA follow-up for the wildfire mutual-aid
+      simulation. Initial create wrote governed records in 23.170s but scored
+      0/10 under independent artifact readback because generated browser proof
+      found missing managed brand lockup assets and the independent engineer
+      lens could not see prewrite dry-run safety evidence after final program
+      commit. The platform fix seeds missing managed brand assets before
+      greenfield dashboard refresh, snapshots `odylith/surfaces/brand` in the
+      rollback guard, carries explicit `prewrite_safety` evidence through the
+      create payload and matrix readback, and statically rejects missing local
+      HTML assets. Focused proof passed 94 tests in 12.62s. The retained
+      wildfire replay then passed source-local post-confirm in 23.205s with
+      complete governed counts, clean surface/browser proof, all expert lenses
+      passing, and hard 10/10 across all release-matrix dimensions. This is
+      one high-variance source-local proof, not installed release readiness;
+      broader high-variance source-local and rebuilt installed matrix proof
+      remain required.
+- [ ] Typed projection provenance follow-up. Independent review found the
+      current canonical projection layer still flattens facts into allowed text
+      strings and permits raw accepted-intent repetition instead of validating
+      repeated copy against typed semantic node IDs, source paths, projection
+      IDs, and sanctioned surface roles. Do not extend that string allowance
+      pattern. The next architecture slice must preserve ProjectionFactIR
+      provenance into package quality and route unsanctioned projection repeats
+      as typed custody findings.
+- [x] Closed Tribunal visible-role scoring false positives without role-label
+      regex stacking. Clinical-trial and biobank source-local simulations proved
+      two distinct escapes: generated judgment roles could collapse to one proof
+      reviewer label, and an internal evidence system could be projected as the
+      evidence owner while the release matrix still scored 10/10. The fix adds
+      actor-source provenance, allows explicit accepted many-hat actors, requires
+      generated role-specific judgment labels, excludes evidence objects/systems
+      from visible judgment actor selection, and validates persisted
+      accepted-project actor readback against the create payload. Focused
+      actor/readback proof passed 6 tests, the proposal/matrix pack passed
+      85 tests in 86.30s, and a fresh biobank source-local create completed in
+      21.867s with complete governed counts, all expert lenses passing, and
+      zero temp leftovers. A broader 121-test follow-up caught an overcorrection
+      where explicit `Audit reviewer` was rewritten to `audit proof reviewer`;
+      evidence-owner vocabulary now treats audit reviewer/auditor as a generic
+      valid proof role while still rejecting internal evidence systems.
+- [x] Closed the external-boundary semantic input gap exposed by the broad
+      quality pack. Legacy host proposal bridges can no longer leave the
+      architect lens with an empty external-system boundary: apply-semantic input
+      now uses explicit accepted external systems, inferred first-path external
+      boundary rows, or a typed deferred manual/fixture boundary. This keeps the
+      repair in semantic facts instead of diagnostic text or project-specific
+      wording.
+- [x] Hardened source-local simulation cleanup after background Odylith runtime
+      files resurrected temp roots after apparent deletion. The release smoke
+      cleanup helper now retries and verifies a settled absent temp root before
+      the matrix moves to the next project, preserving the recursive
+      create-assess-learn-delete discipline.
+- [x] Closed the HIIT Atlas label custody blocker without weakening public-copy
+      gates. The retained HIIT integration failed before governed writes because
+      Mermaid labels rendered visible lines ending in `with`, and the
+      accepted-project preview carried compact one-line Mermaid that public-copy
+      custody still had to inspect. The source fix is generic: shared Mermaid
+      label wrapping now moves stranded connector words to the following visual
+      line, and compact-flowchart visible-label extraction is covered so graph
+      syntax and class declarations are not treated as prose. Focused proof
+      passed the two Mermaid helper tests plus the HIIT integration in 20.34s;
+      the wider source-local post-confirm/Tribunal pack then passed 85 tests in
+      70.23s.
+- [x] Completed a fresh ten-domain source-local standard-path brutal QA matrix
+      after the role-provenance, repetition, external-boundary, cleanup, and
+      Mermaid label custody fixes. Domains covered regulated health, lunar
+      operations, cultural archive consent, autonomous rail safety, climate
+      finance, special education, esports integrity, decentralized identity,
+      food recall logistics, and disaster insurance. Every run saved the
+      no-write propose output as confirmed intent, completed confirmed create,
+      committed governed records, scored hard 10/10 across all twelve release
+      dimensions, produced the expected Radar/Registry/Atlas/Compass/project/
+      release/program/rendered-surface counts, reported zero quality issues,
+      and deleted its repo plus the parent temp root. Create timings were
+      22.072-23.827s; whole-project timings were 15.521-16.534s.
+- [ ] Release posture remains unclaimed until these source-local fixes are
+      checked into governance, generated Atlas/Registry/Compass surfaces are
+      refreshed, and a fresh built installed dist passes the maintained
+      high-variance matrix with persisted readback proof under the standard and
+      rescue time budgets.

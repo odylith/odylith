@@ -180,6 +180,13 @@ def build_prewrite_completion_package(
                 allow_existing=True,
                 dry_run=True,
             )
+        prewrite_safety_preview = prewrite_safety_evidence(
+            validation_gate=validation_gate,
+            program_result=preview_program_result,
+            release_target_result=preview_release_target,
+            release_assignment_result=preview_release_assignment,
+            release_selector=release_selector,
+        )
         package_proposal = proposal_with_component_brief_gate(proposal)
         project_brief = package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
         next_steps_preview = greenfield_experience.build_next_steps(
@@ -231,11 +238,48 @@ def build_prewrite_completion_package(
                 next_steps_preview=next_steps_preview,
                 backlog_result=backlog_result,
                 program_result=preview_program_result,
+                prewrite_safety_preview=prewrite_safety_preview,
                 release_target_result=preview_release_target,
                 release_assignment_result=preview_release_assignment,
                 release_workstream_ids=tuple(first_release_workstreams),
             ),
         )
+
+
+def prewrite_safety_evidence(
+    *,
+    validation_gate: Mapping[str, Any],
+    program_result: Mapping[str, Any] | None,
+    release_target_result: Mapping[str, Any] | None,
+    release_assignment_result: Mapping[str, Any] | None,
+    release_selector: str,
+) -> dict[str, Any]:
+    """Return explicit prewrite proof before final governed writes run."""
+
+    program = dict(program_result or {})
+    release_target = dict(release_target_result or {})
+    release_assignment = dict(release_assignment_result or {})
+    selector = str(release_selector or "").strip()
+    checks = {
+        "program_dry_run": bool(program.get("created")) and bool(program.get("dry_run")),
+        "validation_gate_passed": str(validation_gate.get("status", "")).strip().casefold() == "passed",
+        "release_target_dry_run": not selector or bool(release_target.get("dry_run")),
+        "release_assignment_dry_run": not selector or bool(release_assignment.get("dry_run")),
+    }
+    return {
+        "status": "passed" if all(checks.values()) else "failed",
+        "checks": checks,
+        "program": _safety_evidence_subset(program, keys=("created", "dry_run", "umbrella_id", "program_path")),
+        "release_target": _safety_evidence_subset(release_target, keys=("dry_run", "release_id", "selector")),
+        "release_assignment": _safety_evidence_subset(
+            release_assignment,
+            keys=("dry_run", "selector", "workstream_ids", "release_id"),
+        ),
+    }
+
+
+def _safety_evidence_subset(source: Mapping[str, Any], *, keys: Sequence[str]) -> dict[str, Any]:
+    return {key: source[key] for key in keys if key in source}
 
 
 def proposal_with_component_brief_gate(proposal: Mapping[str, Any]) -> dict[str, Any]:
@@ -714,6 +758,7 @@ __all__ = [
     "preview_accepted_project_memory",
     "preview_compass_acceptance_event",
     "preview_project_dashboard_payload",
+    "prewrite_safety_evidence",
     "remap_prewrite_backlog_result",
     "staged_greenfield_prewrite_root",
 ]

@@ -496,6 +496,35 @@ def test_mermaid_text_counts_numbered_flowchart_nodes_once() -> None:
     assert mermaid_text.numbered_flowchart_node_count(source, prefix="C") == 1
 
 
+def test_mermaid_label_wrapping_carries_dangling_connector_to_next_line() -> None:
+    wrapped = mermaid_text.wrap_mermaid_label(
+        "Saved session in history with date, workout, and total time",
+        width=30,
+        max_lines=5,
+        limit=168,
+    )
+
+    assert "history with<br/>date" not in wrapped
+    assert "history<br/>with date" in wrapped
+    assert all(not part.endswith(" with") for part in wrapped.split("<br/>"))
+
+
+def test_mermaid_quality_extracts_visible_labels_from_compact_flowchart_source() -> None:
+    source = (
+        'flowchart LR actor["Trainee"] S1["Saved session in history<br/>with date, workout, and total time"] '
+        'S1 --> proof proof["Proof result<br/>Saved session in history<br/>with date, workout, and total time"] '
+        "classDef step fill:#FFFFFF,stroke:#CBD5E1,color:#17233A,stroke-width:1px;"
+    )
+
+    units = mermaid_text.visible_mermaid_label_quality_texts(source)
+
+    assert "Trainee" in units
+    assert "Saved session in history with date, workout, and total time" in units
+    assert "Saved session in history" in units
+    assert "with date, workout, and total time" in units
+    assert all("flowchart" not in unit and "classDef" not in unit for unit in units)
+
+
 def test_confirmed_greenfield_create_handles_generic_reviewer_and_action_systems(tmp_path: Path) -> None:
     intent = parse_confirmed_intent_text(
         """Volunteer Equipment Checkout Tracker — Product Intent Confirmation

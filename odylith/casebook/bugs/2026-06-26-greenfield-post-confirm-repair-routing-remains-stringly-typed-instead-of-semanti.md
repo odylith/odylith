@@ -1037,6 +1037,73 @@
   present. The durable rule is that Atlas source truth alone is insufficient
   proof for architecture updates; any new or updated diagram must also prove
   rendered asset presence and payload visibility before completion is claimed.
+  A follow-up operator check on 2026-06-28 exposed that the prior visibility
+  proof was still too shallow: D-045 was active, rendered, and present in the
+  payload, but it disappeared from B-142 workstream navigation because the
+  Atlas renderer inferred B-142 from `related_backlog` for surface links and
+  then `_attach_diagram_workstream_relationships` overwrote
+  `related_workstreams` with only explicitly authored workstream rows. The fix
+  preserves backlog-derived `idea_id` ownership during relationship attachment,
+  and the regression proof verifies D-045 is fresh, owned by B-142, present in
+  `diagram_related_workstreams`, and visible alongside D-043 and D-046 under
+  the B-142 filter. Failed mechanism to avoid: treating payload existence or
+  asset presence as Atlas visibility proof without checking route/filter
+  indexes and tooltip lookup ownership.
+  Independent architecture review on 2026-06-29 found the current
+  canonical-projection repetition fix is still type-shaped rather than fully
+  typed: `greenfield_canonical_projection_facts.py` builds richer fact rows and
+  then flattens them to text values, while `greenfield_package_quality.py`
+  consumes string allowlists and accepted-intent prose rather than fact IDs,
+  source paths, semantic node IDs, and sanctioned projection roles. The
+  immediate wildfire fix deliberately did not extend that pattern. Next repair
+  must preserve typed projection provenance end-to-end and remove raw
+  accepted-intent repetition allowances once projection aliases are attached to
+  actual semantic facts.
+  A 2026-06-29 source-local clinical-trial and biobank follow-up closed a
+  separate release-scoring false positive without returning to rendered-prose
+  repair. The clinical replay wrote complete governed records in 26.920s but
+  collapsed beneficiary advocate, domain operator, risk owner, and evidence
+  owner into one visible proof reviewer label while the matrix still awarded
+  10/10. Independent review caught the failed mechanism: checking CLI create
+  payload rows alone is not persisted artifact proof, and forced role
+  separation regresses valid explicit many-hat actors. The fix adds
+  `actor_source` provenance to Tribunal visible actors, permits shared labels
+  only for accepted explicit actors, requires generated judgment actors to use
+  role-appropriate labels, and makes the matrix compare create payload actor
+  rows with persisted accepted-project preview readback. A later biobank replay
+  then caught a second false positive where an internal evidence system,
+  `Specimen Link Ledger`, was projected as evidence owner; actor selection now
+  excludes evidence objects/systems and prefers explicit human or review-role
+  actors. Focused actor/readback proof passed six targeted tests and the full
+  proposal/matrix pack passed 85 tests in 86.30s.
+  The same pass fixed a typed semantic omission found by the broader quality
+  pack: legacy host proposals could reach the architect lens without an
+  explicit external-system boundary. `greenfield_apply_semantic.py` now uses
+  explicit accepted external systems when present, infers from first-path
+  external-boundary rows when available, or records a generic deferred manual
+  or fixture-backed boundary instead of leaving the lens empty. This is a
+  SemanticModelIR input repair, not a phrase filter. The post-confirm live
+  harness also now verifies temp repo deletion survives background runtime
+  residue from locks and Compass caches before moving on.
+  The follow-up source-local matrix on 2026-06-29 used ten fresh domains not
+  reused from the maintained installed case catalog: sepsis antibiotic
+  stewardship, lunar regolith mining permits, indigenous language archive
+  consent, autonomous rail-yard safety, mangrove carbon-credit verification,
+  special-education accommodation review, esports anti-cheat appeals,
+  decentralized identity recovery, food-allergen recall trace, and wildfire
+  insurance claims. Every run used no-write `greenfield propose` output as the
+  confirmed intent, then executed confirmed `greenfield create`; every case
+  committed governed writes, scored 10/10 across completion, latency, semantic
+  manifest, copy/semantic clarity, governance depth, traceability, operator
+  usefulness, Project implementation prompts, PM, architect, engineer, and
+  domain-expert lenses, and produced four Radar workstreams, three Registry
+  specs, six Atlas sources, twelve rendered Atlas assets, six rendered
+  surfaces, twelve payloads, twenty Compass records, project/release/program
+  records, eighteen trace nodes, and zero quality issues. Create timings were
+  22.072-23.827s and whole-project timings were 15.521-16.534s. Every temp repo
+  and the parent matrix root were deleted. This is strong source-local standard
+  proof, but installed release readiness remains unclaimed until the fresh dist
+  matrix and rescue proof pass.
 
 - Related Incidents/Bugs: CB-207
 
@@ -1073,12 +1140,15 @@
 - src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py
 - src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py
+- src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py
+- src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py
 - src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py
 - src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py
 - src/odylith/runtime/domain_intelligence/greenfield_first_path_step_roles.py
 - src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py
 - src/odylith/runtime/domain_intelligence/greenfield_gerund_actions.py
 - src/odylith/runtime/common/prose_grammar.py
+- src/odylith/runtime/common/mermaid_text.py
 - src/odylith/runtime/artifact_quality/generated_copy_quality.py
 - src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py
@@ -1093,10 +1163,15 @@
 - src/odylith/runtime/artifact_quality/greenfield_package_quality.py
 - src/odylith/runtime/surfaces/generated_flowchart_assets.py
 - scripts/release/greenfield_rescue_smoke.py
+- scripts/release/local_release_smoke.py
+- scripts/release/greenfield_post_confirm_matrix.py
 - src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py
 - src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py
 - src/odylith/runtime/domain_intelligence/greenfield_experience.py
 - src/odylith/runtime/project_intelligence/source_launch.py
 - tests/unit/runtime/test_greenfield_post_confirm_patch_payload.py
 - tests/unit/runtime/test_greenfield_post_confirm_projection_rerender.py
+- tests/unit/runtime/test_greenfield_confirmed_surfaces.py
+- tests/integration/runtime/test_greenfield_hiit_post_confirm_quality.py
 - odylith/atlas/source/domain-intelligence-greenfield-governance.mmd
+- odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd

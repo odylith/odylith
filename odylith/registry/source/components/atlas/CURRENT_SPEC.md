@@ -6,10 +6,10 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-05-11
+Last updated: 2026-06-29
 
 
-Last updated (UTC): 2026-05-11
+Last updated (UTC): 2026-06-29
 
 ## Purpose
 Atlas is Odylith's architecture and diagram-governance surface. It manages the
@@ -301,6 +301,9 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-28 · Implementation:** Fixed Atlas workstream navigation visibility for backlog-derived diagram ownership: D-045 now remains owned by B-142 in diagram_related_workstreams after render attachment, with Atlas source-local check-only proof at 46 fresh / 0 stale.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +3 more
 - **2026-03-16 · Implementation:** Implemented the Subagent Router runtime, the thin router skill, the component spec and runbook, and the Atlas routing topology diagrams.
   - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
 - **2026-03-16 · Decision:** keep Subagent Router accuracy-first, hard-gated, and first-class in Registry and Atlas instead of hiding delegation policy in prompt folklore.
@@ -308,6 +311,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-06-28: Tightened Atlas workstream visibility custody after D-045 was rendered but not visible from B-142 navigation. The renderer now preserves backlog-derived `idea_id` ownership during diagram relationship attachment, and Atlas proof must check route/filter indexes such as `diagram_related_workstreams`, not only catalog rows, payload presence, or SVG/PNG assets. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
 - 2026-06-28: Added source-local static generated-flowchart visibility proof to the Atlas architecture contract. D-040 now shows static generated-flowchart fallback inside Atlas auto-update, and new diagrams D-045/D-046 were rendered with SVG/PNG assets after the browser renderer degraded. Atlas payload verification confirmed D-040, D-043, D-045, and D-046 as fresh with rendered assets present, so new architecture diagrams must prove rendered visibility, not just catalog/source creation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
 - 2026-05-09: Promoted diagram-box explanation from a per-diagram convention to a general Atlas contract: Mermaid source now derives every flowchart container and inner node, catalog-authored box copy must be clear complete sentences, and v0.1.15 upgrade migration regenerates older Atlas browser surfaces without rewriting repo-owned diagram source truth. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140))
 - 2026-05-09: Reworked Atlas detail panes so diagrams explain what they show, how to read them, each cataloged diagram box, and their owning components before presenting linked engineering context as a bottom category list. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141))

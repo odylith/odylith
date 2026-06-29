@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "267f20d78775f9477fb3d052c394ff9bda137ca1aaf0fb44239655ca2d36ce86",
+    "digest": "7c3240b73d449834b45444f166ef756d9f42bbf7f8ef77bfe5dd0322715f9970",
     "file_count": 314,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -8513,7 +8513,9 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [
-        "D-043"
+        "D-043",
+        "D-045",
+        "D-046"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
       "promoted_to_plan": "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
@@ -8592,7 +8594,7 @@
       "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 1,
+        "linked_diagram_count": 3,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -10764,6 +10766,7 @@
         "D-041",
         "D-043",
         "D-044",
+        "D-046",
         "D-005",
         "D-006",
         "D-007",
@@ -11251,7 +11254,9 @@
         "B-143"
       ],
       "diagrams": [
-        "D-043"
+        "D-043",
+        "D-045",
+        "D-046"
       ],
       "sources": [
         "manifest",
@@ -13615,6 +13620,41 @@
         "Host Adapters",
         "Radar",
         "Atlas"
+      ],
+      "related_component_ids": []
+    },
+    {
+      "id": "diagram:D-045",
+      "type": "diagram",
+      "label": "Greenfield First-Path Semantic Copy Custody",
+      "diagram_id": "D-045",
+      "status": "active",
+      "owner": "product",
+      "file": "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+      "related_workstreams": [
+        "B-142"
+      ],
+      "component_names": [
+        "Domain Intelligence",
+        "Generated Copy Quality"
+      ],
+      "related_component_ids": []
+    },
+    {
+      "id": "diagram:D-046",
+      "type": "diagram",
+      "label": "Greenfield Rendered Surface And Static Atlas Custody",
+      "diagram_id": "D-046",
+      "status": "active",
+      "owner": "product",
+      "file": "odylith/atlas/source/greenfield-rendered-surface-and-static-atlas-custody.mmd",
+      "related_workstreams": [
+        "B-142"
+      ],
+      "component_names": [
+        "Domain Intelligence",
+        "Atlas",
+        "Generated Flowchart Assets"
       ],
       "related_component_ids": []
     },
@@ -20525,6 +20565,16 @@
     },
     {
       "source": "B-142",
+      "target": "diagram:D-045",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-142",
+      "target": "diagram:D-046",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-142",
       "target": "plan:odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
       "edge_type": "promoted_to_plan"
     },
@@ -20716,6 +20766,11 @@
     {
       "source": "component:atlas",
       "target": "diagram:D-044",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:atlas",
+      "target": "diagram:D-046",
       "edge_type": "component_diagram"
     },
     {
@@ -21421,6 +21476,16 @@
     {
       "source": "component:domain-intelligence",
       "target": "diagram:D-043",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:domain-intelligence",
+      "target": "diagram:D-045",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:domain-intelligence",
+      "target": "diagram:D-046",
       "edge_type": "component_diagram"
     },
     {
@@ -24549,7 +24614,7 @@
     },
     "B-142": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 1,
+      "linked_diagram_count": 3,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -24621,6 +24686,16 @@
       "idea_id": "B-110",
       "action": "Resolve explicitly in odylith/radar/source/ideas/2026-04/2026-04-17-discipline-with-learning-spine.md: current='D-039' candidate='D-039,D-040'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
+    },
+    {
+      "severity": "info",
+      "audience": "maintainer",
+      "surface_visibility": "diagnostics",
+      "category": "topology_conflict",
+      "message": "B-142: autofix skipped `related_diagram_ids` due to metadata conflict",
+      "idea_id": "B-142",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md: current='D-043' candidate='D-043,D-045,D-046'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
+      "source": "odylith/radar/traceability-autofix-report.v1.json"
     }
   ],
   "warnings": [
@@ -24629,6 +24704,7 @@
     "B-069: autofix skipped `related_diagram_ids` due to metadata conflict",
     "B-071: autofix skipped `related_diagram_ids` due to metadata conflict",
     "B-110: autofix skipped `related_diagram_ids` due to metadata conflict",
+    "B-142: autofix skipped `related_diagram_ids` due to metadata conflict",
     "suppressed unresolved idea component tokens: 26"
   ],
   "topology_integrity": {
@@ -24643,10 +24719,10 @@
       "info": 0
     },
     "connectivity": {
-      "spine_node_count": 257,
-      "structural_edge_count": 1700,
+      "spine_node_count": 259,
+      "structural_edge_count": 1705,
       "connected_component_count": 3,
-      "largest_component_size": 255,
+      "largest_component_size": 257,
       "isolated_node_count": 2,
       "isolated_nodes": [
         "release:release-0-1-11",
@@ -24662,12 +24738,12 @@
     "active_release_assignment_count": 20,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 348,
-    "edge_count": 1804,
-    "warning_count": 6,
-    "warning_item_count": 6,
+    "node_count": 350,
+    "edge_count": 1809,
+    "warning_count": 7,
+    "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-06-28 11:05:52Z"
+  "generated_utc": "2026-06-29 00:28:09Z"
 }

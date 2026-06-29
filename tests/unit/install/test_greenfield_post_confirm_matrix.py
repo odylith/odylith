@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -68,6 +69,31 @@ def _write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _passing_visible_actors() -> list[dict[str, str]]:
+    return [
+        {
+            "stable_role": "beneficiary_advocate",
+            "visible_actor": "Permit beneficiary advocate",
+            "actor_source": "generated_role_projection",
+        },
+        {
+            "stable_role": "domain_operator",
+            "visible_actor": "Permit workflow operator",
+            "actor_source": "generated_role_projection",
+        },
+        {
+            "stable_role": "risk_owner",
+            "visible_actor": "Permit risk reviewer",
+            "actor_source": "generated_role_projection",
+        },
+        {
+            "stable_role": "evidence_owner",
+            "visible_actor": "Permit proof reviewer",
+            "actor_source": "generated_role_projection",
+        },
+    ]
+
+
 def _empty_package() -> SimpleNamespace:
     return SimpleNamespace(
         proposal={},
@@ -76,11 +102,12 @@ def _empty_package() -> SimpleNamespace:
         rendered_atlas_sources={},
         component_registry_preview=(),
         project_brief_preview={},
-        accepted_project_preview={},
+        accepted_project_preview={"validation_gate": {"visible_actors": _passing_visible_actors()}},
         project_dashboard_preview={},
         compass_memory_preview={},
         next_steps_preview={},
         program_result={},
+        prewrite_safety_preview={},
         release_target_result={},
         release_assignment_result={},
         release_workstream_ids=(),
@@ -125,6 +152,49 @@ def _passing_manifest() -> dict[str, object]:
     }
 
 
+def _passing_create_payload() -> dict[str, object]:
+    return {
+        "post_confirm_quality_manifest": _passing_manifest(),
+        "validation_gate": {"visible_actors": _passing_visible_actors()},
+    }
+
+
+def _passing_package_lens_report() -> dict[str, object]:
+    return {
+        "version": "greenfield-quality-lenses-v1",
+        "status": "passed",
+        "issues": [],
+        "lenses": {
+            "product_manager": {"status": "passed", "checks": []},
+            "architect": {"status": "passed", "checks": []},
+            "engineer": {"status": "passed", "checks": []},
+            "domain_expert": {"status": "passed", "checks": []},
+        },
+    }
+
+
+def test_collect_artifact_package_carries_prewrite_safety_evidence(tmp_path: Path) -> None:
+    module = _module()
+
+    package = module.collect_artifact_package(
+        repo_root=tmp_path,
+        create_payload={
+            "prewrite_safety": {
+                "status": "passed",
+                "checks": {
+                    "program_dry_run": True,
+                    "validation_gate_passed": True,
+                    "release_target_dry_run": True,
+                    "release_assignment_dry_run": True,
+                },
+            }
+        },
+    )
+
+    assert package.prewrite_safety_preview["status"] == "passed"
+    assert package.prewrite_safety_preview["checks"]["program_dry_run"] is True
+
+
 def _passing_matrix_result(module) -> object:
     return module.GreenfieldMatrixResult(
         name="matrix case",
@@ -159,16 +229,17 @@ def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monke
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
     monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         if "create" in command:
             create_envs.append(dict(env))
-            payload = {"post_confirm_quality_manifest": _passing_manifest()}
-            return module.subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+            payload = _passing_create_payload()
+            return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
         if "propose" in command:
-            return module.subprocess.CompletedProcess(command, 0, "Visible product intent\n", "")
-        return module.subprocess.CompletedProcess(command, 0, "", "")
+            return subprocess.CompletedProcess(command, 0, "Visible product intent\n", "")
+        return subprocess.CompletedProcess(command, 0, "", "")
 
     monkeypatch.setattr(module, "_run", fake_run)
 
@@ -196,15 +267,16 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
     monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         commands.append(list(command))
         if "create" in command:
             create_envs.append(dict(env))
-            payload = {"post_confirm_quality_manifest": _passing_manifest()}
-            return module.subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
-        return module.subprocess.CompletedProcess(command, 0, "", "")
+            payload = _passing_create_payload()
+            return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
 
     monkeypatch.setattr(module, "_run", fake_run)
 
@@ -237,6 +309,7 @@ def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: 
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
     monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
@@ -254,10 +327,10 @@ def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: 
                 }
             )
             payload = {"post_confirm_quality_manifest": manifest}
-            return module.subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
+            return subprocess.CompletedProcess(command, 0, json.dumps(payload), "")
         if "propose" in command:
-            return module.subprocess.CompletedProcess(command, 0, "Visible product intent\n", "")
-        return module.subprocess.CompletedProcess(command, 0, "", "")
+            return subprocess.CompletedProcess(command, 0, "Visible product intent\n", "")
+        return subprocess.CompletedProcess(command, 0, "", "")
 
     monkeypatch.setattr(module, "_run", fake_run)
 
@@ -384,12 +457,31 @@ def test_quality_verdict_requires_committed_write_transaction() -> None:
     assert verdict.lenses["engineer"] is False
 
 
-def test_quality_verdict_scores_premium_only_when_every_dimension_is_clean(monkeypatch) -> None:
+def test_quality_verdict_rejects_self_reported_manifest_without_package_readback(monkeypatch) -> None:
     module = _module()
     monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
 
     verdict = module.build_quality_verdict(
-        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        create_payload=_passing_create_payload(),
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score == 0
+    assert any(issue.startswith("quality lens product_manager") for issue in verdict.issues)
+    assert all(passed is False for passed in verdict.lenses.values())
+
+
+def test_quality_verdict_scores_premium_only_when_every_dimension_is_clean(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
         package=_empty_package(),
         counts=_full_counts(module),
         create_returncode=0,
@@ -402,6 +494,87 @@ def test_quality_verdict_scores_premium_only_when_every_dimension_is_clean(monke
     assert "all brutal release-quality dimensions scored 10" in verdict.score_explanation
 
 
+def test_quality_verdict_rejects_collapsed_tribunal_judgment_roles(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    payload = _passing_create_payload()
+    payload["validation_gate"] = {
+        "visible_actors": [
+            {
+                "stable_role": role,
+                "visible_actor": "Cross-Boundary Evidence Workspace proof reviewer",
+            }
+            for role in ("beneficiary_advocate", "domain_operator", "risk_owner", "evidence_owner")
+        ]
+    }
+
+    verdict = module.build_quality_verdict(
+        create_payload=payload,
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score < 10
+    assert verdict.scores["copy_semantic_clarity"] < 10
+    assert any("collapse distinct judgment roles" in issue for issue in verdict.issues)
+
+
+def test_quality_verdict_rejects_persisted_actor_readback_drift(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    package = _empty_package()
+    package.accepted_project_preview = {
+        "validation_gate": {
+            "visible_actors": [
+                {
+                    "stable_role": role,
+                    "visible_actor": "Cross-Boundary Evidence Workspace proof reviewer",
+                    "actor_source": "generated_role_projection",
+                }
+                for role in ("beneficiary_advocate", "domain_operator", "risk_owner", "evidence_owner")
+            ]
+        }
+    }
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=package,
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score < 10
+    assert any("accepted-project readback" in issue and "collapse distinct judgment roles" in issue for issue in verdict.issues)
+    assert any("drifted from create payload" in issue for issue in verdict.issues)
+
+
+def test_quality_verdict_requires_create_payload_actor_evidence(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    payload = _passing_create_payload()
+    payload["validation_gate"] = {}
+
+    verdict = module.build_quality_verdict(
+        create_payload=payload,
+        package=_empty_package(),
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score < 10
+    assert "create payload validation gate visible actors missing" in verdict.issues
+
+
 def test_quality_verdict_caps_score_when_rendered_artifacts_have_copy_findings(monkeypatch) -> None:
     module = _module()
     monkeypatch.setattr(
@@ -409,9 +582,10 @@ def test_quality_verdict_caps_score_when_rendered_artifacts_have_copy_findings(m
         "greenfield_rendered_package_quality_issues",
         lambda package: ["Radar workstream has clipped copy", "Registry spec repeats generic copy"],
     )
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
 
     verdict = module.build_quality_verdict(
-        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        create_payload=_passing_create_payload(),
         package=_empty_package(),
         counts=_full_counts(module),
         create_returncode=0,
@@ -431,9 +605,10 @@ def test_quality_verdict_rejects_project_implementation_prompt_findings(monkeypa
         "greenfield_rendered_package_quality_issues",
         lambda package: ["Project implementation prompt `Build smallest runnable slice` does not bind implementation to a governed workstream"],
     )
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
 
     verdict = module.build_quality_verdict(
-        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        create_payload=_passing_create_payload(),
         package=_empty_package(),
         counts=_full_counts(module),
         create_returncode=0,
@@ -537,7 +712,7 @@ def test_quality_verdict_requires_all_case_domain_terms() -> None:
         project_implementation_prompts=5,
     )
     quality = module.build_quality_verdict(
-        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        create_payload=_passing_create_payload(),
         package=_empty_package(),
         counts=counts,
         create_returncode=0,
@@ -607,6 +782,7 @@ def test_rendered_surface_health_requires_payload_assets_and_shell_contract(tmp_
             (
                 '<script id="toolingDashboardData" src="tooling-payload.v1.js?v=123"></script>',
                 '<script src="tooling-app.v1.js?v=123"></script>',
+                '<img src="surfaces/brand/lockup/odylith-lockup-horizontal.svg" alt="Odylith" />',
                 '<button type="button" data-tab="radar" role="tab">radar</button>',
                 '<iframe id="frame-radar"></iframe>',
             )
@@ -617,6 +793,10 @@ def test_rendered_surface_health_requires_payload_assets_and_shell_contract(tmp_
     issues = module.rendered_surface_health_issues(repo_root=tmp_path)
 
     assert "rendered surface odylith/radar/radar.html does not load backlog-app.v1.js" in issues
+    assert (
+        "rendered surface odylith/index.html references missing local asset "
+        "surfaces/brand/lockup/odylith-lockup-horizontal.svg"
+    ) in issues
     assert "rendered surface payload odylith/registry/registry-payload.v1.js is missing or empty" in issues
     assert "Atlas diagram odylith/atlas/source/sample-flow.mmd is missing rendered png output" in issues
     assert "odylith/index.html shell payload is missing or invalid" in issues
@@ -624,11 +804,13 @@ def test_rendered_surface_health_requires_payload_assets_and_shell_contract(tmp_
     assert "odylith/index.html is missing shell frame frame-registry" in issues
 
 
-def test_quality_verdict_rejects_surface_health_findings() -> None:
+def test_quality_verdict_rejects_surface_health_findings(monkeypatch) -> None:
     module = _module()
+    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
 
     verdict = module.build_quality_verdict(
-        create_payload={"post_confirm_quality_manifest": _passing_manifest()},
+        create_payload=_passing_create_payload(),
         package=_empty_package(),
         counts=_full_counts(module),
         surface_issues=("rendered surface odylith/radar/radar.html does not load backlog-payload.v1.js",),

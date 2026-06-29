@@ -32,6 +32,31 @@ _LABEL_HEADER_TEXTS = frozenset(
         "visible result",
     }
 )
+_DANGLING_LINE_TAILS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "as",
+        "at",
+        "because",
+        "by",
+        "for",
+        "from",
+        "if",
+        "in",
+        "into",
+        "of",
+        "on",
+        "or",
+        "the",
+        "to",
+        "when",
+        "while",
+        "with",
+        "without",
+    }
+)
 
 
 def clean_mermaid_text(value: object) -> str:
@@ -76,6 +101,7 @@ def wrap_mermaid_label(value: object, *, width: int = 24, max_lines: int = 3, li
     elif current:
         truncated = True
     lines = _rebalance_connector_line_breaks(lines, width=width)
+    lines = _rebalance_dangling_line_breaks(lines, width=width)
     if truncated and lines:
         lines[-1] = _append_ellipsis(lines[-1], width=width)
     return "<br/>".join(lines)
@@ -93,6 +119,28 @@ def _rebalance_connector_line_breaks(lines: list[str], *, width: int) -> list[st
         if len(words[:-1]) >= 3 and len(rebalanced[index + 1].split()) == 1 and previous_line and len(next_line) <= width:
             rebalanced[index] = previous_line
             rebalanced[index + 1] = next_line
+    return rebalanced
+
+
+def _rebalance_dangling_line_breaks(lines: list[str], *, width: int) -> list[str]:
+    """Move stranded connector words to the following visual line."""
+
+    rebalanced = list(lines)
+    for index in range(len(rebalanced) - 1):
+        words = rebalanced[index].split()
+        if len(words) < 2:
+            continue
+        tail = words[-1].casefold().strip(".,;:")
+        if tail not in _DANGLING_LINE_TAILS:
+            continue
+        head = " ".join(words[:-1]).strip(" ,;:")
+        if not head:
+            continue
+        next_line = f"{words[-1]} {rebalanced[index + 1]}".strip()
+        if len(next_line) > max(width + 12, len(rebalanced[index + 1])):
+            continue
+        rebalanced[index] = head
+        rebalanced[index + 1] = next_line
     return rebalanced
 
 

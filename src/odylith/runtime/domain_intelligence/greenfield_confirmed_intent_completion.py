@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_confirmed_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_confirmed_text as _short
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import completed_external_boundary_rows
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase, readable_action_chain_sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, material_first_path_action, normalize_project_title
@@ -46,6 +47,7 @@ def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     result["human_actors"] = _completed_actor_rows(result, title=title)
     _normalize_confirmed_actor_context(result, title=title)
     result["internal_systems"] = _completed_system_rows(result, title=title)
+    _complete_external_boundary(result)
     _complete_core_fields(result, title=title)
     _normalize_confirmed_core_language(result)
     repair_confirmed_intent_semantic_projections(result)
@@ -80,6 +82,14 @@ def _normalize_confirmed_core_language(intent: dict[str, Any]) -> None:
             for row in external_systems
             if (normalized := _boundary_clause_item(_normalize_external_system_language(row), limit=180))
         ]
+
+
+def _complete_external_boundary(intent: dict[str, Any]) -> None:
+    rows, ambiguities = completed_external_boundary_rows(intent)
+    if rows:
+        intent["external_systems"] = rows
+    if ambiguities:
+        intent["ambiguities"] = list(unique_text([*confirmed_text_values(intent.get("ambiguities")), *ambiguities]))
 
 
 def _normalize_open_clause(value: str) -> str:

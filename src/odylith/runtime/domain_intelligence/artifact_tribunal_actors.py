@@ -24,6 +24,26 @@ TRIBUNAL_STABLE_ROLES = (
     "release_owner",
 )
 
+TRIBUNAL_JUDGMENT_ROLES = (
+    "beneficiary_advocate",
+    "domain_operator",
+    "risk_owner",
+    "evidence_owner",
+)
+
+_JUDGMENT_ROLE_SUFFIXES = {
+    "beneficiary_advocate": ("beneficiary advocate",),
+    "domain_operator": ("workflow operator",),
+    "risk_owner": ("risk reviewer", "safety reviewer", "compliance reviewer"),
+    "evidence_owner": ("proof reviewer", "evidence reviewer", "audit reviewer", "auditor", "evidence owner"),
+}
+_JUDGMENT_ROLE_REPAIR_SUFFIX = {
+    "beneficiary_advocate": "beneficiary advocate",
+    "domain_operator": "workflow operator",
+    "risk_owner": "risk reviewer",
+    "evidence_owner": "proof reviewer",
+}
+
 _GENERIC_ACTOR_ROLE_LABELS = {
     "actor",
     "actors",
@@ -59,6 +79,7 @@ def tribunal_actor_projection(proposal: Mapping[str, Any]) -> tuple[dict[str, st
 
     first_graph = _first_domain_graph(proposal)
     actor_names = _domain_actor_names(first_graph, proposal=proposal)
+    explicit_actor_label_keys = _explicit_actor_label_keys(proposal)
     responsibilities = {
         "beneficiary_advocate": "Protects the person or team receiving the value.",
         "domain_operator": "Checks that the workflow is operationally coherent.",
@@ -71,6 +92,9 @@ def tribunal_actor_projection(proposal: Mapping[str, Any]) -> tuple[dict[str, st
         {
             "stable_role": role,
             "visible_actor": actor_names[role],
+            "actor_source": "explicit_intent_actor"
+            if _label_key(actor_names[role]) in explicit_actor_label_keys
+            else "generated_role_projection",
             "responsibility": responsibilities[role],
         }
         for role in TRIBUNAL_STABLE_ROLES
@@ -89,6 +113,7 @@ def _first_domain_graph(proposal: Mapping[str, Any]) -> DomainIntelligenceGraph:
 def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str, Any]) -> dict[str, str]:
     compact = _compact_lens_name(graph, proposal=proposal)
     proposal_actors = _proposal_actor_candidates(proposal)
+    explicit_actor_label_keys = _explicit_actor_label_keys(proposal)
     actors = _role_candidates([*proposal_actors, *graph.actors])
     actor_pool = actors or _role_candidates(proposal_actors)
     first_path_actor = _first_path_contract_actor(proposal)
@@ -103,8 +128,12 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
         ownerish_fallback=False,
     )
     evidence_owners = _role_specific_candidates(
-        [*proposal_actors, *graph.evidence_types, *graph.proof_standards, *graph.actors],
-        ("proof", "evidence", "validation"),
+        [*proposal_actors, *graph.actors],
+        ("proof", "evidence", "validation", "audit", "auditor"),
+        ownerish_fallback=False,
+    ) or _role_specific_candidates(
+        [*proposal_actors, *graph.actors],
+        ("reviewer", "inspector", "analyst"),
         ownerish_fallback=False,
     )
     implementation_owners = _role_specific_candidates(
@@ -141,7 +170,7 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
             fallback=_best_role_actor(
                 actor_pool,
                 ("commander", "proof", "evidence", "validation", "audit", "auditor", "inspector", "reviewer", "analyst", "information", "officer"),
-                fallback=domain_operator or primary_actor,
+                fallback=_role_suffixed_label(compact, _JUDGMENT_ROLE_REPAIR_SUFFIX["evidence_owner"]),
             ),
         ),
         "implementation_owner": _actor_label(implementation_owners, fallback="Project implementation owner"),
@@ -165,7 +194,7 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
             ),
         ),
     }
-    return _dedupe_visible_actor_names(names)
+    return _dedupe_visible_actor_names(names, explicit_actor_label_keys=explicit_actor_label_keys)
 
 
 def _first_path_contract_actor(proposal: Mapping[str, Any]) -> str:
@@ -179,14 +208,199 @@ def _first_path_contract_actor(proposal: Mapping[str, Any]) -> str:
     return actor if actor and _looks_like_actor_label(actor) else ""
 
 
-def _dedupe_visible_actor_names(names: Mapping[str, str]) -> dict[str, str]:
-    """Keep visible actors grounded; one real actor may legitimately own several hats."""
+def _explicit_actor_label_keys(proposal: Mapping[str, Any]) -> set[str]:
+    """Return actor labels grounded directly in accepted intent, not role fallback text."""
+
+    labels = list(_proposal_actor_candidates(proposal))
+    first_path_actor = _first_path_contract_actor(proposal)
+    if first_path_actor:
+        labels.append(first_path_actor)
+    return {_label_key(label) for label in labels if clean_text(label)}
+
+
+def _dedupe_visible_actor_names(
+    names: Mapping[str, str],
+    *,
+    explicit_actor_label_keys: set[str],
+) -> dict[str, str]:
+    """Keep intentional shared actors while separating generated judgment roles."""
 
     result: dict[str, str] = {}
+    seen_judgment_labels: set[str] = set()
     for role in TRIBUNAL_STABLE_ROLES:
         label = clean_text(names.get(role, ""))
+        if role in TRIBUNAL_JUDGMENT_ROLES:
+            label = _role_specific_judgment_label(
+                role=role,
+                label=label,
+                seen_labels=seen_judgment_labels,
+                explicit_actor_label_keys=explicit_actor_label_keys,
+            )
+            seen_judgment_labels.add(_label_key(label))
         result[role] = label
     return result
+
+
+def _role_specific_judgment_label(
+    *,
+    role: str,
+    label: str,
+    seen_labels: set[str],
+    explicit_actor_label_keys: set[str],
+) -> str:
+    text = clean_text(label).strip(" .")
+    if not text:
+        return _role_suffixed_label("Project", _JUDGMENT_ROLE_REPAIR_SUFFIX[role])
+    key = _label_key(text)
+    if key in explicit_actor_label_keys and _can_keep_explicit_actor_for_role(label=text, role=role):
+        return text
+    if (
+        _incompatible_judgment_role_suffix(label=text, role=role)
+        or key in seen_labels
+        or not _compatible_judgment_role_suffix(label=text, role=role)
+    ):
+        base = _actor_label_prefix(text) or text
+        text = _role_suffixed_label(base, _JUDGMENT_ROLE_REPAIR_SUFFIX[role])
+    return text
+
+
+def tribunal_visible_actor_quality_issues(
+    visible_actors: Sequence[Mapping[str, str]],
+) -> tuple[str, ...]:
+    """Return quality issues for visible Tribunal role projections."""
+
+    role_to_row = {
+        str(row.get("stable_role", "")).strip(): row
+        for row in visible_actors
+        if isinstance(row, Mapping)
+    }
+    role_to_label = {
+        role: clean_text(row.get("visible_actor", "")).strip()
+        for role, row in role_to_row.items()
+    }
+    issues: list[str] = []
+    label_roles: dict[str, list[str]] = {}
+    for role in TRIBUNAL_JUDGMENT_ROLES:
+        label = role_to_label.get(role, "")
+        if not label:
+            issues.append(f"Tribunal visible actor missing for {role}")
+            continue
+        key = _label_key(label)
+        label_roles.setdefault(key, []).append(role)
+        incompatible = _incompatible_judgment_role_suffix(label=label, role=role)
+        shared_explicit_actor = _allows_shared_explicit_actor(role_to_row.get(role), label=label)
+        if incompatible and not shared_explicit_actor:
+            issues.append(
+                f"Tribunal visible actor for {role} uses {incompatible} role language: {label}"
+            )
+        if not shared_explicit_actor and not _compatible_judgment_role_suffix(label=label, role=role):
+            issues.append(
+                f"Tribunal generated visible actor for {role} lacks role-specific judgment language: {label}"
+            )
+    for roles in label_roles.values():
+        if len(roles) <= 1:
+            continue
+        label = role_to_label.get(roles[0], "")
+        if _allows_shared_explicit_judgment_overlap(roles=roles, role_to_row=role_to_row, label=label):
+            continue
+        issues.append(
+            "Tribunal visible actors collapse distinct judgment roles "
+            + ", ".join(roles)
+            + f" into {label}"
+        )
+    return tuple(dict.fromkeys(issues))
+
+
+def _allows_shared_explicit_actor(row: Mapping[str, Any] | None, *, label: str) -> bool:
+    if not isinstance(row, Mapping):
+        return False
+    return (
+        clean_text(row.get("actor_source")).casefold() == "explicit_intent_actor"
+        and _can_be_shared_explicit_actor_label(label)
+    )
+
+
+def _allows_shared_explicit_judgment_overlap(
+    *,
+    roles: Sequence[str],
+    role_to_row: Mapping[str, Mapping[str, Any]],
+    label: str,
+) -> bool:
+    role_set = set(roles)
+    if len(role_set) > 2:
+        return False
+    if not role_set <= {"beneficiary_advocate", "domain_operator"}:
+        return False
+    return all(_allows_shared_explicit_actor(role_to_row.get(role), label=label) for role in role_set)
+
+
+def _can_be_shared_explicit_actor_label(label: str) -> bool:
+    text = clean_text(label).strip(" .")
+    lowered = text.casefold()
+    if not text:
+        return False
+    if _incompatible_shared_explicit_label(lowered):
+        return False
+    return _looks_like_actor_label(text)
+
+
+def _can_keep_explicit_actor_for_role(*, label: str, role: str) -> bool:
+    text = clean_text(label).strip(" .")
+    lowered = text.casefold()
+    if not text:
+        return False
+    if _incompatible_shared_explicit_label(lowered):
+        return False
+    if _compatible_judgment_role_suffix(label=text, role=role):
+        return True
+    if role in {"beneficiary_advocate", "domain_operator"} and _looks_like_actor_label(text):
+        return True
+    return False
+
+
+def _incompatible_shared_explicit_label(lowered: str) -> bool:
+    if any(
+        token in lowered
+        for token in (
+            "proof reviewer",
+            "evidence reviewer",
+            "risk reviewer",
+            "workflow operator",
+            "beneficiary advocate",
+            "release owner",
+            "implementation owner",
+            "system",
+            "platform",
+            "workspace",
+            "service",
+            "ledger",
+            "board",
+        )
+    ):
+        return True
+    return False
+
+
+def _label_key(value: str) -> str:
+    return clean_text(value).casefold()
+
+
+def _incompatible_judgment_role_suffix(*, label: str, role: str) -> str:
+    lowered = clean_text(label).casefold()
+    for other_role, suffixes in _JUDGMENT_ROLE_SUFFIXES.items():
+        if other_role == role:
+            continue
+        if any(lowered == suffix or lowered.endswith(f" {suffix}") for suffix in suffixes):
+            return other_role
+    return ""
+
+
+def _compatible_judgment_role_suffix(*, label: str, role: str) -> bool:
+    lowered = clean_text(label).casefold()
+    return any(
+        lowered == suffix or lowered.endswith(f" {suffix}")
+        for suffix in _JUDGMENT_ROLE_SUFFIXES.get(role, ())
+    )
 
 
 def _proposal_actor_candidates(proposal: Mapping[str, Any]) -> tuple[str, ...]:
@@ -532,9 +746,12 @@ def _actor_label_prefix(label: str) -> str:
         "manufacturer",
         "operator",
         "owner",
+        "proof",
         "reviewer",
+        "risk",
         "team",
         "user",
+        "workflow",
     }
     words = text.replace("/", " ").split()
     while words and words[-1].strip(".,;:()").casefold() in role_words:
@@ -587,4 +804,9 @@ def _normalize_role_suffix_case(label: str) -> str:
     return text
 
 
-__all__ = ["TRIBUNAL_STABLE_ROLES", "tribunal_actor_projection"]
+__all__ = [
+    "TRIBUNAL_JUDGMENT_ROLES",
+    "TRIBUNAL_STABLE_ROLES",
+    "tribunal_actor_projection",
+    "tribunal_visible_actor_quality_issues",
+]

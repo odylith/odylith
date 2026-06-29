@@ -21,6 +21,7 @@ from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import uniqu
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_canonical_projection_facts import canonical_projection_text_values
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -499,12 +500,12 @@ def _package_repetition_issues(package: Any, artifacts: list[RenderedArtifact]) 
         chunks = _mermaid_label_chunks(artifact.text) if artifact.kind == "mermaid" else _repetition_chunks(artifact.text)
         for chunk in chunks:
             key = _sentence_key(chunk)
-            if key and key not in allowed and not _allowed_structured_repetition_key(key):
+            if key and not _allowed_repetition_chunk(chunk, key, allowed) and not _allowed_structured_repetition_key(key):
                 occurrences.setdefault(key, []).append((artifact, normalize_string(chunk)))
         if artifact.kind != "mermaid":
             for chunk in _markdown_section_body_chunks(artifact.text):
                 key = _repetition_key(chunk)
-                if key and key not in allowed and not _allowed_structured_repetition_key(key):
+                if key and not _allowed_repetition_chunk(chunk, key, allowed) and not _allowed_structured_repetition_key(key):
                     occurrences.setdefault(key, []).append((artifact, normalize_string(chunk)))
     issues: list[str] = []
     for key, rows in occurrences.items():
@@ -600,6 +601,26 @@ def _allowed_structured_repetition_key(key: str) -> bool:
     )
 
 
+def _allowed_repetition_chunk(chunk: str, key: str, allowed: set[str]) -> bool:
+    if key in allowed:
+        return True
+    body = _section_body_for_repetition(chunk)
+    if not body:
+        return False
+    body_key = _repetition_key(body)
+    return bool(body_key and body_key in allowed)
+
+
+def _section_body_for_repetition(chunk: str) -> str:
+    head, separator, body = normalize_string(chunk).partition(":")
+    if not separator:
+        return ""
+    head_tokens = _word_tokens(head)
+    if not 1 <= len(head_tokens) <= 5:
+        return ""
+    return body.strip(" .;-")
+
+
 def _package_component_identity_issues(package: Any) -> list[str]:
     proposal = _as_mapping(getattr(package, "proposal", None))
     rows = proposal.get("components", [])
@@ -641,11 +662,7 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
     values = [
         intent.get("title"),
         _actor_label_summary(text_values(intent.get("human_actors"))),
-        *(
-            _accepted_intent_repetition_values(intent)
-            if _complete_semantic_repetition_source(semantic_model)
-            else []
-        ),
+        *canonical_projection_text_values(proposal),
         *_semantic_label_repetition_values(first_path),
         *[
             f"{component.get('component_id', '')} {component.get('label', '')}"
@@ -665,33 +682,6 @@ def _allowed_repetition_keys(package: Any) -> set[str]:
             if key:
                 keys.add(key)
     return keys
-
-
-def _accepted_intent_repetition_values(intent: Mapping[str, Any]) -> list[str]:
-    values: list[str] = []
-    for key in (
-        "product_story",
-        "summary",
-        "state_object",
-        "first_path",
-        "proof_boundary",
-        "critical_assumptions",
-        "assumptions",
-        "non_goals",
-        "ambiguities",
-    ):
-        values.extend(text_values(intent.get(key)))
-    return [value for value in values if value]
-
-
-def _complete_semantic_repetition_source(semantic_model: Mapping[str, Any]) -> bool:
-    """Allow accepted source prose only when full semantic custody is present."""
-
-    return bool(
-        semantic_model
-        and isinstance(semantic_model.get("first_path_contract"), Mapping)
-        and isinstance(semantic_model.get("domain_ontology"), Mapping)
-    )
 
 
 def _semantic_label_repetition_values(first_path: Mapping[str, Any]) -> list[str]:

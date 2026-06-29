@@ -476,6 +476,31 @@ def test_load_catalog_enriches_related_backlog_entries_with_front_matter_metadat
     ]
 
 
+def test_attach_workstream_relationships_preserves_backlog_derived_owners() -> None:
+    diagrams = [
+        {
+            "diagram_id": "D-321",
+            "related_workstreams": [],
+            "related_backlog": [
+                {
+                    "file": "odylith/radar/source/ideas/2026-04/sample.md",
+                    "idea_id": "B-321",
+                    "title": "Atlas Hot Path",
+                }
+            ],
+        }
+    ]
+
+    renderer._attach_diagram_workstream_relationships(  # noqa: SLF001
+        diagrams=diagrams,
+        traceability_graph={},
+        delivery_intelligence={},
+    )
+
+    assert diagrams[0]["owner_workstreams"] == ["B-321"]
+    assert diagrams[0]["related_workstreams"] == ["B-321"]
+
+
 def test_load_catalog_allows_atlas_first_draft_without_related_links(tmp_path: Path) -> None:
     repo_root = tmp_path
     (repo_root / "AGENTS.md").write_text("# Repo Root\n", encoding="utf-8")

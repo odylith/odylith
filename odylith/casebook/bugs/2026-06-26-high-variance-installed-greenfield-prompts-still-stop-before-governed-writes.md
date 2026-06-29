@@ -44,6 +44,19 @@
   Additional Root Cause on 2026-06-27: Project dashboard source-launch prompts were admitted into the final package gate, but their renderer still treated clipped embedded clauses as full sentences. The shared Project `short()` helper re-added terminal periods to fragments, and source-launch then embedded those fragments before comma clauses, producing `workspace., validation points` and `workspace., input validation`. The same source-launch path joined an action with a visible outcome that semantically restated the action, creating low-quality `do X and receive do X` prompts. Separately, operator next-step previews could clip inside subordinate tails such as `when required information`, which passed existing gates but failed the premium human-readable bar.
   Follow-up Root Cause on 2026-06-27: Independent review showed the initial source fix was still incomplete. The duplicate action/outcome class survived for shorter object-repetition shapes such as `receive a disclosure and receive a disclosure` and `review compliance exceptions and receive compliance exceptions`, and the proof fallback still copied the raw first-path text after the displayed path had been semantically cleaned. Release proof also had an evidence gap: installed matrix and release smoke could prove normal governed writes, while rescue activation after a repairable typed failure was only proven source-local. The first rescue-smoke harness narrowed that gap but still under-proved release readiness because rescue was opt-in from the canonical matrix wrapper and the auto-rescue check used a monkeypatched installed-engine script instead of the packaged CLI. The engine manifest also recorded mechanical package repairs but not semantic or artifact-plan repair issue codes, so a real auto-rescue create could pass without durable evidence of which typed issue was repaired.
   Installed Harness Root Cause on 2026-06-27: The rebuilt 265cc0cf installed proof exposed a release-matrix custody bug rather than a packaged-runtime semantic failure. The matrix accidentally passed the internal rescue-probe environment to normal standard create cases, while the actual rescue-smoke `greenfield create --repair-tier auto` subprocess used the plain environment. The packaged CLI therefore had no injected typed final-gate finding in the only leg meant to prove auto-rescue, so it correctly stayed on the standard tier and recorded no repaired probe code. Standard simulations and rescue simulations must have opposite probe-env custody.
+  Source-Local Brutal QA Repro on 2026-06-28: A fresh disposable source-local
+  wildfire mutual-aid evacuation workspace simulation failed post-confirm before
+  governed writes in 14.495s, then the temp repo was deleted. The final blockers
+  were `greenfield rendered package repeats noncanonical prose across 4
+  artifact(s)` for the accepted first-path outcome phrase and `quality lens
+  architect missing explicit external system boundary`. Root learning: stricter
+  independent package-lens readback is valuable, but it exposed two platform
+  custody gaps. First, canonical accepted-intent first-path outcome text can be
+  repeated by sanctioned projections and must be represented as typed canonical
+  source text rather than treated like unsanctioned copy repetition. Second,
+  reports, feeds, and constraint sources named in the accepted first path must
+  become explicit external boundary facts or an exact ambiguity, not an empty
+  `External systems` section that fails only at the final package lens.
 
 - Solution: Fix Odylith generally in semantic/projection ownership rather than domain-specific terms or rendered-string repair. Confirmed-intent recovery now localizes role-only actors to the project, keeps object modifiers out of actor labels, treats state-review predicates as review targets, rejects passive object-state subjects as human actors, and uses article-safe actor references. Outcome-action projection now converts system-generated results into modal-safe `review` or `see` actions before `user can` prose is composed. The role-can normalizer now preserves interrogative/modal clauses such as `what can be released`. First-path visible-result extraction now respects token boundaries inside hyphenated noun compounds, and semantic proof-control detection no longer rejects first-path `release readiness for ...` noun results while still rejecting control claims such as `release readiness requires ...`. Artifact-plan PatchSet row repair now refuses untargeted row mutations. A shared Tribunal lens contract now lets PM, architect, engineer, and domain-expert checks emit source-map target paths, semantic-node IDs, projection IDs, repairability, and repair owner at judgment time instead of reconstructing repair custody from check-name prose. The structured reasoning adapter now supplies an explicit live-proven Codex model for general structured repair when config is blank, maps the legacy Spark alias to the live CLI model, avoids the unsupported Codex ladder rung, and keeps user-config bypass reproducible. Tribunal patch planning now uses strict structured-output schemas for decision ledger, proof deltas, and replacement facts, then materializes the typed fact envelope back into caller-owned semantic or artifact-plan replacements after custody validation.
   Current Source Fix: Source-launch prompt composition now emits embedded prompt facts as fragments instead of sentences, strips dangling subordinate tails, uses generic material-term containment plus semantic overlap scoring to suppress outcomes that merely restate the action object, and routes proof fallback through the same cleaned first-path projection instead of copying raw confirmed text. Operator next-step preview trimming now detects incomplete subordinate tails near the end of clipped fragments, removing tails like `when required information` while preserving complete clauses such as `when required information is missing`. Release proof now runs installed rescue smoke by default from the canonical matrix wrapper. The smoke uses the packaged CLI in `--repair-tier auto`, injects one maintainer-only typed post-confirm finding through an exact internal release-proof token, requires the engine to auto-escalate to rescue, applies a typed semantic PatchSet marker, writes governed records, and fails unless the final manifest records `post_confirm_rescue_probe` as repaired under the 90s budget. The matrix harness now keeps normal standard cases on a clean environment and applies the internal probe environment only to the rescue-smoke create subprocess, with unit coverage for both sides of the boundary.
@@ -216,8 +229,96 @@
   as repeated `-ing` words as semantic quality evidence. If the generator can
   project an accepted first-path action directly, fix the projection and make
   the prompt checker reject only typed or locally owned malformed structures.
+  Additional failed mechanism on 2026-06-28: the maintained release matrix
+  could still award a hard 10/10 when a generated create payload self-reported
+  a passing `post_confirm_quality_manifest` and the harness observed count
+  floors, even if the collected artifact package was empty or semantically
+  unreviewed. The failed mechanism is self-reported custody: producer
+  manifests, row counts, prompt counts, and domain-term substring hits are not
+  sufficient release-quality evidence unless the matrix independently
+  recomputes package quality lenses from the generated repo artifacts and
+  compares that readback against the manifest. Do not repeat this by adding
+  more phrase filters; strengthen the typed artifact-package readback and keep
+  the score capped when independent package-lens evidence is missing or fails.
+  Additional failed mechanisms on 2026-06-29 from a source-local wildfire
+  mutual-aid simulation: the governed write completed in 23.170s and produced
+  complete record counts, but brutal QA scored 0/10 because generated HTML
+  referenced `odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg`
+  without seeding the managed brand asset tree, and independent package
+  readback treated the final committed program record as missing prewrite
+  dry-run safety evidence. The fixes stay platform-owned: `brand_assets`
+  seeds missing managed surface assets before greenfield dashboard refresh and
+  the rollback transaction snapshots `odylith/surfaces/brand`; prewrite
+  creates an explicit `prewrite_safety` evidence object that records program,
+  release-target, release-assignment, and validation dry-run proof separately
+  from final committed program state; and static surface health now rejects
+  missing local HTML assets before browser proof. The retained wildfire replay
+  passed source-local create in 23.205s with 22 brand assets seeded, six
+  rendered surfaces, twelve payload assets, twelve Atlas assets, no browser or
+  surface issues, all expert lenses passing, and hard 10/10 across all matrix
+  dimensions. Manual shell-trap cleanup left three temp repos behind before
+  explicit deletion, so future ad hoc simulations must include an explicit
+  post-run cleanup assertion rather than relying on trap intent.
+  Additional guardrail from the clinical trial role-collapse false positive:
+  producer manifests, artifact counts, and package-lens booleans are not enough
+  when role projections lose judgment separation. The matrix and validation
+  gate must independently check Tribunal visible-role distinctness and
+  role-appropriate suffixes before awarding expert-gate or release-readiness
+  credit.
+  Additional failed mechanism on 2026-06-29 from a source-local cross-border
+  clinical trial consent simulation: post-confirm create completed in 30.980s
+  and wrote the expected Radar, Registry, Atlas, release, traceability, and
+  rendered-surface records, but the generated validation gate rendered
+  beneficiary advocate, domain operator, risk owner, and evidence owner as the
+  same visible actor label, `Cross-border Clinical Trial proof reviewer`. The
+  maintained matrix scorer still awarded a hard 10/10 with zero issues. Root
+  learning: expert-lens and release-quality gates must reject collapsed
+  Tribunal role projections. A project can be complete and still be
+  non-premium when independent judgment roles are indistinguishable. Do not fix
+  this with domain terms; fix the generic role-projection and validation
+  custody so distinct stable roles get role-appropriate visible labels or an
+  explicit, reviewable reason when one actor legitimately owns multiple hats.
+  Follow-up hardening from the same escaped class: the first role-collapse fix
+  overcorrected by forcing separation even when the accepted intent explicitly
+  named one human actor wearing multiple hats. The accepted fix records
+  `actor_source` provenance for every Tribunal visible actor, allows shared
+  labels only when they are grounded in explicit accepted actors, and requires
+  generated judgment actors to carry role-specific language. The release matrix
+  now checks both the create payload and persisted accepted-project preview,
+  and fails on drift between the two. A fresh biobank consent simulation then
+  exposed another false-positive 10/10: the evidence owner was incorrectly
+  projected as `Specimen Link Ledger`, an internal evidence system. The generic
+  fix stops drawing visible judgment actors from evidence objects or systems,
+  requires generated judgment labels to be human/review-role shaped, and keeps
+  explicit actors from the accepted intent as the first source of truth.
+  Additional source-local proof after these fixes: the biobank consent replay
+  completed governed writes in 21.867s with four Radar workstreams, four
+  Registry specs, six Atlas Mermaid sources, twelve rendered Atlas assets,
+  twenty Compass records, full release/project records, zero final issues, all
+  expert lenses passing, and no temp leftovers after cleanup.
+  Follow-up failed mechanism from the broader 121-test pack: the role-provenance
+  hardening overcorrected by rewriting an explicit `Audit reviewer` actor into
+  `audit proof reviewer`. That is not a project-domain exception; audit
+  reviewer/auditor is a generic evidence-owner role concept. The fix extends
+  the typed Tribunal evidence-owner vocabulary so explicit audit reviewers are
+  preserved while internal evidence systems remain rejected. The targeted
+  Tribunal pack passed 5 tests and the broader greenfield/matrix/local-release
+  pack passed 121 tests in 86.48s.
+  Additional failed mechanism on 2026-06-29 from the retained HIIT integration:
+  post-confirm failed before governed writes because Atlas labels rendered
+  `Saved session in history with<br/>date, workout, and total time`, leaving a
+  visible line ending in `with`. The accepted-project preview also stored
+  compact one-line Mermaid, so public-copy custody reported the failure from
+  both rendered Atlas sources and the memory preview. This is a generic
+  generated-label custody problem, not a HIIT-domain problem. The fix belongs
+  in shared Mermaid wrapping/extraction: move stranded connector words to the
+  following visual line and prove compact Mermaid visible-label extraction does
+  not treat graph syntax or class declarations as public prose. The exact HIIT
+  integration then passed post-confirm in 20.34s as part of a three-test
+  focused proof, and the broader affected source-local pack passed 85 tests in
+  70.23s.
 
-- Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing.
+- Agent Guardrails: Before claiming release readiness, run hard prompts with overloaded terms such as state, agent, model, case, claim, release, record, proof, system, consent, and verify governed writes plus expert lenses. Capture failures in Casebook before fixing. Release scoring must inspect persisted artifact readback, not only producer manifests or create stdout.
 
 - Preflight Checks: Search CB-208 and this bug before changing greenfield completion, final quality gates, repair routing, or release matrix proof.
 
@@ -226,9 +327,13 @@
 - Related Incidents/Bugs: CB-208
 
 - Code References: - src/odylith/runtime/domain_intelligence
+- src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py
 - src/odylith/runtime/reasoning/tribunal_lens.py
 - src/odylith/runtime/artifact_quality/greenfield_quality_lenses.py
+- src/odylith/runtime/common/mermaid_text.py
 - scripts/release/greenfield_post_confirm_matrix.py
 - scripts/release/greenfield_rescue_smoke.py
 - src/odylith/runtime/project_intelligence/source_launch.py
 - src/odylith/runtime/domain_intelligence/greenfield_experience.py
+- tests/unit/runtime/test_greenfield_confirmed_surfaces.py
+- tests/integration/runtime/test_greenfield_hiit_post_confirm_quality.py

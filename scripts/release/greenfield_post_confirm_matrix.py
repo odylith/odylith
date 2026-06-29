@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import json
 import os
 from pathlib import Path
 import shutil
-import subprocess
 import sys
 import tempfile
 import time
@@ -22,9 +20,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from local_release_smoke import _cleanup_smoke_temp_root  # noqa: E402
-from local_release_smoke import _local_release_env  # noqa: E402
-from local_release_smoke import _serve_directory  # noqa: E402
+from local_release_smoke import _cleanup_smoke_temp_root, _local_release_env, _serve_directory  # noqa: E402
 from greenfield_rescue_smoke import POST_CONFIRM_RESCUE_BUDGET_SECONDS  # noqa: E402
 from greenfield_rescue_smoke import installed_auto_rescue_env  # noqa: E402
 from greenfield_rescue_smoke import rescue_cli_issues  # noqa: E402
@@ -38,8 +34,16 @@ from greenfield_surface_health import rendered_surface_health_issues  # noqa: E4
 from greenfield_surface_health import rendered_surface_payload_count  # noqa: E402
 from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 from greenfield_post_confirm_matrix_cases import default_cases  # noqa: E402
+from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import (  # noqa: E402
+    tribunal_visible_actor_quality_issues,
+)
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text  # noqa: E402
 from odylith.runtime.artifact_quality.greenfield_package_quality import (  # noqa: E402
     greenfield_rendered_package_quality_issues,
+)
+from odylith.runtime.artifact_quality.greenfield_quality_lenses import (  # noqa: E402
+    build_greenfield_quality_lens_report,
 )
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder  # noqa: E402
 
@@ -50,7 +54,6 @@ QUALITY_MATRIX_VERSION = "greenfield-post-confirm-installed-matrix-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 GENERATED_TEXT_SUFFIXES = {".html", ".js", ".json", ".jsonl", ".md", ".mmd"}
 RADAR_WORKSTREAM_SKIP_FILES = {"AGENTS.md", "INDEX.md", "README.md"}
-
 @dataclass(frozen=True)
 class GreenfieldArtifactCounts:
     radar_workstreams: int = 0
@@ -437,6 +440,7 @@ def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, An
         next_steps_preview=_as_mapping(create_payload.get("next_steps")),
         backlog_result=backlog_result,
         program_result=_as_mapping(create_payload.get("program")),
+        prewrite_safety_preview=_as_mapping(create_payload.get("prewrite_safety")),
         release_target_result=_as_mapping(create_payload.get("release_bootstrap")),
         release_assignment_result=_as_mapping(create_payload.get("release_target")),
         release_workstream_ids=tuple(_release_workstream_ids(create_payload)),
@@ -482,11 +486,15 @@ def build_quality_verdict(
 ) -> GreenfieldQualityVerdict:
     manifest = _as_mapping(create_payload.get("post_confirm_quality_manifest"))
     manifest_lenses = _manifest_lenses(manifest)
+    package_lens_report = _as_mapping(build_greenfield_quality_lens_report(package)) if create_returncode == 0 else {}
+    package_lenses = _package_lenses(package_lens_report)
     rendered_issues = (
         tuple(
             dict.fromkeys(
                 (
                     *tuple(greenfield_rendered_package_quality_issues(package)),
+                    *tuple(_package_lens_issues(package_lens_report)),
+                    *tuple(_validation_gate_actor_issues(create_payload=create_payload, package=package)),
                     *tuple(str(issue).strip() for issue in surface_issues if str(issue).strip()),
                 )
             )
@@ -503,12 +511,14 @@ def build_quality_verdict(
     lenses = {
         "product_manager": (
             _lens_passed(manifest_lenses, "product_manager")
+            and _lens_passed(package_lenses, "product_manager")
             and counts.radar_workstreams >= 4
             and counts.release_records >= 1
             and counts.project_brief_records >= 1
         ),
         "architect": (
             _lens_passed(manifest_lenses, "architect")
+            and _lens_passed(package_lenses, "architect")
             and counts.registry_component_specs >= 3
             and counts.atlas_mermaid_sources >= 4
             and counts.trace_nodes >= 12
@@ -516,6 +526,7 @@ def build_quality_verdict(
         ),
         "engineer": (
             _lens_passed(manifest_lenses, "engineer")
+            and _lens_passed(package_lenses, "engineer")
             and counts.registry_component_specs >= 3
             and counts.program_records >= 1
             and create_returncode == 0
@@ -523,6 +534,7 @@ def build_quality_verdict(
         ),
         "domain_expert": (
             _lens_passed(manifest_lenses, "domain_expert")
+            and _lens_passed(package_lenses, "domain_expert")
             and counts.domain_term_hits >= _required_domain_term_hits(counts)
         ),
     }
@@ -590,29 +602,6 @@ def _failed_case(
         quality=quality,
         create_returncode=returncode,
     )
-
-
-def _run(
-    *,
-    cwd: Path,
-    env: Mapping[str, str],
-    command: list[str],
-    timeout: float,
-) -> subprocess.CompletedProcess[str]:
-    try:
-        return subprocess.run(
-            command,
-            cwd=str(cwd),
-            env=dict(env),
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-    except subprocess.TimeoutExpired as exc:
-        stdout = exc.stdout.decode("utf-8", errors="replace") if isinstance(exc.stdout, bytes) else str(exc.stdout or "")
-        stderr = exc.stderr.decode("utf-8", errors="replace") if isinstance(exc.stderr, bytes) else str(exc.stderr or "")
-        return subprocess.CompletedProcess(command, 124, stdout=stdout, stderr=stderr)
 
 
 def _cleanup_repo_before_next(repo_root: Path) -> None:
@@ -984,8 +973,54 @@ def _manifest_issues(manifest: Mapping[str, Any]) -> tuple[str, ...]:
     return tuple(issues)
 
 
+def _validation_gate_actor_issues(*, create_payload: Mapping[str, Any], package: Any) -> tuple[str, ...]:
+    create_gate = _as_mapping(create_payload.get("validation_gate"))
+    accepted_gate = _as_mapping(_as_mapping(getattr(package, "accepted_project_preview", {})).get("validation_gate"))
+    sources = (
+        ("create payload", create_gate),
+        ("accepted-project readback", accepted_gate),
+    )
+    issues: list[str] = []
+    source_labels: dict[str, dict[str, str]] = {}
+    for source_name, validation_gate in sources:
+        visible_actors = validation_gate.get("visible_actors")
+        if not isinstance(visible_actors, Sequence) or isinstance(visible_actors, (str, bytes)):
+            issues.append(f"{source_name} validation gate visible actors missing")
+            continue
+        rows = tuple(row for row in visible_actors if isinstance(row, Mapping))
+        source_labels[source_name] = {
+            str(row.get("stable_role", "")).strip(): clean_text(row.get("visible_actor", "")).strip()
+            for row in rows
+            if str(row.get("stable_role", "")).strip()
+        }
+        issues.extend(f"{source_name} {issue}" for issue in tribunal_visible_actor_quality_issues(rows))
+    if source_labels.get("create payload") and source_labels.get("accepted-project readback"):
+        if source_labels["create payload"] != source_labels["accepted-project readback"]:
+            issues.append("accepted-project validation gate visible actors drifted from create payload")
+    return tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
+
+
 def _manifest_lenses(manifest: Mapping[str, Any]) -> Mapping[str, Any]:
     return _as_mapping(_as_mapping(manifest.get("quality_lenses")).get("lenses"))
+
+
+def _package_lenses(package_lens_report: Mapping[str, Any]) -> Mapping[str, Any]:
+    return _as_mapping(package_lens_report.get("lenses"))
+
+
+def _package_lens_issues(package_lens_report: Mapping[str, Any]) -> tuple[str, ...]:
+    if not package_lens_report:
+        return ("independent package quality lens report missing",)
+    issues = tuple(
+        str(issue).strip()
+        for issue in package_lens_report.get("issues", ())
+        if str(issue).strip()
+    )
+    if issues:
+        return issues
+    if str(package_lens_report.get("status", "")).strip() != "passed":
+        return ("independent package quality lens report did not pass",)
+    return ()
 
 
 def _lens_passed(lenses: Mapping[str, Any], name: str) -> bool:

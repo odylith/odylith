@@ -13,6 +13,7 @@ flowchart LR
       apply_input["Typed apply-semantic input<br/>source paths, provenance,<br/>legacy proposal bridge"]
       compiler["Deterministic semantic compiler<br/>provider-free common path"]
       semantic_ir["SemanticModelIR<br/>first-path contract,<br/>ontology, event graph,<br/>proof obligations"]
+      external_boundary["External boundary semantics<br/>explicit systems, inferred first-path boundary,<br/>or typed deferred manual/fixture boundary"]
       sequence_owner["First-path sequence owner<br/>modal actor capability chains,<br/>coordinated object-list tails"]
       result_language["Result-language owner<br/>result-status modifiers stay attached,<br/>artifact-tail status stays conservative,<br/>grammatical result item order"]
       artifact_plan["ArtifactPlanIR<br/>sanctioned projection fields"]
@@ -21,8 +22,10 @@ flowchart LR
       next_steps["Operator next steps<br/>governed start workstream,<br/>readiness gates, validation commands"]
       project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>from accepted project context"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
+      visible_actor_projection["Tribunal visible actor projection<br/>actor_source provenance,<br/>explicit many-hat allowance,<br/>role-specific generated labels"]
       validators["Deterministic validators<br/>schema, traceability,<br/>grammar, repetition, topology,<br/>Project prompt quality,<br/>clipped terminal labels"]
       expert_lenses["Expert-lens review<br/>PM, architect, engineer,<br/>domain reviewer typed owner contract<br/>coverage over accepted systems,<br/>including deferred topology"]
+      persisted_readback["Persisted artifact readback<br/>create payload and accepted-project preview<br/>must agree before scoring"]
       typed_findings["Source-owned typed findings<br/>target layer, target path,<br/>semantic node, no proposal-repair lane"]
       legacy_blockers["Legacy/raw issue strings<br/>diagnostic blockers only,<br/>no repair authority"]
       final_manifest{"Final manifest passes?"}
@@ -56,8 +59,8 @@ flowchart LR
     end
 
     visible_intent --> confirmable_stdout --> confirm --> source_guard --> confirmed_ir
-    confirmed_ir --> apply_input --> compiler --> semantic_ir --> sequence_owner --> result_language --> artifact_plan --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
-    draft_set --> validators --> expert_lenses --> typed_findings --> final_manifest
+    confirmed_ir --> apply_input --> compiler --> semantic_ir --> external_boundary --> sequence_owner --> result_language --> artifact_plan --> projection_contract --> projections --> next_steps --> project_dashboard --> draft_set
+    draft_set --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> release_matrix
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
@@ -81,7 +84,7 @@ flowchart LR
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirmable_stdout,confirm,source_guard,confirmed_ir intent;
-    class apply_input,compiler,semantic_ir,sequence_owner,result_language,artifact_plan,projection_contract,projections,next_steps,project_dashboard,draft_set,validators,expert_lenses,typed_findings,legacy_blockers,final_manifest standard;
+    class apply_input,compiler,semantic_ir,external_boundary,sequence_owner,result_language,artifact_plan,projection_contract,projections,next_steps,project_dashboard,draft_set,visible_actor_projection,validators,expert_lenses,persisted_readback,typed_findings,legacy_blockers,final_manifest standard;
     class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
     class writes,rollback,blockers,proof_log,surface_custody,release_matrix write;
 

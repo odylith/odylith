@@ -2,8 +2,11 @@ flowchart LR
     subgraph write_lane["Post-Confirm Write Boundary"]
       direction TB
       final_manifest["Final greenfield manifest<br/>semantic, package, and lens gates"]
+      prewrite_safety["Prewrite safety evidence<br/>program, release target,<br/>assignment, validation dry-runs"]
       governed_write["Governed records written<br/>Radar, Registry, Atlas,<br/>Compass, release proof"]
+      rollback_guard["Rollback guard<br/>source truth plus managed<br/>surface assets restored on failure"]
       dashboard_refresh["Surface refresh orchestration<br/>readable views after source truth"]
+      brand_assets["Managed brand assets<br/>lockup, icons, manifest<br/>seeded before browser proof"]
     end
 
     subgraph atlas_lane["Atlas Render Custody"]
@@ -31,7 +34,12 @@ flowchart LR
     end
 
     final_manifest --> governed_write
-    governed_write --> dashboard_refresh
+    final_manifest --> prewrite_safety
+    prewrite_safety --> governed_write
+    governed_write --> rollback_guard
+    rollback_guard --> dashboard_refresh
+    dashboard_refresh --> brand_assets
+    brand_assets --> surface_health
     dashboard_refresh --> catalog_truth
     catalog_truth --> mermaid_worker
     mermaid_worker --> rendered_assets
@@ -51,7 +59,7 @@ flowchart LR
     classDef atlas fill:#F5F3FF,stroke:#DDD6FE,color:#17233A,stroke-width:1px;
     classDef surface fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;
     classDef blocker fill:#FFF1F0,stroke:#F7B4AE,color:#17233A,stroke-width:1px;
-    class final_manifest,governed_write,dashboard_refresh write;
+    class final_manifest,prewrite_safety,governed_write,rollback_guard,dashboard_refresh,brand_assets write;
     class catalog_truth,mermaid_worker,static_renderer,rendered_assets,freshness_gate atlas;
     class rendered_package,surface_health,browser_state,hard_score surface;
     class exact_blockers,no_release_claim,proof_checkpoint blocker;

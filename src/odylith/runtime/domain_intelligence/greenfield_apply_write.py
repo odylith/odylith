@@ -34,6 +34,7 @@ from odylith.runtime.governance import component_authoring
 from odylith.runtime.governance import owned_surface_refresh
 from odylith.runtime.governance import release_planning_authoring
 from odylith.runtime.project_intelligence import builder as project_intelligence_builder
+from odylith.runtime.surfaces import brand_assets
 from odylith.runtime.surfaces import scaffold_mermaid_diagram
 
 
@@ -226,11 +227,25 @@ def write_greenfield_proposal(
         memory_record=memory_record,
         next_steps=next_steps,
     )
-    dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
-    dashboard_refresh["rendered_surface_custody"] = _raise_for_greenfield_rendered_surface_custody(
-        repo_root=root,
-        diagram_ids=diagrams_created,
-    )
+    brand_asset_paths = brand_assets.ensure_brand_assets(repo_root=root)
+    try:
+        dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
+    except RuntimeError as exc:
+        dashboard_refresh = {
+            "status": "warning",
+            "surfaces": list(_GREENFIELD_VISIBLE_SURFACES),
+            "view": owned_surface_refresh.dashboard_handoff(surface="project"),
+            "warning": str(exc),
+        }
+    else:
+        dashboard_refresh["rendered_surface_custody"] = _raise_for_greenfield_rendered_surface_custody(
+            repo_root=root,
+            diagram_ids=diagrams_created,
+        )
+    dashboard_refresh["managed_brand_assets"] = {
+        "status": "passed",
+        "seeded_count": len(brand_asset_paths),
+    }
 
     return {
         "mode": "applied",
@@ -244,6 +259,7 @@ def write_greenfield_proposal(
         "memory": memory_record,
         "dashboard_refresh": dashboard_refresh,
         "next_steps": next_steps,
+        "prewrite_safety": dict(prewrite_package.prewrite_safety_preview or {}) if prewrite_package else {},
         "release_bootstrap": release_bootstrap or {"created": False, "release": {}},
         "release_target": release_targeting or {"selector": release_selector, "release_id": "none", "events": []},
     }

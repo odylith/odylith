@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence impo
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_risk_lines
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import _role_suffixed_label
 from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_actor_projection
+from odylith.runtime.domain_intelligence.artifact_tribunal_actors import tribunal_visible_actor_quality_issues
 from odylith.runtime.governance import backlog_authoring
 from odylith.runtime.governance import build_traceability_graph
 from odylith.runtime.governance import release_planning_view_model
@@ -46,6 +47,15 @@ ARTIFACT_TRIBUNAL_ACTORS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/
 GREENFIELD_DOMAIN_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py"
 GREENFIELD_COMPONENT_TERM_INDEX_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_component_term_index.py"
 GREENFIELD_PRODUCT_RISKS_PATH = ROOT / "src/odylith/runtime/domain_intelligence/greenfield_product_risks.py"
+
+
+@pytest.fixture(autouse=True)
+def _stub_rendered_surface_custody_for_legacy_proposal_units(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped_in_legacy_proposal_unit"},
+    )
 
 
 def test_greenfield_apply_write_stays_in_dedicated_owner() -> None:
@@ -445,6 +455,137 @@ def test_tribunal_role_suffixes_do_not_repeat_existing_role_words() -> None:
     assert _role_suffixed_label("Decision Workspace", "proof reviewer") == "Decision Workspace proof reviewer"
 
 
+def test_greenfield_tribunal_splits_collapsed_judgment_roles() -> None:
+    projection = tribunal_actor_projection(
+        {
+            "title": "Cross-Boundary Evidence Workspace",
+            "intent": {"title": "Cross-Boundary Evidence Workspace"},
+            "backlog": [
+                {
+                    "title": "Prove one complete evidence path",
+                    "customer": "Regional Evidence",
+                    "domain_intelligence": {
+                        "actors": [
+                            "Regional Evidence: needs the product to collect reports and keep the result reviewable"
+                        ],
+                        "evidence_model": [
+                            "Review evidence belongs in Cross-Boundary Proof Record; proof checks stay separate from narrative claims."
+                        ],
+                        "proof_standards": [
+                            "Cross-Boundary Proof Record must show accepted input, changed state, validation result, and decision."
+                        ],
+                    },
+                }
+            ],
+        }
+    )
+    role_labels = {row["stable_role"]: row["visible_actor"] for row in projection}
+
+    assert role_labels["beneficiary_advocate"] == "Cross-Boundary Evidence Workspace beneficiary advocate"
+    assert role_labels["domain_operator"] == "Cross-Boundary Evidence Workspace workflow operator"
+    assert role_labels["risk_owner"] == "Cross-Boundary Evidence Workspace risk reviewer"
+    assert role_labels["evidence_owner"] == "Cross-Boundary Evidence Workspace proof reviewer"
+    assert len({role_labels[role] for role in ("beneficiary_advocate", "domain_operator", "risk_owner", "evidence_owner")}) == 4
+    assert tribunal_visible_actor_quality_issues(projection) == ()
+
+
+def test_greenfield_tribunal_quality_rejects_collapsed_judgment_roles() -> None:
+    collapsed = tuple(
+        {
+            "stable_role": role,
+            "visible_actor": "Cross-Boundary Evidence Workspace proof reviewer",
+            "responsibility": "Checks the generated proposal.",
+        }
+        for role in ("beneficiary_advocate", "domain_operator", "risk_owner", "evidence_owner")
+    )
+
+    issues = tribunal_visible_actor_quality_issues(collapsed)
+
+    assert any("collapse distinct judgment roles" in issue for issue in issues)
+    assert any("beneficiary_advocate uses evidence_owner role language" in issue for issue in issues)
+
+
+def test_greenfield_tribunal_quality_rejects_collapsed_explicit_proof_labels() -> None:
+    collapsed = tuple(
+        {
+            "stable_role": role,
+            "visible_actor": "Neonatal Medication Compounding proof reviewer",
+            "actor_source": "explicit_intent_actor",
+            "responsibility": "Checks the generated proposal.",
+        }
+        for role in ("beneficiary_advocate", "domain_operator", "risk_owner", "evidence_owner")
+    )
+
+    issues = tribunal_visible_actor_quality_issues(collapsed)
+
+    assert any("collapse distinct judgment roles" in issue for issue in issues)
+    assert any("beneficiary_advocate uses evidence_owner role language" in issue for issue in issues)
+
+
+def test_greenfield_tribunal_keeps_evidence_system_out_of_judgment_actor() -> None:
+    projection = tribunal_actor_projection(
+        {
+            "title": "Consent Revocation Ledger",
+            "intent": {"title": "Consent Revocation Ledger"},
+            "project_intelligence": {
+                "actors": [
+                    "Consent coordinator - imports revocation requests.",
+                    "Compliance reviewer - approves or blocks the revocation decision package.",
+                    "Audit reviewer - checks blocked release evidence.",
+                ]
+            },
+            "backlog": [
+                {
+                    "customer": "Consent coordinator; Compliance reviewer; Audit reviewer",
+                    "domain_intelligence": {
+                        "actors": [
+                            "Consent coordinator - imports revocation requests.",
+                            "Compliance reviewer - approves or blocks the revocation decision package.",
+                            "Audit reviewer - checks blocked release evidence.",
+                        ],
+                        "evidence_types": ["Specimen Link Ledger"],
+                        "proof_standards": ["Specimen Link Ledger must show applied restriction scope."],
+                    },
+                }
+            ],
+        }
+    )
+    role_labels = {row["stable_role"]: row["visible_actor"] for row in projection}
+
+    assert role_labels["evidence_owner"].casefold() == "audit reviewer"
+    assert role_labels["evidence_owner"] != "Specimen Link Ledger"
+    assert tribunal_visible_actor_quality_issues(projection) == ()
+
+
+def test_greenfield_tribunal_quality_rejects_generated_system_as_judgment_actor() -> None:
+    issues = tribunal_visible_actor_quality_issues(
+        (
+            {
+                "stable_role": "beneficiary_advocate",
+                "visible_actor": "Consent Revocation Ledger beneficiary advocate",
+                "actor_source": "generated_role_projection",
+            },
+            {
+                "stable_role": "domain_operator",
+                "visible_actor": "Consent Revocation Ledger workflow operator",
+                "actor_source": "generated_role_projection",
+            },
+            {
+                "stable_role": "risk_owner",
+                "visible_actor": "Consent Revocation Ledger risk reviewer",
+                "actor_source": "generated_role_projection",
+            },
+            {
+                "stable_role": "evidence_owner",
+                "visible_actor": "Specimen Link Ledger",
+                "actor_source": "generated_role_projection",
+            },
+        )
+    )
+
+    assert any("lacks role-specific judgment language" in issue for issue in issues)
+
+
 def test_greenfield_tribunal_ignores_runtime_behavior_scaffold_as_actor() -> None:
     projection = tribunal_actor_projection(
         {
@@ -516,9 +657,45 @@ def test_greenfield_tribunal_projection_keeps_explicit_actor_roles_distinct() ->
 
     assert "Field Technician" in labels
     assert labels.count("Field Technician") >= 2
-    assert "Dispatch Reviewer" in labels or "Dispatch reviewer" in labels
+    assert "Dispatch risk reviewer" in labels
+    assert "Dispatch proof reviewer" in labels
     assert "Field Technician Proof" not in labels
-    assert not any("risk reviewer" in label.casefold() for label in labels)
+    assert any("risk reviewer" in label.casefold() for label in labels)
+    assert tribunal_visible_actor_quality_issues(projection) == ()
+
+
+def test_greenfield_tribunal_projection_repairs_project_title_proof_reviewer_labels() -> None:
+    projection = tribunal_actor_projection(
+        {
+            "title": "Neonatal Medication Compounding Exception",
+            "intent": {"title": "Neonatal Medication Compounding Exception"},
+            "project_intelligence": {
+                "actors": [
+                    "Neonatal Medication Compounding proof reviewer",
+                ],
+            },
+            "backlog": [
+                {
+                    "title": "Review compounding exception",
+                    "customer": "Neonatal Medication Compounding proof reviewer",
+                    "domain_intelligence": {
+                        "actors": [
+                            "Neonatal Medication Compounding proof reviewer",
+                        ],
+                        "operators": [],
+                        "risk_owners": [],
+                    },
+                }
+            ],
+        }
+    )
+    role_labels = {row["stable_role"]: row["visible_actor"] for row in projection}
+
+    assert role_labels["beneficiary_advocate"] == "Neonatal Medication Compounding beneficiary advocate"
+    assert role_labels["domain_operator"] == "Neonatal Medication Compounding workflow operator"
+    assert role_labels["risk_owner"] == "Neonatal Medication Compounding risk reviewer"
+    assert role_labels["evidence_owner"] == "Neonatal Medication Compounding proof reviewer"
+    assert tribunal_visible_actor_quality_issues(projection) == ()
 
 
 def test_greenfield_artifacts_are_bound_to_project_intelligence_root(tmp_path) -> None:
@@ -1590,6 +1767,18 @@ def test_greenfield_transaction_restores_nested_symlink_without_copying_target(t
     assert nested_link.is_symlink()
     assert nested_link.resolve() == outside_file.resolve()
     assert outside_file.read_text(encoding="utf-8") == "outside\n"
+
+
+def test_greenfield_transaction_rolls_back_managed_brand_assets(tmp_path) -> None:
+    brand_asset = tmp_path / "odylith/surfaces/brand/lockup/odylith-lockup-horizontal.svg"
+
+    with pytest.raises(RuntimeError, match="synthetic failure"):
+        with GreenfieldApplyTransaction(tmp_path):
+            brand_asset.parent.mkdir(parents=True, exist_ok=True)
+            brand_asset.write_text("<svg></svg>\n", encoding="utf-8")
+            raise RuntimeError("synthetic failure")
+
+    assert not brand_asset.exists()
 
 
 def test_greenfield_apply_requires_confirmation(tmp_path) -> None:

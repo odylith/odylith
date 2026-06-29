@@ -88,6 +88,35 @@ def test_cleanup_smoke_temp_root_retries_enotempty(monkeypatch, tmp_path: Path) 
     assert len(calls) >= 2
 
 
+def test_cleanup_smoke_temp_root_removes_post_success_runtime_residue(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
+    module = _module()
+    target = tmp_path / "release-smoke"
+    (target / ".odylith" / "compass").mkdir(parents=True)
+    (target / ".odylith" / "compass" / "standup-brief-cache.v25.json").write_text("{}", encoding="utf-8")
+    real_rmtree = shutil.rmtree
+    calls = 0
+
+    def rmtree_then_recreate(path, *args, **kwargs):  # noqa: ANN001
+        nonlocal calls
+        calls += 1
+        result = real_rmtree(path, *args, **kwargs)
+        if calls == 1:
+            (target / ".odylith" / "locks" / "odylith-context-engine").mkdir(parents=True)
+            (target / ".odylith" / "locks" / "odylith-context-engine" / "late.lock").write_text(
+                "",
+                encoding="utf-8",
+            )
+        return result
+
+    monkeypatch.setattr(module.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(module.shutil, "rmtree", rmtree_then_recreate)
+
+    module._cleanup_smoke_temp_root(target)
+
+    assert not target.exists()
+    assert calls >= 2
+
+
 def test_cleanup_smoke_temp_root_swallows_persistent_cleanup_noise(monkeypatch, tmp_path: Path) -> None:  # noqa: ANN001
     module = _module()
     target = tmp_path / "release-smoke"
@@ -180,6 +209,7 @@ def test_greenfield_propose_apply_smoke_runs_exact_release_journey(monkeypatch, 
         "odylith/registry/registry.html",
         "odylith/atlas/atlas.html",
         "odylith/compass/compass.html",
+        "odylith/casebook/casebook.html",
         "odylith/runtime/source/accepted-project.v1.json",
         "odylith/runtime/delivery_intelligence.v4.json",
         "odylith/radar/traceability-graph.v1.json",

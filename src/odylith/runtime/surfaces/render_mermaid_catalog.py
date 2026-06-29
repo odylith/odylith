@@ -1025,6 +1025,14 @@ def _attach_diagram_workstream_relationships(
             for workstream in [_normalize_workstream_id(str(token or ""))]
             if workstream
         }
+        related_backlog = diagram.get("related_backlog", [])
+        if isinstance(related_backlog, list):
+            for item in related_backlog:
+                if not isinstance(item, Mapping):
+                    continue
+                workstream = _normalize_workstream_id(str(item.get("idea_id", "")))
+                if workstream:
+                    owners.add(workstream)
         # Fail closed on Atlas "active touch" noise: only promote active workstreams
         # that already have authored traceability to the diagram instead of letting
         # broad delivery-intelligence linkage invent new diagram associations.

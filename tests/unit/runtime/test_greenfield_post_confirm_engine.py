@@ -52,6 +52,15 @@ class _PassingTribunal:
 def _disable_refreshes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {
+            "status": "passed",
+            "atlas_surface_count": 3,
+            "atlas_diagram_count": 0,
+        },
+    )
+    monkeypatch.setattr(
         greenfield_apply_write.component_authoring.owned_surface_refresh,
         "raise_for_failed_refresh",
         lambda **_kwargs: None,

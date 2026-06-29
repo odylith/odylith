@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
+from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import completed_external_boundary_rows
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -113,6 +114,7 @@ def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldAp
         backlog_rows=backlog_rows,
         proof_boundary=proof_boundary,
     )
+    external_systems, _external_source = _external_system_rows(intent=intent, first_path=first_path)
     return GreenfieldApplySemanticInput(
         schema_version=APPLY_SEMANTIC_INPUT_VERSION,
         title=title,
@@ -122,7 +124,7 @@ def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldAp
         components=tuple(row for row in proposal.get("components", []) if isinstance(row, Mapping)),
         human_actors=tuple(text_values(intent.get("human_actors"))),
         internal_systems=tuple(text_values(intent.get("internal_systems"))),
-        external_systems=tuple(text_values(intent.get("external_systems"))),
+        external_systems=tuple(external_systems),
         non_goals=tuple(text_values(proposal.get("non_goals") or intent.get("non_goals"))),
         workstreams=tuple(backlog_rows),
         source_paths=(
@@ -133,10 +135,26 @@ def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldAp
             ("components", "proposal.components"),
             ("human_actors", "intent.human_actors"),
             ("internal_systems", "intent.internal_systems"),
-            ("external_systems", "intent.external_systems"),
+            ("external_systems", _external_source),
             ("non_goals", "proposal.non_goals|intent.non_goals"),
             ("workstreams", "proposal.backlog"),
         ),
+    )
+
+
+def _external_system_rows(*, intent: Mapping[str, Any], first_path: str) -> tuple[tuple[str, ...], str]:
+    rows = tuple(text_values(intent.get("external_systems")))
+    if rows:
+        return rows, "intent.external_systems"
+    inferred_rows, _ambiguities = completed_external_boundary_rows({**dict(intent), "first_path": first_path})
+    if inferred_rows:
+        return tuple(inferred_rows), "semantic_inference.first_path_external_boundary"
+    return (
+        (
+            "No live external system is accepted for the first release - manual or fixture-backed input supplies "
+            "the accepted first-path evidence before product state changes.",
+        ),
+        "semantic_inference.deferred_external_boundary",
     )
 
 

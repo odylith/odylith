@@ -24,6 +24,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 _TEMP_ROOT_CLEANUP_RETRY_COUNT = 5
 _TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS = 0.2
 _TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS = {errno.EACCES, errno.EBUSY, errno.ENOTEMPTY, errno.EPERM}
+_TEMP_ROOT_CLEANUP_SETTLE_COUNT = 3
+_TEMP_ROOT_CLEANUP_SETTLE_DELAY_SECONDS = 0.05
 _COMMAND_TIMEOUT_SECONDS = 300
 
 
@@ -117,9 +119,8 @@ def _cleanup_smoke_temp_root(path: Path) -> None:
     for attempt in range(_TEMP_ROOT_CLEANUP_RETRY_COUNT + 1):
         try:
             shutil.rmtree(target)
-            return
         except FileNotFoundError:
-            return
+            pass
         except OSError as exc:
             last_error = exc
             if exc.errno not in _TEMP_ROOT_CLEANUP_RETRYABLE_ERRNOS:
@@ -127,8 +128,28 @@ def _cleanup_smoke_temp_root(path: Path) -> None:
             if attempt >= _TEMP_ROOT_CLEANUP_RETRY_COUNT:
                 break
             time.sleep(_TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS)
+            continue
+        if _cleanup_smoke_temp_root_stayed_removed(target):
+            return
+        last_error = OSError(errno.ENOTEMPTY, f"temporary root reappeared after cleanup: {target}")
+        if attempt >= _TEMP_ROOT_CLEANUP_RETRY_COUNT:
+            break
+        time.sleep(_TEMP_ROOT_CLEANUP_RETRY_DELAY_SECONDS)
     if last_error is not None:
+        for _ in range(_TEMP_ROOT_CLEANUP_SETTLE_COUNT + 1):
+            shutil.rmtree(target, ignore_errors=True)
+            if _cleanup_smoke_temp_root_stayed_removed(target):
+                return
+            time.sleep(_TEMP_ROOT_CLEANUP_SETTLE_DELAY_SECONDS)
         shutil.rmtree(target, ignore_errors=True)
+
+
+def _cleanup_smoke_temp_root_stayed_removed(target: Path) -> bool:
+    for _ in range(_TEMP_ROOT_CLEANUP_SETTLE_COUNT):
+        if target.exists():
+            return False
+        time.sleep(_TEMP_ROOT_CLEANUP_SETTLE_DELAY_SECONDS)
+    return not target.exists()
 
 
 def _local_release_env(*, base_url: str, version: str) -> dict[str, str]:

@@ -64,6 +64,10 @@ def rendered_surface_health_issues(*, repo_root: Path) -> tuple[str, ...]:
             issues.append(f"rendered surface {relative} is missing or empty")
             continue
         links = _html_asset_links(path)
+        for asset_name in sorted(links):
+            asset_path = path.parent / asset_name
+            if not _nonempty(asset_path):
+                issues.append(f"rendered surface {relative} references missing local asset {asset_name}")
         for asset_name in SURFACE_PAYLOAD_CONTRACTS.get(relative, ()):
             if asset_name not in links:
                 issues.append(f"rendered surface {relative} does not load {asset_name}")
@@ -143,7 +147,7 @@ class _SurfaceAssetParser(HTMLParser):
                 self.iframe_ids.add(frame_id)
         if tag == "script" and attr_map.get("id", "").strip() and attr_map.get("src", "").strip():
             self.script_sources_by_id[attr_map["id"].strip()] = attr_map["src"].strip()
-        if tag not in {"script", "link"}:
+        if tag not in {"script", "link", "img"}:
             return
         for key, value in attrs:
             if key not in {"src", "href"} or not value:
@@ -159,6 +163,8 @@ def _html_asset_links(path: Path) -> set[str]:
 
 def _normalize_asset_ref(value: str) -> str:
     asset = str(value).split("?", 1)[0].split("#", 1)[0].strip()
+    if not asset or "://" in asset or asset.startswith(("data:", "mailto:", "#", "/")):
+        return ""
     while asset.startswith("./"):
         asset = asset[2:]
     return asset

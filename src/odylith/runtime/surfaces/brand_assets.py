@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+from importlib import resources
 import os
 from pathlib import Path
 
@@ -10,6 +11,7 @@ _BRAND_ROOT = Path("odylith/surfaces/brand")
 _FAVICON_ROOT = _BRAND_ROOT / "favicon"
 _ICON_ROOT = _BRAND_ROOT / "icon"
 _LOCKUP_ROOT = _BRAND_ROOT / "lockup"
+_PACKAGED_BRAND_ROOT = "bundle/assets/odylith/surfaces/brand"
 
 
 def asset_href(*, repo_root: Path, output_path: Path, asset_path: str | Path) -> str:
@@ -56,8 +58,41 @@ def tooling_shell_brand_payload(*, repo_root: Path, output_path: Path) -> dict[s
     }
 
 
+def ensure_brand_assets(*, repo_root: Path) -> tuple[Path, ...]:
+    """Seed missing managed brand assets referenced by rendered Odylith surfaces."""
+
+    target_root = Path(repo_root).expanduser().resolve() / _BRAND_ROOT
+    copied: list[Path] = []
+    source_root = resources.files("odylith").joinpath(_PACKAGED_BRAND_ROOT)
+    for relative, source in _resource_files(source_root):
+        if relative.name == ".DS_Store":
+            continue
+        target = target_root / relative
+        if target.is_file() and target.stat().st_size > 0:
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(source.read_bytes())
+        copied.append(target)
+    return tuple(copied)
+
+
+def _resource_files(
+    root: resources.abc.Traversable,
+    prefix: Path = Path(),
+) -> tuple[tuple[Path, resources.abc.Traversable], ...]:
+    rows: list[tuple[Path, resources.abc.Traversable]] = []
+    for child in root.iterdir():
+        relative = prefix / child.name
+        if child.is_dir():
+            rows.extend(_resource_files(child, relative))
+        elif child.is_file():
+            rows.append((relative, child))
+    return tuple(rows)
+
+
 __all__ = [
     "asset_href",
+    "ensure_brand_assets",
     "render_brand_head_html",
     "tooling_shell_brand_payload",
 ]

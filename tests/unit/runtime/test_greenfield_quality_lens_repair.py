@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from odylith.runtime.artifact_quality.greenfield_quality_lenses import build_greenfield_quality_lens_report
+from odylith.runtime.domain_intelligence.greenfield_apply_semantic import greenfield_apply_semantic_input
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import package_review_findings
 from odylith.runtime.domain_intelligence.greenfield_quality_lens_repair import (
@@ -67,6 +68,30 @@ def test_quality_lens_repair_declares_every_reviewer_check() -> None:
         "artifact_plan_projector"
     }
     assert {quality_lens_repair_owner(check) for check in QUALITY_LENS_GATE_ONLY_CHECKS} == {"prewrite_gate"}
+
+
+def test_apply_semantic_input_records_deferred_external_boundary_when_missing() -> None:
+    compiler_input = greenfield_apply_semantic_input(
+        {
+            "intent": {
+                "title": "Local Review Workspace",
+                "state_object": "A local review file records one submitted item, reviewer notes, and final status.",
+                "first_path": "A reviewer opens a local draft, records a decision, and sees the accepted result.",
+                "proof_boundary": "Release succeeds when the reviewer can inspect the decision and supporting evidence.",
+            },
+            "components": [{"component_id": "review-file", "label": "Review File"}],
+            "backlog": [
+                {
+                    "title": "Prove local review path",
+                    "product_view": "The product records one local review decision and evidence trail.",
+                }
+            ],
+        }
+    )
+
+    assert compiler_input.external_systems
+    assert "No live external system is accepted" in compiler_input.external_systems[0]
+    assert dict(compiler_input.source_paths)["external_systems"] == "semantic_inference.deferred_external_boundary"
 
 
 def test_quality_lens_report_emits_typed_tribunal_repair_targets() -> None:
@@ -266,6 +291,160 @@ def test_quality_lens_accepts_deferred_component_topology_when_all_systems_are_c
     assert engineer_checks["component_specs"]["status"] == "passed"
     assert "4 active component(s), 5 component row(s), 5 internal system(s)" in architect_checks["component_topology"]["evidence"]
     assert "4 spec or preview evidence row(s) for 4 active component(s)" in engineer_checks["component_specs"]["evidence"]
+
+
+def test_quality_lens_does_not_use_proof_boundary_as_visible_result() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "first_path_contract": {
+                    "capability": "Reviewer accepts one record and sees the accepted state.",
+                    "events": [{"action": "accept"}, {"action": "review"}, {"action": "publish"}],
+                }
+            },
+            "intent": {
+                "proof_boundary": "Release succeeds when evidence is reviewed and accepted.",
+            },
+            "backlog": [{"success_metrics": ["Accepted state appears", "Review evidence is saved"]}],
+            "assumptions": [{"statement": "One record is enough."}, {"statement": "Review owner is known."}],
+            "open_questions": [{"question": "Who owns final publication?"}],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={},
+        rendered_component_specs={},
+        component_registry_preview=(),
+        next_steps_preview={},
+        backlog_result={},
+        program_result={},
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    checks = {check["name"]: check for check in report["lenses"]["product_manager"]["checks"]}
+
+    assert checks["complete_first_path"]["status"] == "failed"
+    assert "visible result" in checks["complete_first_path"]["issue"]
+
+
+def test_quality_lens_requires_non_empty_external_boundary() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {
+                    "state_object": "A case record",
+                    "internal_systems": [
+                        "Case Intake Register records submitted cases.",
+                        "Review Decision Board records accepted decisions.",
+                    ],
+                    "external_systems": [],
+                }
+            },
+            "intent": {"state_object": "A case record", "external_systems": []},
+            "components": [
+                {"component_id": "case-intake-register", "label": "Case Intake Register"},
+                {"component_id": "review-decision-board", "label": "Review Decision Board"},
+            ],
+            "diagrams": [{"slug": "one"}, {"slug": "two"}],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={"one": "flowchart TD\nA-->B\n", "two": "flowchart TD\nA-->B\n"},
+        rendered_component_specs={},
+        component_registry_preview=(),
+        next_steps_preview={},
+        backlog_result={},
+        program_result={},
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    checks = {check["name"]: check for check in report["lenses"]["architect"]["checks"]}
+
+    assert checks["system_boundary"]["status"] == "failed"
+    assert "0 external system boundary row(s)" in checks["system_boundary"]["evidence"]
+
+
+def test_quality_lens_requires_prewrite_program_dry_run_evidence() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "components": [{"component_id": "case-intake-register", "label": "Case Intake Register"}],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={},
+        rendered_component_specs={"case-intake-register": "# Case Intake Register\n"},
+        component_registry_preview=({"component_id": "case-intake-register", "validation_gate": {"status": "passed"}},),
+        next_steps_preview={
+            "implementation_prompt": "Start B-001 from the accepted product direction with tests and proof.",
+            "start_workstream_id": "B-001",
+            "verification_commands": ["pytest", "odylith validate plan-workstream-binding"],
+            "coding_readiness_gates": ["semantic", "release", "proof", "excluded"],
+        },
+        backlog_result={"validation_gate": {"status": "passed"}},
+        program_result={},
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    checks = {check["name"]: check for check in report["lenses"]["engineer"]["checks"]}
+
+    assert checks["prewrite_safety"]["status"] == "failed"
+    assert checks["component_specs"]["status"] == "passed"
+    assert checks["validation_evidence"]["status"] == "passed"
+
+
+def test_quality_lens_accepts_explicit_prewrite_safety_preview_after_commit() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "components": [{"component_id": "case-intake-register", "label": "Case Intake Register"}],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={},
+        rendered_component_specs={"case-intake-register": "# Case Intake Register\n"},
+        component_registry_preview=({"component_id": "case-intake-register", "validation_gate": {"status": "passed"}},),
+        next_steps_preview={
+            "implementation_prompt": "Start B-001 from the accepted product direction with tests and proof.",
+            "start_workstream_id": "B-001",
+            "verification_commands": ["pytest", "odylith validate plan-workstream-binding"],
+            "coding_readiness_gates": ["semantic", "release", "proof", "excluded"],
+        },
+        backlog_result={"validation_gate": {"status": "passed"}},
+        program_result={"created": True, "dry_run": False},
+        prewrite_safety_preview={
+            "status": "passed",
+            "checks": {
+                "program_dry_run": True,
+                "validation_gate_passed": True,
+                "release_target_dry_run": True,
+                "release_assignment_dry_run": True,
+            },
+        },
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    checks = {check["name"]: check for check in report["lenses"]["engineer"]["checks"]}
+
+    assert checks["prewrite_safety"]["status"] == "passed"
+    assert "4 of 4 prewrite safety check(s) passed" in checks["prewrite_safety"]["evidence"]
 
 
 def test_gate_only_quality_lens_check_stays_non_patchable(
