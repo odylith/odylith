@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 345,
-    "mapped_workstream_evidence_count": 315,
+    "explicit_event_count": 346,
+    "mapped_workstream_evidence_count": 316,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 345
+    "timeline_event_count": 346
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e1f00464/greenfield-post-confirm-matrix-20260630-e1f00464.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 726,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh local release dist e1f00464 passed the 49-term platform domain-leakage guard and the 13-case installed greenfield matrix with hard 10/10 scores, zero issues, all expert lenses and browser proof passing, max standard create 29.110s, clean temp cleanup, and synthetic rescue wiring in 33.402s; natural host-rescue quality remains unproven.",
+      "ts_iso": "2026-06-29T19:06:39-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",

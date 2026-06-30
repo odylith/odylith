@@ -66,6 +66,22 @@ vocabulary, or degraded packages.
 
 ## Latest Simulation Evidence
 
+- 2026-06-30 committed release-dist proof: checkpoint e1f00464 rebuilt into
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e1f00464`
+  after tightening greenfield rescue PatchSet custody. The release build and
+  installed matrix both passed the 49-term platform domain-leakage guard. The
+  maintained installed matrix proof at
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e1f00464/greenfield-post-confirm-matrix-20260630-e1f00464.v1.json`
+  passed 13/13 standard cases with hard 10/10 scores, zero issues, all
+  product-manager, architect, engineer, and domain-expert lenses passing,
+  per-case browser surface proof passing, complete governed records, five
+  implementation prompts per project with zero prompt findings, max standard
+  create time 29.110s, and average standard create time 26.014s. Synthetic
+  typed-probe rescue wiring passed in 33.402s under the 90s rescue budget, but
+  natural host-model semantic rescue quality remains unproven and must not be
+  claimed from this wiring proof. Temp matrix and rescue roots were clean after
+  the run.
+
 - 2026-06-30 committed release-dist proof: checkpoint a258b913 rebuilt into
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913`
   after the repair-routing fix was committed and pushed. The maintained

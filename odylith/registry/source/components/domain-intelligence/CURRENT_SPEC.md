@@ -1464,6 +1464,16 @@ This section captures synchronized requirement and contract signals derived from
   complete governed records, Project implementation prompt evidence, and clean
   temp-root cleanup; synthetic rescue wiring passed in 34.261s but does not
   prove organically triggered host-model semantic rescue quality.
+- Current release proof: dist `odylith-local-release-0.1.15-e1f00464`
+  passed the release-build and installed-matrix 49-term platform
+  domain-leakage guard, then passed the maintained thirteen-case installed
+  matrix in 22.659-29.110s per standard create with hard 10/10 scores, zero
+  issues, all product-manager, architect, engineer, and domain-expert lenses
+  passing, per-case browser proof passing, complete governed records, five
+  implementation prompts per project with zero prompt findings, and clean temp
+  cleanup. Synthetic typed-probe rescue wiring passed in 33.402s under the
+  90-second rescue tier; natural host-model semantic rescue quality remains
+  unproven and cannot be claimed from this checkpoint.
 
 ## Research Basis
 

@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 230,
-    "mapped_workstream_evidence_count": 214,
+    "explicit_event_count": 231,
+    "mapped_workstream_evidence_count": 215,
     "recent_path_match_count": 1,
     "spec_history_event_count": 190,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 231
+    "timeline_event_count": 232
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -22,21 +22,53 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py"
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 726,
+      "event_index": 727,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py +1 more",
-      "ts_iso": "2026-06-29T18:37:43-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+      "ts_iso": "2026-06-29T19:07:01-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e1f00464/greenfield-post-confirm-matrix-20260630-e1f00464.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 726,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh local release dist e1f00464 passed the 49-term platform domain-leakage guard and the 13-case installed greenfield matrix with hard 10/10 scores, zero issues, all expert lenses and browser proof passing, max standard create 29.110s, clean temp cleanup, and synthetic rescue wiring in 33.402s; natural host-rescue quality remains unproven.",
+      "ts_iso": "2026-06-29T19:06:39-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
