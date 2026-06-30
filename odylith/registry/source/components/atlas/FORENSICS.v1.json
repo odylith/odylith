@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 286,
-    "mapped_workstream_evidence_count": 254,
+    "explicit_event_count": 287,
+    "mapped_workstream_evidence_count": 255,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 286
+    "timeline_event_count": 287
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -52,6 +52,38 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913/greenfield-post-confirm-fresh-variance-20260630-a258b913.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 724,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Fresh non-reused high-variance installed greenfield matrix passed against dist a258b913: 10/10 new domains scored hard 10/10 with zero issues, browser proof passed, max create 29.398s, and temp matrix roots cleaned.",
+      "ts_iso": "2026-06-29T18:18:01-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913/greenfield-post-confirm-matrix-20260630-a258b913.v1.json"

@@ -80,6 +80,17 @@ vocabulary, or degraded packages.
   rescue passed in 33.537s under the 90s rescue budget, and temp matrix/rescue
   roots were clean after the run.
 
+- 2026-06-30 fresh non-reused variance proof:
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913/greenfield-post-confirm-fresh-variance-20260630-a258b913.v1.json`
+  passed 10/10 new installed consumer simulations with hard 10/10 scores,
+  zero issues, browser proof, complete governed records, max create time
+  29.398s, and clean temp cleanup. The pass covered maternal transport
+  escalation, municipal permit appeals, fusion maintenance planning, school
+  accommodation review, vaccine cold-chain release, museum loan condition,
+  rail outage planning, model risk waiver review, robot lockout safety, and
+  API deprecation migration without changing platform source or hand-fixing
+  generated repos.
+
 - 2026-06-29 installed repair-routing checkpoint: fresh dist
   `odylith-local-release-0.1.15-14f5102a` passed the strengthened 49-term
   domain-leakage gate but failed 4/13 maintained cases before governed writes

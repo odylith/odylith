@@ -62,7 +62,10 @@ This section captures synchronized requirement and contract signals derived from
   29.244s. After commit a258b913, the rebuilt release dist passed the
   maintained installed matrix again with hard 10/10 scores, browser surface
   proof, zero issues, max standard create time 28.925s, and rescue
-  typed-probe smoke in 33.537s.
+  typed-probe smoke in 33.537s. A fresh non-reused ten-domain variance pass
+  against the same dist then passed with hard 10/10 scores, browser proof, zero
+  issues, complete governed records, max create time 29.398s, and clean temp
+  cleanup.
 
 - 2026-06-29: Removed broad rendered-preview repair authority from post-confirm package cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagrams: D-043, D-045)
   Safe artifact-draft repair now depends on exact leaf target paths owned by

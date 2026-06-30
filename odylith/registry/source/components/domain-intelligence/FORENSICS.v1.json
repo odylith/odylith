@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 228,
-    "mapped_workstream_evidence_count": 212,
+    "explicit_event_count": 229,
+    "mapped_workstream_evidence_count": 213,
     "recent_path_match_count": 1,
     "spec_history_event_count": 189,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 229
+    "timeline_event_count": 230
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -25,7 +25,7 @@
         "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 724,
+      "event_index": 725,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -33,8 +33,40 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T18:03:09-07:00",
+      "ts_iso": "2026-06-29T18:18:35-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913/greenfield-post-confirm-fresh-variance-20260630-a258b913.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 724,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Fresh non-reused high-variance installed greenfield matrix passed against dist a258b913: 10/10 new domains scored hard 10/10 with zero issues, browser proof passed, max create 29.398s, and temp matrix roots cleaned.",
+      "ts_iso": "2026-06-29T18:18:01-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [
