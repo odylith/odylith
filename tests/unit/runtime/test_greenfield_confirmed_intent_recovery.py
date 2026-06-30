@@ -197,7 +197,7 @@ def test_host_guidance_recovery_does_not_invent_modal_actor_from_can_path() -> N
 
     assert intent["title"] == "Wearable-informed Lab Recovery Teams Workspace"
     assert intent["human_actors"][0].startswith("Wearable-informed Lab Recovery Teams:")
-    assert "needs the product to ingest motion sensor recovery entries" in intent["human_actors"][0]
+    assert "need the product to ingest motion sensor recovery entries" in intent["human_actors"][0]
     assert "Can:" not in rendered
     assert "a can can" not in rendered.casefold()
     assert "Can needs" not in rendered
@@ -327,6 +327,26 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         )
         == "tenant aid coordinators"
     )
+    planned = prompt_intent_source(
+        "Plan a new exception review cockpit for operations teams that tracks evidence, review holds, "
+        "decision outcomes, exception notes, and release proof."
+    )
+    assert planned.title == "exception review cockpit"
+    assert planned.actor == "operations teams"
+    assert planned.first_path == (
+        "operations teams track evidence, review holds, decision outcomes, exception notes, and release proof"
+    )
+    rendered = confirmation_from_operator_intent(
+        "Plan a new exception review cockpit for operations teams that tracks evidence, review holds, "
+        "decision outcomes, exception notes, and release proof.",
+        prefer_product_title=True,
+    )
+    assert "# Exception Review Cockpit Workspace - Product Intent Confirmation" in rendered
+    assert (
+        "Operations Teams: need the product to track evidence, review holds, decision outcomes, exception notes, and release proof"
+        in rendered
+    )
+    assert "Review Holds:" not in rendered
 
 
 def test_prompt_source_preserves_infinitive_after_use_to_instead_of_can_rewrite() -> None:

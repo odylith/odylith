@@ -276,7 +276,7 @@ def _accepted_memory_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
     """Return the proposal shape stored in accepted memory."""
 
     payload = copy.deepcopy(dict(proposal))
-    first_path = _normalized_first_path_from_events(payload)
+    first_path = _canonical_accepted_first_path(payload) or _normalized_first_path_from_events(payload)
     if not first_path:
         return payload
 
@@ -301,6 +301,15 @@ def _accepted_memory_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
     if contract:
         contract["raw_path"] = first_path
     return payload
+
+
+def _canonical_accepted_first_path(proposal: Mapping[str, Any]) -> str:
+    apply_input = proposal.get("apply_semantic_input") if isinstance(proposal.get("apply_semantic_input"), Mapping) else {}
+    text = _clean(apply_input.get("first_path")) if isinstance(apply_input, Mapping) else ""
+    if text:
+        return text
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    return _clean(intent.get("first_path")) if isinstance(intent, Mapping) else ""
 
 
 def _mutable_child(payload: dict[str, Any], key: str) -> dict[str, Any]:

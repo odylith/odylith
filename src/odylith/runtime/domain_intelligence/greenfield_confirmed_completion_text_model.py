@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import project_specific_actor_labels
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -119,7 +120,7 @@ def _base_user_action_phrase(value: str) -> str:
         return ""
     text = re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
     if looks_like_action_clause(text):
-        return base_action_clause(text)
+        return base_action_clause(text, force_leading_finite=True)
     actor_action = _actor_led_base_action_phrase(text)
     if actor_action:
         return actor_action
@@ -162,36 +163,58 @@ def outcome_action_phrase(outcome: str) -> str:
     text = _reviewable_result_object(_clean(outcome).rstrip(" .") or "the product result")
     system_action = _system_generated_outcome_action(text)
     if system_action:
-        return system_action
+        return _modal_safe_outcome_action(system_action)
     actor_review = _actor_led_outcome_review_action(text)
     if actor_review:
-        return actor_review
+        return _modal_safe_outcome_action(actor_review)
     if _looks_like_past_result_noun(text):
-        return f"see {_object_phrase(text)}"
+        return _modal_safe_outcome_action(f"see {_object_phrase(text)}")
     if looks_like_action_clause(text):
-        return base_action_clause(text)
+        return _modal_safe_outcome_action(base_action_clause(text, force_leading_finite=True))
     if _looks_like_question_result(text):
-        return f"see {text}"
+        return _modal_safe_outcome_action(f"see {text}")
     if _looks_like_predicate_result(text):
-        return f"see that {text}"
-    actor_action = _actor_led_base_action_phrase(re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE))
-    if actor_action:
-        return actor_action
+        return _modal_safe_outcome_action(f"see that {text}")
     words = {word.strip(".,:;").casefold() for word in text.replace("-", " ").split()}
+    actor, actor_action = _actor_led_base_action_parts(
+        re.sub(r"^(?:a|an|the)\s+", "", text, flags=re.IGNORECASE)
+    )
+    if actor_action and (
+        not words & {"proof", "proven", "verified", "evidence", "audit", "result", "status"}
+        or _looks_like_human_actor_prefix(actor)
+    ):
+        return _modal_safe_outcome_action(actor_action)
     object_text = _object_phrase(text)
     if "status" in words and "visible" in words:
-        return f"see {object_text}"
+        return _modal_safe_outcome_action(f"see {object_text}")
     if words & {"proof", "proven", "verified", "evidence", "audit"}:
-        return f"review {object_text}"
+        return _modal_safe_outcome_action(f"review {object_text}")
     if "readiness" in words:
-        return f"see {object_text}"
+        return _modal_safe_outcome_action(f"see {object_text}")
     if "status" in words and words & {"tracking", "lifecycle"}:
-        return f"see {object_text}"
+        return _modal_safe_outcome_action(f"see {object_text}")
     if words & _VISIBLE_SEE_RESULT_HINTS:
-        return f"see {object_text}"
+        return _modal_safe_outcome_action(f"see {object_text}")
     if words & _VISIBLE_RESULT_OBJECT_HINTS:
-        return f"use {object_text}"
-    return f"reach {object_text}"
+        return _modal_safe_outcome_action(f"use {object_text}")
+    return _modal_safe_outcome_action(f"reach {object_text}")
+
+
+def _modal_safe_outcome_action(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if looks_like_action_clause(text):
+        return base_action_clause(text, force_leading_finite=True) or text
+    return text
+
+
+def _looks_like_human_actor_prefix(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text:
+        return False
+    if has_actor_role_word(text):
+        return True
+    words = [word.strip(".,:;()[]{}").casefold() for word in text.split() if word.strip(".,:;()[]{}")]
+    return bool(words and words[-1].endswith(("ant", "ent", "er", "ian", "ist", "or", "owner")))
 
 
 def _system_generated_outcome_action(value: str) -> str:
@@ -255,7 +278,7 @@ def _object_phrase(value: str) -> str:
     text = _clean(value).strip(" .")
     if not text:
         return "the product result"
-    lowered = text[:1].lower() + text[1:]
+    lowered = lower_first(text)
     words = lowered.split(maxsplit=1)
     first = words[0].strip(".,:;").casefold() if words else ""
     if first in {"a", "an", "the", "this", "that", "one", "my", "your", "their", "his", "her", "our", "its"}:

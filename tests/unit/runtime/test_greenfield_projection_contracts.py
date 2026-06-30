@@ -13,6 +13,13 @@ def test_visible_result_object_stays_modal_safe_in_user_can_projection() -> None
     assert generated_semantic_slop_issues(f"Result proof confirms the user can {action}.") == []
 
 
+def test_comma_led_finite_outcome_stays_modal_safe_in_user_can_projection() -> None:
+    action = outcome_action_phrase("submits, review notes, decision status, and release proof")
+
+    assert action == "submit, review notes, decision status, and release proof"
+    assert generated_semantic_slop_issues(f"Result proof confirms the user can {action}.") == []
+
+
 def test_child_workstream_risk_projection_preserves_governed_risk_posture() -> None:
     proposal = {
         "intent": {

@@ -1167,6 +1167,48 @@ def test_accepted_project_memory_normalizes_adverbial_action_copy() -> None:
     assert "optionally note context" in rendered
 
 
+def test_accepted_project_memory_preserves_canonical_apply_first_path_over_event_padding() -> None:
+    accepted_path = (
+        "Review teams track source evidence, owner attestations, queue holds, inspection outcomes, "
+        "exception notes, and release proof before a record closes."
+    )
+    event_padded_path = (
+        "Review teams track source evidence, owner attestations. Queue holds, inspection outcomes, "
+        "exception notes, and release proof before a record closes. Review evidence for queue holds."
+    )
+    payload = build_accepted_project_source_payload(
+        proposal={
+            "intent": {
+                "title": "Review Workspace",
+                "first_path": accepted_path,
+                "summary": f"Release stays bounded to: {accepted_path}",
+            },
+            "apply_semantic_input": {"first_path": accepted_path},
+            "semantic_model": {
+                "first_path_contract": {
+                    "raw_path": event_padded_path,
+                    "events": [
+                        {"text": "Review teams track source evidence, owner attestations"},
+                        {"text": "Queue holds, inspection outcomes, exception notes, and release proof before a record closes"},
+                        {"text": "Review evidence for queue holds"},
+                    ],
+                },
+            },
+        },
+        backlog_items=[],
+        component_items=[],
+        diagram_ids=[],
+        release_selector="0.0.1",
+        release_id="release-review-workspace-0-0-1",
+        validation_gate={"status": "passed"},
+    )
+
+    proposal = payload["proposal"]
+
+    assert proposal["intent"]["first_path"] == accepted_path
+    assert proposal["semantic_model"]["first_path_contract"]["raw_path"] == accepted_path
+
+
 def test_status_view_responsibility_avoids_presentational_action_splice() -> None:
     responsibility = responsibility_from_contract(
         "Review Assignment and Status Tracking Service",
@@ -1962,7 +2004,16 @@ def test_outcome_action_phrase_does_not_wrap_action_outcomes_as_visible_objects(
         "see a simple recap showing what the child explored"
     )
     assert outcome_action_phrase("a lead creates a readiness review") == "create a readiness review"
+    assert (
+        outcome_action_phrase("a lead records the launch decision with proof of what was reviewed")
+        == "record the launch decision with proof of what was reviewed"
+    )
     assert outcome_action_phrase("the publication status") == "see the publication status"
+
+
+def test_outcome_action_phrase_preserves_leading_acronym_result_objects() -> None:
+    assert outcome_action_phrase("NICU acceptance and handoff proof") == "review the NICU acceptance and handoff proof"
+    assert outcome_action_phrase("AI/ML review status") == "see the AI/ML review status"
 
 
 def test_component_focus_phrase_drops_terminal_preposition_from_label_focus() -> None:
@@ -3087,6 +3138,46 @@ def test_operator_next_steps_use_typed_first_path_instead_of_contract_field_dump
     assert "status evacuation coordination incident area" not in prompt
     assert "route constraint" not in prompt
     assert generated_public_copy_issues("operator next-steps preview", next_steps) == ()
+
+
+def test_source_launch_prompt_preserves_canonical_apply_first_path_over_project_brief_summary() -> None:
+    accepted_path = (
+        "Review teams track source evidence, owner attestations, queue holds, inspection outcomes, "
+        "exception notes, and release proof before a record closes."
+    )
+    split_summary = (
+        "Review teams track source evidence, owner attestations. Queue holds, inspection outcomes, "
+        "exception notes, and release proof before a record closes."
+    )
+    next_steps = build_next_steps(
+        proposal={
+            "intent": {"title": "Review Workspace", "first_path": accepted_path},
+            "apply_semantic_input": {"first_path": accepted_path},
+            "semantic_model": {"first_path_contract": {"raw_path": split_summary}},
+            "backlog": [
+                {"title": "Prove One Complete Review Path"},
+                {"title": "Let Review Teams Track Source Evidence", "recommended_first_slice": "Track source evidence."},
+            ],
+            "project_brief": {
+                "blueprint_sections": [{"section": "First path", "must_capture": split_summary}],
+                "coding_readiness_gates": ["The first implementation lane is ready."],
+            },
+        },
+        backlog_result={
+            "created": [
+                {"idea_id": "B-001", "title": "Prove One Complete Review Path"},
+                {"idea_id": "B-002", "title": "Let Review Teams Track Source Evidence"},
+            ]
+        },
+        first_release_workstreams=["B-001", "B-002"],
+        program_result={"umbrella_id": "B-001", "waves": [{"status": "active", "primary_workstreams": ["B-002"]}]},
+        release_selector="0.0.1",
+    )
+
+    prompt = next_steps["implementation_prompt"]
+
+    assert f"Preserve this accepted first path: {accepted_path}" in prompt
+    assert "owner attestations. Queue holds" not in prompt
 
 
 def test_field_heavy_state_object_stays_compact_in_workstream_titles_and_completion_metrics() -> None:

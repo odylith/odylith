@@ -588,14 +588,16 @@ def base_following_action_verbs(value: str) -> str:
     )
 
 
-def base_action_clause(value: str) -> str:
+def base_action_clause(value: str, *, force_leading_finite: bool = False) -> str:
     """Convert a finite action clause into the form used after ``to``."""
 
     parts = [part for part in re.split(r"(,\s*)", str(value or "").strip(" .")) if part]
     first_content = next((part for part in parts if not re.fullmatch(r",\s*", part)), "")
     if first_content and not looks_like_action_clause(first_content):
-        text = str(value or "").strip(" .")
-        return _lower_initial_for_sentence(text)
+        first_token = first_content.split(maxsplit=1)[0] if first_content.split(maxsplit=1) else ""
+        if not force_leading_finite or not looks_like_finite_action_token(first_token):
+            text = str(value or "").strip(" .")
+            return _lower_initial_for_sentence(text)
     converted: list[str] = []
     for part in parts:
         if re.fullmatch(r",\s*", part):

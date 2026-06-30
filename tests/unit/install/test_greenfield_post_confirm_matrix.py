@@ -103,7 +103,6 @@ def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
         )
 
     assert len(captured_terms) == 1
-    assert "xenobot" in captured_terms[0]
     assert "xenobot custody" in captured_terms[0]
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
@@ -145,7 +144,6 @@ def test_run_matrix_preflight_supplements_declared_sentinels_with_case_vocabular
 
     assert len(captured_terms) == 1
     assert "dictionary review sentinel" in captured_terms[0]
-    assert "language" in captured_terms[0]
     assert "language archive" in captured_terms[0]
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
@@ -1075,10 +1073,10 @@ def test_package_evidence_rejects_missing_persisted_project_prompt_payload() -> 
     assert any("accepted Project readback does not expose five source-launch prompts" in finding.message for finding in findings)
 
 
-def test_generated_leakage_terms_supplement_declared_sentinels_with_distinctive_anchors(tmp_path: Path) -> None:
+def test_generated_leakage_terms_supplement_declared_sentinels_with_source_phrases(tmp_path: Path) -> None:
     module = _module()
     package = _substantive_package()
-    package.project_brief_record_text += "\nWafer lot xenobot readiness remains visible for review."
+    package.project_brief_record_text += "\nWafer lot and wafer xenobot attestation remain visible for review."
     case = module.GreenfieldMatrixCase(
         name="wafer xenobot",
         prompt="Create a proposal for wafer xenobot attestation.",
@@ -1093,11 +1091,12 @@ def test_generated_leakage_terms_supplement_declared_sentinels_with_distinctive_
 
     assert "wafer lot" in terms
     assert "missing lattice phrase" not in terms
-    assert "xenobot" in terms
-    assert "wafer" in terms
+    assert "wafer xenobot" in terms
+    assert "xenobot" not in terms
+    assert "wafer" not in terms
 
 
-def test_generated_leakage_terms_suppress_generic_required_anchors(tmp_path: Path) -> None:
+def test_generated_leakage_terms_ignore_required_quality_anchors(tmp_path: Path) -> None:
     module = _module()
     package = _substantive_package()
     package.project_brief_record_text += "\nXenobot readiness remains visible for review."
@@ -1116,7 +1115,7 @@ def test_generated_leakage_terms_suppress_generic_required_anchors(tmp_path: Pat
     assert "protocol" not in terms
     assert "artifact" not in terms
     assert "sample" not in terms
-    assert "xenobot" in terms
+    assert "xenobot" not in terms
 
 
 def test_generated_leakage_terms_suppress_required_anchors_already_native_to_platform(
@@ -1158,11 +1157,7 @@ def test_generated_leakage_terms_suppress_required_anchors_already_native_to_pla
     )
 
     assert len(captured_terms) == 1
-    assert "estimate" in captured_terms[0]
-    assert "projection" in captured_terms[0]
     assert "estimate projection" in captured_terms[0]
-    assert "estimate" in platform_baseline_terms
-    assert "projection" in platform_baseline_terms
     assert "estimate projection" in platform_baseline_terms
     assert "estimate" not in terms
     assert "projection" not in terms
@@ -1171,10 +1166,10 @@ def test_generated_leakage_terms_suppress_required_anchors_already_native_to_pla
 def test_generated_leakage_terms_fall_back_when_case_has_no_declared_sentinels(tmp_path: Path) -> None:
     module = _module()
     package = _substantive_package()
-    package.project_brief_record_text += "\nXenobot readiness remains visible for review."
+    package.project_brief_record_text += "\nXenobot culture readiness remains visible for review."
     case = module.GreenfieldMatrixCase(
-        name="xenobot fallback",
-        prompt="Create a proposal for xenobot review.",
+        name="xenobot culture fallback",
+        prompt="Create a proposal for xenobot culture review.",
         required_terms=("xenobot",),
     )
 
@@ -1183,7 +1178,8 @@ def test_generated_leakage_terms_fall_back_when_case_has_no_declared_sentinels(t
         generated_text=module._generated_text(repo_root=tmp_path, package=package),  # noqa: SLF001
     )
 
-    assert "xenobot" in terms
+    assert "xenobot culture" in terms
+    assert "xenobot" not in terms
 
 
 def test_platform_leakage_proof_summary_reports_cumulative_terms_and_issues() -> None:

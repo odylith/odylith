@@ -21,6 +21,8 @@ def is_release_proof_control_step(value: str) -> bool:
     words = _semantic_words(value)
     if not words:
         return False
+    if _is_release_readiness_product_phrase(words):
+        return False
     word_set = set(words)
     if "release" not in word_set and "proof" not in word_set:
         return False
@@ -31,6 +33,12 @@ def is_release_proof_control_step(value: str) -> bool:
     if words[0] in {"release", "proof", "readiness", "validation"}:
         return True
     return words[:3] == ["the", "first", "release"]
+
+
+def _is_release_readiness_product_phrase(words: Sequence[str]) -> bool:
+    if len(words) < 3 or words[:2] != ["release", "readiness"] or "for" not in words:
+        return False
+    return not bool(set(words) & {"complete", "prove", "proof", "succeed", "validate"})
 
 
 def _semantic_words(value: str) -> list[str]:

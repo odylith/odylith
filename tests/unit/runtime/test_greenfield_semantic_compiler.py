@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.domain_intelligence import greenfield_apply_semantic
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import APPLY_SEMANTIC_INPUT_VERSION
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import greenfield_apply_semantic_input
@@ -11,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion 
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     compile_greenfield_semantics,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import GreenfieldSemanticCandidate
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     repair_greenfield_semantic_projections,
 )
@@ -170,6 +172,34 @@ def test_apply_semantic_input_records_source_paths_and_semantic_visibility_fallb
     assert persisted_input["schema_version"] == APPLY_SEMANTIC_INPUT_VERSION
     assert persisted_input["first_path"].endswith("then shows the accepted result for review.")
     assert persisted_input["source_paths"]["first_path"] == "intent.first_path+semantic_visible_result_fallback"
+
+
+def test_apply_semantic_accepts_first_path_event_visible_result_below_proof_boundary_floor(monkeypatch) -> None:
+    def semantic_candidate(value: Any, *, proof_boundary: Any = "", **_kwargs: Any) -> GreenfieldSemanticCandidate:
+        return GreenfieldSemanticCandidate(
+            role="visible_result",
+            text="accepted outcome, review status, proof notes, owner decision trail, and evidence state",
+            source_kind="first_path_event",
+            source_path="first_path.visible_result",
+            confidence=0.83,
+            provenance=(str(value), str(proof_boundary)),
+        )
+
+    monkeypatch.setattr(greenfield_apply_semantic, "select_visible_result_candidate", semantic_candidate)
+    proposal = {
+        "intent": {
+            "title": "Review Workspace",
+            "state_object": "Review record",
+            "first_path": "Operators collect accepted inputs and review the accepted outcome.",
+            "proof_boundary": "Release 0.0.1 is proven when the accepted outcome is reviewable.",
+        },
+    }
+
+    ensured = greenfield_apply_semantic.ensure_apply_semantic_model(proposal, refresh=True)
+    persisted_input = ensured["apply_semantic_input"]
+
+    assert persisted_input["first_path"] == "Operators collect accepted inputs and review the accepted outcome."
+    assert persisted_input["source_paths"]["first_path"] == "intent.first_path"
 
 
 def test_apply_semantic_visibility_fallback_does_not_leave_trailing_comma_step() -> None:

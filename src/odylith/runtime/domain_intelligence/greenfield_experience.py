@@ -426,6 +426,9 @@ def _first_slice_text(row: Mapping[str, Any]) -> str:
 
 
 def _first_path_summary(proposal: Mapping[str, Any]) -> str:
+    canonical_first_path = _canonical_accepted_first_path(proposal)
+    if canonical_first_path:
+        return canonical_first_path
     brief_first_path = _project_brief_first_path(proposal)
     if brief_first_path:
         return brief_first_path
@@ -447,6 +450,15 @@ def _first_path_summary(proposal: Mapping[str, Any]) -> str:
             return _preview_safe_fragment(f"{action}, ending with {outcome}", limit=460)
         return _preview_safe_fragment(action or outcome or raw_path, limit=460)
     return ""
+
+
+def _canonical_accepted_first_path(proposal: Mapping[str, Any]) -> str:
+    apply_input = proposal.get("apply_semantic_input") if isinstance(proposal.get("apply_semantic_input"), Mapping) else {}
+    text = _preview_safe_fragment(apply_input.get("first_path"), limit=460) if isinstance(apply_input, Mapping) else ""
+    if text:
+        return text
+    intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    return _preview_safe_fragment(intent.get("first_path"), limit=460) if isinstance(intent, Mapping) else ""
 
 
 def _project_brief_first_path(proposal: Mapping[str, Any]) -> str:

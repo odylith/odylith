@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
@@ -18,6 +19,7 @@ _REQUEST_COMMAND_WORDS = frozenset(
         "draft",
         "generate",
         "make",
+        "plan",
         "propose",
         "scaffold",
         "write",
@@ -48,6 +50,7 @@ _REQUEST_PRODUCT_WORDS = frozenset(
         "room",
         "service",
         "coach",
+        "cockpit",
         "coordination",
         "studio",
         "system",
@@ -97,6 +100,7 @@ class PromptIntentSource:
     title: str
     first_path: str
     command_led: bool
+    actor: str = ""
 
 
 def prompt_first_path_source(value: str) -> str:
@@ -117,16 +121,21 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     text = clean_markdown_text(_operator_original_intent_block(value) or value).strip(" .")
     words = _request_words(text)
     start, command_led = _request_content_start(words)
+    actor, actor_led_first_path = _actor_led_relative_clause(value)
     return PromptIntentSource(
         title=_project_title_source_from_words(words, start=start, command_led=command_led),
-        first_path=_first_path_source_from_text(text),
+        first_path=actor_led_first_path or _first_path_source_from_text(text),
         command_led=command_led,
+        actor=actor,
     )
 
 
 def _first_path_source_from_text(value: str) -> str:
     raw_text = clean_markdown_text(value).strip(" .")
     text = _strip_operator_request_wrapper(raw_text)
+    actor_led_candidate = _actor_led_relative_clause_source(raw_text)
+    if word_count(actor_led_candidate) >= 8 and _looks_like_recoverable_first_path(actor_led_candidate):
+        return _strip_release_proof_tail(actor_led_candidate)
     release_candidate = _release_action_sentence_source(raw_text) or _release_action_sentence_source(text)
     if word_count(release_candidate) >= 8 and _looks_like_recoverable_first_path(release_candidate):
         return _strip_release_proof_tail(release_candidate)
@@ -231,7 +240,7 @@ def _project_title_before_sentence_boundary(words: list[str], *, start: int) -> 
 
 def _skip_proposal_wrapper(words: list[str], start: int) -> int:
     index = start
-    while index < len(words) and words[index].casefold().strip(",:;") in {"greenfield", "product-first"}:
+    while index < len(words) and words[index].casefold().strip(",:;") in {"greenfield", "new", "product-first"}:
         index += 1
     if index < len(words) and words[index].casefold().strip(",:;") == "proposal":
         index += 1
@@ -255,6 +264,34 @@ def _tail_after_word(value: str, marker: str) -> str:
             continue
         return " ".join(words[index + 1 :]).strip(" .")
     return ""
+
+
+def _actor_led_relative_clause_source(value: str) -> str:
+    _actor, first_path = _actor_led_relative_clause(value)
+    return first_path
+
+
+def _actor_led_relative_clause(value: str) -> tuple[str, str]:
+    words = _request_words(value)
+    lowered = [word.casefold().strip(".,:;") for word in words]
+    for for_index, token in enumerate(lowered[:-3]):
+        if token != "for":
+            continue
+        for connector_index in range(for_index + 2, len(words) - 1):
+            if lowered[connector_index] not in {"that", "who"}:
+                continue
+            actor_words = words[for_index + 1 : connector_index]
+            tail_words = words[connector_index + 1 :]
+            if not actor_words or not tail_words or not _looks_like_actor_purpose_left(actor_words):
+                continue
+            action = base_action_clause(_smooth_request_first_path_clause(" ".join(tail_words)), force_leading_finite=True)
+            if action:
+                actor = " ".join(actor_words).strip(" .")
+                connector = lowered[connector_index]
+                if connector == "who":
+                    return actor, f"{actor} {connector} {action}".strip(" .")
+                return actor, f"{actor} {action}".strip(" .")
+    return "", ""
 
 
 def _strip_operator_request_wrapper(value: str) -> str:

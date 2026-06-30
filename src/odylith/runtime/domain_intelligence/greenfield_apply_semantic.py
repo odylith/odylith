@@ -12,10 +12,12 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import word_count
 
 
 APPLY_SEMANTIC_INPUT_VERSION = "odylith.greenfield.apply_semantic_input.v1"
 _VISIBLE_RESULT_CONFIDENCE_FLOOR = 0.9
+_FIRST_PATH_EVENT_VISIBLE_RESULT_CONFIDENCE_FLOOR = 0.8
 
 
 @dataclass(frozen=True)
@@ -226,7 +228,23 @@ def _first_text_with_source(
 
 def _first_path_has_visible_result(value: str, *, proof_boundary: str) -> bool:
     candidate = select_visible_result_candidate(value, proof_boundary=proof_boundary)
-    return candidate.source_path.startswith("first_path.") and candidate.confidence >= _VISIBLE_RESULT_CONFIDENCE_FLOOR
+    if not candidate.source_path.startswith("first_path."):
+        return False
+    if candidate.source_kind == "first_path_event" and candidate.confidence < _VISIBLE_RESULT_CONFIDENCE_FLOOR:
+        return _has_compound_first_path_result_shape(candidate.text) and (
+            candidate.confidence >= _FIRST_PATH_EVENT_VISIBLE_RESULT_CONFIDENCE_FLOOR
+        )
+    confidence_floor = (
+        _FIRST_PATH_EVENT_VISIBLE_RESULT_CONFIDENCE_FLOOR
+        if candidate.source_kind == "first_path_event"
+        else _VISIBLE_RESULT_CONFIDENCE_FLOOR
+    )
+    return candidate.confidence >= confidence_floor
+
+
+def _has_compound_first_path_result_shape(value: str) -> bool:
+    text = clean_text(value).strip(" .")
+    return word_count(text) >= 10 and "," in text
 
 
 def _has_current_apply_semantic_input(proposal: Mapping[str, Any]) -> bool:

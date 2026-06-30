@@ -49,7 +49,7 @@ def test_default_matrix_cases_each_contribute_distinctive_leakage_terms() -> Non
     assert all(leakage.case_leakage_terms(case) for case in cases)
 
 
-def test_declared_leakage_terms_are_supplemented_by_distinctive_required_anchors() -> None:
+def test_declared_leakage_terms_are_not_padded_with_required_quality_anchors() -> None:
     terms = leakage.case_leakage_terms(
         SimpleNamespace(
             required_terms=("wafer", "reliability", "agent"),
@@ -57,7 +57,7 @@ def test_declared_leakage_terms_are_supplemented_by_distinctive_required_anchors
         )
     )
 
-    assert terms == ("chamber exposure", "wafer", "wafer lot")
+    assert terms == ("chamber exposure", "wafer lot")
 
 
 def test_case_leakage_terms_derive_distinctive_prompt_vocabulary() -> None:
@@ -78,8 +78,8 @@ def test_case_leakage_terms_derive_distinctive_prompt_vocabulary() -> None:
 
     assert "bell inequality" in terms
     assert "entangled photon" in terms
-    assert "quantum" in terms
     assert "quantum communication" in terms
+    assert "quantum" not in terms
     assert "create" not in terms
     assert "greenfield proposal" not in terms
 
@@ -95,18 +95,66 @@ def test_generic_required_anchors_do_not_reenter_leakage_custody_noise() -> None
     assert terms == ("lab sample custody",)
 
 
-def test_domain_leakage_terms_accept_custom_matrix_cases_without_platform_native_noise() -> None:
+def test_domain_leakage_terms_accept_custom_matrix_cases_without_required_anchor_noise() -> None:
     terms = set(
         leakage.domain_leakage_terms(
             (
-                SimpleNamespace(required_terms=("xenobot", "tribunal", "agent", "casebook")),
-                SimpleNamespace(required_terms=("neutrino observatory", "release")),
+                SimpleNamespace(
+                    prompt="Coordinate xenobot culture transfer and organoid chamber evidence.",
+                    required_terms=("xenobot", "tribunal", "agent", "casebook"),
+                ),
+                SimpleNamespace(
+                    prompt="Compare neutrino observatory exposure logs before detector recalibration.",
+                    required_terms=("neutrino observatory", "release"),
+                ),
             ),
             include_historical=False,
         )
     )
 
-    assert terms == {"neutrino observatory", "xenobot"}
+    assert "xenobot culture" in terms
+    assert "neutrino observatory" in terms
+    assert "tribunal" not in terms
+    assert "agent" not in terms
+    assert "casebook" not in terms
+    assert "release" not in terms
+
+
+def test_required_terms_do_not_create_platform_custody_false_positives() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                prompt=(
+                    "Plan wildfire burn review with smoke window forecasts, subtitle evidence notes, "
+                    "ballast crew timing, and ingredient substitution approvals."
+                ),
+                required_terms=("smoke", "subtitle", "ballast", "substitution"),
+                leakage_terms=(),
+            )
+        )
+    )
+
+    assert "smoke" not in terms
+    assert "subtitle" not in terms
+    assert "ballast" not in terms
+    assert "substitution" not in terms
+    assert any("wildfire" in term for term in terms)
+
+
+def test_source_text_terms_do_not_cross_case_field_boundaries() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                name="geothermal drilling window planner",
+                prompt="Plan a new geothermal drilling board for borehole approval.",
+                required_terms=("geothermal", "drilling"),
+                leakage_terms=(),
+            )
+        )
+    )
+
+    assert "planner plan" not in terms
+    assert "geothermal drilling" in terms
 
 
 def test_explicit_leakage_terms_can_use_platform_words_inside_project_phrase() -> None:

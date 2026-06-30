@@ -215,6 +215,7 @@ DOMAIN_TEXT_STOPWORDS = frozenset(
         "native",
         "no",
         "not",
+        "new",
         "of",
         "only",
         "operations",
@@ -223,6 +224,9 @@ DOMAIN_TEXT_STOPWORDS = frozenset(
         "outside",
         "owner",
         "owners",
+        "plan",
+        "planned",
+        "planner",
         "prepare",
         "prepares",
         "preserve",
@@ -359,7 +363,6 @@ def case_leakage_terms(case: object) -> tuple[str, ...]:
     return domain_leakage_terms_from_terms(
         (
             *_case_declared_leakage_terms(case),
-            *_case_required_terms(case),
             *_case_source_text_terms(case),
         )
     )
@@ -590,16 +593,15 @@ def _normalize_term(term: str) -> str:
 
 
 def _case_source_text_terms(case: object) -> tuple[str, ...]:
-    text = "\n".join(
-        str(value or "")
+    return domain_leakage_terms_from_terms(
+        term
         for value in (
             getattr(case, "name", ""),
             getattr(case, "prompt", ""),
             getattr(case, "confirmed_intent_markdown", ""),
         )
-        if str(value or "").strip()
+        for term in domain_leakage_terms_from_text(str(value or ""))
     )
-    return domain_leakage_terms_from_text(text)
 
 
 def _is_distinctive_source_token(token: str) -> bool:

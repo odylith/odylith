@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "generated_utc": "2026-06-30T10:08:06Z",
+  "generated_utc": "2026-06-30T12:01:06Z",
   "release_summary": {
     "catalog": [
       {
@@ -318,19 +318,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 36,
+            "commit_count": 35,
             "local_change_count": 6,
-            "file_touch_count": 154
+            "file_touch_count": 153
           },
           "48h": {
             "commit_count": 47,
             "local_change_count": 6,
-            "file_touch_count": 315
+            "file_touch_count": 312
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-30T03:07:08-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 4,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -756,18 +756,18 @@
         "activity": {
           "24h": {
             "commit_count": 19,
-            "local_change_count": 4,
-            "file_touch_count": 116
+            "local_change_count": 1,
+            "file_touch_count": 111
           },
           "48h": {
             "commit_count": 27,
-            "local_change_count": 4,
-            "file_touch_count": 228
+            "local_change_count": 1,
+            "file_touch_count": 223
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-06-30T03:06:42-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 81,
           "eta_days": null,
           "eta_confidence": "low"
@@ -927,18 +927,18 @@
         "activity": {
           "24h": {
             "commit_count": 19,
-            "local_change_count": 4,
-            "file_touch_count": 116
+            "local_change_count": 1,
+            "file_touch_count": 111
           },
           "48h": {
             "commit_count": 27,
-            "local_change_count": 4,
-            "file_touch_count": 224
+            "local_change_count": 1,
+            "file_touch_count": 219
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-06-30T03:06:42-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 94,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1099,18 +1099,18 @@
         "activity": {
           "24h": {
             "commit_count": 19,
-            "local_change_count": 4,
-            "file_touch_count": 116
+            "local_change_count": 1,
+            "file_touch_count": 111
           },
           "48h": {
             "commit_count": 27,
-            "local_change_count": 4,
-            "file_touch_count": 228
+            "local_change_count": 1,
+            "file_touch_count": 223
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-06-30T03:06:42-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 83,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1273,18 +1273,18 @@
         "activity": {
           "24h": {
             "commit_count": 19,
-            "local_change_count": 4,
-            "file_touch_count": 116
+            "local_change_count": 1,
+            "file_touch_count": 111
           },
           "48h": {
             "commit_count": 27,
-            "local_change_count": 4,
-            "file_touch_count": 228
+            "local_change_count": 1,
+            "file_touch_count": 223
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-06-30T03:06:42-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -1439,9 +1439,9 @@
             "file_touch_count": 51
           },
           "48h": {
-            "commit_count": 4,
+            "commit_count": 3,
             "local_change_count": 0,
-            "file_touch_count": 132
+            "file_touch_count": 117
           }
         },
         "timeline": {
@@ -1466,7 +1466,7 @@
             "band": "Medium"
           },
           "48h": {
-            "index": 48,
+            "index": 45,
             "band": "Medium"
           }
         },
@@ -1599,9 +1599,9 @@
             "file_touch_count": 51
           },
           "48h": {
-            "commit_count": 5,
+            "commit_count": 4,
             "local_change_count": 0,
-            "file_touch_count": 221
+            "file_touch_count": 209
           }
         },
         "timeline": {
@@ -1626,7 +1626,7 @@
             "band": "Medium"
           },
           "48h": {
-            "index": 52,
+            "index": 48,
             "band": "Medium"
           }
         },
@@ -1964,14 +1964,14 @@
             "file_touch_count": 0
           },
           "48h": {
-            "commit_count": 1,
+            "commit_count": 0,
             "local_change_count": 0,
-            "file_touch_count": 75
+            "file_touch_count": 14
           }
         },
         "timeline": {
           "start_date": "2026-03-31",
-          "last_activity_iso": "2026-06-28T04:07:31-07:00",
+          "last_activity_iso": "2026-04-28T14:07:28-07:00",
           "age_days": 91,
           "eta_days": 10,
           "eta_confidence": "high"
@@ -1999,7 +1999,7 @@
             "band": "Medium"
           },
           "48h": {
-            "index": 58,
+            "index": 55,
             "band": "Medium"
           }
         },
@@ -2498,14 +2498,14 @@
             "file_touch_count": 0
           },
           "48h": {
-            "commit_count": 1,
+            "commit_count": 0,
             "local_change_count": 0,
-            "file_touch_count": 72
+            "file_touch_count": 11
           }
         },
         "timeline": {
           "start_date": "2026-03-31",
-          "last_activity_iso": "2026-06-28T04:07:31-07:00",
+          "last_activity_iso": "2026-04-28T14:07:28-07:00",
           "age_days": 91,
           "eta_days": 10,
           "eta_confidence": "high"
@@ -2527,7 +2527,7 @@
             "band": "Low"
           },
           "48h": {
-            "index": 38,
+            "index": 35,
             "band": "Low"
           }
         },
@@ -8932,14 +8932,14 @@
             "file_touch_count": 0
           },
           "48h": {
-            "commit_count": 1,
+            "commit_count": 0,
             "local_change_count": 0,
-            "file_touch_count": 71
+            "file_touch_count": 10
           }
         },
         "timeline": {
           "start_date": "2026-03-29",
-          "last_activity_iso": "2026-06-28T04:07:31-07:00",
+          "last_activity_iso": "2026-04-28T14:07:28-07:00",
           "age_days": 93,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -8959,7 +8959,7 @@
             "band": "Low"
           },
           "48h": {
-            "index": 38,
+            "index": 35,
             "band": "Low"
           }
         },
@@ -29762,19 +29762,19 @@
         },
         "activity": {
           "24h": {
-            "commit_count": 36,
+            "commit_count": 35,
             "local_change_count": 6,
-            "file_touch_count": 154
+            "file_touch_count": 153
           },
           "48h": {
             "commit_count": 47,
             "local_change_count": 6,
-            "file_touch_count": 315
+            "file_touch_count": 312
           }
         },
         "timeline": {
           "start_date": "2026-06-26",
-          "last_activity_iso": "2026-06-30T03:07:08-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 4,
           "eta_days": 1,
           "eta_confidence": "high"
@@ -30200,18 +30200,18 @@
         "activity": {
           "24h": {
             "commit_count": 19,
-            "local_change_count": 4,
-            "file_touch_count": 116
+            "local_change_count": 1,
+            "file_touch_count": 111
           },
           "48h": {
             "commit_count": 27,
-            "local_change_count": 4,
-            "file_touch_count": 228
+            "local_change_count": 1,
+            "file_touch_count": 223
           }
         },
         "timeline": {
           "start_date": "2026-04-10",
-          "last_activity_iso": "2026-06-30T03:06:42-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 81,
           "eta_days": null,
           "eta_confidence": "low"
@@ -30371,18 +30371,18 @@
         "activity": {
           "24h": {
             "commit_count": 19,
-            "local_change_count": 4,
-            "file_touch_count": 116
+            "local_change_count": 1,
+            "file_touch_count": 111
           },
           "48h": {
             "commit_count": 27,
-            "local_change_count": 4,
-            "file_touch_count": 224
+            "local_change_count": 1,
+            "file_touch_count": 219
           }
         },
         "timeline": {
           "start_date": "2026-03-28",
-          "last_activity_iso": "2026-06-30T03:06:42-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 94,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30543,18 +30543,18 @@
         "activity": {
           "24h": {
             "commit_count": 19,
-            "local_change_count": 4,
-            "file_touch_count": 116
+            "local_change_count": 1,
+            "file_touch_count": 111
           },
           "48h": {
             "commit_count": 27,
-            "local_change_count": 4,
-            "file_touch_count": 228
+            "local_change_count": 1,
+            "file_touch_count": 223
           }
         },
         "timeline": {
           "start_date": "2026-04-08",
-          "last_activity_iso": "2026-06-30T03:06:42-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 83,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30717,18 +30717,18 @@
         "activity": {
           "24h": {
             "commit_count": 19,
-            "local_change_count": 4,
-            "file_touch_count": 116
+            "local_change_count": 1,
+            "file_touch_count": 111
           },
           "48h": {
             "commit_count": 27,
-            "local_change_count": 4,
-            "file_touch_count": 228
+            "local_change_count": 1,
+            "file_touch_count": 223
           }
         },
         "timeline": {
           "start_date": "2026-04-09",
-          "last_activity_iso": "2026-06-30T03:06:42-07:00",
+          "last_activity_iso": "2026-06-30T05:01:05-07:00",
           "age_days": 82,
           "eta_days": 0,
           "eta_confidence": "high"
@@ -30883,9 +30883,9 @@
             "file_touch_count": 51
           },
           "48h": {
-            "commit_count": 5,
+            "commit_count": 4,
             "local_change_count": 0,
-            "file_touch_count": 221
+            "file_touch_count": 209
           }
         },
         "timeline": {
@@ -30910,7 +30910,7 @@
             "band": "Medium"
           },
           "48h": {
-            "index": 52,
+            "index": 48,
             "band": "Medium"
           }
         },
@@ -31043,9 +31043,9 @@
             "file_touch_count": 51
           },
           "48h": {
-            "commit_count": 4,
+            "commit_count": 3,
             "local_change_count": 0,
-            "file_touch_count": 132
+            "file_touch_count": 117
           }
         },
         "timeline": {
@@ -31070,7 +31070,7 @@
             "band": "Medium"
           },
           "48h": {
-            "index": 48,
+            "index": 45,
             "band": "Medium"
           }
         },
@@ -34002,575 +34002,6 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-117"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-022",
-        "title": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
-        "status": "implementation",
-        "priority": "P0",
-        "sizing": "L",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith now has a benchmark lane that matters. That creates two failure modes: the benchmark can drift toward flattering proof instead of hard proof, and Odylith itself can carry avoidable latency, token, or grounding drift against the honest `odylith_off` baseline while the product story stays ahead of the runtime. This can happen through scenario softening, stale runtime truth, weakened validators, cache-profile cherry-picking, unrealistic required paths, broad hot-path scans, over-wide governance packets, architecture packet bloat, or README publication that outruns the real conservative report.",
-          "customer": "- Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss. - Secondary: consumers deciding whether Odylith-on is actually smarter, faster, cheaper, more reliable, and more accurate than Codex alone in serious repo work.",
-          "proposed_solution": "Re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark contract: - reject stale or unsynced source-truth inputs before publication - add harder adversarial scenarios that punish benchmark softening - detect weakened required paths, weakened validators, and cross-profile cherry-picking - make `raw_agent_baseline` the explicit primary honest baseline while keeping `odylith_off` as its explicit alias and the repo-scan lane as a secondary scaffold control - replace broad hot-path scans with deterministic path-scoped selection and bounded cache reuse - compact governance and architecture packets so Odylith carries less drag into the weak families - expand the corpus beyond the current suite with additional realistic same-task scenarios across the tracked families - require the published README story to stay conservative and same-scenario aligned with the report that actually cleared the gate",
-          "opportunity": "If Odylith treats anti-gaming and honest product improvement as the same contract, the benchmark becomes more trustworthy than a typical internal eval and more useful than a flattering one. That makes README proof defensible and turns benchmark regressions into product-improvement signals instead of narrative-management pressure.",
-          "why_now": "Once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims.",
-          "founder_pov": "If Odylith ever wins by gaming the eval, the proof becomes worse than useless. If Odylith loses honestly because the runtime is still dragging, that is still better than teaching the product to optimize the story instead of the outcome."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
-          "plan_file": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "benchmark",
-            "name": "Benchmark"
-          },
-          {
-            "component_id": "dashboard",
-            "name": "Dashboard"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "subagent-orchestrator",
-            "name": "Subagent Orchestrator"
-          },
-          {
-            "component_id": "tribunal",
-            "name": "Tribunal"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "",
-        "plan": {
-          "created": "2026-03-31",
-          "updated": "2026-04-05",
-          "all_total_tasks": 125,
-          "all_done_tasks": 74,
-          "total_tasks": 82,
-          "done_tasks": 74,
-          "progress_ratio": 0.9024,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.9024,
-          "display_progress_label": "90% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "tracked",
-          "checklist_label": "Checklist 74/82",
-          "next_tasks": [
-            "The corpus grows beyond the current 30-scenario suite with deeper weak",
-            "The next proof rerun must clear both cache profiles, keep",
-            "Keep `B-022` as the umbrella proof-governance workstream until the next",
-            "Close `B-038` when the remaining weak live families clear on targeted",
-            "Keep `B-039` queued, not pseudo-active, until the runtime weak-family",
-            "Close `B-022` only after:"
-          ]
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 0,
-            "local_change_count": 0,
-            "file_touch_count": 0
-          },
-          "48h": {
-            "commit_count": 1,
-            "local_change_count": 0,
-            "file_touch_count": 75
-          }
-        },
-        "timeline": {
-          "start_date": "2026-03-31",
-          "last_activity_iso": "2026-06-28T04:07:31-07:00",
-          "age_days": 91,
-          "eta_days": 10,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [
-            "B-038",
-            "B-039",
-            "B-041",
-            "B-042",
-            "B-043",
-            "B-044",
-            "B-046"
-          ],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 55,
-          "24h": {
-            "index": 55,
-            "band": "Medium"
-          },
-          "48h": {
-            "index": 58,
-            "band": "Medium"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 16,
-            "decision_evidence": true,
-            "explicit_count": 338,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 235,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 329,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-022"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-022"
-          }
-        ],
-        "proof_summary_lines": []
-      },
-      {
-        "idea_id": "B-038",
-        "title": "Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
-        "status": "implementation",
-        "priority": "P0",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "`odylith_on` is currently winning the main proof metrics but still paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, `component_governance`, `compass_brief_freshness`, and other narrow proof slices. The runtime still scans too much projection truth, previously compiled an effectively empty guidance catalog on benchmark slices, and still lets warm/cold posture change which truthful slice gets handed to the model.",
-          "customer": "- Primary: Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload. - Secondary: evaluators and users who need Odylith's extra cost to buy materially better grounding and validation instead of packet drag.",
-          "proposed_solution": "Improve the runtime slices that currently add the most avoidable cost: - restore benchmark guidance memory through the canonical manifest at `odylith/agents-guidelines/indexable-guidance-chunks.v1.json`, with family hints flowing into retrieval and packet finalization - require a non-empty guidance catalog during benchmark warm preflight so proof never runs with zero benchmark guidance chunks - add fast deterministic path-scoped selectors, family-aware doc ceilings, and local cache reuse so Odylith stops broad-scanning projection truth on benchmark hot paths - prune weak-family ballast in `release_publication`, explicit-workstream, `component_governance`, `consumer_profile_compatibility`, `daemon_security`, `compass_brief_freshness`, and governance-heavy closeout paths - enforce strict bounded live handoff on exact-path and anchor-complete proof slices so validator-only tests, generated assets, support-doc spillover, and miss recovery do not become accidental first-pass reads - make warm and cold choose the same truthful slice through deterministic candidate tie-breaking for docs, tests, and commands - bias validation-backed developer-core slices such as `agent_activation` and `install_upgrade_runtime` toward validator-backed no-op closeout when the current tree already satisfies the grounded contract, and treat support docs as read-only unless they are explicit write anchors - align live scenario metadata and scorer semantics with that same no-op contract so \"already correct\" does not still score as a write failure - compact architecture dossier output specifically by removing non-required architecture reads while preserving required-path grounding and expectation quality",
-          "opportunity": "The fastest honest benchmark improvement is not narrative tuning. It is making the hot path more selective, the packet smaller, and the architecture output more truthful about what the task actually needs.",
-          "why_now": "Odylith will not honestly beat `odylith_off` by narrative. It has to do less unnecessary work while staying just as grounded.",
-          "founder_pov": "If Odylith needs more time or tokens, those costs must buy real quality. This child exists to remove the part of Odylith's cost that is just waste."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md",
-          "plan_file": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "benchmark",
-            "name": "Benchmark"
-          },
-          {
-            "component_id": "compass",
-            "name": "Compass"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "odylith-memory-backend",
-            "name": "Odylith Memory Backend"
-          },
-          {
-            "component_id": "tribunal",
-            "name": "Tribunal"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "",
-        "plan": {
-          "created": "2026-03-31",
-          "updated": "2026-04-05",
-          "all_total_tasks": 125,
-          "all_done_tasks": 74,
-          "total_tasks": 82,
-          "done_tasks": 74,
-          "progress_ratio": 0.9024,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 0.9024,
-          "display_progress_label": "90% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "tracked",
-          "checklist_label": "Checklist 74/82",
-          "next_tasks": [
-            "The corpus grows beyond the current 30-scenario suite with deeper weak",
-            "The next proof rerun must clear both cache profiles, keep",
-            "Keep `B-022` as the umbrella proof-governance workstream until the next",
-            "Close `B-038` when the remaining weak live families clear on targeted",
-            "Keep `B-039` queued, not pseudo-active, until the runtime weak-family",
-            "Close `B-022` only after:"
-          ]
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 0,
-            "local_change_count": 0,
-            "file_touch_count": 0
-          },
-          "48h": {
-            "commit_count": 1,
-            "local_change_count": 0,
-            "file_touch_count": 72
-          }
-        },
-        "timeline": {
-          "start_date": "2026-03-31",
-          "last_activity_iso": "2026-06-28T04:07:31-07:00",
-          "age_days": 91,
-          "eta_days": 10,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [
-            "B-022"
-          ],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 35,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 38,
-            "band": "Low"
-          }
-        },
-        "proof_state": {
-          "lane_id": "proof",
-          "frontier_phase": "merged_full_rerun",
-          "proof_status": "unit_tested",
-          "evidence_tier": "unit_tested",
-          "allowed_next_work": [
-            "primary fix",
-            "validating test",
-            "deploy instruction"
-          ],
-          "deprioritized_until_cleared": [
-            "docs",
-            "UX polish",
-            "broader hardening"
-          ],
-          "deployment_truth": {
-            "local_head": "ecf78ba37f81c13d6b2f122b6c22399a16707c20",
-            "pushed_head": "unknown",
-            "published_source_commit": "unknown",
-            "runner_fingerprint": "unknown",
-            "last_live_failing_commit": "unknown"
-          },
-          "recent_work_categories": [
-            "test_hardening"
-          ],
-          "warnings": [
-            "Recent activity is skewing away from the primary blocker while the current blocker is still open."
-          ],
-          "source": "inferred",
-          "resolution_state": "inferred"
-        },
-        "claim_guard": {
-          "blocked_terms": [
-            "fixed",
-            "cleared",
-            "resolved"
-          ],
-          "claim_scope": "code_or_preview",
-          "highest_truthful_claim": "unit-tested",
-          "hosted_frontier_advanced": false,
-          "proof_status": "unit_tested",
-          "same_fingerprint_as_last_falsification": false
-        },
-        "proof_state_resolution": {
-          "lane_ids": [
-            "proof"
-          ],
-          "state": "resolved"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 25,
-            "decision_evidence": true,
-            "explicit_count": 365,
-            "frontier_phase": "merged_full_rerun",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 248,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 335,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "unit_tested",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": false
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-038"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-038"
-          }
-        ],
-        "proof_summary_lines": [
-          "Frontier: merged_full_rerun",
-          "Evidence tier: unit tested",
-          "Recent activity is skewing away from the primary blocker while the current blocker is still open."
-        ]
-      },
-      {
-        "idea_id": "B-020",
-        "title": "Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
-        "status": "finished",
-        "priority": "P0",
-        "sizing": "M",
-        "complexity": "High",
-        "ordering_score": "100",
-        "implemented_summary": "",
-        "why": {
-          "problem": "Odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust. The runner can execute more than one cache profile, yet the public report and README still center a single primary profile. That leaves a credibility gap: Odylith could look stronger in the published snapshot than it really is under a tougher warm-plus-cold read of the same Codex corpus.",
-          "customer": "- Primary: Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game. - Secondary: Odylith consumers deciding whether the product genuinely makes agentic coding smarter, faster, cheaper, and more reliable than Codex alone.",
-          "proposed_solution": "Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary across those profiles, carries explicit robustness metadata, and only uses that conservative proof for the public README tables and maintained SVG graphs.",
-          "opportunity": "If Odylith publishes a conservative multi-profile benchmark summary and states the methodology more clearly, the benchmark becomes materially more trustworthy. That turns README proof from a nice scorecard into a stronger product claim about real agentic coding improvement.",
-          "why_now": "Odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance. The product should get ahead of that and publish the harder proof lane now.",
-          "founder_pov": "If Odylith claims to make agentic coding materially better, the published benchmark should be the hardest honest local proof we can stand behind, not the easiest green snapshot."
-        },
-        "links": {
-          "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
-          "plan_file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md"
-        },
-        "registry_components": [
-          {
-            "component_id": "benchmark",
-            "name": "Benchmark"
-          },
-          {
-            "component_id": "odylith",
-            "name": "Odylith"
-          },
-          {
-            "component_id": "odylith-context-engine",
-            "name": "Odylith Context Engine"
-          },
-          {
-            "component_id": "subagent-orchestrator",
-            "name": "Subagent Orchestrator"
-          }
-        ],
-        "execution_wave_programs": [],
-        "release": {},
-        "release_history_summary": "",
-        "plan": {
-          "created": "2026-03-29",
-          "updated": "2026-03-29",
-          "all_total_tasks": 50,
-          "all_done_tasks": 45,
-          "total_tasks": 24,
-          "done_tasks": 24,
-          "progress_ratio": 1.0,
-          "progress_basis": "execution_checklist",
-          "display_progress_ratio": 1.0,
-          "display_progress_label": "100% progress",
-          "display_progress_state": "percent",
-          "progress_classification": "closed",
-          "checklist_label": "Checklist 24/24",
-          "next_tasks": []
-        },
-        "activity": {
-          "24h": {
-            "commit_count": 0,
-            "local_change_count": 0,
-            "file_touch_count": 0
-          },
-          "48h": {
-            "commit_count": 1,
-            "local_change_count": 0,
-            "file_touch_count": 71
-          }
-        },
-        "timeline": {
-          "start_date": "2026-03-29",
-          "last_activity_iso": "2026-06-28T04:07:31-07:00",
-          "age_days": 93,
-          "eta_days": 0,
-          "eta_confidence": "high"
-        },
-        "lineage": {
-          "reopens": [],
-          "reopened_by": [],
-          "split_from": [],
-          "split_into": [],
-          "merged_into": [],
-          "merged_from": []
-        },
-        "cost": {
-          "base_index": 35,
-          "24h": {
-            "index": 35,
-            "band": "Low"
-          },
-          "48h": {
-            "index": 38,
-            "band": "Low"
-          }
-        },
-        "proof_state": {},
-        "claim_guard": {},
-        "proof_state_resolution": {
-          "lane_ids": [],
-          "state": "none"
-        },
-        "scope_signal": {
-          "budget_class": "fast_simple",
-          "caps": [],
-          "feature_vector": {
-            "blast_radius_class": "cross-surface",
-            "broad_fanout": false,
-            "cross_surface_conflict": false,
-            "decision_count": 20,
-            "decision_evidence": true,
-            "explicit_count": 349,
-            "frontier_phase": "",
-            "generated_only_churn": false,
-            "governance_only_local_change": false,
-            "has_any_signal": true,
-            "implementation_count": 239,
-            "implementation_evidence": true,
-            "linked_child_count": 0,
-            "linked_surface_count": 5,
-            "meaningful_change_count": 332,
-            "meaningful_scope_activity": true,
-            "narrow_verified_signal": true,
-            "open_warning": false,
-            "proof_blocker": false,
-            "proof_status": "",
-            "stale_authority": false,
-            "synthetic_count": 0,
-            "unsafe_closeout": false,
-            "verified_completion": true
-          },
-          "label": "Active scope",
-          "promoted_default": true,
-          "rank": 3,
-          "reasons": [
-            "A recent verified completion was recorded.",
-            "A narrow verified scoped signal was recorded.",
-            "Explicit decision evidence is present.",
-            "Explicit implementation evidence is present.",
-            "Meaningful scope-local implementation evidence is present."
-          ],
-          "rung": "R3",
-          "token": "active_scope"
-        },
-        "proof_refs": [
-          {
-            "anchor": "timeline-audit",
-            "fact_tag": "frontier",
-            "kind": "workstream",
-            "label": "Proof frontier",
-            "surface": "compass",
-            "value": "B-020"
-          },
-          {
-            "anchor": "current-workstreams",
-            "fact_tag": "deployment_truth",
-            "kind": "workstream",
-            "label": "Deployment truth",
-            "surface": "compass",
-            "value": "B-020"
           }
         ],
         "proof_summary_lines": []
@@ -38883,6 +38314,188 @@
         "proof_summary_lines": []
       },
       {
+        "idea_id": "B-022",
+        "title": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
+        "status": "implementation",
+        "priority": "P0",
+        "sizing": "L",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith now has a benchmark lane that matters. That creates two failure modes: the benchmark can drift toward flattering proof instead of hard proof, and Odylith itself can carry avoidable latency, token, or grounding drift against the honest `odylith_off` baseline while the product story stays ahead of the runtime. This can happen through scenario softening, stale runtime truth, weakened validators, cache-profile cherry-picking, unrealistic required paths, broad hot-path scans, over-wide governance packets, architecture packet bloat, or README publication that outruns the real conservative report.",
+          "customer": "- Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss. - Secondary: consumers deciding whether Odylith-on is actually smarter, faster, cheaper, more reliable, and more accurate than Codex alone in serious repo work.",
+          "proposed_solution": "Re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark contract: - reject stale or unsynced source-truth inputs before publication - add harder adversarial scenarios that punish benchmark softening - detect weakened required paths, weakened validators, and cross-profile cherry-picking - make `raw_agent_baseline` the explicit primary honest baseline while keeping `odylith_off` as its explicit alias and the repo-scan lane as a secondary scaffold control - replace broad hot-path scans with deterministic path-scoped selection and bounded cache reuse - compact governance and architecture packets so Odylith carries less drag into the weak families - expand the corpus beyond the current suite with additional realistic same-task scenarios across the tracked families - require the published README story to stay conservative and same-scenario aligned with the report that actually cleared the gate",
+          "opportunity": "If Odylith treats anti-gaming and honest product improvement as the same contract, the benchmark becomes more trustworthy than a typical internal eval and more useful than a flattering one. That makes README proof defensible and turns benchmark regressions into product-improvement signals instead of narrative-management pressure.",
+          "why_now": "Once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims.",
+          "founder_pov": "If Odylith ever wins by gaming the eval, the proof becomes worse than useless. If Odylith loses honestly because the runtime is still dragging, that is still better than teaching the product to optimize the story instead of the outcome."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
+          "plan_file": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "benchmark",
+            "name": "Benchmark"
+          },
+          {
+            "component_id": "dashboard",
+            "name": "Dashboard"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "subagent-orchestrator",
+            "name": "Subagent Orchestrator"
+          },
+          {
+            "component_id": "tribunal",
+            "name": "Tribunal"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "",
+        "plan": {
+          "created": "2026-03-31",
+          "updated": "2026-04-05",
+          "all_total_tasks": 125,
+          "all_done_tasks": 74,
+          "total_tasks": 82,
+          "done_tasks": 74,
+          "progress_ratio": 0.9024,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 0.9024,
+          "display_progress_label": "90% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "tracked",
+          "checklist_label": "Checklist 74/82",
+          "next_tasks": [
+            "The corpus grows beyond the current 30-scenario suite with deeper weak",
+            "The next proof rerun must clear both cache profiles, keep",
+            "Keep `B-022` as the umbrella proof-governance workstream until the next",
+            "Close `B-038` when the remaining weak live families clear on targeted",
+            "Keep `B-039` queued, not pseudo-active, until the runtime weak-family",
+            "Close `B-022` only after:"
+          ]
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 0,
+            "local_change_count": 0,
+            "file_touch_count": 0
+          },
+          "48h": {
+            "commit_count": 0,
+            "local_change_count": 0,
+            "file_touch_count": 14
+          }
+        },
+        "timeline": {
+          "start_date": "2026-03-31",
+          "last_activity_iso": "2026-04-28T14:07:28-07:00",
+          "age_days": 91,
+          "eta_days": 10,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [
+            "B-038",
+            "B-039",
+            "B-041",
+            "B-042",
+            "B-043",
+            "B-044",
+            "B-046"
+          ],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 55,
+          "24h": {
+            "index": 55,
+            "band": "Medium"
+          },
+          "48h": {
+            "index": 55,
+            "band": "Medium"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 16,
+            "decision_evidence": true,
+            "explicit_count": 338,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 235,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 329,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-022"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-022"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
         "idea_id": "B-033",
         "title": "v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline",
         "status": "implementation",
@@ -39063,6 +38676,229 @@
           }
         ],
         "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-038",
+        "title": "Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
+        "status": "implementation",
+        "priority": "P0",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "`odylith_on` is currently winning the main proof metrics but still paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, `component_governance`, `compass_brief_freshness`, and other narrow proof slices. The runtime still scans too much projection truth, previously compiled an effectively empty guidance catalog on benchmark slices, and still lets warm/cold posture change which truthful slice gets handed to the model.",
+          "customer": "- Primary: Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload. - Secondary: evaluators and users who need Odylith's extra cost to buy materially better grounding and validation instead of packet drag.",
+          "proposed_solution": "Improve the runtime slices that currently add the most avoidable cost: - restore benchmark guidance memory through the canonical manifest at `odylith/agents-guidelines/indexable-guidance-chunks.v1.json`, with family hints flowing into retrieval and packet finalization - require a non-empty guidance catalog during benchmark warm preflight so proof never runs with zero benchmark guidance chunks - add fast deterministic path-scoped selectors, family-aware doc ceilings, and local cache reuse so Odylith stops broad-scanning projection truth on benchmark hot paths - prune weak-family ballast in `release_publication`, explicit-workstream, `component_governance`, `consumer_profile_compatibility`, `daemon_security`, `compass_brief_freshness`, and governance-heavy closeout paths - enforce strict bounded live handoff on exact-path and anchor-complete proof slices so validator-only tests, generated assets, support-doc spillover, and miss recovery do not become accidental first-pass reads - make warm and cold choose the same truthful slice through deterministic candidate tie-breaking for docs, tests, and commands - bias validation-backed developer-core slices such as `agent_activation` and `install_upgrade_runtime` toward validator-backed no-op closeout when the current tree already satisfies the grounded contract, and treat support docs as read-only unless they are explicit write anchors - align live scenario metadata and scorer semantics with that same no-op contract so \"already correct\" does not still score as a write failure - compact architecture dossier output specifically by removing non-required architecture reads while preserving required-path grounding and expectation quality",
+          "opportunity": "The fastest honest benchmark improvement is not narrative tuning. It is making the hot path more selective, the packet smaller, and the architecture output more truthful about what the task actually needs.",
+          "why_now": "Odylith will not honestly beat `odylith_off` by narrative. It has to do less unnecessary work while staying just as grounded.",
+          "founder_pov": "If Odylith needs more time or tokens, those costs must buy real quality. This child exists to remove the part of Odylith's cost that is just waste."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md",
+          "plan_file": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "benchmark",
+            "name": "Benchmark"
+          },
+          {
+            "component_id": "compass",
+            "name": "Compass"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "odylith-memory-backend",
+            "name": "Odylith Memory Backend"
+          },
+          {
+            "component_id": "tribunal",
+            "name": "Tribunal"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "",
+        "plan": {
+          "created": "2026-03-31",
+          "updated": "2026-04-05",
+          "all_total_tasks": 125,
+          "all_done_tasks": 74,
+          "total_tasks": 82,
+          "done_tasks": 74,
+          "progress_ratio": 0.9024,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 0.9024,
+          "display_progress_label": "90% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "tracked",
+          "checklist_label": "Checklist 74/82",
+          "next_tasks": [
+            "The corpus grows beyond the current 30-scenario suite with deeper weak",
+            "The next proof rerun must clear both cache profiles, keep",
+            "Keep `B-022` as the umbrella proof-governance workstream until the next",
+            "Close `B-038` when the remaining weak live families clear on targeted",
+            "Keep `B-039` queued, not pseudo-active, until the runtime weak-family",
+            "Close `B-022` only after:"
+          ]
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 0,
+            "local_change_count": 0,
+            "file_touch_count": 0
+          },
+          "48h": {
+            "commit_count": 0,
+            "local_change_count": 0,
+            "file_touch_count": 11
+          }
+        },
+        "timeline": {
+          "start_date": "2026-03-31",
+          "last_activity_iso": "2026-04-28T14:07:28-07:00",
+          "age_days": 91,
+          "eta_days": 10,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [
+            "B-022"
+          ],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 35,
+            "band": "Low"
+          },
+          "48h": {
+            "index": 35,
+            "band": "Low"
+          }
+        },
+        "proof_state": {
+          "lane_id": "proof",
+          "frontier_phase": "merged_full_rerun",
+          "proof_status": "unit_tested",
+          "evidence_tier": "unit_tested",
+          "allowed_next_work": [
+            "primary fix",
+            "validating test",
+            "deploy instruction"
+          ],
+          "deprioritized_until_cleared": [
+            "docs",
+            "UX polish",
+            "broader hardening"
+          ],
+          "deployment_truth": {
+            "local_head": "ecf78ba37f81c13d6b2f122b6c22399a16707c20",
+            "pushed_head": "unknown",
+            "published_source_commit": "unknown",
+            "runner_fingerprint": "unknown",
+            "last_live_failing_commit": "unknown"
+          },
+          "recent_work_categories": [
+            "test_hardening"
+          ],
+          "warnings": [
+            "Recent activity is skewing away from the primary blocker while the current blocker is still open."
+          ],
+          "source": "inferred",
+          "resolution_state": "inferred"
+        },
+        "claim_guard": {
+          "blocked_terms": [
+            "fixed",
+            "cleared",
+            "resolved"
+          ],
+          "claim_scope": "code_or_preview",
+          "highest_truthful_claim": "unit-tested",
+          "hosted_frontier_advanced": false,
+          "proof_status": "unit_tested",
+          "same_fingerprint_as_last_falsification": false
+        },
+        "proof_state_resolution": {
+          "lane_ids": [
+            "proof"
+          ],
+          "state": "resolved"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 25,
+            "decision_evidence": true,
+            "explicit_count": 365,
+            "frontier_phase": "merged_full_rerun",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 248,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 335,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "unit_tested",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": false
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-038"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-038"
+          }
+        ],
+        "proof_summary_lines": [
+          "Frontier: merged_full_rerun",
+          "Evidence tier: unit tested",
+          "Recent activity is skewing away from the primary blocker while the current blocker is still open."
+        ]
       },
       {
         "idea_id": "B-040",
@@ -44863,6 +44699,170 @@
             "label": "Deployment truth",
             "surface": "compass",
             "value": "B-019"
+          }
+        ],
+        "proof_summary_lines": []
+      },
+      {
+        "idea_id": "B-020",
+        "title": "Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
+        "status": "finished",
+        "priority": "P0",
+        "sizing": "M",
+        "complexity": "High",
+        "ordering_score": "100",
+        "implemented_summary": "",
+        "why": {
+          "problem": "Odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust. The runner can execute more than one cache profile, yet the public report and README still center a single primary profile. That leaves a credibility gap: Odylith could look stronger in the published snapshot than it really is under a tougher warm-plus-cold read of the same Codex corpus.",
+          "customer": "- Primary: Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game. - Secondary: Odylith consumers deciding whether the product genuinely makes agentic coding smarter, faster, cheaper, and more reliable than Codex alone.",
+          "proposed_solution": "Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary across those profiles, carries explicit robustness metadata, and only uses that conservative proof for the public README tables and maintained SVG graphs.",
+          "opportunity": "If Odylith publishes a conservative multi-profile benchmark summary and states the methodology more clearly, the benchmark becomes materially more trustworthy. That turns README proof from a nice scorecard into a stronger product claim about real agentic coding improvement.",
+          "why_now": "Odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance. The product should get ahead of that and publish the harder proof lane now.",
+          "founder_pov": "If Odylith claims to make agentic coding materially better, the published benchmark should be the hardest honest local proof we can stand behind, not the easiest green snapshot."
+        },
+        "links": {
+          "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+          "plan_file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md"
+        },
+        "registry_components": [
+          {
+            "component_id": "benchmark",
+            "name": "Benchmark"
+          },
+          {
+            "component_id": "odylith",
+            "name": "Odylith"
+          },
+          {
+            "component_id": "odylith-context-engine",
+            "name": "Odylith Context Engine"
+          },
+          {
+            "component_id": "subagent-orchestrator",
+            "name": "Subagent Orchestrator"
+          }
+        ],
+        "execution_wave_programs": [],
+        "release": {},
+        "release_history_summary": "",
+        "plan": {
+          "created": "2026-03-29",
+          "updated": "2026-03-29",
+          "all_total_tasks": 50,
+          "all_done_tasks": 45,
+          "total_tasks": 24,
+          "done_tasks": 24,
+          "progress_ratio": 1.0,
+          "progress_basis": "execution_checklist",
+          "display_progress_ratio": 1.0,
+          "display_progress_label": "100% progress",
+          "display_progress_state": "percent",
+          "progress_classification": "closed",
+          "checklist_label": "Checklist 24/24",
+          "next_tasks": []
+        },
+        "activity": {
+          "24h": {
+            "commit_count": 0,
+            "local_change_count": 0,
+            "file_touch_count": 0
+          },
+          "48h": {
+            "commit_count": 0,
+            "local_change_count": 0,
+            "file_touch_count": 10
+          }
+        },
+        "timeline": {
+          "start_date": "2026-03-29",
+          "last_activity_iso": "2026-04-28T14:07:28-07:00",
+          "age_days": 93,
+          "eta_days": 0,
+          "eta_confidence": "high"
+        },
+        "lineage": {
+          "reopens": [],
+          "reopened_by": [],
+          "split_from": [],
+          "split_into": [],
+          "merged_into": [],
+          "merged_from": []
+        },
+        "cost": {
+          "base_index": 35,
+          "24h": {
+            "index": 35,
+            "band": "Low"
+          },
+          "48h": {
+            "index": 35,
+            "band": "Low"
+          }
+        },
+        "proof_state": {},
+        "claim_guard": {},
+        "proof_state_resolution": {
+          "lane_ids": [],
+          "state": "none"
+        },
+        "scope_signal": {
+          "budget_class": "fast_simple",
+          "caps": [],
+          "feature_vector": {
+            "blast_radius_class": "cross-surface",
+            "broad_fanout": false,
+            "cross_surface_conflict": false,
+            "decision_count": 20,
+            "decision_evidence": true,
+            "explicit_count": 349,
+            "frontier_phase": "",
+            "generated_only_churn": false,
+            "governance_only_local_change": false,
+            "has_any_signal": true,
+            "implementation_count": 239,
+            "implementation_evidence": true,
+            "linked_child_count": 0,
+            "linked_surface_count": 5,
+            "meaningful_change_count": 332,
+            "meaningful_scope_activity": true,
+            "narrow_verified_signal": true,
+            "open_warning": false,
+            "proof_blocker": false,
+            "proof_status": "",
+            "stale_authority": false,
+            "synthetic_count": 0,
+            "unsafe_closeout": false,
+            "verified_completion": true
+          },
+          "label": "Active scope",
+          "promoted_default": true,
+          "rank": 3,
+          "reasons": [
+            "A recent verified completion was recorded.",
+            "A narrow verified scoped signal was recorded.",
+            "Explicit decision evidence is present.",
+            "Explicit implementation evidence is present.",
+            "Meaningful scope-local implementation evidence is present."
+          ],
+          "rung": "R3",
+          "token": "active_scope"
+        },
+        "proof_refs": [
+          {
+            "anchor": "timeline-audit",
+            "fact_tag": "frontier",
+            "kind": "workstream",
+            "label": "Proof frontier",
+            "surface": "compass",
+            "value": "B-020"
+          },
+          {
+            "anchor": "current-workstreams",
+            "fact_tag": "deployment_truth",
+            "kind": "workstream",
+            "label": "Deployment truth",
+            "surface": "compass",
+            "value": "B-020"
           }
         ],
         "proof_summary_lines": []
@@ -59207,19 +59207,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 36,
+          "commit_count": 35,
           "local_change_count": 6,
-          "file_touch_count": 154
+          "file_touch_count": 153
         },
         "48h": {
           "commit_count": 47,
           "local_change_count": 6,
-          "file_touch_count": 315
+          "file_touch_count": 312
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-30T03:07:08-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 4,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -59645,18 +59645,18 @@
       "activity": {
         "24h": {
           "commit_count": 19,
-          "local_change_count": 4,
-          "file_touch_count": 116
+          "local_change_count": 1,
+          "file_touch_count": 111
         },
         "48h": {
           "commit_count": 27,
-          "local_change_count": 4,
-          "file_touch_count": 228
+          "local_change_count": 1,
+          "file_touch_count": 223
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-06-30T03:06:42-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 81,
         "eta_days": null,
         "eta_confidence": "low"
@@ -59816,18 +59816,18 @@
       "activity": {
         "24h": {
           "commit_count": 19,
-          "local_change_count": 4,
-          "file_touch_count": 116
+          "local_change_count": 1,
+          "file_touch_count": 111
         },
         "48h": {
           "commit_count": 27,
-          "local_change_count": 4,
-          "file_touch_count": 224
+          "local_change_count": 1,
+          "file_touch_count": 219
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-06-30T03:06:42-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 94,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -59988,18 +59988,18 @@
       "activity": {
         "24h": {
           "commit_count": 19,
-          "local_change_count": 4,
-          "file_touch_count": 116
+          "local_change_count": 1,
+          "file_touch_count": 111
         },
         "48h": {
           "commit_count": 27,
-          "local_change_count": 4,
-          "file_touch_count": 228
+          "local_change_count": 1,
+          "file_touch_count": 223
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-06-30T03:06:42-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 83,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60162,18 +60162,18 @@
       "activity": {
         "24h": {
           "commit_count": 19,
-          "local_change_count": 4,
-          "file_touch_count": 116
+          "local_change_count": 1,
+          "file_touch_count": 111
         },
         "48h": {
           "commit_count": 27,
-          "local_change_count": 4,
-          "file_touch_count": 228
+          "local_change_count": 1,
+          "file_touch_count": 223
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-06-30T03:06:42-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -60328,9 +60328,9 @@
           "file_touch_count": 51
         },
         "48h": {
-          "commit_count": 5,
+          "commit_count": 4,
           "local_change_count": 0,
-          "file_touch_count": 221
+          "file_touch_count": 209
         }
       },
       "timeline": {
@@ -60355,7 +60355,7 @@
           "band": "Medium"
         },
         "48h": {
-          "index": 52,
+          "index": 48,
           "band": "Medium"
         }
       },
@@ -60488,9 +60488,9 @@
           "file_touch_count": 51
         },
         "48h": {
-          "commit_count": 4,
+          "commit_count": 3,
           "local_change_count": 0,
-          "file_touch_count": 132
+          "file_touch_count": 117
         }
       },
       "timeline": {
@@ -60515,7 +60515,7 @@
           "band": "Medium"
         },
         "48h": {
-          "index": 48,
+          "index": 45,
           "band": "Medium"
         }
       },
@@ -63447,575 +63447,6 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-117"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
-      "idea_id": "B-022",
-      "title": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
-      "status": "implementation",
-      "priority": "P0",
-      "sizing": "L",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith now has a benchmark lane that matters. That creates two failure modes: the benchmark can drift toward flattering proof instead of hard proof, and Odylith itself can carry avoidable latency, token, or grounding drift against the honest `odylith_off` baseline while the product story stays ahead of the runtime. This can happen through scenario softening, stale runtime truth, weakened validators, cache-profile cherry-picking, unrealistic required paths, broad hot-path scans, over-wide governance packets, architecture packet bloat, or README publication that outruns the real conservative report.",
-        "customer": "- Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss. - Secondary: consumers deciding whether Odylith-on is actually smarter, faster, cheaper, more reliable, and more accurate than Codex alone in serious repo work.",
-        "proposed_solution": "Re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark contract: - reject stale or unsynced source-truth inputs before publication - add harder adversarial scenarios that punish benchmark softening - detect weakened required paths, weakened validators, and cross-profile cherry-picking - make `raw_agent_baseline` the explicit primary honest baseline while keeping `odylith_off` as its explicit alias and the repo-scan lane as a secondary scaffold control - replace broad hot-path scans with deterministic path-scoped selection and bounded cache reuse - compact governance and architecture packets so Odylith carries less drag into the weak families - expand the corpus beyond the current suite with additional realistic same-task scenarios across the tracked families - require the published README story to stay conservative and same-scenario aligned with the report that actually cleared the gate",
-        "opportunity": "If Odylith treats anti-gaming and honest product improvement as the same contract, the benchmark becomes more trustworthy than a typical internal eval and more useful than a flattering one. That makes README proof defensible and turns benchmark regressions into product-improvement signals instead of narrative-management pressure.",
-        "why_now": "Once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims.",
-        "founder_pov": "If Odylith ever wins by gaming the eval, the proof becomes worse than useless. If Odylith loses honestly because the runtime is still dragging, that is still better than teaching the product to optimize the story instead of the outcome."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
-        "plan_file": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "benchmark",
-          "name": "Benchmark"
-        },
-        {
-          "component_id": "dashboard",
-          "name": "Dashboard"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        },
-        {
-          "component_id": "subagent-orchestrator",
-          "name": "Subagent Orchestrator"
-        },
-        {
-          "component_id": "tribunal",
-          "name": "Tribunal"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "2026-03-31",
-        "updated": "2026-04-05",
-        "all_total_tasks": 125,
-        "all_done_tasks": 74,
-        "total_tasks": 82,
-        "done_tasks": 74,
-        "progress_ratio": 0.9024,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.9024,
-        "display_progress_label": "90% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "tracked",
-        "checklist_label": "Checklist 74/82",
-        "next_tasks": [
-          "The corpus grows beyond the current 30-scenario suite with deeper weak",
-          "The next proof rerun must clear both cache profiles, keep",
-          "Keep `B-022` as the umbrella proof-governance workstream until the next",
-          "Close `B-038` when the remaining weak live families clear on targeted",
-          "Keep `B-039` queued, not pseudo-active, until the runtime weak-family",
-          "Close `B-022` only after:"
-        ]
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 0,
-          "local_change_count": 0,
-          "file_touch_count": 0
-        },
-        "48h": {
-          "commit_count": 1,
-          "local_change_count": 0,
-          "file_touch_count": 75
-        }
-      },
-      "timeline": {
-        "start_date": "2026-03-31",
-        "last_activity_iso": "2026-06-28T04:07:31-07:00",
-        "age_days": 91,
-        "eta_days": 10,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [
-          "B-038",
-          "B-039",
-          "B-041",
-          "B-042",
-          "B-043",
-          "B-044",
-          "B-046"
-        ],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 55,
-        "24h": {
-          "index": 55,
-          "band": "Medium"
-        },
-        "48h": {
-          "index": 58,
-          "band": "Medium"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 16,
-          "decision_evidence": true,
-          "explicit_count": 338,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 235,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 329,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": false
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-022"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-022"
-        }
-      ],
-      "proof_summary_lines": []
-    },
-    {
-      "idea_id": "B-038",
-      "title": "Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
-      "status": "implementation",
-      "priority": "P0",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "`odylith_on` is currently winning the main proof metrics but still paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, `component_governance`, `compass_brief_freshness`, and other narrow proof slices. The runtime still scans too much projection truth, previously compiled an effectively empty guidance catalog on benchmark slices, and still lets warm/cold posture change which truthful slice gets handed to the model.",
-        "customer": "- Primary: Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload. - Secondary: evaluators and users who need Odylith's extra cost to buy materially better grounding and validation instead of packet drag.",
-        "proposed_solution": "Improve the runtime slices that currently add the most avoidable cost: - restore benchmark guidance memory through the canonical manifest at `odylith/agents-guidelines/indexable-guidance-chunks.v1.json`, with family hints flowing into retrieval and packet finalization - require a non-empty guidance catalog during benchmark warm preflight so proof never runs with zero benchmark guidance chunks - add fast deterministic path-scoped selectors, family-aware doc ceilings, and local cache reuse so Odylith stops broad-scanning projection truth on benchmark hot paths - prune weak-family ballast in `release_publication`, explicit-workstream, `component_governance`, `consumer_profile_compatibility`, `daemon_security`, `compass_brief_freshness`, and governance-heavy closeout paths - enforce strict bounded live handoff on exact-path and anchor-complete proof slices so validator-only tests, generated assets, support-doc spillover, and miss recovery do not become accidental first-pass reads - make warm and cold choose the same truthful slice through deterministic candidate tie-breaking for docs, tests, and commands - bias validation-backed developer-core slices such as `agent_activation` and `install_upgrade_runtime` toward validator-backed no-op closeout when the current tree already satisfies the grounded contract, and treat support docs as read-only unless they are explicit write anchors - align live scenario metadata and scorer semantics with that same no-op contract so \"already correct\" does not still score as a write failure - compact architecture dossier output specifically by removing non-required architecture reads while preserving required-path grounding and expectation quality",
-        "opportunity": "The fastest honest benchmark improvement is not narrative tuning. It is making the hot path more selective, the packet smaller, and the architecture output more truthful about what the task actually needs.",
-        "why_now": "Odylith will not honestly beat `odylith_off` by narrative. It has to do less unnecessary work while staying just as grounded.",
-        "founder_pov": "If Odylith needs more time or tokens, those costs must buy real quality. This child exists to remove the part of Odylith's cost that is just waste."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md",
-        "plan_file": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "benchmark",
-          "name": "Benchmark"
-        },
-        {
-          "component_id": "compass",
-          "name": "Compass"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        },
-        {
-          "component_id": "odylith-memory-backend",
-          "name": "Odylith Memory Backend"
-        },
-        {
-          "component_id": "tribunal",
-          "name": "Tribunal"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "2026-03-31",
-        "updated": "2026-04-05",
-        "all_total_tasks": 125,
-        "all_done_tasks": 74,
-        "total_tasks": 82,
-        "done_tasks": 74,
-        "progress_ratio": 0.9024,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 0.9024,
-        "display_progress_label": "90% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "tracked",
-        "checklist_label": "Checklist 74/82",
-        "next_tasks": [
-          "The corpus grows beyond the current 30-scenario suite with deeper weak",
-          "The next proof rerun must clear both cache profiles, keep",
-          "Keep `B-022` as the umbrella proof-governance workstream until the next",
-          "Close `B-038` when the remaining weak live families clear on targeted",
-          "Keep `B-039` queued, not pseudo-active, until the runtime weak-family",
-          "Close `B-022` only after:"
-        ]
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 0,
-          "local_change_count": 0,
-          "file_touch_count": 0
-        },
-        "48h": {
-          "commit_count": 1,
-          "local_change_count": 0,
-          "file_touch_count": 72
-        }
-      },
-      "timeline": {
-        "start_date": "2026-03-31",
-        "last_activity_iso": "2026-06-28T04:07:31-07:00",
-        "age_days": 91,
-        "eta_days": 10,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [
-          "B-022"
-        ],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 35,
-          "band": "Low"
-        },
-        "48h": {
-          "index": 38,
-          "band": "Low"
-        }
-      },
-      "proof_state": {
-        "lane_id": "proof",
-        "frontier_phase": "merged_full_rerun",
-        "proof_status": "unit_tested",
-        "evidence_tier": "unit_tested",
-        "allowed_next_work": [
-          "primary fix",
-          "validating test",
-          "deploy instruction"
-        ],
-        "deprioritized_until_cleared": [
-          "docs",
-          "UX polish",
-          "broader hardening"
-        ],
-        "deployment_truth": {
-          "local_head": "ecf78ba37f81c13d6b2f122b6c22399a16707c20",
-          "pushed_head": "unknown",
-          "published_source_commit": "unknown",
-          "runner_fingerprint": "unknown",
-          "last_live_failing_commit": "unknown"
-        },
-        "recent_work_categories": [
-          "test_hardening"
-        ],
-        "warnings": [
-          "Recent activity is skewing away from the primary blocker while the current blocker is still open."
-        ],
-        "source": "inferred",
-        "resolution_state": "inferred"
-      },
-      "claim_guard": {
-        "blocked_terms": [
-          "fixed",
-          "cleared",
-          "resolved"
-        ],
-        "claim_scope": "code_or_preview",
-        "highest_truthful_claim": "unit-tested",
-        "hosted_frontier_advanced": false,
-        "proof_status": "unit_tested",
-        "same_fingerprint_as_last_falsification": false
-      },
-      "proof_state_resolution": {
-        "lane_ids": [
-          "proof"
-        ],
-        "state": "resolved"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 25,
-          "decision_evidence": true,
-          "explicit_count": 365,
-          "frontier_phase": "merged_full_rerun",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 248,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 335,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "unit_tested",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": false
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-038"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-038"
-        }
-      ],
-      "proof_summary_lines": [
-        "Frontier: merged_full_rerun",
-        "Evidence tier: unit tested",
-        "Recent activity is skewing away from the primary blocker while the current blocker is still open."
-      ]
-    },
-    {
-      "idea_id": "B-020",
-      "title": "Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
-      "status": "finished",
-      "priority": "P0",
-      "sizing": "M",
-      "complexity": "High",
-      "ordering_score": "100",
-      "implemented_summary": "",
-      "why": {
-        "problem": "Odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust. The runner can execute more than one cache profile, yet the public report and README still center a single primary profile. That leaves a credibility gap: Odylith could look stronger in the published snapshot than it really is under a tougher warm-plus-cold read of the same Codex corpus.",
-        "customer": "- Primary: Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game. - Secondary: Odylith consumers deciding whether the product genuinely makes agentic coding smarter, faster, cheaper, and more reliable than Codex alone.",
-        "proposed_solution": "Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary across those profiles, carries explicit robustness metadata, and only uses that conservative proof for the public README tables and maintained SVG graphs.",
-        "opportunity": "If Odylith publishes a conservative multi-profile benchmark summary and states the methodology more clearly, the benchmark becomes materially more trustworthy. That turns README proof from a nice scorecard into a stronger product claim about real agentic coding improvement.",
-        "why_now": "Odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance. The product should get ahead of that and publish the harder proof lane now.",
-        "founder_pov": "If Odylith claims to make agentic coding materially better, the published benchmark should be the hardest honest local proof we can stand behind, not the easiest green snapshot."
-      },
-      "links": {
-        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
-        "plan_file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md"
-      },
-      "registry_components": [
-        {
-          "component_id": "benchmark",
-          "name": "Benchmark"
-        },
-        {
-          "component_id": "odylith",
-          "name": "Odylith"
-        },
-        {
-          "component_id": "odylith-context-engine",
-          "name": "Odylith Context Engine"
-        },
-        {
-          "component_id": "subagent-orchestrator",
-          "name": "Subagent Orchestrator"
-        }
-      ],
-      "execution_wave_programs": [],
-      "release": {},
-      "release_history_summary": "",
-      "plan": {
-        "created": "2026-03-29",
-        "updated": "2026-03-29",
-        "all_total_tasks": 50,
-        "all_done_tasks": 45,
-        "total_tasks": 24,
-        "done_tasks": 24,
-        "progress_ratio": 1.0,
-        "progress_basis": "execution_checklist",
-        "display_progress_ratio": 1.0,
-        "display_progress_label": "100% progress",
-        "display_progress_state": "percent",
-        "progress_classification": "closed",
-        "checklist_label": "Checklist 24/24",
-        "next_tasks": []
-      },
-      "activity": {
-        "24h": {
-          "commit_count": 0,
-          "local_change_count": 0,
-          "file_touch_count": 0
-        },
-        "48h": {
-          "commit_count": 1,
-          "local_change_count": 0,
-          "file_touch_count": 71
-        }
-      },
-      "timeline": {
-        "start_date": "2026-03-29",
-        "last_activity_iso": "2026-06-28T04:07:31-07:00",
-        "age_days": 93,
-        "eta_days": 0,
-        "eta_confidence": "high"
-      },
-      "lineage": {
-        "reopens": [],
-        "reopened_by": [],
-        "split_from": [],
-        "split_into": [],
-        "merged_into": [],
-        "merged_from": []
-      },
-      "cost": {
-        "base_index": 35,
-        "24h": {
-          "index": 35,
-          "band": "Low"
-        },
-        "48h": {
-          "index": 38,
-          "band": "Low"
-        }
-      },
-      "proof_state": {},
-      "claim_guard": {},
-      "proof_state_resolution": {
-        "lane_ids": [],
-        "state": "none"
-      },
-      "scope_signal": {
-        "budget_class": "fast_simple",
-        "caps": [],
-        "feature_vector": {
-          "blast_radius_class": "cross-surface",
-          "broad_fanout": false,
-          "cross_surface_conflict": false,
-          "decision_count": 20,
-          "decision_evidence": true,
-          "explicit_count": 349,
-          "frontier_phase": "",
-          "generated_only_churn": false,
-          "governance_only_local_change": false,
-          "has_any_signal": true,
-          "implementation_count": 239,
-          "implementation_evidence": true,
-          "linked_child_count": 0,
-          "linked_surface_count": 5,
-          "meaningful_change_count": 332,
-          "meaningful_scope_activity": true,
-          "narrow_verified_signal": true,
-          "open_warning": false,
-          "proof_blocker": false,
-          "proof_status": "",
-          "stale_authority": false,
-          "synthetic_count": 0,
-          "unsafe_closeout": false,
-          "verified_completion": true
-        },
-        "label": "Active scope",
-        "promoted_default": true,
-        "rank": 3,
-        "reasons": [
-          "A recent verified completion was recorded.",
-          "A narrow verified scoped signal was recorded.",
-          "Explicit decision evidence is present.",
-          "Explicit implementation evidence is present.",
-          "Meaningful scope-local implementation evidence is present."
-        ],
-        "rung": "R3",
-        "token": "active_scope"
-      },
-      "proof_refs": [
-        {
-          "anchor": "timeline-audit",
-          "fact_tag": "frontier",
-          "kind": "workstream",
-          "label": "Proof frontier",
-          "surface": "compass",
-          "value": "B-020"
-        },
-        {
-          "anchor": "current-workstreams",
-          "fact_tag": "deployment_truth",
-          "kind": "workstream",
-          "label": "Deployment truth",
-          "surface": "compass",
-          "value": "B-020"
         }
       ],
       "proof_summary_lines": []
@@ -68328,6 +67759,188 @@
       "proof_summary_lines": []
     },
     {
+      "idea_id": "B-022",
+      "title": "Honest Benchmark Improvement, Anti-Gaming Integrity, and Independent Proof",
+      "status": "implementation",
+      "priority": "P0",
+      "sizing": "L",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith now has a benchmark lane that matters. That creates two failure modes: the benchmark can drift toward flattering proof instead of hard proof, and Odylith itself can carry avoidable latency, token, or grounding drift against the honest `odylith_off` baseline while the product story stays ahead of the runtime. This can happen through scenario softening, stale runtime truth, weakened validators, cache-profile cherry-picking, unrealistic required paths, broad hot-path scans, over-wide governance packets, architecture packet bloat, or README publication that outruns the real conservative report.",
+        "customer": "- Primary: maintainers and evaluators who need Odylith benchmark claims to be auditable and hard to dismiss. - Secondary: consumers deciding whether Odylith-on is actually smarter, faster, cheaper, more reliable, and more accurate than Codex alone in serious repo work.",
+        "proposed_solution": "Re-scope `B-022` as the umbrella workstream for honest benchmark improvement, then harden the runner and corpus around adversarial integrity while improving the weak runtime families without changing the benchmark contract: - reject stale or unsynced source-truth inputs before publication - add harder adversarial scenarios that punish benchmark softening - detect weakened required paths, weakened validators, and cross-profile cherry-picking - make `raw_agent_baseline` the explicit primary honest baseline while keeping `odylith_off` as its explicit alias and the repo-scan lane as a secondary scaffold control - replace broad hot-path scans with deterministic path-scoped selection and bounded cache reuse - compact governance and architecture packets so Odylith carries less drag into the weak families - expand the corpus beyond the current suite with additional realistic same-task scenarios across the tracked families - require the published README story to stay conservative and same-scenario aligned with the report that actually cleared the gate",
+        "opportunity": "If Odylith treats anti-gaming and honest product improvement as the same contract, the benchmark becomes more trustworthy than a typical internal eval and more useful than a flattering one. That makes README proof defensible and turns benchmark regressions into product-improvement signals instead of narrative-management pressure.",
+        "why_now": "Once the benchmark starts shaping product claims, it must also resist the temptation to shape itself around those claims.",
+        "founder_pov": "If Odylith ever wins by gaming the eval, the proof becomes worse than useless. If Odylith loses honestly because the runtime is still dragging, that is still better than teaching the product to optimize the story instead of the outcome."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-anti-gaming-adversarial-corpus-integrity-and-independent-proof.md",
+        "plan_file": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "benchmark",
+          "name": "Benchmark"
+        },
+        {
+          "component_id": "dashboard",
+          "name": "Dashboard"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        },
+        {
+          "component_id": "subagent-orchestrator",
+          "name": "Subagent Orchestrator"
+        },
+        {
+          "component_id": "tribunal",
+          "name": "Tribunal"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "2026-03-31",
+        "updated": "2026-04-05",
+        "all_total_tasks": 125,
+        "all_done_tasks": 74,
+        "total_tasks": 82,
+        "done_tasks": 74,
+        "progress_ratio": 0.9024,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 0.9024,
+        "display_progress_label": "90% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "tracked",
+        "checklist_label": "Checklist 74/82",
+        "next_tasks": [
+          "The corpus grows beyond the current 30-scenario suite with deeper weak",
+          "The next proof rerun must clear both cache profiles, keep",
+          "Keep `B-022` as the umbrella proof-governance workstream until the next",
+          "Close `B-038` when the remaining weak live families clear on targeted",
+          "Keep `B-039` queued, not pseudo-active, until the runtime weak-family",
+          "Close `B-022` only after:"
+        ]
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 0,
+          "local_change_count": 0,
+          "file_touch_count": 0
+        },
+        "48h": {
+          "commit_count": 0,
+          "local_change_count": 0,
+          "file_touch_count": 14
+        }
+      },
+      "timeline": {
+        "start_date": "2026-03-31",
+        "last_activity_iso": "2026-04-28T14:07:28-07:00",
+        "age_days": 91,
+        "eta_days": 10,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [
+          "B-038",
+          "B-039",
+          "B-041",
+          "B-042",
+          "B-043",
+          "B-044",
+          "B-046"
+        ],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 55,
+        "24h": {
+          "index": 55,
+          "band": "Medium"
+        },
+        "48h": {
+          "index": 55,
+          "band": "Medium"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 16,
+          "decision_evidence": true,
+          "explicit_count": 338,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 235,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 329,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": false
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-022"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-022"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
       "idea_id": "B-033",
       "title": "v0.1.6 Release Hardening, Product Explanation, and Refactor Discipline",
       "status": "implementation",
@@ -68508,6 +68121,229 @@
         }
       ],
       "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-038",
+      "title": "Benchmark Hot-Path Selector, Compaction, and Cold-Path Improvement",
+      "status": "implementation",
+      "priority": "P0",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "`odylith_on` is currently winning the main proof metrics but still paying too much cold-start and prompt-cost drag in the weak benchmark families, especially `release_publication`, `component_governance`, `compass_brief_freshness`, and other narrow proof slices. The runtime still scans too much projection truth, previously compiled an effectively empty guidance catalog on benchmark slices, and still lets warm/cold posture change which truthful slice gets handed to the model.",
+        "customer": "- Primary: Odylith maintainers who need the benchmark runtime to win honestly against `odylith_off` on the real same-task workload. - Secondary: evaluators and users who need Odylith's extra cost to buy materially better grounding and validation instead of packet drag.",
+        "proposed_solution": "Improve the runtime slices that currently add the most avoidable cost: - restore benchmark guidance memory through the canonical manifest at `odylith/agents-guidelines/indexable-guidance-chunks.v1.json`, with family hints flowing into retrieval and packet finalization - require a non-empty guidance catalog during benchmark warm preflight so proof never runs with zero benchmark guidance chunks - add fast deterministic path-scoped selectors, family-aware doc ceilings, and local cache reuse so Odylith stops broad-scanning projection truth on benchmark hot paths - prune weak-family ballast in `release_publication`, explicit-workstream, `component_governance`, `consumer_profile_compatibility`, `daemon_security`, `compass_brief_freshness`, and governance-heavy closeout paths - enforce strict bounded live handoff on exact-path and anchor-complete proof slices so validator-only tests, generated assets, support-doc spillover, and miss recovery do not become accidental first-pass reads - make warm and cold choose the same truthful slice through deterministic candidate tie-breaking for docs, tests, and commands - bias validation-backed developer-core slices such as `agent_activation` and `install_upgrade_runtime` toward validator-backed no-op closeout when the current tree already satisfies the grounded contract, and treat support docs as read-only unless they are explicit write anchors - align live scenario metadata and scorer semantics with that same no-op contract so \"already correct\" does not still score as a write failure - compact architecture dossier output specifically by removing non-required architecture reads while preserving required-path grounding and expectation quality",
+        "opportunity": "The fastest honest benchmark improvement is not narrative tuning. It is making the hot path more selective, the packet smaller, and the architecture output more truthful about what the task actually needs.",
+        "why_now": "Odylith will not honestly beat `odylith_off` by narrative. It has to do less unnecessary work while staying just as grounded.",
+        "founder_pov": "If Odylith needs more time or tokens, those costs must buy real quality. This child exists to remove the part of Odylith's cost that is just waste."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-31-odylith-benchmark-hot-path-selector-compaction-and-cold-path-improvement.md",
+        "plan_file": "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "benchmark",
+          "name": "Benchmark"
+        },
+        {
+          "component_id": "compass",
+          "name": "Compass"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        },
+        {
+          "component_id": "odylith-memory-backend",
+          "name": "Odylith Memory Backend"
+        },
+        {
+          "component_id": "tribunal",
+          "name": "Tribunal"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "2026-03-31",
+        "updated": "2026-04-05",
+        "all_total_tasks": 125,
+        "all_done_tasks": 74,
+        "total_tasks": 82,
+        "done_tasks": 74,
+        "progress_ratio": 0.9024,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 0.9024,
+        "display_progress_label": "90% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "tracked",
+        "checklist_label": "Checklist 74/82",
+        "next_tasks": [
+          "The corpus grows beyond the current 30-scenario suite with deeper weak",
+          "The next proof rerun must clear both cache profiles, keep",
+          "Keep `B-022` as the umbrella proof-governance workstream until the next",
+          "Close `B-038` when the remaining weak live families clear on targeted",
+          "Keep `B-039` queued, not pseudo-active, until the runtime weak-family",
+          "Close `B-022` only after:"
+        ]
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 0,
+          "local_change_count": 0,
+          "file_touch_count": 0
+        },
+        "48h": {
+          "commit_count": 0,
+          "local_change_count": 0,
+          "file_touch_count": 11
+        }
+      },
+      "timeline": {
+        "start_date": "2026-03-31",
+        "last_activity_iso": "2026-04-28T14:07:28-07:00",
+        "age_days": 91,
+        "eta_days": 10,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [
+          "B-022"
+        ],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 35,
+          "band": "Low"
+        },
+        "48h": {
+          "index": 35,
+          "band": "Low"
+        }
+      },
+      "proof_state": {
+        "lane_id": "proof",
+        "frontier_phase": "merged_full_rerun",
+        "proof_status": "unit_tested",
+        "evidence_tier": "unit_tested",
+        "allowed_next_work": [
+          "primary fix",
+          "validating test",
+          "deploy instruction"
+        ],
+        "deprioritized_until_cleared": [
+          "docs",
+          "UX polish",
+          "broader hardening"
+        ],
+        "deployment_truth": {
+          "local_head": "ecf78ba37f81c13d6b2f122b6c22399a16707c20",
+          "pushed_head": "unknown",
+          "published_source_commit": "unknown",
+          "runner_fingerprint": "unknown",
+          "last_live_failing_commit": "unknown"
+        },
+        "recent_work_categories": [
+          "test_hardening"
+        ],
+        "warnings": [
+          "Recent activity is skewing away from the primary blocker while the current blocker is still open."
+        ],
+        "source": "inferred",
+        "resolution_state": "inferred"
+      },
+      "claim_guard": {
+        "blocked_terms": [
+          "fixed",
+          "cleared",
+          "resolved"
+        ],
+        "claim_scope": "code_or_preview",
+        "highest_truthful_claim": "unit-tested",
+        "hosted_frontier_advanced": false,
+        "proof_status": "unit_tested",
+        "same_fingerprint_as_last_falsification": false
+      },
+      "proof_state_resolution": {
+        "lane_ids": [
+          "proof"
+        ],
+        "state": "resolved"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 25,
+          "decision_evidence": true,
+          "explicit_count": 365,
+          "frontier_phase": "merged_full_rerun",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 248,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 335,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "unit_tested",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": false
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-038"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-038"
+        }
+      ],
+      "proof_summary_lines": [
+        "Frontier: merged_full_rerun",
+        "Evidence tier: unit tested",
+        "Recent activity is skewing away from the primary blocker while the current blocker is still open."
+      ]
     },
     {
       "idea_id": "B-040",
@@ -74308,6 +74144,170 @@
           "label": "Deployment truth",
           "surface": "compass",
           "value": "B-019"
+        }
+      ],
+      "proof_summary_lines": []
+    },
+    {
+      "idea_id": "B-020",
+      "title": "Benchmark Integrity, Conservative Multi-Profile Proof, and README Hardening",
+      "status": "finished",
+      "priority": "P0",
+      "sizing": "M",
+      "complexity": "High",
+      "ordering_score": "100",
+      "implemented_summary": "",
+      "why": {
+        "problem": "Odylith's benchmark lane is green, but the published benchmark story is still too easy to misread or over-trust. The runner can execute more than one cache profile, yet the public report and README still center a single primary profile. That leaves a credibility gap: Odylith could look stronger in the published snapshot than it really is under a tougher warm-plus-cold read of the same Codex corpus.",
+        "customer": "- Primary: Odylith maintainers and evaluators who need the benchmark to be authentic, conservative, and hard to game. - Secondary: Odylith consumers deciding whether the product genuinely makes agentic coding smarter, faster, cheaper, and more reliable than Codex alone.",
+        "proposed_solution": "Harden the benchmark runner so the default full benchmark lane exercises both warm and cold cache profiles, computes a conservative published summary across those profiles, carries explicit robustness metadata, and only uses that conservative proof for the public README tables and maintained SVG graphs.",
+        "opportunity": "If Odylith publishes a conservative multi-profile benchmark summary and states the methodology more clearly, the benchmark becomes materially more trustworthy. That turns README proof from a nice scorecard into a stronger product claim about real agentic coding improvement.",
+        "why_now": "Odylith's benchmark delta is finally strong enough that the next failure mode is credibility, not just performance. The product should get ahead of that and publish the harder proof lane now.",
+        "founder_pov": "If Odylith claims to make agentic coding materially better, the published benchmark should be the hardest honest local proof we can stand behind, not the easiest green snapshot."
+      },
+      "links": {
+        "idea_file": "odylith/radar/source/ideas/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md",
+        "plan_file": "odylith/technical-plans/done/2026-03/2026-03-29-odylith-benchmark-integrity-conservative-multi-profile-proof-and-readme-hardening.md"
+      },
+      "registry_components": [
+        {
+          "component_id": "benchmark",
+          "name": "Benchmark"
+        },
+        {
+          "component_id": "odylith",
+          "name": "Odylith"
+        },
+        {
+          "component_id": "odylith-context-engine",
+          "name": "Odylith Context Engine"
+        },
+        {
+          "component_id": "subagent-orchestrator",
+          "name": "Subagent Orchestrator"
+        }
+      ],
+      "execution_wave_programs": [],
+      "release": {},
+      "release_history_summary": "",
+      "plan": {
+        "created": "2026-03-29",
+        "updated": "2026-03-29",
+        "all_total_tasks": 50,
+        "all_done_tasks": 45,
+        "total_tasks": 24,
+        "done_tasks": 24,
+        "progress_ratio": 1.0,
+        "progress_basis": "execution_checklist",
+        "display_progress_ratio": 1.0,
+        "display_progress_label": "100% progress",
+        "display_progress_state": "percent",
+        "progress_classification": "closed",
+        "checklist_label": "Checklist 24/24",
+        "next_tasks": []
+      },
+      "activity": {
+        "24h": {
+          "commit_count": 0,
+          "local_change_count": 0,
+          "file_touch_count": 0
+        },
+        "48h": {
+          "commit_count": 0,
+          "local_change_count": 0,
+          "file_touch_count": 10
+        }
+      },
+      "timeline": {
+        "start_date": "2026-03-29",
+        "last_activity_iso": "2026-04-28T14:07:28-07:00",
+        "age_days": 93,
+        "eta_days": 0,
+        "eta_confidence": "high"
+      },
+      "lineage": {
+        "reopens": [],
+        "reopened_by": [],
+        "split_from": [],
+        "split_into": [],
+        "merged_into": [],
+        "merged_from": []
+      },
+      "cost": {
+        "base_index": 35,
+        "24h": {
+          "index": 35,
+          "band": "Low"
+        },
+        "48h": {
+          "index": 35,
+          "band": "Low"
+        }
+      },
+      "proof_state": {},
+      "claim_guard": {},
+      "proof_state_resolution": {
+        "lane_ids": [],
+        "state": "none"
+      },
+      "scope_signal": {
+        "budget_class": "fast_simple",
+        "caps": [],
+        "feature_vector": {
+          "blast_radius_class": "cross-surface",
+          "broad_fanout": false,
+          "cross_surface_conflict": false,
+          "decision_count": 20,
+          "decision_evidence": true,
+          "explicit_count": 349,
+          "frontier_phase": "",
+          "generated_only_churn": false,
+          "governance_only_local_change": false,
+          "has_any_signal": true,
+          "implementation_count": 239,
+          "implementation_evidence": true,
+          "linked_child_count": 0,
+          "linked_surface_count": 5,
+          "meaningful_change_count": 332,
+          "meaningful_scope_activity": true,
+          "narrow_verified_signal": true,
+          "open_warning": false,
+          "proof_blocker": false,
+          "proof_status": "",
+          "stale_authority": false,
+          "synthetic_count": 0,
+          "unsafe_closeout": false,
+          "verified_completion": true
+        },
+        "label": "Active scope",
+        "promoted_default": true,
+        "rank": 3,
+        "reasons": [
+          "A recent verified completion was recorded.",
+          "A narrow verified scoped signal was recorded.",
+          "Explicit decision evidence is present.",
+          "Explicit implementation evidence is present.",
+          "Meaningful scope-local implementation evidence is present."
+        ],
+        "rung": "R3",
+        "token": "active_scope"
+      },
+      "proof_refs": [
+        {
+          "anchor": "timeline-audit",
+          "fact_tag": "frontier",
+          "kind": "workstream",
+          "label": "Proof frontier",
+          "surface": "compass",
+          "value": "B-020"
+        },
+        {
+          "anchor": "current-workstreams",
+          "fact_tag": "deployment_truth",
+          "kind": "workstream",
+          "label": "Deployment truth",
+          "surface": "compass",
+          "value": "B-020"
         }
       ],
       "proof_summary_lines": []
@@ -88811,14 +88811,14 @@
           "file_touch_count": 0
         },
         "48h": {
-          "commit_count": 1,
+          "commit_count": 0,
           "local_change_count": 0,
-          "file_touch_count": 75
+          "file_touch_count": 14
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-06-28T04:07:31-07:00",
+        "last_activity_iso": "2026-04-28T14:07:28-07:00",
         "age_days": 91,
         "eta_days": 10,
         "eta_confidence": "high"
@@ -88846,7 +88846,7 @@
           "band": "Medium"
         },
         "48h": {
-          "index": 58,
+          "index": 55,
           "band": "Medium"
         }
       },
@@ -89345,14 +89345,14 @@
           "file_touch_count": 0
         },
         "48h": {
-          "commit_count": 1,
+          "commit_count": 0,
           "local_change_count": 0,
-          "file_touch_count": 72
+          "file_touch_count": 11
         }
       },
       "timeline": {
         "start_date": "2026-03-31",
-        "last_activity_iso": "2026-06-28T04:07:31-07:00",
+        "last_activity_iso": "2026-04-28T14:07:28-07:00",
         "age_days": 91,
         "eta_days": 10,
         "eta_confidence": "high"
@@ -89374,7 +89374,7 @@
           "band": "Low"
         },
         "48h": {
-          "index": 38,
+          "index": 35,
           "band": "Low"
         }
       },
@@ -90614,18 +90614,18 @@
       "activity": {
         "24h": {
           "commit_count": 19,
-          "local_change_count": 4,
-          "file_touch_count": 116
+          "local_change_count": 1,
+          "file_touch_count": 111
         },
         "48h": {
           "commit_count": 27,
-          "local_change_count": 4,
-          "file_touch_count": 228
+          "local_change_count": 1,
+          "file_touch_count": 223
         }
       },
       "timeline": {
         "start_date": "2026-04-10",
-        "last_activity_iso": "2026-06-30T03:06:42-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 81,
         "eta_days": null,
         "eta_confidence": "low"
@@ -93339,19 +93339,19 @@
       },
       "activity": {
         "24h": {
-          "commit_count": 36,
+          "commit_count": 35,
           "local_change_count": 6,
-          "file_touch_count": 154
+          "file_touch_count": 153
         },
         "48h": {
           "commit_count": 47,
           "local_change_count": 6,
-          "file_touch_count": 315
+          "file_touch_count": 312
         }
       },
       "timeline": {
         "start_date": "2026-06-26",
-        "last_activity_iso": "2026-06-30T03:07:08-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 4,
         "eta_days": 1,
         "eta_confidence": "high"
@@ -94092,9 +94092,9 @@
           "file_touch_count": 51
         },
         "48h": {
-          "commit_count": 4,
+          "commit_count": 3,
           "local_change_count": 0,
-          "file_touch_count": 132
+          "file_touch_count": 117
         }
       },
       "timeline": {
@@ -94119,7 +94119,7 @@
           "band": "Medium"
         },
         "48h": {
-          "index": 48,
+          "index": 45,
           "band": "Medium"
         }
       },
@@ -94260,18 +94260,18 @@
       "activity": {
         "24h": {
           "commit_count": 19,
-          "local_change_count": 4,
-          "file_touch_count": 116
+          "local_change_count": 1,
+          "file_touch_count": 111
         },
         "48h": {
           "commit_count": 27,
-          "local_change_count": 4,
-          "file_touch_count": 224
+          "local_change_count": 1,
+          "file_touch_count": 219
         }
       },
       "timeline": {
         "start_date": "2026-03-28",
-        "last_activity_iso": "2026-06-30T03:06:42-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 94,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -96757,14 +96757,14 @@
           "file_touch_count": 0
         },
         "48h": {
-          "commit_count": 1,
+          "commit_count": 0,
           "local_change_count": 0,
-          "file_touch_count": 71
+          "file_touch_count": 10
         }
       },
       "timeline": {
         "start_date": "2026-03-29",
-        "last_activity_iso": "2026-06-28T04:07:31-07:00",
+        "last_activity_iso": "2026-04-28T14:07:28-07:00",
         "age_days": 93,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -96784,7 +96784,7 @@
           "band": "Low"
         },
         "48h": {
-          "index": 38,
+          "index": 35,
           "band": "Low"
         }
       },
@@ -97405,9 +97405,9 @@
           "file_touch_count": 51
         },
         "48h": {
-          "commit_count": 5,
+          "commit_count": 4,
           "local_change_count": 0,
-          "file_touch_count": 221
+          "file_touch_count": 209
         }
       },
       "timeline": {
@@ -97432,7 +97432,7 @@
           "band": "Medium"
         },
         "48h": {
-          "index": 52,
+          "index": 48,
           "band": "Medium"
         }
       },
@@ -102493,18 +102493,18 @@
       "activity": {
         "24h": {
           "commit_count": 19,
-          "local_change_count": 4,
-          "file_touch_count": 116
+          "local_change_count": 1,
+          "file_touch_count": 111
         },
         "48h": {
           "commit_count": 27,
-          "local_change_count": 4,
-          "file_touch_count": 228
+          "local_change_count": 1,
+          "file_touch_count": 223
         }
       },
       "timeline": {
         "start_date": "2026-04-08",
-        "last_activity_iso": "2026-06-30T03:06:42-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 83,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -103301,18 +103301,18 @@
       "activity": {
         "24h": {
           "commit_count": 19,
-          "local_change_count": 4,
-          "file_touch_count": 116
+          "local_change_count": 1,
+          "file_touch_count": 111
         },
         "48h": {
           "commit_count": 27,
-          "local_change_count": 4,
-          "file_touch_count": 228
+          "local_change_count": 1,
+          "file_touch_count": 223
         }
       },
       "timeline": {
         "start_date": "2026-04-09",
-        "last_activity_iso": "2026-06-30T03:06:42-07:00",
+        "last_activity_iso": "2026-06-30T05:01:05-07:00",
         "age_days": 82,
         "eta_days": 0,
         "eta_confidence": "high"
@@ -120902,24 +120902,23 @@
         }
       },
       "B-022": {
-        "rank": 1,
-        "rung": "R1",
-        "token": "background_trace",
-        "label": "Background trace",
+        "rank": 0,
+        "rung": "R0",
+        "token": "suppressed_noise",
+        "label": "Suppressed noise",
         "reasons": [
-          "The signal fans across too many scopes to promote directly.",
-          "Recent signal exists, but it is not strong enough to promote by default."
+          "This scope has no verified activity in the selected window."
         ],
         "caps": [
-          "broad_fanout"
+          "window_inactive"
         ],
         "promoted_default": false,
-        "budget_class": "cache_only",
+        "budget_class": "none",
         "feature_vector": {
-          "has_any_signal": true,
-          "window_inactive": false,
+          "has_any_signal": false,
+          "window_inactive": true,
           "governance_only_local_change": false,
-          "broad_fanout": true
+          "broad_fanout": false
         }
       },
       "B-025": {
@@ -120964,24 +120963,23 @@
         }
       },
       "B-038": {
-        "rank": 1,
-        "rung": "R1",
-        "token": "background_trace",
-        "label": "Background trace",
+        "rank": 0,
+        "rung": "R0",
+        "token": "suppressed_noise",
+        "label": "Suppressed noise",
         "reasons": [
-          "The signal fans across too many scopes to promote directly.",
-          "Recent signal exists, but it is not strong enough to promote by default."
+          "This scope has no verified activity in the selected window."
         ],
         "caps": [
-          "broad_fanout"
+          "window_inactive"
         ],
         "promoted_default": false,
-        "budget_class": "cache_only",
+        "budget_class": "none",
         "feature_vector": {
-          "has_any_signal": true,
-          "window_inactive": false,
+          "has_any_signal": false,
+          "window_inactive": true,
           "governance_only_local_change": false,
-          "broad_fanout": true
+          "broad_fanout": false
         }
       },
       "B-040": {
@@ -121797,24 +121795,23 @@
         }
       },
       "B-020": {
-        "rank": 1,
-        "rung": "R1",
-        "token": "background_trace",
-        "label": "Background trace",
+        "rank": 0,
+        "rung": "R0",
+        "token": "suppressed_noise",
+        "label": "Suppressed noise",
         "reasons": [
-          "The signal fans across too many scopes to promote directly.",
-          "Recent signal exists, but it is not strong enough to promote by default."
+          "This scope has no verified activity in the selected window."
         ],
         "caps": [
-          "broad_fanout"
+          "window_inactive"
         ],
         "promoted_default": false,
-        "budget_class": "cache_only",
+        "budget_class": "none",
         "feature_vector": {
-          "has_any_signal": true,
-          "window_inactive": false,
+          "has_any_signal": false,
+          "window_inactive": true,
           "governance_only_local_change": false,
-          "broad_fanout": true
+          "broad_fanout": false
         }
       },
       "B-023": {

@@ -11,8 +11,10 @@ from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
+from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_first_path_source
+from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
@@ -162,14 +164,17 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
 
     raw_source = str(intent_text or "")
     source = _clean(raw_source).strip(" .")
-    recovered_first_path_source = prompt_first_path_source(raw_source)
+    prompt_source = prompt_intent_source(raw_source)
+    recovered_first_path_source = prompt_source.first_path or prompt_first_path_source(raw_source)
     title_source = _recover_title_source(raw_source) if prefer_product_title else ""
     title = _recovered_title(title_source or first_path_outcome_phrase(recovered_first_path_source, fallback=""))
     first_path_source = _usable_first_path_source(
         recovered_first_path_source,
         title=title,
+        preserve_one_line=bool(prompt_source.command_led and prompt_source.title and prompt_source.actor),
     ) or _generic_first_path_source(title, source=recovered_first_path_source)
-    actor_rows = _human_actor_rows_from_first_path(first_path_source, title=title)
+    direct_actor_row = _prompt_actor_row(prompt_source.actor, first_path_source)
+    actor_rows = [direct_actor_row] if direct_actor_row else _human_actor_rows_from_first_path(first_path_source, title=title)
     actor_rows = [
         localized
         for row in actor_rows
@@ -184,7 +189,11 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     outcome_object = _object_result_phrase(outcome)
     lead_actor_ref = _actor_reference(lead_actor)
     lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
-    first_path_inline = _embedded_first_path_clause(first_path_source.rstrip("."), actor=lead_actor_ref)
+    first_path_inline = _embedded_first_path_clause(
+        first_path_source.rstrip("."),
+        actor=lead_actor_ref,
+        force_actor_modal=bool(prompt_source.actor and prompt_source.command_led),
+    )
     first_path = _sentence_start(first_path_inline)
     story = _recovered_story_text(
         title=title,
@@ -235,7 +244,7 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     )
 
 
-def _usable_first_path_source(value: str, *, title: str) -> str:
+def _usable_first_path_source(value: str, *, title: str, preserve_one_line: bool = False) -> str:
     text = _clean(value).strip(" .")
     if not text or _path_source_restates_title(text, title=title):
         return ""
@@ -245,7 +254,8 @@ def _usable_first_path_source(value: str, *, title: str) -> str:
         return ""
     if len(model.steps) >= 2:
         if (
-            _preserve_one_line_capability_source(text)
+            preserve_one_line
+            or _preserve_one_line_capability_source(text)
             or _preserve_one_line_sequence_source(text)
             or _preserve_one_line_relative_actor_source(text)
         ):
@@ -254,6 +264,18 @@ def _usable_first_path_source(value: str, *, title: str) -> str:
     if word_count(text) >= 6 and (model.material_action or model.visible_outcome or gerund_action):
         return text
     return ""
+
+
+def _prompt_actor_row(actor: str, first_path: str) -> str:
+    actor_text = _clean(actor).strip(" .")
+    path = _clean(first_path).strip(" .")
+    if not actor_text or not path:
+        return ""
+    action = re.sub(rf"^{re.escape(actor_text)}\s+", "", path, count=1, flags=re.IGNORECASE).strip(" .")
+    action = _strip_relative_action_prefix(action)
+    if not action:
+        return ""
+    return _human_actor_row(actor_text, action, preserve_full_action=True)
 
 
 def _first_path_source_from_steps(steps: Sequence[str]) -> str:
@@ -302,7 +324,7 @@ def _generic_first_path_source(title: str, *, source: str = "") -> str:
     return semantic_first_path_from_context(title=title, source=source)
 
 
-def _embedded_first_path_clause(value: str, *, actor: str) -> str:
+def _embedded_first_path_clause(value: str, *, actor: str, force_actor_modal: bool = False) -> str:
     text = _clean(value).strip(" .")
     if not text:
         return ""
@@ -317,6 +339,9 @@ def _embedded_first_path_clause(value: str, *, actor: str) -> str:
     gerund_actor, gerund_action = _actor_gerund_action_parts(text)
     if gerund_actor and gerund_action:
         return f"{_clean(gerund_actor) or _clean(actor) or 'the representative user'} can {gerund_action}"
+    actor_prefix, actor_action = _actor_led_base_action_parts(text) if force_actor_modal else ("", "")
+    if force_actor_modal and actor_prefix and actor_action:
+        return f"{_clean(actor_prefix) or _clean(actor) or 'the representative user'} can {actor_action}"
     clause = _lower_leading_word(text)
     actorless_modal_action = _actorless_modal_action(clause)
     if actorless_modal_action:
@@ -368,8 +393,38 @@ def _relative_actor_action(value: str) -> str:
     )
     if not match:
         return ""
-    action = _clean(match.group("action")).strip(" .")
+    action = _strip_leading_can_action(_clean(match.group("action")).strip(" ."))
     return action if looks_like_action_clause(action) else ""
+
+
+def _actor_led_base_action_parts(value: str) -> tuple[str, str]:
+    text = _clean(value).strip(" .")
+    if not text:
+        return "", ""
+    words = text.split()
+    for index in range(1, min(len(words), 6)):
+        prefix = " ".join(words[:index]).strip(" .")
+        if not looks_like_actor_led_subject_prefix(prefix, text):
+            continue
+        candidate = _strip_leading_can_action(" ".join(words[index:]).strip(" ."))
+        if looks_like_action_clause(candidate):
+            return prefix, base_action_clause(candidate, force_leading_finite=True).strip(" .") or candidate
+    return "", ""
+
+
+def _strip_relative_action_prefix(value: str) -> str:
+    text = _clean(value).strip(" .")
+    text = re.sub(r"^(?:who|that)\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
+    return _strip_leading_can_action(text)
+
+
+def _strip_leading_can_action(value: str) -> str:
+    text = _clean(value).strip(" .")
+    match = re.match(r"^can\s+(?P<action>.+)$", text, flags=re.IGNORECASE)
+    if not match:
+        return text
+    action = _clean(match.group("action")).strip(" .")
+    return action if looks_like_action_clause(action) else text
 
 
 def _actor_purpose_action(value: str) -> str:
@@ -784,11 +839,12 @@ def _first_word_index(words: Sequence[str], targets: set[str] | frozenset[str]) 
     return -1
 
 
-def _human_actor_row(actor: str, action: str) -> str:
+def _human_actor_row(actor: str, action: str, *, preserve_full_action: bool = False) -> str:
     actor_words = _strip_leading_articles(_words(actor))
     actor_words, action = _repair_role_object_actor_split(actor_words, action)
     actor_label = title_case_text(" ".join(actor_words))
-    action_text = _base_actor_action_clause(_primary_actor_action_segment(action))
+    action_source = action if preserve_full_action else _primary_actor_action_segment(action)
+    action_text = _base_actor_action_clause(action_source)
     if _starts_with_relation_word(actor_label) or _starts_with_relation_word(action_text):
         return ""
     if not actor_label or not action_text or _looks_like_non_human_actor(actor_label):
