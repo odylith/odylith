@@ -1370,6 +1370,19 @@
   cleanup scan was empty after the run. This is a precommit checkpoint only:
   do not cite it as final release proof until the code is committed, pushed,
   rebuilt from the committed head, and the installed matrix passes again.
+  Committed-head proof on 2026-06-30 rebuilt
+  `odylith-local-release-0.1.15-78787588` after commit `78787588` and passed
+  the platform leakage guard over source plus dist. The installed matrix then
+  passed 13/13 high-variance standard creates from the fresh dist with zero
+  quality issues, zero platform-leakage issues, zero browser-surface issues,
+  minimum/average/maximum create times of 22.690s/26.156s/29.050s, and 10/10
+  brutal scores for completion, governance depth, implementation prompts,
+  browser proof, copy clarity, latency, operator usefulness, and all expert
+  lenses. The matrix used generated artifact terms as the leakage corpus and
+  confirmed those terms did not leak back into platform source or dist. The
+  synthetic typed-probe rescue smoke passed in 33.888s, but its manifest still
+  records `natural_rescue_quality_proven=false`; do not use that smoke as proof
+  of natural host-model rescue quality.
 
 - Related Incidents/Bugs: CB-208
 

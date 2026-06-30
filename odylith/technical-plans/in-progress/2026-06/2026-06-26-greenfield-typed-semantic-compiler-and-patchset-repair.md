@@ -2010,6 +2010,15 @@ vocabulary, or degraded packages.
       box explanations; reruns the 285-term leakage guard; and reruns a strict
       platform-surface scan with zero retained-scenario matches outside
       intentional fixtures/evidence.
+      Committed-head proof rebuilt
+      `odylith-local-release-0.1.15-78787588`, passed the source-plus-dist
+      leakage guard, then passed the maintained installed greenfield matrix:
+      13/13 standard creates, 22.690s minimum, 26.156s average, 29.050s
+      maximum create time, zero platform leakage findings, zero browser
+      findings, zero quality issues, and 10/10 brutal scores across all
+      standard matrix cases. The synthetic rescue smoke passed in 33.888s, but
+      remains typed-probe wiring proof rather than natural host-rescue quality
+      proof.
 - [x] Decompose Atlas box tracked-object phrase selection.
       The platform-facing leakage cleanup touched
       `atlas_box_explanations.py`, which was already above the source-size
