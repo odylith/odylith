@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 344,
-    "mapped_workstream_evidence_count": 299,
+    "explicit_event_count": 345,
+    "mapped_workstream_evidence_count": 300,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 344
+    "timeline_event_count": 345
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,38 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913/greenfield-post-confirm-matrix-20260630-a258b913.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 723,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Committed dist a258b913 greenfield installed matrix passed: 13/13 standard cases scored hard 10/10 with zero issues, browser surface proof passed, max standard create 28.925s, rescue typed-probe smoke passed in 33.537s, and temp matrix/rescue roots cleaned.",
+      "ts_iso": "2026-06-29T18:02:28-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json",

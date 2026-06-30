@@ -66,6 +66,20 @@ vocabulary, or degraded packages.
 
 ## Latest Simulation Evidence
 
+- 2026-06-30 committed release-dist proof: checkpoint a258b913 rebuilt into
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913`
+  after the repair-routing fix was committed and pushed. The maintained
+  installed matrix proof at
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913/greenfield-post-confirm-matrix-20260630-a258b913.v1.json`
+  passed 13/13 standard cases with hard 10/10 scores across completion,
+  product-manager, architect, engineer, domain-expert, copy/semantic clarity,
+  governance depth, traceability, implementation-prompts, latency, semantic
+  manifest, and operator-usefulness dimensions. Every case wrote complete
+  governed records, browser surface proof passed, no prompt findings or issues
+  were reported, max standard create time was 28.925s, synthetic typed-probe
+  rescue passed in 33.537s under the 90s rescue budget, and temp matrix/rescue
+  roots were clean after the run.
+
 - 2026-06-29 installed repair-routing checkpoint: fresh dist
   `odylith-local-release-0.1.15-14f5102a` passed the strengthened 49-term
   domain-leakage gate but failed 4/13 maintained cases before governed writes
@@ -85,8 +99,8 @@ vocabulary, or degraded packages.
   installed matrix then passed 13/13 cases with hard 10/10 scores, zero issues,
   generated browser proof, complete governed records, max standard create time
   29.244s, synthetic typed-probe rescue wiring in 33.836s, and clean temp
-  cleanup. Final release proof still requires a rebuild from the committed
-  checkpoint.
+  cleanup. The subsequent committed checkpoint a258b913 passed the maintained
+  installed release-dist proof above.
 
 - 2026-06-26 faithful propose-then-confirm source-local proof:
   quantum-tunneling education completed post-confirm create in 11.668 seconds
