@@ -47,6 +47,9 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import raise_for_fail
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import assert_greenfield_completion_ready
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
+    GreenfieldPostConfirmEngineError,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     GreenfieldPostConfirmRepairContext,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
@@ -691,7 +694,10 @@ def _with_operator_output(result: Mapping[str, Any], captured: Sequence[str]) ->
 
 def _print_greenfield_error(exc: Exception, *, as_json: bool) -> None:
     if as_json:
-        print(json.dumps({"mode": "error", "error": str(exc)}, indent=2, sort_keys=True))
+        payload: dict[str, Any] = {"mode": "error", "error": str(exc)}
+        if isinstance(exc, GreenfieldPostConfirmEngineError):
+            payload["post_confirm_quality_manifest"] = exc.manifest
+        print(json.dumps(payload, indent=2, sort_keys=True))
         return
     print(str(exc))
 

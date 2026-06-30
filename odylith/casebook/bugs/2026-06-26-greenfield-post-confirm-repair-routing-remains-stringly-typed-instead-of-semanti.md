@@ -1133,6 +1133,18 @@
   blockers instead of spending rescue budget on a no-op. Focused proof passed
   the post-confirm engine, patch-payload, semantic executor, quality-repair,
   artifact-plan patch, and projection-rerender suite: 97 tests in 46.13s.
+  Follow-up cleanup on 2026-06-30 removed the remaining rendered-artifact
+  mutation authority instead of broadening the repair stack. The prewrite
+  package path now uses read-only package inspection; the compatibility repair
+  functions return the original package unchanged; final next steps fail
+  closed on generated-copy defects instead of running a repair probe; generated
+  copy findings route to `ArtifactPlanIR` as `plan_patch`; `safe_package_repair`
+  was removed from the post-confirm and Tribunal repairability allow-lists; and
+  patchsets no longer produce `artifact_draft_set` operations. Focused contract
+  proof passed 42 tests in 34.85s after the cleanup, and semantic rescue proof
+  passed 23 targeted tests after adding idempotent host-adjudication ledger
+  support. Do not reintroduce rendered-copy mutation as a shortcut for premium
+  artifact quality.
 
 - Related Incidents/Bugs: CB-207
 

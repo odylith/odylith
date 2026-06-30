@@ -31,9 +31,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import
 )
 from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_expand_projection_scope
 from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import patch_scope_requires_full_prewrite
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import (
-    repair_greenfield_package_until_clean,
-)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import inspect_greenfield_package
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
     GreenfieldReviewFinding,
 )
@@ -198,28 +196,18 @@ def run_greenfield_post_confirm_engine(
             prewrite_build = build_prewrite(current, tribunal)
         pending_prewrite_build = None
         pending_rerender_projections = ()
-        package_repair = repair_greenfield_package_until_clean(prewrite_build.package)
-        initial_typed_issues = classify_greenfield_post_confirm_issues(package_repair.initial_report)
-        if package_repair.changed:
-            prewrite_build = _replace_prewrite_package(prewrite_build, package_repair.package)
-
-        report = package_repair.report
+        package_inspection = inspect_greenfield_package(prewrite_build.package)
+        report = package_inspection.report
         typed_issues = classify_greenfield_post_confirm_issues(report)
         quality_lenses = build_greenfield_quality_lens_report(prewrite_build.package)
         semantic_compiler = compile_greenfield_semantics(prewrite_build.package.proposal).to_dict()
-        if package_repair.changed:
-            repaired_issue_codes.update(
-                issue.code
-                for issue in initial_typed_issues
-                if issue.repairability == "safe_package_repair"
-            )
         pass_records.append(
             GreenfieldPostConfirmPass(
                 pass_index=pass_index,
                 status=report.status,
                 elapsed_seconds=round(max(0.0, clock() - started), 3),
-                package_repair_passes=package_repair.passes,
-                package_changed=package_repair.changed,
+                package_repair_passes=package_inspection.passes,
+                package_changed=package_inspection.changed,
                 issue_count=len(report.issues),
                 issue_codes=tuple(sorted({issue.code for issue in typed_issues})),
             )
@@ -441,7 +429,7 @@ def _rescue_eligible(
         "semantic_compiler",
         "semantic_drift",
     }
-    repairable_types = {"semantic_patch", "plan_patch", "safe_package_repair"}
+    repairable_types = {"semantic_patch", "plan_patch"}
     return any(issue.code in rescue_codes and issue.repairability in repairable_types for issue in issues)
 
 
@@ -580,17 +568,6 @@ def finalize_greenfield_post_confirm_manifest(
     transaction["rollback_guard"] = "enabled"
     payload["write_transaction"] = transaction
     return payload
-
-
-def _replace_prewrite_package(prewrite_build: Any, package: Any) -> Any:
-    try:
-        return replace(
-            prewrite_build,
-            package=package,
-            backlog_result=package.backlog_result or prewrite_build.backlog_result,
-        )
-    except TypeError:
-        return prewrite_build
 
 
 def _repair_proposal_with_context(

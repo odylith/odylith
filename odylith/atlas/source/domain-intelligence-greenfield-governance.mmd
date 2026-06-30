@@ -56,11 +56,11 @@ flowchart LR
       strict_schema["Strict patch-plan schema<br/>fact envelope, ledger,<br/>proof delta"]
       custody_check["Patch-plan custody validator<br/>reject moved targets,<br/>invented paths, empty facts"]
       repair_manifest["Repair evidence custody<br/>last_repair_patchset_request<br/>survives final clean pass"]
-      semantic_apply["SemanticModelIR patch executor<br/>operation-kind targets,<br/>exact paths, scoped posture"]
+      semantic_apply["SemanticModelIR patch executor<br/>operation-kind targets,<br/>exact paths, idempotent host-adjudication ledger"]
       plan_apply["ArtifactPlanIR patch executor<br/>proposal-target reroute,<br/>projection facts only"]
       scope_ledger["Patch application ledger<br/>explicit affected projections,<br/>full-prewrite posture"]
       projection_rerender["Projection rerender finding<br/>corrupted rendered scope only<br/>no host semantic patch"]
-      copy_repair["Exact-leaf draft cleanup<br/>source-owned public-copy leaf paths,<br/>indexed preview paths and Project dashboard leaves included,<br/>legacy broad targets have no repair authority"]
+      package_inspection["Read-only package inspection<br/>generated-copy findings route to ArtifactPlanIR<br/>rendered drafts are not repair substrates"]
       rerender["Scoped prewrite rerender<br/>named package previews,<br/>same gates, no lowered bar"]
     end
 
@@ -89,12 +89,12 @@ flowchart LR
     rescue_budget -- "yes" --> tribunal_planner --> provider_adapter --> strict_schema --> custody_check --> repair_manifest
     repair_manifest --> semantic_apply
     custody_check --> plan_apply
-    custody_check --> copy_repair
+    custody_check --> package_inspection
     projection_contract -. "sanctioned roots + envelopes" .-> plan_apply
     projection_contract -. "dependency scope" .-> scope_ledger
     semantic_apply --> rerender
     plan_apply --> scope_ledger --> rerender
-    copy_repair --> rerender
+    package_inspection --> rerender
     executable_target -- "no" --> rollback
     rerender --> validators
     rescue_budget -- "no" --> rollback --> blockers
@@ -107,7 +107,7 @@ flowchart LR
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirmable_stdout,confirm,source_guard,prompt_recovery,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
     class apply_input,compiler,semantic_ir,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,legacy_blockers,final_manifest standard;
-    class repairable,patchset,executable_target,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
+    class repairable,patchset,executable_target,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,scope_ledger,projection_rerender,package_inspection,rerender rescue;
     class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155

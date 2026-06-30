@@ -98,7 +98,7 @@ def test_package_repair_rejects_non_mechanical_artifact_draft_operations() -> No
         assert repaired == package
 
 
-def test_package_repair_surface_stays_limited_to_duplicate_and_dangling_cleanup() -> None:
+def test_package_repair_does_not_rewrite_duplicate_or_dangling_rendered_copy() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         rendered_component_specs={
@@ -114,10 +114,7 @@ def test_package_repair_surface_stays_limited_to_duplicate_and_dangling_cleanup(
         },
     )
 
-    rendered = repaired.rendered_component_specs["spec.md"]
-    assert "evidence evidence" not in rendered
-    assert rendered.endswith("visible.")
-    assert "owns maintains state" in rendered
+    assert repaired == package
 
 
 def test_generated_copy_quality_ignores_structural_semantic_axis_values() -> None:
@@ -137,7 +134,7 @@ def test_generated_copy_quality_ignores_structural_semantic_axis_values() -> Non
     assert issues == ()
 
 
-def test_package_repair_mutates_only_addressed_artifact_leaf() -> None:
+def test_package_repair_does_not_mutate_addressed_artifact_leaf() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         rendered_component_specs={
@@ -159,11 +156,10 @@ def test_package_repair_mutates_only_addressed_artifact_leaf() -> None:
         },
     )
 
-    assert repaired.rendered_component_specs["spec.md"] == "The record stays attached to the accepted state."
-    assert repaired.rendered_component_specs["other.md"] == package.rendered_component_specs["other.md"]
+    assert repaired == package
 
 
-def test_package_quality_findings_emit_exact_artifact_draft_target_path() -> None:
+def test_package_quality_findings_emit_exact_artifact_plan_target_path() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         rendered_component_specs={
@@ -172,17 +168,20 @@ def test_package_quality_findings_emit_exact_artifact_draft_target_path() -> Non
     )
 
     findings = package_artifact_findings(package)
-    finding = next(item for item in findings if item.repairability == "safe_package_repair")
+    finding = next(item for item in findings if item.code == "generated_copy_quality")
     patchset = patchset_request_from_findings((finding,)).to_dict()
     operation = patchset["operations"][0]
 
     assert finding.projection_id == "registry"
+    assert finding.repairability == "plan_patch"
+    assert finding.owner == "artifact_plan_projector"
     assert finding.target_path == "prewrite_package.rendered_component_specs::spec.md"
+    assert operation["target_layer"] == "artifact_plan"
     assert operation["target_path"] == "prewrite_package.rendered_component_specs::spec.md"
     assert operation["affected_projections"] == ("registry",)
 
 
-def test_package_repair_accepts_exact_rendered_artifact_targets() -> None:
+def test_package_repair_ignores_exact_rendered_artifact_targets() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
@@ -207,13 +206,7 @@ def test_package_repair_accepts_exact_rendered_artifact_targets() -> None:
         },
     )
 
-    assert repaired.rendered_component_specs == {
-        "spec.md": "The record stays attached to the accepted state."
-    }
-    assert repaired.rendered_atlas_sources == {
-        "flow.mmd": "flow stays attached to the accepted state."
-    }
-    assert repaired.next_steps_preview == package.next_steps_preview
+    assert repaired == package
 
 
 def test_package_repair_ignores_unsupported_preview_tree_targets() -> None:
@@ -265,7 +258,7 @@ def test_package_repair_ignores_unsupported_preview_tree_targets() -> None:
     assert repaired == package
 
 
-def test_package_repair_collapses_adjacent_duplicate_words() -> None:
+def test_package_repair_preserves_adjacent_duplicate_words_for_gate_failure() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         rendered_component_specs={"spec.md": "The record stays attached attached to the accepted state."},
@@ -273,7 +266,7 @@ def test_package_repair_collapses_adjacent_duplicate_words() -> None:
 
     repaired = repair_greenfield_package_once(package)
 
-    assert repaired.rendered_component_specs == {"spec.md": "The record stays attached to the accepted state."}
+    assert repaired == package
 
 
 def test_package_repair_requires_artifact_draft_patchset_permission() -> None:
@@ -337,7 +330,7 @@ def test_package_repair_rejects_whole_preview_tree_targets() -> None:
     assert repaired.next_steps_preview == package.next_steps_preview
 
 
-def test_package_repair_only_mutates_exact_preview_leaf() -> None:
+def test_package_repair_does_not_mutate_exact_preview_leaf() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         next_steps_preview={
@@ -362,16 +355,10 @@ def test_package_repair_only_mutates_exact_preview_leaf() -> None:
         },
     )
 
-    assert repaired.next_steps_preview == {
-        "implementation_prompt": package.next_steps_preview["implementation_prompt"],
-        "operator_sequence": [
-            "Review the accepted brief.",
-            "Open the first workstream.",
-        ],
-    }
+    assert repaired == package
 
 
-def test_package_repair_handles_indexed_preview_leaf_paths() -> None:
+def test_package_repair_does_not_mutate_indexed_preview_leaf_paths() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         accepted_project_preview={
@@ -394,25 +381,10 @@ def test_package_repair_handles_indexed_preview_leaf_paths() -> None:
 
     repaired = repair_greenfield_package_once(package)
 
-    assert repaired.accepted_project_preview == {
-        "created": {
-            "components": [
-                {
-                    "feature_history": [
-                        {"summary": "The accepted state remains visible."},
-                    ],
-                },
-            ],
-        },
-    }
-    assert repaired.project_dashboard_preview == {
-        "host_handoff_prompts": [
-            {"prompt": "The implementation prompt stays visible."},
-        ],
-    }
+    assert repaired == package
 
 
-def test_package_repair_handles_project_dashboard_non_prompt_leaf() -> None:
+def test_package_repair_reports_project_dashboard_non_prompt_leaf_without_mutating() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         project_dashboard_preview={
@@ -427,12 +399,10 @@ def test_package_repair_handles_project_dashboard_non_prompt_leaf() -> None:
     assert [item.target_path for item in generated] == [
         "prewrite_package.project_dashboard_preview.overview.summary"
     ]
-    assert repaired.project_dashboard_preview == {
-        "overview": {"summary": "The dashboard keeps governed state visible."},
-    }
+    assert repaired == package
 
 
-def test_package_repair_loop_clears_indexed_and_dashboard_preview_copy_findings() -> None:
+def test_package_repair_loop_preserves_indexed_and_dashboard_preview_copy_findings() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         accepted_project_preview={
@@ -453,11 +423,12 @@ def test_package_repair_loop_clears_indexed_and_dashboard_preview_copy_findings(
 
     result = repair_greenfield_package_until_clean(package)
 
-    assert result.changed is True
+    assert result.changed is False
+    assert result.report == result.initial_report
     assert "accepted-project memory preview leaked adjacent duplicate word prose" in result.initial_report.issues
     assert "project dashboard preview leaked adjacent duplicate word prose" in result.initial_report.issues
-    assert "accepted-project memory preview leaked adjacent duplicate word prose" not in result.report.issues
-    assert "project dashboard preview leaked adjacent duplicate word prose" not in result.report.issues
+    assert "accepted-project memory preview leaked adjacent duplicate word prose" in result.report.issues
+    assert "project dashboard preview leaked adjacent duplicate word prose" in result.report.issues
 
 
 def test_package_quality_findings_emit_exact_preview_leaf_repair_path() -> None:
@@ -494,10 +465,10 @@ def test_package_report_suppresses_legacy_broad_repair_target_when_exact_leaf_ex
         "prewrite_package.next_steps_preview.implementation_prompt"
     ]
     assert all("prewrite_package.next_steps." not in item.target_path for item in generated)
-    assert all(item.repairability == "safe_package_repair" for item in generated)
+    assert all(item.repairability == "plan_patch" for item in generated)
 
 
-def test_package_repair_handles_exact_compass_preview_leaf() -> None:
+def test_package_repair_reports_exact_compass_preview_leaf_without_mutating() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
         compass_memory_preview={
@@ -516,10 +487,7 @@ def test_package_repair_handles_exact_compass_preview_leaf() -> None:
     patchset = patchset_request_from_findings(tuple(generated)).to_dict()
     repaired = repair_greenfield_package_once(package, patchset_request=patchset)
 
-    assert repaired.compass_memory_preview == {
-        "summary": "The accepted state remains visible.",
-        "proof": "Release proof stays attached to the decision.",
-    }
+    assert repaired == package
 
 
 def test_package_repair_preserves_markdown_plan_link_targets() -> None:
@@ -541,29 +509,27 @@ def test_package_repair_preserves_markdown_plan_link_targets() -> None:
     repaired = repair_greenfield_package_once(package)
 
     repaired_summary = repaired.component_registry_preview[0]["feature_history"][0]["summary"]
+    assert repaired == package
     assert "odylith/radar/radar.html?view=plan&workstream=B-002" in repaired_summary
     assert "radar. html? view=plan" not in repaired_summary
     assert "odylith/radar/radar.html?view=plan&workstream=B-002" in repaired.rendered_component_specs["spec.md"]
 
 
-def test_final_next_steps_repair_matches_prewrite_copy_repair() -> None:
-    repaired = greenfield_apply_write._repair_final_next_steps(
-        {
-            "start_workstream_id": "B-002",
-            "validation_gates": [
-                "Flood Shelter Intake System Intake Register Service owns flood shelter intake intake register evidence, review rules, and result visibility",
-                "Flood Shelter Intake System Intake Register Service blocks incomplete evidence before presenting a result, then explains what has to change for flood shelter intake intake register",
-            ],
-        }
-    )
-
-    rendered = "\n".join(repaired["validation_gates"])
-    assert "intake intake" not in rendered.casefold()
-    assert "flood shelter intake register evidence" in rendered.casefold()
+def test_final_next_steps_quality_fails_closed_on_duplicate_copy() -> None:
+    with pytest.raises(ValueError, match="final next steps quality failed"):
+        greenfield_apply_write._raise_for_final_next_steps_quality(
+            {
+                "start_workstream_id": "B-002",
+                "validation_gates": [
+                    "Flood Shelter Intake System Intake Register Service owns flood shelter intake intake register evidence, review rules, and result visibility",
+                    "Flood Shelter Intake System Intake Register Service blocks incomplete evidence before presenting a result, then explains what has to change for flood shelter intake intake register",
+                ],
+            }
+        )
 
 
-def test_final_next_steps_repair_preserves_release_selector_tokens() -> None:
-    repaired = greenfield_apply_write._repair_final_next_steps(
+def test_final_next_steps_quality_preserves_release_selector_tokens() -> None:
+    next_steps = (
         {
             "release_selector": "0.0.1",
             "customization_options": [
@@ -579,7 +545,8 @@ def test_final_next_steps_repair_preserves_release_selector_tokens() -> None:
         }
     )
 
-    rendered = json.dumps(repaired, sort_keys=True)
+    greenfield_apply_write._raise_for_final_next_steps_quality(next_steps)
+    rendered = json.dumps(next_steps, sort_keys=True)
     assert "0.0.1" in rendered
     assert "0. 0. 1" not in rendered
 

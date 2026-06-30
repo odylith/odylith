@@ -18,7 +18,6 @@ _REPAIRABILITIES = {
     "unrepairable",
     "semantic_patch",
     "plan_patch",
-    "safe_package_repair",
     "projection_rerender",
 }
 

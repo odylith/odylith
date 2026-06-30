@@ -488,8 +488,9 @@ governed subsystem.
   deterministic rescue-probe issue code, finish under the 90 second rescue
   budget, and write the same governed record floor as the standard matrix.
   Provider timeout, empty replacement facts, missing `last_repair_patchset_request`,
-  or a clean standard matrix plus synthetic rescue smoke is not enough to claim
-  natural rescue quality.
+  missing semantic-patch ledger evidence for an idempotent provider-confirmed
+  fact, or a clean standard matrix plus synthetic rescue smoke is not enough to
+  claim natural rescue quality.
 - The local release asset builder, standalone greenfield matrix target, and
   shared release proof lane must run the platform domain-leakage guard against
   current runtime/source guidance, release tooling, and built release assets

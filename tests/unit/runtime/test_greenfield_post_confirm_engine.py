@@ -367,8 +367,8 @@ def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() ->
                 surface="registry",
                 target_path="prewrite_package.rendered_component_specs::spec.md",
                 severity="medium",
-                repairability="safe_package_repair",
-                owner="artifact_draft_cleaner",
+                repairability="plan_patch",
+                owner="artifact_plan_projector",
                 source="rendered_component_spec_quality",
                 message="Rendered component specs repeat adjacent words.",
             ),
@@ -379,7 +379,7 @@ def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() ->
 
     assert by_path["next_steps"]["target_layer"] == "artifact_plan"
     assert by_path["next_steps"]["affected_projections"] == ("next_steps",)
-    assert by_path["prewrite_package.rendered_component_specs::spec.md"]["target_layer"] == "artifact_draft_set"
+    assert by_path["prewrite_package.rendered_component_specs::spec.md"]["target_layer"] == "artifact_plan"
     assert by_path["prewrite_package.rendered_component_specs::spec.md"]["affected_projections"] == ("registry",)
 
 
@@ -618,7 +618,7 @@ def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: py
     monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         engine,
-        "repair_greenfield_package_until_clean",
+        "inspect_greenfield_package",
         lambda current: SimpleNamespace(package=current, initial_report=report, report=report, passes=0, changed=False),
     )
 
@@ -707,7 +707,7 @@ def test_post_confirm_engine_passes_quality_lens_context_to_semantic_repair(
         repair_contexts.append(context)
         return {**current, "repaired": True}
 
-    monkeypatch.setattr(engine, "repair_greenfield_package_until_clean", fake_package_repair)
+    monkeypatch.setattr(engine, "inspect_greenfield_package", fake_package_repair)
 
     result = engine.run_greenfield_post_confirm_engine(
         proposal={"intent": {"title": "Context Test"}},
@@ -824,7 +824,7 @@ def test_post_confirm_manifest_preserves_provider_backed_repair_patchset(
         repair_contexts.append(context)
         return {**current, "repaired": True}
 
-    monkeypatch.setattr(engine, "repair_greenfield_package_until_clean", fake_package_repair)
+    monkeypatch.setattr(engine, "inspect_greenfield_package", fake_package_repair)
 
     result = engine.run_greenfield_post_confirm_engine(
         proposal={"intent": {"title": "Provider Evidence"}},
@@ -881,7 +881,7 @@ def test_post_confirm_auto_tier_rejects_rescue_without_executable_patchset(
     monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         engine,
-        "repair_greenfield_package_until_clean",
+        "inspect_greenfield_package",
         lambda package: SimpleNamespace(package=package, initial_report=report, report=report, passes=0, changed=False),
     )
 
@@ -931,7 +931,7 @@ def test_post_confirm_auto_tier_stays_standard_when_first_pass_succeeds(
     monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         engine,
-        "repair_greenfield_package_until_clean",
+        "inspect_greenfield_package",
         lambda package: SimpleNamespace(package=package, initial_report=report, report=report, passes=0, changed=False),
     )
 
@@ -1033,7 +1033,7 @@ def test_post_confirm_auto_tier_extends_to_rescue_after_repairable_failure(
         report = reports[index]
         return SimpleNamespace(package=package, initial_report=report, report=report, passes=0, changed=False)
 
-    monkeypatch.setattr(engine, "repair_greenfield_package_until_clean", fake_package_repair)
+    monkeypatch.setattr(engine, "inspect_greenfield_package", fake_package_repair)
 
     def repair_callback(
         current: dict[str, object],
@@ -1083,7 +1083,7 @@ def test_post_confirm_deep_tier_requires_explicit_request(
     monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         engine,
-        "repair_greenfield_package_until_clean",
+        "inspect_greenfield_package",
         lambda package: SimpleNamespace(package=package, initial_report=report, report=report, passes=0, changed=False),
     )
 
@@ -1463,7 +1463,7 @@ def test_post_confirm_engine_uses_scoped_prewrite_rerender_after_patch_ledger(
             changed=False,
         )
 
-    monkeypatch.setattr(engine, "repair_greenfield_package_until_clean", fake_package_repair)
+    monkeypatch.setattr(engine, "inspect_greenfield_package", fake_package_repair)
 
     def fake_repair_proposal(
         current: Mapping[str, Any],

@@ -180,6 +180,20 @@ This section captures synchronized requirement and contract signals derived from
   passed for the changed modules, and independent reviewer repro verified exact
   Compass cleanup plus removal of broad `next_steps` safe-repair operations.
 
+- 2026-06-30: Superseded rendered artifact-draft repair with read-only package inspection and typed source repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
+  `greenfield_post_confirm_repair.py` no longer mutates rendered project
+  brief, next-step, accepted-project, dashboard, Compass, Radar, Registry, or
+  Atlas artifact drafts. The post-confirm engine inspects package quality
+  without replacement, final next steps fail closed on generated-copy defects,
+  generated-copy findings route to `ArtifactPlanIR` as `plan_patch`, and the
+  `safe_package_repair` repairability plus `artifact_draft_set` PatchSet
+  target are removed from source-owned repair custody. Semantic rescue now
+  records host-authored decision ledgers even when a typed replacement fact is
+  idempotent with the existing semantic model, preserving provider
+  adjudication without inventing a changed domain fact. Focused proof passed
+  42 no-rendered-repair contract tests in 34.85s and 23 semantic
+  executor/structured-rescue tests in 0.41s; fresh installed proof is pending.
+
 - 2026-06-29: Hardened selected-case domain-leakage proof for recursive custom simulations. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   `GreenfieldMatrixCase` now carries explicit `leakage_terms` for maintained
   simulations, `platform_domain_leakage_check.py` derives per-case forbidden

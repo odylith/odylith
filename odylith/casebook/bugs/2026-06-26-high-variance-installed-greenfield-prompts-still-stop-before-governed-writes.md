@@ -1444,6 +1444,23 @@
   hard 10/10 quality scores and the real installed natural structured-rescue
   leg passed in 67.435s under the 90s rescue tier with a provider-planned
   semantic patch, committed governed records, and zero final findings.
+  Regression follow-up on 2026-06-30 against fresh current-head dist
+  `odylith-local-release-0.1.15-261f00dc` passed all thirteen standard
+  high-variance greenfield cases at hard 10/10 in 24.713-33.345s with
+  browser proof, domain-leakage proof, complete governed records, prompt
+  quality proof, and temp-cleanup proof, but the real installed natural
+  structured-rescue leg failed in 49.691s before governed writes. The blocker
+  was not Codex provider availability: a live direct Codex structured-planner
+  probe returned a valid `semantic_external_systems` plan in 12.692s. The root
+  cause was a custody edge in semantic patch execution: when the host-planned
+  replacement fact matched the already-present canonical semantic value, the
+  executor treated the patch as a no-op and did not write the
+  `semantic_patch_ledger` entry required by `structured_rescue_semantic_patch`.
+  Source now records host-authored semantic adjudication ledgers for
+  idempotent typed semantic facts when the replacement fact, decision ledger,
+  and confidence are present. Focused semantic executor, structured-rescue,
+  patch-payload, natural-rescue proof-scope, and no-rendered-repair contract
+  tests passed; rebuilt installed proof remains pending for this checkpoint.
 
 - Related Incidents/Bugs: CB-208
 

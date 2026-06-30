@@ -85,37 +85,48 @@ def apply_semantic_patch_operations_detailed(
 def _apply_semantic_operation(proposal: dict[str, Any], operation: Mapping[str, Any], *, target: str = "") -> str:
     target = target or _semantic_target(operation)
     replacement = operation.get("replacement_fact")
+    record_noop = _records_host_adjudication(operation)
     if target == "first_path":
         return _set_first_path_contract(
             proposal,
             _replacement_text(replacement, _FIRST_PATH_KEYS),
             require_action=True,
+            record_noop=record_noop,
         )
     if target == "proof_boundary":
         return _set_domain_ontology_text(
             proposal,
             "proof_boundary",
             _replacement_text(replacement, _PROOF_BOUNDARY_KEYS),
+            record_noop=record_noop,
         )
     if target == "state_object":
         return _set_domain_ontology_text(
             proposal,
             "state_object",
             _replacement_text(replacement, _STATE_OBJECT_KEYS),
+            record_noop=record_noop,
         )
     if target == "human_actors":
-        return _set_domain_ontology_list(proposal, "human_actors", _replacement_list(replacement, _ACTOR_KEYS))
+        return _set_domain_ontology_list(
+            proposal,
+            "human_actors",
+            _replacement_list(replacement, _ACTOR_KEYS),
+            record_noop=record_noop,
+        )
     if target == "external_systems":
         return _set_domain_ontology_list(
             proposal,
             "external_systems",
             _replacement_list(replacement, _EXTERNAL_SYSTEM_KEYS),
+            record_noop=record_noop,
         )
     if target == "internal_systems":
         return _set_domain_ontology_list(
             proposal,
             "internal_systems",
             _replacement_list(replacement, _INTERNAL_SYSTEM_KEYS),
+            record_noop=record_noop,
         )
     return ""
 
@@ -137,6 +148,7 @@ def _set_first_path_contract(
     value: str,
     *,
     require_action: bool = False,
+    record_noop: bool = False,
 ) -> str:
     text = normalize_string(value)
     if not text:
@@ -149,7 +161,7 @@ def _set_first_path_contract(
     current_contract = normalize_string(contract.get("raw_path"))
     current_intent = normalize_string(intent.get("first_path"))
     if current_contract == text and current_intent == text:
-        return ""
+        return "semantic_model.first_path_contract.raw_path" if record_noop else ""
     contract["raw_path"] = text
     capability = first_path_capability_phrase(text, fallback=text, gerund=True)
     if capability:
@@ -158,7 +170,13 @@ def _set_first_path_contract(
     return "semantic_model.first_path_contract.raw_path"
 
 
-def _set_domain_ontology_text(proposal: dict[str, Any], key: str, value: str) -> str:
+def _set_domain_ontology_text(
+    proposal: dict[str, Any],
+    key: str,
+    value: str,
+    *,
+    record_noop: bool = False,
+) -> str:
     text = normalize_string(value)
     if not text:
         return ""
@@ -167,13 +185,19 @@ def _set_domain_ontology_text(proposal: dict[str, Any], key: str, value: str) ->
     current_ontology = normalize_string(ontology.get(key))
     current_intent = normalize_string(intent.get(key))
     if current_ontology == text and current_intent == text:
-        return ""
+        return f"semantic_model.domain_ontology.{key}" if record_noop else ""
     ontology[key] = text
     intent[key] = text
     return f"semantic_model.domain_ontology.{key}"
 
 
-def _set_domain_ontology_list(proposal: dict[str, Any], key: str, values: Sequence[str]) -> str:
+def _set_domain_ontology_list(
+    proposal: dict[str, Any],
+    key: str,
+    values: Sequence[str],
+    *,
+    record_noop: bool = False,
+) -> str:
     rows = [normalize_string(value) for value in values if normalize_string(value)]
     if not rows:
         return ""
@@ -182,7 +206,7 @@ def _set_domain_ontology_list(proposal: dict[str, Any], key: str, values: Sequen
     ontology_current = [normalize_string(value) for value in text_values(ontology.get(key))]
     current = [normalize_string(value) for value in text_values(intent.get(key))]
     if ontology_current == rows and current == rows:
-        return ""
+        return f"semantic_model.domain_ontology.{key}" if record_noop else ""
     ontology[key] = rows
     intent[key] = rows
     return f"semantic_model.domain_ontology.{key}"
@@ -234,6 +258,26 @@ def _replacement_list(value: Any, keys: Sequence[str]) -> list[str]:
                 return rows
         return []
     return [normalize_string(row) for row in text_values(value) if normalize_string(row)]
+
+
+def _records_host_adjudication(operation: Mapping[str, Any]) -> bool:
+    if not _replacement_has_value(operation.get("replacement_fact")):
+        return False
+    if not isinstance(operation.get("decision_ledger_entry"), Mapping):
+        return False
+    return _confidence(operation.get("confidence")) > 0.0
+
+
+def _replacement_has_value(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(normalize_string(value))
+    if isinstance(value, Mapping):
+        return any(_replacement_has_value(item) for item in value.values())
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return any(_replacement_has_value(item) for item in value)
+    return True
 
 
 def _ledger_entry(operation: Mapping[str, Any], *, applied_field: str) -> dict[str, Any]:

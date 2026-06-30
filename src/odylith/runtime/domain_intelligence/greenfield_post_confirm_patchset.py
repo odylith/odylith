@@ -135,8 +135,6 @@ def _target_layer(finding: GreenfieldReviewFinding) -> str:
         return "semantic_model"
     if repairability == "plan_patch":
         return "artifact_plan"
-    if repairability == "safe_package_repair":
-        return "artifact_draft_set"
     return ""
 
 
@@ -168,8 +166,6 @@ def _projection_kind(finding: GreenfieldReviewFinding) -> str:
 def _operation_kind(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:
     if target_layer == "artifact_plan":
         return "artifact_plan_projection"
-    if target_layer == "artifact_draft_set":
-        return "artifact_draft_mechanical_copy"
     if target_layer != "semantic_model":
         return ""
     target_path = normalize_string(finding.target_path)
@@ -219,7 +215,7 @@ def _requested_action(finding: GreenfieldReviewFinding, *, target_layer: str) ->
         )
     if target_layer == "artifact_plan":
         return "Return an artifact-plan patch that changes only sanctioned projection fields before rerender."
-    return "Apply only explicitly safe mechanical cleanup, then rerun the same typed review gates."
+    return ""
 
 
 def _rejected_interpretation(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:

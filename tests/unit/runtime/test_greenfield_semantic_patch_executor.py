@@ -132,6 +132,59 @@ def test_semantic_patch_executor_routes_external_systems_without_rewriting_inter
     }
 
 
+def test_semantic_patch_executor_records_host_adjudication_for_idempotent_fact() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "external_systems": ["Partner Evidence Feed"],
+        },
+        "semantic_model": {
+            "domain_ontology": {
+                "external_systems": ["Partner Evidence Feed"],
+            },
+        },
+    }
+
+    result = apply_semantic_patch_operations_detailed(
+        proposal,
+        [
+            {
+                "operation_id": "external-system-adjudication",
+                "target_layer": "semantic_model",
+                "target_path": "semantic_model.domain_ontology.external_systems",
+                "semantic_node_id": "SemanticModelIR.domain_ontology.external_systems",
+                "issue_code": "semantic_alignment",
+                "operation_kind": "semantic_external_systems",
+                "replacement_fact": {"external_systems": ["Partner Evidence Feed"]},
+                "decision_ledger_entry": {
+                    "chosen_interpretation": "Partner Evidence Feed is the accepted external system boundary.",
+                    "rationale": "The host repair confirmed the existing semantic fact instead of inventing a new one.",
+                    "rejected_interpretations": ["Add another external system not present in the accepted intent."],
+                },
+                "confidence": 0.92,
+            }
+        ],
+    )
+
+    assert result.changed is True
+    assert result.applied_fields == ("semantic_model.domain_ontology.external_systems",)
+    assert proposal["intent"]["external_systems"] == ["Partner Evidence Feed"]
+    assert proposal["semantic_model"]["domain_ontology"]["external_systems"] == ["Partner Evidence Feed"]
+    assert proposal["semantic_patch_ledger"] == [
+        {
+            "chosen_interpretation": "Partner Evidence Feed is the accepted external system boundary.",
+            "rationale": "The host repair confirmed the existing semantic fact instead of inventing a new one.",
+            "rejected_interpretations": ["Add another external system not present in the accepted intent."],
+            "applied_field": "semantic_model.domain_ontology.external_systems",
+            "operation_id": "external-system-adjudication",
+            "target_path": "semantic_model.domain_ontology.external_systems",
+            "semantic_node_id": "SemanticModelIR.domain_ontology.external_systems",
+            "issue_code": "semantic_alignment",
+            "confidence": 0.92,
+        }
+    ]
+
+
 def test_semantic_patch_executor_uses_operation_kind_as_primary_target() -> None:
     proposal: dict[str, Any] = {
         "intent": {

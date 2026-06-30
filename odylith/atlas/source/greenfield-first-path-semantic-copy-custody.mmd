@@ -43,7 +43,7 @@ flowchart LR
     subgraph repair_lane["Repair Custody"]
       direction TB
       semantic_plan_patch["Semantic or plan patch<br/>source fact repair only"]
-      exact_draft_cleanup["Exact-leaf draft cleanup<br/>duplicate words and dangling tails<br/>on source-owned public-copy leaves;<br/>indexed preview paths and Project dashboard leaves included;<br/>whole previews are not repair targets"]
+      package_inspection["Read-only package inspection<br/>duplicate words and dangling tails stay blockers<br/>until source or ArtifactPlanIR is repaired"]
       final_gate["Final package gate<br/>same validators, no lowered bar"]
       governed_write["Governed writes<br/>only after manifest passes"]
     end
@@ -81,9 +81,9 @@ flowchart LR
     canonical_facts --> repetition_gate
     repetition_gate --> package_findings
     package_findings --> semantic_plan_patch
-    package_findings --> exact_draft_cleanup
+    package_findings --> package_inspection
     semantic_plan_patch --> final_gate
-    exact_draft_cleanup --> final_gate
+    package_inspection --> final_gate
     final_gate --> governed_write
 
     classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;
@@ -93,7 +93,7 @@ flowchart LR
     class accepted_path,actor_roles,actor_recovery,actor_path_role,subject_carry_guard,purpose_context,action_boundary,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,modal_owner intent;
     class shape_checks,gerund_owner,actor_role_head_guard,structural_filter,repetition_gate prose;
     class radar_projection,state_boundary_titles,actor_choice_copy,atlas_projection,mermaid_label_custody,next_step_prompts,overlap_projection,artifact_units,canonical_facts,tribunal_actors,package_findings projection;
-    class semantic_plan_patch,exact_draft_cleanup,final_gate,governed_write repair;
+    class semantic_plan_patch,package_inspection,final_gate,governed_write repair;
 
     style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
     style prose_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#334155

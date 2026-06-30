@@ -118,7 +118,7 @@ def test_post_confirm_engine_uses_direct_projection_rerender(
             changed=False,
         )
 
-    monkeypatch.setattr(engine, "repair_greenfield_package_until_clean", fake_package_repair)
+    monkeypatch.setattr(engine, "inspect_greenfield_package", fake_package_repair)
 
     def fake_rerender_prewrite(
         *,
@@ -176,7 +176,7 @@ def test_post_confirm_engine_requires_rerender_callback_for_projection_rerender(
     )
     monkeypatch.setattr(
         engine,
-        "repair_greenfield_package_until_clean",
+        "inspect_greenfield_package",
         lambda package: SimpleNamespace(
             package=package,
             initial_report=failed_report,

@@ -1103,7 +1103,7 @@ def test_next_steps_preview_trims_clipped_terminal_fragments() -> None:
     ) == "Do not expand beyond recording first entry and logging again"
 
 
-def test_greenfield_package_repair_cleans_operator_next_step_dangling_tail(tmp_path: Path) -> None:
+def test_greenfield_package_inspection_preserves_operator_next_step_dangling_tail(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     next_steps = _next_steps_preview()
     next_steps["implementation_prompt"] = (
@@ -1114,16 +1114,18 @@ def test_greenfield_package_repair_cleans_operator_next_step_dangling_tail(tmp_p
     package = _package_for_quality_report(proposal, next_steps_preview=next_steps)
 
     initial = build_greenfield_package_report(package)
-    repaired = repair_greenfield_package_until_clean(package)
+    inspected = repair_greenfield_package_until_clean(package)
 
     assert not initial.passed
-    assert repaired.report.passed
-    rendered = json.dumps(repaired.package.next_steps_preview, sort_keys=True)
-    assert "proof until" not in rendered
-    assert "replay evidence." in rendered
+    assert inspected.initial_report == initial
+    assert not inspected.changed
+    assert not inspected.report.passed
+    rendered = json.dumps(inspected.package.next_steps_preview, sort_keys=True)
+    assert "replay evidence until" in rendered
+    assert "clipped or dangling phrase ending" in "\n".join(inspected.report.issues)
 
 
-def test_greenfield_package_repair_cleans_radar_clause_dangling_tails(tmp_path: Path) -> None:
+def test_greenfield_package_inspection_preserves_radar_clause_dangling_tails(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     backlog_result = _prewrite_backlog_result(proposal)
     first_path = next(iter(backlog_result["idea_files"]))
@@ -1134,13 +1136,16 @@ def test_greenfield_package_repair_cleans_radar_clause_dangling_tails(tmp_path: 
     package = _package_for_quality_report(proposal, backlog_result=backlog_result)
 
     initial = build_greenfield_package_report(package)
-    repaired = repair_greenfield_package_until_clean(package)
+    inspected = repair_greenfield_package_until_clean(package)
 
     assert not initial.passed
-    assert repaired.report.passed
-    rendered = "\n".join(str(value) for value in repaired.package.backlog_result["idea_files"].values())
-    assert "dangling from," not in rendered
-    assert "dangling into." not in rendered
+    assert inspected.initial_report == initial
+    assert not inspected.changed
+    assert not inspected.report.passed
+    rendered = "\n".join(str(value) for value in inspected.package.backlog_result["idea_files"].values())
+    assert "dangling from," in rendered
+    assert "dangling into." in rendered
+    assert "clipped or dangling phrase ending" in "\n".join(inspected.report.issues)
 
 
 def test_greenfield_package_gate_rejects_clipped_terminal_article(tmp_path: Path) -> None:
