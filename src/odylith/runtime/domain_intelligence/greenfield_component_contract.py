@@ -131,7 +131,7 @@ def build_component_contract(
         ]
     )
     state_label = _state_label(state_object, fallback=f"{_component_subject(label)} state")
-    profile = _profile(label=label, kind=kind, context=context)
+    profile = _profile(label=label, kind=kind, context=local_context or context)
     semantic_contract = derive_component_semantic_contract(
         row,
         proposal=proposal,
@@ -154,7 +154,7 @@ def build_component_contract(
         contract = contract_profiles.status_view_contract(
             label=label,
             state_label=state_label,
-            context=context,
+            context=_context_text([local_context, state_object, first_path, proof_boundary]) or context,
             previous_label=previous_label,
             next_label=next_label,
         )
@@ -192,16 +192,10 @@ def _requires_profile_preserving_rebuild(
     proposal: Mapping[str, Any],
     workstream_title: str,
 ) -> bool:
-    state_object = _proposal_text(proposal, "state_object", "intent.state_object") or _clean(row.get("state_object"))
-    first_path = _proposal_text(proposal, "first_path", "intent.first_path")
-    proof_boundary = _proposal_text(proposal, "proof_boundary", "intent.proof_boundary")
     description = _component_description(row)
     context = _context_text(
         [
-            _proposal_title(proposal),
-            state_object,
-            first_path,
-            proof_boundary,
+            _label(row),
             description,
             _clean(row.get("boundary")),
             " ".join(text_values(row.get("interfaces"))),
@@ -357,9 +351,9 @@ def _profile(*, label: str, kind: str, context: str) -> str:
     if focused_words & {"access", "permission", "rbac", "audit", "retention"}:
         return "generic"
     analytic_timeline = focused_words & {"correlation", "metric", "measurement", "activity", "overlay", "trend"}
-    lifecycle_view = focused_words & {"status", "notification", "stale"} or "current owner" in focused
+    lifecycle_view = focused_words & {"status", "stale"} or "current owner" in focused
     lifecycle_timeline = focused_words & {"timeline", "history"} and bool(
-        focused_words & {"status", "lifecycle", "notification", "audit", "owner", "readiness"}
+        focused_words & {"status", "lifecycle", "audit", "owner", "readiness"}
     )
     if (lifecycle_view or lifecycle_timeline) and not analytic_timeline:
         return "status_view"

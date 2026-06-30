@@ -106,6 +106,45 @@ def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
 
+def test_run_matrix_preflight_uses_declared_sentinels_before_required_anchors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\n")
+    captured_terms: list[tuple[str, ...]] = []
+
+    def fake_scan_platform_custody(*, repo_root: Path, dist_dir: Path, terms: tuple[str, ...]):
+        captured_terms.append(terms)
+        return (
+            module.platform_domain_leakage.LeakageFinding(
+                location="src/odylith/runtime/example.py",
+                term=terms[0],
+                line=1,
+            ),
+        )
+
+    monkeypatch.setattr(module.platform_domain_leakage, "scan_platform_custody", fake_scan_platform_custody)
+
+    with pytest.raises(RuntimeError, match="selected greenfield matrix case vocabulary"):
+        module.run_matrix(
+            dist_dir=dist_dir,
+            version="0.1.15",
+            temp_parent=tmp_path,
+            cases=(
+                module.GreenfieldMatrixCase(
+                    name="language archive",
+                    prompt="Create a greenfield proposal for language archive dictionary review.",
+                    required_terms=("language", "archive", "dictionary"),
+                    leakage_terms=("dictionary review sentinel",),
+                ),
+            ),
+        )
+
+    assert captured_terms == [("dictionary review sentinel",)]
+    assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
+
+
 def test_run_matrix_rejects_custom_cases_without_distinctive_leakage_terms(tmp_path: Path) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
@@ -1023,52 +1062,105 @@ def test_package_evidence_rejects_missing_persisted_project_prompt_payload() -> 
 def test_generated_leakage_terms_supplement_declared_sentinels_with_distinctive_anchors(tmp_path: Path) -> None:
     module = _module()
     package = _substantive_package()
-    package.project_brief_record_text += "\nWafer lot readiness remains visible for review."
+    package.project_brief_record_text += "\nWafer lot xenobot readiness remains visible for review."
     case = module.GreenfieldMatrixCase(
-        name="wafer permit",
-        prompt="Create a proposal for wafer attestation.",
-        required_terms=("permit", "wafer", "attestation"),
+        name="wafer xenobot",
+        prompt="Create a proposal for wafer xenobot attestation.",
+        required_terms=("xenobot", "wafer", "attestation"),
         leakage_terms=("wafer lot", "missing lattice phrase"),
     )
 
-    terms = module._case_generated_leakage_terms(case=case, repo_root=tmp_path, package=package)  # noqa: SLF001
+    terms = module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        repo_root=tmp_path,
+        release_dir=tmp_path,
+        package=package,
+    )
 
     assert "wafer lot" in terms
     assert "missing lattice phrase" not in terms
-    assert "permit" in terms
+    assert "xenobot" in terms
     assert "wafer" in terms
 
 
 def test_generated_leakage_terms_suppress_generic_required_anchors(tmp_path: Path) -> None:
     module = _module()
     package = _substantive_package()
+    package.project_brief_record_text += "\nXenobot readiness remains visible for review."
     case = module.GreenfieldMatrixCase(
         name="protocol artifact sample",
         prompt="Create a proposal for protocol artifact sample review.",
-        required_terms=("protocol", "artifact", "sample", "permit"),
+        required_terms=("protocol", "artifact", "sample", "xenobot"),
         leakage_terms=("missing lattice phrase",),
     )
 
-    terms = module._case_generated_leakage_terms(case=case, repo_root=tmp_path, package=package)  # noqa: SLF001
+    terms = module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        repo_root=tmp_path,
+        release_dir=tmp_path,
+        package=package,
+    )
 
     assert "protocol" not in terms
     assert "artifact" not in terms
     assert "sample" not in terms
-    assert "permit" in terms
+    assert "xenobot" in terms
+
+
+def test_generated_leakage_terms_suppress_required_anchors_already_native_to_platform(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _module()
+    package = _substantive_package()
+    package.project_brief_record_text += "\nEstimate disputes stay visible for review."
+    case = module.GreenfieldMatrixCase(
+        name="estimate dispute",
+        prompt="Create a proposal for estimate dispute review.",
+        required_terms=("estimate",),
+        leakage_terms=("missing lattice phrase",),
+    )
+
+    def fake_scan_platform_custody(*, repo_root: Path, dist_dir: Path, terms: tuple[str, ...]):
+        if terms == ("estimate",):
+            return (
+                module.platform_domain_leakage.LeakageFinding(
+                    location="src/odylith/runtime/common/cache_budget_policy.py",
+                    term="estimate",
+                    line=1,
+                ),
+            )
+        return ()
+
+    monkeypatch.setattr(module.platform_domain_leakage, "scan_platform_custody", fake_scan_platform_custody)
+
+    terms = module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        repo_root=tmp_path,
+        release_dir=tmp_path,
+        package=package,
+    )
+
+    assert "estimate" not in terms
 
 
 def test_generated_leakage_terms_fall_back_when_case_has_no_declared_sentinels(tmp_path: Path) -> None:
     module = _module()
     package = _substantive_package()
+    package.project_brief_record_text += "\nXenobot readiness remains visible for review."
     case = module.GreenfieldMatrixCase(
-        name="permit fallback",
-        prompt="Create a proposal for permit review.",
-        required_terms=("permit",),
+        name="xenobot fallback",
+        prompt="Create a proposal for xenobot review.",
+        required_terms=("xenobot",),
     )
 
-    terms = module._case_generated_leakage_terms(case=case, repo_root=tmp_path, package=package)  # noqa: SLF001
+    terms = module._case_generated_leakage_terms(  # noqa: SLF001
+        case=case,
+        repo_root=tmp_path,
+        release_dir=tmp_path,
+        package=package,
+    )
 
-    assert "permit" in terms
+    assert "xenobot" in terms
 
 
 def test_platform_leakage_proof_summary_reports_cumulative_terms_and_issues() -> None:

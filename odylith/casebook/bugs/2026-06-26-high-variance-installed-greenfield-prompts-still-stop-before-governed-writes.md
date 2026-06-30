@@ -1154,6 +1154,29 @@
   preserved `lead`, `water`, `abatement`, and `sample` in generated governed
   records. Rebuilt installed dist and fresh corrected high-variance matrix
   proof remain required before release readiness can be reclaimed.
+  Follow-up proof on 2026-06-30 found that the leakage correction needed one
+  more custody split before release proof could be trusted. Required domain
+  coverage anchors and forbidden platform leakage sentinels are now separate:
+  selected cases scan declared leakage sentinels before simulation, generated
+  readback adds only declared sentinels plus distinctive required anchors that
+  are actually present and not already native to platform custody, and legacy
+  custom cases without sentinels keep their fallback. A fresh custom variance
+  against the previous `cdee30ee` dist then passed platform leakage proof
+  across 45 generated readback terms but failed one case before governed
+  writes because top-level product risk prose began with generic `Operator`.
+  Source repair keeps the final gate strict and localizes actor-leading product
+  risk rows through accepted actor semantics instead of weakening the gate or
+  adding domain terms. The same broad source proof exposed a Registry contract
+  profile custody bug: profile routing used too much surrounding context, so a
+  notification/deadline component could inherit search/dashboard state from a
+  sibling surface, while over-narrowing then starved true status-view contracts
+  of accepted lifecycle transitions. The source fix routes profile selection
+  from component-local context, stops treating `notification` alone as a
+  status-view signal, and renders true status-view contracts from local
+  component context plus accepted state/path/proof. Focused proof passed 68
+  leakage, matrix, actor-risk, and component-boundary tests; the broader
+  affected greenfield/component suite passed 325 tests in 409.12s. Rebuilt
+  installed proof remains required before release readiness is reclaimed.
 
 - Related Incidents/Bugs: CB-208
 

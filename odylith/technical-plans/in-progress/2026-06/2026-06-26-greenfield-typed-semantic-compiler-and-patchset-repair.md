@@ -1818,3 +1818,23 @@ vocabulary, or degraded packages.
       checkpoint and rerun corrected fresh high-variance installed matrix proof
       with browser checks, generated-term leakage proof, hard 10/10 scores,
       sub-60s standard creates, and clean temp cleanup.
+- [ ] Rebuild and prove the post-cdee30ee leakage/actor-risk/profile-boundary
+      checkpoint.
+      Source proof after the `cdee30ee` custom variance audit found no
+      protected platform leakage across 45 generated readback terms, but one
+      high-variance project still failed before governed writes because
+      product risk prose began with generic `Operator`. The source fix keeps
+      the actor gate strict and localizes top-level product risk statements and
+      mitigations through accepted actor semantics. The same proof pass
+      separated release-matrix leakage sentinels from required domain coverage
+      anchors and fixed Registry component-profile custody so profile
+      selection uses component-local context, notification/deadline services do
+      not inherit status/dashboard semantics by label alone, and true
+      status-view contracts still receive accepted state/path/proof transitions.
+      Current source proof: 68 focused leakage/matrix/actor/component tests
+      passed and the broader affected greenfield/component suite passed 325
+      tests in 409.12s. Remaining proof: commit the checkpoint, rebuild the
+      installable dist, rerun the maintained installed matrix and fresh
+      non-reused variance matrix with browser proof, generated-term leakage
+      proof, hard 10/10 scores, sub-60s standard creates, and clean temp
+      cleanup.

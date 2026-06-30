@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Split release-matrix leakage sentinels from domain coverage anchors and repaired generic actor risk plus Registry profile context custody after fresh variance proof.
+  - Scope: B-142
+  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py +2 more
 - **2026-06-30 · Implementation:** Tightened fresh-variance proof custody and prompt-intent recovery after a non-reused installed run exposed false leakage sentinels plus actor-led gerund fallback prose.
   - Scope: B-142
   - Evidence: scripts/release/greenfield_post_confirm_matrix.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py +2 more
@@ -54,6 +57,24 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-06-30: Repaired the final leakage-proof and greenfield quality boundary found after the `cdee30ee` custom variance audit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-045, D-046)
+  Release-matrix leakage custody now separates declared forbidden leakage
+  sentinels from required domain-coverage anchors. Selected-case preflight
+  scans declared sentinels first, generated readback adds only terms that are
+  actually present in governed artifacts, and required anchors already native
+  to platform custody are suppressed so ordinary platform vocabulary cannot
+  create false leakage failures. Product-risk completion now treats generic
+  actor-led risk statements as incomplete and localizes risk statement and
+  mitigation copy through accepted actor semantics before the final quality
+  gate. Registry component profile selection now uses component-local context,
+  no longer treats `notification` alone as a status-view signal, and renders
+  true status-view contracts with local component context plus accepted
+  state/path/proof so lifecycle transitions remain complete without sibling
+  dashboard/search contamination. Focused proof passed 68
+  leakage/matrix/actor/profile tests, and the broader affected
+  greenfield/component suite passed 325 tests in 409.12s. Rebuilt installed
+  proof remains required before release readiness is reclaimed.
 
 - 2026-06-30: Tightened fresh-variance leakage custody, grounded-anchor scoring, and first-path purpose-context recovery. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-045)
   A non-reused installed variance run against checkpoint `25b8f9cf` exposed

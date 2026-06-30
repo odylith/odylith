@@ -67,6 +67,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_text as _sentence
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_list as _set_list
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
+from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks_from_proposal
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
 from odylith.runtime.domain_intelligence.greenfield_release_scope_limits import proof_boundary_limit_text
@@ -158,6 +159,7 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
         or not risks
         or _sequence_has_text_repair(risks)
         or any(risk_text_has_framework_leak(row) for row in risks)
+        or _risks_have_generic_actor_label(risks)
     ):
         proposal["risks"] = build_product_risks_from_proposal(
             proposal,
@@ -202,6 +204,14 @@ def _complete_project_posture(proposal: dict[str, Any]) -> bool:
         )
         changed = True
     return changed
+
+
+def _risks_have_generic_actor_label(value: Any) -> bool:
+    return any(
+        value_starts_with_generic_actor_label(row.get("statement"))
+        or value_starts_with_generic_actor_label(row.get("mitigation"))
+        for row in dict_rows(value)
+    )
 
 
 def _complete_backlog(proposal: dict[str, Any]) -> bool:
@@ -739,6 +749,7 @@ def _repair_generated_sentence_lists(proposal: dict[str, Any], *, release_select
 
 def _repair_generic_actor_labels(proposal: dict[str, Any]) -> bool:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    actor_rows = text_values(intent.get("human_actors")) if isinstance(intent, Mapping) else []
     labels = project_specific_actor_labels(intent if isinstance(intent, Mapping) else {})
     if not labels:
         labels = project_specific_actor_labels(
@@ -749,8 +760,24 @@ def _repair_generic_actor_labels(proposal: dict[str, Any]) -> bool:
         )
     if not labels:
         return False
+    actor_rows = actor_rows or labels
+    fallback = labels[0]
     summary = "; ".join(labels[:2])
     changed = False
+    project_focus = completion_text.project_title(proposal)
+    for row in dict_rows(proposal.get("risks")):
+        for key in ("statement", "mitigation"):
+            value = row.get(key)
+            repaired = localize_leading_actor_reference(
+                str(value or ""),
+                actor_rows=actor_rows,
+                project_focus=project_focus,
+                fallback=fallback,
+                sentence_context=True,
+            )
+            if repaired and repaired != _clean(value):
+                row[key] = repaired
+                changed = True
     for row in dict_rows(proposal.get("backlog")):
         if value_starts_with_generic_actor_label(row.get("customer")):
             row["customer"] = summary

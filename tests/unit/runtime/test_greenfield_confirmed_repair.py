@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import component_focus_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import keywords
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.project_intelligence.greenfield import build_greenfield_payload
 from tests.unit.runtime.greenfield_proposal_fixtures import _confirmed_intent
 
@@ -193,6 +194,24 @@ def test_confirmed_repair_loop_cleans_dirty_public_prose_across_artifact_familie
         assert set(CONTRACT_KEYS) <= set(row["component_contract"])
         contract_text = json.dumps(row["component_contract"]).casefold()
         assert "permit" in contract_text or "zoning" in contract_text or "revision" in contract_text
+
+
+def test_confirmed_repair_loop_localizes_generic_actor_product_risks(tmp_path) -> None:
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt="Draft a greenfield proposal for a municipal permit review workspace",
+        confirmed_intent=_confirmed_intent(),
+        release_selector="0.0.1",
+    )
+    proposal["risks"][0]["statement"] = "Operator may trust an incomplete result without seeing the source record."
+    proposal["risks"][0]["mitigation"] = "Operator reviews the source record before release."
+
+    repaired = complete_confirmed_proposal(proposal, release_selector="0.0.1")
+    encoded = json.dumps(repaired, sort_keys=True)
+
+    assert "Operator may trust" not in encoded
+    assert "Operator reviews" not in encoded
+    assert not any("generic actor label" in issue for issue in greenfield_quality_issues(repaired))
 
 
 PEER_REVIEW_INTENT_TEXT = """Science Paper Peer Review App

@@ -104,14 +104,26 @@ def run_matrix(
 
 
 def _raise_for_platform_domain_leakage(release_dir: Path, cases: Sequence[GreenfieldMatrixCase]) -> None:
-    missing_cases = platform_domain_leakage.cases_missing_leakage_terms(cases)
+    missing_cases = tuple(
+        str(getattr(case, "name", "unnamed case")).strip() or "unnamed case"
+        for case in cases
+        if not _case_preflight_leakage_terms(case)
+    )
     if missing_cases:
         names = ", ".join(missing_cases)
         raise RuntimeError(
             "platform domain leakage check cannot prove selected greenfield matrix case vocabulary; "
             f"declare leakage_terms for: {names}"
         )
-    terms = platform_domain_leakage.domain_leakage_terms(cases, include_historical=False)
+    terms = tuple(
+        sorted(
+            {
+                term
+                for case in cases
+                for term in _case_preflight_leakage_terms(case)
+            }
+        )
+    )
     if not terms:
         return
     findings = platform_domain_leakage.scan_platform_custody(
@@ -241,7 +253,12 @@ def _run_case(
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)
-    leakage_terms = _case_generated_leakage_terms(case=case, repo_root=repo_root, package=package)
+    leakage_terms = _case_generated_leakage_terms(
+        case=case,
+        repo_root=repo_root,
+        release_dir=install_script.parent,
+        package=package,
+    )
     leakage_issues = _case_platform_leakage_issues(
         terms=leakage_terms,
         release_dir=install_script.parent,
@@ -660,10 +677,64 @@ def _generated_text(*, repo_root: Path, package: Any) -> str:
     return "\n".join(str(item) for item in chunks).casefold()
 
 
-def _case_generated_leakage_terms(*, case: GreenfieldMatrixCase, repo_root: Path, package: Any) -> tuple[str, ...]:
+def _case_preflight_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
+    declared = _case_declared_leakage_terms(case)
+    return declared or platform_domain_leakage.case_leakage_terms(case)
+
+
+def _case_declared_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
+    value = getattr(case, "leakage_terms", ())
+    if isinstance(value, (str, bytes)):
+        raw_terms = (str(value),)
+    else:
+        raw_terms = tuple(str(term) for term in value) if isinstance(value, Sequence) else ()
+    return platform_domain_leakage.domain_leakage_terms_from_terms(raw_terms)
+
+
+def _case_required_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
+    value = getattr(case, "required_terms", ())
+    if isinstance(value, (str, bytes)):
+        raw_terms = (str(value),)
+    else:
+        raw_terms = tuple(str(term) for term in value) if isinstance(value, Sequence) else ()
+    return platform_domain_leakage.domain_leakage_terms_from_terms(raw_terms)
+
+
+def _case_generated_leakage_terms(
+    *,
+    case: GreenfieldMatrixCase,
+    repo_root: Path,
+    release_dir: Path,
+    package: Any,
+) -> tuple[str, ...]:
     generated_text = _generated_text(repo_root=repo_root, package=package)
-    candidate_terms = platform_domain_leakage.case_leakage_terms(case)
-    return tuple(term for term in candidate_terms if _term_present(generated_text, term))
+    declared_terms = _case_declared_leakage_terms(case)
+    required_terms = _case_required_leakage_terms(case)
+    declared_present = tuple(term for term in declared_terms if _term_present(generated_text, term))
+    required_present = tuple(
+        term
+        for term in required_terms
+        if _term_present(generated_text, term)
+        and term not in declared_terms
+        and not _platform_baseline_contains_term(term=term, release_dir=release_dir)
+    )
+    return tuple(dict.fromkeys((*declared_present, *required_present)))
+
+
+_PLATFORM_BASELINE_TERM_CACHE: dict[tuple[str, str], bool] = {}
+
+
+def _platform_baseline_contains_term(*, term: str, release_dir: Path) -> bool:
+    key = (str(Path(release_dir).expanduser().resolve()), str(term).strip())
+    if key not in _PLATFORM_BASELINE_TERM_CACHE:
+        _PLATFORM_BASELINE_TERM_CACHE[key] = bool(
+            platform_domain_leakage.scan_platform_custody(
+                repo_root=REPO_ROOT,
+                dist_dir=release_dir,
+                terms=(str(term).strip(),),
+            )
+        )
+    return _PLATFORM_BASELINE_TERM_CACHE[key]
 
 
 def _case_platform_leakage_issues(*, terms: Sequence[str], release_dir: Path) -> tuple[str, ...]:
