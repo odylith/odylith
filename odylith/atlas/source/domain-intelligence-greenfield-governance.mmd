@@ -47,6 +47,7 @@ flowchart LR
       direction TB
       repairable["Repairable typed findings"]
       patchset["PatchSet request<br/>operation ID, kind, owner,<br/>target path, affected projections"]
+      executable_target{"Executable PatchSet target?"}
       rescue_budget{"Rescue budget remains?"}
       tribunal_planner["Structured Tribunal patch planner<br/>host fills replacement facts only"]
       provider_adapter["Reasoning provider adapter<br/>explicit model,<br/>ignored unsafe user config"]
@@ -78,7 +79,8 @@ flowchart LR
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> matrix_scorer --> release_matrix --> selected_case_leakage
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
-    final_manifest -- "repairable typed failure" --> repairable --> patchset --> rescue_budget
+    final_manifest -- "repairable typed failure" --> repairable --> patchset --> executable_target
+    executable_target -- "yes" --> rescue_budget
     rescue_budget -- "yes" --> tribunal_planner --> provider_adapter --> strict_schema --> custody_check
     custody_check --> semantic_apply
     custody_check --> plan_apply
@@ -88,6 +90,7 @@ flowchart LR
     semantic_apply --> rerender
     plan_apply --> scope_ledger --> rerender
     copy_repair --> rerender
+    executable_target -- "no" --> rollback
     rerender --> validators
     rescue_budget -- "no" --> rollback --> blockers
     final_manifest -- "non-repairable" --> rollback
@@ -99,7 +102,7 @@ flowchart LR
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirmable_stdout,confirm,source_guard,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
     class apply_input,compiler,semantic_ir,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,visible_actor_projection,validators,expert_lenses,persisted_readback,evidence_readback,typed_findings,legacy_blockers,final_manifest standard;
-    class repairable,patchset,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
+    class repairable,patchset,executable_target,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
     class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,selected_case_leakage write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155

@@ -382,7 +382,7 @@ def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() ->
     assert by_path["prewrite_package.rendered_component_specs::spec.md"]["affected_projections"] == ("registry",)
 
 
-def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() -> None:
+def test_patchset_rejects_generic_semantic_targets_without_supported_slot() -> None:
     patchset = patchset_request_from_findings(
         (
             review_finding(
@@ -401,21 +401,8 @@ def test_patchset_preserves_semantic_field_target_and_rejected_interpretation() 
         )
     ).to_dict()
 
-    operation = patchset["operations"][0]
-
-    assert operation["target_layer"] == "semantic_model"
-    assert operation["target_path"] == "quality_lenses.product_manager.decision_boundary"
-    assert operation["semantic_node_id"] == "ReviewReport.quality_lenses"
-    assert operation["operation_kind"] == "semantic_fact"
-    assert operation["repair_owner"] == "quality_lens_contract"
-    assert operation["projection_kind"] == ""
-    assert operation["rejected_interpretation"] == (
-        "quality lens product_manager missing assumptions or ambiguity boundary"
-    )
-    assert operation["replacement_fact"] == ""
-    assert operation["decision_ledger_entry"] == ""
-    assert operation["proof_obligation_delta"] == ""
-    assert operation["affected_projections"] == ()
+    assert patchset["status"] == "no_repairable_operations"
+    assert patchset["operations"] == []
 
 
 def test_patchset_routes_proposal_projection_targets_to_artifact_plan() -> None:
@@ -670,9 +657,9 @@ def test_post_confirm_engine_passes_quality_lens_context_to_semantic_repair(
                 review_finding(
                     code="quality_lens_gap",
                     surface="product_manager",
-                    target_path="quality_lenses.product_manager.decision_boundary",
+                    target_path="semantic_model.domain_ontology.state_object",
                     projection_id="review_report",
-                    semantic_node_id="ReviewReport.quality_lenses",
+                    semantic_node_id="SemanticModelIR.domain_ontology.state_object",
                     severity="high",
                     repairability="semantic_patch",
                     owner="quality_lens_contract",
@@ -742,9 +729,76 @@ def test_post_confirm_engine_passes_quality_lens_context_to_semantic_repair(
     assert context.review_report["version"] == "odylith.greenfield.post_confirm.review_report.v1"
     assert context.patchset_request["version"] == "odylith.greenfield.post_confirm.patchset_request.v1"
     assert context.patchset_request["operations"][0]["target_layer"] == "semantic_model"
+    assert context.patchset_request["operations"][0]["operation_kind"] == "semantic_state_object"
     assert context.quality_lenses["status"] == "failed"
     assert context.quality_lenses["lenses"]["product_manager"]["status"] == "failed"
     assert context.semantic_compiler["version"] == "odylith.greenfield.semantic_compiler.v1"
+
+
+def test_post_confirm_auto_tier_rejects_rescue_without_executable_patchset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"next_steps_previews": 1},
+        tribunal_status="passed",
+        issues=("quality lens product_manager missing assumptions or ambiguity boundary",),
+        findings=(
+            review_finding(
+                code="quality_lens_gap",
+                surface="product_manager",
+                target_path="quality_lenses.product_manager.decision_boundary",
+                projection_id="review_report",
+                semantic_node_id="ReviewReport.quality_lenses",
+                severity="high",
+                repairability="semantic_patch",
+                owner="quality_lens_contract",
+                source="quality_lens",
+                lens="product_manager",
+                message="quality lens product_manager missing assumptions or ambiguity boundary",
+            ),
+        ),
+    )
+    repair_contexts: list[engine.GreenfieldPostConfirmRepairContext] = []
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        engine,
+        "repair_greenfield_package_until_clean",
+        lambda package: SimpleNamespace(package=package, initial_report=report, report=report, passes=0, changed=False),
+    )
+
+    def repair_callback(
+        current: dict[str, object],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> dict[str, object]:
+        repair_contexts.append(context)
+        return {**current, "unexpected_repair": True}
+
+    with pytest.raises(engine.GreenfieldPostConfirmEngineError) as exc:
+        engine.run_greenfield_post_confirm_engine(
+            proposal={"intent": {"title": "Unsupported Rescue"}},
+            release_selector="0.0.1",
+            build_prewrite=lambda current, _tribunal: SimpleNamespace(
+                package=GreenfieldCompletionPackage(proposal=current, release_selector="0.0.1"),
+                backlog_result={},
+            ),
+            repair_proposal=repair_callback,
+            proposal_ready=True,
+            repair_tier="auto",
+        )
+
+    manifest = exc.value.manifest
+    assert repair_contexts == []
+    assert manifest["stop_reason"] == "not_rescue_eligible"
+    assert manifest["requested_repair_tier"] == "auto"
+    assert manifest["repair_tier"] == "standard"
+    assert manifest["rescue_activated"] is False
+    assert manifest["patchset_request"]["status"] == "no_repairable_operations"
+    assert manifest["patchset_request"]["operations"] == []
 
 
 def test_post_confirm_auto_tier_stays_standard_when_first_pass_succeeds(

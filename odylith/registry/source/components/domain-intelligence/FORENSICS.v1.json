@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 229,
-    "mapped_workstream_evidence_count": 213,
+    "explicit_event_count": 230,
+    "mapped_workstream_evidence_count": 214,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 189,
+    "spec_history_event_count": 190,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 230
+    "timeline_event_count": 231
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -22,19 +22,56 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py"
       ],
       "confidence": "high",
-      "event_index": 725,
+      "event_index": 726,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T18:18:35-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py +1 more",
+      "ts_iso": "2026-06-29T18:37:43-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py"
+      ],
+      "confidence": "high",
+      "event_index": 725,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Tightened greenfield auto-rescue custody so unsupported semantic roots no longer emit no-op PatchSet operations; focused post-confirm proof passed 97 tests.",
+      "ts_iso": "2026-06-29T18:36:29-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

@@ -101,6 +101,12 @@ def _operation_from_finding(
     if not target_layer:
         return None
     probe_values = rescue_probe_patch_values(finding)
+    operation_kind = normalize_token(probe_values.get("operation_kind")) or _operation_kind(
+        finding,
+        target_layer=target_layer,
+    )
+    if target_layer == "semantic_model" and not operation_kind:
+        return None
     return GreenfieldPatchOperation(
         operation_id=f"GF-PATCH-{index:03d}",
         target_layer=target_layer,
@@ -108,7 +114,7 @@ def _operation_from_finding(
         semantic_node_id=normalize_string(finding.semantic_node_id),
         issue_code=finding.code,
         source_finding=finding.source,
-        operation_kind=normalize_token(probe_values.get("operation_kind")) or _operation_kind(finding, target_layer=target_layer),
+        operation_kind=operation_kind,
         repair_owner=finding.owner,
         projection_kind=_projection_kind(finding),
         affected_projections=_affected_projections(finding),
@@ -202,7 +208,7 @@ def _operation_kind(finding: GreenfieldReviewFinding, *, target_layer: str) -> s
         "proposal.semantic_model.domain_ontology.internal_systems",
     } or semantic_node == "SemanticModelIR.domain_ontology.internal_systems":
         return "semantic_internal_systems"
-    return "semantic_fact"
+    return ""
 
 
 def _requested_action(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:

@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Tightened greenfield auto-rescue custody so unsupported semantic roots no longer emit no-op PatchSet operations; focused post-confirm proof passed 97 tests.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +2 more
 - **2026-06-29 · Implementation:** Fixed greenfield post-confirm artifact-draft repair routing: project-dashboard preview leaves are exact repair targets and indexed preview paths now reach scalar leaves; focused tests, Casebook validation, leakage guard, four failed-case installed replay, and full 13-case installed matrix passed with max standard create 29.244s.
   - Scope: B-142
   - Evidence: Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json, src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py +2 more
@@ -39,12 +42,24 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Fresh custom installed greenfield variance reopened CB-209; source fix split actor path-role custody, preserved title-compound user roles, trimmed preposition/action-led actor fragments, moved non-goal derivation to its own owner, and left rebuilt installed matrix proof pending.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +1 more
-- **2026-06-29 · Implementation:** Extended canonical first-path projection custody to sequence-step variants after the request-handoff replay exposed repeated noncanonical prose blockers; focused package/sequence proof passed and live source-local create wrote 4 Radar, 3 Registry, 6 Atlas records in 19.609s with zero issues and no Or-fragment copy.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-06-30: Removed generic no-op semantic PatchSet rescue operations. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagram: D-043)
+  Auto-rescue now requires actual typed repair custody, not just a repairable
+  issue label. `greenfield_post_confirm_patchset.py` no longer emits a generic
+  `semantic_fact` operation for reviewer-lens or `SemanticModelIR` roots that
+  do not name a supported semantic slot. `greenfield_post_confirm_engine.py`
+  derives the PatchSet before deciding rescue eligibility and keeps auto mode
+  on the standard 60s path with exact blockers when no executable PatchSet
+  operation exists. Supported semantic rescue targets remain first path, proof
+  boundary, state object, human actors, external systems, and internal systems.
+  Focused proof passed the post-confirm engine, patch payload, semantic
+  executor, quality repair, artifact-plan patch, and projection-rerender suite:
+  97 tests in 46.13s. Natural host-model rescue quality remains a separate
+  unclaimed proof class until a non-internal provider-authored rescue scenario
+  is proven end to end.
 
 - 2026-06-29: Fixed artifact-draft repair routing for indexed preview leaves and Project dashboard preview leaves. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-045)
   The post-confirm repair loop now treats concrete Project dashboard preview
@@ -747,6 +762,13 @@ This section captures synchronized requirement and contract signals derived from
   may pass typed findings, review evidence, and PatchSet requests, but it must
   retain custody of operation identity, target layer, target path,
   semantic-node ID, affected projections, time budget, and final commit gates.
+- Semantic PatchSet emission must fail closed unless the finding names an
+  executable semantic slot. Generic reviewer-lens roots, whole
+  `SemanticModelIR` roots, or other unpatchable semantic facts must not become
+  generic `semantic_fact` operations. Auto-rescue may activate only when the
+  derived PatchSet has at least one executable semantic, artifact-plan, or
+  exact artifact-draft operation; otherwise the final manifest must return
+  exact blockers without spending the rescue budget.
 - Semantic PatchSet execution must patch `SemanticModelIR` first. Accepted
   intent fields may be mirrored only as compatibility input for current
   deterministic completion; executors must not delete `semantic_model` and rely

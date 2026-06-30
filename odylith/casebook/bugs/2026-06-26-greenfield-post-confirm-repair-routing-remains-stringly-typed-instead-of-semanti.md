@@ -1119,6 +1119,20 @@
   confirmed no broad `next_steps` safe-repair target remained. Focused proof
   passed 41 artifact-plan and quality-repair tests, and the widened
   post-confirm repair/engine/projection-rerender set passed 76 tests in 50.17s.
+  A 2026-06-30 rescue-custody audit found a remaining failed mechanism:
+  source-owned findings could still mark generic `SemanticModelIR` or
+  reviewer-lens roots as `semantic_patch`, `greenfield_post_confirm_patchset.py`
+  would emit a generic `semantic_fact` operation, and the semantic executor
+  would correctly no-op because no concrete patchable slot was named. That made
+  auto-rescue look repairable while it had no executable target. The source fix
+  removes the generic semantic operation kind, suppresses semantic PatchSet
+  operations unless the finding names a supported slot such as first path,
+  proof boundary, state object, human actors, or system boundaries, and makes
+  the post-confirm engine require a non-empty PatchSet before activating
+  rescue from auto mode. Unsupported semantic roots now fail closed with exact
+  blockers instead of spending rescue budget on a no-op. Focused proof passed
+  the post-confirm engine, patch-payload, semantic executor, quality-repair,
+  artifact-plan patch, and projection-rerender suite: 97 tests in 46.13s.
 
 - Related Incidents/Bugs: CB-207
 

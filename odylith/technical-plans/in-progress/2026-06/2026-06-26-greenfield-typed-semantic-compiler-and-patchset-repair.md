@@ -1677,3 +1677,17 @@ vocabulary, or degraded packages.
       passed 76 tests in 50.17s, compile proof passed for the changed modules,
       and independent review verified exact Compass memory repair plus
       suppression of stale broad `next_steps` safe-repair paths.
+- [x] Remove generic no-op semantic PatchSet rescue operations.
+      A rescue audit found that generic reviewer-lens or `SemanticModelIR`
+      roots could still be marked `semantic_patch`, converted to a generic
+      `semantic_fact` operation, and then no-op in the semantic executor
+      because no supported IR slot was named. The source fix makes PatchSet
+      emission fail closed unless a semantic finding targets an executable slot
+      such as first path, proof boundary, state object, human actors, or
+      system boundaries, and makes auto-rescue require a non-empty PatchSet
+      before switching from the 60s standard tier to the 90s rescue tier.
+      Focused proof passed the post-confirm engine, patch payload, semantic
+      executor, quality repair, artifact-plan patch, and projection rerender
+      suite: 97 tests in 46.13s. Natural host-model rescue quality remains an
+      explicit unclaimed proof class until a non-internal provider-authored
+      rescue scenario is proven end to end.

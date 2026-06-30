@@ -38,12 +38,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 346,
-    "mapped_workstream_evidence_count": 301,
+    "explicit_event_count": 347,
+    "mapped_workstream_evidence_count": 302,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 346
+    "timeline_event_count": 347
   },
   "name": "Radar",
   "path_prefixes": [
@@ -53,6 +53,41 @@
   ],
   "spec_ref": "odylith/registry/source/components/radar/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patchset.py"
+      ],
+      "confidence": "high",
+      "event_index": 725,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Tightened greenfield auto-rescue custody so unsupported semantic roots no longer emit no-op PatchSet operations; focused post-confirm proof passed 97 tests.",
+      "ts_iso": "2026-06-29T18:36:29-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913/greenfield-post-confirm-fresh-variance-20260630-a258b913.v1.json"

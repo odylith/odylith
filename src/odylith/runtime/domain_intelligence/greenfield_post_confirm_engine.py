@@ -248,6 +248,7 @@ def run_greenfield_post_confirm_engine(
             stop_reason = "no_progress"
             break
         seen_failures.add(failure_signature)
+        patchset_request = patchset_request_from_findings(report.findings).to_dict()
         direct_rerender_projections = _direct_rerender_projections(typed_issues)
         if direct_rerender_projections:
             if rerender_prewrite is None:
@@ -262,7 +263,7 @@ def run_greenfield_post_confirm_engine(
             pass_index += 1
             continue
         if active_tier == "standard" and requested_tier == "auto":
-            if not _rescue_eligible(typed_issues):
+            if not _rescue_eligible(typed_issues, patchset_request=patchset_request):
                 stop_reason = "not_rescue_eligible"
                 break
             active_tier = "rescue"
@@ -281,7 +282,7 @@ def run_greenfield_post_confirm_engine(
                 report=report,
                 issues=typed_issues,
                 review_report=review_report_from_findings(report.findings).to_dict(),
-                patchset_request=patchset_request_from_findings(report.findings).to_dict(),
+                patchset_request=patchset_request,
                 quality_lenses=quality_lenses,
                 semantic_compiler=semantic_compiler,
                 repair_tier=active_tier,
@@ -397,10 +398,16 @@ def _tier_budget_seconds(tier: str, *, fallback: float) -> float:
     return min(value if value > 0 else POST_CONFIRM_STANDARD_BUDGET_SECONDS, POST_CONFIRM_STANDARD_BUDGET_SECONDS)
 
 
-def _rescue_eligible(issues: Sequence[GreenfieldPostConfirmIssue]) -> bool:
+def _rescue_eligible(
+    issues: Sequence[GreenfieldPostConfirmIssue],
+    *,
+    patchset_request: Mapping[str, Any] | None = None,
+) -> bool:
     if not issues:
         return False
     if any(issue.repairability == "unrepairable" for issue in issues):
+        return False
+    if patchset_request is not None and not _patchset_has_operations(patchset_request):
         return False
     rescue_codes = {
         "artifact_shape_drift",
@@ -419,6 +426,11 @@ def _rescue_eligible(issues: Sequence[GreenfieldPostConfirmIssue]) -> bool:
     }
     repairable_types = {"semantic_patch", "plan_patch", "safe_package_repair"}
     return any(issue.code in rescue_codes and issue.repairability in repairable_types for issue in issues)
+
+
+def _patchset_has_operations(patchset_request: Mapping[str, Any]) -> bool:
+    operations = patchset_request.get("operations")
+    return isinstance(operations, Sequence) and not isinstance(operations, (str, bytes)) and bool(operations)
 
 
 def _direct_rerender_projections(issues: Sequence[GreenfieldPostConfirmIssue]) -> tuple[str, ...]:
