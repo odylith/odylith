@@ -1707,3 +1707,18 @@ vocabulary, or degraded packages.
       suite: 97 tests in 46.13s. Natural host-model rescue quality remains an
       explicit unclaimed proof class until a non-internal provider-authored
       rescue scenario is proven end to end.
+- [x] Tighten source-level domain-custody proof after the release guard missed
+      hardcoded example nouns in generic runtime helpers.
+      The guard now treats the historical example nouns as forbidden protected
+      source-custody sentinels, while test fixtures and release matrix cases
+      remain allowed proof sources. Generic visible-result and backlog helpers no
+      longer depend on those nouns, component-kind classification no longer lets
+      adjacent external dependency vocabulary demote an accepted internal system
+      to an adapter, and sequence-step capitalization now uses the shared
+      greenfield text owner. Proof passed the 52-term platform domain-leakage
+      guard, py_compile for the touched modules, and 78 focused
+      greenfield/matrix/component tests. A fresh 12-domain installed variance
+      pass against the prior dist still passed 12/12 with hard 10/10 scores,
+      browser proof, zero issues, max create time 28.819s, and clean temp
+      cleanup; final shipped-custody proof still requires a rebuilt dist from
+      this source checkpoint.

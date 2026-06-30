@@ -261,13 +261,13 @@ def _drop_launcher_prefix(value: str) -> str:
 def visible_result_object(value: str) -> str:
     text = clean_visible_result_phrase(value) or clean_first_path_text(value)
     nominal = nominal_visible_result_object(text)
-    if nominal.casefold().startswith("the usage-linked metric change view"):
+    if nominal.casefold().startswith("the tracked metric trend view"):
         return nominal
     text = strip_action_subject(text)
     if _routing_action_clause(text, strip_subject=strip_action_subject):
         return ""
     nominal = nominal_visible_result_object(text)
-    if nominal.casefold().startswith("the usage-linked metric change view"):
+    if nominal.casefold().startswith("the tracked metric trend view"):
         return nominal
     patterns = (
         r":\s*(?:the\s+)?(?:user|owner|person|participant|actor|operator|applicant|customer)\s+"
@@ -332,20 +332,19 @@ def nominal_visible_result_object(value: str) -> str:
     nominal = _nominalize_leading_result_action(text)
     if nominal:
         return nominal
-    protocol_suffix = " for that protocol" if re.search(r"\bfor\s+that\s+protocol\b", text, flags=re.IGNORECASE) else ""
     if re.fullmatch(
-        r"(?:the\s+)?usage-linked\s+metric\s+change\s+view(?:\s+for\s+that\s+protocol)?",
+        r"(?:the\s+)?tracked\s+metric\s+trend\s+view(?:\s+for\s+.+)?",
         text,
         flags=re.IGNORECASE,
     ):
-        return f"the usage-linked metric change view{protocol_suffix}"
+        return "the tracked metric trend view"
     if re.fullmatch(
         r"(?:whether\s+)?(?:the\s+)?tracked\s+metrics?\s+(?:changed|moved|trended)\s+with\s+usage"
-        r"(?:\s+for\s+that\s+protocol)?",
+        r"(?:\s+for\s+.+)?",
         text,
         flags=re.IGNORECASE,
     ):
-        return f"the usage-linked metric change view{protocol_suffix}"
+        return "the tracked metric trend view"
     return text
 
 _RESULT_ACTION_NOMINALS = {

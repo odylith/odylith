@@ -20,7 +20,6 @@ def prefer_outcome_title(value: str) -> bool:
     if words & weak:
         return False
     strong = {
-        "booking",
         "confirmation",
         "decision",
         "estimate",

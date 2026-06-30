@@ -367,6 +367,7 @@ def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, An
     accepted_project = _read_json_mapping(repo_root / "odylith/runtime/source/accepted-project.v1.json")
     confirmed_intent = _read_json_mapping(repo_root / ".odylith/runtime/greenfield/confirmed-intent.json")
     proposal = _as_mapping(accepted_project.get("proposal")) or _as_mapping(create_payload.get("proposal")) or confirmed_intent
+    source_launch_readback = _as_mapping(accepted_project.get("source_launch"))
     backlog_result = {
         "idea_files": _read_radar_workstreams(repo_root),
         "backlog_index_text": _read_text(repo_root / "odylith/radar/source/INDEX.md"),
@@ -379,7 +380,9 @@ def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, An
         rendered_atlas_sources=_read_atlas_sources(repo_root),
         component_registry_preview=tuple(_mapping_rows(create_payload.get("components"))),
         project_brief_preview=_as_mapping(proposal.get("project_brief")) if isinstance(proposal, Mapping) else {},
+        project_brief_record_text=_read_text(repo_root / "odylith/runtime/source/project-brief.v1.md"),
         accepted_project_preview=accepted_project,
+        source_launch_readback=source_launch_readback,
         project_dashboard_preview=project_intelligence_builder.build_project_intelligence_payload(
             repo_root=repo_root,
             shell_payload={},
@@ -609,11 +612,11 @@ def _read_atlas_sources(repo_root: Path) -> dict[str, str]:
 
 
 def _project_brief_record_count(*, repo_root: Path, package: Any) -> int:
-    del repo_root
-    count = 0
-    if _as_mapping(getattr(package, "project_brief_preview", None)):
-        count += 1
-    return count
+    text = _read_text(repo_root / "odylith/runtime/source/project-brief.v1.md")
+    if not text:
+        text = str(getattr(package, "project_brief_record_text", "") or "")
+    required_markers = ("## Brief", "## Project Design Board", "## Governance Package")
+    return 1 if text and all(marker in text for marker in required_markers) else 0
 
 
 def _generated_text(*, repo_root: Path, package: Any) -> str:
@@ -623,8 +626,8 @@ def _generated_text(*, repo_root: Path, package: Any) -> str:
     chunks.append(str(package.backlog_result.get("backlog_index_text") or ""))
     chunks.extend(_as_mapping(package.rendered_component_specs).values())
     chunks.extend(_as_mapping(package.rendered_atlas_sources).values())
-    chunks.extend(text_values(getattr(package, "project_brief_preview", None)))
-    chunks.extend(text_values(getattr(package, "next_steps_preview", None)))
+    chunks.append(str(getattr(package, "project_brief_record_text", "") or ""))
+    chunks.extend(text_values(getattr(package, "source_launch_readback", None)))
     for row in _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts")):
         chunks.extend(text_values(row))
     return "\n".join(str(item) for item in chunks).casefold()

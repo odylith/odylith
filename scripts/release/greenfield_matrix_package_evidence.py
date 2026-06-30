@@ -110,9 +110,21 @@ def evidence_blocks_dimension(findings: Sequence[PackageEvidenceFinding], dimens
 
 
 def _project_brief_findings(*, package: Any, proposal: Mapping[str, Any]) -> list[PackageEvidenceFinding]:
-    brief = package_mapping(getattr(package, "project_brief_preview", None)) or package_mapping(
-        proposal.get("project_brief")
-    )
+    record_text = normalize_string(getattr(package, "project_brief_record_text", ""))
+    if not record_text:
+        return [_finding("product_manager", "independent package evidence missing persisted project brief readback")]
+    required_markers = ("# ", "## Brief", "## Project Design Board", "## Governance Package")
+    missing_markers = [marker for marker in required_markers if marker not in record_text]
+    if missing_markers:
+        return [
+            _finding(
+                "product_manager",
+                f"persisted project brief readback is missing required section marker(s): {', '.join(missing_markers)}",
+            )
+        ]
+    if word_count(record_text) < 80:
+        return [_finding("product_manager", "persisted project brief readback is too shallow for release-quality review")]
+    brief = package_mapping(proposal.get("project_brief"))
     if not brief:
         return [_finding("product_manager", "independent package evidence missing project brief readback")]
     return [
@@ -196,9 +208,11 @@ def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[
 
 
 def _next_step_findings(package: Any) -> list[PackageEvidenceFinding]:
-    next_steps = package_mapping(getattr(package, "next_steps_preview", None))
+    next_steps = package_mapping(getattr(package, "source_launch_readback", None))
     if not next_steps:
-        return [_finding("operator_usefulness", "independent package evidence missing operator next steps")]
+        next_steps = package_mapping(getattr(package, "next_steps_preview", None))
+    if not next_steps:
+        return [_finding("operator_usefulness", "independent package evidence missing accepted source-launch readback")]
     findings: list[PackageEvidenceFinding] = []
     prompt = normalize_string(next_steps.get("implementation_prompt"))
     start_id = normalize_string(next_steps.get("start_workstream_id"))
@@ -208,8 +222,9 @@ def _next_step_findings(package: Any) -> list[PackageEvidenceFinding]:
         findings.append(_finding("engineer", "operator next steps do not include at least two verification commands"))
     if len(text_values(next_steps.get("coding_readiness_gates"))) < 4:
         findings.append(_finding("engineer", "operator next steps do not include four coding-readiness gates"))
-    if len(text_values(next_steps.get("operator_sequence"))) < 3:
-        findings.append(_finding("operator_usefulness", "operator next steps do not include a usable action sequence"))
+    prompts = package_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts")
+    if len(mapping_rows(prompts)) < 5:
+        findings.append(_finding("operator_usefulness", "accepted Project readback does not expose five source-launch prompts"))
     return findings
 
 

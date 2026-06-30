@@ -129,10 +129,13 @@ PLATFORM_NATIVE_TERMS = frozenset(
 )
 HISTORICAL_DOMAIN_SENTINEL_TERMS = (
     "anger management",
+    "appointment",
+    "booking",
     "digestive health",
     "fifa tracker",
     "quantum tunneling",
     "wearable app",
+    "workout",
 )
 
 

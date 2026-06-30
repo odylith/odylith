@@ -499,6 +499,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Tightened greenfield domain-custody proof: runtime helpers no longer hardcode historical example-domain nouns, the leak guard forbids them in protected source custody, component kind classification preserves accepted internal ownership, focused tests passed, and rebuilt dist proof remains pending.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +4 more
 - **2026-06-29 · Implementation:** Strengthened greenfield leakage proof from selected required-term mining to explicit per-case leakage terms; maintained matrix now scans 44 terms with zero missing cases and zero protected-custody findings.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md
@@ -514,9 +517,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Hardened greenfield release scoring against global domain-term soup by requiring local semantic grounding across Radar, Registry, Atlas, and Project prompt surfaces; focused scorer tests passed 36/36.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, tests/unit/install/test_greenfield_post_confirm_matrix.py
-- **2026-06-29 · Implementation:** Captured and fixed hardened release-matrix proof defect: rebuilt dist def2f783 completed thirteen standard greenfield creates under 28s plus rescue smoke at 34.916s, but scorer falsely treated odylith/radar/source/CLAUDE.md as a Radar workstream. Casebook, Registry, Atlas, and plan now record the custody-boundary failure; collector excludes guidance/catalog Markdown and focused matrix proof passed 49 tests.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 231,
-    "mapped_workstream_evidence_count": 215,
+    "explicit_event_count": 232,
+    "mapped_workstream_evidence_count": 216,
     "recent_path_match_count": 1,
-    "spec_history_event_count": 190,
+    "spec_history_event_count": 191,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 232
+    "timeline_event_count": 233
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -22,19 +22,65 @@
   "timeline": [
     {
       "artifacts": [
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_first_path_fragments.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py"
       ],
       "confidence": "high",
-      "event_index": 727,
+      "event_index": 728,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T19:07:01-07:00",
+      "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py +6 more",
+      "ts_iso": "2026-06-29T19:48:20-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
+      ],
+      "confidence": "high",
+      "event_index": 727,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Tightened greenfield domain-custody proof: runtime helpers no longer hardcode historical example-domain nouns, the leak guard forbids them in protected source custody, component kind classification preserves accepted internal ownership, focused tests passed, and rebuilt dist proof remains pending.",
+      "ts_iso": "2026-06-29T19:47:59-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

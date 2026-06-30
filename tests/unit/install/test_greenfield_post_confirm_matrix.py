@@ -164,7 +164,9 @@ def _empty_package() -> SimpleNamespace:
         rendered_atlas_sources={},
         component_registry_preview=(),
         project_brief_preview={},
+        project_brief_record_text="",
         accepted_project_preview={"validation_gate": {"visible_actors": _passing_visible_actors()}},
+        source_launch_readback={},
         project_dashboard_preview={},
         compass_memory_preview={},
         next_steps_preview={},
@@ -234,6 +236,43 @@ def _substantive_project_brief() -> dict[str, object]:
             for index in range(1, 4)
         ],
     }
+
+
+def _substantive_project_brief_record_text() -> str:
+    return """# Permit Readiness Workspace Project Brief
+
+- schema: odylith.greenfield.project_brief.v1
+- origin: greenfield
+- accepted_at: prewrite
+- release: 0.0.1
+- workstreams: 4
+- components: 3
+- diagrams: 4
+
+## Brief
+- outcome: Release 0.0.1 proves one accepted permit path where intake, evidence review, decision rationale, and readiness proof stay connected.
+- principle: Keep every permit state transition tied to source evidence, reviewer ownership, blocked-path proof, and explicit release scope.
+
+## Project Design Board
+- Blueprint section 1: The accepted actor, state change, evidence source, and release boundary.
+- Blueprint section 2: The accepted actor, state change, evidence source, and release boundary.
+- Blueprint section 3: The accepted actor, state change, evidence source, and release boundary.
+- Blueprint section 4: The accepted actor, state change, evidence source, and release boundary.
+
+## Governance Package
+- choose before coding:
+  - Review depth: Keep the first release focused on one governed permit path.
+  - Evidence scope: Preserve source evidence before adding additional routing.
+- customize by saying:
+  - Prioritize reviewer evidence before adding additional notification channels.
+  - Keep the first release bounded to one permit path.
+  - Treat missing evidence as a blocked path requiring explanation.
+- coding readiness gates:
+  - The first path has accepted actors, state changes, and visible result.
+  - The component boundary identifies source files and proof ownership.
+  - The validation plan covers valid input, missing input, and replay.
+  - The excluded scope remains explicit before implementation begins.
+"""
 
 
 def _substantive_workstream_text(title: str) -> str:
@@ -349,6 +388,17 @@ def _substantive_prompt(position: int, label: str) -> dict[str, str]:
 
 def _substantive_package() -> SimpleNamespace:
     project_brief = _substantive_project_brief()
+    source_launch = {
+        "start_workstream_id": "B-001",
+        "implementation_prompt": "Start B-001 from the accepted permit readiness model and prove valid, missing, replay, and source-boundary evidence.",
+        "verification_commands": ["pytest tests/unit/test_permit.py", "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ."],
+        "coding_readiness_gates": [
+            "Semantic contract accepted.",
+            "Release boundary accepted.",
+            "Proof commands identified.",
+            "Excluded scope preserved.",
+        ],
+    }
     proposal = {
         "write_policy": "confirmed_intent_before_confirmed_create",
         "intent": {
@@ -422,7 +472,12 @@ def _substantive_package() -> SimpleNamespace:
             {"component_id": "readiness-proof-publisher", "validation_gate": {"status": "passed"}},
         ),
         project_brief_preview=project_brief,
-        accepted_project_preview={"validation_gate": {"visible_actors": _passing_visible_actors()}},
+        project_brief_record_text=_substantive_project_brief_record_text(),
+        accepted_project_preview={
+            "validation_gate": {"visible_actors": _passing_visible_actors()},
+            "source_launch": source_launch,
+        },
+        source_launch_readback=source_launch,
         project_dashboard_preview={"host_handoff_prompts": [_substantive_prompt(index, label) for index, label in enumerate(
             (
                 "Choose runtime and test harness",
@@ -773,6 +828,42 @@ def test_project_brief_record_count_excludes_runtime_custody_files(tmp_path: Pat
     assert counts.project_brief_records == 0
 
 
+def test_project_brief_record_count_requires_persisted_brief_source(tmp_path: Path) -> None:
+    module = _module()
+    package = _empty_package()
+    package.project_brief_preview = _substantive_project_brief()
+    _write(tmp_path / "odylith/radar/traceability-graph.v1.json", json.dumps({"nodes": [], "workstreams": []}))
+
+    preview_only = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
+    assert preview_only.project_brief_records == 0
+
+    _write(tmp_path / "odylith/runtime/source/project-brief.v1.md", _substantive_project_brief_record_text())
+    persisted = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
+    assert persisted.project_brief_records == 1
+
+
+def test_package_evidence_rejects_preview_only_project_brief() -> None:
+    module = _module()
+    package = _substantive_package()
+    package.project_brief_record_text = ""
+
+    findings = module.package_evidence_findings(package)
+
+    assert any("persisted project brief readback" in finding.message for finding in findings)
+
+
+def test_package_evidence_prefers_accepted_source_launch_readback() -> None:
+    module = _module()
+    package = _substantive_package()
+    package.next_steps_preview = {}
+    package.source_launch_readback = dict(package.accepted_project_preview["source_launch"])
+
+    findings = module.package_evidence_findings(package)
+
+    assert not any("accepted source-launch readback" in finding.message for finding in findings)
+    assert not any("operator next steps" in finding.message for finding in findings)
+
+
 def test_domain_readback_excludes_accepted_project_source_launch_runtime_text() -> None:
     module = _module()
     package = _empty_package()
@@ -1009,7 +1100,7 @@ def test_quality_verdict_rejects_count_only_package_even_when_lenses_are_stubbed
     assert verdict.scores["governance_depth"] == 0
     assert verdict.scores["operator_usefulness"] == 0
     assert verdict.scores["implementation_prompts"] == 0
-    assert any("independent package evidence missing project brief readback" in issue for issue in verdict.issues)
+    assert any("independent package evidence missing persisted project brief readback" in issue for issue in verdict.issues)
     assert any("independent Radar readback has only 0 workstream" in issue for issue in verdict.issues)
 
 

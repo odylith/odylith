@@ -405,8 +405,7 @@ def _carry_subject_across_parts(values: list[str]) -> list[str]:
 
 
 def _result_object_step(value: str) -> str:
-    text = _compact_text(value).strip(" .")
-    return text[:1].upper() + text[1:] if text else ""
+    return clean_markdown_sentence(value).rstrip(".")
 
 
 def _append_carried_object_fragment(previous: str, fragment: str, *, has_connector: bool) -> str:

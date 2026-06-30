@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Tightened greenfield domain-custody proof: runtime helpers no longer hardcode historical example-domain nouns, the leak guard forbids them in protected source custody, component kind classification preserves accepted internal ownership, focused tests passed, and rebuilt dist proof remains pending.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +4 more
 - **2026-06-29 · Implementation:** Tightened greenfield auto-rescue custody so unsupported semantic roots no longer emit no-op PatchSet operations; focused post-confirm proof passed 97 tests.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +2 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Source-fixed CB-209 terminal sequence-label custody: terminal flowchart labels fall back to first-path action clauses when result-object compaction drops distinctive tail terms; exact indigenous-language prompt replay now writes governed records in about 20s with Record learner progress evidence, and temp cleanup succeeded.
   - Scope: B-142
   - Evidence: src/odylith/runtime/common/mermaid_text.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py +2 more
-- **2026-06-29 · Implementation:** Fresh custom installed greenfield variance reopened CB-209; source fix split actor path-role custody, preserved title-compound user roles, trimmed preposition/action-led actor fragments, moved non-goal derivation to its own owner, and left rebuilt installed matrix proof pending.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -126,6 +126,20 @@ This section captures synchronized requirement and contract signals derived from
   findings. Fresh local release dist `odylith-local-release-0.1.15-14f5102a`
   then rebuilt from this committed checkpoint and passed the same 49-term
   platform domain-leakage build gate.
+
+- 2026-06-30: Tightened source-level domain-custody enforcement for generic greenfield helpers. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  The leak guard now forbids historical example-domain nouns inside protected
+  platform custody, and the runtime visible-result/backlog helpers no longer
+  depend on those nouns as generic semantic hints. The same checkpoint narrowed
+  component-kind custody so adjacent external dependency terms cannot turn an
+  accepted internal system into an adapter unless the system itself declares an
+  adapter/import/integration boundary, and moved sequence-step capitalization to
+  the shared greenfield text owner. Focused proof passed the 52-term platform
+  leakage guard, py_compile for touched modules, and 78 greenfield/matrix/text
+  ownership tests. A fresh 12-domain installed variance proof against the prior
+  dist passed 12/12 with hard 10/10 scores, zero issues, browser proof, max
+  create time 28.819s, and clean temp cleanup; rebuilt shipped-custody proof
+  remains required for the next dist.
 
 - 2026-06-29: Source-fixed workstream-title preservation constraint custody after focused reviewer proof found the runtime quality-repair suite red. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   `greenfield_confirmed_backlog_actions.py` now reattaches useful

@@ -1024,6 +1024,21 @@
   variance run against the same committed dist passed 10/10 with hard 10/10
   scores, zero issues, browser proof, complete governed records, max standard
   create time 29.398s, and clean temp cleanup.
+  Follow-up domain-custody audit on 2026-06-30 found the strengthened release
+  guard still missed one source-level risk: generic runtime helpers carried
+  example-domain nouns as visible-result hints. The source fix removed those
+  nouns from runtime decision lists, promoted them into historical leak-guard
+  sentinels so protected source custody fails if they reappear, and kept fixture
+  usage confined to tests and release-proof cases. The same pass fixed a generic
+  component-kind ownership bug where external storage/provider vocabulary could
+  demote an accepted internal evidence-capture system to an adapter, and routed
+  sequence-step capitalization through the shared greenfield text owner instead
+  of a local helper. Proof passed the 52-term platform domain-leakage guard,
+  py_compile for the touched modules, and 78 focused greenfield/matrix/component
+  tests. A fresh 12-domain installed variance proof against the prior dist still
+  passed 12/12 with hard 10/10 scores, zero issues, browser proof, max create
+  time 28.819s, and clean temp cleanup; a rebuilt dist from this source
+  checkpoint remains required before shipped-custody closure.
 
 - Related Incidents/Bugs: CB-208
 

@@ -97,15 +97,21 @@ def collect_rendered_package_artifacts(package: Any) -> list[RenderedArtifact]:
             )
         )
 
-    project_brief = _preview_text(getattr(package, "project_brief_preview", None))
+    project_brief = normalize_string(getattr(package, "project_brief_record_text", ""))
+    project_brief_name = "project-brief.v1.md"
+    project_brief_path = "prewrite_package.project_brief_readback"
+    if not project_brief:
+        project_brief = _preview_text(getattr(package, "project_brief_preview", None))
+        project_brief_name = "project_brief"
+        project_brief_path = "prewrite_package.project_brief_preview"
     if project_brief:
         artifacts.append(
             RenderedArtifact(
-                "Project brief preview",
-                "project_brief",
+                "Project brief",
+                project_brief_name,
                 project_brief,
                 "project_brief",
-                "prewrite_package.project_brief_preview",
+                project_brief_path,
             )
         )
 
@@ -123,6 +129,8 @@ def collect_rendered_package_artifacts(package: Any) -> list[RenderedArtifact]:
 
     accepted_project = package_mapping(getattr(package, "accepted_project_preview", None))
     source_launch = package_mapping(accepted_project.get("source_launch"))
+    if not source_launch:
+        source_launch = package_mapping(getattr(package, "source_launch_readback", None))
     source_launch_prompt = normalize_string(source_launch.get("implementation_prompt"))
     if source_launch_prompt:
         artifacts.append(

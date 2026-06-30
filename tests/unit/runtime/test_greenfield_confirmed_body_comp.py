@@ -304,7 +304,7 @@ def test_confirmed_body_composition_tracker_removes_generated_text_residue(tmp_p
     assert "PeptideTrack Personal Peptide" not in encoded
     assert "Peptide Reference Catalog (descriptions" not in encoded
     assert "Individual User" in encoded
-    assert "the usage-linked metric change view for that protocol" in encoded
+    assert "the tracked metric trend view" in encoded
     assert greenfield_quality_issues(proposal) == []
     assert component_spec_preflight_issues(proposal) == []
     rendered_specs = "\n".join(_rendered_component_specs(proposal))
@@ -405,7 +405,7 @@ def test_confirmed_solar_optimizer_preserves_plan_outcome_without_meta_proof_dri
     assert "capture the information needed to battery" not in payload_encoded
     assert "That single path" not in payload_encoded
     assert "whole product proven end to end" not in payload_encoded
-    assert "the user can connect their solar inverter and battery and receive today's plan" in payload_encoded
+    assert "a homeowner can connect their solar inverter and battery and receive today's plan" in payload_encoded
 
     decision = run_greenfield_tribunal(proposal, release_selector="0.0.1")
     assert decision.passed

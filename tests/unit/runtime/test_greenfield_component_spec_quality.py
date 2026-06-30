@@ -193,6 +193,12 @@ def test_confirmed_components_helper_shape_stays_below_soft_limit() -> None:
         label_slug="permit-review",
         internal_systems=["External-provider adapter - imports permit status from city records."],
     )[0]["kind"] == "adapter"
+    assert confirmed_components(
+        label="Review Evidence",
+        label_slug="review-evidence",
+        internal_systems=["Attachment evidence capture - owns accepted evidence, blocked states, and review handoff."],
+        external_systems=["Attachment storage provider."],
+    )[0]["kind"] == "service"
 
 
 def test_component_contract_artifact_cleaning_stays_in_text_owner() -> None:

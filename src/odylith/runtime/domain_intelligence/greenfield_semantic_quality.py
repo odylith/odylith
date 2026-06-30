@@ -370,7 +370,7 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"connector-clipped security subject leaked at {location}")
         if re.search(r"\bservice\s+boundary\s+for\s+(?:combines?|evaluates?)\b", lowered):
             issues.append(f"action clause leaked into registry boundary summary at {location}")
-        if re.search(r"\bmetrics?\s+changed\s+usage\s+protocol\b", lowered):
+        if re.search(r"\bmetrics?\s+changed\s+usage\b", lowered):
             issues.append(f"malformed metric-change artifact phrase leaked at {location}")
         if re.search(r"\bkeeps?\s+the\s+accepted\s+path\s+step\s+reviewable\b", lowered):
             issues.append(f"mechanical path-review scaffold leaked at {location}")

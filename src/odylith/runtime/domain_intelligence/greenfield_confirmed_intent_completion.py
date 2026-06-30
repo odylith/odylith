@@ -502,8 +502,8 @@ def _story_problem_sentence(value: str) -> str:
 
 def _decision_problem_phrase(outcome_text: str) -> str:
     outcome = _inline_result_phrase(_clean(outcome_text).rstrip(" .") or "the product result")
-    if outcome.casefold().startswith("the usage-linked metric change view"):
-        return "act on the metric-change view"
+    if outcome.casefold().startswith("the tracked metric trend view"):
+        return "act on the tracked metric trend view"
     return f"decide the next step from {outcome}"
 
 
@@ -551,7 +551,6 @@ def _sequence_has_generic_non_goals(values: Sequence[str]) -> bool:
         re.search(r"\bstays\s+limited\s+to\s+the\s+accepted\b", text, re.I)
         or re.search(r"\bbroader\s+users,\s+integrations,\s+datasets,\s+edge\s+cases\b", text, re.I)
         or re.search(r"\bseparately\s+accepted\s+proof\s+boundary\b", text, re.I)
-        or "personalized automation" in lowered
     )
 
 
@@ -659,9 +658,9 @@ def _visible_outcome_phrase(first_path: str, *, proof: str = "") -> str:
     if re.match(r"^why\b", text, flags=re.I):
         text = f"the explanation for {text}"
     if not re.search(
-        r"\b(?:answer|appointment|booking|card|confirmation|consequence|decision|entry|explanation|history|"
+        r"\b(?:answer|card|confirmation|consequence|decision|entry|explanation|history|"
         r"metrics?|outcome|plan|readout|recommendation|reflection|report|result|schedule|session|status|summary|"
-        r"timeline|trend|view|workout)\b",
+        r"timeline|trend|view)\b",
         text,
         re.I,
     ):

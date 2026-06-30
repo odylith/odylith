@@ -67,7 +67,6 @@ _VISIBLE_RESULT_OBJECT_HINTS = {
     "view",
 }
 _VISIBLE_SEE_RESULT_HINTS = {
-    "appointment",
     "card",
     "consequence",
     "date",
