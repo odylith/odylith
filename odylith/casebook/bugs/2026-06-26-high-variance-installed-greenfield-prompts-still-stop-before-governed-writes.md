@@ -1461,6 +1461,34 @@
   and confidence are present. Focused semantic executor, structured-rescue,
   patch-payload, natural-rescue proof-scope, and no-rendered-repair contract
   tests passed; rebuilt installed proof remains pending for this checkpoint.
+  Rebuilt installed proof against committed dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-de17cdda`
+  falsified release readiness. The natural installed structured-rescue leg now
+  passes in 62.823s with `structured_rescue_semantic_patch`, committed governed
+  records, complete Radar/Registry/Atlas/project brief/prompt/traceability
+  evidence, and clean findings, so the previous idempotent semantic-ledger
+  failure is fixed in the package. The maintained standard matrix still failed
+  4/13 cases and scored 6.923/10 overall because `flood shelter intake` and
+  `apprenticeship credential readiness` stopped on `accepted-project memory
+  preview leaked adjacent duplicate word prose`, while `semiconductor lab
+  custody` and `package supply chain exception desk` stopped on `project
+  dashboard preview leaked adjacent duplicate word prose`. Each failed case
+  activated rescue, emitted a repairable `generated_copy_quality` `plan_patch`
+  request owned by `artifact_plan_projector`, but had zero Tribunal plan
+  operations, zero repaired issue codes, failed validation, and wrote no
+  governed records. The failed create times were 20.508s, 21.842s, 22.004s,
+  and 22.759s; the nine passing standard cases remained 10/10 with complete
+  records and max passing create time 30.270s. Platform domain leakage passed
+  across 178 terms, temp cleanup passed with no remaining roots, browser proof
+  passed only for the nine committed cases and was skipped for the four failed
+  creates. The mechanism-level learning is that removing rendered-copy mutation
+  was architecturally correct, but the replacement `ArtifactPlanIR` repair path
+  is not implemented deeply enough: a typed `plan_patch` envelope without a
+  real projection-fact patch or host-planned structured artifact-plan repair is
+  equivalent to giving up before the governed write. Do not reintroduce
+  artifact-draft string cleanup; fix the artifact-plan repair substrate or
+  projection facts so generated-copy quality failures can be repaired before
+  final commit.
 
 - Related Incidents/Bugs: CB-208
 

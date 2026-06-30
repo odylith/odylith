@@ -1624,6 +1624,21 @@ This section captures synchronized requirement and contract signals derived from
   cleanup. Synthetic typed-probe rescue wiring passed in 33.402s under the
   90-second rescue tier; natural host-model semantic rescue quality remains
   unproven and cannot be claimed from this checkpoint.
+- Current release-risk update: dist `odylith-local-release-0.1.15-de17cdda`
+  proves the installed natural structured-rescue leg now passes in 62.823s
+  under the 90-second rescue tier with committed governed records and
+  `structured_rescue_semantic_patch`, but the full installed release matrix is
+  not release-ready. Four of thirteen standard cases fail before governed write
+  on generated-copy quality in accepted-project or project-dashboard previews.
+  The manifests correctly route those findings as `ArtifactPlanIR` `plan_patch`
+  requests owned by `artifact_plan_projector`, but no artifact-plan repair is
+  applied and no Tribunal patch operation is planned. Domain Intelligence must
+  treat this as an open component contract gap: final generated-copy defects may
+  be detected in rendered preview packages, but the repair target must be a
+  sanctioned semantic or artifact-plan projection fact before rerender, not a
+  mutable rendered draft. Release claims are capped until the maintained matrix
+  passes 13/13 standard cases plus synthetic and natural rescue proof from a
+  rebuilt installed dist.
 
 ## Research Basis
 

@@ -1145,6 +1145,23 @@
   passed 23 targeted tests after adding idempotent host-adjudication ledger
   support. Do not reintroduce rendered-copy mutation as a shortcut for premium
   artifact quality.
+  Fresh installed matrix proof against committed dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-de17cdda`
+  shows the new boundary is directionally right but incomplete. The package no
+  longer mutates rendered drafts, natural structured semantic rescue now passes
+  in 62.823s, and cleanup/leakage proof passes, but 4/13 standard cases fail
+  because generated-copy findings route to `plan_patch` without an executable
+  artifact-plan repair. The failing manifests all contain one repairable
+  `generated_copy_quality` issue, `repair_owner=artifact_plan_projector`,
+  `target_layer=artifact_plan`, and an addressed preview path, but no Tribunal
+  plan operation and no repaired issue code. This is the precise residual debt:
+  typed issue routing exists, yet the semantic/artifact-plan patch substrate
+  cannot currently change the projection fact that produced the bad preview.
+  Any next fix that restores `safe_package_repair`, mutates
+  `ArtifactDraftSet`, or stacks phrase-specific regex cleanup repeats a failed
+  mechanism. The next acceptable fix must repair sanctioned `ArtifactPlanIR`
+  facts or invoke schema-constrained host reasoning to produce a typed
+  artifact-plan patch, then rerender and revalidate.
 
 - Related Incidents/Bugs: CB-207
 
