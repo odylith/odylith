@@ -25,6 +25,7 @@
   "spec_ref": "odylith/registry/source/components/security/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 692,
@@ -36,15 +37,16 @@
         "security"
       ],
       "meaningful": false,
-      "summary": "Greenfield security-disclosure source fixes passed: canonical first-path object-list tail custody plus Project Brief clipped-readiness repair; focused proof passed 23 tests, slop Project Brief proof passed 4 tests, full live simulation regression passed 15 tests in 200.98s, and source-local create completed under 23s with temp cleanup.",
+      "summary": "Timeline evidence linked this component to governed work.",
       "ts_iso": "2026-06-29T03:21:26-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 3,
       "artifacts": [
-        "github/workflows/release.yml",
-        "odylith/install.json",
-        "odylith/runtime/source/product-version.v1.json"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
       "event_index": 467,
@@ -66,17 +68,18 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
       "ts_iso": "2026-05-19T16:16:54-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 5,
       "artifacts": [
-        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-        "src/odylith/cli.py",
-        "src/odylith/install/manager.py",
-        "src/odylith/install/runtime.py",
-        "src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3",
+        "tracked_artifact_4",
+        "tracked_artifact_5"
       ],
       "confidence": "high",
       "event_index": 456,
@@ -113,18 +116,19 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in dentoai-orion; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
       "ts_iso": "2026-05-03T10:46:04-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
-        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
-        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
-        "src/odylith/install/runtime.py",
-        "src/odylith/runtime/intervention_engine/prompt_signal_runtime.py"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3",
+        "tracked_artifact_4"
       ],
       "confidence": "high",
       "event_index": 434,
@@ -160,18 +164,19 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
       "ts_iso": "2026-05-02T16:21:02-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
-        "src/odylith/install/lock_hygiene.py",
-        "src/odylith/install/manager.py",
-        "src/odylith/install/release_assets.py",
-        "src/odylith/install/upgrade_reporting.py"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3",
+        "tracked_artifact_4"
       ],
       "confidence": "high",
       "event_index": 379,
@@ -193,18 +198,19 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "v0.1.12 hardening: extracted upgrade reporting from CLI into install-owned helpers, added recursive lock hygiene with doctor repair, improved Sigstore warning summaries, and compacted 13715 stale zero-byte lock placeholders in this product repo.",
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
       "ts_iso": "2026-04-27T15:19:58-07:00",
       "workstreams": [
         "B-030"
       ]
     },
     {
+      "artifact_count": 4,
       "artifacts": [
-        "src/odylith/cli.py",
-        "src/odylith/install/manager.py",
-        "src/odylith/install/release_assets.py",
-        "src/odylith/runtime/governance/workstream_inference.py"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3",
+        "tracked_artifact_4"
       ],
       "confidence": "high",
       "event_index": 378,
@@ -222,15 +228,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "v0.1.12 / CB-133: hardened upgrade lifecycle UX with exact dry-run target metadata, idempotent current-target planning, upgrade JSON/report persistence, clearer installed-local version wording, doctor trust/upgrade observability, OS metadata dirty-path filtering, and rollback scope closeout.",
+      "summary": "Implementation evidence linked this component to governed work. 4 tracked artifact references retained.",
       "ts_iso": "2026-04-27T14:24:28-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 3,
       "artifacts": [
-        "github/workflows/release.yml",
-        "odylith/install.json",
-        "odylith/runtime/source/product-version.v1.json"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
       "event_index": 287,
@@ -252,13 +259,14 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
       "ts_iso": "2026-04-20T08:43:11-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 1,
       "artifacts": [
-        "AGENTS.md"
+        "tracked_artifact_1"
       ],
       "confidence": "high",
       "event_index": 275,
@@ -302,7 +310,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has CB-122 in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
         "B-001",
@@ -426,10 +434,11 @@
       ]
     },
     {
+      "artifact_count": 3,
       "artifacts": [
-        "github/workflows/release.yml",
-        "odylith/install.json",
-        "odylith/runtime/source/product-version.v1.json"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
       "event_index": 49,
@@ -451,15 +460,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
       "ts_iso": "2026-04-05T22:24:37-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 3,
       "artifacts": [
-        "github/workflows/release.yml",
-        "odylith/install.json",
-        "odylith/runtime/source/product-version.v1.json"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
       "event_index": 44,
@@ -481,15 +491,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
       "ts_iso": "2026-04-05T20:35:50-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 3,
       "artifacts": [
-        "github/workflows/release.yml",
-        "odylith/install.json",
-        "odylith/runtime/source/product-version.v1.json"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
       "event_index": 41,
@@ -511,15 +522,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
       "ts_iso": "2026-04-03T22:07:58-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 3,
       "artifacts": [
-        "github/workflows/release.yml",
-        "odylith/install.json",
-        "odylith/runtime/source/product-version.v1.json"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
       "event_index": 40,
@@ -541,15 +553,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
       "ts_iso": "2026-04-03T21:55:34-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 3,
       "artifacts": [
-        "github/workflows/release.yml",
-        "odylith/install.json",
-        "odylith/runtime/source/product-version.v1.json"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
       "event_index": 31,
@@ -569,15 +582,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
       "ts_iso": "2026-03-27T16:19:09-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 3,
       "artifacts": [
-        "github/workflows/release.yml",
-        "odylith/install.json",
-        "odylith/runtime/source/product-version.v1.json"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
       "event_index": 30,
@@ -597,15 +611,16 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
       "ts_iso": "2026-03-27T16:12:16-07:00",
       "workstreams": []
     },
     {
+      "artifact_count": 3,
       "artifacts": [
-        "github/workflows/release.yml",
-        "odylith/install.json",
-        "odylith/runtime/source/product-version.v1.json"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
       "event_index": 29,
@@ -625,7 +640,7 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
       "ts_iso": "2026-03-27T16:07:04-07:00",
       "workstreams": []
     }

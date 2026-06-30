@@ -45,6 +45,7 @@ SOURCE_SCAN_PATHS = (
     "docs",
     "odylith/agents-guidelines",
     "odylith/skills",
+    "odylith/registry/source/components",
     ".codex",
     ".agents",
     ".claude",

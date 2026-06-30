@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Removed platform-facing retained-scenario vocabulary from current Registry specs and Atlas box-explanation runtime custody; leakage guard and strict platform-surface scan are clean outside intentional fixtures/evidence.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/atlas/CURRENT_SPEC.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
 - **2026-06-29 · Implementation:** Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Fixed greenfield post-confirm artifact-draft repair routing: project-dashboard preview leaves are exact repair targets and indexed preview paths now reach scalar leaves; focused tests, Casebook validation, leakage guard, four failed-case installed replay, and full 13-case installed matrix passed with max standard create 29.244s.
   - Scope: B-142
   - Evidence: Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json, src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py +2 more
-- **2026-06-29 · Implementation:** Removed broad rendered-preview repair authority from greenfield post-confirm package cleanup; exact source-owned artifact-draft leaf paths now gate safe mechanical repair, Compass memory leaves are covered, and legacy broad generated-copy findings no longer create safe repair operations. Focused proof passed 41 tests and widened post-confirm proof passed 76 tests in 50.17s.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +5 more
 <!-- registry-requirements:end -->
 
 ## Feature History

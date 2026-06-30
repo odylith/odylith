@@ -373,6 +373,9 @@ artifacts to that header.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Removed platform-facing retained-scenario vocabulary from current Registry specs and Atlas box-explanation runtime custody; leakage guard and strict platform-surface scan are clean outside intentional fixtures/evidence.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/atlas/CURRENT_SPEC.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
 - **2026-03-23 · Decision:** Successor created: B-279 reopens B-278 for active plan binding
   - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
 - **2026-03-20 · Decision:** Successor created: B-258 reopens B-256 for active plan binding

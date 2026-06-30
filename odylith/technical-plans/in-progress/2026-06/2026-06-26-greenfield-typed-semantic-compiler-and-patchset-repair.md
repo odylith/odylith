@@ -66,6 +66,22 @@ vocabulary, or degraded packages.
 
 ## Latest Simulation Evidence
 
+- 2026-06-30 source leakage-boundary checkpoint: a strict audit found the
+  installable 09e520b3 package clean, but Registry component forensics still
+  retained raw high-variance simulation phrases from Compass timeline
+  summaries. The platform fix keeps raw repro language in Casebook and Compass
+  evidence while making Registry `FORENSICS.v1.json` protected component
+  custody: sidecar rows now store generic event summaries, component IDs,
+  workstream scope, confidence, meaningfulness, and artifact counts instead of
+  raw event prose or artifact paths. The platform leakage guard now scans
+  `odylith/registry/source/components` alongside source, guidance, release
+  scripts, and installable dist custody. Source-local proof passed py_compile,
+  `git diff --check`, 68 focused leakage/Registry/render/delivery/bundle
+  tests, the strengthened 285-term leakage guard, an exact Registry component
+  scan with zero findings, and D-043 Atlas refresh with 46 fresh / 0 stale
+  diagrams. This is not installed-release proof until the committed-head dist
+  is rebuilt and the installed matrix is rerun.
+
 - 2026-06-30 precommit release-dist proof:
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-1ef33083-precommit`
   rebuilt from the current working tree after governed readback scoring,

@@ -19,8 +19,9 @@
   "spec_ref": "odylith/registry/source/components/governed-harness/CURRENT_SPEC.md",
   "timeline": [
     {
+      "artifact_count": 1,
       "artifacts": [
-        "AGENTS.md"
+        "tracked_artifact_1"
       ],
       "confidence": "high",
       "event_index": 275,
@@ -64,7 +65,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Tribunal already has CB-122 in the decision path.",
+      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
         "B-001",

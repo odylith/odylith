@@ -308,6 +308,12 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Decomposed Atlas diagram-box tracked-object phrase selection into a dedicated term owner, pinned generic-verb fallback, and kept the touched explanation renderer under the source-size pressure line.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/atlas/CURRENT_SPEC.md +3 more
+- **2026-06-30 · Implementation:** Removed platform-facing retained-scenario vocabulary from current Registry specs and Atlas box-explanation runtime custody; leakage guard and strict platform-surface scan are clean outside intentional fixtures/evidence.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/atlas/CURRENT_SPEC.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
 - **2026-06-28 · Implementation:** Fixed Atlas workstream navigation visibility for backlog-derived diagram ownership: D-045 now remains owned by B-142 in diagram_related_workstreams after render attachment, with Atlas source-local check-only proof at 46 fresh / 0 stale.
   - Scope: B-142
   - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +3 more

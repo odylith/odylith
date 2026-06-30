@@ -526,6 +526,12 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Registry component forensics now project generic event summaries and neutral artifact counts; the platform leakage guard scans Registry component custody, while raw repro language remains limited to evidence surfaces.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +2 more
+- **2026-06-30 · Implementation:** Removed platform-facing retained-scenario vocabulary from current Registry specs and Atlas box-explanation runtime custody; leakage guard and strict platform-surface scan are clean outside intentional fixtures/evidence.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/atlas/CURRENT_SPEC.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
 - **2026-06-29 · Decision:** Greenfield release proof must score Project brief and implementation prompts from persisted generated shell payloads and browser surfaces, not regenerated proof-harness payloads.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md
@@ -538,12 +544,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Tightened greenfield domain-custody proof: runtime helpers no longer hardcode historical example-domain nouns, the leak guard forbids them in protected source custody, component kind classification preserves accepted internal ownership, focused tests passed, and rebuilt dist proof remains pending.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +4 more
-- **2026-06-29 · Implementation:** Strengthened greenfield leakage proof from selected required-term mining to explicit per-case leakage terms; maintained matrix now scans 44 terms with zero missing cases and zero protected-custody findings.
-  - Scope: B-142
-  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md
-- **2026-06-29 · Implementation:** Hardened greenfield matrix domain-leakage custody so selected custom simulation terms scan protected source, shipped guidance, and wheel custody before temp repos are created.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md
 <!-- registry-requirements:end -->
 
 ## Feature History

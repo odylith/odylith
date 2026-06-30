@@ -32,6 +32,8 @@
 
 - Environment Update: 2026-06-30 fresh non-reused variance proof against /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913 persisted at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913/greenfield-post-confirm-fresh-variance-20260630-a258b913.v1.json. Ten new domains passed with hard 10/10 scores, zero issues, complete governed records, browser proof, max create time 29.398s, and clean temp cleanup: maternal transport escalation, municipal tree permit appeals, fusion divertor maintenance window, school accommodation evidence circle, vaccine cold chain release, interactive museum loan condition, rail corridor vegetation outage, model risk validation waiver, robot lockout safety audit, and API deprecation migration cockpit.
 
+- Environment Update: 2026-06-30 committed checkpoint 09e520b3 rebuilt local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-09e520b3. Maintained installed matrix proof persisted at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-09e520b3/greenfield-post-confirm-matrix.v1.json: 13/13 standard cases passed with hard 10/10 scores, zero quality/browser/leakage issues, complete governed records, browser proof, max standard create time 28.918s, average create time 25.815s, generated-term leakage proof over 213 readback terms, and synthetic typed-probe rescue wiring passed in 34.547s. Natural rescue-quality proof remains unproven and must not be claimed from that synthetic wiring proof.
+
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
 - Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts. The 3d13f434 installed matrix reopened the release gate again: 12 of 13 cases passed with hard 10/10 scores, browser proof, and complete records, but sparse disclosure confirmation scored 0/10 after governed writes because it produced only two Registry component specs, carried only three of four required domain anchors, and failed architect, engineer, and domain-expert matrix lenses.
@@ -88,6 +90,17 @@
   Root cause: Project Brief summary composition punctuated a `short_summary`
   comma-list fragment as if it were a complete sentence, and the existing
   package/public-copy gates did not catch this persisted readback defect.
+  Registry-forensics leakage root cause on 2026-06-30: the platform leakage
+  guard correctly protected source, shipped guidance, wheels, and runtime
+  archives, but it still excluded Registry component forensics as generic
+  governance evidence. `sync_component_spec_requirements` then mirrored raw
+  Compass timeline summaries and artifact paths into component
+  `FORENSICS.v1.json` sidecars, allowing high-variance simulation vocabulary
+  to persist inside platform Registry custody even though the installable dist
+  stayed clean. Failed mechanism: treating all governance evidence as the same
+  raw repro lane. Casebook and Compass streams may retain concrete repro
+  evidence, but Registry component forensics are platform component custody and
+  must project generic event facts.
 
 - Solution: Fix Odylith generally in semantic/projection ownership rather than domain-specific terms or rendered-string repair. Confirmed-intent recovery now localizes role-only actors to the project, keeps object modifiers out of actor labels, treats state-review predicates as review targets, rejects passive object-state subjects as human actors, and uses article-safe actor references. Outcome-action projection now converts system-generated results into modal-safe `review` or `see` actions before `user can` prose is composed. The role-can normalizer now preserves interrogative/modal clauses such as `what can be released`. First-path visible-result extraction now respects token boundaries inside hyphenated noun compounds, and semantic proof-control detection no longer rejects first-path `release readiness for ...` noun results while still rejecting control claims such as `release readiness requires ...`. Artifact-plan PatchSet row repair now refuses untargeted row mutations. A shared Tribunal lens contract now lets PM, architect, engineer, and domain-expert checks emit source-map target paths, semantic-node IDs, projection IDs, repairability, and repair owner at judgment time instead of reconstructing repair custody from check-name prose. The structured reasoning adapter now supplies an explicit live-proven Codex model for general structured repair when config is blank, maps the legacy Spark alias to the live CLI model, avoids the unsupported Codex ladder rung, and keeps user-config bypass reproducible. Tribunal patch planning now uses strict structured-output schemas for decision ledger, proof deltas, and replacement facts, then materializes the typed fact envelope back into caller-owned semantic or artifact-plan replacements after custody validation.
   Current Source Fix: Source-launch prompt composition now emits embedded prompt facts as fragments instead of sentences, strips dangling subordinate tails, uses generic material-term containment plus semantic overlap scoring to suppress outcomes that merely restate the action object, and routes proof fallback through the same cleaned first-path projection instead of copying raw confirmed text. Operator next-step preview trimming now detects incomplete subordinate tails near the end of clipped fragments, removing tails like `when required information` while preserving complete clauses such as `when required information is missing`. Release proof now runs installed rescue smoke by default from the canonical matrix wrapper. The smoke uses the packaged CLI in `--repair-tier auto`, injects one maintainer-only typed post-confirm finding through an exact internal release-proof token, requires the engine to auto-escalate to rescue, applies a typed semantic PatchSet marker, writes governed records, and fails unless the final manifest records `post_confirm_rescue_probe` as repaired under the 90s budget. The matrix harness now keeps normal standard cases on a clean environment and applies the internal probe environment only to the rescue-smoke create subprocess, with unit coverage for both sides of the boundary.
@@ -114,6 +127,13 @@
   therefore flagged valid proof evidence as domain leakage. The guard now treats
   matrix proof JSON in the dist as evidence while still scanning the built wheel
   and text install payloads.
+  Registry forensics custody fix on 2026-06-30: component forensics no longer
+  store raw Compass summary prose or raw artifact paths. They preserve event
+  index, timestamp, kind, component IDs, workstream scope, confidence,
+  meaningfulness, and artifact counts while rendering generic event summaries
+  and neutral artifact reference labels. The platform leakage guard now scans
+  `odylith/registry/source/components` as protected custody, so future raw
+  project-domain phrases in component specs or forensics fail release proof.
 
 - Rollback/Forward Fix: Forward fix only
 
@@ -255,6 +275,16 @@
   were zero, all PM/architect/engineer/domain-expert lenses passed, temp
   matrix roots were clean, and the synthetic wiring-only rescue smoke passed
   in 27.399s. Natural rescue quality remains unclaimed.
+  Current source leakage-boundary proof on 2026-06-30: focused leakage,
+  Registry spec-sync, Registry render, delivery-intelligence, and public-bundle
+  tests passed 68 tests in 28.45s; py_compile passed for the touched scanner
+  and Registry sync owner; `git diff --check` passed; the strengthened
+  platform leakage guard passed across 285 distinctive fixture terms; an exact
+  scan of `odylith/registry/source/components` returned zero findings; exact
+  text search found no retained historical simulation phrases in Registry
+  component custody; D-043 Atlas refreshed with 46 fresh / 0 stale diagrams.
+  This proves source-local leakage custody only until a new committed-head dist
+  is rebuilt and rerun through the installed matrix.
 
 - Prevention: Keep high-variance installed simulations in release proof; require failure stderr/blocker retention for any matrix failure before cleanup; do not rely on standard-domain passes alone. Release proof must include the installed standard matrix and the installed CLI auto-rescue smoke by default; `RESCUE_SMOKE=0` is local debugging only and cannot support release-readiness claims. The shared release proof function itself must invoke the matrix, persist the matrix JSON proof artifact, and fail closed when standard cases, expert lenses, strict domain-anchor coverage, governed writes, rendered artifact checks, cleanup, or the wiring-only rescue smoke fail. Standalone matrix runs must persist the same proof payload instead of becoming stdout-only evidence. Expert-lens failures must carry typed Tribunal lens evidence at the point of judgment: source-map target, semantic node, projection, repairability, and owner. Failed mechanisms recorded here must not be repeated: broad proof-control rejection of product-result noun phrases, action extraction inside hyphenated noun compounds, passive object-state tails promoted to actors, rendered-string cleanup after Radar files are already written, blank Codex structured model inheritance under ignored user config, unsupported automatic model ladder rungs, model-facing patch-plan schema holes, raw first-path fallback after cleaned projection, source-only rescue proof substituted for built-dist rescue evidence, release-lane smoke substituted for installed matrix proof, opt-in rescue smoke silently under-proving the default matrix, synthetic installed-engine probes substituted for packaged CLI auto-rescue, semantic/plan repairs omitted from manifest repaired issue codes, or internal rescue-probe environment wired to standard matrix cases while rescue smoke runs without it.
   Updated prevention on 2026-06-28: release proof must include Casebook in the

@@ -437,8 +437,66 @@ def _forensics_payload(
             "developer_docs": list(traceability.get("developer_docs", [])),
             "code_references": list(traceability.get("code_references", [])),
         },
-        "timeline": [row.as_dict() for row in timeline],
+        "timeline": [_forensics_timeline_row(row) for row in timeline],
     }
+
+
+def _forensics_timeline_row(event: component_registry.MappedEvent) -> dict[str, object]:
+    artifacts = _unique_values(event.artifacts)
+    workstreams = _unique_values(event.workstreams)
+    return {
+        "event_index": event.event_index,
+        "ts_iso": event.ts_iso,
+        "kind": event.kind,
+        "summary": _forensics_summary(event=event, artifact_count=len(artifacts), workstream_count=len(workstreams)),
+        "workstreams": workstreams,
+        "artifact_count": len(artifacts),
+        "artifacts": [f"tracked_artifact_{index}" for index in range(1, len(artifacts) + 1)],
+        "explicit_components": _unique_values(event.explicit_components),
+        "mapped_components": _unique_values(event.mapped_components),
+        "confidence": event.confidence,
+        "meaningful": event.meaningful,
+    }
+
+
+def _forensics_summary(
+    *,
+    event: component_registry.MappedEvent,
+    artifact_count: int,
+    workstream_count: int,
+) -> str:
+    kind = _normalize_space(event.kind).lower() or "timeline"
+    if kind == "workspace_activity":
+        base = "Workspace activity touched tracked component evidence."
+    elif kind == "decision":
+        base = "Decision evidence linked this component to governed work."
+    elif kind == "implementation":
+        base = "Implementation evidence linked this component to governed work."
+    elif kind == "statement":
+        base = "Timeline evidence linked this component to governed work."
+    else:
+        base = "Component evidence linked this component to governed work."
+    qualifiers: list[str] = []
+    if workstream_count:
+        qualifiers.append("workstream scope preserved")
+    if artifact_count:
+        plural = "s" if artifact_count != 1 else ""
+        qualifiers.append(f"{artifact_count} tracked artifact reference{plural} retained")
+    if not qualifiers:
+        return base
+    return f"{base} {'; '.join(qualifiers)}."
+
+
+def _unique_values(values: Sequence[str]) -> list[str]:
+    rows: list[str] = []
+    seen: set[str] = set()
+    for raw in values:
+        value = str(raw or "").strip()
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        rows.append(value)
+    return rows
 
 
 def _write_json_if_changed(*, path: Path, payload: dict[str, object]) -> bool:

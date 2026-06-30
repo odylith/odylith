@@ -73,13 +73,14 @@ flowchart LR
       matrix_scorer["Hardened matrix scorer<br/>grounded anchor preflight,<br/>persisted governed readback,<br/>public artifact readback,<br/>Project shell payload readback,<br/>browser proof as premium blocker,<br/>runtime custody excluded"]
       release_matrix["Installed release proof<br/>13-case standard matrix,<br/>Casebook surface included,<br/>per-case generated browser state proof,<br/>Project tab DOM and payload proof,<br/>Atlas diagram state checked,<br/>independent artifact readback scoring,<br/>generated-term leakage rescan,<br/>persisted matrix JSON,<br/>failed-create blocker excerpts,<br/>strict temp-root cleanup,<br/>plus rescue wiring smoke<br/>natural rescue proof still required"]
       selected_case_leakage["Release domain leakage custody<br/>declared case sentinels,<br/>filtered distinctive anchors,<br/>historical sentinels,<br/>and generated readback<br/>scan protected source, shipped guidance,<br/>wheel, and runtime archives"]
+      registry_forensics_custody["Registry forensics custody<br/>component sidecars keep generic summaries,<br/>workstream scope, component IDs,<br/>and artifact counts only<br/>raw scenario prose stays in evidence surfaces"]
     end
 
     visible_intent --> confirmable_stdout --> confirm --> source_guard --> prompt_recovery --> confirmed_ir --> non_goal_owner --> sparse_systems --> public_system_copy
     public_system_copy --> apply_input --> compiler --> semantic_ir --> actor_role_owner --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> projections --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
     draft_set --> artifact_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
-    final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> matrix_scorer --> release_matrix --> selected_case_leakage
+    final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> matrix_scorer --> release_matrix --> selected_case_leakage --> registry_forensics_custody
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> patchset --> executable_target
     executable_target -- "yes" --> rescue_budget
@@ -105,7 +106,7 @@ flowchart LR
     class visible_intent,confirmable_stdout,confirm,source_guard,prompt_recovery,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
     class apply_input,compiler,semantic_ir,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,legacy_blockers,final_manifest standard;
     class repairable,patchset,executable_target,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,semantic_apply,plan_apply,scope_ledger,projection_rerender,copy_repair,rerender rescue;
-    class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,selected_case_leakage write;
+    class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,selected_case_leakage,registry_forensics_custody write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
     style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#334155

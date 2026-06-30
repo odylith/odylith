@@ -142,6 +142,50 @@ def test_clean_requirement_summary_scrubs_consumer_repo_names() -> None:
     ) == "CB-149 update measured 25.40s in a real consumer repo before the fast path."
 
 
+def test_forensics_payload_keeps_timeline_rows_scenario_neutral() -> None:
+    entry = _component_entry(
+        component_id="release",
+        spec_ref="odylith/registry/source/components/release/CURRENT_SPEC.md",
+    )
+    coverage = component_registry.ComponentForensicCoverage(
+        status="forensic_coverage_present",
+        timeline_event_count=1,
+        explicit_event_count=1,
+        recent_path_match_count=0,
+        mapped_workstream_evidence_count=1,
+        spec_history_event_count=0,
+        empty_reasons=[],
+    )
+    event = component_registry.MappedEvent(
+        event_index=7,
+        ts_iso="2026-06-30T12:00:00-07:00",
+        kind="statement",
+        summary="Quantum tunneling scenario passed while shelter capacity failed.",
+        workstreams=["B-142"],
+        artifacts=["/tmp/quantum-tunneling/proof.json"],
+        explicit_components=["release"],
+        mapped_components=["release"],
+        confidence="high",
+        meaningful=True,
+    )
+
+    payload = sync._forensics_payload(
+        entry=entry,
+        coverage=coverage,
+        timeline=[event],
+        traceability={"runbooks": [], "developer_docs": [], "code_references": []},
+    )
+
+    row = payload["timeline"][0]
+    assert row["summary"] == (
+        "Timeline evidence linked this component to governed work. "
+        "workstream scope preserved; 1 tracked artifact reference retained."
+    )
+    assert row["artifacts"] == ["tracked_artifact_1"]
+    assert "quantum" not in json.dumps(payload).lower()
+    assert "shelter" not in json.dumps(payload).lower()
+
+
 def test_sync_component_spec_requirements_consumer_specs_use_per_component_sidecars_and_prune_legacy_file(
     tmp_path: Path,
 ) -> None:

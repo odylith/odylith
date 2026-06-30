@@ -238,6 +238,33 @@ def test_scan_repo_allows_fixture_terms_in_governance_evidence(tmp_path: Path) -
     assert leakage.scan_repo(tmp_path, terms=("quantum",)) == ()
 
 
+def test_scan_repo_blocks_fixture_terms_in_component_forensics(tmp_path: Path) -> None:
+    forensics_file = (
+        tmp_path
+        / "odylith"
+        / "registry"
+        / "source"
+        / "components"
+        / "release"
+        / "FORENSICS.v1.json"
+    )
+    forensics_file.parent.mkdir(parents=True)
+    forensics_file.write_text(
+        '{"timeline":[{"summary":"quantum scenario copied into Registry"}]}\\n',
+        encoding="utf-8",
+    )
+
+    findings = leakage.scan_repo(tmp_path, terms=("quantum",))
+
+    assert findings == (
+        leakage.LeakageFinding(
+            location="odylith/registry/source/components/release/FORENSICS.v1.json",
+            term="quantum",
+            line=1,
+        ),
+    )
+
+
 def test_scan_repo_blocks_fixture_terms_in_root_codex_guidance(tmp_path: Path) -> None:
     guidance_file = tmp_path / ".codex" / "agents" / "example.toml"
     guidance_file.parent.mkdir(parents=True)
