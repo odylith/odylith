@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_package_findings import package_artifact_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_once
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_repair import repair_greenfield_package_until_clean
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
@@ -368,6 +369,95 @@ def test_package_repair_only_mutates_exact_preview_leaf() -> None:
             "Open the first workstream.",
         ],
     }
+
+
+def test_package_repair_handles_indexed_preview_leaf_paths() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        accepted_project_preview={
+            "created": {
+                "components": [
+                    {
+                        "feature_history": [
+                            {"summary": "The accepted state state remains visible."},
+                        ],
+                    },
+                ],
+            },
+        },
+        project_dashboard_preview={
+            "host_handoff_prompts": [
+                {"prompt": "The implementation prompt prompt stays visible."},
+            ],
+        },
+    )
+
+    repaired = repair_greenfield_package_once(package)
+
+    assert repaired.accepted_project_preview == {
+        "created": {
+            "components": [
+                {
+                    "feature_history": [
+                        {"summary": "The accepted state remains visible."},
+                    ],
+                },
+            ],
+        },
+    }
+    assert repaired.project_dashboard_preview == {
+        "host_handoff_prompts": [
+            {"prompt": "The implementation prompt stays visible."},
+        ],
+    }
+
+
+def test_package_repair_handles_project_dashboard_non_prompt_leaf() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        project_dashboard_preview={
+            "overview": {"summary": "The dashboard dashboard keeps governed state visible."},
+        },
+    )
+
+    findings = package_artifact_findings(package)
+    generated = [item for item in findings if item.code == "generated_copy_quality"]
+    repaired = repair_greenfield_package_once(package)
+
+    assert [item.target_path for item in generated] == [
+        "prewrite_package.project_dashboard_preview.overview.summary"
+    ]
+    assert repaired.project_dashboard_preview == {
+        "overview": {"summary": "The dashboard keeps governed state visible."},
+    }
+
+
+def test_package_repair_loop_clears_indexed_and_dashboard_preview_copy_findings() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        accepted_project_preview={
+            "created": {
+                "components": [
+                    {
+                        "feature_history": [
+                            {"summary": "The accepted state state remains visible."},
+                        ],
+                    },
+                ],
+            },
+        },
+        project_dashboard_preview={
+            "overview": {"summary": "The dashboard dashboard keeps governed state visible."},
+        },
+    )
+
+    result = repair_greenfield_package_until_clean(package)
+
+    assert result.changed is True
+    assert "accepted-project memory preview leaked adjacent duplicate word prose" in result.initial_report.issues
+    assert "project dashboard preview leaked adjacent duplicate word prose" in result.initial_report.issues
+    assert "accepted-project memory preview leaked adjacent duplicate word prose" not in result.report.issues
+    assert "project dashboard preview leaked adjacent duplicate word prose" not in result.report.issues
 
 
 def test_package_quality_findings_emit_exact_preview_leaf_repair_path() -> None:

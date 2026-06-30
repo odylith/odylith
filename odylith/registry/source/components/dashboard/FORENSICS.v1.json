@@ -39,12 +39,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 117,
-    "mapped_workstream_evidence_count": 65,
+    "explicit_event_count": 119,
+    "mapped_workstream_evidence_count": 67,
     "recent_path_match_count": 0,
     "spec_history_event_count": 20,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 117
+    "timeline_event_count": 119
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -54,6 +54,82 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
+        "tests/unit/runtime/test_greenfield_post_confirm_quality_repairs.py"
+      ],
+      "confidence": "high",
+      "event_index": 722,
+      "explicit_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "casebook",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Fixed greenfield post-confirm artifact-draft repair routing: project-dashboard preview leaves are exact repair targets and indexed preview paths now reach scalar leaves; focused tests, Casebook validation, leakage guard, four failed-case installed replay, and full 13-case installed matrix passed with max standard create 29.244s.",
+      "ts_iso": "2026-06-29T17:27:09-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-14f5102a/greenfield-post-confirm-matrix-20260629-14f5102a.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
+      ],
+      "confidence": "high",
+      "event_index": 721,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "dashboard",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Installed matrix on dist 14f5102a falsified release readiness: 4/13 greenfield post-confirm cases failed before governed writes because accepted-project or project-dashboard previews retained repairable adjacent duplicate-word prose; CB-209 updated before repair.",
+      "ts_iso": "2026-06-29T16:53:57-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",

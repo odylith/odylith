@@ -90,7 +90,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "19ab9190f680a1d9a59ec3ccf50e8ebafbb4479e5bdd7ef3720ba261f0bef66f",
-        "odylith/radar/source/INDEX.md": "6c0c187374058429028c0e4eb1c13401e1eb2bf76755e50e12ac76a67dcc6bf1",
+        "odylith/radar/source/INDEX.md": "8f0b44c01e15b8db6c2f7c996afb8a0da5ecb317d5aefb0af65a350be410cfdb",
         "odylith/technical-plans/INDEX.md": "6a7a4d6de0e4efad4bea49962ca4873b45a836c87eba1072d701cf44bd5a327d"
       }
     },
@@ -4199,8 +4199,8 @@
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
-      "summary": "Shows the current confirmed greenfield post-confirm architecture: accepted intent becomes a typed source-mapped semantic input, non-goal derivation owns proof/assumption/ambiguity exclusions outside the completion parent, shared actor-role and actor path-role owners keep accepted-path actor descriptions grammatical, sequence custody keeps connector-led object tails attached to their action, sparse/generated confirmed-system rows gain generic proof or state topology while rich explicit rows stay unpadded, public Registry system copy strips compiler-only labels, canonical projection facts carry sequence-step variants for sanctioned repetition, clause-local prose-shape guards accept valid gerund action lists and title-compound user roles while rejecting direct actor-role splices, release-scope proof polarity keeps evidence ledgers in scope, ArtifactPlanIR routing uses a shared projection-contract owner, Radar state-boundary titles use compact review/action focus, Project dashboard source-launch prompts are part of prewrite evidence, persisted artifact readback must agree with the create payload, only source-owned typed findings can drive bounded rescue, legacy raw issue strings fail closed, and governed records write only after the final manifest passes.",
-      "read_guide": "Start with Product Intent Confirmation and follow it through ConfirmedIntentIR, non-goal derivation, the typed apply-semantic input, deterministic SemanticModelIR compiler, shared actor-role custody, actor path-role cleanup, explicit-subject action-chain parsing, sparse-system topology completion, public system-row copy cleanup, connector-led object-tail custody, sequence-step canonical projection facts, external-boundary facts, clause-local prose-shape checks, release-scope proof polarity, and shared ArtifactPlanIR projection contract. Read the standard lane as the custody boundary: Radar, Registry, Atlas, Compass, release proof, operator next steps, Project dashboard source-launch prompts, Tribunal visible actor rows, and persisted accepted-project readback all become reviewed prewrite evidence before writes. Typed findings carry repair authority, while legacy raw strings become blockers. The rescue lane is optional and budgeted; a structured Tribunal planner may fill only replacement facts, custody validation rejects moved targets, and semantic or artifact-plan executors patch IR facts before rerendering impacted projections through the same final gates.",
+      "summary": "Shows the current confirmed greenfield post-confirm architecture: accepted intent becomes a typed source-mapped semantic input, non-goal derivation owns proof/assumption/ambiguity exclusions outside the completion parent, shared actor-role and actor path-role owners keep accepted-path actor descriptions grammatical, sequence custody keeps connector-led object tails attached to their action, sparse/generated confirmed-system rows gain generic proof or state topology while rich explicit rows stay unpadded, public Registry system copy strips compiler-only labels, canonical projection facts carry sequence-step variants for sanctioned repetition, clause-local prose-shape guards accept valid gerund action lists and title-compound user roles while rejecting direct actor-role splices, release-scope proof polarity keeps evidence ledgers in scope, ArtifactPlanIR routing uses a shared projection-contract owner, exact draft cleanup reaches indexed preview paths and Project dashboard leaves, Radar state-boundary titles use compact review/action focus, Project dashboard source-launch prompts are part of prewrite evidence, persisted artifact readback must agree with the create payload, only source-owned typed findings can drive bounded rescue, legacy raw issue strings fail closed, and governed records write only after the final manifest passes.",
+      "read_guide": "Start with Product Intent Confirmation and follow it through ConfirmedIntentIR, non-goal derivation, the typed apply-semantic input, deterministic SemanticModelIR compiler, shared actor-role custody, actor path-role cleanup, explicit-subject action-chain parsing, sparse-system topology completion, public system-row copy cleanup, connector-led object-tail custody, sequence-step canonical projection facts, external-boundary facts, clause-local prose-shape checks, release-scope proof polarity, and shared ArtifactPlanIR projection contract. Read the standard lane as the custody boundary: Radar, Registry, Atlas, Compass, release proof, operator next steps, Project dashboard source-launch prompts, Tribunal visible actor rows, and persisted accepted-project readback all become reviewed prewrite evidence before writes. Typed findings carry repair authority, including concrete indexed preview leaves and Project dashboard preview leaves, while whole preview roots and legacy raw strings become blockers. The rescue lane is optional and budgeted; a structured Tribunal planner may fill only replacement facts, custody validation rejects moved targets, and semantic or artifact-plan executors patch IR facts before rerendering impacted projections through the same final gates.",
       "components": [
         {
           "name": "Domain Intelligence",
@@ -4290,7 +4290,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_apply_semantic.py": "ed28fa3d018588f6aa9dc23b68607efdb720549fab7604c763f4ddcd0b53c2e2",
         "src/odylith/runtime/domain_intelligence/greenfield_external_boundary_semantics.py": "b6e2fb2ec193e6e57d007173056db8ee5555710bb6b6d47c057458930e1f5f5c",
         "src/odylith/runtime/domain_intelligence/artifact_tribunal_actors.py": "8b476a76d02e3b9af9148bfd58e203a3955b0a592cbae2e5377cef2e029b7ea0",
-        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py": "7b72f335bade36f2c216b48c2fc03901b0aa053db52991bbf0c7380ab57d5f36",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py": "5a08fdee5c2ec6af7ab7c6c5c9b885787d60e4eda9bed7f077cca992291d8fd5",
         "src/odylith/runtime/domain_intelligence/greenfield_apply_prewrite.py": "91da7601a9a94e16bb5ad5ab2d11f87886760e90ce59792da81616ecac15c2af",
         "src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py": "3b55955a4a11dc0ab48bfb0e2068883dd125cdff758effad3bc48400de0c8cb7",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py": "5f76b900f7d3c2b0954040935de0f4ec7ea9bef9a3e633ae172012695cfc3400",
@@ -4330,12 +4330,12 @@
         "src/odylith/runtime/reasoning/tribunal_patch_planner.py": "57664efd8a6b44694eb2157bc99405c7bf261808b3becfa920fa2049dadc180f",
         "scripts/release/greenfield_post_confirm_matrix.py": "d92db2b7c428996036d49b43067aa458371f9c0765c5ecedfa3c1911647176ba",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "3b662a24176ff40d5191cb8a3669358c7efc4387c8e195c76f8b69ab37382a70",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "5955deca2ca66c62cbbaa35d7f41c43209749172562263da795bd4a8d5b034d0",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "19f07ddfda21d61fb60009938c12791137ed0d1690637b83361c98629aac9aea",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "1899fe0afd2f204a9db569af16ec5da021acb2fdbafa3eaee4198dcbcee2483e",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "163b031f88d36d51c2d61638a87ef1bc90d28c00b7dc8897b3b12d00bc7c5b2e"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "11851326af95e4f070fe871b64b4f85d0e6a6d6ef914e850bbd706f299fb13ed"
       },
-      "render_source_fingerprint": "02657124b08db7693188f6c1541765bcc73f115fd1092ffb955a9091a1f4635b"
+      "render_source_fingerprint": "31de9c0e7ee30269d96a6b47a113a3b013cb1e9da1201e0d4c2624cf2e4e000d"
     },
     {
       "diagram_id": "D-044",
@@ -4444,6 +4444,8 @@
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py",
         "src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py",
         "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py",
@@ -4452,8 +4454,8 @@
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py"
       ],
-      "summary": "Shows how confirmed greenfield first-path text becomes semantic events, shared actor-role facts, actor path-role cleanup, explicit-subject action chains, action-boundary custody for unknown leading actions and finite sibling actions, external-boundary facts, connector-led object-tail custody, sequence-step canonical facts, action-complement and object-list tail custody, modal actor capability steps, provenance-aware Tribunal visible actors, Mermaid label custody, clause-local prose-shape checks with actor-role head custody and title-compound user-role allowance, Radar state-boundary titles without pronoun tails, canonical projection fact custody, package repetition decisions, exact-path draft cleanup, and Project next-step prompts without rendered-prose semantic repair.",
-      "read_guide": "Start with the accepted first path, then follow it through shared actor-role custody, actor path-role cleanup, explicit-subject carried-action parsing, action-boundary ownership for unknown leading actions and finite sibling action splits, semantic event derivation, connector-led object-tail custody, sequence-step canonical fact projection, external-boundary custody, compact tail custody, Tribunal visible actor provenance, Mermaid label custody, clause-local prose-shape checks, state-boundary title projection, canonical projection facts, repetition gates, and exact artifact-draft cleanup. The diagram separates semantic or projection defects from mechanical duplicate/tail cleanup so repair authority stays with the source owner and scoring requires persisted readback.",
+      "summary": "Shows how confirmed greenfield first-path text becomes semantic events, shared actor-role facts, actor path-role cleanup, explicit-subject action chains, action-boundary custody for unknown leading actions and finite sibling actions, external-boundary facts, connector-led object-tail custody, sequence-step canonical facts, action-complement and object-list tail custody, modal actor capability steps, provenance-aware Tribunal visible actors, Mermaid label custody, clause-local prose-shape checks with actor-role head custody and title-compound user-role allowance, Radar state-boundary titles without pronoun tails, canonical projection fact custody, package repetition decisions, exact-path draft cleanup for scalar preview leaves including indexed paths and Project dashboard leaves, and Project next-step prompts without rendered-prose semantic repair.",
+      "read_guide": "Start with the accepted first path, then follow it through shared actor-role custody, actor path-role cleanup, explicit-subject carried-action parsing, action-boundary ownership for unknown leading actions and finite sibling action splits, semantic event derivation, connector-led object-tail custody, sequence-step canonical fact projection, external-boundary custody, compact tail custody, Tribunal visible actor provenance, Mermaid label custody, clause-local prose-shape checks, state-boundary title projection, canonical projection facts, repetition gates, and exact artifact-draft cleanup. The cleanup lane can reach concrete scalar preview leaves, including list-indexed leaves and Project dashboard preview leaves, but whole preview roots remain blocked. The diagram separates semantic or projection defects from mechanical duplicate/tail cleanup so repair authority stays with the source owner and scoring requires persisted readback.",
       "components": [
         {
           "name": "Domain Intelligence",
@@ -4489,6 +4491,8 @@
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py",
         "src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py",
         "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py",
@@ -4513,6 +4517,8 @@
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py": "bd124affb7d6d1c33d4a71be3f75e9ad9d05f2e59f856082e89c2e62000f8d89",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_project_brief.py": "2d4cde4fe3f39dbbc0991096b6ad739b0cecbc0c2d955340eb7514a7660b26ef",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py": "8701d4b504ad73188faea07fcdc368c9ca7020a283eb650ca752b3896f797b87",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py": "5a08fdee5c2ec6af7ab7c6c5c9b885787d60e4eda9bed7f077cca992291d8fd5",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py": "4f3707359a6de1957e61064d40b473cf06b1838c49ede9d97139c665db97560e",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py": "83fcb96e165887ee460f53a44fc01387f52e0d371d44c8dfda79f5dad98819d6",
         "src/odylith/runtime/domain_intelligence/greenfield_structural_copy.py": "3f76bfa22396619014fb40a45f4469f4fe9d1a10e9b21a1030947fd2f14b4f15",
         "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py": "38766a315fd64e0a9373d5f1f4232c0d63622992ecde38cfe6838cb0c46d0a97",
@@ -4521,7 +4527,7 @@
         "src/odylith/runtime/artifact_quality/greenfield_package_quality.py": "595c6f27303766773011d61a8abc9630ac2f19d7ab5d510975a49ea41c14349f",
         "src/odylith/runtime/domain_intelligence/greenfield_experience.py": "99bf357a12a505495fd64f842facc227df3ca789c0adcd32591e9f5dab731aff"
       },
-      "render_source_fingerprint": "d46c3e41bf7301945f5913353a877d101ca412a6408f1782c0ea26d49c305275"
+      "render_source_fingerprint": "630f9b3f2e0a41c71c28ee86fd471ac204c08d4ad8272036eac2442e08c97eb5"
     },
     {
       "diagram_id": "D-046",

@@ -238,8 +238,11 @@ def _parse_artifact_draft_path(value: str) -> tuple[_PathSegment, ...]:
     while index < len(text):
         char = text[index]
         if char == ".":
-            if not token:
+            if not token and (not segments or text[index - 1] == "."):
                 return ()
+            if not token:
+                index += 1
+                continue
             segments.append("".join(token))
             token = []
             index += 1
@@ -248,6 +251,8 @@ def _parse_artifact_draft_path(value: str) -> tuple[_PathSegment, ...]:
             if token:
                 segments.append("".join(token))
                 token = []
+            elif not segments:
+                return ()
             end_index = text.find("]", index + 1)
             if end_index < 0:
                 return ()

@@ -66,6 +66,28 @@ vocabulary, or degraded packages.
 
 ## Latest Simulation Evidence
 
+- 2026-06-29 installed repair-routing checkpoint: fresh dist
+  `odylith-local-release-0.1.15-14f5102a` passed the strengthened 49-term
+  domain-leakage gate but failed 4/13 maintained cases before governed writes
+  because accepted-project or Project dashboard previews retained repairable
+  adjacent duplicate-word prose. The root cause was repair routing, not domain
+  semantics: indexed artifact-draft paths were authorized but not traversed,
+  and Project dashboard preview leaves outside the original prompt whitelist
+  could be detected without gaining safe mechanical repair authority. The fix
+  keeps the architecture generic: exact typed leaf paths now cover concrete
+  Project dashboard preview leaves and the path parser reaches list-indexed
+  scalar leaves before applying the existing duplicate/tail cleanup. Focused
+  proof passed 44 artifact-plan/quality-repair tests, 25 package/source-launch
+  and repetition tests, 76 post-confirm engine/repair tests, py_compile,
+  Casebook validation, and the 49-term domain-leakage guard. A fresh
+  installable precommit dist replayed the four failed cases with browser proof
+  and all four passed at hard 10/10 in 27.038-29.000s; the full maintained
+  installed matrix then passed 13/13 cases with hard 10/10 scores, zero issues,
+  generated browser proof, complete governed records, max standard create time
+  29.244s, synthetic typed-probe rescue wiring in 33.836s, and clean temp
+  cleanup. Final release proof still requires a rebuild from the committed
+  checkpoint.
+
 - 2026-06-26 faithful propose-then-confirm source-local proof:
   quantum-tunneling education completed post-confirm create in 11.668 seconds
   with no simple artifact red flags; shelter-capacity coordination failed in

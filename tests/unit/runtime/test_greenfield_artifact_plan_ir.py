@@ -72,6 +72,7 @@ def test_artifact_plan_ir_requires_exact_artifact_draft_repair_paths() -> None:
     assert artifact_draft_exact_repair_path("prewrite_package.next_steps_preview.operator_sequence[0]") is True
     assert artifact_draft_exact_repair_path("prewrite_package.compass_memory_preview.summary") is True
     assert artifact_draft_exact_repair_path("prewrite_package.compass_memory_preview") is False
+    assert artifact_draft_exact_repair_path("prewrite_package.project_dashboard_preview.overview.summary") is True
     assert artifact_draft_exact_repair_path("prewrite_package.project_dashboard_preview.host_handoff_prompts[0]") is False
     assert (
         artifact_draft_exact_repair_path("prewrite_package.project_dashboard_preview.host_handoff_prompts[0].prompt")

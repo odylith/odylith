@@ -86,9 +86,7 @@ _ARTIFACT_DRAFT_EXACT_PREFIXES = (
     "prewrite_package.project_brief_preview.",
     "prewrite_package.next_steps_preview.",
 )
-_ARTIFACT_DRAFT_INDEXED_LEAF_PREFIXES = (
-    "prewrite_package.project_dashboard_preview.host_handoff_prompts[",
-)
+_PROJECT_DASHBOARD_PREVIEW_PREFIX = "prewrite_package.project_dashboard_preview."
 
 
 def artifact_plan_canonical_root(value: Any) -> str:
@@ -220,9 +218,9 @@ def artifact_draft_exact_repair_path(value: Any) -> bool:
     for prefix in _ARTIFACT_DRAFT_EXACT_PREFIXES:
         if target.startswith(prefix):
             return bool(target[len(prefix) :])
-    for prefix in _ARTIFACT_DRAFT_INDEXED_LEAF_PREFIXES:
-        if target.startswith(prefix):
-            return "]." in target[len(prefix) :]
+    if target.startswith(_PROJECT_DASHBOARD_PREVIEW_PREFIX):
+        relative = target[len(_PROJECT_DASHBOARD_PREVIEW_PREFIX) :]
+        return bool(relative) and not relative.endswith("]")
     return False
 
 

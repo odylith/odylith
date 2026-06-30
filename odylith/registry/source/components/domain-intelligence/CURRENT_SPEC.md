@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Fixed greenfield post-confirm artifact-draft repair routing: project-dashboard preview leaves are exact repair targets and indexed preview paths now reach scalar leaves; focused tests, Casebook validation, leakage guard, four failed-case installed replay, and full 13-case installed matrix passed with max standard create 29.244s.
+  - Scope: B-142
+  - Evidence: Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json, src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py +2 more
 - **2026-06-29 · Implementation:** Removed broad rendered-preview repair authority from greenfield post-confirm package cleanup; exact source-owned artifact-draft leaf paths now gate safe mechanical repair, Compass memory leaves are covered, and legacy broad generated-copy findings no longer create safe repair operations. Focused proof passed 41 tests and widened post-confirm proof passed 76 tests in 50.17s.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +5 more
@@ -39,12 +42,25 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Extended canonical first-path projection custody to sequence-step variants after the request-handoff replay exposed repeated noncanonical prose blockers; focused package/sequence proof passed and live source-local create wrote 4 Radar, 3 Registry, 6 Atlas records in 19.609s with zero issues and no Or-fragment copy.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py +2 more
-- **2026-06-29 · Implementation:** Fixed proof-review sequence projection failure: connector-led and short non-finite object tails now stay attached to the prior first-path action, preventing Project Brief fragments such as Required request context and Or more-info request; focused sequence/create proof passed 5 tests in 50.46s.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_sequence_steps.py +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-06-29: Fixed artifact-draft repair routing for indexed preview leaves and Project dashboard preview leaves. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-045)
+  The post-confirm repair loop now treats concrete Project dashboard preview
+  leaves as safe mechanical repair targets and correctly traverses
+  list-indexed artifact-draft paths before applying duplicate-word or
+  dangling-tail cleanup to the addressed scalar. This preserves the existing
+  custody split: typed source-owned findings grant repair authority, whole
+  preview roots remain blocked, and semantic defects still require semantic or
+  ArtifactPlanIR repair rather than rendered-prose cleanup. Focused proof
+  passed 44 artifact-plan/quality-repair tests, 25 package/source-launch and
+  repetition tests, 76 post-confirm engine/repair tests, Casebook validation,
+  py_compile, the 49-term domain-leakage guard, a four-case installed replay
+  of the prior blockers, and the full 13-case installed matrix with hard
+  10/10 scores, browser proof, zero issues, and max standard create time
+  29.244s. Final release proof still requires rebuilding from the committed
+  checkpoint.
 
 - 2026-06-29: Removed broad rendered-preview repair authority from post-confirm package cleanup. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagrams: D-043, D-045)
   Safe artifact-draft repair now depends on exact leaf target paths owned by

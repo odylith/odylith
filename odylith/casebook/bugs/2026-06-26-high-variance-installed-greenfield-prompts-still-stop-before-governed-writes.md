@@ -973,6 +973,44 @@
   dist `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-14f5102a`
   then rebuilt from the committed checkpoint and passed the same strengthened
   49-term platform domain-leakage build gate.
+  Reopened installed proof on 2026-06-29: the fresh dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-14f5102a`
+  passed the strengthened 49-term platform domain-leakage gate, but the
+  maintained installed matrix proof at
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-14f5102a/greenfield-post-confirm-matrix-20260629-14f5102a.v1.json`
+  failed 4/13 standard cases. `flood shelter intake` and
+  `apprenticeship credential readiness` stopped before governed writes with
+  `accepted-project memory preview leaked adjacent duplicate word prose`;
+  `semiconductor lab custody` and `package supply chain exception desk`
+  stopped before governed writes with `project dashboard preview leaked
+  adjacent duplicate word prose`. Each failed case returned create code 2,
+  wrote no quality manifest, and produced zero Radar workstreams, Registry
+  specs, Atlas sources, release/program records, trace nodes, trace
+  workstreams, and Project implementation prompts. Nine standard cases still
+  passed with hard 10/10 scores and the synthetic typed-probe rescue smoke
+  passed, but the release claim is falsified because repairable final-gate
+  preview-copy defects were not cleared internally before the transaction
+  returned. Temp matrix roots were clean after the run.
+  Forward fix and precommit proof: source now treats concrete
+  `project_dashboard_preview.*` leaves as exact artifact-draft repair targets
+  and fixes the artifact-draft path parser so list-index paths such as
+  `created.components[0].feature_history[0].summary` and
+  `host_handoff_prompts[0].prompt` reach the addressed scalar leaf. This keeps
+  repair authority in source-owned typed leaf paths and the existing generic
+  duplicate/tail cleanup; it does not add domain vocabulary or a new prose
+  patch tower. Focused proof passed 44 artifact-plan/quality-repair tests,
+  25 package/source-launch/repetition tests, 76 post-confirm engine/repair
+  tests, py_compile, Casebook validation, and the 49-term platform
+  domain-leakage guard. A fresh installable local dist then replayed the four
+  failed standard cases with browser proof and all four passed with hard 10/10
+  scores in 27.038-29.000s. The full maintained installed matrix proof at
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json`
+  passed 13/13 cases with hard 10/10 scores, zero issues, generated browser
+  proof, complete governed records, max standard create time 29.244s, and
+  synthetic typed-probe rescue wiring in 33.836s. Temp matrix and rescue roots
+  were clean after the run. This is valid proof for the current uncommitted
+  source build; final release evidence still requires a post-commit rebuild
+  and matrix proof from the committed dist.
 
 - Related Incidents/Bugs: CB-208
 
