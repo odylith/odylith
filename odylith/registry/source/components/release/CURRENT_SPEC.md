@@ -499,6 +499,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Proved 9a764dc7 installed greenfield matrix, then removed unconditional notification semantics from generic status-view Registry profiles after source domain-custody audit.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
 - **2026-06-29 · Implementation:** Tightened greenfield domain-custody proof: runtime helpers no longer hardcode historical example-domain nouns, the leak guard forbids them in protected source custody, component kind classification preserves accepted internal ownership, focused tests passed, and rebuilt dist proof remains pending.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +4 more
@@ -514,9 +517,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Added platform domain-leakage guard to local release build, standalone greenfield matrix, and shared release proof; guard derives distinctive fixture terms from the high-variance matrix and keeps domain vocabulary out of runtime and shipped guidance while allowing governed/evaluation evidence.
   - Scope: B-142
   - Evidence: bin/_odylith.sh, bin/greenfield-post-confirm-matrix +2 more
-- **2026-06-29 · Implementation:** Hardened greenfield release scoring against global domain-term soup by requiring local semantic grounding across Radar, Registry, Atlas, and Project prompt surfaces; focused scorer tests passed 36/36.
-  - Scope: B-142
-  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, tests/unit/install/test_greenfield_post_confirm_matrix.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -573,6 +573,15 @@ This section captures synchronized requirement and contract signals derived from
   real project-brief/next-step evidence, distinct governance dimensions, and
   mandatory browser proof are required before a 10/10 claim.
 - 2026-06-29: Release proof correctly failed the fresh `odylith-local-release-0.1.15-3d13f434` installed matrix. Twelve of thirteen standard greenfield cases passed with hard 10/10 scores and browser proof, and synthetic wiring-only rescue smoke passed in 33.936s, but sparse disclosure confirmation failed the release gate with score 0/10 because generated governance depth and domain-anchor coverage were insufficient. Release remains blocked until a rebuilt dist passes the maintained installed matrix from the current commit; older passing dist evidence cannot be reused as release readiness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+- 2026-06-30: Proved rebuilt installed checkpoint `odylith-local-release-0.1.15-9a764dc7`, then reopened shipped-custody proof for a newer source-level domain-neutralization fix. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  The maintained installed matrix at
+  `odylith-local-release-0.1.15-9a764dc7/greenfield-post-confirm-matrix-20260630-9a764dc7.v1.json`
+  passed 13/13 standard cases with hard 10/10 scores, zero issues, browser
+  proof, complete governed records, 22.259-29.208s standard create timings,
+  synthetic typed-probe rescue wiring in 33.474s, and clean temp cleanup. A
+  follow-up source audit removed unconditional notification semantics from
+  generic status-view Registry profiles; a fresh dist proof from that newer
+  source checkpoint is required before release closure.
 - 2026-05-03: Added the v0.1.14 release-planning target and made `next` point to `release-0-1-14`; B-141 and B-142 are active there, while B-140 is recorded as completed release history for migration-observer proof. Greenfield project proposals now default omitted consumer project release selectors to `0.0.1` so first-release planning does not borrow Odylith's own `next` alias. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-03-27: Added a first-class maintainer release subsystem with sticky version sessions, stable semver auto-tagging, canonical commit-bound release dispatch, and a dedicated release runbook. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
 - 2026-03-28: Reset the local relaunch narrative to restart preview at `v0.1.0`, made split managed assets part of the canonical release lane while keeping install full-stack by default, and blocked dispatch on local hosted-asset installer proof. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))

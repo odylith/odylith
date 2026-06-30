@@ -93,10 +93,10 @@ def status_view_contract(
     return {
         "owned_state": (
             f"{view_scope + ', ' if view_scope else ''}{timeline}, current next-action owner, {role_scope}, transition history, blocked or stale indicators, "
-            "notification freshness marker, and audit trail"
+            "source freshness marker, and audit trail"
         ),
         "accepted_inputs": (
-            f"lifecycle events, actor identity, source timestamps, notification delivery markers, role context, and outcome updates from {upstream}"
+            f"lifecycle events, actor identity, source timestamps, source event markers, role context, and outcome updates from {upstream}"
         ),
         "produced_outputs": (
             f"role-appropriate status views, current owner, transition-validation display, {stale_indicator}, and audit history entries"
@@ -371,7 +371,7 @@ def _status_local_proof(*, label: str, object_base: str, role_scope: str, stale_
 
 
 def _status_outside_boundary(context: str, *, object_base: str) -> str:
-    rows = [f"{object_base} creation", "matching or context validation", "notification delivery", "final release approval"]
+    rows = [f"{object_base} creation", "matching or context validation", "downstream action execution", "final release approval"]
     return ", ".join(rows)
 
 

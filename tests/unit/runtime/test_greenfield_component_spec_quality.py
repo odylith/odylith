@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -444,6 +445,11 @@ def test_component_contract_profiles_stay_in_dedicated_owner() -> None:
         assert "Successful path evidence for" in proof_text
         assert "Blocked input evidence for" in proof_text
         assert "Replay evidence for" in proof_text
+
+    status_contract_text = json.dumps(status_contract, sort_keys=True).casefold()
+    assert "source freshness marker" in status_contract_text
+    assert "source event markers" in status_contract_text
+    assert "notification" not in status_contract_text
 
 
 def test_component_contract_targets_stay_in_dedicated_owner() -> None:

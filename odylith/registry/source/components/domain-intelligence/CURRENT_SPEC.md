@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Proved 9a764dc7 installed greenfield matrix, then removed unconditional notification semantics from generic status-view Registry profiles after source domain-custody audit.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
 - **2026-06-29 · Implementation:** Tightened greenfield domain-custody proof: runtime helpers no longer hardcode historical example-domain nouns, the leak guard forbids them in protected source custody, component kind classification preserves accepted internal ownership, focused tests passed, and rebuilt dist proof remains pending.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +4 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Source-fixed greenfield workstream-title preservation constraint custody after focused reviewer proof found the quality-repair suite red; 44 focused tests now pass, rebuilt installed proof remains pending.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py
-- **2026-06-29 · Implementation:** Source-fixed CB-209 terminal sequence-label custody: terminal flowchart labels fall back to first-path action clauses when result-object compaction drops distinctive tail terms; exact indigenous-language prompt replay now writes governed records in about 20s with Record learner progress evidence, and temp cleanup succeeded.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/common/mermaid_text.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -140,6 +140,15 @@ This section captures synchronized requirement and contract signals derived from
   dist passed 12/12 with hard 10/10 scores, zero issues, browser proof, max
   create time 28.819s, and clean temp cleanup; rebuilt shipped-custody proof
   remains required for the next dist.
+
+- 2026-06-30: Removed unconditional notification semantics from generic status-view Registry profiles. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  Status-view contracts no longer inject `notification freshness marker`,
+  `notification delivery markers`, or `notification delivery` unless the
+  accepted project vocabulary already owns that concept through the component
+  facts. Generic status profiles now project source freshness, source event
+  markers, and downstream action execution. Focused proof passed 39
+  component-spec tests, 3 explicit notification/intent regression tests, the
+  52-term platform leakage guard, and exact-string scan for the removed phrases.
 
 - 2026-06-29: Source-fixed workstream-title preservation constraint custody after focused reviewer proof found the runtime quality-repair suite red. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   `greenfield_confirmed_backlog_actions.py` now reattaches useful

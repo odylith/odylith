@@ -1039,6 +1039,22 @@
   passed 12/12 with hard 10/10 scores, zero issues, browser proof, max create
   time 28.819s, and clean temp cleanup; a rebuilt dist from this source
   checkpoint remains required before shipped-custody closure.
+  Rebuilt-dist proof for checkpoint `9a764dc7` completed on 2026-06-30:
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-9a764dc7/greenfield-post-confirm-matrix-20260630-9a764dc7.v1.json`
+  passed 13/13 maintained installed cases with hard 10/10 scores, zero issues,
+  browser surface proof, complete governed records, 22.259-29.208s standard
+  create timings, synthetic typed-probe rescue wiring in 33.474s, and clean
+  temp cleanup.
+  A follow-up source audit then found a subtler domain-custody risk that the
+  sentinel scan alone cannot prove away: the generic status-view Registry
+  profile injected `notification freshness marker`, `notification delivery
+  markers`, and `notification delivery` even when the accepted intent did not
+  own notifications. The source fix keeps status-view contracts generic by
+  projecting source freshness, source event markers, and downstream action
+  execution instead. Focused proof passed 39 component-spec tests, 3 explicit
+  notification/intent regression tests, the 52-term platform leakage guard, and
+  exact-string scan for the removed phrases. A rebuilt dist from this newer
+  source checkpoint remains required before shipped-custody closure.
 
 - Related Incidents/Bugs: CB-208
 

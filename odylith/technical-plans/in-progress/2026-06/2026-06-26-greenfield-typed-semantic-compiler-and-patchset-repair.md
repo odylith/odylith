@@ -1722,3 +1722,17 @@ vocabulary, or degraded packages.
       browser proof, zero issues, max create time 28.819s, and clean temp
       cleanup; final shipped-custody proof still requires a rebuilt dist from
       this source checkpoint.
+- [x] Prove the `9a764dc7` rebuilt dist and remove unconditional status-profile
+      notification copy from generic Registry contracts.
+      The installed maintained matrix at
+      `odylith-local-release-0.1.15-9a764dc7/greenfield-post-confirm-matrix-20260630-9a764dc7.v1.json`
+      passed 13/13 standard cases with hard 10/10 scores, zero issues, browser
+      proof, complete governed records, 22.259-29.208s standard create timings,
+      synthetic typed-probe rescue wiring in 33.474s, and clean temp cleanup.
+      Follow-up source audit found that status-view Registry profiles still
+      injected notification semantics without accepted-intent ownership. The
+      profile now emits source freshness/source event/downstream action language
+      instead. Focused proof passed 39 component-spec tests, 3 explicit
+      notification/intent regression tests, the 52-term platform leakage guard,
+      and exact-string scan for the removed phrases. A rebuilt dist from this
+      newer source checkpoint remains required before shipped-custody closure.
