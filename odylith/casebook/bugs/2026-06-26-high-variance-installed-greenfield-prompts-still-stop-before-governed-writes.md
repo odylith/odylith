@@ -1531,6 +1531,27 @@
   validation passing, no escaped bad strings, and temp repos deleted after each
   run. Release readiness still requires a rebuilt installed dist matrix with
   browser proof and hardened artifact readback.
+  Rebuilt installed proof against committed dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2a389428`
+  passed after cleaning the failed first run root. The maintained matrix
+  persisted
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2a389428/greenfield-post-confirm-matrix.v1.json`:
+  13/13 standard installed cases passed with hard 10/10 scores, zero quality
+  issues, zero browser-surface issues, zero platform-leakage findings across
+  213 generated readback terms, complete governed records, 13/13 per-case
+  browser proof, temp-cleanup proof passed with no remaining paths, max
+  standard create time 30.468s, and average standard create time 27.801s. The
+  synthetic typed-probe rescue smoke passed in 37.493s, and the real installed
+  structured-rescue leg passed in 62.894s with natural rescue quality proven
+  under the 90s rescue tier. Failed-mechanism note: the first full matrix
+  attempt against the same dist exited with `Bus error: 10` from the Python
+  harness and left `/Users/freedom/mock/odylith-greenfield-matrix-a60029b7`.
+  macOS crash diagnostics reported `Object has no pager because the backing
+  vnode was force unmounted`. One-case and three-case browser probes then
+  passed generated artifact proof, and the final full retry passed after temp
+  cleanup. Treat this as release-harness/runtime fragility to harden with
+  incremental proof persistence and stronger subprocess isolation; do not
+  mistake the bus error for a generated-artifact semantic failure.
 
 - Related Incidents/Bugs: CB-208
 

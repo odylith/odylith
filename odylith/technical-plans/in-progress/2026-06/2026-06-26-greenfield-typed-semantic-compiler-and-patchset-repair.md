@@ -2099,3 +2099,17 @@ vocabulary, or degraded packages.
       `last_repair_patchset_request`, and committed governed records. Remaining
       proof: rebuild the committed-head dist and rerun the full installed
       matrix with natural structured-rescue proof.
+- [x] Prove committed source-owned repair checkpoint through the installed
+      release matrix.
+      Fresh dist `odylith-local-release-0.1.15-2a389428` passed the maintained
+      installed matrix after temp cleanup: 13/13 standard cases, hard 10/10
+      scores, zero quality/browser/platform-leakage issues, 13/13 browser
+      proof, generated-term leakage proof across 213 readback terms, clean
+      temp cleanup, max standard create time 30.468s, average standard create
+      time 27.801s, synthetic rescue smoke at 37.493s, and real installed
+      structured rescue at 62.894s under the 90s rescue tier. The first full
+      attempt against the same dist failed with a Python `SIGBUS` and left a
+      temp root; one-case and three-case browser probes passed, then the full
+      retry passed. Follow-up hardening remains to persist incremental matrix
+      results and isolate browser/rescue proof legs so harness-native crashes
+      cannot erase completed evidence.

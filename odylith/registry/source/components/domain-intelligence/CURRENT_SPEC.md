@@ -46,6 +46,20 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-30: Proved the source-owned repair and actor-custody checkpoint in the installed consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
+  Fresh local release dist `odylith-local-release-0.1.15-2a389428` passed the
+  maintained installed matrix with 13/13 standard cases, hard 10/10 scores,
+  zero quality/browser/platform-leakage issues, 13/13 per-case browser proof,
+  complete governed records, generated-term leakage proof across 213 generated
+  readback terms, temp-cleanup proof with no remaining paths, standard create
+  timings of 25.689-30.468s, average standard create time 27.801s, synthetic
+  typed-probe rescue at 37.493s, and real installed structured rescue at
+  62.894s with natural rescue quality proven. The first full matrix attempt
+  against the same dist failed with a Python `SIGBUS` and left a temp root; the
+  final proof passed after cleanup, so artifact quality is release-proven for
+  this dist while the release harness still needs stronger incremental proof
+  persistence and process isolation.
+
 - 2026-06-30: Fixed coordinated-action actor recovery, card-specific dashboard repair routing, and repeated clarity-title shape after source-local artifact QA exposed green-validator false confidence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
   A six-domain source-local sweep completed governed writes under 22s, but
   direct human-facing artifact inspection found one retained-quality failure:
