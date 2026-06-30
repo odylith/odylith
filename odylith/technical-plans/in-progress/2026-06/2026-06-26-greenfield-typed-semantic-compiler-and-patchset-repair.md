@@ -1838,3 +1838,23 @@ vocabulary, or degraded packages.
       non-reused variance matrix with browser proof, generated-term leakage
       proof, hard 10/10 scores, sub-60s standard creates, and clean temp
       cleanup.
+- [ ] Rebuild and prove the post-7cf9d2ed leakage-baseline harness checkpoint.
+      The `7cf9d2ed` dist passed the 65-term platform domain-leakage build
+      gate, but the maintained installed matrix stalled after the first
+      disposable case because generated-readback required-anchor suppression
+      rescanned protected source and runtime tarball custody once per term.
+      Follow-up review found two more proof gaps: release scripts were outside
+      protected source custody, and phrase matching could miss wrapped
+      multi-line phrases plus camelCase or compacted identifier leaks. Source
+      now moves intentional fixture vocabulary into the excluded matrix fixture
+      catalog, includes `scripts/release` in the guarded source surface,
+      tokenizes documents across line boundaries with identifier case
+      splitting, detects compacted phrase tokens, computes platform-native
+      required anchors once for selected matrix vocabulary, and caches the
+      tokenized source/dist corpus so repeated matrix scans stay bounded.
+      Focused install/leakage proof passed 71 tests, and cold/warm source+dist
+      leakage timing against the `7cf9d2ed` dist was 28.228s, 0.062s, and
+      0.809s. Remaining proof: rebuild the installable dist from this source
+      checkpoint and rerun the maintained installed matrix plus fresh
+      non-reused variance with browser proof, generated-term leakage proof,
+      hard 10/10 scores, sub-60s standard creates, and clean temp cleanup.

@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-06-29
+Last updated: 2026-06-30
 
 
 Last updated (UTC): 2026-04-09
@@ -449,10 +449,16 @@ governed subsystem.
   scored from generated `odylith/tooling-payload.v1.js` readback, persisted
   project-brief Markdown must be structurally checked, and generated-domain
   terms actually present in readback artifacts must be rescanned against
-  protected platform source and dist custody. The matrix must also run per-case
-  headless generated browser state proof for the Project shell pane, Radar,
-  Registry, Atlas, Compass, Casebook, and tooling-shell surfaces. That browser
-  lane must cover normal shell routes, Project prompt-card readback,
+  protected platform source and dist custody. Required domain-coverage anchors
+  that are already native to platform custody must be resolved through one
+  selected-vocabulary baseline scan and reused during per-case readback; the
+  matrix must not rescan source or runtime archives once per generated term or
+  once per case when a single generated-readback vocabulary scan can preserve
+  case attribution.
+  The matrix must also run per-case headless generated browser state proof for
+  the Project shell pane, Radar, Registry, Atlas, Compass, Casebook, and
+  tooling-shell surfaces. That browser lane must cover normal shell routes,
+  Project prompt-card readback,
   invalid-query recovery, and Casebook empty/filter fallback, must provision
   Playwright Chromium through the maintained proof wrapper, and must fail
   closed if Playwright or Chromium remains unavailable in the proof environment.
@@ -471,10 +477,13 @@ governed subsystem.
   natural non-internal repairable failure also passes under the 90 second tier.
 - The local release asset builder, standalone greenfield matrix target, and
   shared release proof lane must run the platform domain-leakage guard against
-  current runtime/source guidance and the built wheel before accepting a release
-  proof. Distinctive fixture vocabulary belongs in tests, governed evidence,
-  evaluation corpora, and release notes; it must not leak into runtime code,
-  shipped agent guidance, or bundled default behavior.
+  current runtime/source guidance, release tooling, and built release assets
+  before accepting a release proof. The guard must detect phrase leakage across
+  line boundaries plus identifier-shaped leaks such as camelCase or compacted
+  multi-word terms. Distinctive fixture vocabulary belongs in tests, explicit
+  release fixture catalogs, governed evidence, evaluation corpora, and release
+  notes; it must not leak into runtime code, shipped agent guidance, release
+  tooling behavior, or bundled default behavior.
 - The standalone `make greenfield-post-confirm-matrix` maintainer target must
   write `greenfield-post-confirm-matrix.v1.json` by default, with
   `GREENFIELD_MATRIX_OUTPUT_JSON` as the explicit override. A stdout-only
@@ -505,12 +514,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-30 · Validation:** Rebuilt local release dist aebe9245 and proved the maintained installed greenfield matrix: 13/13 standard cases hard 10/10, browser proof, generated-term leakage proof across 55 readback terms, synthetic auto-rescue, and clean cleanup.
+- **2026-06-29 · Decision:** Greenfield release proof must score Project brief and implementation prompts from persisted generated shell payloads and browser surfaces, not regenerated proof-harness payloads.
   - Scope: B-142
-  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245/greenfield-post-confirm-matrix-20260630-aebe9245.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
-- **2026-06-30 · Implementation:** Closed release-matrix Project proof custody by scoring persisted tooling-payload prompts, adding real Project shell browser proof, checking persisted project-brief structure, and persisting generated-term leakage proof.
-  - Scope: B-142
-  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, scripts/release/greenfield_browser_surface_proof.py +3 more
+  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md
 - **2026-06-29 · Implementation:** Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
@@ -526,12 +532,26 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Hardened greenfield matrix domain-leakage custody so selected custom simulation terms scan protected source, shipped guidance, and wheel custody before temp repos are created.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md
-- **2026-06-29 · Implementation:** Captured and fixed domain-leakage guard false positive: persisted greenfield matrix proof JSON in the dist is evidence, not install payload; guard now excludes greenfield-post-confirm proof JSON while still scanning runtime wheel and text install assets.
-  - Scope: B-142
-  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, tests/unit/install/test_platform_domain_leakage_check.py
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-06-30: Fixed release-matrix generated-readback leakage baseline custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  A `7cf9d2ed` release-dist proof run showed the platform leakage build gate
+  can pass while the installed matrix still stalls if generated-readback
+  required-anchor suppression rescans protected source and runtime tarballs
+  term by term. The matrix now computes platform-native required anchors once
+  for the selected case vocabulary, scans generated-readback leakage terms as
+  one union while preserving case attribution, and reuses the tokenized
+  source/dist custody corpus across repeated term sets. Follow-up review also
+  found that release scripts were outside protected custody and that wrapped or
+  identifier-shaped phrases could escape line-bounded matching. The guard now
+  includes `scripts/release`, keeps intentional fixture vocabulary in the
+  excluded matrix fixture catalog, tokenizes documents across line boundaries,
+  splits identifier case transitions, and catches compacted multi-word phrase
+  tokens. Focused install/leakage proof passed 71 tests; cold/warm source+dist
+  guard timings against the `7cf9d2ed` dist were 28.228s, 0.062s, and 0.809s
+  with zero findings. Rebuilt installed matrix proof remains required before
+  release readiness is reclaimed.
 - 2026-06-30: Proved release package `odylith-local-release-0.1.15-aebe9245` after Project proof-custody hardening. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
   The maintained installed matrix persisted at
   `greenfield-post-confirm-matrix-20260630-aebe9245.v1.json` passed 13/13

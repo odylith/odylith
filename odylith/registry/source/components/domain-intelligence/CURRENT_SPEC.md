@@ -24,18 +24,6 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-30 · Implementation:** Split release-matrix leakage sentinels from domain coverage anchors and repaired generic actor risk plus Registry profile context custody after fresh variance proof.
-  - Scope: B-142
-  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion.py +2 more
-- **2026-06-30 · Implementation:** Tightened fresh-variance proof custody and prompt-intent recovery after a non-reused installed run exposed false leakage sentinels plus actor-led gerund fallback prose.
-  - Scope: B-142
-  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py +2 more
-- **2026-06-30 · Validation:** Rebuilt local release dist aebe9245 and proved the maintained installed greenfield matrix with persisted Project prompt readback, Project browser proof, generated-term leakage proof, and clean temp cleanup.
-  - Scope: B-142
-  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245/greenfield-post-confirm-matrix-20260630-aebe9245.v1.json, scripts/release/greenfield_post_confirm_matrix.py
-- **2026-06-30 · Implementation:** Hardened greenfield matrix proof custody so Project prompt scoring uses persisted tooling-payload readback, Project browser proof covers the real shell pane, persisted project briefs get structural readback checks, and generated-domain terms are rescanned against protected platform custody after each simulation.
-  - Scope: B-142
-  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, scripts/release/greenfield_browser_surface_proof.py +4 more
 - **2026-06-29 · Implementation:** Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more

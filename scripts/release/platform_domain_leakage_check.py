@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 import sys
 import tarfile
 import zipfile
@@ -16,6 +16,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from greenfield_post_confirm_matrix_cases import default_cases  # noqa: E402
+from greenfield_post_confirm_matrix_cases import historical_domain_leakage_sentinels  # noqa: E402
 
 
 TEXT_SUFFIXES = frozenset(
@@ -37,6 +38,7 @@ TEXT_SUFFIXES = frozenset(
 SOURCE_SCAN_PATHS = (
     "src/odylith",
     "bin",
+    "scripts/release",
     "README.md",
     "AGENTS.md",
     "pyproject.toml",
@@ -140,23 +142,30 @@ PLATFORM_NATIVE_TERMS = frozenset(
         "workflow",
     }
 )
-HISTORICAL_DOMAIN_SENTINEL_TERMS = (
-    "anger management",
-    "appointment",
-    "booking",
-    "digestive health",
-    "fifa tracker",
-    "quantum tunneling",
-    "wearable app",
-    "workout",
-)
-
 
 @dataclass(frozen=True)
 class LeakageFinding:
     location: str
     term: str
     line: int
+
+
+@dataclass(frozen=True)
+class _ScanToken:
+    value: str
+    line: int
+
+
+@dataclass(frozen=True)
+class _ScanDocument:
+    location: str
+    tokens: tuple[_ScanToken, ...]
+    token_values: tuple[str, ...]
+    token_lines: Mapping[str, tuple[int, ...]]
+    token_positions: Mapping[str, tuple[int, ...]]
+
+
+_PLATFORM_CUSTODY_DOCUMENT_CACHE: dict[tuple[str, str], tuple[_ScanDocument, ...]] = {}
 
 
 def domain_leakage_terms(
@@ -191,7 +200,7 @@ def domain_leakage_terms_from_terms(terms: Iterable[str]) -> tuple[str, ...]:
 def historical_domain_leakage_terms() -> tuple[str, ...]:
     """Return historical consumer-domain sentinels used as release proof vocabulary."""
 
-    return domain_leakage_terms_from_terms(HISTORICAL_DOMAIN_SENTINEL_TERMS)
+    return domain_leakage_terms_from_terms(historical_domain_leakage_sentinels())
 
 
 def case_leakage_terms(case: object) -> tuple[str, ...]:
@@ -224,43 +233,62 @@ def scan_platform_custody(
     """Scan source and optional dist custody for forbidden project vocabulary."""
 
     scan_terms = terms or domain_leakage_terms()
-    findings = list(scan_repo(repo_root.resolve(), terms=scan_terms))
-    if dist_dir is not None:
-        findings.extend(scan_dist(dist_dir.resolve(), terms=scan_terms))
-    return tuple(findings)
+    documents = _platform_custody_documents(
+        repo_root=repo_root.resolve(),
+        dist_dir=dist_dir.resolve() if dist_dir else None,
+    )
+    return _scan_documents(documents, terms=scan_terms)
 
 
 def scan_repo(repo_root: Path, terms: tuple[str, ...] | None = None) -> tuple[LeakageFinding, ...]:
     scan_terms = terms or domain_leakage_terms()
-    findings: list[LeakageFinding] = []
-    for scan_path in SOURCE_SCAN_PATHS:
-        path = repo_root / scan_path
-        if path.is_file():
-            findings.extend(_scan_file(path, repo_root=repo_root, location_prefix="", terms=scan_terms))
-        elif path.is_dir():
-            for file_path in sorted(path.rglob("*")):
-                if _should_scan_source_file(file_path, repo_root):
-                    findings.extend(_scan_file(file_path, repo_root=repo_root, location_prefix="", terms=scan_terms))
-    return tuple(findings)
+    return _scan_documents(_repo_documents(repo_root.resolve()), terms=scan_terms)
 
 
 def scan_dist(dist_dir: Path, terms: tuple[str, ...] | None = None) -> tuple[LeakageFinding, ...]:
     scan_terms = terms or domain_leakage_terms()
-    findings: list[LeakageFinding] = []
+    return _scan_documents(_dist_documents(dist_dir.resolve()), terms=scan_terms)
+
+
+def _platform_custody_documents(*, repo_root: Path, dist_dir: Path | None) -> tuple[_ScanDocument, ...]:
+    key = (str(repo_root.resolve()), str(dist_dir.resolve()) if dist_dir else "")
+    if key not in _PLATFORM_CUSTODY_DOCUMENT_CACHE:
+        documents = list(_repo_documents(repo_root.resolve()))
+        if dist_dir is not None:
+            documents.extend(_dist_documents(dist_dir.resolve()))
+        _PLATFORM_CUSTODY_DOCUMENT_CACHE[key] = tuple(documents)
+    return _PLATFORM_CUSTODY_DOCUMENT_CACHE[key]
+
+
+def _repo_documents(repo_root: Path) -> tuple[_ScanDocument, ...]:
+    documents: list[_ScanDocument] = []
+    for scan_path in SOURCE_SCAN_PATHS:
+        path = repo_root / scan_path
+        if path.is_file():
+            documents.extend(_file_documents(path, repo_root=repo_root, location_prefix=""))
+        elif path.is_dir():
+            for file_path in sorted(path.rglob("*")):
+                if _should_scan_source_file(file_path, repo_root):
+                    documents.extend(_file_documents(file_path, repo_root=repo_root, location_prefix=""))
+    return tuple(documents)
+
+
+def _dist_documents(dist_dir: Path) -> tuple[_ScanDocument, ...]:
+    documents: list[_ScanDocument] = []
     if not dist_dir.exists():
         return ()
     for file_path in sorted(dist_dir.iterdir()):
         if file_path.is_file() and file_path.name.endswith(".whl"):
-            findings.extend(_scan_wheel(file_path, terms=scan_terms))
+            documents.extend(_wheel_documents(file_path))
         elif file_path.is_file() and file_path.name.endswith(".tar.gz"):
-            findings.extend(_scan_tar(file_path, terms=scan_terms))
+            documents.extend(_tar_documents(file_path))
         elif file_path.is_file() and _should_scan_dist_text_file(file_path):
-            findings.extend(_scan_file(file_path, repo_root=dist_dir, location_prefix="dist:", terms=scan_terms))
-    return tuple(findings)
+            documents.extend(_file_documents(file_path, repo_root=dist_dir, location_prefix="dist:"))
+    return tuple(documents)
 
 
-def _scan_wheel(wheel: Path, *, terms: tuple[str, ...]) -> tuple[LeakageFinding, ...]:
-    findings: list[LeakageFinding] = []
+def _wheel_documents(wheel: Path) -> tuple[_ScanDocument, ...]:
+    documents: list[_ScanDocument] = []
     with zipfile.ZipFile(wheel) as zf:
         for name in sorted(zf.namelist()):
             if not _should_scan_wheel_member(name):
@@ -269,12 +297,12 @@ def _scan_wheel(wheel: Path, *, terms: tuple[str, ...]) -> tuple[LeakageFinding,
                 text = zf.read(name).decode("utf-8")
             except UnicodeDecodeError:
                 continue
-            findings.extend(_scan_text(text, location=f"wheel:{wheel.name}:{name}", terms=terms))
-    return tuple(findings)
+            documents.append(_text_document(text, location=f"wheel:{wheel.name}:{name}"))
+    return tuple(documents)
 
 
-def _scan_tar(archive: Path, *, terms: tuple[str, ...]) -> tuple[LeakageFinding, ...]:
-    findings: list[LeakageFinding] = []
+def _tar_documents(archive: Path) -> tuple[_ScanDocument, ...]:
+    documents: list[_ScanDocument] = []
     with tarfile.open(archive) as tf:
         for member in sorted(tf.getmembers(), key=lambda item: item.name):
             if not member.isfile() or not _should_scan_tar_member(member.name):
@@ -286,38 +314,69 @@ def _scan_tar(archive: Path, *, terms: tuple[str, ...]) -> tuple[LeakageFinding,
                 text = extracted.read().decode("utf-8")
             except UnicodeDecodeError:
                 continue
-            findings.extend(_scan_text(text, location=f"tar:{archive.name}:{member.name}", terms=terms))
-    return tuple(findings)
+            documents.append(_text_document(text, location=f"tar:{archive.name}:{member.name}"))
+    return tuple(documents)
 
 
-def _scan_file(
+def _file_documents(
     path: Path,
     *,
     repo_root: Path,
     location_prefix: str,
-    terms: tuple[str, ...],
-) -> tuple[LeakageFinding, ...]:
+) -> tuple[_ScanDocument, ...]:
     try:
         text = path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
         return ()
     location = f"{location_prefix}{path.relative_to(repo_root).as_posix()}"
-    return _scan_text(text, location=location, terms=terms)
+    return (_text_document(text, location=location),)
+
+
+def _text_document(text: str, *, location: str) -> _ScanDocument:
+    tokens = _scan_tokens(text)
+    line_sets: dict[str, set[int]] = {}
+    position_lists: dict[str, list[int]] = {}
+    for index, token in enumerate(tokens):
+        line_sets.setdefault(token.value, set()).add(token.line)
+        position_lists.setdefault(token.value, []).append(index)
+    return _ScanDocument(
+        location=location,
+        tokens=tokens,
+        token_values=tuple(token.value for token in tokens),
+        token_lines={value: tuple(sorted(lines)) for value, lines in line_sets.items()},
+        token_positions={value: tuple(positions) for value, positions in position_lists.items()},
+    )
+
+
+def _scan_documents(documents: tuple[_ScanDocument, ...], *, terms: tuple[str, ...]) -> tuple[LeakageFinding, ...]:
+    findings: list[LeakageFinding] = []
+    term_token_pairs = tuple((term, _tokens(term)) for term in terms)
+    for document in documents:
+        findings.extend(_scan_document(document, term_token_pairs=term_token_pairs))
+    return tuple(findings)
 
 
 def _scan_text(text: str, *, location: str, terms: tuple[str, ...]) -> tuple[LeakageFinding, ...]:
+    return _scan_document(
+        _text_document(text, location=location),
+        term_token_pairs=tuple((term, _tokens(term)) for term in terms),
+    )
+
+
+def _scan_document(
+    document: _ScanDocument,
+    *,
+    term_token_pairs: tuple[tuple[str, tuple[str, ...]], ...],
+) -> tuple[LeakageFinding, ...]:
     findings: list[LeakageFinding] = []
-    term_token_pairs = tuple((term, _tokens(term)) for term in terms)
-    lowered_lines = text.casefold().splitlines()
-    for line_number, line in enumerate(lowered_lines, start=1):
-        line_token_tuple = _tokens(line)
-        line_token_set = set(line_token_tuple)
-        for term, term_tokens in term_token_pairs:
-            if len(term_tokens) == 1:
-                if term_tokens[0] in line_token_set:
-                    findings.append(LeakageFinding(location=location, term=term, line=line_number))
-            elif _contains_phrase(line_token_tuple, term_tokens):
-                findings.append(LeakageFinding(location=location, term=term, line=line_number))
+    seen: set[tuple[str, int]] = set()
+    for term, term_tokens in term_token_pairs:
+        for line_number in _term_match_lines(document, term_tokens):
+            key = (term, line_number)
+            if key in seen:
+                continue
+            seen.add(key)
+            findings.append(LeakageFinding(location=document.location, term=term, line=line_number))
     return tuple(findings)
 
 
@@ -364,7 +423,9 @@ def _should_scan_tar_member(name: str) -> bool:
         return False
     if "odylith" in parts:
         return True
-    return path.name == "METADATA" and any(part.startswith("odylith-") and part.endswith(".dist-info") for part in parts)
+    return path.name == "METADATA" and any(
+        part.startswith("odylith-") and part.endswith(".dist-info") for part in parts
+    )
 
 
 def _should_scan_dist_text_file(path: Path) -> bool:
@@ -378,17 +439,88 @@ def _normalize_term(term: str) -> str:
 
 
 def _tokens(text: str) -> tuple[str, ...]:
-    tokens: list[str] = []
+    return tuple(token.value for token in _scan_tokens(text))
+
+
+def _scan_tokens(text: str) -> tuple[_ScanToken, ...]:
+    tokens: list[_ScanToken] = []
     current: list[str] = []
-    for char in text.casefold():
+    line_number = 1
+    token_line = 1
+    for char in str(text or ""):
         if char.isalnum():
+            if not current:
+                token_line = line_number
             current.append(char)
-        elif current:
-            tokens.append("".join(current))
+            continue
+        if current:
+            tokens.extend(_scan_token_parts("".join(current), line=token_line))
             current = []
+        if char == "\n":
+            line_number += 1
     if current:
-        tokens.append("".join(current))
+        tokens.extend(_scan_token_parts("".join(current), line=token_line))
     return tuple(tokens)
+
+
+def _scan_token_parts(value: str, *, line: int) -> tuple[_ScanToken, ...]:
+    parts = _identifier_parts(value)
+    tokens = tuple(_ScanToken(part.casefold(), line) for part in parts if part)
+    compact = "".join(part.casefold() for part in parts if part)
+    if compact and compact not in {token.value for token in tokens}:
+        return (*tokens, _ScanToken(compact, line))
+    return tokens
+
+
+def _identifier_parts(value: str) -> tuple[str, ...]:
+    text = str(value or "")
+    if not text:
+        return ()
+    starts = [0]
+    for index in range(1, len(text)):
+        previous = text[index - 1]
+        current = text[index]
+        next_char = text[index + 1] if index + 1 < len(text) else ""
+        if (
+            previous.islower()
+            and current.isupper()
+            or previous.isalpha()
+            and current.isdigit()
+            or previous.isdigit()
+            and current.isalpha()
+            or previous.isupper()
+            and current.isupper()
+            and bool(next_char)
+            and next_char.islower()
+        ):
+            starts.append(index)
+    starts.append(len(text))
+    return tuple(text[starts[index] : starts[index + 1]] for index in range(len(starts) - 1))
+
+
+def _term_match_lines(document: _ScanDocument, term_tokens: tuple[str, ...]) -> tuple[int, ...]:
+    if not document.tokens or not term_tokens:
+        return ()
+    lines: list[int] = []
+    if len(term_tokens) == 1:
+        return document.token_lines.get(term_tokens[0], ())
+    width = len(term_tokens)
+    if width <= len(document.token_values):
+        lines.extend(
+            document.tokens[index].line
+            for index in document.token_positions.get(term_tokens[0], ())
+            if index + width <= len(document.token_values)
+            and document.token_values[index : index + width] == term_tokens
+        )
+    compact = "".join(term_tokens)
+    if compact:
+        lines.extend(
+            line
+            for token_value, token_lines in document.token_lines.items()
+            if compact in token_value
+            for line in token_lines
+        )
+    return tuple(lines)
 
 
 def _contains_phrase(line_tokens: tuple[str, ...], term_tokens: tuple[str, ...]) -> bool:

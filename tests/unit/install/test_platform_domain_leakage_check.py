@@ -140,6 +140,67 @@ def test_scan_repo_blocks_fixture_terms_in_docs(tmp_path: Path) -> None:
     )
 
 
+def test_scan_repo_blocks_fixture_terms_in_release_scripts(tmp_path: Path) -> None:
+    script = tmp_path / "scripts" / "release" / "proof.py"
+    script.parent.mkdir(parents=True)
+    script.write_text('PROMPT = "quantum onboarding should never live here"\\n', encoding="utf-8")
+
+    findings = leakage.scan_repo(tmp_path, terms=("quantum",))
+
+    assert findings == (
+        leakage.LeakageFinding(location="scripts/release/proof.py", term="quantum", line=1),
+    )
+
+
+def test_scan_repo_allows_release_fixture_catalog_vocabulary(tmp_path: Path) -> None:
+    fixture = tmp_path / "scripts" / "release" / "greenfield_post_confirm_matrix_cases.py"
+    fixture.parent.mkdir(parents=True)
+    fixture.write_text('PROMPT = "quantum communication fixture lives here"\\n', encoding="utf-8")
+
+    assert leakage.scan_repo(tmp_path, terms=("quantum communication",)) == ()
+
+
+def test_scan_repo_blocks_wrapped_phrase_leakage(tmp_path: Path) -> None:
+    platform_file = tmp_path / "src" / "odylith" / "runtime" / "example.py"
+    platform_file.parent.mkdir(parents=True)
+    platform_file.write_text('VALUE = "personalized\nnotification delivery"\\n', encoding="utf-8")
+
+    findings = leakage.scan_repo(tmp_path, terms=("personalized notification delivery",))
+
+    assert findings == (
+        leakage.LeakageFinding(
+            location="src/odylith/runtime/example.py",
+            term="personalized notification delivery",
+            line=1,
+        ),
+    )
+
+
+def test_scan_repo_blocks_identifier_shaped_phrase_leakage(tmp_path: Path) -> None:
+    platform_file = tmp_path / "src" / "odylith" / "runtime" / "example.py"
+    platform_file.parent.mkdir(parents=True)
+    platform_file.write_text(
+        "securityDisclosureCouncilPrompt = True\n"
+        "securitydisclosurecouncilprompt = True\n",
+        encoding="utf-8",
+    )
+
+    findings = leakage.scan_repo(tmp_path, terms=("security disclosure council",))
+
+    assert findings == (
+        leakage.LeakageFinding(
+            location="src/odylith/runtime/example.py",
+            term="security disclosure council",
+            line=1,
+        ),
+        leakage.LeakageFinding(
+            location="src/odylith/runtime/example.py",
+            term="security disclosure council",
+            line=2,
+        ),
+    )
+
+
 def test_scan_dist_blocks_fixture_terms_inside_runtime_wheel(tmp_path: Path) -> None:
     wheel = tmp_path / "odylith-0.1.15-py3-none-any.whl"
     with zipfile.ZipFile(wheel, "w") as zf:

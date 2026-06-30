@@ -235,4 +235,39 @@ The product is proven when a researcher can configure an E91 run, launch it on t
     )
 
 
-__all__ = ["GreenfieldMatrixCase", "default_cases"]
+def rescue_smoke_case() -> GreenfieldMatrixCase:
+    """Return the internal auto-rescue release proof fixture."""
+
+    return GreenfieldMatrixCase(
+        name="rescue disclosure council",
+        prompt=(
+            "Create a greenfield proposal for a cross-organization disclosure council that receives external reports, "
+            "coordinates review, records evidence custody, decides embargo status, and publishes release readiness proof "
+            "without claiming personalized notification delivery in the first release."
+        ),
+        required_terms=("disclosure", "council", "embargo", "evidence"),
+        leakage_terms=("disclosure council", "embargo status", "personalized notification delivery"),
+    )
+
+
+def historical_domain_leakage_sentinels() -> tuple[str, ...]:
+    """Return historical consumer-domain sentinels for release leakage proof."""
+
+    return (
+        "anger management",
+        "appointment",
+        "booking",
+        "digestive health",
+        "fifa tracker",
+        "quantum tunneling",
+        "wearable app",
+        "workout",
+    )
+
+
+__all__ = [
+    "GreenfieldMatrixCase",
+    "default_cases",
+    "historical_domain_leakage_sentinels",
+    "rescue_smoke_case",
+]

@@ -1177,6 +1177,33 @@
   leakage, matrix, actor-risk, and component-boundary tests; the broader
   affected greenfield/component suite passed 325 tests in 409.12s. Rebuilt
   installed proof remains required before release readiness is reclaimed.
+  Release-proof harness failed mechanism on 2026-06-30: the rebuilt
+  `7cf9d2ed` local release dist passed the 65-term platform domain-leakage
+  build gate, but the maintained installed matrix had to be killed after the
+  first disposable case because generated-readback leakage filtering scanned
+  protected source and runtime tarball custody once per required generated
+  anchor while holding the runtime tarball open. That was not evidence of
+  domain leakage in Odylith source; it was a proof-harness custody and latency
+  defect. The forward fix computes platform-native required anchors once for
+  the selected matrix vocabulary and reuses that baseline during per-case
+  generated artifact readback, preserving fail-closed leakage checks without
+  an unbounded per-term archive scan. Do not repeat the failed mechanism by
+  adding broader term-by-term rescans, domain allowlists, or weaker leakage
+  proof.
+  Reviewer follow-up on 2026-06-30 found two additional leakage-proof blind
+  spots before rebuilt release proof could be trusted. First,
+  `scripts/release` was outside the source custody scan, so release tooling
+  itself could carry project-domain vocabulary while proving other surfaces
+  clean. Second, phrase detection was line-bounded and separator-dependent, so
+  wrapped phrases and identifier-shaped leaks such as camelCase or compacted
+  lowercase project phrases could pass. The forward fix moves intentional
+  release fixture vocabulary into the excluded matrix fixture catalog, includes
+  release scripts in protected custody, tokenizes documents across line
+  boundaries with identifier case splitting, detects compacted multi-token
+  phrases, and caches the tokenized source/dist corpus for repeated matrix
+  scans. Focused leakage proof passed 71 tests, and cold/warm guard timing
+  against the `7cf9d2ed` dist improved to 28.228s cold, 0.062s for a warm
+  three-term query, and 0.809s for a warm 65-term query with zero findings.
 
 - Related Incidents/Bugs: CB-208
 

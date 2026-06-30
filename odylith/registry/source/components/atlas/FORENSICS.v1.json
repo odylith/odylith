@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 292,
-    "mapped_workstream_evidence_count": 260,
+    "explicit_event_count": 296,
+    "mapped_workstream_evidence_count": 264,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 292
+    "timeline_event_count": 296
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -52,6 +52,136 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 733,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Source checkpoint split leakage sentinels from coverage anchors, localized generic actor-led product risks, fixed component-profile context custody, and passed 325 affected greenfield/component tests; rebuilt installed matrix proof remains required.",
+      "ts_iso": "2026-06-30T01:23:30-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 732,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Fresh variance reopened greenfield release readiness: leakage proof now uses declared sentinels only, actor-led gerund intent recovery source proof passed, rebuilt installed proof pending.",
+      "ts_iso": "2026-06-29T22:26:51-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245/greenfield-post-confirm-matrix-20260630-aebe9245.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 731,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Rebuilt local release aebe9245 passed the maintained installed greenfield post-confirm matrix: 13/13 standard cases scored hard 10/10 under 60s with browser proof, zero quality/browser/leakage issues, generated-term leakage proof passed across 55 readback terms, synthetic auto-rescue smoke passed in 33.617s, and temp cleanup was clean.",
+      "ts_iso": "2026-06-29T21:45:14-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifacts": [
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
+      ],
+      "confidence": "high",
+      "event_index": 730,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "decision",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Greenfield release proof must score Project brief and implementation prompts from persisted generated shell payloads and browser surfaces, not regenerated proof-harness payloads.",
+      "ts_iso": "2026-06-29T20:56:41-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",

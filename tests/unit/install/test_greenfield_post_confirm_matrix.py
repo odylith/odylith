@@ -1072,9 +1072,7 @@ def test_generated_leakage_terms_supplement_declared_sentinels_with_distinctive_
 
     terms = module._case_generated_leakage_terms(  # noqa: SLF001
         case=case,
-        repo_root=tmp_path,
-        release_dir=tmp_path,
-        package=package,
+        generated_text=module._generated_text(repo_root=tmp_path, package=package),  # noqa: SLF001
     )
 
     assert "wafer lot" in terms
@@ -1096,9 +1094,7 @@ def test_generated_leakage_terms_suppress_generic_required_anchors(tmp_path: Pat
 
     terms = module._case_generated_leakage_terms(  # noqa: SLF001
         case=case,
-        repo_root=tmp_path,
-        release_dir=tmp_path,
-        package=package,
+        generated_text=module._generated_text(repo_root=tmp_path, package=package),  # noqa: SLF001
     )
 
     assert "protocol" not in terms
@@ -1112,35 +1108,43 @@ def test_generated_leakage_terms_suppress_required_anchors_already_native_to_pla
 ) -> None:
     module = _module()
     package = _substantive_package()
-    package.project_brief_record_text += "\nEstimate disputes stay visible for review."
+    package.project_brief_record_text += "\nEstimate projection disputes stay visible for review."
     case = module.GreenfieldMatrixCase(
         name="estimate dispute",
-        prompt="Create a proposal for estimate dispute review.",
-        required_terms=("estimate",),
+        prompt="Create a proposal for estimate projection dispute review.",
+        required_terms=("estimate", "projection"),
         leakage_terms=("missing lattice phrase",),
     )
+    captured_terms: list[tuple[str, ...]] = []
 
     def fake_scan_platform_custody(*, repo_root: Path, dist_dir: Path, terms: tuple[str, ...]):
-        if terms == ("estimate",):
-            return (
-                module.platform_domain_leakage.LeakageFinding(
-                    location="src/odylith/runtime/common/cache_budget_policy.py",
-                    term="estimate",
-                    line=1,
-                ),
+        captured_terms.append(terms)
+        return tuple(
+            module.platform_domain_leakage.LeakageFinding(
+                location="src/odylith/runtime/common/cache_budget_policy.py",
+                term=term,
+                line=index,
             )
-        return ()
+            for index, term in enumerate(terms, start=1)
+        )
 
     monkeypatch.setattr(module.platform_domain_leakage, "scan_platform_custody", fake_scan_platform_custody)
 
+    platform_baseline_terms = module._platform_baseline_required_terms(  # noqa: SLF001
+        repo_root=module.REPO_ROOT,
+        release_dir=tmp_path,
+        cases=(case,),
+    )
     terms = module._case_generated_leakage_terms(  # noqa: SLF001
         case=case,
-        repo_root=tmp_path,
-        release_dir=tmp_path,
-        package=package,
+        generated_text=module._generated_text(repo_root=tmp_path, package=package),  # noqa: SLF001
+        platform_baseline_terms=platform_baseline_terms,
     )
 
+    assert captured_terms == [("estimate", "projection")]
+    assert platform_baseline_terms == ("estimate", "projection")
     assert "estimate" not in terms
+    assert "projection" not in terms
 
 
 def test_generated_leakage_terms_fall_back_when_case_has_no_declared_sentinels(tmp_path: Path) -> None:
@@ -1155,9 +1159,7 @@ def test_generated_leakage_terms_fall_back_when_case_has_no_declared_sentinels(t
 
     terms = module._case_generated_leakage_terms(  # noqa: SLF001
         case=case,
-        repo_root=tmp_path,
-        release_dir=tmp_path,
-        package=package,
+        generated_text=module._generated_text(repo_root=tmp_path, package=package),  # noqa: SLF001
     )
 
     assert "xenobot" in terms
@@ -1185,6 +1187,60 @@ def test_platform_leakage_proof_summary_reports_cumulative_terms_and_issues() ->
     assert proof["issues"] == [
         "platform domain leakage after generated artifact readback: src/x.py:1 leaked `permit`"
     ]
+
+
+def test_generated_leakage_scan_runs_once_for_result_union(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _module()
+    first = _passing_matrix_result(module)
+    first = module.GreenfieldMatrixResult(
+        name="first",
+        status=first.status,
+        create_seconds=first.create_seconds,
+        counts=first.counts,
+        quality=first.quality,
+        browser_surface_proof_attempted=True,
+        platform_leakage_terms=("zephyr",),
+    )
+    second = _passing_matrix_result(module)
+    second = module.GreenfieldMatrixResult(
+        name="second",
+        status=second.status,
+        create_seconds=second.create_seconds,
+        counts=second.counts,
+        quality=second.quality,
+        browser_surface_proof_attempted=True,
+        platform_leakage_terms=("lattice",),
+    )
+    captured_terms: list[tuple[str, ...]] = []
+
+    def fake_scan_platform_custody(*, repo_root: Path, dist_dir: Path, terms: tuple[str, ...]):
+        captured_terms.append(terms)
+        return (
+            module.platform_domain_leakage.LeakageFinding(
+                location="scripts/release/example.py",
+                term="zephyr",
+                line=7,
+            ),
+        )
+
+    monkeypatch.setattr(module.platform_domain_leakage, "scan_platform_custody", fake_scan_platform_custody)
+
+    results = module._with_platform_leakage_issues(  # noqa: SLF001
+        repo_root=module.REPO_ROOT,
+        results=(first, second),
+        release_dir=tmp_path,
+    )
+
+    assert captured_terms == [("lattice", "zephyr")]
+    assert results[0].status == "failed"
+    assert results[0].quality.score == 0
+    assert results[0].platform_leakage_issues == (
+        "platform domain leakage after generated artifact readback: scripts/release/example.py:7 leaked `zephyr`",
+    )
+    assert results[1].status == "passed"
+    assert results[1].platform_leakage_issues == ()
 
 
 def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -> None:

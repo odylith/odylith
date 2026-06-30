@@ -31,8 +31,14 @@ from greenfield_surface_health import SURFACE_PAYLOAD_CONTRACTS  # noqa: E402
 from greenfield_surface_health import atlas_rendered_asset_count  # noqa: E402
 from greenfield_surface_health import rendered_surface_health_issues  # noqa: E402
 from greenfield_surface_health import rendered_surface_payload_count  # noqa: E402
+from greenfield_matrix_leakage import case_generated_leakage_terms as _case_generated_leakage_terms  # noqa: E402
+from greenfield_matrix_leakage import case_preflight_leakage_terms as _case_preflight_leakage_terms  # noqa: E402
+from greenfield_matrix_leakage import platform_baseline_required_terms as _platform_baseline_required_terms  # noqa: E402
+from greenfield_matrix_leakage import term_present as _term_present  # noqa: E402
+from greenfield_matrix_leakage import with_platform_leakage_issues as _with_platform_leakage_issues  # noqa: E402
 from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 from greenfield_post_confirm_matrix_cases import default_cases  # noqa: E402
+from greenfield_post_confirm_matrix_cases import rescue_smoke_case  # noqa: E402
 from greenfield_process import run_command_with_group_timeout as _run  # noqa: E402
 from greenfield_matrix_types import GreenfieldArtifactCounts  # noqa: E402
 from greenfield_matrix_types import GreenfieldMatrixResult  # noqa: E402
@@ -79,6 +85,11 @@ def run_matrix(
         raise FileNotFoundError(f"missing local release install script: {install_script}")
     _raise_for_ungrounded_required_terms(selected_cases)
     _raise_for_platform_domain_leakage(release_dir, selected_cases)
+    platform_baseline_terms = _platform_baseline_required_terms(
+        repo_root=REPO_ROOT,
+        release_dir=release_dir,
+        cases=selected_cases,
+    )
     run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-matrix-{uuid.uuid4().hex[:8]}"
     run_root.mkdir(parents=True, exist_ok=False)
     server, base_url = _serve_directory(release_dir)
@@ -93,9 +104,17 @@ def run_matrix(
                 base_url=base_url,
                 version=version,
                 include_browser_proof=include_browser_proof,
+                platform_baseline_terms=platform_baseline_terms,
             )
             results.append(result)
             _cleanup_repo_before_next(repo_root)
+        results = list(
+            _with_platform_leakage_issues(
+                repo_root=REPO_ROOT,
+                results=results,
+                release_dir=release_dir,
+            )
+        )
     finally:
         server.shutdown()
         server.server_close()
@@ -206,6 +225,7 @@ def _run_case(
     base_url: str,
     version: str,
     include_browser_proof: bool = False,
+    platform_baseline_terms: Sequence[str] = (),
 ) -> GreenfieldMatrixResult:
     repo_root.mkdir(parents=True)
     env = _local_release_env(base_url=base_url, version=version)
@@ -255,13 +275,8 @@ def _run_case(
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)
     leakage_terms = _case_generated_leakage_terms(
         case=case,
-        repo_root=repo_root,
-        release_dir=install_script.parent,
-        package=package,
-    )
-    leakage_issues = _case_platform_leakage_issues(
-        terms=leakage_terms,
-        release_dir=install_script.parent,
+        generated_text=_generated_text(repo_root=repo_root, package=package),
+        platform_baseline_terms=platform_baseline_terms,
     )
     browser_surface_proof_attempted = bool(include_browser_proof and create.returncode == 0)
     browser_surface_issues = (
@@ -271,7 +286,7 @@ def _run_case(
         create_payload=payload,
         package=package,
         counts=counts,
-        surface_issues=(*surface_issues, *browser_surface_issues, *leakage_issues),
+        surface_issues=(*surface_issues, *browser_surface_issues),
         create_returncode=create.returncode,
         create_seconds=create_seconds,
         create_detail=create.stderr or create.stdout,
@@ -289,7 +304,6 @@ def _run_case(
         create_stdout_excerpt=_command_excerpt(create.stdout) if create.returncode else "",
         create_stderr_excerpt=_command_excerpt(create.stderr) if create.returncode else "",
         platform_leakage_terms=leakage_terms,
-        platform_leakage_issues=leakage_issues,
     )
 
 
@@ -300,16 +314,7 @@ def _run_rescue_smoke_case(
     base_url: str,
     version: str,
 ) -> GreenfieldRescueSmokeResult:
-    case = GreenfieldMatrixCase(
-        name="rescue disclosure council",
-        prompt=(
-            "Create a greenfield proposal for a cross-organization disclosure council that receives external reports, "
-            "coordinates review, records evidence custody, decides embargo status, and publishes release readiness proof "
-            "without claiming personalized notification delivery in the first release."
-        ),
-        required_terms=("disclosure", "council", "embargo", "evidence"),
-        leakage_terms=("disclosure council", "embargo status", "personalized notification delivery"),
-    )
+    case = rescue_smoke_case()
     repo_root.mkdir(parents=True)
     env = _local_release_env(base_url=base_url, version=version)
     _run(cwd=repo_root, env=env, command=["git", "init"], timeout=60)
@@ -675,128 +680,6 @@ def _generated_text(*, repo_root: Path, package: Any) -> str:
     for row in _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts")):
         chunks.extend(text_values(row))
     return "\n".join(str(item) for item in chunks).casefold()
-
-
-def _case_preflight_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
-    declared = _case_declared_leakage_terms(case)
-    return declared or platform_domain_leakage.case_leakage_terms(case)
-
-
-def _case_declared_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
-    value = getattr(case, "leakage_terms", ())
-    if isinstance(value, (str, bytes)):
-        raw_terms = (str(value),)
-    else:
-        raw_terms = tuple(str(term) for term in value) if isinstance(value, Sequence) else ()
-    return platform_domain_leakage.domain_leakage_terms_from_terms(raw_terms)
-
-
-def _case_required_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
-    value = getattr(case, "required_terms", ())
-    if isinstance(value, (str, bytes)):
-        raw_terms = (str(value),)
-    else:
-        raw_terms = tuple(str(term) for term in value) if isinstance(value, Sequence) else ()
-    return platform_domain_leakage.domain_leakage_terms_from_terms(raw_terms)
-
-
-def _case_generated_leakage_terms(
-    *,
-    case: GreenfieldMatrixCase,
-    repo_root: Path,
-    release_dir: Path,
-    package: Any,
-) -> tuple[str, ...]:
-    generated_text = _generated_text(repo_root=repo_root, package=package)
-    declared_terms = _case_declared_leakage_terms(case)
-    required_terms = _case_required_leakage_terms(case)
-    declared_present = tuple(term for term in declared_terms if _term_present(generated_text, term))
-    required_present = tuple(
-        term
-        for term in required_terms
-        if _term_present(generated_text, term)
-        and term not in declared_terms
-        and not _platform_baseline_contains_term(term=term, release_dir=release_dir)
-    )
-    return tuple(dict.fromkeys((*declared_present, *required_present)))
-
-
-_PLATFORM_BASELINE_TERM_CACHE: dict[tuple[str, str], bool] = {}
-
-
-def _platform_baseline_contains_term(*, term: str, release_dir: Path) -> bool:
-    key = (str(Path(release_dir).expanduser().resolve()), str(term).strip())
-    if key not in _PLATFORM_BASELINE_TERM_CACHE:
-        _PLATFORM_BASELINE_TERM_CACHE[key] = bool(
-            platform_domain_leakage.scan_platform_custody(
-                repo_root=REPO_ROOT,
-                dist_dir=release_dir,
-                terms=(str(term).strip(),),
-            )
-        )
-    return _PLATFORM_BASELINE_TERM_CACHE[key]
-
-
-def _case_platform_leakage_issues(*, terms: Sequence[str], release_dir: Path) -> tuple[str, ...]:
-    checked_terms = tuple(dict.fromkeys(str(term).strip() for term in terms if str(term).strip()))
-    if not checked_terms:
-        return ()
-    findings = platform_domain_leakage.scan_platform_custody(
-        repo_root=REPO_ROOT,
-        dist_dir=release_dir,
-        terms=checked_terms,
-    )
-    return tuple(
-        f"platform domain leakage after generated artifact readback: {finding.location}:{finding.line} leaked `{finding.term}`"
-        for finding in findings
-    )
-
-
-def _term_present(text: str, term: str) -> bool:
-    text_tokens = _tokenize(text)
-    term_tokens = _tokenize(term)
-    if not text_tokens or not term_tokens or len(term_tokens) > len(text_tokens):
-        return False
-    width = len(term_tokens)
-    return any(
-        all(
-            _token_matches(source_token, term_token)
-            for source_token, term_token in zip(text_tokens[index : index + width], term_tokens, strict=True)
-        )
-        for index in range(len(text_tokens) - width + 1)
-    )
-
-
-def _token_matches(source_token: str, term_token: str) -> bool:
-    return bool(set(_token_forms(source_token)) & set(_token_forms(term_token)))
-
-
-def _token_forms(token: str) -> tuple[str, ...]:
-    value = str(token or "").casefold()
-    forms = [value]
-    if len(value) > 2:
-        forms.append(f"{value}s")
-    if len(value) > 3 and value.endswith("y"):
-        forms.append(f"{value[:-1]}ies")
-    if len(value) > 3 and value.endswith("s") and not value.endswith("ss"):
-        forms.append(value[:-1])
-    if len(value) > 4 and value.endswith("ies"):
-        forms.append(f"{value[:-3]}y")
-    return tuple(dict.fromkeys(form for form in forms if form))
-
-
-def _tokenize(text: str) -> tuple[str, ...]:
-    tokens: list[str] = []
-    current: list[str] = []
-    for char in str(text or "").casefold():
-        if char.isalnum():
-            current.append(char)
-        elif current:
-            tokens.append("".join(current))
-            current = []
-    if current:
-        tokens.append("".join(current))
-    return tuple(tokens)
 
 
 def _read_project_dashboard_payload(repo_root: Path) -> Mapping[str, Any]:
