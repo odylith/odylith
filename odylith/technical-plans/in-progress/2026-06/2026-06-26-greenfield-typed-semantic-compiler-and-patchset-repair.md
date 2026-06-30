@@ -1838,7 +1838,7 @@ vocabulary, or degraded packages.
       non-reused variance matrix with browser proof, generated-term leakage
       proof, hard 10/10 scores, sub-60s standard creates, and clean temp
       cleanup.
-- [ ] Rebuild and prove the post-7cf9d2ed leakage-baseline harness checkpoint.
+- [x] Rebuild and prove the post-7cf9d2ed leakage-baseline harness checkpoint.
       The `7cf9d2ed` dist passed the 65-term platform domain-leakage build
       gate, but the maintained installed matrix stalled after the first
       disposable case because generated-readback required-anchor suppression
@@ -1854,7 +1854,13 @@ vocabulary, or degraded packages.
       tokenized source/dist corpus so repeated matrix scans stay bounded.
       Focused install/leakage proof passed 71 tests, and cold/warm source+dist
       leakage timing against the `7cf9d2ed` dist was 28.228s, 0.062s, and
-      0.809s. Remaining proof: rebuild the installable dist from this source
-      checkpoint and rerun the maintained installed matrix plus fresh
-      non-reused variance with browser proof, generated-term leakage proof,
-      hard 10/10 scores, sub-60s standard creates, and clean temp cleanup.
+      0.809s. Rebuilt installable dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2ab8793f`
+      passed the 65-term platform domain-leakage build gate and persisted the
+      maintained installed matrix at
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2ab8793f/greenfield-post-confirm-matrix-20260630-2ab8793f.v1.json`.
+      The matrix passed 13/13 maintained standard cases with hard 10/10 scores,
+      zero quality/browser/platform-leakage issues, generated-readback
+      protected-custody proof across 54 terms, create timings of
+      22.856-29.056s, synthetic typed-probe rescue in 34.430s, and clean
+      matrix/rescue/debug/source temp cleanup.

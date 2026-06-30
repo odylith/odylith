@@ -37,12 +37,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 296,
-    "mapped_workstream_evidence_count": 264,
+    "explicit_event_count": 297,
+    "mapped_workstream_evidence_count": 265,
     "recent_path_match_count": 0,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 296
+    "timeline_event_count": 297
   },
   "name": "Atlas",
   "path_prefixes": [
@@ -52,6 +52,40 @@
   ],
   "spec_ref": "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2ab8793f/greenfield-post-confirm-matrix-20260630-2ab8793f.v1.json"
+      ],
+      "confidence": "high",
+      "event_index": 736,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "B-142 release proof updated: packaged 0.1.15 checkpoint 2ab8793f passed the 65-term build-time platform leakage gate and the installed 13-case maintained greenfield matrix with zero platform leakage issues across 54 generated readback terms, zero browser issues, 10/10 quality scores, 22.856-29.056s standard creates, rescue smoke in 34.430s, and clean temp cleanup.",
+      "ts_iso": "2026-06-30T02:35:50-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [],
       "confidence": "high",
