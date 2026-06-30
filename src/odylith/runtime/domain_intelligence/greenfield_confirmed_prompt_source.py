@@ -284,6 +284,9 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
             tail_words = words[connector_index + 1 :]
             if not actor_words or not tail_words or not _looks_like_actor_purpose_left(actor_words):
                 continue
+            embedded_actor, embedded_action = _helper_relative_actor_action(tail_words)
+            if embedded_actor and embedded_action:
+                return embedded_actor, f"{embedded_actor} {embedded_action}".strip(" .")
             action = base_action_clause(_smooth_request_first_path_clause(" ".join(tail_words)), force_leading_finite=True)
             if action:
                 actor = " ".join(actor_words).strip(" .")
@@ -292,6 +295,31 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
                     return actor, f"{actor} {connector} {action}".strip(" .")
                 return actor, f"{actor} {action}".strip(" .")
     return "", ""
+
+
+def _helper_relative_actor_action(words: list[str]) -> tuple[str, str]:
+    if len(words) < 3 or _word_key(words[0]) not in _REQUEST_HELPER_WORDS:
+        return "", ""
+    tail_words = words[1:]
+    if tail_words and _word_key(tail_words[0]) == "to":
+        tail_words = tail_words[1:]
+    for split_index in range(1, min(len(tail_words), 7)):
+        actor_words = tail_words[:split_index]
+        action_words = tail_words[split_index:]
+        if not action_words or not _looks_like_actor_purpose_left(actor_words):
+            continue
+        action_source = _smooth_request_first_path_clause(" ".join(action_words))
+        action = base_action_clause(action_source, force_leading_finite=True)
+        if action:
+            return _strip_leading_actor_article(" ".join(actor_words)), action
+    return "", ""
+
+
+def _strip_leading_actor_article(value: str) -> str:
+    words = _request_words(value)
+    if words and _word_key(words[0]) in {"a", "an", "the"}:
+        words = words[1:]
+    return " ".join(words).strip(" .")
 
 
 def _strip_operator_request_wrapper(value: str) -> str:

@@ -832,14 +832,8 @@ def _preserve_system_hyphen_token(value: str) -> bool:
     if "-" not in value or value.startswith("-") or value.endswith("-"):
         return False
     lower = value.casefold().strip(".,;:()")
-    return lower in {
-        "conflict-of-interest",
-        "reason-code",
-        "revision-round",
-        "role-based",
-        "source-backed",
-        "user-facing",
-    }
+    parts = tuple(part for part in lower.split("-") if part)
+    return 2 <= len(parts) <= 4 and all(part.isalpha() for part in parts)
 
 
 def _title_case_system_token(value: str) -> str:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import importlib
 import json
 import subprocess
 import sys
@@ -32,6 +33,18 @@ def _load_module(path: Path, name: str):
 
 def _module():
     return _load_module(SCRIPTS_ROOT / "greenfield_post_confirm_matrix.py", "greenfield_post_confirm_matrix")
+
+
+def _scoring_module():
+    if str(SCRIPTS_ROOT) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS_ROOT))
+    return importlib.import_module("greenfield_matrix_quality_scoring")
+
+
+def _package_evidence_module():
+    if str(SCRIPTS_ROOT) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS_ROOT))
+    return importlib.import_module("greenfield_matrix_package_evidence")
 
 
 def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
@@ -96,14 +109,14 @@ def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
             cases=(
                 module.GreenfieldMatrixCase(
                     name="xenobot custody",
-                    prompt="Create a greenfield proposal for xenobot agent custody.",
-                    required_terms=("xenobot", "agent"),
+                    prompt="Create a greenfield proposal for xenobot culture custody.",
+                    required_terms=("xenobot", "culture"),
                 ),
             ),
         )
 
     assert len(captured_terms) == 1
-    assert "xenobot custody" in captured_terms[0]
+    assert "xenobot culture" in captured_terms[0]
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
 
@@ -144,7 +157,7 @@ def test_run_matrix_preflight_supplements_declared_sentinels_with_case_vocabular
 
     assert len(captured_terms) == 1
     assert "dictionary review sentinel" in captured_terms[0]
-    assert "language archive" in captured_terms[0]
+    assert "language archive dictionary" in captured_terms[0]
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
 
@@ -236,6 +249,7 @@ def _empty_package() -> SimpleNamespace:
         source_launch_readback={},
         project_dashboard_preview={},
         compass_memory_preview={},
+        governed_readback=_empty_governed_readback(),
         next_steps_preview={},
         program_result={},
         prewrite_safety_preview={},
@@ -472,6 +486,79 @@ def _substantive_project_payload() -> dict[str, object]:
     }
 
 
+def _empty_governed_readback() -> SimpleNamespace:
+    return SimpleNamespace(
+        release_catalogs={},
+        release_events={},
+        program_records={},
+        compass_records={},
+        surface_payloads={},
+    )
+
+
+def _substantive_governed_readback() -> SimpleNamespace:
+    return SimpleNamespace(
+        release_catalogs={
+            "odylith/radar/source/releases/releases.v1.json": {
+                "version": "v1",
+                "releases": [
+                    {"release_id": "release-0-0-1", "version": "0.0.1", "status": "active"},
+                ],
+            }
+        },
+        release_events={
+            "odylith/radar/source/releases/release-assignment-events.v1.jsonl": (
+                {
+                    "action": "add",
+                    "recorded_at": "2026-06-30T12:00:00Z",
+                    "release_id": "release-0-0-1",
+                    "workstream_id": "B-001",
+                },
+            )
+        },
+        program_records={
+            "odylith/radar/source/programs/B-001.execution-waves.v1.json": {
+                "umbrella_id": "B-001",
+                "version": "v1",
+                "waves": [
+                    {
+                        "wave_id": "W1",
+                        "label": "First governed path",
+                        "summary": "Prove one governed path before expanding scope.",
+                        "primary_workstreams": ["B-001"],
+                    }
+                ],
+            }
+        },
+        compass_records={
+            "odylith/compass/runtime/current.v1.json": {
+                "version": "v1",
+                "generated_utc": "2026-06-30T12:00:00Z",
+                "sources": {"backlog_index": "odylith/radar/source/INDEX.md"},
+            }
+        },
+        surface_payloads={
+            "radar": {"entries": [{"id": f"B-00{index}"} for index in range(1, 5)]},
+            "registry": {"components": [{"id": f"C{index}"} for index in range(1, 4)]},
+            "atlas": {"diagrams": [{"id": f"D{index}"} for index in range(1, 5)]},
+            "compass": {
+                "runtime_json_href": "runtime/current.v1.json?v=1",
+                "source_truth_href": "../compass-source-truth.v1.json?v=1",
+            },
+            "casebook": {"bugs": [], "counts": {"total": 0}},
+            "tooling": {
+                "radar_href": "radar/radar.html?v=1",
+                "registry_href": "registry/registry.html?v=1",
+                "atlas_href": "atlas/atlas.html?v=1",
+                "compass_href": "compass/compass.html?v=1",
+                "casebook_href": "casebook/casebook.html?v=1",
+                "project_intelligence": _substantive_project_payload(),
+                "surface_runtime_status": {"status": "ready"},
+            },
+        },
+    )
+
+
 def _substantive_package() -> SimpleNamespace:
     project_brief = _substantive_project_brief()
     source_launch = {
@@ -566,6 +653,7 @@ def _substantive_package() -> SimpleNamespace:
         source_launch_readback=source_launch,
         project_dashboard_preview=_substantive_project_payload(),
         compass_memory_preview={},
+        governed_readback=_substantive_governed_readback(),
         next_steps_preview={
             "start_workstream_id": "B-001",
             "implementation_prompt": "Start B-001 from the accepted permit readiness model and prove valid, missing, replay, and source-boundary evidence.",
@@ -606,7 +694,7 @@ def _full_counts(module) -> object:
         trace_nodes=12,
         trace_workstreams=4,
         rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
-        rendered_surface_payloads=len(module.SURFACE_PAYLOAD_CONTRACTS) * 2,
+        rendered_surface_payloads=len(_scoring_module().SURFACE_PAYLOAD_CONTRACTS) * 2,
         atlas_rendered_assets=8,
         domain_term_hits=3,
         project_implementation_prompts=5,
@@ -685,7 +773,7 @@ def _passing_matrix_result(module) -> object:
             passed=True,
             issues=(),
             lenses={lens: True for lens in ("product_manager", "architect", "engineer", "domain_expert")},
-            scores={dimension: 10 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
+            scores={dimension: 10 for dimension in module.QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
             score=10,
             score_explanation=("all brutal release-quality dimensions scored 10",),
         ),
@@ -708,9 +796,10 @@ def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monke
     create_envs: list[dict[str, str]] = []
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _substantive_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "browser_surface_proof_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         if "create" in command:
@@ -729,11 +818,12 @@ def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monke
             prompt="Create a standard greenfield project.",
             required_terms=("standard", "project"),
         ),
-        repo_root=tmp_path / "standard-repo",
-        install_script=tmp_path / "install.sh",
-        base_url="http://127.0.0.1:8123",
-        version="0.1.15",
-    )
+            repo_root=tmp_path / "standard-repo",
+            install_script=tmp_path / "install.sh",
+            base_url="http://127.0.0.1:8123",
+            version="0.1.15",
+            include_browser_proof=True,
+        )
 
     assert result.status == "passed"
     assert len(create_envs) == 1
@@ -746,9 +836,10 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
     create_envs: list[dict[str, str]] = []
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _substantive_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
+    monkeypatch.setattr(module, "browser_surface_proof_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
         commands.append(list(command))
@@ -767,11 +858,12 @@ def test_standard_matrix_override_intent_skips_propose_without_rescue_probe(monk
             required_terms=("sparse", "project"),
             confirmed_intent_markdown="# Product Intent Confirmation\n\n## State object\nReport.\n",
         ),
-        repo_root=tmp_path / "standard-repo",
-        install_script=tmp_path / "install.sh",
-        base_url="http://127.0.0.1:8123",
-        version="0.1.15",
-    )
+            repo_root=tmp_path / "standard-repo",
+            install_script=tmp_path / "install.sh",
+            base_url="http://127.0.0.1:8123",
+            version="0.1.15",
+            include_browser_proof=True,
+        )
 
     intent_text = (tmp_path / "standard-repo/.odylith/runtime/greenfield/confirmed-intent.md").read_text(
         encoding="utf-8"
@@ -788,8 +880,8 @@ def test_rescue_smoke_create_receives_internal_probe_env(monkeypatch, tmp_path: 
     create_envs: list[dict[str, str]] = []
     monkeypatch.setattr(module, "collect_artifact_package", lambda **_kwargs: _empty_package())
     monkeypatch.setattr(module, "collect_artifact_counts", lambda **_kwargs: _full_counts(module))
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     monkeypatch.setattr(module, "rendered_surface_health_issues", lambda **_kwargs: ())
 
     def fake_run(*, cwd, env, command, timeout):  # noqa: ANN001
@@ -847,8 +939,31 @@ def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_p
         tmp_path / "odylith/radar/traceability-graph.v1.json",
         json.dumps({"nodes": [{"id": str(index)} for index in range(12)], "workstreams": ["B-001", "B-002", "B-003", "B-004"]}),
     )
-    _write(tmp_path / "odylith/radar/source/releases/releases.v1.json", "{}\n")
-    _write(tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json", "{}\n")
+    _write(
+        tmp_path / "odylith/radar/source/releases/releases.v1.json",
+        json.dumps(
+            {
+                "version": "v1",
+                "releases": [{"release_id": "release-0-0-1", "version": "0.0.1", "status": "active"}],
+            }
+        ),
+    )
+    _write(
+        tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json",
+        json.dumps(
+            {
+                "umbrella_id": "B-001",
+                "waves": [
+                    {
+                        "wave_id": "W1",
+                        "label": "First path",
+                        "summary": "Prove the first governed path.",
+                        "primary_workstreams": ["B-001"],
+                    }
+                ],
+            }
+        ),
+    )
     _write(tmp_path / "odylith/runtime/source/accepted-project.v1.json", "{}\n")
     _write(
         tmp_path / ".odylith/runtime/greenfield/confirmed-intent.json",
@@ -856,7 +971,16 @@ def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_p
     )
     for surface in module.REQUIRED_RENDERED_SURFACES:
         _write(tmp_path / surface, "<html>ready</html>\n")
-    _write(tmp_path / "odylith/compass/runtime/current.v1.json", "{}\n")
+    _write(
+        tmp_path / "odylith/compass/runtime/current.v1.json",
+        json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-06-30T12:00:00Z",
+                "sources": {"backlog_index": "odylith/radar/source/INDEX.md"},
+            }
+        ),
+    )
 
     package = module.collect_artifact_package(repo_root=tmp_path, create_payload={})
     counts = module.collect_artifact_counts(
@@ -870,8 +994,112 @@ def test_collect_artifact_package_excludes_guidance_from_radar_workstreams(tmp_p
     assert counts.radar_workstreams == 1
     assert counts.registry_component_specs == 1
     assert counts.atlas_mermaid_sources == 1
+    assert counts.compass_records == 1
     assert counts.rendered_surfaces == len(module.REQUIRED_RENDERED_SURFACES)
     assert counts.domain_term_hits == 4
+
+
+def test_collect_artifact_package_infers_release_workstream_ids_from_radar_readback(tmp_path: Path) -> None:
+    module = _module()
+    _write(
+        tmp_path / "odylith/radar/source/ideas/B-123.md",
+        "# First governed slice\n\n## Problem\nOperators need a governed path.\n",
+    )
+    _write(tmp_path / "odylith/radar/traceability-graph.v1.json", json.dumps({"nodes": [], "workstreams": []}))
+
+    package = module.collect_artifact_package(repo_root=tmp_path, create_payload={})
+
+    assert package.release_workstream_ids == ("B-123",)
+
+
+def test_collect_artifact_counts_does_not_count_compass_shell_assets_as_records(tmp_path: Path) -> None:
+    module = _module()
+    package = _empty_package()
+    _write(tmp_path / "odylith/compass/compass.html", "<html>Compass shell</html>\n")
+    _write(tmp_path / "odylith/compass/compass-payload.v1.js", "window.__ODYLITH_COMPASS__ = {}\n")
+    _write(tmp_path / "odylith/radar/traceability-graph.v1.json", json.dumps({"nodes": [], "workstreams": []}))
+
+    shell_only = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
+    assert shell_only.compass_records == 0
+
+    _write(
+        tmp_path / "odylith/compass/runtime/current.v1.json",
+        json.dumps(
+            {
+                "version": "v1",
+                "generated_utc": "2026-06-30T12:00:00Z",
+                "sources": {"backlog_index": "odylith/radar/source/INDEX.md"},
+            }
+        ),
+    )
+    package = module.collect_artifact_package(repo_root=tmp_path, create_payload={})
+    with_record = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
+    assert with_record.compass_records == 1
+
+
+def test_collect_artifact_counts_require_typed_release_program_and_compass_readback(tmp_path: Path) -> None:
+    module = _module()
+    package = _empty_package()
+    _write(tmp_path / "odylith/radar/source/releases/AGENTS.md", "# Release guidance\n")
+    _write(tmp_path / "odylith/radar/source/releases/releases.v1.json", "{}\n")
+    _write(tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl", '{"action":"add"}\n')
+    _write(tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json", "{}\n")
+    _write(tmp_path / "odylith/compass/runtime/current.v1.json", "{}\n")
+    _write(tmp_path / "odylith/radar/traceability-graph.v1.json", json.dumps({"nodes": [], "workstreams": []}))
+
+    stale_counts = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
+
+    assert stale_counts.release_records == 0
+    assert stale_counts.program_records == 0
+    assert stale_counts.compass_records == 0
+
+    _write(
+        tmp_path / "odylith/radar/source/releases/releases.v1.json",
+        json.dumps(
+            {
+                "version": "v1",
+                "releases": [{"release_id": "release-0-0-1", "version": "0.0.1", "status": "active"}],
+            }
+        ),
+    )
+    _write(
+        tmp_path / "odylith/radar/source/releases/release-assignment-events.v1.jsonl",
+        json.dumps(
+            {
+                "action": "add",
+                "recorded_at": "2026-06-30T12:00:00Z",
+                "release_id": "release-0-0-1",
+                "workstream_id": "B-001",
+            }
+        )
+        + "\n",
+    )
+    _write(
+        tmp_path / "odylith/radar/source/programs/B-001.execution-waves.v1.json",
+        json.dumps(
+            {
+                "umbrella_id": "B-001",
+                "waves": [
+                    {
+                        "wave_id": "W1",
+                        "label": "First path",
+                        "summary": "Prove the first governed path.",
+                        "primary_workstreams": ["B-001"],
+                    }
+                ],
+            }
+        ),
+    )
+    _write(
+        tmp_path / "odylith/compass/runtime/current.v1.json",
+        json.dumps({"version": "v1", "generated_utc": "2026-06-30T12:00:00Z", "sources": {}}),
+    )
+    package = module.collect_artifact_package(repo_root=tmp_path, create_payload={})
+    valid_counts = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
+
+    assert valid_counts.release_records == 2
+    assert valid_counts.program_records == 1
+    assert valid_counts.compass_records == 1
 
 
 def test_collect_artifact_counts_excludes_runtime_custody_from_domain_terms(tmp_path: Path) -> None:
@@ -935,7 +1163,7 @@ def test_package_evidence_rejects_preview_only_project_brief() -> None:
     package = _substantive_package()
     package.project_brief_record_text = ""
 
-    findings = module.package_evidence_findings(package)
+    findings = _package_evidence_module().package_evidence_findings(package)
 
     assert any("persisted project brief readback" in finding.message for finding in findings)
 
@@ -946,10 +1174,67 @@ def test_package_evidence_prefers_accepted_source_launch_readback() -> None:
     package.next_steps_preview = {}
     package.source_launch_readback = dict(package.accepted_project_preview["source_launch"])
 
-    findings = module.package_evidence_findings(package)
+    findings = _package_evidence_module().package_evidence_findings(package)
 
     assert not any("accepted source-launch readback" in finding.message for finding in findings)
     assert not any("operator next steps" in finding.message for finding in findings)
+
+
+def test_package_evidence_rejects_preview_only_source_launch() -> None:
+    module = _module()
+    package = _substantive_package()
+    package.source_launch_readback = {}
+    package.next_steps_preview = {
+        "start_workstream_id": "B-001",
+        "implementation_prompt": "Start B-001 from the accepted model.",
+        "verification_commands": ["pytest", "./.odylith/bin/odylith validate plan-workstream-binding --repo-root ."],
+        "coding_readiness_gates": ["One", "Two", "Three", "Four"],
+    }
+
+    findings = _package_evidence_module().package_evidence_findings(package)
+
+    assert any("persisted accepted source-launch readback" in finding.message for finding in findings)
+
+
+def test_package_evidence_rejects_stale_release_program_and_surface_readback() -> None:
+    module = _module()
+    package = _substantive_package()
+    stale = _substantive_governed_readback()
+    stale.release_events = {
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl": (
+            {
+                "action": "add",
+                "recorded_at": "2026-06-30T12:00:00Z",
+                "release_id": "release-0-0-1",
+                "workstream_id": "B-999",
+            },
+        )
+    }
+    stale.program_records = {
+        "odylith/radar/source/programs/B-999.execution-waves.v1.json": {
+            "umbrella_id": "B-999",
+            "waves": [
+                {
+                    "wave_id": "W1",
+                    "label": "Unrelated path",
+                    "summary": "This record belongs to another workstream.",
+                    "primary_workstreams": ["B-999"],
+                }
+            ],
+        }
+    }
+    stale.surface_payloads = {
+        key: value for key, value in stale.surface_payloads.items() if key not in {"registry", "casebook"}
+    }
+    package.governed_readback = stale
+
+    findings = _package_evidence_module().package_evidence_findings(package)
+    messages = [finding.message for finding in findings]
+
+    assert any("release assignment events do not cover workstream(s): B-001" in message for message in messages)
+    assert any("program readback does not cover release workstream(s): B-001" in message for message in messages)
+    assert any("registry surface payload readback is missing or invalid" in message for message in messages)
+    assert any("casebook surface payload readback is missing or invalid" in message for message in messages)
 
 
 def test_domain_readback_excludes_accepted_project_source_launch_runtime_text() -> None:
@@ -976,7 +1261,7 @@ def test_domain_readback_excludes_accepted_project_source_launch_runtime_text() 
         "validation_gate": {"visible_actors": _passing_visible_actors()},
     }
 
-    findings = module.package_evidence_findings(package)
+    findings = _package_evidence_module().package_evidence_findings(package)
 
     assert any(
         finding.dimension == "domain_expert" and "independent domain readback carried" in finding.message
@@ -1003,7 +1288,7 @@ def test_domain_readback_requires_semantic_terms_on_each_major_surface() -> None
     generic_spec = "# Generic Component\n\nSource boundary and Trace links are present. Successful path evidence, Blocked input evidence, and Replay evidence are present. " + "Ownership keeps operators aligned with controls, logs, recovery, routing, status, and audit notes. " * 8
     package.rendered_component_specs = {key: generic_spec for key in package.rendered_component_specs}
 
-    findings = module.package_evidence_findings(package)
+    findings = _package_evidence_module().package_evidence_findings(package)
 
     assert any("semantic terms on Registry" in finding.message for finding in findings)
 
@@ -1068,7 +1353,7 @@ def test_package_evidence_rejects_missing_persisted_project_prompt_payload() -> 
     package = _substantive_package()
     package.project_dashboard_preview = {}
 
-    findings = module.package_evidence_findings(package)
+    findings = _package_evidence_module().package_evidence_findings(package)
 
     assert any("accepted Project readback does not expose five source-launch prompts" in finding.message for finding in findings)
 
@@ -1091,7 +1376,7 @@ def test_generated_leakage_terms_supplement_declared_sentinels_with_source_phras
 
     assert "wafer lot" in terms
     assert "missing lattice phrase" not in terms
-    assert "wafer xenobot" in terms
+    assert "wafer xenobot attestation" in terms
     assert "xenobot" not in terms
     assert "wafer" not in terms
 
@@ -1310,7 +1595,7 @@ def test_matrix_result_json_carries_bounded_failure_evidence() -> None:
             passed=False,
             issues=("post-confirm create exited with code 2",),
             lenses={lens: False for lens in ("product_manager", "architect", "engineer", "domain_expert")},
-            scores={dimension: 0 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
+            scores={dimension: 0 for dimension in module.QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
             score=0,
             score_explanation=("score forced to 0 because post-confirm did not commit governed records",),
         ),
@@ -1357,7 +1642,7 @@ def test_quality_verdict_requires_committed_write_transaction() -> None:
 
 def test_quality_verdict_rejects_self_reported_manifest_without_package_readback(monkeypatch) -> None:
     module = _module()
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
@@ -1375,8 +1660,8 @@ def test_quality_verdict_rejects_self_reported_manifest_without_package_readback
 
 def test_quality_verdict_scores_premium_only_when_every_dimension_is_clean(monkeypatch) -> None:
     module = _module()
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
@@ -1392,10 +1677,31 @@ def test_quality_verdict_scores_premium_only_when_every_dimension_is_clean(monke
     assert "all brutal release-quality dimensions scored 10" in verdict.score_explanation
 
 
+def test_quality_verdict_rejects_unattempted_browser_surface_proof(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=_substantive_package(),
+        counts=_full_counts(module),
+        browser_surface_proof_attempted=False,
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score == 0
+    assert verdict.scores["browser_surface_proof"] == 0
+    assert verdict.scores["copy_semantic_clarity"] == 10
+    assert "browser surface proof was not attempted; premium release scoring requires headless rendered-surface proof" in verdict.issues
+
+
 def test_quality_verdict_rejects_count_only_package_even_when_lenses_are_stubbed(monkeypatch) -> None:
     module = _module()
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
@@ -1416,8 +1722,8 @@ def test_quality_verdict_rejects_count_only_package_even_when_lenses_are_stubbed
 
 def test_quality_verdict_rejects_dry_run_only_prewrite_safety(monkeypatch) -> None:
     module = _module()
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     package = _substantive_package()
     package.prewrite_safety_preview = {}
 
@@ -1436,8 +1742,8 @@ def test_quality_verdict_rejects_dry_run_only_prewrite_safety(monkeypatch) -> No
 
 def test_quality_verdict_rejects_stub_atlas_diagrams(monkeypatch) -> None:
     module = _module()
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     package = _substantive_package()
     package.rendered_atlas_sources = {f"stub-{index}.mmd": "flowchart TD\n  A[Placeholder]\n" for index in range(1, 5)}
 
@@ -1456,8 +1762,8 @@ def test_quality_verdict_rejects_stub_atlas_diagrams(monkeypatch) -> None:
 
 def test_quality_verdict_rejects_collapsed_tribunal_judgment_roles(monkeypatch) -> None:
     module = _module()
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     payload = _passing_create_payload()
     payload["validation_gate"] = {
         "visible_actors": [
@@ -1485,8 +1791,8 @@ def test_quality_verdict_rejects_collapsed_tribunal_judgment_roles(monkeypatch) 
 
 def test_quality_verdict_rejects_persisted_actor_readback_drift(monkeypatch) -> None:
     module = _module()
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     package = _empty_package()
     package.accepted_project_preview = {
         "validation_gate": {
@@ -1517,8 +1823,8 @@ def test_quality_verdict_rejects_persisted_actor_readback_drift(monkeypatch) -> 
 
 def test_quality_verdict_requires_create_payload_actor_evidence(monkeypatch) -> None:
     module = _module()
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
     payload = _passing_create_payload()
     payload["validation_gate"] = {}
 
@@ -1538,11 +1844,11 @@ def test_quality_verdict_requires_create_payload_actor_evidence(monkeypatch) -> 
 def test_quality_verdict_caps_score_when_rendered_artifacts_have_copy_findings(monkeypatch) -> None:
     module = _module()
     monkeypatch.setattr(
-        module,
+        _scoring_module(),
         "greenfield_rendered_package_quality_issues",
         lambda package: ["Radar workstream has clipped copy", "Registry spec repeats generic copy"],
     )
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
@@ -1561,11 +1867,11 @@ def test_quality_verdict_caps_score_when_rendered_artifacts_have_copy_findings(m
 def test_quality_verdict_rejects_project_implementation_prompt_findings(monkeypatch) -> None:
     module = _module()
     monkeypatch.setattr(
-        module,
+        _scoring_module(),
         "greenfield_rendered_package_quality_issues",
         lambda package: ["Project implementation prompt `Build smallest runnable slice` does not bind implementation to a governed workstream"],
     )
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
@@ -1601,9 +1907,9 @@ def test_rescue_cli_issues_allow_committed_rescue_under_90s(monkeypatch) -> None
         manifest=manifest,
         package=_empty_package(),
         counts=_full_counts(module),
-        count_minimums=module._required_count_minimums(),  # noqa: SLF001
-        count_key=module._count_key,  # noqa: SLF001
-        write_committed=module._write_committed,  # noqa: SLF001
+        count_minimums=_scoring_module().required_count_minimums(),  # noqa: SLF001
+        count_key=_scoring_module().count_key,  # noqa: SLF001
+        write_committed=_scoring_module().write_committed,  # noqa: SLF001
         as_mapping=module._as_mapping,  # noqa: SLF001
         package_quality_issues=module.greenfield_rendered_package_quality_issues,
         create_returncode=0,
@@ -1635,9 +1941,9 @@ def test_rescue_cli_issues_require_auto_escalation() -> None:
         },
         package=_empty_package(),
         counts=_full_counts(module),
-        count_minimums=module._required_count_minimums(),  # noqa: SLF001
-        count_key=module._count_key,  # noqa: SLF001
-        write_committed=module._write_committed,  # noqa: SLF001
+        count_minimums=_scoring_module().required_count_minimums(),  # noqa: SLF001
+        count_key=_scoring_module().count_key,  # noqa: SLF001
+        write_committed=_scoring_module().write_committed,  # noqa: SLF001
         as_mapping=module._as_mapping,  # noqa: SLF001
         package_quality_issues=lambda _package: [],
         create_returncode=0,
@@ -1665,7 +1971,7 @@ def test_quality_verdict_requires_all_case_domain_terms() -> None:
         trace_nodes=12,
         trace_workstreams=4,
         rendered_surfaces=len(module.REQUIRED_RENDERED_SURFACES),
-        rendered_surface_payloads=len(module.SURFACE_PAYLOAD_CONTRACTS) * 2,
+        rendered_surface_payloads=len(_scoring_module().SURFACE_PAYLOAD_CONTRACTS) * 2,
         atlas_rendered_assets=8,
         domain_term_hits=3,
         required_domain_terms=4,
@@ -1686,7 +1992,7 @@ def test_quality_verdict_requires_all_case_domain_terms() -> None:
 
 def test_rendered_surface_health_requires_payload_assets_and_shell_contract(tmp_path: Path) -> None:
     module = _module()
-    for relative, assets in module.SURFACE_PAYLOAD_CONTRACTS.items():
+    for relative, assets in _scoring_module().SURFACE_PAYLOAD_CONTRACTS.items():
         body = "\n".join(f'<script src="{asset}?v=123"></script>' for asset in assets)
         _write(tmp_path / relative, f"<!doctype html><html><head>{body}</head><body>ready</body></html>")
         for asset in assets:
@@ -1772,8 +2078,8 @@ def test_rendered_surface_health_requires_payload_assets_and_shell_contract(tmp_
 
 def test_quality_verdict_rejects_surface_health_findings(monkeypatch) -> None:
     module = _module()
-    monkeypatch.setattr(module, "greenfield_rendered_package_quality_issues", lambda _package: [])
-    monkeypatch.setattr(module, "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda _package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
@@ -1904,7 +2210,7 @@ def test_main_fails_when_requested_browser_surface_proof_fails(monkeypatch, tmp_
             passed=True,
             issues=(),
             lenses={lens: True for lens in ("product_manager", "architect", "engineer", "domain_expert")},
-            scores={dimension: 10 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
+            scores={dimension: 10 for dimension in module.QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
             score=10,
             score_explanation=("all brutal release-quality dimensions scored 10",),
         ),
@@ -1946,7 +2252,7 @@ def test_browser_surface_proof_summary_marks_unattempted_case_as_skipped() -> No
             passed=False,
             issues=("post-confirm create exited with code 2",),
             lenses={lens: False for lens in ("product_manager", "architect", "engineer", "domain_expert")},
-            scores={dimension: 0 for dimension in module._QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
+            scores={dimension: 0 for dimension in module.QUALITY_SCORE_DIMENSIONS},  # noqa: SLF001
             score=0,
             score_explanation=("completion scored 0/10",),
         ),

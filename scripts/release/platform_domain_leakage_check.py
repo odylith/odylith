@@ -608,19 +608,50 @@ def _is_distinctive_source_token(token: str) -> bool:
     value = str(token or "").casefold()
     if len(value) < 7:
         return False
-    return (
-        value not in DOMAIN_TEXT_STOPWORDS
-        and value not in GENERIC_PRODUCT_TERMS
-        and value not in PLATFORM_NATIVE_TERMS
-    )
+    return not _is_generic_source_token(value)
 
 
 def _is_distinctive_source_phrase(tokens: tuple[str, ...]) -> bool:
     if len(tokens) < 2:
         return False
-    if any(token in DOMAIN_TEXT_STOPWORDS for token in tokens):
+    if _is_generic_source_token(tokens[0]) or _is_generic_source_token(tokens[-1]):
         return False
-    return any(_is_distinctive_source_token(token) for token in tokens)
+    signal_tokens = tuple(token for token in tokens if _is_distinctive_source_token(token))
+    if len(signal_tokens) >= 2:
+        return True
+    supporting_tokens = tuple(token for token in tokens if _is_source_support_token(token))
+    return any(_is_strong_source_token(token) for token in signal_tokens) and len(supporting_tokens) >= 2
+
+
+def _is_strong_source_token(token: str) -> bool:
+    value = str(token or "").casefold()
+    return len(value) >= 9 and _is_distinctive_source_token(value)
+
+
+def _is_source_support_token(token: str) -> bool:
+    value = str(token or "").casefold()
+    return len(value) >= 5 and not _is_generic_source_token(value)
+
+
+def _is_generic_source_token(token: str) -> bool:
+    return any(
+        form in DOMAIN_TEXT_STOPWORDS or form in GENERIC_PRODUCT_TERMS or form in PLATFORM_NATIVE_TERMS
+        for form in _source_token_forms(str(token or "").casefold())
+    )
+
+
+def _source_token_forms(token: str) -> tuple[str, ...]:
+    value = str(token or "").casefold()
+    forms = [value]
+    if len(value) > 2:
+        forms.append(f"{value}s")
+    if len(value) > 3 and value.endswith("s") and not value.endswith("ss"):
+        forms.append(value[:-1])
+    if len(value) > 3 and value.endswith("y"):
+        forms.append(f"{value[:-1]}ies")
+    if len(value) > 4 and value.endswith("ies"):
+        forms.append(f"{value[:-3]}y")
+    return tuple(dict.fromkeys(form for form in forms if form))
 
 
 def _tokens(text: str) -> tuple[str, ...]:

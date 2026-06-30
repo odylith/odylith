@@ -8,6 +8,7 @@ from pathlib import Path
 from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter, product_story
 from odylith.runtime.project_intelligence.greenfield_job_cards import _jobs
 from odylith.runtime.project_intelligence.greenfield import _risk_classes
+from odylith.runtime.project_intelligence.utils import short
 from odylith.runtime.surfaces import dashboard_shell_links
 from tests.unit.runtime.greenfield_proposal_fixtures import _apply_ready_greenfield_fixture as _host_greenfield_fixture
 
@@ -30,6 +31,19 @@ def _assert_greenfield_story_cards(story: dict[str, object]) -> None:
     assert "additional accepted capabilities" not in encoded.casefold()
     assert "proof boundary blocks" not in encoded.casefold()
     assert "validation, replay, access, privacy, safety" not in encoded.casefold()
+
+
+def test_project_short_strips_dangling_terminal_verbs_after_clip() -> None:
+    value = (
+        "Needs the product to record stunt cues, map performer clearance evidence, track prop inspection exceptions, "
+        "coordinate medical standby signoff, and publish rehearsal readiness before opening night and keep the "
+        "result visible and reviewable"
+    )
+
+    clipped = short(value, limit=145)
+
+    assert clipped.endswith("medical standby signoff.")
+    assert not clipped.endswith("and keep.")
 
 
 def test_project_intelligence_blank_install_starts_with_minimal_project_state(tmp_path: Path) -> None:

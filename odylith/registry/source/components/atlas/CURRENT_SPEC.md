@@ -6,10 +6,10 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-06-29
+Last updated: 2026-06-30
 
 
-Last updated (UTC): 2026-06-29
+Last updated (UTC): 2026-06-30
 
 ## Purpose
 Atlas is Odylith's architecture and diagram-governance surface. It manages the
@@ -73,6 +73,13 @@ grounding.
 - `src/odylith/runtime/surfaces/atlas_detail_layout.py`
   Atlas detail-pane contract for diagram explanation, read guidance, component
   cards, and linked engineering context layout.
+- `src/odylith/runtime/surfaces/atlas_box_explanations.py`
+  Generic box-explanation text for Atlas diagram elements. It must not encode
+  simulation-domain triggers; explanations should depend on platform-generic
+  roles, ownership, evidence, provider, and topology cues.
+- `src/odylith/runtime/surfaces/atlas_box_terms.py`
+  Selects the tracked domain object phrase used by generated box explanations
+  without letting generic control verbs become the subject of visible copy.
 - `src/odylith/runtime/surfaces/auto_update_mermaid_diagrams.py`
   Watched-change re-renderer and freshness updater.
 - `src/odylith/runtime/surfaces/install_mermaid_autosync_hook.py`
@@ -311,6 +318,7 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-06-30: Tightened Atlas box-explanation custody against platform-domain leakage. `atlas_box_explanations.py` must describe generic topology, provider, ownership, and evidence cues without carrying simulation-domain triggers into platform runtime; fixture and Casebook evidence may retain concrete repro vocabulary, but Atlas runtime explanations and current component contracts stay scenario-neutral. Tracked-object phrase extraction now lives in `atlas_box_terms.py`, keeping the touched explanation owner under the source-size pressure line and pinning generic verb fallback so terms like `stays` do not become the visible domain object. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
 - 2026-06-28: Tightened Atlas workstream visibility custody after D-045 was rendered but not visible from B-142 navigation. The renderer now preserves backlog-derived `idea_id` ownership during diagram relationship attachment, and Atlas proof must check route/filter indexes such as `diagram_related_workstreams`, not only catalog rows, payload presence, or SVG/PNG assets. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
 - 2026-06-28: Added source-local static generated-flowchart visibility proof to the Atlas architecture contract. D-040 now shows static generated-flowchart fallback inside Atlas auto-update, and new diagrams D-045/D-046 were rendered with SVG/PNG assets after the browser renderer degraded. Atlas payload verification confirmed D-040, D-043, D-045, and D-046 as fresh with rendered assets present, so new architecture diagrams must prove rendered visibility, not just catalog/source creation. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`)
 - 2026-05-09: Promoted diagram-box explanation from a per-diagram convention to a general Atlas contract: Mermaid source now derives every flowchart container and inner node, catalog-authored box copy must be clear complete sentences, and v0.1.15 upgrade migration regenerates older Atlas browser surfaces without rewriting repo-owned diagram source truth. (Plan: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141); Assessment: [B-140](odylith/radar/radar.html?view=plan&workstream=B-140))

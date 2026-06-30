@@ -1221,6 +1221,125 @@
   guard passed across 387 distinctive fixture terms against the `88df22be`
   dist. Do not repeat the failed mechanisms by relying on hand-curated
   sentinels alone, broad free-text token extraction, or substring scoring.
+  Fresh variance on 2026-06-30 against committed dist
+  `odylith-local-release-0.1.15-1ef33083` proved the source-text leakage
+  extractor was still too broad before any temp repo was created. A ten-domain
+  installed matrix was blocked at preflight because the derived case vocabulary
+  treated platform/governance-native phrases such as `handoff evidence`,
+  `manual override`, `operators request`, and `support team` as forbidden
+  project-domain sentinels, then found those phrases in protected runtime and
+  bundled guidance custody. The failed mechanism is not a consumer-project
+  defect and must not be fixed by weakening the leakage gate, broad allowlists,
+  or one-off regex phrase suppression. The next forward fix must make
+  source-text sentinel derivation materially more selective: declared
+  case-owned sentinels remain explicit proof vocabulary, but automatically
+  derived prompt phrases must require richer domain-specific signal than one
+  long token next to generic governance vocabulary. Rerun fresh non-reused
+  installed variance after the fix, keep browser proof on, and delete every
+  temp repo after evidence extraction.
+  Independent score-harness review in the same pass found additional
+  false-confidence risk before any new 10/10 claim can be trusted. The
+  installed matrix can still compute a premium score when browser proof is not
+  requested; several governed surfaces are counted for completion without
+  persisted readback quality checks; `compass_records` can be inflated by
+  rendered Compass shell assets instead of durable generated Compass records;
+  and non-Atlas browser proof mostly verifies shell hydration rather than
+  payload-to-render binding. The forward fix must make omitted browser proof a
+  hard premium-score blocker, tighten Compass record counting to durable
+  runtime/source records, and then incrementally promote release, program,
+  Compass, Casebook, and rendered-shell payloads into first-class package
+  evidence. Do not repeat the failed mechanism of counting surface existence as
+  release-quality artifact proof.
+  After the source-text overreach fix, the same fresh variance immediately
+  exposed a real platform domain leak before repo creation: the research grant
+  case's selected vocabulary found `conflict of interest` hardcoded in
+  `greenfield_confirmed_system_completion.py` and
+  `greenfield_confirmed_system_rows.py`, including the built wheel/runtime
+  tarballs from `odylith-local-release-0.1.15-1ef33083`. This is not a false
+  positive; it is historical example-domain wording in generic greenfield
+  runtime defaults. The forward fix must replace that wording with generic
+  policy/eligibility language in platform source, add a sentinel regression,
+  rebuild the dist, and rerun fresh variance.
+  Fresh non-reused variance after the domain-custody dist rebuild reopened the
+  post-confirm gate on 2026-06-30. Nine of ten new installed projects passed
+  with hard 10/10 scores, browser proof, complete governed records, and
+  sub-60s creates, and the installed synthetic auto-rescue smoke passed in
+  33.324s. `Performing arts safety rehearsal` failed before governed writes in
+  36.865s with 76 `semantic slop: gerundized actor-role action leaked`
+  blockers. A source-local replay showed the no-write Product Intent
+  Confirmation itself was malformed: the prompt `... planner that lets a stage
+  manager record ...` recovered the product container as the human actor and
+  rendered `A performing arts safety rehearsal planner let a stage manager...`.
+  The failed mechanism is generic relative-purpose recovery. Prompt/intent
+  recovery handles `product for actor receiving...` and direct `where actor
+  acts...` forms, but still misses `product that lets/enables/helps actor
+  act...` forms. Do not fix this by weakening the gerundized actor-role gate,
+  adding performing-arts vocabulary, or patching rendered strings. The forward
+  fix must extract the embedded actor/action from helper relative clauses and
+  project that semantic fact before post-confirm completion.
+  Independent scoring review in the same pass confirmed that the quality
+  scorer still permits false 10/10 claims for artifact families whose persisted
+  readback is shallow. Release/program scoring is count-or-preview based,
+  Compass quality accepts the presence of narrow runtime/source files without
+  content evaluation, Casebook is not a scored artifact family, and shell
+  payload proof for non-Project tabs mostly checks route/hydration structure.
+  Treat those as release-blocking proof gaps: release/program, Compass,
+  Casebook, and rendered shell payloads must become first-class persisted
+  readback evidence before any honest premium 10/10 release claim.
+  Forward fix on 2026-06-30 kept the platform gate strict and addressed the
+  generic causes. Prompt-source recovery now recognizes helper-relative clauses
+  such as `product that lets/enables/helps/allows <actor> <action>` and extracts
+  the embedded human actor/action before no-write Product Intent Confirmation,
+  so product containers do not become actor-role subjects. Project brief
+  clipping now removes dangling terminal verbs such as `keep` when shortening
+  long accepted sentences, preventing persisted brief/readback copy from ending
+  in broken tails. The release matrix now collects persisted governed readback
+  through a first-class owner: release catalogs/events, program wave records,
+  Compass runtime/source records, and per-surface payload globals are parsed and
+  scored before premium claims. Release/program freshness is linked to actual
+  generated Radar workstream ids, program umbrellas count as coverage for their
+  own workstream, preview-only source-launch output no longer satisfies
+  operator evidence, and omitted browser proof fails only the browser-proof
+  dimension instead of masquerading as copy/semantic slop. Source proof passed
+  58 matrix tests, 84 install/leakage tests, 68 intent-recovery/Project tests,
+  113 generated-prose/slop tests, py_compile, a 285-term source leakage guard,
+  a disposable source-local performing-arts create in 15.770s, and a disposable
+  municipal readback collector replay where all dimensions except intentionally
+  omitted browser proof scored 10. Fresh rebuilt installed proof with browser
+  proof remains required before release readiness can be reclaimed.
+  Follow-up custody audit on 2026-06-30 found that the runtime/source leakage
+  guard was green but platform-facing Registry CURRENT_SPEC history still named
+  old simulation scenarios, and `atlas_box_explanations.py` carried one
+  remote-signal category trigger from a specific technical domain. The forward
+  fix is not to weaken evidence capture: fixture catalogs, Casebook evidence,
+  and forensic snapshots may retain concrete repro vocabulary, but platform
+  contracts and runtime heuristics must describe generic failure classes and
+  semantic cues. The current fix rewrites Domain Intelligence, Dashboard, and
+  Release CURRENT_SPEC proof notes into scenario-neutral language, removes the
+  technical-domain trigger from Atlas box explanations, and reruns the
+  285-term platform leakage guard plus a stricter platform-surface scan with
+  zero retained-scenario matches outside intentional fixtures/evidence.
+  Hygiene follow-up in the same slice found that `atlas_box_explanations.py`
+  was already above the source-size pressure line and that tracked-object
+  phrase fallback could select generic control verbs such as `stays` as the
+  visible object. The fix moves tracked-object phrase selection into
+  `atlas_box_terms.py`, keeps the Atlas explanation owner under the threshold,
+  and pins the generic fallback behavior with focused tests. Do not repeat the
+  failed mechanism by adding more local vocabulary to the explanation renderer
+  or by letting generic control prose stand in for a domain object.
+  Precommit installed-package proof on 2026-06-30 rebuilt
+  `odylith-local-release-0.1.15-1ef33083-precommit` from the current working
+  tree and passed the 285-term platform domain-leakage guard at build time and
+  matrix time. The maintained installed matrix passed 13/13 high-variance
+  standard cases with hard 10/10 release-quality scores, zero issues, every
+  browser surface proof attempted and passed, generated terms absent from
+  platform source/dist, complete governed records, five Project implementation
+  prompts per project with zero prompt findings, max standard create time
+  28.697s, and average standard create time 25.779s. Synthetic typed-probe
+  rescue wiring passed in 33.237s under the 90s rescue tier. The temp project
+  cleanup scan was empty after the run. This is a precommit checkpoint only:
+  do not cite it as final release proof until the code is committed, pushed,
+  rebuilt from the committed head, and the installed matrix passes again.
 
 - Related Incidents/Bugs: CB-208
 

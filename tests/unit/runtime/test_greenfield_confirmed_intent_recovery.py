@@ -427,6 +427,34 @@ def test_host_guidance_recovery_handles_direct_product_for_actor_gerund_path(tmp
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_host_guidance_recovery_handles_helper_relative_embedded_actor_path() -> None:
+    prompt = (
+        "Create a greenfield proposal for a performing arts safety rehearsal planner that lets a stage manager "
+        "record stunt cues, map performer clearance evidence, track prop inspection exceptions, coordinate medical "
+        "standby signoff, and publish rehearsal readiness before opening night."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert source.title == "performing arts safety rehearsal planner"
+    assert source.actor == "stage manager"
+    assert source.first_path.startswith("stage manager record stunt cues")
+    assert intent["human_actors"][0].startswith("Stage Manager:")
+    assert "stage manager can record stunt cues" in rendered
+    assert "performing arts safety rehearsal planner let a stage manager" not in rendered
+    assert "gerundized actor-role action leaked" not in "\n".join(greenfield_quality_issues(proposal))
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_host_guidance_recovery_preserves_leading_purpose_context_before_actions() -> None:
     prompt = (
         "municipal water utility planner for lead service-line abatement; intake household records, "

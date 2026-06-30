@@ -84,6 +84,50 @@ def test_case_leakage_terms_derive_distinctive_prompt_vocabulary() -> None:
     assert "greenfield proposal" not in terms
 
 
+def test_source_text_terms_skip_platform_native_governance_phrases() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                prompt=(
+                    "Create an ICU review workspace that preserves handoff evidence, "
+                    "tracks manual override exceptions, lets operators request review, "
+                    "and publishes readiness for the support team."
+                ),
+                required_terms=("icu", "override"),
+                leakage_terms=("ventilator event review",),
+            )
+        )
+    )
+
+    assert "ventilator event review" in terms
+    assert "handoff evidence" not in terms
+    assert "manual override" not in terms
+    assert "operators request" not in terms
+    assert "support team" not in terms
+
+
+def test_source_text_terms_keep_domain_rich_phrases_without_declared_terms() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                prompt=(
+                    "Plan a tokamak experiment desk for plasma physicists to verify coil "
+                    "configuration, diagnostic calibration, interlock exceptions, and "
+                    "countdown telemetry evidence."
+                ),
+                required_terms=("tokamak", "plasma", "interlock"),
+                leakage_terms=(),
+            )
+        )
+    )
+
+    assert "diagnostic calibration" in terms
+    assert "calibration interlock" in terms
+    assert "plasma physicists" in terms
+    assert "countdown telemetry" in terms
+    assert "a tokamak experiment" not in terms
+
+
 def test_generic_required_anchors_do_not_reenter_leakage_custody_noise() -> None:
     terms = leakage.case_leakage_terms(
         SimpleNamespace(
@@ -125,7 +169,7 @@ def test_required_terms_do_not_create_platform_custody_false_positives() -> None
         leakage.case_leakage_terms(
             SimpleNamespace(
                 prompt=(
-                    "Plan wildfire burn review with smoke window forecasts, subtitle evidence notes, "
+                    "Plan wildfire evacuation review with smoke window forecasts, subtitle evidence notes, "
                     "ballast crew timing, and ingredient substitution approvals."
                 ),
                 required_terms=("smoke", "subtitle", "ballast", "substitution"),
@@ -178,6 +222,12 @@ def test_scan_repo_blocks_fixture_terms_in_platform_code(tmp_path: Path) -> None
     assert findings == (
         leakage.LeakageFinding(location="src/odylith/runtime/example.py", term="quantum", line=1),
     )
+
+
+def test_current_platform_source_does_not_carry_historical_conflict_domain_phrase() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+
+    assert leakage.scan_repo(repo_root, terms=("conflict of interest",)) == ()
 
 
 def test_scan_repo_allows_fixture_terms_in_governance_evidence(tmp_path: Path) -> None:

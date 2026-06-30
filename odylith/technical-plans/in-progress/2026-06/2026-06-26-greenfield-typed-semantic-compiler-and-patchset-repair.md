@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-06-29
+Updated: 2026-06-30
 
 Backlog: B-142
 
@@ -65,6 +65,23 @@ vocabulary, or degraded packages.
   rendered-prose mutation.
 
 ## Latest Simulation Evidence
+
+- 2026-06-30 precommit release-dist proof:
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-1ef33083-precommit`
+  rebuilt from the current working tree after governed readback scoring,
+  helper-relative intent recovery, platform-facing vocabulary cleanup, and
+  Atlas tracked-object extraction. The build gate passed the 285-term platform
+  domain-leakage guard. The installed matrix proof at
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-1ef33083-precommit/greenfield-post-confirm-matrix.v1.json`
+  passed 13/13 maintained high-variance standard cases with hard 10/10
+  release-quality scores, zero issues, every browser surface proof attempted
+  and passed, generated terms absent from platform source/dist, complete
+  governed records, five implementation prompts per project with zero prompt
+  findings, max standard create time 28.697s, and average standard create time
+  25.779s. Synthetic typed-probe rescue wiring passed in 33.237s under the
+  90s rescue tier. This proves the standard installed path for the precommit
+  checkpoint only; final release proof still requires commit, push, rebuild
+  from the committed head, and rerun of the release matrix.
 
 - 2026-06-30 committed release-dist proof: checkpoint e1f00464 rebuilt into
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e1f00464`
@@ -1888,3 +1905,101 @@ vocabulary, or degraded packages.
       maintained installed matrix and fresh non-reused variance matrix with
       browser proof, generated-term leakage proof, hard 10/10 scores,
       sub-60s standard creates, and clean temp cleanup.
+- [ ] Fix the 2026-06-30 fresh-variance source-text sentinel overreach.
+      The committed `1ef33083` dist passed source-plus-dist leakage proof, but
+      a new ten-domain installed variance run blocked before repo creation
+      because automatic prompt phrase derivation treated platform/governance
+      phrases such as `handoff evidence`, `manual override`,
+      `operators request`, and `support team` as project-domain leakage
+      sentinels. This is a recurrence of the broad free-text extraction failed
+      mechanism captured in `CB-209`, not a generated consumer-project defect.
+      The fix must keep declared case-owned sentinels explicit while making
+      automatically derived source-text phrases require richer domain-specific
+      signal than one long token next to generic governance vocabulary. Do not
+      weaken the leakage gate, add broad phrase allowlists, or build a regex
+      suppression tower. Proof must include focused leakage tests, source/dist
+      leakage guard, and a fresh non-reused installed variance run with browser
+      proof and clean temp cleanup.
+- [ ] Remove score-harness false confidence before the next 10/10 claim.
+      Independent review found that installed matrix quality can still score
+      10/10 without browser proof, that several governed surfaces are counted
+      without persisted readback quality checks, and that Compass record counts
+      can be satisfied by shell assets instead of generated Compass records.
+      Immediate fix: make omitted browser proof a premium-score blocker and
+      count durable Compass records from specific source/runtime record paths.
+      Follow-up hardening: add first-class package-evidence readback for
+      release records, program records, Compass records, Casebook records, and
+      rendered shell payload fields so existence counts cannot substitute for
+      artifact quality.
+- [ ] Remove the fresh-variance `conflict of interest` platform leak.
+      After the source-text extraction overreach fix, the same ten-domain
+      variance run blocked on a real platform leak: `conflict of interest`
+      appears in generic greenfield runtime defaults and in the previously
+      built wheel/runtime tarballs. Replace the example-domain phrase with
+      generic policy or eligibility language, add a leakage sentinel regression,
+      rebuild the local release dist, and rerun the fresh variance matrix with
+      browser proof.
+- [x] Fix helper-relative prompt recovery for embedded actor/action facts.
+      Source now extracts embedded human actor/action facts from helper-relative
+      prompt forms before Product Intent Confirmation, and project brief
+      clipping removes dangling terminal verbs after accepted-sentence
+      shortening. Focused proof passed the new helper-relative recovery
+      regression, Project clipping regression, the generated-prose and
+      post-confirm slop suites, and a disposable source-local performing-arts
+      create passed in 15.770s with complete governed records and clean temp
+      deletion. Remaining proof is packaged installed variance after rebuild,
+      not another rendered-string patch.
+- [x] Promote release/program/Compass/Casebook/shell payload readback into
+      first-class quality evidence.
+      Independent static review found that release/program quality is still
+      count-or-preview based, Compass quality accepts narrow record presence
+      without content readback, Casebook has no scored record family, and
+      non-Project shell payload proof mainly checks route/hydration shape.
+      This means current 10/10 scores are still too optimistic even when
+      browser proof is mandatory. Add persisted readback objects and
+      contract-aware quality checks for these families before claiming premium
+      release readiness.
+      The release matrix now uses `greenfield_matrix_governed_readback.py` to
+      parse persisted release catalogs/events, program wave records, Compass
+      runtime/source records, and all generated surface payload globals before
+      premium scoring. Counts no longer accept arbitrary nonempty files,
+      release/program freshness is tied to actual generated Radar workstream
+      ids, program umbrella ids satisfy their own workstream coverage, missing
+      Registry/Casebook/Compass/tooling payload readback blocks the appropriate
+      dimension, and preview-only source-launch data no longer satisfies
+      operator proof. Omitted browser proof is now a distinct browser dimension
+      blocker rather than a copy/semantic finding. Current source proof: 58
+      matrix tests, 84 install/leakage tests, 68 intent-recovery/Project tests,
+      113 generated-prose/slop tests, py_compile, the 285-term source leakage
+      guard, and a disposable municipal collector replay with all non-browser
+      dimensions at 10/10 and clean temp cleanup. Remaining proof: rebuild the
+      installable dist and rerun maintained plus fresh high-variance installed
+      matrices with browser proof.
+- [x] Split release-matrix scoring out of the oversized runner.
+      `greenfield_matrix_quality_scoring.py` now owns brutal score dimensions,
+      expert-lens score assembly, write-commit checks, count minimums, browser
+      proof scoring, and score explanations. `greenfield_post_confirm_matrix.py`
+      is back under the hard source-size pressure and owns orchestration,
+      install/create execution, artifact collection, cleanup, and persisted
+      matrix output. Focused install/leakage tests passed after updating tests
+      to patch the scoring owner directly.
+- [x] Remove platform-facing scenario vocabulary from current Registry specs.
+      A follow-up leakage audit found that source/runtime leakage proof passed,
+      but Domain Intelligence, Dashboard, and Release CURRENT_SPEC proof history
+      still named old simulation scenarios. Those names are valid in fixture
+      catalogs, Casebook repro evidence, and forensic snapshots, but not in
+      platform-facing component contracts. The current pass rewrites those
+      summaries to describe failure classes, proof posture, timings, and counts
+      without scenario labels; removes a technical-domain trigger from Atlas
+      box explanations; reruns the 285-term leakage guard; and reruns a strict
+      platform-surface scan with zero retained-scenario matches outside
+      intentional fixtures/evidence.
+- [x] Decompose Atlas box tracked-object phrase selection.
+      The platform-facing leakage cleanup touched
+      `atlas_box_explanations.py`, which was already above the source-size
+      pressure line. The current checkpoint moves tracked-object phrase
+      selection into `atlas_box_terms.py`, keeps Atlas rendered-copy ownership
+      focused on extraction and explanation composition, and pins a generic
+      fallback regression where ordinary control verbs such as `stays` could
+      become the visible domain object. Focused Atlas box explanation proof
+      passed after the extraction.

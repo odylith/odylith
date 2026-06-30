@@ -22,6 +22,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
+from greenfield_matrix_governed_readback import governed_readback_findings
 
 
 @dataclass(frozen=True)
@@ -97,6 +98,7 @@ def package_evidence_findings(package: Any) -> tuple[PackageEvidenceFinding, ...
     findings.extend(_next_step_findings(package))
     findings.extend(_prewrite_safety_findings(package))
     findings.extend(_project_prompt_findings(artifacts))
+    findings.extend(_governed_readback_findings(package))
     findings.extend(_domain_readback_findings(package=package, artifacts=artifacts, proposal=proposal))
     return _unique_findings(findings)
 
@@ -269,9 +271,7 @@ def _atlas_findings(*, artifacts: Sequence[RenderedArtifact], proposal: Mapping[
 def _next_step_findings(package: Any) -> list[PackageEvidenceFinding]:
     next_steps = package_mapping(getattr(package, "source_launch_readback", None))
     if not next_steps:
-        next_steps = package_mapping(getattr(package, "next_steps_preview", None))
-    if not next_steps:
-        return [_finding("operator_usefulness", "independent package evidence missing accepted source-launch readback")]
+        return [_finding("operator_usefulness", "independent package evidence missing persisted accepted source-launch readback")]
     findings: list[PackageEvidenceFinding] = []
     prompt = normalize_string(next_steps.get("implementation_prompt"))
     start_id = normalize_string(next_steps.get("start_workstream_id"))
@@ -303,6 +303,20 @@ def _project_prompt_findings(artifacts: Sequence[RenderedArtifact]) -> list[Pack
     for prompt in prompts:
         findings.extend(_finding("implementation_prompts", issue) for issue in project_implementation_prompt_issues(prompt))
     return findings
+
+
+def _governed_readback_findings(package: Any) -> list[PackageEvidenceFinding]:
+    readback = getattr(package, "governed_readback", None)
+    if readback is None:
+        return [_finding("completion", "independent package evidence missing governed record readback")]
+    return [
+        _finding(dimension, message)
+        for dimension, message in governed_readback_findings(
+            readback,
+            release_selector=str(getattr(package, "release_selector", "") or ""),
+            release_workstream_ids=tuple(str(item) for item in getattr(package, "release_workstream_ids", ())),
+        )
+    ]
 
 
 def _domain_readback_findings(
