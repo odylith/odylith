@@ -55,26 +55,34 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
-- 2026-06-30: Tightened fresh-variance leakage custody and actor-led gerund prompt recovery. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-045)
+- 2026-06-30: Tightened fresh-variance leakage custody, grounded-anchor scoring, and first-path purpose-context recovery. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-045)
   A non-reused installed variance run against checkpoint `25b8f9cf` exposed
   two general failures: generated-readback leakage proof rescanned required
   domain coverage anchors as forbidden leakage sentinels, creating false
   platform-leakage failures on ordinary platform vocabulary, and a direct
   `product coordination for actor receiving/calculating/recording...` prompt
   fell back to generic representative-user review prose before final semantic
-  gating. Matrix leakage custody now scans declared case leakage sentinels
-  only, with fallback behavior retained for legacy cases without declared
-  sentinels. Product-intent recovery recognizes neutral `coordination`
-  product containers and treats actor-led gerund action lists as usable
-  first-path sources before generic fallback, preserving punctuation while
-  converting the action tail to base form. Workflow title selection now
-  prefers explicitly confirmed or approved outcomes without baking the domain
-  object into platform vocabulary. Focused proof passed 60 leakage/matrix
-  tests, 66 recovery/post-confirm tests, the broader affected 266-test pack,
-  and a disposable source-local orbital/satellite replay completed governed
-  create in 24.522s with 4 Radar workstreams, 3 Registry specs, 6 Atlas
-  sources, and clean temp deletion. Rebuilt installed variance proof remains
-  required before release readiness is reclaimed.
+  gating. The rebuilt `8495f96a` proof then showed the first fix was still
+  incomplete: phrase-only leakage custody could miss bare distinctive anchors,
+  two custom cases used required anchors not grounded in accepted input, and a
+  semicolon-led purpose phrase could be lost before first-path actions. Matrix
+  leakage custody now scans declared case leakage sentinels plus filtered
+  distinctive generated anchors, while suppressing generic anchors that would
+  turn ordinary platform vocabulary into false leakage. The matrix preflights
+  `required_terms` against prompt or confirmed intent before simulation,
+  accepts simple singular/plural token variants so real grounded cases do not
+  self-block, and regression-tests the shipped default catalog against that
+  preflight. First-path semantics carry accepted semicolon-led purpose context
+  into the first actionable step without carrying unrelated sentence context,
+  with the purpose-context handler split into its own owner module to keep the
+  parser under the anti-slop line guard. Product recovery also recognizes
+  neutral `coordination` containers and actor-led gerund action lists before
+  generic fallback. Focused proof passed the install/leakage/recovery pack, the
+  first-path file-size guard, a 65-term platform source/dist leakage scan,
+  disposable source-local orbital/satellite replay, and disposable
+  source-local municipal replay preserving all grounded anchors. Rebuilt
+  installed variance proof remains required before release readiness is
+  reclaimed.
 
 - 2026-06-30: Proved the committed Project proof-custody checkpoint in the installed consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
   Fresh local release dist `odylith-local-release-0.1.15-aebe9245` passed the
@@ -1492,10 +1500,12 @@ This section captures synchronized requirement and contract signals derived from
   product-manager failures or inflate domain-term carry-through.
 - Domain Intelligence release proof must run the platform domain-leakage guard
   before claiming installed matrix quality. The guard derives distinctive
-  high-variance fixture terms from the matrix case catalog and fails if those
-  terms appear in runtime code or shipped guidance surfaces. Tests, governed
-  learning records, evaluation corpora, and release notes may retain domain
-  terms as evidence; those surfaces must not become generation defaults.
+  high-variance fixture terms from the matrix case catalog and generated
+  artifact readback, fails if those terms appear in runtime code or shipped
+  guidance surfaces, and rejects ungrounded matrix scoring anchors before
+  simulation starts. Tests, governed learning records, evaluation corpora, and
+  release notes may retain domain terms as evidence; those surfaces must not
+  become generation defaults.
 - Prompt-source recovery must preserve infinitive `use to` action chains while
   still modalizing human-role purpose clauses into `can` capability prose. This
   owner must stay regex-free and must not use project-domain vocabularies to

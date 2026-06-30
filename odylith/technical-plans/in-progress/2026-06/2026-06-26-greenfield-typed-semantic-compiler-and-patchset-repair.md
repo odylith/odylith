@@ -1790,3 +1790,31 @@ vocabulary, or degraded packages.
       checkpoint and rerun the fresh high-variance installed matrix with
       browser proof, generated-term leakage proof, hard 10/10 scores, sub-60s
       standard creates, and clean temp cleanup.
+- [ ] Close the grounded-anchor and purpose-context custody gap found after
+      the `8495f96a` rebuilt proof.
+      The rebuilt fresh variance matrix wrote complete governed records for
+      every case and kept standard create times under 29s, but failed three
+      domain-expert checks. Two failures came from ungrounded release-case
+      anchors that were not present in the accepted prompt; the release harness
+      now rejects such impossible `required_terms` before installing temp
+      repos. The real generation failure was accepted purpose context before a
+      semicolon being dropped from first-path projections, so `lead
+      service-line abatement; intake...` lost `abatement` even though the
+      operator supplied it. The source fix carries semicolon-led purpose
+      context into the first actionable step, preserves ordinary sentence
+      context dropping, and keeps leakage proof as declared sentinels plus
+      filtered distinctive generated anchors rather than broad required-term
+      scanning. A read-only review then found that exact-token grounding made
+      the default matrix self-invalidating on singular/plural drift; the
+      harness now accepts simple token inflection variants and regression-tests
+      the real default catalog before simulation. The purpose-context handler
+      moved into its own first-path owner module after the broader suite caught
+      the parser crossing the 800-line guard. Current source proof: focused
+      install/leakage/recovery tests passed, the first-path file-size guard
+      passed, py_compile passed, the 65-term platform source/dist leakage scan
+      passed, and a disposable source-local municipal replay preserved `lead`,
+      `water`, `abatement`, and `sample` in governed records with clean temp
+      cleanup. Remaining proof: rebuild the installable dist from this source
+      checkpoint and rerun corrected fresh high-variance installed matrix proof
+      with browser checks, generated-term leakage proof, hard 10/10 scores,
+      sub-60s standard creates, and clean temp cleanup.

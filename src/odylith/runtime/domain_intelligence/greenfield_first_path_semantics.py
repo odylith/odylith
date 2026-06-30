@@ -51,6 +51,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     visible_result_object as _visible_result_object,
 )
+from odylith.runtime.domain_intelligence import greenfield_first_path_purpose_context as _purpose_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import drop_release_proof_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_visible_results import (
@@ -115,6 +116,9 @@ def _first_path_steps(value: str) -> list[str]:
     if not text:
         return []
     text = _strip_first_path_frame(text)
+    text = _purpose_context.carry_semicolon_context_to_first_action(
+        text, split_action_pieces=_split_action_pieces, step_has_action_signal=_step_has_action_signal
+    )
     text = re.sub(r"\bthat\s+single\s+loop\s*[–—-]\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(
         r"(?:^|(?<=[.!?])\s+)(?:this|that)\s+(?:single\s+)?(?:path|loop|journey|flow)\s+[–—-]\s*.*$",

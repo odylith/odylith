@@ -6,6 +6,7 @@ flowchart LR
       actor_recovery["Actor recovery owner<br/>finite action leads stay actions,<br/>not plural actor subjects"]
       actor_path_role["Actor path-role owner<br/>accepted-path descriptions,<br/>title-suffix subject stripping,<br/>preposition/action-led role cleanup"]
       subject_carry_guard["Explicit subject-carry guard<br/>actorless action chains cannot<br/>invent carried subjects"]
+      purpose_context["Purpose-context owner<br/>semicolon-led accepted context<br/>carries into first actionable step"]
       action_boundary["Action-boundary owner<br/>unknown leading actions stay actions,<br/>finite sibling actions split events"]
       semantic_contract["SemanticModelIR first-path contract<br/>events, visible result,<br/>proof obligations"]
       external_boundary["External boundary facts<br/>explicit system rows,<br/>inferred interaction,<br/>or deferred fixture/manual boundary"]
@@ -51,7 +52,8 @@ flowchart LR
     actor_roles --> actor_recovery
     actor_recovery --> actor_path_role
     actor_path_role --> subject_carry_guard
-    subject_carry_guard --> action_boundary
+    subject_carry_guard --> purpose_context
+    purpose_context --> action_boundary
     action_boundary --> semantic_contract
     semantic_contract --> external_boundary
     external_boundary --> sequence_owner
@@ -88,7 +90,7 @@ flowchart LR
     classDef prose fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1px;
     classDef projection fill:#ECFDFB,stroke:#A7E9E3,color:#17233A,stroke-width:1px;
     classDef repair fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;
-    class accepted_path,actor_roles,actor_recovery,actor_path_role,subject_carry_guard,action_boundary,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,modal_owner intent;
+    class accepted_path,actor_roles,actor_recovery,actor_path_role,subject_carry_guard,purpose_context,action_boundary,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,modal_owner intent;
     class shape_checks,gerund_owner,actor_role_head_guard,structural_filter,repetition_gate prose;
     class radar_projection,state_boundary_titles,actor_choice_copy,atlas_projection,mermaid_label_custody,next_step_prompts,overlap_projection,artifact_units,canonical_facts,tribunal_actors,package_findings projection;
     class semantic_plan_patch,exact_draft_cleanup,final_gate,governed_write repair;

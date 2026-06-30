@@ -77,6 +77,7 @@ def run_matrix(
     install_script = release_dir / "install.sh"
     if not install_script.is_file():
         raise FileNotFoundError(f"missing local release install script: {install_script}")
+    _raise_for_ungrounded_required_terms(selected_cases)
     _raise_for_platform_domain_leakage(release_dir, selected_cases)
     run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-matrix-{uuid.uuid4().hex[:8]}"
     run_root.mkdir(parents=True, exist_ok=False)
@@ -129,6 +130,29 @@ def _raise_for_platform_domain_leakage(release_dir: Path, cases: Sequence[Greenf
         "platform domain leakage check failed for selected greenfield matrix case vocabulary\n"
         f"{preview}{suffix}"
     )
+
+
+def _raise_for_ungrounded_required_terms(cases: Sequence[GreenfieldMatrixCase]) -> None:
+    ungrounded: list[str] = []
+    for case in cases:
+        source_text = "\n".join(
+            str(item or "") for item in (case.prompt, getattr(case, "confirmed_intent_markdown", ""))
+        )
+        missing = tuple(
+            str(term).strip()
+            for term in getattr(case, "required_terms", ())
+            if str(term).strip() and not _term_present(source_text, str(term))
+        )
+        if missing:
+            ungrounded.append(f"{case.name}: {', '.join(missing)}")
+    if ungrounded:
+        preview = "\n".join(f"- {row}" for row in ungrounded[:10])
+        remaining = len(ungrounded) - 10
+        suffix = f"\n- ... {remaining} additional case(s)" if remaining > 0 else ""
+        raise RuntimeError(
+            "greenfield matrix required_terms must be grounded in the case prompt or confirmed intent\n"
+            f"{preview}{suffix}"
+        )
 
 
 def run_rescue_smoke(
@@ -663,7 +687,31 @@ def _term_present(text: str, term: str) -> bool:
     if not text_tokens or not term_tokens or len(term_tokens) > len(text_tokens):
         return False
     width = len(term_tokens)
-    return any(text_tokens[index : index + width] == term_tokens for index in range(len(text_tokens) - width + 1))
+    return any(
+        all(
+            _token_matches(source_token, term_token)
+            for source_token, term_token in zip(text_tokens[index : index + width], term_tokens, strict=True)
+        )
+        for index in range(len(text_tokens) - width + 1)
+    )
+
+
+def _token_matches(source_token: str, term_token: str) -> bool:
+    return bool(set(_token_forms(source_token)) & set(_token_forms(term_token)))
+
+
+def _token_forms(token: str) -> tuple[str, ...]:
+    value = str(token or "").casefold()
+    forms = [value]
+    if len(value) > 2:
+        forms.append(f"{value}s")
+    if len(value) > 3 and value.endswith("y"):
+        forms.append(f"{value[:-1]}ies")
+    if len(value) > 3 and value.endswith("s") and not value.endswith("ss"):
+        forms.append(value[:-1])
+    if len(value) > 4 and value.endswith("ies"):
+        forms.append(f"{value[:-3]}y")
+    return tuple(dict.fromkeys(form for form in forms if form))
 
 
 def _tokenize(text: str) -> tuple[str, ...]:

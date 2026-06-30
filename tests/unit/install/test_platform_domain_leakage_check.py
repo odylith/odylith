@@ -49,6 +49,28 @@ def test_default_matrix_cases_each_contribute_distinctive_leakage_terms() -> Non
     assert all(leakage.case_leakage_terms(case) for case in cases)
 
 
+def test_declared_leakage_terms_are_supplemented_by_distinctive_required_anchors() -> None:
+    terms = leakage.case_leakage_terms(
+        SimpleNamespace(
+            required_terms=("wafer", "reliability", "agent"),
+            leakage_terms=("wafer lot", "chamber exposure"),
+        )
+    )
+
+    assert terms == ("chamber exposure", "wafer", "wafer lot")
+
+
+def test_generic_required_anchors_do_not_reenter_leakage_custody_noise() -> None:
+    terms = leakage.case_leakage_terms(
+        SimpleNamespace(
+            required_terms=("artifact", "protocol", "sample", "interpreter", "model"),
+            leakage_terms=("lab sample custody",),
+        )
+    )
+
+    assert terms == ("lab sample custody",)
+
+
 def test_domain_leakage_terms_accept_custom_matrix_cases_without_platform_native_noise() -> None:
     terms = set(
         leakage.domain_leakage_terms(

@@ -1123,6 +1123,37 @@
   specs, 6 Atlas sources, and clean debug-repo deletion. Rebuilt installed dist
   and fresh high-variance proof remain required before release readiness can be
   reclaimed.
+  Rebuilt checkpoint `8495f96a` then proved the leakage-custody correction was
+  incomplete rather than releasable. The fresh ten-domain installed matrix
+  passed 7/10 with complete governed records, zero browser issues, and all
+  standard creates under 29s, but failed the domain-expert lens for three
+  cases. Two failures were corpus-authoring defects: the custom proof required
+  unaccepted anchors (`trial`, `debris`) that the operator prompt never
+  supplied, which would pressure the generator to hallucinate domain terms.
+  The real platform defect was semantic custody for leading purpose context:
+  `lead service-line abatement; intake...` preserved the action list but lost
+  `abatement` from governed artifacts. A reviewer also caught that the
+  phrase-only leakage correction could miss distinctive bare anchors such as
+  `wafer` when a generated project uses the bare anchor and platform custody
+  leaks it separately. The current source fix rejects ungrounded matrix
+  `required_terms` before simulation, unions declared leakage sentinels with
+  filtered distinctive required anchors, keeps generic anchors such as
+  `artifact`, `protocol`, `sample`, `interpreter`, `model`, and `water` out of
+  leakage custody noise, and carries semicolon-led purpose context into the
+  first actionable path step without carrying unrelated sentence context. A
+  follow-up read-only review found one more failed mechanism before release:
+  the new grounding preflight rejected the shipped default matrix because a
+  valid prompt used a plural source token while the required anchor was
+  singular. The harness now accepts simple token inflection variants, the
+  default case catalog itself is regression-tested against the grounding
+  preflight, and the semicolon purpose-context owner was decomposed into its
+  own first-path module after the broader suite caught the parser crossing the
+  800-line anti-slop guard. Focused proof passed the install/leakage/recovery
+  pack, the first-path file-size guard, py_compile, a 65-term platform
+  source/dist leakage scan, and a disposable source-local municipal replay that
+  preserved `lead`, `water`, `abatement`, and `sample` in generated governed
+  records. Rebuilt installed dist and fresh corrected high-variance matrix
+  proof remain required before release readiness can be reclaimed.
 
 - Related Incidents/Bugs: CB-208
 

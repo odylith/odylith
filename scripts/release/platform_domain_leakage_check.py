@@ -75,8 +75,11 @@ DIST_EVIDENCE_PREFIXES = (
 GENERIC_PRODUCT_TERMS = frozenset(
     {
         "archive",
+        "artifact",
         "care",
         "certification",
+        "consent",
+        "court",
         "credit",
         "custody",
         "dependency",
@@ -87,13 +90,19 @@ GENERIC_PRODUCT_TERMS = frozenset(
         "flood",
         "credential",
         "guardian",
+        "hearing",
         "incident",
+        "interpreter",
+        "lead",
+        "menu",
         "open",
+        "outage",
         "package",
         "placement",
         "port",
         "project",
         "product",
+        "protocol",
         "provenance",
         "reliability",
         "resident",
@@ -102,9 +111,12 @@ GENERIC_PRODUCT_TERMS = frozenset(
         "runbook",
         "screening",
         "security",
+        "sample",
         "source",
         "union",
+        "verifier",
         "waiver",
+        "water",
     }
 )
 PLATFORM_NATIVE_TERMS = frozenset(
@@ -185,9 +197,12 @@ def historical_domain_leakage_terms() -> tuple[str, ...]:
 def case_leakage_terms(case: object) -> tuple[str, ...]:
     """Return distinctive leakage terms for one simulation case."""
 
-    declared = _case_declared_leakage_terms(case)
-    source_terms = declared if declared else _case_required_terms(case)
-    return domain_leakage_terms_from_terms(source_terms)
+    return domain_leakage_terms_from_terms(
+        (
+            *_case_declared_leakage_terms(case),
+            *_case_required_terms(case),
+        )
+    )
 
 
 def cases_missing_leakage_terms(cases: Iterable[object]) -> tuple[str, ...]:

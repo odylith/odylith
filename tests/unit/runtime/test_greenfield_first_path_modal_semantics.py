@@ -123,6 +123,17 @@ def test_subjectless_action_chains_do_not_invent_carried_subjects() -> None:
     )
 
 
+def test_leading_purpose_context_is_preserved_on_first_action_step() -> None:
+    steps = first_path_steps(
+        "lead service-line abatement; intake household records, prioritize vulnerable sites, "
+        "coordinate contractor windows, preserve lab sample evidence"
+    )
+
+    assert steps[0] == "Intake household records, prioritize vulnerable sites for lead service-line abatement"
+    assert any("lead service-line abatement" in step for step in steps)
+    assert "lead service-line abatement" not in steps
+
+
 def test_confirmed_completion_repairs_modal_drift_from_recovered_host_guidance_intent() -> None:
     confirmation = build_product_intent_confirmation(
         prompt=FLOOD_SHELTER_PROMPT,

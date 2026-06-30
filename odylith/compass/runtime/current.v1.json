@@ -933,7 +933,7 @@
         "provider_failure_detail": "Codex CLI exited with status 1. Error loading config.toml: unknown variant `default`, expected `fast` or `flex` in `service_tier`",
         "provider_model": "gpt-5.3-codex-spark",
         "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-06-30T05:56:55Z"
+        "next_retry_utc": "2026-06-30T08:56:55Z"
       },
       "evidence_lookup": {}
     },
@@ -957,7 +957,7 @@
         "provider_failure_detail": "Codex CLI exited with status 1. Error loading config.toml: unknown variant `default`, expected `fast` or `flex` in `service_tier`",
         "provider_model": "gpt-5.3-codex-spark",
         "provider_reasoning_effort": "medium",
-        "next_retry_utc": "2026-06-30T11:26:55Z"
+        "next_retry_utc": "2026-06-30T12:56:55Z"
       },
       "evidence_lookup": {}
     }

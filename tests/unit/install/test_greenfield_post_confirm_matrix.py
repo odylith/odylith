@@ -40,6 +40,8 @@ def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
     cases = module.default_cases()
 
     assert len(cases) >= 10
+    module._raise_for_ungrounded_required_terms(cases)  # noqa: SLF001
+    assert module._term_present("displaced residents register for shelter", "resident")  # noqa: SLF001
     for name in (
         "credit union fair lending exception",
         "apprenticeship credential readiness",
@@ -94,7 +96,7 @@ def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
             cases=(
                 module.GreenfieldMatrixCase(
                     name="xenobot custody",
-                    prompt="Create a greenfield proposal for xenobot custody.",
+                    prompt="Create a greenfield proposal for xenobot agent custody.",
                     required_terms=("xenobot", "agent"),
                 ),
             ),
@@ -117,8 +119,31 @@ def test_run_matrix_rejects_custom_cases_without_distinctive_leakage_terms(tmp_p
             cases=(
                 module.GreenfieldMatrixCase(
                     name="platform-native only",
-                    prompt="Create a greenfield proposal for an agent tool tribunal.",
+                    prompt="Create a greenfield proposal for an agent tool permission tribunal.",
                     required_terms=("agent", "tool", "permission", "tribunal"),
+                ),
+            ),
+        )
+
+    assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
+
+
+def test_run_matrix_rejects_ungrounded_required_terms_before_simulation(tmp_path: Path) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\n")
+
+    with pytest.raises(RuntimeError, match="required_terms must be grounded"):
+        module.run_matrix(
+            dist_dir=dist_dir,
+            version="0.1.15",
+            temp_parent=tmp_path,
+            cases=(
+                module.GreenfieldMatrixCase(
+                    name="ungrounded anchor",
+                    prompt="Create a greenfield proposal for protocol review.",
+                    required_terms=("protocol", "trial"),
+                    leakage_terms=("protocol review",),
                 ),
             ),
         )
@@ -995,21 +1020,41 @@ def test_package_evidence_rejects_missing_persisted_project_prompt_payload() -> 
     assert any("accepted Project readback does not expose five source-launch prompts" in finding.message for finding in findings)
 
 
-def test_generated_leakage_terms_use_declared_sentinels_not_required_anchors(tmp_path: Path) -> None:
+def test_generated_leakage_terms_supplement_declared_sentinels_with_distinctive_anchors(tmp_path: Path) -> None:
     module = _module()
     package = _substantive_package()
+    package.project_brief_record_text += "\nWafer lot readiness remains visible for review."
     case = module.GreenfieldMatrixCase(
-        name="zephyr permit",
-        prompt="Create a proposal for zephyr attestation.",
-        required_terms=("permit", "zephyr", "attestation"),
-        leakage_terms=("zephyr attestation", "missing lattice phrase"),
+        name="wafer permit",
+        prompt="Create a proposal for wafer attestation.",
+        required_terms=("permit", "wafer", "attestation"),
+        leakage_terms=("wafer lot", "missing lattice phrase"),
     )
 
     terms = module._case_generated_leakage_terms(case=case, repo_root=tmp_path, package=package)  # noqa: SLF001
 
-    assert "zephyr attestation" not in terms
+    assert "wafer lot" in terms
     assert "missing lattice phrase" not in terms
-    assert "permit" not in terms
+    assert "permit" in terms
+    assert "wafer" in terms
+
+
+def test_generated_leakage_terms_suppress_generic_required_anchors(tmp_path: Path) -> None:
+    module = _module()
+    package = _substantive_package()
+    case = module.GreenfieldMatrixCase(
+        name="protocol artifact sample",
+        prompt="Create a proposal for protocol artifact sample review.",
+        required_terms=("protocol", "artifact", "sample", "permit"),
+        leakage_terms=("missing lattice phrase",),
+    )
+
+    terms = module._case_generated_leakage_terms(case=case, repo_root=tmp_path, package=package)  # noqa: SLF001
+
+    assert "protocol" not in terms
+    assert "artifact" not in terms
+    assert "sample" not in terms
+    assert "permit" in terms
 
 
 def test_generated_leakage_terms_fall_back_when_case_has_no_declared_sentinels(tmp_path: Path) -> None:

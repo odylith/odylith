@@ -407,6 +407,29 @@ def test_host_guidance_recovery_handles_direct_product_for_actor_gerund_path(tmp
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_host_guidance_recovery_preserves_leading_purpose_context_before_actions() -> None:
+    prompt = (
+        "municipal water utility planner for lead service-line abatement; intake household records, "
+        "prioritize vulnerable sites, coordinate contractor windows, preserve lab sample evidence, "
+        "track resident access constraints, and publish block readiness without claiming regulatory certification"
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert "lead service-line abatement" in intent["first_path"].casefold()
+    assert "lead service-line abatement" in rendered
+    assert "preserve lab sample evidence" in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_host_guidance_recovery_keeps_direct_where_prompt_title_instead_of_terminal_outcome() -> None:
     prompt = (
         "factory line changeover readiness board where supervisors verify tooling, materials, "
