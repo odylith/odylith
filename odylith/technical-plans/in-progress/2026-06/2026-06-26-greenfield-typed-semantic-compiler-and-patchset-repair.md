@@ -1734,5 +1734,6 @@ vocabulary, or degraded packages.
       profile now emits source freshness/source event/downstream action language
       instead. Focused proof passed 39 component-spec tests, 3 explicit
       notification/intent regression tests, the 52-term platform leakage guard,
-      and exact-string scan for the removed phrases. A rebuilt dist from this
-      newer source checkpoint remains required before shipped-custody closure.
+      and exact-string scan for the removed phrases. Fresh local release dist
+      `odylith-local-release-0.1.15-3c616936` then passed the platform
+      domain-leakage build gate across the same 52 distinctive fixture terms.

@@ -1053,8 +1053,10 @@
   projecting source freshness, source event markers, and downstream action
   execution instead. Focused proof passed 39 component-spec tests, 3 explicit
   notification/intent regression tests, the 52-term platform leakage guard, and
-  exact-string scan for the removed phrases. A rebuilt dist from this newer
-  source checkpoint remains required before shipped-custody closure.
+  exact-string scan for the removed phrases. Fresh local release dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3c616936`
+  then passed the platform domain-leakage build gate across the same 52
+  distinctive fixture terms.
 
 - Related Incidents/Bugs: CB-208
 

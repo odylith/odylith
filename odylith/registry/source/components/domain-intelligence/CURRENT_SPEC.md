@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
 - **2026-06-29 · Implementation:** Proved 9a764dc7 installed greenfield matrix, then removed unconditional notification semantics from generic status-view Registry profiles after source domain-custody audit.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
@@ -39,9 +42,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Removed broad rendered-preview repair authority from greenfield post-confirm package cleanup; exact source-owned artifact-draft leaf paths now gate safe mechanical repair, Compass memory leaves are covered, and legacy broad generated-copy findings no longer create safe repair operations. Focused proof passed 41 tests and widened post-confirm proof passed 76 tests in 50.17s.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +5 more
-- **2026-06-29 · Implementation:** Source-fixed greenfield workstream-title preservation constraint custody after focused reviewer proof found the quality-repair suite red; 44 focused tests now pass, rebuilt installed proof remains pending.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -148,7 +148,8 @@ This section captures synchronized requirement and contract signals derived from
   facts. Generic status profiles now project source freshness, source event
   markers, and downstream action execution. Focused proof passed 39
   component-spec tests, 3 explicit notification/intent regression tests, the
-  52-term platform leakage guard, and exact-string scan for the removed phrases.
+  52-term platform leakage guard, exact-string scan for the removed phrases, and
+  fresh dist leakage proof on `odylith-local-release-0.1.15-3c616936`.
 
 - 2026-06-29: Source-fixed workstream-title preservation constraint custody after focused reviewer proof found the runtime quality-repair suite red. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   `greenfield_confirmed_backlog_actions.py` now reattaches useful

@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 147,
-    "mapped_workstream_evidence_count": 111,
+    "explicit_event_count": 148,
+    "mapped_workstream_evidence_count": 112,
     "recent_path_match_count": 1,
     "spec_history_event_count": 25,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 148
+    "timeline_event_count": 149
   },
   "name": "Release",
   "path_prefixes": [
@@ -49,7 +49,7 @@
         "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
-      "event_index": 730,
+      "event_index": 731,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
@@ -57,8 +57,45 @@
       ],
       "meaningful": true,
       "summary": "Recent workspace activity across tracked paths: odylith/registry/source/components/release/CURRENT_SPEC.md",
-      "ts_iso": "2026-06-29T20:19:03-07:00",
+      "ts_iso": "2026-06-29T20:25:49-07:00",
       "workstreams": []
+    },
+    {
+      "artifacts": [
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
+      ],
+      "confidence": "high",
+      "event_index": 729,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.",
+      "ts_iso": "2026-06-29T20:25:32-07:00",
+      "workstreams": [
+        "B-142"
+      ]
     },
     {
       "artifacts": [

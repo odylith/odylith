@@ -499,6 +499,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-29 · Implementation:** Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
 - **2026-06-29 · Implementation:** Proved 9a764dc7 installed greenfield matrix, then removed unconditional notification semantics from generic status-view Registry profiles after source domain-custody audit.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
@@ -514,9 +517,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Implementation:** Captured and fixed domain-leakage guard false positive: persisted greenfield matrix proof JSON in the dist is evidence, not install payload; guard now excludes greenfield-post-confirm proof JSON while still scanning runtime wheel and text install assets.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, tests/unit/install/test_platform_domain_leakage_check.py
-- **2026-06-29 · Implementation:** Added platform domain-leakage guard to local release build, standalone greenfield matrix, and shared release proof; guard derives distinctive fixture terms from the high-variance matrix and keeps domain vocabulary out of runtime and shipped guidance while allowing governed/evaluation evidence.
-  - Scope: B-142
-  - Evidence: bin/_odylith.sh, bin/greenfield-post-confirm-matrix +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -580,8 +580,9 @@ This section captures synchronized requirement and contract signals derived from
   proof, complete governed records, 22.259-29.208s standard create timings,
   synthetic typed-probe rescue wiring in 33.474s, and clean temp cleanup. A
   follow-up source audit removed unconditional notification semantics from
-  generic status-view Registry profiles; a fresh dist proof from that newer
-  source checkpoint is required before release closure.
+  generic status-view Registry profiles; fresh local release dist
+  `odylith-local-release-0.1.15-3c616936` passed the platform domain-leakage
+  build gate across 52 distinctive fixture terms.
 - 2026-05-03: Added the v0.1.14 release-planning target and made `next` point to `release-0-1-14`; B-141 and B-142 are active there, while B-140 is recorded as completed release history for migration-observer proof. Greenfield project proposals now default omitted consumer project release selectors to `0.0.1` so first-release planning does not borrow Odylith's own `next` alias. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-03-27: Added a first-class maintainer release subsystem with sticky version sessions, stable semver auto-tagging, canonical commit-bound release dispatch, and a dedicated release runbook. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
 - 2026-03-28: Reset the local relaunch narrative to restart preview at `v0.1.0`, made split managed assets part of the canonical release lane while keeping install full-stack by default, and blocked dispatch on local hosted-asset installer proof. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
