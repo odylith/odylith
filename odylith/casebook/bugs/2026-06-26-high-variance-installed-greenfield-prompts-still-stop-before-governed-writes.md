@@ -1395,6 +1395,18 @@
   minimum, 25.405s average, 25.970s maximum standard create time, passed cleanup
   proof, and synthetic rescue smoke at 33.491s. Natural host-rescue quality
   remains unproven.
+  Fresh committed-head proof after the proof-hardening checkpoint rebuilt
+  `odylith-local-release-0.1.15-4750c7ec` from pushed commit `4750c7ec` and
+  passed the source-plus-dist platform leakage guard. The maintained installed
+  matrix then passed 13/13 high-variance standard post-confirm creates with
+  persisted JSON proof, 10/10 scores, zero quality issues, zero browser-surface
+  issues, zero platform-leakage issues, 22.622s minimum, 26.394s average,
+  28.799s maximum create time, browser proof passed for all 13 cases,
+  persisted temp-cleanup proof passed with no remaining temp paths, and the
+  synthetic typed-probe rescue smoke passed in 34.340s. The manifest summaries
+  were present for all 13 standard cases and recorded no standard-path rescue
+  activation. Natural host-model rescue remains explicitly unproven and must
+  not be inferred from the synthetic typed-probe smoke.
 
 - Related Incidents/Bugs: CB-208
 

@@ -2030,6 +2030,15 @@ vocabulary, or degraded packages.
       platform-leakage issues, 24.952s minimum, 25.405s average, 25.970s
       maximum create time, passed persisted cleanup proof, and synthetic rescue
       smoke at 33.491s. Natural host-rescue quality remains explicitly unproven.
+      Follow-up committed-head proof rebuilt
+      `odylith-local-release-0.1.15-4750c7ec` from pushed commit `4750c7ec`;
+      the maintained installed matrix passed 13/13 standard creates with
+      persisted JSON proof, 10/10 scores, zero quality/browser/platform-leakage
+      issues, browser proof passed for all 13 cases, 22.622s minimum,
+      26.394s average, 28.799s maximum create time, persisted cleanup proof
+      passed with no remaining temp paths, and synthetic typed-probe rescue
+      smoke passed in 34.340s. Natural host-model rescue remains explicitly
+      unproven and is still the next proof gap.
 - [x] Decompose Atlas box tracked-object phrase selection.
       The platform-facing leakage cleanup touched
       `atlas_box_explanations.py`, which was already above the source-size
