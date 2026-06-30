@@ -2019,6 +2019,17 @@ vocabulary, or degraded packages.
       standard matrix cases. The synthetic rescue smoke passed in 33.888s, but
       remains typed-probe wiring proof rather than natural host-rescue quality
       proof.
+- [x] Make fresh-variance matrix proof durable and externally configurable.
+      The installed matrix now accepts explicit external case files through the
+      release script and the standalone wrapper, persists per-case post-confirm
+      manifest summaries, derives natural-rescue proof only from non-probe
+      provider-backed structured patch evidence, and records temp-cleanup proof
+      as a matrix status gate. Focused proof passed 101 install/runtime tests,
+      py_compile, shell syntax checks, and a three-case external variance run
+      against the latest local dist with 10/10 scores, zero quality/browser/
+      platform-leakage issues, 24.952s minimum, 25.405s average, 25.970s
+      maximum create time, passed persisted cleanup proof, and synthetic rescue
+      smoke at 33.491s. Natural host-rescue quality remains explicitly unproven.
 - [x] Decompose Atlas box tracked-object phrase selection.
       The platform-facing leakage cleanup touched
       `atlas_box_explanations.py`, which was already above the source-size

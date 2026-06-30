@@ -499,7 +499,13 @@ governed subsystem.
 - The standalone `make greenfield-post-confirm-matrix` maintainer target must
   write `greenfield-post-confirm-matrix.v1.json` by default, with
   `GREENFIELD_MATRIX_OUTPUT_JSON` as the explicit override. A stdout-only
-  matrix pass is not durable release evidence.
+  matrix pass is not durable release evidence. The target must also accept an
+  explicit fresh-variance case file through `GREENFIELD_MATRIX_CASE_FILE` so
+  maintainers can run external high-variance simulations without adding domain
+  vocabulary to the platform source catalog. Persisted matrix JSON must include
+  per-case post-confirm manifest summaries and temp-cleanup proof; leftover
+  Odylith simulation roots are release-proof failures, not chat-side cleanup
+  chores.
 - Local release smoke must inspect installed greenfield guidance files as part of
   the same journey. Installed AGENTS, README, and skill guidance must mention the
   `greenfield create` confirmation path, must forbid hand-authored proposal JSON,

@@ -1516,7 +1516,11 @@ This section captures synchronized requirement and contract signals derived from
   timing, artifact collection, scoring, cleanup, and rescue smoke; the case
   catalog owner contains only high-variance project scenarios and any
   confirmed-intent override text needed to replay escaped operator-input
-  shapes.
+  shapes. External fresh-variance cases are loaded from explicit JSON case
+  files by the release harness, not added to reusable platform defaults.
+  Persisted matrix proof must expose post-confirm manifest summaries and
+  cleanup proof so standard, rescue, and leftover-temp behavior can be audited
+  from the JSON artifact.
 - Installed release matrix artifact collection must preserve record custody:
   generated Radar workstream readback includes governed workstream records, not
   host guidance, catalog, or companion Markdown such as `AGENTS.md`,

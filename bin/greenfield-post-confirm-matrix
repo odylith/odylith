@@ -31,6 +31,9 @@ if [[ "${BROWSER_PROOF:-1}" != "0" ]]; then
   extra_args+=(--include-browser-proof)
   ensure_playwright_chromium
 fi
+if [[ -n "${GREENFIELD_MATRIX_CASE_FILE:-}" ]]; then
+  extra_args+=(--case-file "$GREENFIELD_MATRIX_CASE_FILE")
+fi
 
 "$odylith_python" scripts/release/greenfield_post_confirm_matrix.py \
   --dist-dir "$dist_dir" \

@@ -1383,6 +1383,18 @@
   synthetic typed-probe rescue smoke passed in 33.888s, but its manifest still
   records `natural_rescue_quality_proven=false`; do not use that smoke as proof
   of natural host-model rescue quality.
+  Follow-up proof-hardening on 2026-06-30 found two release-evidence gaps that
+  could let future claims depend on chat-side evidence instead of durable
+  artifacts: fresh high-variance cases required Python-level harness calls, and
+  temp cleanup was enforced but not persisted in the matrix JSON. The harness now
+  accepts explicit external case files, writes per-case post-confirm manifest
+  summaries, derives natural-rescue proof only from non-probe provider-backed
+  structured patch evidence, and records temp-cleanup proof as a matrix status
+  gate. A three-case external variance run against the latest local dist passed
+  with 10/10 scores, zero quality/browser/platform-leakage findings, 24.952s
+  minimum, 25.405s average, 25.970s maximum standard create time, passed cleanup
+  proof, and synthetic rescue smoke at 33.491s. Natural host-rescue quality
+  remains unproven.
 
 - Related Incidents/Bugs: CB-208
 

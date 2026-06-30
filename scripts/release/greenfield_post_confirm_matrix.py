@@ -35,6 +35,10 @@ from greenfield_matrix_leakage import case_preflight_leakage_terms as _case_pref
 from greenfield_matrix_leakage import platform_baseline_required_terms as _platform_baseline_required_terms  # noqa: E402
 from greenfield_matrix_leakage import term_present as _term_present  # noqa: E402
 from greenfield_matrix_leakage import with_platform_leakage_issues as _with_platform_leakage_issues  # noqa: E402
+from greenfield_matrix_case_file import load_case_file  # noqa: E402
+from greenfield_matrix_proof_scope import natural_rescue_quality_proven  # noqa: E402
+from greenfield_matrix_proof_scope import post_confirm_manifest_summary  # noqa: E402
+from greenfield_matrix_proof_scope import temp_cleanup_proof  # noqa: E402
 from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase  # noqa: E402
 from greenfield_post_confirm_matrix_cases import default_cases  # noqa: E402
 from greenfield_post_confirm_matrix_cases import rescue_smoke_case  # noqa: E402
@@ -269,6 +273,7 @@ def _run_case(
     )
     create_seconds = round(time.perf_counter() - started, 3)
     payload = _parse_json_object(create.stdout)
+    manifest = _as_mapping(payload.get("post_confirm_quality_manifest"))
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)
@@ -304,6 +309,7 @@ def _run_case(
         create_stdout_excerpt=command_excerpt(create.stdout) if create.returncode else "",
         create_stderr_excerpt=command_excerpt(create.stderr) if create.returncode else "",
         platform_leakage_terms=leakage_terms,
+        post_confirm_manifest_summary=post_confirm_manifest_summary(manifest),
     )
 
 
@@ -503,6 +509,7 @@ def _failed_case(
         quality=quality,
         create_returncode=returncode,
         failure_detail=command_excerpt(detail),
+        post_confirm_manifest_summary={},
     )
 
 
@@ -746,6 +753,15 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument("--version", default=_version_from_pyproject())
     parser.add_argument("--temp-parent", default=str(_default_temp_parent()))
     parser.add_argument(
+        "--case-file",
+        action="append",
+        default=None,
+        help=(
+            "JSON file containing fresh high-variance GreenfieldMatrixCase records. "
+            "Repeatable; when present, these cases replace the maintained default catalog."
+        ),
+    )
+    parser.add_argument(
         "--include-rescue-smoke",
         action="store_true",
         default=True,
@@ -778,10 +794,12 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parse_args(argv)
+    selected_cases = _load_cli_case_files(args.case_file or ())
     results = run_matrix(
         dist_dir=Path(args.dist_dir),
         version=str(args.version),
         temp_parent=Path(args.temp_parent),
+        cases=selected_cases,
         include_browser_proof=bool(args.include_browser_proof),
     )
     rescue = (
@@ -795,16 +813,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
     platform_leakage_proof = _platform_leakage_proof_summary(results)
+    cleanup_proof = temp_cleanup_proof(Path(args.temp_parent))
+    natural_rescue_proven = natural_rescue_quality_proven(results)
     browser_status = str(browser_proof.get("status") or "").strip()
     browser_passed = browser_status == "passed" or (
         browser_status == "skipped" and bool(args.allow_skipped_browser_proof)
     )
     platform_leakage_passed = str(platform_leakage_proof.get("status") or "").strip() == "passed"
+    cleanup_passed = str(cleanup_proof.get("status") or "").strip() == "passed"
     passed = (
         all(result.quality.passed for result in results)
         and (rescue is None or rescue.passed)
         and browser_passed
         and platform_leakage_passed
+        and cleanup_passed
     )
     payload = {
         "version": QUALITY_MATRIX_VERSION,
@@ -812,7 +834,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         "proof_scope": {
             "standard_path": "real_installed_greenfield_post_confirm_quality_matrix",
             "rescue_path": "synthetic_typed_probe_wiring_only",
-            "natural_rescue_quality_proven": False,
+            "natural_rescue_path": (
+                "real_installed_structured_patch_plan_case"
+                if natural_rescue_proven
+                else "not_proven"
+            ),
+            "natural_rescue_quality_proven": natural_rescue_proven,
             "browser_surface_proof": (
                 BROWSER_SURFACE_PROOF_SCOPE if bool(args.include_browser_proof) else "not_requested"
             ),
@@ -820,6 +847,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "results": [result.to_dict() for result in results],
         "browser_surface_proof": browser_proof,
         "platform_domain_leakage_proof": platform_leakage_proof,
+        "temp_cleanup_proof": cleanup_proof,
     }
     if rescue is not None:
         payload["rescue_smoke"] = rescue.to_dict()
@@ -833,5 +861,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_human_summary(results)
         _print_rescue_summary(rescue)
     return 0 if payload["status"] == "passed" else 1
+
+
+def _load_cli_case_files(case_files: Sequence[str]) -> tuple[GreenfieldMatrixCase, ...]:
+    cases: list[GreenfieldMatrixCase] = []
+    for case_file in case_files:
+        token = str(case_file or "").strip()
+        if token:
+            cases.extend(load_case_file(Path(token)))
+    return tuple(cases)
+
+
 if __name__ == "__main__":
     raise SystemExit(main())
