@@ -1078,6 +1078,17 @@
   generated leakage terms checked, zero leakage findings, and clean temp
   cleanup. Rebuilt full-dist maintained matrix proof remains required before
   release readiness can be claimed for this checkpoint.
+  Rebuilt full-dist proof for committed checkpoint `aebe9245` completed on
+  2026-06-30:
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245/greenfield-post-confirm-matrix-20260630-aebe9245.v1.json`
+  passed 13/13 maintained installed standard cases with hard 10/10 scores,
+  zero quality issues, zero browser issues, complete governed records, per-case
+  Project shell browser proof, persisted Project prompt payload readback,
+  22.338-28.973s standard create timings with a 25.949s average, generated-term
+  leakage proof across 55 generated readback terms with zero protected-custody
+  findings, synthetic typed-probe auto-rescue in 33.617s, and clean temp
+  cleanup. Natural non-internal host-model rescue quality remains a separate
+  unclaimed proof class.
 
 - Related Incidents/Bugs: CB-208
 

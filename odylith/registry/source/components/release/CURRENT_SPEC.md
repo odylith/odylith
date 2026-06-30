@@ -505,6 +505,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Validation:** Rebuilt local release dist aebe9245 and proved the maintained installed greenfield matrix: 13/13 standard cases hard 10/10, browser proof, generated-term leakage proof across 55 readback terms, synthetic auto-rescue, and clean cleanup.
+  - Scope: B-142
+  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245/greenfield-post-confirm-matrix-20260630-aebe9245.v1.json, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md
 - **2026-06-30 · Implementation:** Closed release-matrix Project proof custody by scoring persisted tooling-payload prompts, adding real Project shell browser proof, checking persisted project-brief structure, and persisting generated-term leakage proof.
   - Scope: B-142
   - Evidence: scripts/release/greenfield_post_confirm_matrix.py, scripts/release/greenfield_browser_surface_proof.py +3 more
@@ -529,6 +532,16 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-06-30: Proved release package `odylith-local-release-0.1.15-aebe9245` after Project proof-custody hardening. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
+  The maintained installed matrix persisted at
+  `greenfield-post-confirm-matrix-20260630-aebe9245.v1.json` passed 13/13
+  standard cases with hard 10/10 scores, zero quality issues, zero browser
+  issues, complete governed records, standard create timings of 22.338-28.973s,
+  per-case generated browser-state proof including Project shell state,
+  generated-term leakage proof across 55 readback terms with zero protected
+  platform findings, synthetic typed-probe auto-rescue in 33.617s, and clean
+  temp cleanup. Natural non-internal host-model rescue remains outside this
+  proof scope.
 - 2026-06-29: Broadened the platform domain-leakage release guard. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-043)
   The guard now scans root `.codex` guidance, public `docs/`, historical
   escaped-domain sentinels, and Odylith launchers/runtime/guidance inside

@@ -1751,11 +1751,18 @@ vocabulary, or degraded packages.
       py_compile, and a real installed flood-shelter post-confirm run with
       browser proof in 26.754s, hard 10/10 score, four generated leakage terms
       checked, zero leakage findings, and clean temp cleanup.
-- [ ] Rebuild the installable dist from the Project proof-custody checkpoint
+- [x] Rebuild the installable dist from the Project proof-custody checkpoint
       and rerun the full maintained installed matrix with browser proof plus
       rescue smoke.
-      Release readiness remains unclaimed until the current source checkpoint
-      has a fresh dist proof showing 13/13 maintained cases, hard 10/10 scores,
-      persisted Project prompt readback, Project browser proof, generated-term
-      leakage proof, synthetic rescue wiring, standard create times under 60s,
-      and clean temp cleanup.
+      Fresh local release dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245`
+      rebuilt from committed checkpoint `aebe9245` and passed the maintained
+      installed matrix at
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245/greenfield-post-confirm-matrix-20260630-aebe9245.v1.json`.
+      The proof shows 13/13 maintained standard cases passed, every case scored
+      hard 10/10, standard create times were 22.338-28.973s with a 25.949s
+      average, per-case browser proof was attempted and passed, Project prompt
+      readback came from the persisted tooling payload, generated-term leakage
+      proof passed across 55 generated readback terms with zero findings,
+      synthetic auto-rescue smoke passed in 33.617s under the 90s rescue budget,
+      and temp matrix/rescue cleanup was clean.

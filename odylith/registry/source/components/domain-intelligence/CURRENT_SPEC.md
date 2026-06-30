@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Validation:** Rebuilt local release dist aebe9245 and proved the maintained installed greenfield matrix with persisted Project prompt readback, Project browser proof, generated-term leakage proof, and clean temp cleanup.
+  - Scope: B-142
+  - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245/greenfield-post-confirm-matrix-20260630-aebe9245.v1.json, scripts/release/greenfield_post_confirm_matrix.py
 - **2026-06-30 · Implementation:** Hardened greenfield matrix proof custody so Project prompt scoring uses persisted tooling-payload readback, Project browser proof covers the real shell pane, persisted project briefs get structural readback checks, and generated-domain terms are rescanned against protected platform custody after each simulation.
   - Scope: B-142
   - Evidence: scripts/release/greenfield_post_confirm_matrix.py, scripts/release/greenfield_browser_surface_proof.py +4 more
@@ -48,6 +51,15 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-06-30: Proved the committed Project proof-custody checkpoint in the installed consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
+  Fresh local release dist `odylith-local-release-0.1.15-aebe9245` passed the
+  maintained installed matrix with 13/13 standard cases, hard 10/10 scores,
+  zero quality/browser/leakage issues, complete governed records, Project
+  prompt scoring from persisted tooling-payload readback, per-case Project
+  shell browser proof, generated-term leakage proof across 55 generated
+  readback terms, standard create timings of 22.338-28.973s, synthetic
+  auto-rescue smoke at 33.617s, and clean temp cleanup.
 
 - 2026-06-30: Closed the greenfield release-matrix Project proof-custody gap. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-045)
   The matrix now reads Project implementation prompts from the persisted
