@@ -1057,6 +1057,27 @@
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3c616936`
   then passed the platform domain-leakage build gate across the same 52
   distinctive fixture terms.
+  Proof-custody follow-up on 2026-06-30 found a release-evidence
+  false-positive risk after the next fresh b013c835 dist/matrix pass: the
+  installed matrix rebuilt `project_dashboard_preview` inside
+  `collect_artifact_package`, so Project implementation prompt counts, prompt
+  quality, and domain-term readback came from a regenerated builder payload
+  rather than the persisted `odylith/tooling-payload.v1.js` that operators
+  actually open. Browser proof also skipped the shell-owned Project tab, and
+  the platform leakage proof stopped at pre-run declared terms rather than
+  rescanning terms actually present in generated readback artifacts. The source
+  fix keeps custody in persisted artifacts: matrix package collection reads
+  `tooling-payload.v1.js`, persisted project-brief Markdown gets structural
+  readback checks, browser proof opens `odylith/index.html?tab=project` and
+  verifies accepted Project state plus five implementation prompt cards,
+  static surface health checks Project payload prompt integrity, and each case
+  rescans generated readback terms against protected platform source/dist
+  custody. Focused proof passed 64 matrix/browser/leakage unit tests, 2 Project
+  browser integration tests, py_compile, and one real installed flood-shelter
+  post-confirm run with browser proof in 26.754s, hard 10/10 score, four
+  generated leakage terms checked, zero leakage findings, and clean temp
+  cleanup. Rebuilt full-dist maintained matrix proof remains required before
+  release readiness can be claimed for this checkpoint.
 
 - Related Incidents/Bugs: CB-208
 

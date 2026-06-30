@@ -92,6 +92,7 @@ GENERIC_PRODUCT_TERMS = frozenset(
         "package",
         "placement",
         "port",
+        "project",
         "product",
         "provenance",
         "reliability",

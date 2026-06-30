@@ -445,12 +445,18 @@ governed subsystem.
   standard budget for every create, write complete governed records, pass all
   expert lenses, satisfy strict case-required domain-anchor coverage, and score
   10/10 across the release matrix dimensions. The matrix must also run
-  per-case headless generated browser state proof for Radar, Registry, Atlas,
-  Compass, Casebook, and tooling-shell surfaces. That browser lane must cover
-  normal shell routes, invalid-query recovery, and Casebook empty/filter
-  fallback, must provision Playwright Chromium through the maintained proof
-  wrapper, and must fail closed if Playwright or Chromium remains unavailable
-  in the proof environment. The matrix must include rescue smoke by default when post-confirm repair behavior
+  persisted-artifact custody checks: Project implementation prompts must be
+  scored from generated `odylith/tooling-payload.v1.js` readback, persisted
+  project-brief Markdown must be structurally checked, and generated-domain
+  terms actually present in readback artifacts must be rescanned against
+  protected platform source and dist custody. The matrix must also run per-case
+  headless generated browser state proof for the Project shell pane, Radar,
+  Registry, Atlas, Compass, Casebook, and tooling-shell surfaces. That browser
+  lane must cover normal shell routes, Project prompt-card readback,
+  invalid-query recovery, and Casebook empty/filter fallback, must provision
+  Playwright Chromium through the maintained proof wrapper, and must fail
+  closed if Playwright or Chromium remains unavailable in the proof environment.
+  The matrix must include rescue smoke by default when post-confirm repair behavior
   changes. That smoke must
   run the packaged CLI in `--repair-tier auto`, inject one exact-token internal
   typed final-gate finding, prove auto-escalation from standard to the 90 second
@@ -499,6 +505,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Closed release-matrix Project proof custody by scoring persisted tooling-payload prompts, adding real Project shell browser proof, checking persisted project-brief structure, and persisting generated-term leakage proof.
+  - Scope: B-142
+  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, scripts/release/greenfield_browser_surface_proof.py +3 more
 - **2026-06-29 · Implementation:** Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more

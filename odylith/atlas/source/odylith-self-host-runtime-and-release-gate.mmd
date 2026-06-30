@@ -37,7 +37,7 @@ flowchart TB
     subgraph Gate["Release Gate"]
         Pin["Source version + repo pin + __version__"]
         Validate["odylith validate self-host-posture<br/>--mode release --expected-tag vX.Y.Z"]
-        Matrix["Installed greenfield matrix<br/>10+ standard cases,<br/>per-case generated browser state proof,<br/>Atlas diagram state + Casebook included,<br/>persisted proof JSON,<br/>rescue wiring-only label"]
+        Matrix["Installed greenfield matrix<br/>10+ standard cases,<br/>per-case generated browser state proof,<br/>Project prompt payload readback,<br/>generated-term leakage proof,<br/>Atlas diagram state + Casebook included,<br/>persisted proof JSON,<br/>rescue wiring-only label"]
         Workflow[".github/workflows/release.yml"]
         Publish["GitHub release assets"]
         Pin --> Validate --> Matrix --> Workflow --> Publish

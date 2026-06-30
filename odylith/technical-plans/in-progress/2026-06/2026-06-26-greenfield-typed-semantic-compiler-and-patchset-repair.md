@@ -1737,3 +1737,25 @@ vocabulary, or degraded packages.
       and exact-string scan for the removed phrases. Fresh local release dist
       `odylith-local-release-0.1.15-3c616936` then passed the platform
       domain-leakage build gate across the same 52 distinctive fixture terms.
+- [x] Close the greenfield release-proof custody gap for Project artifacts.
+      A proof audit found that the installed matrix still rebuilt the Project
+      dashboard inside the proof harness, so Project implementation prompt
+      counts, prompt quality, and domain-term readback could pass even if the
+      generated shell payload was stale or divergent. The fix makes
+      `collect_artifact_package` read `odylith/tooling-payload.v1.js`,
+      strengthens persisted project-brief Markdown readback, adds real Project
+      shell-pane browser proof for accepted state and five implementation
+      prompt cards, and records per-case generated-domain terms that are then
+      rescanned against protected source/dist custody. Focused proof passed 64
+      matrix/browser/leakage unit tests, 2 Project browser integration tests,
+      py_compile, and a real installed flood-shelter post-confirm run with
+      browser proof in 26.754s, hard 10/10 score, four generated leakage terms
+      checked, zero leakage findings, and clean temp cleanup.
+- [ ] Rebuild the installable dist from the Project proof-custody checkpoint
+      and rerun the full maintained installed matrix with browser proof plus
+      rescue smoke.
+      Release readiness remains unclaimed until the current source checkpoint
+      has a fresh dist proof showing 13/13 maintained cases, hard 10/10 scores,
+      persisted Project prompt readback, Project browser proof, generated-term
+      leakage proof, synthetic rescue wiring, standard create times under 60s,
+      and clean temp cleanup.

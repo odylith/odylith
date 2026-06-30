@@ -39,6 +39,13 @@ def browser_surface_proof_issues(*, repo_root: Path, timeout_ms: int = 15000) ->
                 try:
                     context = browser.new_context(viewport={"width": 1440, "height": 1100})
                     try:
+                        issues.extend(
+                            _project_generated_state_issues(
+                                context=context,
+                                base_url=base_url,
+                                timeout_ms=timeout_ms,
+                            )
+                        )
                         for tab, frame_selector, heading_selector, heading_text in BROWSER_SURFACE_EXPECTATIONS:
                             issues.extend(
                                 _route_surface_issues(
@@ -110,6 +117,114 @@ def _route_surface_issues(
     finally:
         issues.extend(runtime_issues())
         page.close()
+    return tuple(issues)
+
+
+def _project_generated_state_issues(*, context: Any, base_url: str, timeout_ms: int) -> tuple[str, ...]:
+    page, runtime_issues = _new_page(context, issue_prefix="browser surface project generated state")
+    issues: list[str] = []
+    try:
+        response = page.goto(f"{base_url}/odylith/index.html?tab=project", wait_until="domcontentloaded")
+        if response is None or not response.ok:
+            issues.append("browser surface project did not load shell route")
+            return tuple(issues)
+        page.locator("#tab-project").wait_for(timeout=timeout_ms)
+        if page.locator("#tab-project").get_attribute("aria-selected") != "true":
+            issues.append("browser surface project did not select its shell tab")
+        page.locator("#pane-project .project-surface").wait_for(timeout=timeout_ms)
+        page.locator("#pane-project .project-product-story").wait_for(timeout=timeout_ms)
+        page.locator("#pane-project .project-host-handoff").wait_for(timeout=timeout_ms)
+        project_state = page.locator("#pane-project").evaluate(
+            """(node) => {
+                const prompts = Array.from(node.querySelectorAll(".project-host-prompt"));
+                const text = String(node.innerText || "");
+                return {
+                  promptCount: prompts.length,
+                  hasPromptGrid: Boolean(node.querySelector(".project-host-prompt-grid")),
+                  hasBlankState: text.includes("Project not defined yet"),
+                  hasImplementationPrompts: [
+                    "Choose implementation language",
+                    "Create first implementation plan",
+                    "Build smallest runnable slice",
+                    "Add tests and proof",
+                    "Refresh governed records"
+                  ].every((label) => text.includes(label)),
+                  maxPromptOverflow: prompts.reduce(
+                    (max, card) => Math.max(max, card.scrollWidth - card.clientWidth),
+                    0
+                  ),
+                  paneOverflow: node.scrollWidth - node.clientWidth
+                };
+            }"""
+        )
+        payload_state = page.evaluate(
+            """() => {
+                const payload = window.__ODYLITH_TOOLING_DATA__ || {};
+                const project = payload && payload.project_intelligence || {};
+                const prompts = Array.isArray(project.host_handoff_prompts)
+                  ? project.host_handoff_prompts
+                  : [];
+                return {
+                  origin: project && project.projection && project.projection.origin || "",
+                  promptCount: prompts.length,
+                  emptyPrompts: prompts.filter((row) => !String(row && row.prompt || "").trim()).length
+                };
+            }"""
+        )
+        issues.extend(
+            _project_state_assertion_issues(
+                payload_origin=str(payload_state.get("origin", "") if isinstance(payload_state, dict) else ""),
+                payload_prompt_count=int(payload_state.get("promptCount", 0) if isinstance(payload_state, dict) else 0),
+                empty_payload_prompts=int(payload_state.get("emptyPrompts", 0) if isinstance(payload_state, dict) else 0),
+                rendered_prompt_count=int(project_state.get("promptCount", 0) if isinstance(project_state, dict) else 0),
+                has_prompt_grid=bool(project_state.get("hasPromptGrid", False) if isinstance(project_state, dict) else False),
+                has_blank_state=bool(project_state.get("hasBlankState", False) if isinstance(project_state, dict) else False),
+                has_implementation_prompts=bool(
+                    project_state.get("hasImplementationPrompts", False) if isinstance(project_state, dict) else False
+                ),
+                max_prompt_overflow=int(project_state.get("maxPromptOverflow", 0) if isinstance(project_state, dict) else 0),
+                pane_overflow=int(project_state.get("paneOverflow", 0) if isinstance(project_state, dict) else 0),
+            )
+        )
+    except Exception as exc:
+        issues.append(f"browser surface project generated state failed render: {type(exc).__name__}: {exc}")
+    finally:
+        issues.extend(runtime_issues())
+        page.close()
+    return tuple(issues)
+
+
+def _project_state_assertion_issues(
+    *,
+    payload_origin: str,
+    payload_prompt_count: int,
+    empty_payload_prompts: int,
+    rendered_prompt_count: int,
+    has_prompt_grid: bool,
+    has_blank_state: bool,
+    has_implementation_prompts: bool,
+    max_prompt_overflow: int,
+    pane_overflow: int,
+) -> tuple[str, ...]:
+    issues: list[str] = []
+    if payload_origin != "accepted greenfield project":
+        issues.append("browser surface project payload is not accepted greenfield project state")
+    if payload_prompt_count < 5:
+        issues.append("browser surface project payload exposes fewer than five implementation prompts")
+    if empty_payload_prompts:
+        issues.append("browser surface project payload contains empty implementation prompt text")
+    if rendered_prompt_count < 5:
+        issues.append("browser surface project rendered fewer than five implementation prompt cards")
+    if not has_prompt_grid:
+        issues.append("browser surface project did not render the implementation prompt grid")
+    if has_blank_state:
+        issues.append("browser surface project rendered the blank project state after post-confirm")
+    if not has_implementation_prompts:
+        issues.append("browser surface project did not render the expected implementation prompt labels")
+    if max_prompt_overflow > 4:
+        issues.append("browser surface project implementation prompt cards overflow their containers")
+    if pane_overflow > 4:
+        issues.append("browser surface project pane overflows horizontally")
     return tuple(issues)
 
 

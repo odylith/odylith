@@ -97,3 +97,40 @@ def test_atlas_state_assertion_rejects_heading_only_or_unloaded_state() -> None:
     assert "browser surface atlas rendered no generated diagram buttons" in issues
     assert "browser surface atlas viewer did not load a generated diagram asset" in issues
     assert "browser surface atlas generated diagram asset did not finish loading" in issues
+
+
+def test_project_state_assertion_requires_persisted_prompt_state() -> None:
+    module = _module()
+
+    assert (
+        module._project_state_assertion_issues(
+            payload_origin="accepted greenfield project",
+            payload_prompt_count=5,
+            empty_payload_prompts=0,
+            rendered_prompt_count=5,
+            has_prompt_grid=True,
+            has_blank_state=False,
+            has_implementation_prompts=True,
+            max_prompt_overflow=0,
+            pane_overflow=0,
+        )
+        == ()
+    )
+
+    issues = module._project_state_assertion_issues(
+        payload_origin="greenfield proposal",
+        payload_prompt_count=3,
+        empty_payload_prompts=1,
+        rendered_prompt_count=2,
+        has_prompt_grid=False,
+        has_blank_state=True,
+        has_implementation_prompts=False,
+        max_prompt_overflow=20,
+        pane_overflow=16,
+    )
+
+    assert "browser surface project payload is not accepted greenfield project state" in issues
+    assert "browser surface project payload exposes fewer than five implementation prompts" in issues
+    assert "browser surface project payload contains empty implementation prompt text" in issues
+    assert "browser surface project rendered fewer than five implementation prompt cards" in issues
+    assert "browser surface project rendered the blank project state after post-confirm" in issues

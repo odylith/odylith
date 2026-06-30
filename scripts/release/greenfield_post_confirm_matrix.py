@@ -53,7 +53,6 @@ from odylith.runtime.artifact_quality.greenfield_package_quality import (  # noq
 from odylith.runtime.artifact_quality.greenfield_quality_lenses import (  # noqa: E402
     build_greenfield_quality_lens_report,
 )
-from odylith.runtime.project_intelligence import builder as project_intelligence_builder  # noqa: E402
 
 
 POST_CONFIRM_BUDGET_SECONDS = 60.0
@@ -218,6 +217,11 @@ def _run_case(
     package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
     counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
     surface_issues = rendered_surface_health_issues(repo_root=repo_root)
+    leakage_terms = _case_generated_leakage_terms(case=case, repo_root=repo_root, package=package)
+    leakage_issues = _case_platform_leakage_issues(
+        terms=leakage_terms,
+        release_dir=install_script.parent,
+    )
     browser_surface_proof_attempted = bool(include_browser_proof and create.returncode == 0)
     browser_surface_issues = (
         browser_surface_proof_issues(repo_root=repo_root) if browser_surface_proof_attempted else ()
@@ -226,7 +230,7 @@ def _run_case(
         create_payload=payload,
         package=package,
         counts=counts,
-        surface_issues=(*surface_issues, *browser_surface_issues),
+        surface_issues=(*surface_issues, *browser_surface_issues, *leakage_issues),
         create_returncode=create.returncode,
         create_seconds=create_seconds,
         create_detail=create.stderr or create.stdout,
@@ -243,6 +247,8 @@ def _run_case(
         failure_detail=_command_excerpt(create.stderr or create.stdout) if create.returncode else "",
         create_stdout_excerpt=_command_excerpt(create.stdout) if create.returncode else "",
         create_stderr_excerpt=_command_excerpt(create.stderr) if create.returncode else "",
+        platform_leakage_terms=leakage_terms,
+        platform_leakage_issues=leakage_issues,
     )
 
 
@@ -383,10 +389,7 @@ def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, An
         project_brief_record_text=_read_text(repo_root / "odylith/runtime/source/project-brief.v1.md"),
         accepted_project_preview=accepted_project,
         source_launch_readback=source_launch_readback,
-        project_dashboard_preview=project_intelligence_builder.build_project_intelligence_payload(
-            repo_root=repo_root,
-            shell_payload={},
-        ),
+        project_dashboard_preview=_read_project_dashboard_payload(repo_root),
         compass_memory_preview=_as_mapping(_as_mapping(create_payload.get("memory")).get("event")),
         next_steps_preview=_as_mapping(create_payload.get("next_steps")),
         backlog_result=backlog_result,
@@ -631,6 +634,76 @@ def _generated_text(*, repo_root: Path, package: Any) -> str:
     for row in _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts")):
         chunks.extend(text_values(row))
     return "\n".join(str(item) for item in chunks).casefold()
+
+
+def _case_generated_leakage_terms(*, case: GreenfieldMatrixCase, repo_root: Path, package: Any) -> tuple[str, ...]:
+    generated_text = _generated_text(repo_root=repo_root, package=package)
+    candidate_terms = platform_domain_leakage.domain_leakage_terms_from_terms(
+        (
+            *platform_domain_leakage.case_leakage_terms(case),
+            *tuple(str(term) for term in getattr(case, "required_terms", ()) if str(term).strip()),
+        )
+    )
+    return tuple(term for term in candidate_terms if _term_present(generated_text, term))
+
+
+def _case_platform_leakage_issues(*, terms: Sequence[str], release_dir: Path) -> tuple[str, ...]:
+    checked_terms = tuple(dict.fromkeys(str(term).strip() for term in terms if str(term).strip()))
+    if not checked_terms:
+        return ()
+    findings = platform_domain_leakage.scan_platform_custody(
+        repo_root=REPO_ROOT,
+        dist_dir=release_dir,
+        terms=checked_terms,
+    )
+    return tuple(
+        f"platform domain leakage after generated artifact readback: {finding.location}:{finding.line} leaked `{finding.term}`"
+        for finding in findings
+    )
+
+
+def _term_present(text: str, term: str) -> bool:
+    text_tokens = _tokenize(text)
+    term_tokens = _tokenize(term)
+    if not text_tokens or not term_tokens or len(term_tokens) > len(text_tokens):
+        return False
+    width = len(term_tokens)
+    return any(text_tokens[index : index + width] == term_tokens for index in range(len(text_tokens) - width + 1))
+
+
+def _tokenize(text: str) -> tuple[str, ...]:
+    tokens: list[str] = []
+    current: list[str] = []
+    for char in str(text or "").casefold():
+        if char.isalnum():
+            current.append(char)
+        elif current:
+            tokens.append("".join(current))
+            current = []
+    if current:
+        tokens.append("".join(current))
+    return tuple(tokens)
+
+
+def _read_project_dashboard_payload(repo_root: Path) -> Mapping[str, Any]:
+    shell_payload = _read_tooling_payload(repo_root)
+    project = shell_payload.get("project_intelligence")
+    return project if isinstance(project, Mapping) else {}
+
+
+def _read_tooling_payload(repo_root: Path) -> Mapping[str, Any]:
+    payload_path = repo_root / "odylith/tooling-payload.v1.js"
+    text = _read_text(payload_path).strip()
+    if not text or "__ODYLITH_TOOLING_DATA__" not in text:
+        return {}
+    json_start = text.find("{")
+    if json_start < 0:
+        return {}
+    try:
+        payload, _end = json.JSONDecoder().raw_decode(text[json_start:])
+    except json.JSONDecodeError:
+        return {}
+    return payload if isinstance(payload, Mapping) else {}
 
 
 def _completion_issues(
@@ -1138,6 +1211,32 @@ def _print_rescue_summary(rescue: GreenfieldRescueSmokeResult | None) -> None:
         print(f"   issue: {issue}")
 
 
+def _platform_leakage_proof_summary(results: Sequence[GreenfieldMatrixResult]) -> dict[str, Any]:
+    terms = sorted(
+        {
+            str(term).strip()
+            for result in results
+            for term in result.platform_leakage_terms
+            if str(term).strip()
+        }
+    )
+    issues = tuple(
+        dict.fromkeys(
+            issue
+            for result in results
+            for issue in result.platform_leakage_issues
+            if str(issue).strip()
+        )
+    )
+    return {
+        "status": "passed" if not issues else "failed",
+        "scope": "generated_artifact_readback_terms_against_platform_source_and_dist",
+        "term_count": len(terms),
+        "terms": terms,
+        "issues": list(issues),
+    }
+
+
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run installed greenfield post-confirm release simulations.")
     parser.add_argument("--dist-dir", required=True, help="Local release asset directory containing install.sh.")
@@ -1192,14 +1291,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         else None
     )
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
+    platform_leakage_proof = _platform_leakage_proof_summary(results)
     browser_status = str(browser_proof.get("status") or "").strip()
     browser_passed = browser_status == "passed" or (
         browser_status == "skipped" and bool(args.allow_skipped_browser_proof)
     )
+    platform_leakage_passed = str(platform_leakage_proof.get("status") or "").strip() == "passed"
     passed = (
         all(result.quality.passed for result in results)
         and (rescue is None or rescue.passed)
         and browser_passed
+        and platform_leakage_passed
     )
     payload = {
         "version": QUALITY_MATRIX_VERSION,
@@ -1214,6 +1316,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         },
         "results": [result.to_dict() for result in results],
         "browser_surface_proof": browser_proof,
+        "platform_domain_leakage_proof": platform_leakage_proof,
     }
     if rescue is not None:
         payload["rescue_smoke"] = rescue.to_dict()

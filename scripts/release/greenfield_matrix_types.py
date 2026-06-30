@@ -62,6 +62,8 @@ class GreenfieldMatrixResult:
     failure_detail: str = ""
     create_stdout_excerpt: str = ""
     create_stderr_excerpt: str = ""
+    platform_leakage_terms: tuple[str, ...] = ()
+    platform_leakage_issues: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -76,6 +78,8 @@ class GreenfieldMatrixResult:
             "failure_detail": self.failure_detail,
             "create_stdout_excerpt": self.create_stdout_excerpt,
             "create_stderr_excerpt": self.create_stderr_excerpt,
+            "platform_leakage_terms": list(self.platform_leakage_terms),
+            "platform_leakage_issues": list(self.platform_leakage_issues),
         }
 
 

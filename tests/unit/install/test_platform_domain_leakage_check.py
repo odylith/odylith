@@ -30,6 +30,7 @@ def test_domain_leakage_terms_use_distinctive_matrix_vocabulary() -> None:
         "wearable app",
     } <= terms
     assert "source" not in terms
+    assert "project" not in terms
     assert "security" not in terms
     assert "evidence" not in terms
 

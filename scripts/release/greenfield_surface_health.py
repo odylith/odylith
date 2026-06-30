@@ -78,14 +78,16 @@ def rendered_surface_health_issues(*, repo_root: Path) -> tuple[str, ...]:
     index_path = root / "odylith/index.html"
     if _nonempty(index_path):
         index_contract = _parse_html(index_path)
+        shell_payload = _shell_payload(repo_root=root, index_contract=index_contract)
+        if "project" not in index_contract.data_tabs:
+            issues.append("odylith/index.html is missing shell tab project")
         for tab, (frame_id, payload_key, expected_href_prefix) in INDEX_SHELL_TAB_CONTRACTS.items():
             if tab not in index_contract.data_tabs:
                 issues.append(f"odylith/index.html is missing shell tab {tab}")
             if frame_id not in index_contract.iframe_ids:
                 issues.append(f"odylith/index.html is missing shell frame {frame_id}")
-            payload = _shell_payload(repo_root=root, index_contract=index_contract)
-            if payload:
-                href = str(payload.get(payload_key) or "").strip()
+            if shell_payload:
+                href = str(shell_payload.get(payload_key) or "").strip()
                 if not href:
                     issues.append(f"odylith/index.html shell payload is missing {payload_key}")
                 elif not href.split("?", 1)[0].split("#", 1)[0].endswith(expected_href_prefix):
@@ -94,6 +96,8 @@ def rendered_surface_health_issues(*, repo_root: Path) -> tuple[str, ...]:
                     )
             else:
                 issues.append("odylith/index.html shell payload is missing or invalid")
+        if shell_payload:
+            issues.extend(_project_payload_issues(shell_payload))
     for source in sorted((root / "odylith/atlas/source").glob("*.mmd")):
         for suffix in (".svg", ".png"):
             rendered = source.with_suffix(suffix)
@@ -199,6 +203,28 @@ def _shell_payload(*, repo_root: Path, index_contract: _SurfaceAssetParser) -> d
     except json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
+
+
+def _project_payload_issues(shell_payload: dict[str, Any]) -> list[str]:
+    project = shell_payload.get("project_intelligence")
+    if not isinstance(project, dict):
+        return ["odylith/index.html shell payload is missing project_intelligence"]
+    prompts = project.get("host_handoff_prompts")
+    if not isinstance(prompts, list):
+        return ["odylith/index.html project payload is missing implementation prompts"]
+    issues: list[str] = []
+    if len([row for row in prompts if isinstance(row, dict)]) < 5:
+        issues.append("odylith/index.html project payload exposes fewer than five implementation prompts")
+    if any(isinstance(row, dict) and not str(row.get("prompt") or "").strip() for row in prompts):
+        issues.append("odylith/index.html project payload contains empty implementation prompt text")
+    origin = project.get("projection")
+    if isinstance(origin, dict) and str(origin.get("origin") or "").strip() not in {
+        "accepted greenfield project",
+        "greenfield proposal",
+        "source-backed project",
+    }:
+        issues.append("odylith/index.html project payload has an unknown projection origin")
+    return issues
 
 
 def _read_text(path: Path) -> str:

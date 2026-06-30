@@ -37,6 +37,11 @@ def _write_greenfield_project_page(tmp_path: Path, monkeypatch) -> Path:  # noqa
         "raise_for_failed_refresh",
         lambda **_kwargs: None,
     )
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {},
+    )
     proposal = _apply_ready_greenfield_fixture(tmp_path, "Build an ecommerce site with checkout recovery")
     greenfield_proposals.apply_greenfield_proposal(
         repo_root=tmp_path,

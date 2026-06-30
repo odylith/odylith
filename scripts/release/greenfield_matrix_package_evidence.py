@@ -110,8 +110,9 @@ def evidence_blocks_dimension(findings: Sequence[PackageEvidenceFinding], dimens
 
 
 def _project_brief_findings(*, package: Any, proposal: Mapping[str, Any]) -> list[PackageEvidenceFinding]:
-    record_text = normalize_string(getattr(package, "project_brief_record_text", ""))
-    if not record_text:
+    raw_record_text = str(getattr(package, "project_brief_record_text", "") or "").strip()
+    record_text = normalize_string(raw_record_text)
+    if not raw_record_text:
         return [_finding("product_manager", "independent package evidence missing persisted project brief readback")]
     required_markers = ("# ", "## Brief", "## Project Design Board", "## Governance Package")
     missing_markers = [marker for marker in required_markers if marker not in record_text]
@@ -124,13 +125,71 @@ def _project_brief_findings(*, package: Any, proposal: Mapping[str, Any]) -> lis
         ]
     if word_count(record_text) < 80:
         return [_finding("product_manager", "persisted project brief readback is too shallow for release-quality review")]
+    findings = _persisted_project_brief_structure_findings(raw_record_text)
     brief = package_mapping(proposal.get("project_brief"))
     if not brief:
-        return [_finding("product_manager", "independent package evidence missing project brief readback")]
-    return [
+        findings.append(_finding("product_manager", "independent package evidence missing project brief readback"))
+        return findings
+    findings.extend(
         _finding("product_manager", f"independent project brief evidence failed: {issue}")
         for issue in project_brief_issues(brief)
-    ]
+    )
+    return findings
+
+
+def _persisted_project_brief_structure_findings(record_text: str) -> list[PackageEvidenceFinding]:
+    sections = _markdown_sections(record_text)
+    brief_body = sections.get("brief", "")
+    design_body = sections.get("project design board", "")
+    governance_body = sections.get("governance package", "")
+    findings: list[PackageEvidenceFinding] = []
+    if "- outcome:" not in brief_body.casefold() or "- principle:" not in brief_body.casefold():
+        findings.append(
+            _finding("product_manager", "persisted project brief readback is missing outcome or principle lines")
+        )
+    if word_count(brief_body) < 40:
+        findings.append(_finding("product_manager", "persisted project brief Brief section is too shallow"))
+    if _bullet_count(design_body) < 4:
+        findings.append(
+            _finding("architect", "persisted project brief Project Design Board has fewer than four grounded rows")
+        )
+    if _bullet_count(governance_body) < 8:
+        findings.append(
+            _finding("engineer", "persisted project brief Governance Package has fewer than eight actionable rows")
+        )
+    if _section_term_overlap(brief_body, design_body, governance_body) < 3:
+        findings.append(
+            _finding("governance_traceability", "persisted project brief sections do not share enough semantic grounding")
+        )
+    return findings
+
+
+def _markdown_sections(record_text: str) -> dict[str, str]:
+    current = ""
+    sections: dict[str, list[str]] = {"": []}
+    for raw_line in record_text.splitlines():
+        line = raw_line.strip()
+        if line.startswith("## "):
+            current = normalize_string(line[3:]).casefold()
+            sections.setdefault(current, [])
+            continue
+        sections.setdefault(current, []).append(raw_line)
+    return {key: "\n".join(value).strip() for key, value in sections.items()}
+
+
+def _bullet_count(section_text: str) -> int:
+    return sum(1 for line in section_text.splitlines() if line.strip().startswith("-"))
+
+
+def _section_term_overlap(*sections: str) -> int:
+    term_sets = [set(_terms(section)) for section in sections if normalize_string(section)]
+    if len(term_sets) < 2:
+        return 0
+    frequencies: dict[str, int] = {}
+    for term_set in term_sets:
+        for term in term_set - _TERM_STOPWORDS:
+            frequencies[term] = frequencies.get(term, 0) + 1
+    return sum(1 for count in frequencies.values() if count >= 2)
 
 
 def _radar_findings(

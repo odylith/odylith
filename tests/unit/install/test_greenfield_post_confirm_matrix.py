@@ -386,6 +386,25 @@ def _substantive_prompt(position: int, label: str) -> dict[str, str]:
     return base
 
 
+def _substantive_project_payload() -> dict[str, object]:
+    return {
+        "projection": {"origin": "accepted greenfield project"},
+        "host_handoff_prompts": [
+            _substantive_prompt(index, label)
+            for index, label in enumerate(
+                (
+                    "Choose runtime and test harness",
+                    "Create first implementation plan",
+                    "Build smallest runnable slice",
+                    "Prove accepted and blocked paths",
+                    "Refresh governed records",
+                ),
+                start=1,
+            )
+        ],
+    }
+
+
 def _substantive_package() -> SimpleNamespace:
     project_brief = _substantive_project_brief()
     source_launch = {
@@ -478,16 +497,7 @@ def _substantive_package() -> SimpleNamespace:
             "source_launch": source_launch,
         },
         source_launch_readback=source_launch,
-        project_dashboard_preview={"host_handoff_prompts": [_substantive_prompt(index, label) for index, label in enumerate(
-            (
-                "Choose runtime and test harness",
-                "Create first implementation plan",
-                "Build smallest runnable slice",
-                "Prove accepted and blocked paths",
-                "Refresh governed records",
-            ),
-            start=1,
-        )]},
+        project_dashboard_preview=_substantive_project_payload(),
         compass_memory_preview={},
         next_steps_preview={
             "start_workstream_id": "B-001",
@@ -950,6 +960,82 @@ def test_collect_artifact_package_prefers_accepted_project_proposal_over_confirm
     assert package.proposal["components"][0]["label"] == "Neonatal Transfer Intake Register Service"
 
 
+def test_collect_artifact_package_reads_project_prompts_from_persisted_tooling_payload(tmp_path: Path) -> None:
+    module = _module()
+    project_payload = _substantive_project_payload()
+    project_payload["host_handoff_prompts"] = [
+        {**row, "label": f"Persisted {index}", "prompt": f"Persisted prompt {index} binds source proof and governed workstream."}
+        for index, row in enumerate(project_payload["host_handoff_prompts"], start=1)
+    ]
+    _write(
+        tmp_path / "odylith/runtime/source/accepted-project.v1.json",
+        json.dumps({"proposal": _substantive_package().proposal, "source_launch": {"start_workstream_id": "B-001"}})
+        + "\n",
+    )
+    _write(
+        tmp_path / "odylith/tooling-payload.v1.js",
+        f'window["__ODYLITH_TOOLING_DATA__"] = {json.dumps({"project_intelligence": project_payload}, sort_keys=True)};\n',
+    )
+
+    package = module.collect_artifact_package(repo_root=tmp_path, create_payload={})
+
+    prompts = package.project_dashboard_preview["host_handoff_prompts"]
+    assert len(prompts) == 5
+    assert prompts[0]["label"] == "Persisted 1"
+    assert "Persisted prompt 5" in prompts[4]["prompt"]
+
+
+def test_package_evidence_rejects_missing_persisted_project_prompt_payload() -> None:
+    module = _module()
+    package = _substantive_package()
+    package.project_dashboard_preview = {}
+
+    findings = module.package_evidence_findings(package)
+
+    assert any("accepted Project readback does not expose five source-launch prompts" in finding.message for finding in findings)
+
+
+def test_generated_leakage_terms_are_limited_to_actual_readback_artifacts(tmp_path: Path) -> None:
+    module = _module()
+    package = _substantive_package()
+    case = module.GreenfieldMatrixCase(
+        name="zephyr permit",
+        prompt="Create a proposal for zephyr attestation.",
+        required_terms=("permit", "zephyr", "attestation"),
+        leakage_terms=("zephyr attestation", "missing lattice phrase"),
+    )
+
+    terms = module._case_generated_leakage_terms(case=case, repo_root=tmp_path, package=package)  # noqa: SLF001
+
+    assert "zephyr attestation" not in terms
+    assert "missing lattice phrase" not in terms
+    assert "permit" in terms
+
+
+def test_platform_leakage_proof_summary_reports_cumulative_terms_and_issues() -> None:
+    module = _module()
+    result = _passing_matrix_result(module)
+    result = module.GreenfieldMatrixResult(
+        **{
+            **result.to_dict(),
+            "counts": result.counts,
+            "quality": result.quality,
+            "browser_surface_issues": tuple(result.browser_surface_issues),
+            "platform_leakage_terms": ("zephyr attestation", "permit"),
+            "platform_leakage_issues": ("platform domain leakage after generated artifact readback: src/x.py:1 leaked `permit`",),
+        }
+    )
+
+    proof = module._platform_leakage_proof_summary((result,))  # noqa: SLF001
+
+    assert proof["status"] == "failed"
+    assert proof["term_count"] == 2
+    assert "zephyr attestation" in proof["terms"]
+    assert proof["issues"] == [
+        "platform domain leakage after generated artifact readback: src/x.py:1 leaked `permit`"
+    ]
+
+
 def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -> None:
     module = _module()
 
@@ -1385,13 +1471,19 @@ def test_rendered_surface_health_requires_payload_assets_and_shell_contract(tmp_
         payload_key: f"{expected_href}?v=123"
         for _tab, (_frame_id, payload_key, expected_href) in module.INDEX_SHELL_TAB_CONTRACTS.items()
     }
+    shell_payload["project_intelligence"] = _substantive_project_payload()
     _write(
         tmp_path / "odylith/tooling-payload.v1.js",
         f'window["__ODYLITH_TOOLING_DATA__"] = {json.dumps(shell_payload, sort_keys=True)};\n',
     )
     tab_markup = "\n".join(
-        f'<button type="button" data-tab="{tab}" role="tab">{tab}</button>'
-        for tab in module.INDEX_SHELL_TAB_CONTRACTS
+        [
+            '<button type="button" data-tab="project" role="tab">project</button>',
+            *(
+                f'<button type="button" data-tab="{tab}" role="tab">{tab}</button>'
+                for tab in module.INDEX_SHELL_TAB_CONTRACTS
+            ),
+        ]
     )
     frame_markup = "\n".join(
         f'<iframe id="{frame_id}"></iframe>'

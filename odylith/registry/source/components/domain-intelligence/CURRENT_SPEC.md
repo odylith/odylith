@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-06-29
+Last updated: 2026-06-30
 
 
 ## Overview
@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Hardened greenfield matrix proof custody so Project prompt scoring uses persisted tooling-payload readback, Project browser proof covers the real shell pane, persisted project briefs get structural readback checks, and generated-domain terms are rescanned against protected platform custody after each simulation.
+  - Scope: B-142
+  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, scripts/release/greenfield_browser_surface_proof.py +4 more
 - **2026-06-29 · Implementation:** Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
@@ -45,6 +48,18 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-06-30: Closed the greenfield release-matrix Project proof-custody gap. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-045)
+  The matrix now reads Project implementation prompts from the persisted
+  `odylith/tooling-payload.v1.js` shell payload instead of rebuilding the
+  Project dashboard inside the proof harness. Persisted project-brief Markdown
+  now has structural readback checks for outcome/principle text, design-board
+  depth, governance-package depth, and semantic grounding. The generated
+  browser proof opens the real `odylith/index.html?tab=project` shell pane,
+  verifies the accepted Project state, five implementation prompt cards, prompt
+  payload integrity, and horizontal overflow. Post-run leakage proof now scans
+  protected source and dist custody for distinctive generated terms that were
+  actually present in the case readback artifacts.
 
 - 2026-06-30: Removed generic no-op semantic PatchSet rescue operations. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagram: D-043)
   Auto-rescue now requires actual typed repair custody, not just a repairable
