@@ -1422,6 +1422,22 @@
   budget. Focused runtime, release-proof-scope, natural-rescue matrix, wrapper,
   and structured-rescue tests passed; installed committed-head proof remains
   pending for this checkpoint.
+  Installed natural-rescue proof then failed on dist
+  `odylith-local-release-0.1.15-e4b31938`: all thirteen standard cases passed
+  at hard 10/10 in 24.780-32.306s and synthetic rescue wiring passed in
+  37.364s, but the real host-planned structured-rescue leg failed before
+  governed writes in 47.228s. Direct planner instrumentation showed the
+  root cause: the structured PatchSet planner inherited global high-effort
+  Codex reasoning and capped its call at 25.0s, causing a provider timeout
+  before replacement facts were returned. The semantic executor correctly
+  refused to apply an empty external-boundary fact, so the proof blocker
+  remained. The forward fix makes this narrow schema-constrained PatchSet
+  planner use a rescue-calibrated default effort and a larger bounded share of
+  the 90-second rescue budget while still honoring explicit operator effort
+  env overrides. A retained source-local repro then passed in 55.085s with
+  `structured_rescue_semantic_patch` recorded in `repaired_issue_codes`, a
+  provider-backed `last_repair_patchset_request`, and committed governed
+  records. Fresh committed-head dist proof remains required.
 
 - Related Incidents/Bugs: CB-208
 

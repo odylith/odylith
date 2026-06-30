@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
+import os
 from pathlib import Path
 from typing import Any
 
@@ -97,9 +98,9 @@ def _structured_patch_timeout_seconds(remaining_seconds: float) -> float:
         remaining = float(remaining_seconds)
     except (TypeError, ValueError):
         return 0.0
-    if remaining <= 8.0:
+    if remaining <= 12.0:
         return 0.0
-    return round(min(25.0, max(0.0, remaining - 5.0)), 3)
+    return round(min(45.0, max(0.0, remaining - 10.0)), 3)
 
 
 def _structured_patch_evidence(
@@ -121,10 +122,22 @@ def _structured_patch_evidence(
 def _provider_reasoning_effort(config: odylith_reasoning.ReasoningConfig, provider: Any) -> str:
     provider_name = odylith_reasoning.provider_failure_metadata(provider).get("provider", "")
     if provider_name == "codex-cli":
-        return config.codex_reasoning_effort
+        return _patch_planner_effort(
+            config.codex_reasoning_effort,
+            explicit_env_key="ODYLITH_REASONING_CODEX_REASONING_EFFORT",
+        )
     if provider_name == "claude-cli":
-        return config.claude_reasoning_effort
+        return _patch_planner_effort(
+            config.claude_reasoning_effort,
+            explicit_env_key="ODYLITH_REASONING_CLAUDE_REASONING_EFFORT",
+        )
     return ""
+
+
+def _patch_planner_effort(configured: str, *, explicit_env_key: str) -> str:
+    if str(os.environ.get(explicit_env_key, "")).strip():
+        return configured
+    return "medium"
 
 
 def _patch_plan_summary(patch_plan: Mapping[str, Any]) -> dict[str, Any]:

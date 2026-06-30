@@ -1450,7 +1450,11 @@ This section captures synchronized requirement and contract signals derived from
   inherit an unsafe blank model from ignored user config; the reasoning adapter
   supplies an explicit structured-repair model unless config names one. Provider
   replacement facts arrive as a typed envelope and are materialized only after
-  Tribunal custody validation. Greenfield must not ask the provider to rewrite
+  Tribunal custody validation. The PatchSet planner is a narrow
+  schema-constrained repair task and must use a rescue-calibrated provider
+  profile: medium local-CLI effort by default, explicit effort env overrides
+  honored, and a provider-call slice that leaves rerender/write buffer inside
+  the 90-second rescue budget. Greenfield must not ask the provider to rewrite
   rendered Radar, Registry, Atlas, project-brief, release, Compass, or next-step
   prose.
 - The post-confirm engine owns rescue evidence custody. If a repair pass uses a

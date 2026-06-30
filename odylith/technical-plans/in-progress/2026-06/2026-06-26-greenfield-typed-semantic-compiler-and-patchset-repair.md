@@ -2064,3 +2064,19 @@ vocabulary, or degraded packages.
       and platform leakage checks. Remaining proof: rebuild the installable
       dist from the committed checkpoint and rerun the maintained installed
       matrix with natural structured-rescue proof enabled.
+- [x] Calibrate structured PatchSet planning for the 90-second rescue budget.
+      The first committed natural-rescue proof caught a real timeout defect:
+      standard installed create passed across thirteen cases, but the
+      host-planned structured-rescue leg failed because the PatchSet planner
+      inherited global high-effort Codex reasoning and capped the provider call
+      at 25 seconds. The provider timed out, no replacement fact was available,
+      and the semantic executor correctly refused an empty repair. The rescue
+      planner now treats PatchSet planning as a narrow schema-constrained task:
+      it defaults local CLI providers to medium effort unless an explicit
+      effort env override is supplied, and it can allocate up to 45 seconds
+      while preserving a 10-second rerender/write buffer inside the 90-second
+      rescue budget. A retained source-local repro passed in 55.085 seconds
+      with `structured_rescue_semantic_patch` repaired, a provider-backed
+      `last_repair_patchset_request`, and committed governed records. Remaining
+      proof: rebuild the committed-head dist and rerun the full installed
+      matrix with natural structured-rescue proof.

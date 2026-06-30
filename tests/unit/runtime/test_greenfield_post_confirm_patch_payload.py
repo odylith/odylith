@@ -62,7 +62,7 @@ def test_repair_payload_enriches_rescue_patchset_with_structured_planner(
         assert kwargs["evidence"]["intent"]["title"] == "Structured Repair"
         assert kwargs["model"] == "planner-model"
         assert kwargs["reasoning_effort"] == ""
-        assert kwargs["timeout_seconds"] == 25.0
+        assert kwargs["timeout_seconds"] == 45.0
         return {
             "version": greenfield_post_confirm_rescue_planner.tribunal_patch_planner.TRIBUNAL_PATCH_PLAN_VERSION,
             "status": "planned",
@@ -209,6 +209,40 @@ def test_repair_payload_skips_structured_planner_on_standard_tier(
     )
 
     assert captured["repair_context"] is context
+
+
+def test_structured_patch_planner_uses_medium_effort_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("ODYLITH_REASONING_CODEX_REASONING_EFFORT", raising=False)
+    provider = SimpleNamespace(
+        provider_name="codex-cli",
+        last_failure_code="",
+        last_failure_detail="",
+        last_request_model="",
+        last_request_reasoning_effort="",
+    )
+    config = SimpleNamespace(codex_reasoning_effort="high", claude_reasoning_effort="high")
+
+    assert greenfield_post_confirm_rescue_planner._provider_reasoning_effort(config, provider) == "medium"
+
+
+def test_structured_patch_planner_honors_explicit_effort_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ODYLITH_REASONING_CODEX_REASONING_EFFORT", "high")
+    provider = SimpleNamespace(
+        provider_name="codex-cli",
+        last_failure_code="",
+        last_failure_detail="",
+        last_request_model="",
+        last_request_reasoning_effort="",
+    )
+    config = SimpleNamespace(codex_reasoning_effort="high", claude_reasoning_effort="medium")
+
+    assert greenfield_post_confirm_rescue_planner._provider_reasoning_effort(config, provider) == "high"
+
+
+def test_structured_patch_planner_keeps_rescue_timeout_inside_budget() -> None:
+    assert greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(85.0) == 45.0
+    assert greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(40.0) == 30.0
+    assert greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(12.0) == 0.0
 
 
 def test_repair_payload_consumes_structured_semantic_patch_targets(monkeypatch: pytest.MonkeyPatch) -> None:
