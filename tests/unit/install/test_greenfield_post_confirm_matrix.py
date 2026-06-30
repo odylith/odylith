@@ -995,7 +995,7 @@ def test_package_evidence_rejects_missing_persisted_project_prompt_payload() -> 
     assert any("accepted Project readback does not expose five source-launch prompts" in finding.message for finding in findings)
 
 
-def test_generated_leakage_terms_are_limited_to_actual_readback_artifacts(tmp_path: Path) -> None:
+def test_generated_leakage_terms_use_declared_sentinels_not_required_anchors(tmp_path: Path) -> None:
     module = _module()
     package = _substantive_package()
     case = module.GreenfieldMatrixCase(
@@ -1009,6 +1009,20 @@ def test_generated_leakage_terms_are_limited_to_actual_readback_artifacts(tmp_pa
 
     assert "zephyr attestation" not in terms
     assert "missing lattice phrase" not in terms
+    assert "permit" not in terms
+
+
+def test_generated_leakage_terms_fall_back_when_case_has_no_declared_sentinels(tmp_path: Path) -> None:
+    module = _module()
+    package = _substantive_package()
+    case = module.GreenfieldMatrixCase(
+        name="permit fallback",
+        prompt="Create a proposal for permit review.",
+        required_terms=("permit",),
+    )
+
+    terms = module._case_generated_leakage_terms(case=case, repo_root=tmp_path, package=package)  # noqa: SLF001
+
     assert "permit" in terms
 
 

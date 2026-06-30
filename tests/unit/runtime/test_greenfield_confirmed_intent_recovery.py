@@ -378,6 +378,35 @@ def test_prompt_intent_source_splits_direct_product_title_from_first_path() -> N
     )
 
 
+def test_host_guidance_recovery_handles_direct_product_for_actor_gerund_path(tmp_path) -> None:
+    prompt = (
+        "orbital operations coordination for satellite operators receiving conjunction warnings, "
+        "calculating maneuver options, recording operator signoff, fuel constraints, regulator notice evidence, "
+        "and post-event readiness proof without autonomously commanding thrusters"
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert source.title == "orbital operations coordination"
+    assert source.first_path.startswith("satellite operators receiving conjunction warnings")
+    assert intent["title"] == "Orbital Operations Coordination"
+    assert intent["human_actors"][0].startswith("Satellite Operators:")
+    assert "satellite operators can receive conjunction warnings" in rendered
+    assert "representative user reviews satellite operators receiving" not in rendered
+    assert "options recording operator" not in rendered
+    assert "gerundized actor-role action leaked" not in "\n".join(greenfield_quality_issues(proposal))
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_host_guidance_recovery_keeps_direct_where_prompt_title_instead_of_terminal_outcome() -> None:
     prompt = (
         "factory line changeover readiness board where supervisors verify tooling, materials, "

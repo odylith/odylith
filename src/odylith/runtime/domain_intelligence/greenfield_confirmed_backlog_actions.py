@@ -19,6 +19,8 @@ def prefer_outcome_title(value: str) -> bool:
     weak = {"consequence", "recap", "reflection"}
     if words & weak:
         return False
+    if words & {"approved", "confirmed"}:
+        return True
     strong = {
         "confirmation",
         "decision",

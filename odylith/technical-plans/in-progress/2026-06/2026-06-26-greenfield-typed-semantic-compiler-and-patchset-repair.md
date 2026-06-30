@@ -1766,3 +1766,27 @@ vocabulary, or degraded packages.
       proof passed across 55 generated readback terms with zero findings,
       synthetic auto-rescue smoke passed in 33.617s under the 90s rescue budget,
       and temp matrix/rescue cleanup was clean.
+- [ ] Close the fresh variance failure found after the Project proof-custody
+      checkpoint.
+      A fresh ten-domain installed variance run against current checkpoint
+      `25b8f9cf` failed release readiness even though temp cleanup completed.
+      The leakage proof overreached by rescanning ordinary required
+      domain-coverage anchors as platform leakage sentinels, causing false
+      failures on platform-native words such as `artifact`, `protocol`,
+      `sample`, `interpreter`, `verifier`, and `consent`. Separately, the
+      satellite/orbital case failed before governed writes because prompt-intent
+      recovery dropped a direct product title and converted an actor-led gerund
+      path into generic representative-user review prose. The source fix must
+      keep leakage custody phrase-first and declared-sentinel based, preserve
+      direct product-container titles such as `coordination`, and normalize
+      actor-led gerund action lists before generic first-path fallback. Current
+      source proof: 60 leakage/matrix tests passed, 66 recovery/post-confirm
+      tests passed, the broader affected 266-test pack passed after generic
+      confirmed/approved outcome-title selection preserved outcome workstreams
+      without adding domain-object vocabulary, and a disposable source-local
+      satellite replay completed governed create in 24.522s with 4 Radar
+      workstreams, 3 Registry specs, 6 Atlas sources, and clean debug-repo
+      deletion. Remaining proof: rebuild the installable dist from this source
+      checkpoint and rerun the fresh high-variance installed matrix with
+      browser proof, generated-term leakage proof, hard 10/10 scores, sub-60s
+      standard creates, and clean temp cleanup.

@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Tightened fresh-variance proof custody and prompt-intent recovery after a non-reused installed run exposed false leakage sentinels plus actor-led gerund fallback prose.
+  - Scope: B-142
+  - Evidence: scripts/release/greenfield_post_confirm_matrix.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py +2 more
 - **2026-06-30 · Validation:** Rebuilt local release dist aebe9245 and proved the maintained installed greenfield matrix with persisted Project prompt readback, Project browser proof, generated-term leakage proof, and clean temp cleanup.
   - Scope: B-142
   - Evidence: /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245/greenfield-post-confirm-matrix-20260630-aebe9245.v1.json, scripts/release/greenfield_post_confirm_matrix.py
@@ -51,6 +54,27 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-06-30: Tightened fresh-variance leakage custody and actor-led gerund prompt recovery. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagram: D-045)
+  A non-reused installed variance run against checkpoint `25b8f9cf` exposed
+  two general failures: generated-readback leakage proof rescanned required
+  domain coverage anchors as forbidden leakage sentinels, creating false
+  platform-leakage failures on ordinary platform vocabulary, and a direct
+  `product coordination for actor receiving/calculating/recording...` prompt
+  fell back to generic representative-user review prose before final semantic
+  gating. Matrix leakage custody now scans declared case leakage sentinels
+  only, with fallback behavior retained for legacy cases without declared
+  sentinels. Product-intent recovery recognizes neutral `coordination`
+  product containers and treats actor-led gerund action lists as usable
+  first-path sources before generic fallback, preserving punctuation while
+  converting the action tail to base form. Workflow title selection now
+  prefers explicitly confirmed or approved outcomes without baking the domain
+  object into platform vocabulary. Focused proof passed 60 leakage/matrix
+  tests, 66 recovery/post-confirm tests, the broader affected 266-test pack,
+  and a disposable source-local orbital/satellite replay completed governed
+  create in 24.522s with 4 Radar workstreams, 3 Registry specs, 6 Atlas
+  sources, and clean temp deletion. Rebuilt installed variance proof remains
+  required before release readiness is reclaimed.
 
 - 2026-06-30: Proved the committed Project proof-custody checkpoint in the installed consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
   Fresh local release dist `odylith-local-release-0.1.15-aebe9245` passed the

@@ -1089,6 +1089,40 @@
   findings, synthetic typed-probe auto-rescue in 33.617s, and clean temp
   cleanup. Natural non-internal host-model rescue quality remains a separate
   unclaimed proof class.
+  Fresh non-reused variance against current checkpoint `25b8f9cf` then reopened
+  release readiness on 2026-06-30. The ten-domain installed matrix completed
+  with clean temp cleanup, but the result was failed for two distinct reasons:
+  the post-run platform leakage proof treated required domain-coverage anchors
+  as forbidden leakage sentinels and therefore falsely flagged platform-native
+  words such as `artifact`, `protocol`, `sample`, `interpreter`, `verifier`,
+  `consent`, `menu`, `court`, and `outage`; and the `satellite debris collision
+  adjudication` case failed before governed writes in 33.445s because no-write
+  Product Intent Confirmation recovery collapsed a noun-leading
+  `product coordination for actor receiving/calculating/recording...` prompt
+  into generic `Representative User reviews ...` prose, then the final gate
+  correctly rejected `proposal.intent.customer` with `semantic slop:
+  gerundized actor-role action leaked`. The failed mechanism is generic:
+  release-proof leakage custody must be phrase-first and use declared
+  distinctive sentinels rather than ordinary domain coverage anchors, while
+  prompt-intent recovery must preserve product title, actor, and actor-led
+  gerund action lists before generic first-path fallback. Do not fix this with
+  domain allowlists, a broader single-token blacklist, rendered-prose repair,
+  or a weakened semantic slop gate.
+  Source fix in progress: `_case_generated_leakage_terms` now scans only the
+  case's declared leakage sentinels, preserving fallback behavior only for
+  legacy cases without declared sentinels; prompt recovery recognizes neutral
+  `coordination` product containers and treats actor-led gerund action lists as
+  usable first-path sources, preserving source punctuation while converting the
+  action tail to base form. The broad regression pass exposed a separate generic
+  title-selection risk where confirmed outcome states could be demoted behind
+  first-input actions; workflow titles now prefer explicitly confirmed or
+  approved outcomes without naming the domain object. Focused proof passed 60
+  leakage/matrix unit tests, 66 recovery/post-confirm tests, the broader
+  affected 266-test pack, and a disposable source-local satellite replay
+  completed governed create in 24.522s with 4 Radar workstreams, 3 Registry
+  specs, 6 Atlas sources, and clean debug-repo deletion. Rebuilt installed dist
+  and fresh high-variance proof remain required before release readiness can be
+  reclaimed.
 
 - Related Incidents/Bugs: CB-208
 

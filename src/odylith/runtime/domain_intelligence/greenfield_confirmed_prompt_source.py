@@ -48,6 +48,7 @@ _REQUEST_PRODUCT_WORDS = frozenset(
         "room",
         "service",
         "coach",
+        "coordination",
         "studio",
         "system",
         "tool",

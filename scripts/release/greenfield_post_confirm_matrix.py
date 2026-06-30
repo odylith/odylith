@@ -638,12 +638,7 @@ def _generated_text(*, repo_root: Path, package: Any) -> str:
 
 def _case_generated_leakage_terms(*, case: GreenfieldMatrixCase, repo_root: Path, package: Any) -> tuple[str, ...]:
     generated_text = _generated_text(repo_root=repo_root, package=package)
-    candidate_terms = platform_domain_leakage.domain_leakage_terms_from_terms(
-        (
-            *platform_domain_leakage.case_leakage_terms(case),
-            *tuple(str(term) for term in getattr(case, "required_terms", ()) if str(term).strip()),
-        )
-    )
+    candidate_terms = platform_domain_leakage.case_leakage_terms(case)
     return tuple(term for term in candidate_terms if _term_present(generated_text, term))
 
 

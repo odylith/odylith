@@ -6,6 +6,7 @@ import re
 from collections.abc import Sequence
 
 from odylith.runtime.common.prose_grammar import base_action_clause
+from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import contains_finite_action
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_base_action_token
@@ -125,6 +126,7 @@ _PRODUCT_CONTAINER_TERMS = frozenset(
         "application",
         "coach",
         "console",
+        "coordination",
         "controller",
         "board",
         "builder",
@@ -238,7 +240,8 @@ def _usable_first_path_source(value: str, *, title: str) -> str:
     if not text or _path_source_restates_title(text, title=title):
         return ""
     model = first_path_model(text)
-    if not first_path_has_action_signal(text):
+    gerund_actor, gerund_action = _actor_gerund_action_parts(text)
+    if not first_path_has_action_signal(text) and not (gerund_actor and gerund_action):
         return ""
     if len(model.steps) >= 2:
         if (
@@ -248,7 +251,7 @@ def _usable_first_path_source(value: str, *, title: str) -> str:
         ):
             return text
         return _first_path_source_from_steps(model.steps) or text
-    if word_count(text) >= 6 and (model.material_action or model.visible_outcome):
+    if word_count(text) >= 6 and (model.material_action or model.visible_outcome or gerund_action):
         return text
     return ""
 
@@ -311,6 +314,9 @@ def _embedded_first_path_clause(value: str, *, actor: str) -> str:
     if purpose_action:
         action = _recovered_action_clause(purpose_action)
         return f"{_clean(actor) or 'the representative user'} can {action}"
+    gerund_actor, gerund_action = _actor_gerund_action_parts(text)
+    if gerund_actor and gerund_action:
+        return f"{_clean(gerund_actor) or _clean(actor) or 'the representative user'} can {gerund_action}"
     clause = _lower_leading_word(text)
     actorless_modal_action = _actorless_modal_action(clause)
     if actorless_modal_action:
@@ -581,6 +587,9 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
     purpose_actor, purpose_action = _actor_purpose_parts(clause)
     if purpose_actor and purpose_action:
         return _human_actor_row(purpose_actor, purpose_action)
+    gerund_actor, gerund_action = _actor_gerund_action_parts(clause)
+    if gerund_actor and gerund_action:
+        return _human_actor_row(gerund_actor, gerund_action)
     if _starts_with_action_without_actor(clause):
         return ""
     marker_index = _first_word_index(words, _MODAL_MARKERS)
@@ -738,6 +747,36 @@ def _action_start_index(words: Sequence[str]) -> int:
     return -1
 
 
+def _actor_gerund_action_parts(value: str) -> tuple[str, str]:
+    """Return an actor plus base-action clause for noun-led gerund paths."""
+
+    text = _clean(value).strip(" .")
+    spans = _word_spans(text)
+    if len(spans) < 3:
+        return ("", "")
+    words = [word for word, _start, _end in spans]
+    max_actor_words = min(5, len(spans) - 1)
+    for index in range(1, max_actor_words + 1):
+        actor_words = words[:index]
+        if not _looks_like_actor_subject(actor_words):
+            continue
+        action_source = text[spans[index][1] :].strip(" ,.;:")
+        action = _gerund_action_clause(action_source)
+        if action:
+            return (" ".join(actor_words), action)
+    return ("", "")
+
+
+def _gerund_action_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    converted = base_gerund_clause(text).strip(" .")
+    if not converted or converted.casefold() == text.casefold():
+        return ""
+    return converted
+
+
 def _first_word_index(words: Sequence[str], targets: set[str] | frozenset[str]) -> int:
     for index, word in enumerate(words):
         if word.casefold() in targets:
@@ -749,13 +788,24 @@ def _human_actor_row(actor: str, action: str) -> str:
     actor_words = _strip_leading_articles(_words(actor))
     actor_words, action = _repair_role_object_actor_split(actor_words, action)
     actor_label = title_case_text(" ".join(actor_words))
-    action_text = base_action_clause(_primary_actor_action_segment(action))
+    action_text = _base_actor_action_clause(_primary_actor_action_segment(action))
     if _starts_with_relation_word(actor_label) or _starts_with_relation_word(action_text):
         return ""
     if not actor_label or not action_text or _looks_like_non_human_actor(actor_label):
         return ""
     need_verb = _actor_verb(actor_label, singular="needs", plural="need")
     return f"{actor_label}: {need_verb} the product to {action_text} and keep the result visible and reviewable"
+
+
+def _base_actor_action_clause(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    action = base_action_clause(text).strip(" .")
+    if action and action.casefold() != text.casefold():
+        return action
+    gerund_action = _gerund_action_clause(text)
+    return gerund_action or action
 
 
 def _repair_role_object_actor_split(actor_words: list[str], action: str) -> tuple[list[str], str]:
@@ -1043,6 +1093,17 @@ def _words(value: str) -> list[str]:
     while words and words[0].casefold() in _LEADING_CONNECTORS:
         words = words[1:]
     return words
+
+
+def _word_spans(value: str) -> list[tuple[str, int, int]]:
+    spans = [
+        (match.group(0).strip("()[]{}\"'.,:;"), match.start(), match.end())
+        for match in re.finditer(r"[A-Za-z][A-Za-z0-9'-]*", _clean(value).replace("/", " "))
+    ]
+    rows = [(word, start, end) for word, start, end in spans if word]
+    while rows and rows[0][0].casefold() in _LEADING_CONNECTORS:
+        rows = rows[1:]
+    return rows
 
 
 def _clean(value: object) -> str:
