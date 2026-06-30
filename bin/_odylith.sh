@@ -346,6 +346,7 @@ PY
     --version "$resolved_version" \
     --dist-dir "$dist_dir" \
     --temp-parent "$matrix_temp_parent" \
+    --include-natural-rescue-proof \
     --include-browser-proof \
     --output-json "$dist_dir/greenfield-post-confirm-matrix.v1.json"
 }

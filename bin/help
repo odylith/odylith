@@ -32,7 +32,7 @@ make local-release-assets [VERSION=X.Y.Z] [DIST=/tmp/odylith-local-release-X.Y.Z
   Build local installable release assets for maintainer smoke testing without dispatching a release.
 
 make greenfield-post-confirm-matrix [VERSION=X.Y.Z] [DIST=/tmp/odylith-local-release-X.Y.Z] [TEMP_PARENT=/Users/freedom/mock]
-  Run the 10+ case installed greenfield post-confirm release matrix, per-case generated browser surface state proof, and installed CLI auto-rescue wiring smoke against a local release dist; write greenfield-post-confirm-matrix.v1.json; prove artifact quality and cleanup; and fail closed on missing governed records, browser failures, or review-lens failures. Set GREENFIELD_MATRIX_CASE_FILE=/path/cases.json for an explicit fresh-variance case file. RESCUE_SMOKE=0 or BROWSER_PROOF=0 skips that lane only for local debugging and is not release proof.
+  Run the 10+ case installed greenfield post-confirm release matrix, per-case generated browser surface state proof, installed CLI auto-rescue wiring smoke, and host-planned structured rescue proof against a local release dist; write greenfield-post-confirm-matrix.v1.json; prove artifact quality and cleanup; and fail closed on missing governed records, browser failures, rescue proof failures, or review-lens failures. Set GREENFIELD_MATRIX_CASE_FILE=/path/cases.json for an explicit fresh-variance case file. RESCUE_SMOKE=0, NATURAL_RESCUE_PROOF=0, or BROWSER_PROOF=0 skips that lane only for local debugging and is not release proof.
 
 make release-candidate [VERSION=X.Y.Z]
   Run the shared non-publishing release-proof lane on the current clean checkout, including installed greenfield post-confirm matrix proof, and compare benchmarks against the last shipped release baseline.

@@ -27,6 +27,8 @@ def rescue_cli_issues(
     create_seconds: float,
     detail: str,
     expected_requested_tier: str = "auto",
+    expected_repaired_issue_code: str = "post_confirm_rescue_probe",
+    forbidden_repaired_issue_codes: Sequence[str] = (),
 ) -> tuple[str, ...]:
     """Return release-blocking issues for an installed CLI auto-rescue create."""
 
@@ -40,12 +42,14 @@ def rescue_cli_issues(
     else:
         issues.extend(
             _manifest_issues(
-                manifest,
-                write_committed=write_committed,
-                as_mapping=as_mapping,
-                expected_requested_tier=expected_requested_tier,
-            )
+            manifest,
+            write_committed=write_committed,
+            as_mapping=as_mapping,
+            expected_requested_tier=expected_requested_tier,
+            expected_repaired_issue_code=expected_repaired_issue_code,
+            forbidden_repaired_issue_codes=forbidden_repaired_issue_codes,
         )
+    )
     issues.extend(_count_floor_issues(counts, minimums=count_minimums, count_key=count_key))
     required_domain_terms = max(3, int(getattr(counts, "required_domain_terms", 0) or 0))
     if int(getattr(counts, "domain_term_hits", 0) or 0) < required_domain_terms:
@@ -70,6 +74,8 @@ def _manifest_issues(
     write_committed: Callable[[Mapping[str, Any]], bool],
     as_mapping: Callable[[Any], Mapping[str, Any]],
     expected_requested_tier: str,
+    expected_repaired_issue_code: str,
+    forbidden_repaired_issue_codes: Sequence[str],
 ) -> tuple[str, ...]:
     issues: list[str] = []
     if str(manifest.get("status", "")).strip() != "passed":
@@ -88,8 +94,13 @@ def _manifest_issues(
         issues.append("auto-rescue manifest did not record a repair pass after the injected typed failure")
     if int(manifest.get("issue_count") or 0) != 0:
         issues.append(f"auto-rescue manifest has {manifest.get('issue_count')} issue(s)")
-    if "post_confirm_rescue_probe" not in set(manifest.get("repaired_issue_codes") or ()):
-        issues.append("auto-rescue manifest did not record the typed rescue probe repair")
+    repaired_issue_codes = set(manifest.get("repaired_issue_codes") or ())
+    if expected_repaired_issue_code and expected_repaired_issue_code not in repaired_issue_codes:
+        issues.append(f"auto-rescue manifest did not record repaired issue `{expected_repaired_issue_code}`")
+    forbidden_codes = set(forbidden_repaired_issue_codes)
+    leaked_codes = sorted(forbidden_codes.intersection(repaired_issue_codes))
+    if leaked_codes:
+        issues.append(f"auto-rescue manifest recorded forbidden repaired issue code(s): {', '.join(leaked_codes)}")
     if not write_committed(manifest):
         issues.append("auto-rescue write transaction was not committed")
     if float(manifest.get("whole_project_elapsed_seconds") or 0.0) >= POST_CONFIRM_RESCUE_BUDGET_SECONDS:

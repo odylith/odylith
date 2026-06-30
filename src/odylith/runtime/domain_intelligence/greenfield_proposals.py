@@ -479,6 +479,11 @@ def _build_repaired_prewrite_package(
             repair_context=context,
             repo_root=root,
         ),
+        prepare_repair_context=lambda current, context: _prepare_confirmed_apply_repair_context(
+            current,
+            repair_context=context,
+            repo_root=root,
+        ),
         proposal_ready=proposal_ready,
         max_passes=_MAX_PACKAGE_REPAIR_PASSES,
         repair_tier=repair_tier,
@@ -503,6 +508,22 @@ def _repair_confirmed_apply_payload(
         release_selector=release_selector,
         repair_context=repair_context,
     )
+
+
+def _prepare_confirmed_apply_repair_context(
+    proposal: Mapping[str, Any],
+    *,
+    repair_context: GreenfieldPostConfirmRepairContext,
+    repo_root: Path | None,
+) -> GreenfieldPostConfirmRepairContext:
+    """Attach bounded structured repair evidence before the engine records custody."""
+
+    enriched = enrich_rescue_patchset_with_structured_plan(
+        proposal,
+        repair_context=repair_context,
+        repo_root=repo_root,
+    )
+    return enriched or repair_context
 
 
 def apply_greenfield_proposal(

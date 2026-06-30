@@ -2048,3 +2048,19 @@ vocabulary, or degraded packages.
       fallback regression where ordinary control verbs such as `stays` could
       become the visible domain object. Focused Atlas box explanation proof
       passed after the extraction.
+- [x] Preserve provider-backed rescue evidence through final clean manifests.
+      The post-confirm engine now records the last nonempty repair PatchSet
+      request as `last_repair_patchset_request` when a repair pass succeeds and
+      the final package is clean. Confirmed greenfield create enriches the
+      repair context with the structured Tribunal patch planner before the
+      engine decides rescue custody, and the planner is idempotent once a plan
+      summary exists. Release proof reads natural rescue evidence from that
+      preserved repair request, not from chat or terminal claims, and the
+      maintained matrix now has an explicit natural structured-rescue proof leg
+      that requires a provider-backed non-probe repair under the 90-second
+      rescue budget. Focused source proof passed the post-confirm engine,
+      structured-rescue trigger, PatchSet enrichment, proof-scope, natural
+      rescue matrix, wrapper/bootstrap, py_compile, shell syntax, diff hygiene,
+      and platform leakage checks. Remaining proof: rebuild the installable
+      dist from the committed checkpoint and rerun the maintained installed
+      matrix with natural structured-rescue proof enabled.

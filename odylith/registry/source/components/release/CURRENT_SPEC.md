@@ -479,8 +479,14 @@ governed subsystem.
   rescue tests, opt-in-only smoke, synthetic installed-engine probes, local
   release smoke alone, a standalone matrix target that the release lane does not
   invoke, and probe-env leakage into the wrong matrix leg do not substitute for
-  this installed release proof. The rescue-smoke result is wiring proof unless a
-  natural non-internal repairable failure also passes under the 90 second tier.
+  this installed release proof. The rescue-smoke result is wiring proof only.
+  Release proof must also include a separate host-planned structured rescue leg
+  when natural rescue quality is claimed: the leg must emit a typed semantic or
+  artifact-plan PatchSet with no deterministic replacement fact, call an
+  explicit reasoning provider, preserve the provider-backed patch-plan summary
+  in the final clean manifest as `last_repair_patchset_request`, avoid the
+  deterministic rescue-probe issue code, finish under the 90 second rescue
+  budget, and write the same governed record floor as the standard matrix.
 - The local release asset builder, standalone greenfield matrix target, and
   shared release proof lane must run the platform domain-leakage guard against
   current runtime/source guidance, release tooling, and built release assets
@@ -503,7 +509,8 @@ governed subsystem.
   explicit fresh-variance case file through `GREENFIELD_MATRIX_CASE_FILE` so
   maintainers can run external high-variance simulations without adding domain
   vocabulary to the platform source catalog. Persisted matrix JSON must include
-  per-case post-confirm manifest summaries and temp-cleanup proof; leftover
+  per-case post-confirm manifest summaries, natural structured-rescue proof
+  when requested by the maintained wrapper, and temp-cleanup proof; leftover
   Odylith simulation roots are release-proof failures, not chat-side cleanup
   chores.
 - Local release smoke must inspect installed greenfield guidance files as part of

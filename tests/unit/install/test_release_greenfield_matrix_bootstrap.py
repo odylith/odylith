@@ -42,6 +42,9 @@ def test_greenfield_post_confirm_matrix_target_runs_installed_release_gate() -> 
     assert 'extra_args=(--include-rescue-smoke)' in text
     assert 'RESCUE_SMOKE:-1' in text
     assert '--skip-rescue-smoke' in text
+    assert 'NATURAL_RESCUE_PROOF:-1' in text
+    assert '--include-natural-rescue-proof' in text
+    assert '--skip-natural-rescue-proof' in text
     assert 'BROWSER_PROOF:-1' in text
     assert '--include-browser-proof' in text
     assert 'ensure_playwright_chromium' in text
@@ -57,7 +60,8 @@ def test_greenfield_post_confirm_matrix_target_runs_installed_release_gate() -> 
     assert "write greenfield-post-confirm-matrix.v1.json" in help_text
     assert "per-case generated browser surface state proof" in help_text
     assert "installed CLI auto-rescue wiring smoke" in help_text
-    assert "BROWSER_PROOF=0 skips that lane only for local debugging" in help_text
+    assert "host-planned structured rescue proof" in help_text
+    assert "NATURAL_RESCUE_PROOF=0" in help_text
 
 
 def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> None:
@@ -79,6 +83,7 @@ def test_release_candidate_is_pr_safe_non_publishing_current_checkout_lane() -> 
     assert 'scripts/release/greenfield_post_confirm_matrix.py \\' in shared
     assert "scripts/release/platform_domain_leakage_check.py" in shared
     assert 'ensure_playwright_chromium' in shared
+    assert '--include-natural-rescue-proof' in shared
     assert '--include-browser-proof' in shared
     assert '--output-json "$dist_dir/greenfield-post-confirm-matrix.v1.json"' in shared
     assert 'release_version_session.py' not in text

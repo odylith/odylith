@@ -20,6 +20,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift 
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
     rescue_probe_findings,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_structured_rescue_proof import (
+    structured_rescue_proof_findings,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
@@ -54,6 +57,7 @@ def package_artifact_findings(package: Any) -> tuple[GreenfieldReviewFinding, ..
     findings.extend(_registry_package_findings(package))
     findings.extend(_memory_projection_findings(package))
     findings.extend(rescue_probe_findings(package))
+    findings.extend(structured_rescue_proof_findings(package))
     return dedupe_review_findings(findings)
 
 

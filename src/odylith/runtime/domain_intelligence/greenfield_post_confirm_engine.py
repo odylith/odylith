@@ -44,6 +44,9 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
     RESCUE_PROBE_CODE,
 )
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_structured_rescue_proof import (
+    STRUCTURED_RESCUE_PROOF_CODE,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     compile_greenfield_semantics,
 )
@@ -135,6 +138,11 @@ def run_greenfield_post_confirm_engine(
     release_selector: str,
     build_prewrite: Callable[[Mapping[str, Any], Any], Any],
     repair_proposal: Callable[..., Mapping[str, Any]],
+    prepare_repair_context: Callable[
+        [Mapping[str, Any], GreenfieldPostConfirmRepairContext],
+        GreenfieldPostConfirmRepairContext,
+    ]
+    | None = None,
     rerender_prewrite: Callable[..., Any] | None = None,
     proposal_ready: bool = False,
     max_passes: int = POST_CONFIRM_MAX_PASSES,
@@ -155,6 +163,7 @@ def run_greenfield_post_confirm_engine(
     repaired_issue_codes: set[str] = set()
     last_report: GreenfieldCompletionReport | None = None
     last_prewrite_build: Any = None
+    last_repair_patchset_request: Mapping[str, Any] | None = None
     pending_prewrite_build: Any = None
     pending_rerender_projections: tuple[str, ...] = ()
     current = proposal
@@ -240,6 +249,7 @@ def run_greenfield_post_confirm_engine(
                     rescue_activated=rescue_activated,
                     quality_lenses=quality_lenses,
                     semantic_compiler=semantic_compiler,
+                    last_repair_patchset_request=last_repair_patchset_request,
                 ),
             )
 
@@ -272,22 +282,27 @@ def run_greenfield_post_confirm_engine(
             effective_budget_seconds = POST_CONFIRM_RESCUE_BUDGET_SECONDS
             bounded_passes = max(bounded_passes, POST_CONFIRM_RESCUE_MAX_PASSES)
         previous = current
+        repair_context = GreenfieldPostConfirmRepairContext(
+            pass_index=pass_index,
+            elapsed_seconds=round(max(0.0, clock() - started), 3),
+            budget_seconds=float(active_budget_seconds),
+            report=report,
+            issues=typed_issues,
+            review_report=review_report_from_findings(report.findings).to_dict(),
+            patchset_request=patchset_request,
+            quality_lenses=quality_lenses,
+            semantic_compiler=semantic_compiler,
+            repair_tier=active_tier,
+            rescue_activated=rescue_activated,
+        )
+        if prepare_repair_context is not None:
+            repair_context = prepare_repair_context(current, repair_context)
+        if _patchset_has_operations(repair_context.patchset_request):
+            last_repair_patchset_request = repair_context.patchset_request
         current = _repair_proposal_with_context(
             repair_proposal,
             current,
-            GreenfieldPostConfirmRepairContext(
-                pass_index=pass_index,
-                elapsed_seconds=round(max(0.0, clock() - started), 3),
-                budget_seconds=float(active_budget_seconds),
-                report=report,
-                issues=typed_issues,
-                review_report=review_report_from_findings(report.findings).to_dict(),
-                patchset_request=patchset_request,
-                quality_lenses=quality_lenses,
-                semantic_compiler=semantic_compiler,
-                repair_tier=active_tier,
-                rescue_activated=rescue_activated,
-            ),
+            repair_context,
         )
         if current != previous:
             repaired_issue_codes.update(
@@ -333,6 +348,7 @@ def run_greenfield_post_confirm_engine(
             if last_prewrite_build is not None
             else None
         ),
+        last_repair_patchset_request=last_repair_patchset_request,
     )
     try:
         raise_for_failed_greenfield_completion(last_report)
@@ -416,6 +432,7 @@ def _rescue_eligible(
         "generated_copy_quality",
         "missing_semantic_model",
         RESCUE_PROBE_CODE,
+        STRUCTURED_RESCUE_PROOF_CODE,
         "post_confirm_contract",
         "proposal_quality_gate",
         "quality_lens_gap",
@@ -497,6 +514,7 @@ def build_greenfield_post_confirm_manifest(
     write_transaction_status: str = "not_started",
     quality_lenses: Mapping[str, Any] | None = None,
     semantic_compiler: Mapping[str, Any] | None = None,
+    last_repair_patchset_request: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the operator-visible quality manifest for the post-confirm path."""
 
@@ -540,6 +558,8 @@ def build_greenfield_post_confirm_manifest(
             "prewrite_clean_before_commit": status == "passed",
         },
     }
+    if last_repair_patchset_request is not None:
+        manifest["last_repair_patchset_request"] = dict(last_repair_patchset_request)
     if whole_project_elapsed_seconds is not None:
         manifest["whole_project_elapsed_seconds"] = round(float(whole_project_elapsed_seconds), 3)
     return manifest

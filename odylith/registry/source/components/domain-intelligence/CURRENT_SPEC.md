@@ -1453,6 +1453,17 @@ This section captures synchronized requirement and contract signals derived from
   Tribunal custody validation. Greenfield must not ask the provider to rewrite
   rendered Radar, Registry, Atlas, project-brief, release, Compass, or next-step
   prose.
+- The post-confirm engine owns rescue evidence custody. If a repair pass uses a
+  provider-backed PatchSet, the final clean manifest must preserve that repair
+  request as `last_repair_patchset_request` instead of rebuilding all evidence
+  from the final no-issue report. The current `patchset_request` continues to
+  describe final blockers, while the last repair PatchSet describes the
+  semantic or plan facts that were repaired before the governed write.
+- Maintainer release proof may enable a generic structured-rescue proof trigger
+  that emits one typed semantic finding with an empty replacement fact. That
+  trigger is not project-domain logic and must clear only after the semantic
+  patch ledger shows a host-planned PatchSet operation was applied. It must not
+  reuse the deterministic rescue-probe marker or mutate rendered prose.
 - Artifact-draft package repair is a mechanical cleanup lane, not a semantic
   repair lane. It may collapse adjacent duplicate words and trim clipped or
   dangling tails only when the PatchSet operation is explicitly
@@ -1513,14 +1524,14 @@ This section captures synchronized requirement and contract signals derived from
   traceability, operator usefulness, and PM/architect/engineer/domain-expert
   lenses.
 - Installed release matrix ownership is split: the runner owns install,
-  timing, artifact collection, scoring, cleanup, and rescue smoke; the case
-  catalog owner contains only high-variance project scenarios and any
+  timing, artifact collection, scoring, cleanup, deterministic rescue smoke,
+  and explicit natural structured-rescue proof; the case catalog owner contains only high-variance project scenarios and any
   confirmed-intent override text needed to replay escaped operator-input
   shapes. External fresh-variance cases are loaded from explicit JSON case
   files by the release harness, not added to reusable platform defaults.
   Persisted matrix proof must expose post-confirm manifest summaries and
-  cleanup proof so standard, rescue, and leftover-temp behavior can be audited
-  from the JSON artifact.
+  cleanup proof so standard, rescue, provider-backed patch planning, and
+  leftover-temp behavior can be audited from the JSON artifact.
 - Installed release matrix artifact collection must preserve record custody:
   generated Radar workstream readback includes governed workstream records, not
   host guidance, catalog, or companion Markdown such as `AGENTS.md`,

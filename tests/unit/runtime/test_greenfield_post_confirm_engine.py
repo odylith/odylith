@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -733,6 +734,119 @@ def test_post_confirm_engine_passes_quality_lens_context_to_semantic_repair(
     assert context.quality_lenses["status"] == "failed"
     assert context.quality_lenses["lenses"]["product_manager"]["status"] == "failed"
     assert context.semantic_compiler["version"] == "odylith.greenfield.semantic_compiler.v1"
+
+
+def test_post_confirm_manifest_preserves_provider_backed_repair_patchset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reports = [
+        GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={"next_steps_previews": 1},
+            tribunal_status="passed",
+            issues=("quality lens architect missing explicit external system boundary",),
+            findings=(
+                review_finding(
+                    code="semantic_alignment",
+                    surface="architect",
+                    target_path="semantic_model.domain_ontology.external_systems",
+                    projection_id="review_report",
+                    semantic_node_id="SemanticModelIR.domain_ontology.external_systems",
+                    severity="high",
+                    repairability="semantic_patch",
+                    owner="quality_lens_contract",
+                    source="quality_lens",
+                    lens="architect",
+                    message="quality lens architect missing explicit external system boundary",
+                ),
+            ),
+        ),
+        GreenfieldCompletionReport(
+            status="passed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={"next_steps_previews": 1},
+            tribunal_status="passed",
+            issues=(),
+        ),
+    ]
+    repair_contexts: list[engine.GreenfieldPostConfirmRepairContext] = []
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+
+    def build_prewrite(current: dict[str, object], _tribunal: Any) -> SimpleNamespace:
+        return SimpleNamespace(
+            package=GreenfieldCompletionPackage(proposal=current, release_selector="0.0.1"),
+            backlog_result={},
+        )
+
+    def fake_package_repair(package: GreenfieldCompletionPackage) -> SimpleNamespace:
+        report = reports[min(len(repair_contexts), len(reports) - 1)]
+        return SimpleNamespace(
+            package=package,
+            initial_report=report,
+            report=report,
+            passes=0,
+            changed=False,
+        )
+
+    def prepare_context(
+        _current: Mapping[str, Any],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> engine.GreenfieldPostConfirmRepairContext:
+        operation = {
+            **dict(context.patchset_request["operations"][0]),
+            "replacement_fact": {"external_systems": ["source system named in the accepted path"]},
+            "confidence": 0.91,
+        }
+        return replace(
+            context,
+            patchset_request={
+                **dict(context.patchset_request),
+                "operations": [operation],
+                "tribunal_patch_plan": {
+                    "version": "odylith.greenfield.tribunal_patch_plan.v1",
+                    "status": "planned",
+                    "operation_count": 1,
+                    "decision_summary": "Preserve the external boundary as a semantic fact.",
+                    "provider": {"provider": "codex-cli", "last_failure_code": ""},
+                },
+            },
+        )
+
+    def repair_callback(
+        current: dict[str, object],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> dict[str, object]:
+        repair_contexts.append(context)
+        return {**current, "repaired": True}
+
+    monkeypatch.setattr(engine, "repair_greenfield_package_until_clean", fake_package_repair)
+
+    result = engine.run_greenfield_post_confirm_engine(
+        proposal={"intent": {"title": "Provider Evidence"}},
+        release_selector="0.0.1",
+        build_prewrite=build_prewrite,
+        repair_proposal=repair_callback,
+        prepare_repair_context=prepare_context,
+        proposal_ready=True,
+        max_passes=3,
+    )
+
+    assert result.manifest["status"] == "passed"
+    assert result.manifest["repair_tier"] == "rescue"
+    assert result.manifest["rescue_activated"] is True
+    assert result.manifest["patchset_request"]["status"] == "no_repairable_operations"
+    repair_patchset = result.manifest["last_repair_patchset_request"]
+    assert repair_patchset["status"] == "repairable"
+    assert repair_patchset["tribunal_patch_plan"]["status"] == "planned"
+    assert repair_patchset["tribunal_patch_plan"]["operation_count"] == 1
+    assert repair_patchset["tribunal_patch_plan"]["provider"]["provider"] == "codex-cli"
+    assert repair_patchset["operations"][0]["replacement_fact"]["external_systems"]
+    assert "semantic_alignment" in result.manifest["repaired_issue_codes"]
 
 
 def test_post_confirm_auto_tier_rejects_rescue_without_executable_patchset(

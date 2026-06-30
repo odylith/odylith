@@ -27,6 +27,8 @@ def enrich_rescue_patchset_with_structured_plan(
     if repair_context.repair_tier not in {"rescue", "deep"}:
         return repair_context
     patchset = repair_context.patchset_request if isinstance(repair_context.patchset_request, Mapping) else {}
+    if isinstance(patchset.get("tribunal_patch_plan"), Mapping):
+        return repair_context
     if not _needs_structured_patch_plan(patchset):
         return repair_context
     timeout_seconds = _structured_patch_timeout_seconds(repair_context.budget_seconds - repair_context.elapsed_seconds)

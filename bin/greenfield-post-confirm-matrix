@@ -27,6 +27,11 @@ extra_args=(--include-rescue-smoke)
 if [[ "${RESCUE_SMOKE:-1}" == "0" ]]; then
   extra_args=(--skip-rescue-smoke)
 fi
+if [[ "${NATURAL_RESCUE_PROOF:-1}" == "0" ]]; then
+  extra_args+=(--skip-natural-rescue-proof)
+else
+  extra_args+=(--include-natural-rescue-proof)
+fi
 if [[ "${BROWSER_PROOF:-1}" != "0" ]]; then
   extra_args+=(--include-browser-proof)
   ensure_playwright_chromium

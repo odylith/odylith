@@ -23,7 +23,7 @@ def post_confirm_manifest_summary(manifest: Mapping[str, Any]) -> dict[str, Any]
 
     if not manifest:
         return {}
-    patchset = _as_mapping(manifest.get("patchset_request"))
+    patchset = _summary_patchset(manifest)
     tribunal_patch_plan = _as_mapping(patchset.get("tribunal_patch_plan"))
     provider = _as_mapping(tribunal_patch_plan.get("provider"))
     return {
@@ -41,6 +41,7 @@ def post_confirm_manifest_summary(manifest: Mapping[str, Any]) -> dict[str, Any]
         "tribunal_patch_plan_operation_count": int(tribunal_patch_plan.get("operation_count") or 0),
         "tribunal_patch_plan_provider": str(provider.get("provider", "")).strip(),
         "tribunal_patch_plan_provider_failure_code": str(provider.get("last_failure_code", "")).strip(),
+        "patchset_summary_source": _patchset_summary_source(manifest),
     }
 
 
@@ -93,6 +94,21 @@ def _remaining_temp_paths(parent: Path) -> list[str]:
 
 def _as_mapping(value: Any) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
+
+
+def _summary_patchset(manifest: Mapping[str, Any]) -> Mapping[str, Any]:
+    repaired = _as_mapping(manifest.get("last_repair_patchset_request"))
+    if repaired:
+        return repaired
+    return _as_mapping(manifest.get("patchset_request"))
+
+
+def _patchset_summary_source(manifest: Mapping[str, Any]) -> str:
+    if _as_mapping(manifest.get("last_repair_patchset_request")):
+        return "last_repair_patchset_request"
+    if _as_mapping(manifest.get("patchset_request")):
+        return "patchset_request"
+    return ""
 
 
 __all__ = [

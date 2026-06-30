@@ -266,3 +266,48 @@ def test_natural_rescue_quality_requires_provider_backed_non_probe_case() -> Non
 
     assert module.natural_rescue_quality_proven((synthetic,)) is False
     assert module.natural_rescue_quality_proven((natural,)) is True
+
+
+def test_post_confirm_manifest_summary_uses_last_repair_patchset_for_clean_final_pass() -> None:
+    module = _module()
+
+    summary = module.post_confirm_manifest_summary(
+        {
+            "status": "passed",
+            "validation_status": "passed",
+            "requested_repair_tier": "auto",
+            "repair_tier": "rescue",
+            "rescue_activated": True,
+            "passes": 2,
+            "issue_count": 0,
+            "repaired_issue_codes": ["semantic_alignment"],
+            "patchset_request": {
+                "status": "no_repairable_operations",
+                "operation_count": 0,
+                "operations": [],
+            },
+            "last_repair_patchset_request": {
+                "status": "repairable",
+                "operation_count": 1,
+                "operations": [
+                    {
+                        "operation_id": "GF-PATCH-001",
+                        "target_layer": "semantic_model",
+                        "replacement_fact": {"external_systems": ["accepted source"]},
+                    }
+                ],
+                "tribunal_patch_plan": {
+                    "status": "planned",
+                    "operation_count": 1,
+                    "provider": {"provider": "codex-cli", "last_failure_code": ""},
+                },
+            },
+        }
+    )
+
+    assert summary["patchset_summary_source"] == "last_repair_patchset_request"
+    assert summary["patchset_status"] == "repairable"
+    assert summary["patchset_operation_count"] == 1
+    assert summary["tribunal_patch_plan_status"] == "planned"
+    assert summary["tribunal_patch_plan_operation_count"] == 1
+    assert summary["tribunal_patch_plan_provider"] == "codex-cli"

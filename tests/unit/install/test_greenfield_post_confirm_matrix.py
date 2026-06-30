@@ -1955,7 +1955,7 @@ def test_rescue_cli_issues_require_auto_escalation() -> None:
     assert "auto-rescue manifest active tier is 'standard'" in issues
     assert "auto-rescue manifest did not mark rescue_activated" in issues
     assert "auto-rescue manifest did not record a repair pass after the injected typed failure" in issues
-    assert "auto-rescue manifest did not record the typed rescue probe repair" in issues
+    assert "auto-rescue manifest did not record repaired issue `post_confirm_rescue_probe`" in issues
 
 
 def test_quality_verdict_requires_all_case_domain_terms() -> None:

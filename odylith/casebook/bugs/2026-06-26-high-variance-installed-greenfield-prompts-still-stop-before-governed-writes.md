@@ -1407,6 +1407,21 @@
   were present for all 13 standard cases and recorded no standard-path rescue
   activation. Natural host-model rescue remains explicitly unproven and must
   not be inferred from the synthetic typed-probe smoke.
+  Natural rescue proof-gap follow-up on 2026-06-30 found a custody defect in
+  the final manifest evidence path. A provider-backed repair pass could enrich
+  a typed PatchSet with a structured Tribunal plan, then rerun completion and
+  produce a clean final package; the clean final manifest rebuilt evidence from
+  the final report and discarded the provider-backed repair request. That meant
+  release proof could not distinguish real host-planned semantic repair from
+  deterministic rescue wiring. The forward fix preserves the last nonempty
+  repair PatchSet request as `last_repair_patchset_request`, lets release
+  scoring read provider-backed repair evidence from that field after a clean
+  final pass, and adds a separate maintained natural structured-rescue proof
+  leg that requires an explicit provider, a non-probe repaired issue, a planned
+  Tribunal patch summary, clean governed writes, and the 90-second rescue
+  budget. Focused runtime, release-proof-scope, natural-rescue matrix, wrapper,
+  and structured-rescue tests passed; installed committed-head proof remains
+  pending for this checkpoint.
 
 - Related Incidents/Bugs: CB-208
 

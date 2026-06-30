@@ -59,6 +59,13 @@ from greenfield_matrix_quality_scoring import count_key  # noqa: E402
 from greenfield_matrix_quality_scoring import required_count_minimums  # noqa: E402
 from greenfield_matrix_quality_scoring import write_committed  # noqa: E402
 import platform_domain_leakage_check as platform_domain_leakage  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import RESCUE_PROBE_CODE  # noqa: E402
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_structured_rescue_proof import (  # noqa: E402
+    STRUCTURED_RESCUE_PROOF_CODE,
+)
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_structured_rescue_proof import (  # noqa: E402
+    structured_rescue_proof_env,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import text_values  # noqa: E402
 from odylith.runtime.artifact_quality.greenfield_package_quality import (  # noqa: E402
     greenfield_rendered_package_quality_issues,
@@ -207,6 +214,37 @@ def run_rescue_smoke(
     try:
         repo_root = run_root / f"odylith-sim-rescue-{uuid.uuid4().hex[:8]}"
         result = _run_rescue_smoke_case(
+            repo_root=repo_root,
+            install_script=install_script,
+            base_url=base_url,
+            version=version,
+        )
+        _cleanup_repo_before_next(repo_root)
+        return result
+    finally:
+        server.shutdown()
+        server.server_close()
+        _cleanup_run_root(run_root)
+
+
+def run_natural_rescue_proof(
+    *,
+    dist_dir: Path,
+    version: str,
+    temp_parent: Path,
+) -> GreenfieldRescueSmokeResult:
+    """Prove installed host-planned structured rescue repair."""
+
+    release_dir = Path(dist_dir).expanduser().resolve()
+    install_script = release_dir / "install.sh"
+    if not install_script.is_file():
+        raise FileNotFoundError(f"missing local release install script: {install_script}")
+    run_root = Path(temp_parent).expanduser().resolve() / f"odylith-greenfield-natural-rescue-{uuid.uuid4().hex[:8]}"
+    run_root.mkdir(parents=True, exist_ok=False)
+    server, base_url = _serve_directory(release_dir)
+    try:
+        repo_root = run_root / f"odylith-sim-natural-rescue-{uuid.uuid4().hex[:8]}"
+        result = _run_natural_rescue_case(
             repo_root=repo_root,
             install_script=install_script,
             base_url=base_url,
@@ -402,6 +440,103 @@ def _run_rescue_smoke_case(
     )
 
 
+def _run_natural_rescue_case(
+    *,
+    repo_root: Path,
+    install_script: Path,
+    base_url: str,
+    version: str,
+) -> GreenfieldRescueSmokeResult:
+    case = rescue_smoke_case()
+    repo_root.mkdir(parents=True)
+    env = _local_release_env(base_url=base_url, version=version)
+    _run(cwd=repo_root, env=env, command=["git", "init"], timeout=60)
+    install = _run(cwd=repo_root, env=env, command=["bash", str(install_script)], timeout=COMMAND_TIMEOUT_SECONDS)
+    if install.returncode != 0:
+        return _rescue_smoke_result(
+            create_payload={},
+            counts=GreenfieldArtifactCounts(),
+            issues=(f"install_failed: {(install.stderr or install.stdout).strip()[:800]}",),
+            create_returncode=install.returncode,
+            proof_scope="real_installed_structured_patch_plan_case",
+        )
+    propose = _run(
+        cwd=repo_root,
+        env=env,
+        command=["./.odylith/bin/odylith", "greenfield", "propose", "--repo-root", ".", "--prompt", case.prompt],
+        timeout=120,
+    )
+    if propose.returncode != 0:
+        return _rescue_smoke_result(
+            create_payload={},
+            counts=GreenfieldArtifactCounts(),
+            issues=(f"propose_failed: {(propose.stderr or propose.stdout).strip()[:800]}",),
+            create_returncode=propose.returncode,
+            proof_scope="real_installed_structured_patch_plan_case",
+        )
+    intent_path = repo_root / ".odylith/runtime/greenfield/confirmed-intent.md"
+    intent_path.parent.mkdir(parents=True, exist_ok=True)
+    intent_path.write_text(propose.stdout, encoding="utf-8")
+    started = time.perf_counter()
+    create = _run(
+        cwd=repo_root,
+        env=_installed_structured_rescue_env(env),
+        command=[
+            "./.odylith/bin/odylith",
+            "greenfield",
+            "create",
+            "--repo-root",
+            ".",
+            "--prompt",
+            case.prompt,
+            "--intent-file",
+            ".odylith/runtime/greenfield/confirmed-intent.md",
+            "--confirm",
+            "--release",
+            "0.0.1",
+            "--repair-tier",
+            "auto",
+            "--json",
+        ],
+        timeout=150,
+    )
+    create_seconds = round(time.perf_counter() - started, 3)
+    payload = _parse_json_object(create.stdout)
+    manifest = _as_mapping(payload.get("post_confirm_quality_manifest"))
+    package = collect_artifact_package(repo_root=repo_root, create_payload=payload)
+    counts = collect_artifact_counts(repo_root=repo_root, package=package, required_terms=case.required_terms)
+    surface_issues = rendered_surface_health_issues(repo_root=repo_root)
+    issues = list(
+        rescue_cli_issues(
+            manifest=manifest,
+            package=package,
+            counts=counts,
+            count_minimums=required_count_minimums(),
+            count_key=count_key,
+            write_committed=write_committed,
+            as_mapping=_as_mapping,
+            package_quality_issues=greenfield_rendered_package_quality_issues,
+            create_returncode=create.returncode,
+            create_seconds=create_seconds,
+            detail=create.stderr or create.stdout,
+            expected_requested_tier="auto",
+            expected_repaired_issue_code=STRUCTURED_RESCUE_PROOF_CODE,
+            forbidden_repaired_issue_codes=(RESCUE_PROBE_CODE,),
+        )
+    )
+    issues.extend(_natural_rescue_manifest_issues(manifest))
+    issues.extend(surface_issues)
+    return _rescue_smoke_result(
+        create_payload=payload,
+        counts=counts,
+        issues=tuple(issues),
+        create_returncode=create.returncode,
+        cli_create_seconds=create_seconds,
+        proof_scope="real_installed_structured_patch_plan_case",
+        natural_rescue_quality_proven=not issues,
+    )
+
+
 def _rescue_smoke_result(
     *,
     create_payload: Mapping[str, Any],
@@ -409,6 +544,8 @@ def _rescue_smoke_result(
     issues: Sequence[str],
     create_returncode: int,
     cli_create_seconds: float = 0.0,
+    proof_scope: str = "synthetic_typed_probe_wiring_only",
+    natural_rescue_quality_proven: bool = False,
 ) -> GreenfieldRescueSmokeResult:
     cleaned_issues = tuple(dict.fromkeys(issue for issue in issues if str(issue).strip()))
     return GreenfieldRescueSmokeResult(
@@ -417,8 +554,57 @@ def _rescue_smoke_result(
         counts=counts,
         issues=cleaned_issues,
         manifest=_as_mapping(create_payload.get("post_confirm_quality_manifest")),
+        proof_scope=proof_scope,
+        natural_rescue_quality_proven=bool(natural_rescue_quality_proven and not cleaned_issues),
         create_returncode=create_returncode,
     )
+
+
+def _installed_structured_rescue_env(env: Mapping[str, str]) -> dict[str, str]:
+    values = structured_rescue_proof_env(env)
+    values["ODYLITH_REASONING_MODE"] = os.environ.get("ODYLITH_REASONING_MODE", "auto")
+    values["ODYLITH_REASONING_PROVIDER"] = _structured_rescue_provider()
+    values["ODYLITH_REASONING_TIMEOUT_SECONDS"] = os.environ.get("ODYLITH_REASONING_TIMEOUT_SECONDS", "35")
+    for key in (
+        "ODYLITH_REASONING_MODEL",
+        "ODYLITH_REASONING_CODEX_BIN",
+        "ODYLITH_REASONING_CODEX_REASONING_EFFORT",
+        "ODYLITH_REASONING_CLAUDE_BIN",
+        "ODYLITH_REASONING_CLAUDE_REASONING_EFFORT",
+    ):
+        if key in os.environ:
+            values[key] = os.environ[key]
+        else:
+            values.pop(key, None)
+    return values
+
+
+def _structured_rescue_provider() -> str:
+    provider = os.environ.get("ODYLITH_STRUCTURED_RESCUE_PROVIDER") or os.environ.get("ODYLITH_REASONING_PROVIDER")
+    provider = str(provider or "").strip()
+    if provider and provider != "auto-local":
+        return provider
+    return "codex-cli"
+
+
+def _natural_rescue_manifest_issues(manifest: Mapping[str, Any]) -> tuple[str, ...]:
+    summary = post_confirm_manifest_summary(manifest)
+    issues: list[str] = []
+    if summary.get("patchset_summary_source") != "last_repair_patchset_request":
+        issues.append("natural rescue proof did not preserve the last repair PatchSet in the final manifest")
+    if summary.get("tribunal_patch_plan_status") != "planned":
+        issues.append("natural rescue proof did not record a planned Tribunal structured patch plan")
+    if int(summary.get("tribunal_patch_plan_operation_count") or 0) <= 0:
+        issues.append("natural rescue proof did not record provider-authored patch operations")
+    if not str(summary.get("tribunal_patch_plan_provider") or "").strip():
+        issues.append("natural rescue proof did not record the structured patch provider")
+    if RESCUE_PROBE_CODE in set(summary.get("repaired_issue_codes") or ()):
+        issues.append("natural rescue proof used the deterministic rescue probe")
+    if STRUCTURED_RESCUE_PROOF_CODE not in set(summary.get("repaired_issue_codes") or ()):
+        issues.append(f"natural rescue proof did not repair `{STRUCTURED_RESCUE_PROOF_CODE}`")
+    return tuple(issues)
+
+
 def collect_artifact_package(*, repo_root: Path, create_payload: Mapping[str, Any]) -> Any:
     """Collect generated records in the shape understood by artifact quality gates."""
 
@@ -774,6 +960,17 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="Skip rescue smoke for local debugging only; this is not release proof.",
     )
     parser.add_argument(
+        "--include-natural-rescue-proof",
+        action="store_true",
+        help="Prove installed host-planned structured semantic rescue.",
+    )
+    parser.add_argument(
+        "--skip-natural-rescue-proof",
+        action="store_false",
+        dest="include_natural_rescue_proof",
+        help="Skip host-planned rescue proof for local debugging only; this is not release proof.",
+    )
+    parser.add_argument(
         "--include-browser-proof",
         action="store_true",
         help="Run headless generated browser state proof against every generated matrix repo.",
@@ -811,10 +1008,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         if bool(args.include_rescue_smoke)
         else None
     )
+    natural_rescue = (
+        run_natural_rescue_proof(
+            dist_dir=Path(args.dist_dir),
+            version=str(args.version),
+            temp_parent=Path(args.temp_parent),
+        )
+        if bool(args.include_natural_rescue_proof)
+        else None
+    )
     browser_proof = browser_proof_summary(results, include_browser_proof=bool(args.include_browser_proof))
     platform_leakage_proof = _platform_leakage_proof_summary(results)
     cleanup_proof = temp_cleanup_proof(Path(args.temp_parent))
-    natural_rescue_proven = natural_rescue_quality_proven(results)
+    natural_rescue_proven = natural_rescue_quality_proven(results) or bool(
+        natural_rescue and natural_rescue.natural_rescue_quality_proven
+    )
     browser_status = str(browser_proof.get("status") or "").strip()
     browser_passed = browser_status == "passed" or (
         browser_status == "skipped" and bool(args.allow_skipped_browser_proof)
@@ -824,6 +1032,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     passed = (
         all(result.quality.passed for result in results)
         and (rescue is None or rescue.passed)
+        and (natural_rescue is None or natural_rescue.passed)
         and browser_passed
         and platform_leakage_passed
         and cleanup_passed
@@ -851,6 +1060,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     }
     if rescue is not None:
         payload["rescue_smoke"] = rescue.to_dict()
+    if natural_rescue is not None:
+        payload["natural_rescue_proof"] = natural_rescue.to_dict()
     if str(args.output_json or "").strip():
         output_path = Path(str(args.output_json)).expanduser().resolve()
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -860,6 +1071,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         _print_human_summary(results)
         _print_rescue_summary(rescue)
+        _print_rescue_summary(natural_rescue)
     return 0 if payload["status"] == "passed" else 1
 
 
