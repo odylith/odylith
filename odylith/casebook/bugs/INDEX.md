@@ -6,7 +6,6 @@ Last updated (UTC): 2026-06-30
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-209 | 2026-06-26 | High variance installed greenfield prompts still stop before governed writes | P1 | domain-intelligence | FixedPendingRelease | [2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md](2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md) |
 | CB-208 | 2026-06-26 | Greenfield post confirm repair routing remains stringly typed instead of semanti | P1 | domain-intelligence | Open | [2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md](2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md) |
 | CB-207 | 2026-06-26 | Greenfield post confirm package repair repeats risk prose across surfaces | P1 | domain-intelligence | Open | [2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md](2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md) |
 | CB-206 | 2026-06-26 | Agent guidance did not require failed mechanism capture before repeated fixes | P1 | odylith-chatter | Open | [2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md](2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md) |
@@ -241,6 +240,7 @@ Last updated (UTC): 2026-06-30
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-209 | 2026-06-26 | High variance installed greenfield prompts still stop before governed writes | P1 | domain-intelligence | Closed | [2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md](2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md) |
 | CB-196 | 2026-05-11 | Radar execution wave summary wastes wide empty space | P2 | radar | Closed | [2026-05-11-radar-execution-wave-summary-wastes-wide-empty-space.md](2026-05-11-radar-execution-wave-summary-wastes-wide-empty-space.md) |
 | CB-137 | 2026-04-29 | Install still surfaces raw trusted root key warning during verification | P1 | release | Closed | [2026-04-29-install-still-surfaces-raw-trusted-root-key-warning-during-verification.md](2026-04-29-install-still-surfaces-raw-trusted-root-key-warning-during-verification.md) |
 | CB-136 | 2026-04-29 | Install overwrites claude settings before verified runtime activation | P0 | migration-runtime | Closed | [2026-04-29-install-overwrites-claude-settings-before-verified-runtime-activation.md](2026-04-29-install-overwrites-claude-settings-before-verified-runtime-activation.md) |

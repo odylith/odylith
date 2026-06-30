@@ -1,6 +1,6 @@
 - Bug ID: CB-209
 
-- Status: FixedPendingRelease
+- Status: Closed
 
 - Created: 2026-06-26
 
@@ -33,6 +33,8 @@
 - Environment Update: 2026-06-30 fresh non-reused variance proof against /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913 persisted at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-a258b913/greenfield-post-confirm-fresh-variance-20260630-a258b913.v1.json. Ten new domains passed with hard 10/10 scores, zero issues, complete governed records, browser proof, max create time 29.398s, and clean temp cleanup: maternal transport escalation, municipal tree permit appeals, fusion divertor maintenance window, school accommodation evidence circle, vaccine cold chain release, interactive museum loan condition, rail corridor vegetation outage, model risk validation waiver, robot lockout safety audit, and API deprecation migration cockpit.
 
 - Environment Update: 2026-06-30 committed checkpoint 09e520b3 rebuilt local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-09e520b3. Maintained installed matrix proof persisted at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-09e520b3/greenfield-post-confirm-matrix.v1.json: 13/13 standard cases passed with hard 10/10 scores, zero quality/browser/leakage issues, complete governed records, browser proof, max standard create time 28.918s, average create time 25.815s, generated-term leakage proof over 213 readback terms, and synthetic typed-probe rescue wiring passed in 34.547s. Natural rescue-quality proof remains unproven and must not be claimed from that synthetic wiring proof.
+
+- Environment Update: 2026-06-30 committed checkpoint dd718448 rebuilt local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-dd718448. Maintained installed matrix proof persisted at /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-dd718448/greenfield-post-confirm-matrix-20260630-dd718448.v1.json: 13/13 standard cases passed with hard 10/10 scores, zero quality/browser/leakage issues, complete governed records, browser proof, max standard create time 32.637s, average create time 29.091s, generated-term leakage proof over 213 readback terms, persisted temp-cleanup proof passed, synthetic typed-probe rescue wiring passed in 38.494s, and the real installed host-planned structured-rescue leg passed in 67.435s with `structured_rescue_semantic_patch`, provider-backed `last_repair_patchset_request`, a planned Tribunal patch summary, committed governed records, and no final quality issues.
 
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
@@ -1437,7 +1439,11 @@
   env overrides. A retained source-local repro then passed in 55.085s with
   `structured_rescue_semantic_patch` recorded in `repaired_issue_codes`, a
   provider-backed `last_repair_patchset_request`, and committed governed
-  records. Fresh committed-head dist proof remains required.
+  records. Fresh committed-head dist proof was then completed from commit
+  `dd718448`: the installed matrix passed 13/13 standard cases under 33s with
+  hard 10/10 quality scores and the real installed natural structured-rescue
+  leg passed in 67.435s under the 90s rescue tier with a provider-planned
+  semantic patch, committed governed records, and zero final findings.
 
 - Related Incidents/Bugs: CB-208
 
