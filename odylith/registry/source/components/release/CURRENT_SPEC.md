@@ -484,6 +484,12 @@ governed subsystem.
   release fixture catalogs, governed evidence, evaluation corpora, and release
   notes; it must not leak into runtime code, shipped agent guidance, release
   tooling behavior, or bundled default behavior.
+- The greenfield release matrix must not rely on hand-curated leakage
+  sentinels alone. Preflight and generated-readback leakage proof must include
+  explicit case sentinels, required anchors, and conservative distinctive
+  source-text phrases from the case prompt or accepted intent while filtering
+  generic confirmation/governance wording. Domain-anchor coverage scoring must
+  use token-aware matching rather than raw substring containment.
 - The standalone `make greenfield-post-confirm-matrix` maintainer target must
   write `greenfield-post-confirm-matrix.v1.json` by default, with
   `GREENFIELD_MATRIX_OUTPUT_JSON` as the explicit override. A stdout-only
@@ -535,6 +541,20 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-06-30: Hardened greenfield release proof against partial sentinel and substring-coverage false positives. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  Reviewer audit found the previous leakage proof could miss omitted case
+  vocabulary when any manual `leakage_terms` were present, and the matrix
+  domain-coverage score could pass on raw substrings. The release harness now
+  derives conservative multi-token source-text leakage phrases from the case
+  prompt or accepted intent, unions them with declared sentinels and required
+  anchors for preflight/readback proof, and scores domain coverage with the
+  shared token-aware matcher. The first broad extractor attempt overreached
+  into generic phrases; that failed mechanism is captured in Casebook. Focused
+  leakage/matrix proof passed 73 tests, the full install unit suite passed 448
+  tests, and the strengthened source/dist leakage guard passed across 387
+  distinctive fixture terms against the `88df22be` dist. Rebuilt installed
+  matrix and fresh-variance proof from the post-fix commit remain required
+  before release readiness is reclaimed.
 - 2026-06-30: Fixed release-matrix generated-readback leakage baseline custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
   A `7cf9d2ed` release-dist proof run showed the platform leakage build gate
   can pass while the installed matrix still stalls if generated-readback

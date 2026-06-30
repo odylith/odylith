@@ -13,12 +13,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 354,
-    "mapped_workstream_evidence_count": 324,
+    "explicit_event_count": 355,
+    "mapped_workstream_evidence_count": 325,
     "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 354
+    "timeline_event_count": 355
   },
   "name": "Governance Intervention Engine",
   "path_prefixes": [
@@ -43,6 +43,38 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 737,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Release proof hardening found and fixed two residual greenfield proof weaknesses: partial leakage_terms could hide omitted case vocabulary, and matrix domain coverage used substring matching. The first broad source-text extractor overreached into generic phrases, so the final source fix uses conservative multi-token source-text leakage phrases plus declared sentinels and required anchors, and token-aware domain coverage. Proof passed 73 focused leakage/matrix tests, 448 install tests, and a strengthened source/dist leakage guard across 387 derived fixture terms against the 88df22be dist; rebuilt installed proof from the next commit remains required.",
+      "ts_iso": "2026-06-30T03:07:08-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifacts": [
         "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2ab8793f/greenfield-post-confirm-matrix-20260630-2ab8793f.v1.json"

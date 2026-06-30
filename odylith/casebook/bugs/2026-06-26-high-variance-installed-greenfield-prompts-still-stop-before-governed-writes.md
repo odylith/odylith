@@ -1204,6 +1204,23 @@
   scans. Focused leakage proof passed 71 tests, and cold/warm guard timing
   against the `7cf9d2ed` dist improved to 28.228s cold, 0.062s for a warm
   three-term query, and 0.809s for a warm 65-term query with zero findings.
+  Reviewer follow-up on 2026-06-30 found that the resulting leakage proof was
+  still too dependent on manually curated case sentinels and that the brutal
+  matrix domain-coverage score still used substring matching. The failed
+  mechanism was two-sided: partial `leakage_terms` declarations could suppress
+  omitted case vocabulary, while a naive attempt to derive every source-text
+  token from prompts and confirmed intents produced generic governance phrases
+  such as `verification evidence`, `owner reviews`, and `question is` as false
+  leakage sentinels. The forward fix keeps declared leakage terms as explicit
+  proof vocabulary, supplements them with required anchors and conservative
+  multi-token source-text phrases that contain distinctive project vocabulary,
+  keeps generic confirmation and governance wording out of derived sentinels,
+  and uses token-aware term matching for matrix domain coverage instead of raw
+  substring containment. Focused proof passed 73 leakage/matrix tests, the full
+  install suite passed 448 tests, and the strengthened source/dist leakage
+  guard passed across 387 distinctive fixture terms against the `88df22be`
+  dist. Do not repeat the failed mechanisms by relying on hand-curated
+  sentinels alone, broad free-text token extraction, or substring scoring.
 
 - Related Incidents/Bugs: CB-208
 

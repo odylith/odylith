@@ -133,6 +133,7 @@ PLATFORM_NATIVE_TERMS = frozenset(
         "model",
         "odylith",
         "permission",
+        "platform",
         "proof",
         "radar",
         "registry",
@@ -142,6 +143,140 @@ PLATFORM_NATIVE_TERMS = frozenset(
         "workflow",
     }
 )
+DOMAIN_TEXT_STOPWORDS = frozenset(
+    {
+        "a",
+        "across",
+        "affected",
+        "after",
+        "all",
+        "an",
+        "and",
+        "action",
+        "advisory",
+        "ambiguities",
+        "available",
+        "approved",
+        "assumptions",
+        "automated",
+        "boundary",
+        "before",
+        "blocks",
+        "by",
+        "can",
+        "capture",
+        "claiming",
+        "collect",
+        "compare",
+        "complete",
+        "completed",
+        "confirmation",
+        "control",
+        "coordinates",
+        "coordinating",
+        "counts",
+        "create",
+        "critical",
+        "daily",
+        "decision",
+        "decisions",
+        "delivery",
+        "exception",
+        "exceptions",
+        "execution",
+        "external",
+        "failed",
+        "final",
+        "first",
+        "flag",
+        "for",
+        "from",
+        "governed",
+        "greenfield",
+        "helps",
+        "history",
+        "human",
+        "in",
+        "intake",
+        "included",
+        "intent",
+        "internal",
+        "is",
+        "lets",
+        "maintainer",
+        "manage",
+        "manages",
+        "manager",
+        "map",
+        "match",
+        "measurement",
+        "measured",
+        "multiple",
+        "native",
+        "no",
+        "not",
+        "of",
+        "only",
+        "operations",
+        "operator",
+        "or",
+        "outside",
+        "owner",
+        "owners",
+        "prepare",
+        "prepares",
+        "preserve",
+        "preserves",
+        "produce",
+        "proposal",
+        "public",
+        "publish",
+        "publishes",
+        "publishing",
+        "question",
+        "rationale",
+        "readiness",
+        "receives",
+        "record",
+        "records",
+        "register",
+        "report",
+        "reports",
+        "requests",
+        "results",
+        "review",
+        "reviews",
+        "routes",
+        "run",
+        "session",
+        "show",
+        "shows",
+        "signoff",
+        "staff",
+        "state",
+        "story",
+        "system",
+        "systems",
+        "that",
+        "the",
+        "title",
+        "to",
+        "tool",
+        "track",
+        "tracks",
+        "through",
+        "until",
+        "user",
+        "users",
+        "validation",
+        "verification",
+        "violation",
+        "basis",
+        "whether",
+        "without",
+        "workspace",
+    }
+).union(PLATFORM_NATIVE_TERMS)
 
 @dataclass(frozen=True)
 class LeakageFinding:
@@ -197,6 +332,21 @@ def domain_leakage_terms_from_terms(terms: Iterable[str]) -> tuple[str, ...]:
     return tuple(sorted(leakage_terms))
 
 
+def domain_leakage_terms_from_text(text: str) -> tuple[str, ...]:
+    """Derive distinctive project-domain leakage terms from simulation source text."""
+
+    tokens = _tokens(text)
+    candidates: set[str] = set()
+    for width in (2, 3, 4):
+        if len(tokens) < width:
+            continue
+        for index in range(len(tokens) - width + 1):
+            window = tokens[index : index + width]
+            if _is_distinctive_source_phrase(window):
+                candidates.add(" ".join(window))
+    return domain_leakage_terms_from_terms(candidates)
+
+
 def historical_domain_leakage_terms() -> tuple[str, ...]:
     """Return historical consumer-domain sentinels used as release proof vocabulary."""
 
@@ -210,6 +360,7 @@ def case_leakage_terms(case: object) -> tuple[str, ...]:
         (
             *_case_declared_leakage_terms(case),
             *_case_required_terms(case),
+            *_case_source_text_terms(case),
         )
     )
 
@@ -436,6 +587,38 @@ def _should_scan_dist_text_file(path: Path) -> bool:
 
 def _normalize_term(term: str) -> str:
     return " ".join(_tokens(term))
+
+
+def _case_source_text_terms(case: object) -> tuple[str, ...]:
+    text = "\n".join(
+        str(value or "")
+        for value in (
+            getattr(case, "name", ""),
+            getattr(case, "prompt", ""),
+            getattr(case, "confirmed_intent_markdown", ""),
+        )
+        if str(value or "").strip()
+    )
+    return domain_leakage_terms_from_text(text)
+
+
+def _is_distinctive_source_token(token: str) -> bool:
+    value = str(token or "").casefold()
+    if len(value) < 7:
+        return False
+    return (
+        value not in DOMAIN_TEXT_STOPWORDS
+        and value not in GENERIC_PRODUCT_TERMS
+        and value not in PLATFORM_NATIVE_TERMS
+    )
+
+
+def _is_distinctive_source_phrase(tokens: tuple[str, ...]) -> bool:
+    if len(tokens) < 2:
+        return False
+    if any(token in DOMAIN_TEXT_STOPWORDS for token in tokens):
+        return False
+    return any(_is_distinctive_source_token(token) for token in tokens)
 
 
 def _tokens(text: str) -> tuple[str, ...]:

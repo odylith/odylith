@@ -1864,3 +1864,27 @@ vocabulary, or degraded packages.
       protected-custody proof across 54 terms, create timings of
       22.856-29.056s, synthetic typed-probe rescue in 34.430s, and clean
       matrix/rescue/debug/source temp cleanup.
+- [ ] Rebuild and prove the source-text leakage and token-aware coverage
+      checkpoint.
+      A post-proof review found that platform leakage proof still depended too
+      much on manually curated case sentinels: a partial `leakage_terms`
+      declaration could hide omitted prompt vocabulary. The same review found
+      that release-matrix domain coverage still used raw substring containment,
+      allowing false positives such as `port` inside unrelated words. The first
+      source-text derivation attempt overcorrected and treated generic
+      governance phrases from prompts and confirmed intents as project-domain
+      sentinels, producing false positives such as `verification evidence`,
+      `owner reviews`, and `question is`. Current source fix keeps explicit
+      declared leakage terms, supplements them with required anchors and
+      conservative multi-token source-text phrases that contain distinctive
+      project vocabulary, and switches domain coverage scoring to the shared
+      token-aware matcher. Source proof passed 73 focused leakage/matrix tests,
+      the full install unit suite passed 448 tests, the strengthened
+      source/dist leakage guard passed across 387 derived fixture terms against
+      the `88df22be` dist, and the pre-fix `88df22be` maintained installed
+      matrix passed 13/13 with 10/10 scores, 22.048-29.166s standard creates,
+      zero issues, and rescue smoke at 34.111s. Remaining proof: commit this
+      checkpoint, rebuild the installable dist from the new commit, rerun the
+      maintained installed matrix and fresh non-reused variance matrix with
+      browser proof, generated-term leakage proof, hard 10/10 scores,
+      sub-60s standard creates, and clean temp cleanup.

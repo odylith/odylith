@@ -102,11 +102,13 @@ def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
             ),
         )
 
-    assert captured_terms == [("xenobot",)]
+    assert len(captured_terms) == 1
+    assert "xenobot" in captured_terms[0]
+    assert "xenobot custody" in captured_terms[0]
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
 
-def test_run_matrix_preflight_uses_declared_sentinels_before_required_anchors(
+def test_run_matrix_preflight_supplements_declared_sentinels_with_case_vocabulary(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     module = _module()
@@ -141,7 +143,10 @@ def test_run_matrix_preflight_uses_declared_sentinels_before_required_anchors(
             ),
         )
 
-    assert captured_terms == [("dictionary review sentinel",)]
+    assert len(captured_terms) == 1
+    assert "dictionary review sentinel" in captured_terms[0]
+    assert "language" in captured_terms[0]
+    assert "language archive" in captured_terms[0]
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
 
@@ -890,6 +895,17 @@ def test_collect_artifact_counts_excludes_runtime_custody_from_domain_terms(tmp_
     assert counts.domain_term_hits == 0
 
 
+def test_collect_artifact_counts_uses_token_aware_domain_terms(tmp_path: Path) -> None:
+    module = _module()
+    package = _empty_package()
+    package.project_brief_record_text = "Portfolio readiness remains visible for review."
+    _write(tmp_path / "odylith/radar/traceability-graph.v1.json", json.dumps({"nodes": [], "workstreams": []}))
+
+    counts = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=("port",))
+
+    assert counts.domain_term_hits == 0
+
+
 def test_project_brief_record_count_excludes_runtime_custody_files(tmp_path: Path) -> None:
     module = _module()
     package = _empty_package()
@@ -1141,8 +1157,13 @@ def test_generated_leakage_terms_suppress_required_anchors_already_native_to_pla
         platform_baseline_terms=platform_baseline_terms,
     )
 
-    assert captured_terms == [("estimate", "projection")]
-    assert platform_baseline_terms == ("estimate", "projection")
+    assert len(captured_terms) == 1
+    assert "estimate" in captured_terms[0]
+    assert "projection" in captured_terms[0]
+    assert "estimate projection" in captured_terms[0]
+    assert "estimate" in platform_baseline_terms
+    assert "projection" in platform_baseline_terms
+    assert "estimate projection" in platform_baseline_terms
     assert "estimate" not in terms
     assert "projection" not in terms
 

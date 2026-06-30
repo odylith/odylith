@@ -466,7 +466,7 @@ def collect_artifact_counts(
         rendered_surfaces=sum(1 for path in REQUIRED_RENDERED_SURFACES if _nonempty(repo_root / path)),
         rendered_surface_payloads=rendered_surface_payload_count(repo_root),
         atlas_rendered_assets=atlas_rendered_asset_count(repo_root),
-        domain_term_hits=sum(1 for term in required_terms if term.casefold() in rendered_text),
+        domain_term_hits=sum(1 for term in required_terms if _term_present(rendered_text, term)),
         required_domain_terms=len(tuple(dict.fromkeys(term.casefold() for term in required_terms if str(term).strip()))),
         project_implementation_prompts=len(
             _mapping_rows(_as_mapping(getattr(package, "project_dashboard_preview", None)).get("host_handoff_prompts"))

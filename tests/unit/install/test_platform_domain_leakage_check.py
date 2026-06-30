@@ -60,6 +60,30 @@ def test_declared_leakage_terms_are_supplemented_by_distinctive_required_anchors
     assert terms == ("chamber exposure", "wafer", "wafer lot")
 
 
+def test_case_leakage_terms_derive_distinctive_prompt_vocabulary() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                name="quantum communication lab",
+                prompt=(
+                    "Create a greenfield proposal for a quantum communication lab that records "
+                    "entangled photon pairs, Bell inequality checks, QBER thresholds, and CHSH "
+                    "review evidence."
+                ),
+                required_terms=("quantum", "qber"),
+                leakage_terms=("bell inequality",),
+            )
+        )
+    )
+
+    assert "bell inequality" in terms
+    assert "entangled photon" in terms
+    assert "quantum" in terms
+    assert "quantum communication" in terms
+    assert "create" not in terms
+    assert "greenfield proposal" not in terms
+
+
 def test_generic_required_anchors_do_not_reenter_leakage_custody_noise() -> None:
     terms = leakage.case_leakage_terms(
         SimpleNamespace(
