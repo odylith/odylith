@@ -1489,6 +1489,48 @@
   artifact-draft string cleanup; fix the artifact-plan repair substrate or
   projection facts so generated-copy quality failures can be repaired before
   final commit.
+  Source follow-up on 2026-06-30 replaced the fake repairable envelope with a
+  source-owned projection repair target resolver. Preview findings such as
+  `prewrite_package.accepted_project_preview.proposal.diagrams[0].mermaid_source`
+  now map to the sanctioned `diagrams[0].mermaid_source` ArtifactPlanIR fact,
+  while Project dashboard release-card copy findings map to card-specific
+  source facts instead of a rendered dashboard body.
+  The Tribunal patch planner now materializes artifact-plan text/list envelopes
+  as `{path, value}` source patches and preserves multiline source text; rescue
+  evidence includes the current target value. Scoped projection rerender now
+  refreshes `project_dashboard` from source previews, and Mermaid source leaves
+  inside preview packages are typed as `mermaid_source` so generated-copy gates
+  inspect visible labels instead of graph syntax. The four prior source-local
+  failure shapes now pass with committed writes: flood shelter intake in
+  19.406s, semiconductor lab custody in 20.957s, package supply chain exception
+  desk in 21.309s, and apprenticeship credential readiness in 22.103s. Focused
+  runtime proof passed 79 tests in 6.89s and the widened post-confirm/install
+  proof slice passed 100 tests in 40.83s. Release readiness remains capped until
+  a rebuilt installed dist passes the full 13-case matrix, browser proof,
+  domain-leakage proof, temp cleanup, synthetic rescue, and natural structured
+  rescue.
+  Additional source follow-up on 2026-06-30 found a hidden quality miss after
+  green validators passed: a wearable-health prompt completed governed writes
+  but produced semantically awkward artifacts, including a false `Separate
+  Urgent` actor, malformed first-path clauses, and a Radar title shaped like
+  `Keep ... Clear ... Clear ...`. The failed mechanism was generic: the
+  provider-free fallback grammar did not recognize ordinary coordinated action
+  verbs such as `separate` and `give`, so sibling action clauses could be
+  promoted into actor prefixes, and the state-boundary title owner added the
+  clarity adjective even when the state label already carried it. The source
+  fix adds those verbs to shared domain-neutral prose grammar, keeps actor carry
+  across coordinated action clauses, routes Project dashboard release-card
+  findings to card-specific SemanticModelIR or ArtifactPlanIR facts, gives
+  accepted-project scoped rerender a fresh source-launch context, and prevents
+  repeated clarity adjectives in Radar state-boundary titles. Proof after the
+  fix: focused recovery/backlog tests passed 48 tests in 89.26s; the combined
+  recovery/projection pack passed 130 tests in 98.20s; the post-confirm/install
+  proof slice passed 100 tests in 42.16s; source platform leakage passed across
+  285 distinctive terms; and six non-reused source-local simulations completed
+  in 19.455-21.543s with zero final issues, Atlas render passing, Registry
+  validation passing, no escaped bad strings, and temp repos deleted after each
+  run. Release readiness still requires a rebuilt installed dist matrix with
+  browser proof and hardened artifact readback.
 
 - Related Incidents/Bugs: CB-208
 

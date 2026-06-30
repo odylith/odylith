@@ -21,7 +21,7 @@ flowchart LR
       actor_path_role["Actor path-role owner<br/>accepted-path descriptions,<br/>suffix-subject stripping,<br/>preposition/action-led role cleanup"]
       external_boundary["External boundary semantics<br/>explicit systems, inferred first-path boundary,<br/>or typed deferred manual/fixture boundary"]
       sequence_owner["First-path sequence owner<br/>modal actor chains,<br/>connector-led object tails,<br/>evidence noun compounds,<br/>distinctive terminal event terms"]
-      subject_carry_guard["Carried-subject guard<br/>only explicit subjects seed carry<br/>for sibling action clauses"]
+      subject_carry_guard["Carried-subject guard<br/>explicit subjects seed carry<br/>for coordinated sibling actions<br/>ordinary action verbs stay actions"]
       result_language["Result-language owner<br/>quoted/bounded visible results,<br/>result-object modifiers,<br/>grammatical item order"]
       prose_shape_guard["Clause-local prose-shape guard<br/>shared actor-role heads only,<br/>valid gerund action lists and<br/>title-compound user roles pass"]
       artifact_plan["ArtifactPlanIR<br/>sanctioned projection fields"]
@@ -29,7 +29,7 @@ flowchart LR
       canonical_facts["CanonicalProjectionFactIR<br/>source layer, semantic node,<br/>source path, repair owner,<br/>allowed projection IDs,<br/>sequence-step and supporting-tail variants"]
       projection_contract["Projection contract owner<br/>roots, aliases,<br/>envelope paths,<br/>affected projections"]
       projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof<br/>Atlas terminal labels keep event terms<br/>before long result wrappers"]
-      state_boundary_titles["Radar state-boundary titles<br/>compact review/action focus,<br/>no mechanical pronoun tails"]
+      state_boundary_titles["Radar state-boundary titles<br/>compact review/action focus,<br/>no mechanical pronoun tails<br/>no repeated clarity modifiers"]
       next_steps["Operator next steps<br/>governed start workstream,<br/>readiness gates, validation commands"]
       project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>persisted into tooling payload"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
@@ -41,6 +41,8 @@ flowchart LR
       governed_readback["Governed record readback<br/>release catalogs/events,<br/>program waves,<br/>Compass records,<br/>surface payload globals,<br/>persisted source-launch"]
       evidence_readback["Independent package evidence<br/>project brief, Radar sections,<br/>Registry proof contracts,<br/>Atlas topology labels,<br/>prewrite safety,<br/>Project prompts from persisted payload,<br/>declared sentinel plus distinctive-anchor readback,<br/>guidance/catalog Markdown excluded"]
       typed_findings["Source-owned typed findings<br/>target layer, target path,<br/>semantic node, no proposal-repair lane"]
+      projection_targets["Projection-source repair targets<br/>rendered preview leaf maps to<br/>SemanticModelIR or ArtifactPlanIR fact"]
+      mermaid_source_units["Mermaid source text units<br/>visible labels checked,<br/>graph syntax excluded from prose gates"]
       legacy_blockers["Legacy/raw issue strings<br/>diagnostic blockers only,<br/>no repair authority"]
       final_manifest{"Final manifest passes?"}
     end
@@ -59,6 +61,7 @@ flowchart LR
       semantic_apply["SemanticModelIR patch executor<br/>operation-kind targets,<br/>exact paths, idempotent host-adjudication ledger"]
       plan_apply["ArtifactPlanIR patch executor<br/>proposal-target reroute,<br/>projection facts only"]
       scope_ledger["Patch application ledger<br/>explicit affected projections,<br/>full-prewrite posture"]
+      dashboard_rerender["Project dashboard scoped rerender<br/>rebuilt from proposal,<br/>accepted-project preview,<br/>and source-launch context"]
       projection_rerender["Projection rerender finding<br/>corrupted rendered scope only<br/>no host semantic patch"]
       package_inspection["Read-only package inspection<br/>generated-copy findings route to ArtifactPlanIR<br/>rendered drafts are not repair substrates"]
       rerender["Scoped prewrite rerender<br/>named package previews,<br/>same gates, no lowered bar"]
@@ -80,11 +83,11 @@ flowchart LR
 
     visible_intent --> confirmable_stdout --> confirm --> source_guard --> prompt_recovery --> confirmed_ir --> non_goal_owner --> sparse_systems --> public_system_copy
     public_system_copy --> apply_input --> compiler --> semantic_ir --> actor_role_owner --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> projections --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
-    draft_set --> artifact_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> final_manifest
+    draft_set --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> projection_targets --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
-    final_manifest -- "repairable typed failure" --> repairable --> patchset --> executable_target
+    final_manifest -- "repairable typed failure" --> repairable --> projection_targets --> patchset --> executable_target
     executable_target -- "yes" --> rescue_budget
     rescue_budget -- "yes" --> tribunal_planner --> provider_adapter --> strict_schema --> custody_check --> repair_manifest
     repair_manifest --> semantic_apply
@@ -92,8 +95,9 @@ flowchart LR
     custody_check --> package_inspection
     projection_contract -. "sanctioned roots + envelopes" .-> plan_apply
     projection_contract -. "dependency scope" .-> scope_ledger
-    semantic_apply --> rerender
-    plan_apply --> scope_ledger --> rerender
+    semantic_apply --> dashboard_rerender
+    plan_apply --> scope_ledger --> dashboard_rerender
+    dashboard_rerender --> rerender
     package_inspection --> rerender
     executable_target -- "no" --> rollback
     rerender --> validators
@@ -106,8 +110,8 @@ flowchart LR
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirmable_stdout,confirm,source_guard,prompt_recovery,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
-    class apply_input,compiler,semantic_ir,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,legacy_blockers,final_manifest standard;
-    class repairable,patchset,executable_target,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,scope_ledger,projection_rerender,package_inspection,rerender rescue;
+    class apply_input,compiler,semantic_ir,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,projection_targets,legacy_blockers,final_manifest standard;
+    class repairable,patchset,executable_target,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
     class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155

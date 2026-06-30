@@ -5,9 +5,9 @@ flowchart LR
       actor_roles["Shared actor-role owner<br/>role nouns normalized once<br/>for recovery, fragments, and signatures"]
       actor_recovery["Actor recovery owner<br/>finite action leads stay actions,<br/>not plural actor subjects"]
       actor_path_role["Actor path-role owner<br/>accepted-path descriptions,<br/>title-suffix subject stripping,<br/>preposition/action-led role cleanup"]
-      subject_carry_guard["Explicit subject-carry guard<br/>actorless action chains cannot<br/>invent carried subjects"]
+      subject_carry_guard["Explicit subject-carry guard<br/>coordinated sibling actions<br/>reuse explicit actors without<br/>inventing new actor subjects"]
       purpose_context["Purpose-context owner<br/>semicolon-led accepted context<br/>carries into first actionable step"]
-      action_boundary["Action-boundary owner<br/>unknown leading actions stay actions,<br/>finite sibling actions split events"]
+      action_boundary["Action-boundary owner<br/>ordinary leading actions stay actions,<br/>finite sibling actions split events"]
       semantic_contract["SemanticModelIR first-path contract<br/>events, visible result,<br/>proof obligations"]
       external_boundary["External boundary facts<br/>explicit system rows,<br/>inferred interaction,<br/>or deferred fixture/manual boundary"]
       sequence_owner["Sequence step owner<br/>keeps connector-led object tails,<br/>evidence noun compounds,<br/>and distinctive terminal event terms"]
@@ -28,13 +28,14 @@ flowchart LR
     subgraph projection_lane["Surface Projections"]
       direction TB
       radar_projection["Radar and brief projection<br/>surface-local wording"]
-      state_boundary_titles["State-boundary title owner<br/>compact review/action focus,<br/>no changes-it pronoun tail"]
+      state_boundary_titles["State-boundary title owner<br/>compact review/action focus,<br/>no changes-it pronoun tail,<br/>no duplicate clarity word"]
       actor_choice_copy["Project-brief actor choices<br/>neutral participant wording,<br/>no category echo"]
       atlas_projection["Atlas event projection<br/>sequence and flow labels"]
       mermaid_label_custody["Mermaid label custody<br/>visible line breaks avoid<br/>dangling connector words"]
       next_step_prompts["Project next-step prompts<br/>accepted first path preserved,<br/>no Radar slice echo"]
       overlap_projection["Next-step overlap projection<br/>raw path, capability,<br/>visible result, events only"]
       artifact_units["ArtifactQualityUnit collector<br/>keeps metadata, commands,<br/>prompt fields, Mermaid labels,<br/>and free prose separate"]
+      mermaid_source_units["Mermaid source custody<br/>source fields become visible-label units<br/>before prose quality checks"]
       canonical_facts["Canonical projection facts<br/>full events, sequence-step variants,<br/>and compact tails carry semantic node,<br/>source path, projection id, sanctioned surfaces"]
       tribunal_actors["Tribunal visible actors<br/>actor_source provenance,<br/>human judgment roles,<br/>persisted readback checked"]
       package_findings["Typed package findings<br/>source path, projection id,<br/>repair owner"]
@@ -43,6 +44,8 @@ flowchart LR
     subgraph repair_lane["Repair Custody"]
       direction TB
       semantic_plan_patch["Semantic or plan patch<br/>source fact repair only"]
+      projection_repair_targets["Projection-source repair targets<br/>preview leaves resolve to<br/>SemanticModelIR or ArtifactPlanIR"]
+      dashboard_rerender["Project dashboard rerender<br/>source previews rebuild dashboard,<br/>not rendered body patches"]
       package_inspection["Read-only package inspection<br/>duplicate words and dangling tails stay blockers<br/>until source or ArtifactPlanIR is repaired"]
       final_gate["Final package gate<br/>same validators, no lowered bar"]
       governed_write["Governed writes<br/>only after manifest passes"]
@@ -71,7 +74,8 @@ flowchart LR
     actor_choice_copy --> artifact_units
     next_step_prompts --> overlap_projection
     overlap_projection --> artifact_units
-    artifact_units --> canonical_facts
+    artifact_units --> mermaid_source_units
+    mermaid_source_units --> canonical_facts
     canonical_facts --> tribunal_actors
     tribunal_actors --> shape_checks
     shape_checks --> gerund_owner
@@ -80,9 +84,11 @@ flowchart LR
     structural_filter --> repetition_gate
     canonical_facts --> repetition_gate
     repetition_gate --> package_findings
-    package_findings --> semantic_plan_patch
+    package_findings --> projection_repair_targets
+    projection_repair_targets --> semantic_plan_patch
+    semantic_plan_patch --> dashboard_rerender
     package_findings --> package_inspection
-    semantic_plan_patch --> final_gate
+    dashboard_rerender --> final_gate
     package_inspection --> final_gate
     final_gate --> governed_write
 
@@ -92,8 +98,8 @@ flowchart LR
     classDef repair fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1px;
     class accepted_path,actor_roles,actor_recovery,actor_path_role,subject_carry_guard,purpose_context,action_boundary,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,modal_owner intent;
     class shape_checks,gerund_owner,actor_role_head_guard,structural_filter,repetition_gate prose;
-    class radar_projection,state_boundary_titles,actor_choice_copy,atlas_projection,mermaid_label_custody,next_step_prompts,overlap_projection,artifact_units,canonical_facts,tribunal_actors,package_findings projection;
-    class semantic_plan_patch,package_inspection,final_gate,governed_write repair;
+    class radar_projection,state_boundary_titles,actor_choice_copy,atlas_projection,mermaid_label_custody,next_step_prompts,overlap_projection,artifact_units,mermaid_source_units,canonical_facts,tribunal_actors,package_findings projection;
+    class semantic_plan_patch,projection_repair_targets,dashboard_rerender,package_inspection,final_gate,governed_write repair;
 
     style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
     style prose_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#334155

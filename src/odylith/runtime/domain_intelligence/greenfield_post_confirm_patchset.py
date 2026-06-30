@@ -11,6 +11,10 @@ from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_affected_projections
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_projection_for_path
+from odylith.runtime.domain_intelligence.greenfield_projection_repair_targets import ProjectionRepairTarget
+from odylith.runtime.domain_intelligence.greenfield_projection_repair_targets import (
+    projection_repair_target_for_finding,
+)
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
     rescue_probe_patch_values,
 )
@@ -97,27 +101,29 @@ def _operation_from_finding(
 ) -> GreenfieldPatchOperation | None:
     if finding.repairability == "unrepairable":
         return None
-    target_layer = _target_layer(finding)
+    repair_target = projection_repair_target_for_finding(finding.to_dict())
+    target_layer = repair_target.target_layer if repair_target else _target_layer(finding)
     if not target_layer:
         return None
     probe_values = rescue_probe_patch_values(finding)
-    operation_kind = normalize_token(probe_values.get("operation_kind")) or _operation_kind(
-        finding,
-        target_layer=target_layer,
+    operation_kind = (
+        normalize_token(probe_values.get("operation_kind"))
+        or (repair_target.operation_kind if repair_target else "")
+        or _operation_kind(finding, target_layer=target_layer)
     )
     if target_layer == "semantic_model" and not operation_kind:
         return None
     return GreenfieldPatchOperation(
         operation_id=f"GF-PATCH-{index:03d}",
         target_layer=target_layer,
-        target_path=normalize_string(finding.target_path or finding.semantic_node_id) or target_layer,
-        semantic_node_id=normalize_string(finding.semantic_node_id),
+        target_path=_target_path(finding, repair_target=repair_target, target_layer=target_layer),
+        semantic_node_id=_semantic_node_id(finding, repair_target=repair_target),
         issue_code=finding.code,
         source_finding=finding.source,
         operation_kind=operation_kind,
         repair_owner=finding.owner,
-        projection_kind=_projection_kind(finding),
-        affected_projections=_affected_projections(finding),
+        projection_kind=_projection_kind(finding, repair_target=repair_target),
+        affected_projections=_affected_projections(finding, repair_target=repair_target),
         requested_action=_requested_action(finding, target_layer=target_layer),
         replacement_fact=probe_values.get("replacement_fact", ""),
         decision_ledger_entry=probe_values.get("decision_ledger_entry", ""),
@@ -125,6 +131,27 @@ def _operation_from_finding(
         rejected_interpretation=_rejected_interpretation(finding, target_layer=target_layer),
         confidence=float(probe_values.get("confidence", 0.2 if target_layer in {"semantic_model", "artifact_plan"} else 0.0)),
     )
+
+
+def _target_path(
+    finding: GreenfieldReviewFinding,
+    *,
+    repair_target: ProjectionRepairTarget | None,
+    target_layer: str,
+) -> str:
+    if repair_target:
+        return repair_target.target_path
+    return normalize_string(finding.target_path or finding.semantic_node_id) or target_layer
+
+
+def _semantic_node_id(
+    finding: GreenfieldReviewFinding,
+    *,
+    repair_target: ProjectionRepairTarget | None,
+) -> str:
+    if repair_target:
+        return repair_target.semantic_node_id
+    return normalize_string(finding.semantic_node_id)
 
 
 def _target_layer(finding: GreenfieldReviewFinding) -> str:
@@ -150,7 +177,13 @@ def _artifact_plan_projection_target(finding: GreenfieldReviewFinding) -> bool:
     return bool(artifact_plan_projection_for_path(target_path))
 
 
-def _affected_projections(finding: GreenfieldReviewFinding) -> tuple[str, ...]:
+def _affected_projections(
+    finding: GreenfieldReviewFinding,
+    *,
+    repair_target: ProjectionRepairTarget | None = None,
+) -> tuple[str, ...]:
+    if repair_target:
+        return repair_target.affected_projections
     return artifact_plan_affected_projections(
         projection_id=finding.projection_id,
         target_path=finding.target_path,
@@ -158,7 +191,13 @@ def _affected_projections(finding: GreenfieldReviewFinding) -> tuple[str, ...]:
     )
 
 
-def _projection_kind(finding: GreenfieldReviewFinding) -> str:
+def _projection_kind(
+    finding: GreenfieldReviewFinding,
+    *,
+    repair_target: ProjectionRepairTarget | None = None,
+) -> str:
+    if repair_target and repair_target.projection_kind:
+        return repair_target.projection_kind
     projections = _affected_projections(finding)
     return projections[0] if len(projections) == 1 else "multi_projection" if projections else ""
 

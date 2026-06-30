@@ -333,6 +333,7 @@ def _materialize_replacement_fact(value: Any, requested: Mapping[str, Any]) -> A
         return value
     assert isinstance(value, Mapping)
     value_kind = normalize_token(value.get("value_kind"))
+    requested_layer = normalize_token(requested.get("target_layer"))
     if value_kind == "mapping":
         entries: dict[str, str] = {}
         raw_entries = value.get("mapping_entries")
@@ -340,21 +341,39 @@ def _materialize_replacement_fact(value: Any, requested: Mapping[str, Any]) -> A
             if not isinstance(raw_entry, Mapping):
                 continue
             key = normalize_string(raw_entry.get("key"))
-            item_value = normalize_string(raw_entry.get("value"))
+            item_value = (
+                _raw_text_value(raw_entry.get("value"))
+                if requested_layer == "artifact_plan"
+                else normalize_string(raw_entry.get("value"))
+            )
             if key and item_value:
                 entries[key] = item_value
+        if requested_layer == "artifact_plan" and "value" in entries:
+            return {"path": normalize_string(requested.get("target_path")), "value": entries["value"]}
         return entries
     if value_kind == "list":
         items = normalize_string_list(value.get("list_values"))
         if not items:
             return []
+        if requested_layer == "artifact_plan":
+            return {"path": normalize_string(requested.get("target_path")), "value": items}
         key = _replacement_fact_leaf_key(requested)
         return {key: items} if key else items
-    text_value = normalize_string(value.get("text_value"))
+    text_value = (
+        _raw_text_value(value.get("text_value"))
+        if requested_layer == "artifact_plan"
+        else normalize_string(value.get("text_value"))
+    )
     if not text_value:
         return ""
+    if requested_layer == "artifact_plan":
+        return {"path": normalize_string(requested.get("target_path")), "value": text_value}
     key = _replacement_fact_leaf_key(requested)
     return {key: text_value} if key else text_value
+
+
+def _raw_text_value(value: Any) -> str:
+    return str(value or "").strip()
 
 
 def _is_replacement_fact_envelope(value: Any) -> bool:

@@ -7,6 +7,8 @@ from typing import Mapping
 import pytest
 
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine as engine
+from odylith.runtime.domain_intelligence import greenfield_prewrite_projection_rerender
+from odylith.runtime.domain_intelligence.greenfield_apply_prewrite import GreenfieldPrewriteBuild
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
@@ -150,7 +152,113 @@ def test_post_confirm_engine_uses_direct_projection_rerender(
 
     assert result.manifest["status"] == "passed"
     assert len(build_calls) == 1
-    assert rerender_calls == [("registry", "project_brief", "accepted_project", "compass", "next_steps")]
+    assert rerender_calls == [
+        ("registry", "project_brief", "accepted_project", "project_dashboard", "compass", "next_steps")
+    ]
+
+
+def test_scoped_projection_rerender_rebuilds_project_dashboard_from_source_previews(
+    tmp_path: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    def fake_dashboard_payload(**kwargs: Any) -> dict[str, Any]:
+        calls.append(dict(kwargs))
+        return {"schema_version": "project-dashboard", "rebuilt": True}
+
+    def fake_next_steps(**_kwargs: Any) -> dict[str, Any]:
+        return {"implementation_prompt": "fresh launch prompt"}
+
+    monkeypatch.setattr(
+        greenfield_prewrite_projection_rerender.greenfield_apply_prewrite,
+        "preview_project_dashboard_payload",
+        fake_dashboard_payload,
+    )
+    monkeypatch.setattr(
+        greenfield_prewrite_projection_rerender.greenfield_experience,
+        "build_next_steps",
+        fake_next_steps,
+    )
+    previous = GreenfieldPrewriteBuild(
+        package=GreenfieldCompletionPackage(
+            proposal={"intent": {"title": "Dashboard Rerender"}},
+            release_selector="0.0.1",
+            accepted_project_preview={"accepted_at": "old", "source_launch": {"implementation_prompt": "old"}},
+            next_steps_preview={"implementation_prompt": "fresh launch prompt"},
+            backlog_result={"created": []},
+        ),
+        backlog_result={"created": []},
+    )
+
+    result = greenfield_prewrite_projection_rerender.rerender_prewrite_package_projections(
+        root=tmp_path,
+        previous_prewrite_build=previous,
+        proposal={"intent": {"title": "Dashboard Rerender"}},
+        release_selector="0.0.1",
+        validation_gate={"status": "passed"},
+        projections=("project_dashboard",),
+        release_assignment_note="release assignment",
+    )
+
+    assert result.package.project_dashboard_preview == {"schema_version": "project-dashboard", "rebuilt": True}
+    assert calls[0]["accepted_project_preview"] == {"accepted_at": "old", "source_launch": {"implementation_prompt": "old"}}
+    assert calls[0]["source_launch_context"] == {"implementation_prompt": "fresh launch prompt"}
+
+
+def test_scoped_projection_rerender_passes_fresh_source_launch_to_accepted_project(
+    tmp_path: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, Any]] = []
+
+    def fake_next_steps(**_kwargs: Any) -> dict[str, Any]:
+        return {"implementation_prompt": "fresh accepted-project launch prompt"}
+
+    def fake_accepted_project_memory(**kwargs: Any) -> dict[str, Any]:
+        calls.append(dict(kwargs))
+        return {
+            "schema_version": "accepted-project",
+            "source_launch": kwargs.get("source_launch_context"),
+        }
+
+    monkeypatch.setattr(
+        greenfield_prewrite_projection_rerender.greenfield_experience,
+        "build_next_steps",
+        fake_next_steps,
+    )
+    monkeypatch.setattr(
+        greenfield_prewrite_projection_rerender.greenfield_apply_prewrite,
+        "preview_accepted_project_memory",
+        fake_accepted_project_memory,
+    )
+    previous = GreenfieldPrewriteBuild(
+        package=GreenfieldCompletionPackage(
+            proposal={"intent": {"title": "Accepted Project Rerender"}},
+            release_selector="0.0.1",
+            accepted_project_preview={"accepted_at": "old", "source_launch": {"implementation_prompt": "stale"}},
+            next_steps_preview={"implementation_prompt": "stale"},
+            backlog_result={"created": []},
+        ),
+        backlog_result={"created": []},
+    )
+
+    result = greenfield_prewrite_projection_rerender.rerender_prewrite_package_projections(
+        root=tmp_path,
+        previous_prewrite_build=previous,
+        proposal={"intent": {"title": "Accepted Project Rerender"}},
+        release_selector="0.0.1",
+        validation_gate={"status": "passed"},
+        projections=("accepted_project",),
+        release_assignment_note="release assignment",
+    )
+
+    assert result.package.accepted_project_preview == {
+        "schema_version": "accepted-project",
+        "source_launch": {"implementation_prompt": "fresh accepted-project launch prompt"},
+    }
+    assert calls[0]["source_launch_context"] == {"implementation_prompt": "fresh accepted-project launch prompt"}
+    assert result.package.next_steps_preview == {"implementation_prompt": "stale"}
 
 
 def test_post_confirm_engine_requires_rerender_callback_for_projection_rerender(

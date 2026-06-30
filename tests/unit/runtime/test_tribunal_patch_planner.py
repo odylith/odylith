@@ -188,6 +188,48 @@ def test_replacement_fact_envelope_uses_operation_kind_for_leaf_key() -> None:
     }
 
 
+def test_artifact_plan_replacement_fact_envelope_materializes_path_value_patch() -> None:
+    patch_plan = validate_structured_patch_plan(
+        {
+            "version": TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "planned",
+            "decision_summary": "Repair the bounded artifact-plan source fact.",
+            "operations": [
+                _valid_plan_operation(
+                    target_layer="artifact_plan",
+                    target_path="diagrams[0].mermaid_source",
+                    semantic_node_id="ArtifactPlanIR.diagrams[0].mermaid_source",
+                    replacement_fact={
+                        "value_kind": "text",
+                        "text_value": "flowchart TD\n    A[Accepted state remains visible]",
+                        "list_values": [],
+                        "mapping_entries": [],
+                    },
+                )
+            ],
+        },
+        patchset_request={
+            **_patchset_request(),
+            "operations": [
+                {
+                    **_patchset_request()["operations"][0],
+                    "target_layer": "artifact_plan",
+                    "target_path": "diagrams[0].mermaid_source",
+                    "semantic_node_id": "ArtifactPlanIR.diagrams[0].mermaid_source",
+                    "operation_kind": "artifact_plan_projection",
+                    "affected_projections": ["atlas", "accepted_project", "project_dashboard"],
+                }
+            ],
+        },
+    )
+
+    assert patch_plan["status"] == "planned"
+    assert patch_plan["operations"][0]["replacement_fact"] == {
+        "path": "diagrams[0].mermaid_source",
+        "value": "flowchart TD\n    A[Accepted state remains visible]",
+    }
+
+
 def test_structured_patch_plan_rejects_invented_or_moved_targets() -> None:
     patch_plan = validate_structured_patch_plan(
         {

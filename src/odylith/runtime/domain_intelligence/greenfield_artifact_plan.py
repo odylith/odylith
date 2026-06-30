@@ -64,12 +64,13 @@ _PROJECTION_ALIASES = {
 _ARTIFACT_PLAN_ENVELOPE_PREFIXES = ("proposal_", "prewrite_package_", "artifactplanir_")
 _IGNORED_DIRECT_PROJECTIONS = frozenset({"review_report"})
 _PROJECTION_DEPENDENCIES = {
-    "project_brief": ("accepted_project", "compass", "next_steps"),
-    "registry": ("project_brief", "accepted_project", "compass", "next_steps"),
-    "atlas": ("accepted_project",),
-    "release": ("accepted_project", "compass", "next_steps"),
-    "radar": ("project_brief", "accepted_project", "compass", "next_steps"),
-    "program": ("accepted_project", "compass", "next_steps", "release"),
+    "accepted_project": ("project_dashboard",),
+    "project_brief": ("accepted_project", "project_dashboard", "compass", "next_steps"),
+    "registry": ("project_brief", "accepted_project", "project_dashboard", "compass", "next_steps"),
+    "atlas": ("accepted_project", "project_dashboard"),
+    "release": ("accepted_project", "project_dashboard", "compass", "next_steps"),
+    "radar": ("project_brief", "accepted_project", "project_dashboard", "compass", "next_steps"),
+    "program": ("accepted_project", "project_dashboard", "compass", "next_steps", "release"),
 }
 _FULL_PREWRITE_PROJECTIONS = frozenset({"radar", "program"})
 _ARTIFACT_DRAFT_EXACT_TARGETS = frozenset(

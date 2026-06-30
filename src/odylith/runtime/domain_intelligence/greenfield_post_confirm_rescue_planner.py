@@ -11,6 +11,9 @@ from typing import Any
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     GreenfieldPostConfirmRepairContext,
 )
+from odylith.runtime.domain_intelligence.greenfield_projection_repair_targets import (
+    projection_repair_target_value,
+)
 from odylith.runtime.reasoning import odylith_reasoning
 from odylith.runtime.reasoning import tribunal_patch_planner
 
@@ -116,7 +119,43 @@ def _structured_patch_evidence(
         "quality_lenses": dict(repair_context.quality_lenses),
         "semantic_compiler": dict(repair_context.semantic_compiler),
         "issues": [issue.to_dict() for issue in repair_context.issues],
+        "patch_targets": _patch_target_evidence(proposal, repair_context=repair_context),
     }
+
+
+def _patch_target_evidence(
+    proposal: Mapping[str, Any],
+    *,
+    repair_context: GreenfieldPostConfirmRepairContext,
+) -> list[dict[str, Any]]:
+    patchset = repair_context.patchset_request if isinstance(repair_context.patchset_request, Mapping) else {}
+    operations = patchset.get("operations")
+    if not isinstance(operations, list):
+        return []
+    evidence: list[dict[str, Any]] = []
+    for operation in operations:
+        if not isinstance(operation, Mapping):
+            continue
+        target_path = str(operation.get("target_path", "")).strip()
+        if not target_path:
+            continue
+        evidence.append(
+            {
+                "operation_id": str(operation.get("operation_id", "")).strip(),
+                "target_layer": str(operation.get("target_layer", "")).strip(),
+                "target_path": target_path,
+                "semantic_node_id": str(operation.get("semantic_node_id", "")).strip(),
+                "affected_projections": _sequence_strings(operation.get("affected_projections")),
+                "current_value": projection_repair_target_value(proposal, target_path),
+            }
+        )
+    return evidence
+
+
+def _sequence_strings(value: Any) -> list[str]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        return []
+    return [str(item).strip() for item in value if str(item).strip()]
 
 
 def _provider_reasoning_effort(config: odylith_reasoning.ReasoningConfig, provider: Any) -> str:

@@ -106,6 +106,18 @@ def rerender_prewrite_package_projections(
             package_proposal.get("project_brief") if isinstance(package_proposal.get("project_brief"), Mapping) else {}
         )
 
+    next_steps_context = (
+        greenfield_experience.build_next_steps(
+            proposal=package_proposal,
+            backlog_result=backlog_result,
+            first_release_workstreams=release_workstream_ids,
+            program_result=program_result,
+            release_selector=release_selector,
+        )
+        if {"accepted_project", "next_steps", "project_dashboard"} & scope
+        else None
+    )
+
     if "accepted_project" in scope:
         updates["accepted_project_preview"] = greenfield_apply_prewrite.preview_accepted_project_memory(
             root=target_root,
@@ -116,6 +128,34 @@ def rerender_prewrite_package_projections(
             release_target_result=release_target_result,
             release_assignment_result=release_assignment_result,
             validation_gate=validation_gate,
+            source_launch_context=next_steps_context if isinstance(next_steps_context, Mapping) else None,
+        )
+
+    if "next_steps" in scope:
+        updates["next_steps_preview"] = next_steps_context if isinstance(next_steps_context, Mapping) else {}
+
+    if "project_dashboard" in scope:
+        accepted_project_preview = (
+            updates.get("accepted_project_preview")
+            if isinstance(updates.get("accepted_project_preview"), Mapping)
+            else package.accepted_project_preview
+            if isinstance(package.accepted_project_preview, Mapping)
+            else {}
+        )
+        source_launch_context = (
+            next_steps_context
+            if isinstance(next_steps_context, Mapping)
+            else updates.get("next_steps_preview")
+            if isinstance(updates.get("next_steps_preview"), Mapping)
+            else package.next_steps_preview
+            if isinstance(package.next_steps_preview, Mapping)
+            else {}
+        )
+        updates["project_dashboard_preview"] = greenfield_apply_prewrite.preview_project_dashboard_payload(
+            root=target_root,
+            proposal=package_proposal,
+            accepted_project_preview=accepted_project_preview,
+            source_launch_context=source_launch_context,
         )
 
     if "compass" in scope:
@@ -127,15 +167,6 @@ def rerender_prewrite_package_projections(
             release_selector=release_selector,
             release_target_result=release_target_result,
             release_assignment_result=release_assignment_result,
-        )
-
-    if "next_steps" in scope:
-        updates["next_steps_preview"] = greenfield_experience.build_next_steps(
-            proposal=package_proposal,
-            backlog_result=backlog_result,
-            first_release_workstreams=release_workstream_ids,
-            program_result=program_result,
-            release_selector=release_selector,
         )
 
     return replace(

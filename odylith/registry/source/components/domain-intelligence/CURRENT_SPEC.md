@@ -46,6 +46,25 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-06-30: Fixed coordinated-action actor recovery, card-specific dashboard repair routing, and repeated clarity-title shape after source-local artifact QA exposed green-validator false confidence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
+  A six-domain source-local sweep completed governed writes under 22s, but
+  direct human-facing artifact inspection found one retained-quality failure:
+  provider-free prompt recovery could promote a sibling action clause into a
+  fake actor when the shared grammar missed everyday action verbs, and Radar
+  state-boundary titles could repeat the clarity adjective when the state label
+  already contained it. Source now recognizes the missing domain-neutral action
+  verbs, carries the accepted actor across coordinated first-path clauses,
+  prevents repeated clarity modifiers in state-boundary titles, routes Project
+  dashboard release-card findings to card-specific SemanticModelIR or
+  ArtifactPlanIR facts, and rebuilds accepted-project/dashboard previews with
+  fresh source-launch context during scoped repair. Focused and widened source
+  proof passed 48 recovery/backlog tests, 130 recovery/projection tests, 100
+  post-confirm/install tests, source leakage across 285 terms, and six
+  non-reused source-local simulations at 19.455-21.543s with zero final issues,
+  Atlas render passing, Registry validation passing, and temp cleanup.
+  Installed release proof remains required before release readiness is
+  reclaimed.
+
 - 2026-06-30: Hardened helper-relative intent recovery and governed readback proof after fresh variance exposed shallow release confidence. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
   Prompt-source recovery now extracts the embedded human actor/action from
   helper-relative product clauses before the no-write Product Intent
@@ -1639,6 +1658,23 @@ This section captures synchronized requirement and contract signals derived from
   mutable rendered draft. Release claims are capped until the maintained matrix
   passes 13/13 standard cases plus synthetic and natural rescue proof from a
   rebuilt installed dist.
+- Source follow-up after the `de17cdda` falsification adds a projection-source
+  repair boundary to the Domain Intelligence contract. Generated-copy findings
+  from preview packages may still identify the rendered leaf that failed, but
+  PatchSet creation must resolve that leaf to a sanctioned source fact before it
+  becomes executable. Accepted-project proposal preview leaves can target
+  ArtifactPlanIR roots such as `diagrams[0].mermaid_source`; Project dashboard
+  release-card copy issues target the semantic first-path contract rather than a
+  rendered dashboard body. The structured Tribunal planner may fill replacement
+  facts, but it must preserve request custody and materialize artifact-plan text
+  as `{path, value}` source patches. Scoped prewrite rerender must refresh
+  downstream `project_dashboard` previews when accepted-project, Atlas, release,
+  project-brief, or explicit dashboard projection facts change. Mermaid source
+  fields in preview packages are typed as `mermaid_source` and quality-checked
+  through visible label units, not through graph syntax. Current source-local
+  proof clears the four prior failed signatures in 19.406s, 20.957s, 21.309s,
+  and 22.103s with committed writes; installed release proof is still required
+  before this contract can be called shipped.
 
 ## Research Basis
 

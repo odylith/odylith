@@ -292,6 +292,7 @@ def test_patchset_repair_skips_full_completion_for_scoped_artifact_plan_patch(
     assert application["rerender_projections"] == (
         "project_brief",
         "accepted_project",
+        "project_dashboard",
         "compass",
         "next_steps",
     )
@@ -371,6 +372,7 @@ def test_patchset_repair_routes_program_patch_to_full_prewrite(
     assert application["rerender_projections"] == (
         "program",
         "accepted_project",
+        "project_dashboard",
         "compass",
         "next_steps",
         "release",
@@ -448,6 +450,12 @@ def test_patchset_repair_release_scope_refreshes_compass_without_full_prewrite(
     assert repaired["release_plan"]["strategy"] == "Release 0.0.1 carries the acceptance evidence."
     application = repaired["post_confirm_patch_application_ledger"][-1]
     assert application["affected_projections"] == ("release",)
-    assert application["rerender_projections"] == ("release", "accepted_project", "compass", "next_steps")
+    assert application["rerender_projections"] == (
+        "release",
+        "accepted_project",
+        "project_dashboard",
+        "compass",
+        "next_steps",
+    )
     assert application["full_prewrite_required"] is False
     assert application["rerender_scope"] == "affected_projections"

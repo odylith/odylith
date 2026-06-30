@@ -382,6 +382,8 @@ def _artifact_draft_text_kind(role: str) -> str:
     normalized = clean_text(role).casefold()
     if normalized in {"command", "commands", "verification_commands"}:
         return "command"
+    if normalized in {"mermaid", "mermaid_source"}:
+        return "mermaid_source"
     if normalized in {"id", "key", "position", "schema_version", "status", "version"}:
         return "metadata"
     return "free_prose"

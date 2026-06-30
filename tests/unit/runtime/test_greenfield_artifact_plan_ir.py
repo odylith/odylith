@@ -13,6 +13,9 @@ from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifac
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_projection_for_path
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_root_kind
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_scope_requires_full_prewrite
+from odylith.runtime.domain_intelligence.greenfield_projection_repair_targets import (
+    projection_repair_target_for_finding,
+)
 
 
 DOMAIN_INTELLIGENCE = Path(__file__).resolve().parents[3] / "src/odylith/runtime/domain_intelligence"
@@ -91,6 +94,7 @@ def test_artifact_plan_ir_expands_projection_dependencies_without_prose_routing(
     assert artifact_plan_expand_projection_scope(("project_brief",)) == (
         "project_brief",
         "accepted_project",
+        "project_dashboard",
         "compass",
         "next_steps",
     )
@@ -98,12 +102,14 @@ def test_artifact_plan_ir_expands_projection_dependencies_without_prose_routing(
         "registry",
         "project_brief",
         "accepted_project",
+        "project_dashboard",
         "compass",
         "next_steps",
     )
     assert artifact_plan_expand_projection_scope(("release",)) == (
         "release",
         "accepted_project",
+        "project_dashboard",
         "compass",
         "next_steps",
     )
@@ -114,6 +120,7 @@ def test_artifact_plan_ir_expands_projection_dependencies_without_prose_routing(
     assert artifact_plan_expand_projection_scope(("program",)) == (
         "program",
         "accepted_project",
+        "project_dashboard",
         "compass",
         "next_steps",
         "release",
@@ -123,6 +130,61 @@ def test_artifact_plan_ir_expands_projection_dependencies_without_prose_routing(
     assert artifact_plan_scope_requires_full_prewrite(("radar",)) is True
     assert artifact_plan_scope_requires_full_prewrite(("program",)) is True
     assert artifact_plan_operation_affected_projections({"projection_kind": "product_manager"}) == ()
+
+
+def test_projection_repair_targets_map_preview_findings_to_source_facts() -> None:
+    accepted = projection_repair_target_for_finding(
+        {
+            "target_path": "prewrite_package.accepted_project_preview.proposal.diagrams[0].mermaid_source",
+            "projection_id": "accepted_project",
+        }
+    )
+    assert accepted is not None
+    assert accepted.target_layer == "artifact_plan"
+    assert accepted.target_path == "diagrams[0].mermaid_source"
+    assert accepted.semantic_node_id == "ArtifactPlanIR.diagrams[0].mermaid_source"
+    assert accepted.affected_projections == ("atlas", "accepted_project", "project_dashboard")
+
+    dashboard_first_path = projection_repair_target_for_finding(
+        {
+            "target_path": "prewrite_package.project_dashboard_preview.product_story.release_contract[1].body",
+            "projection_id": "project_dashboard",
+        }
+    )
+    assert dashboard_first_path is not None
+    assert dashboard_first_path.target_layer == "semantic_model"
+    assert dashboard_first_path.target_path == "semantic_model.first_path_contract"
+    assert dashboard_first_path.operation_kind == "semantic_first_path"
+    assert dashboard_first_path.affected_projections == ("project_dashboard",)
+
+    dashboard_boundary = projection_repair_target_for_finding(
+        {
+            "target_path": "prewrite_package.project_dashboard_preview.product_story.release_contract[2].body",
+            "projection_id": "project_dashboard",
+        }
+    )
+    assert dashboard_boundary is not None
+    assert dashboard_boundary.target_layer == "artifact_plan"
+    assert dashboard_boundary.target_path == "project_brief.operating_principle"
+    assert dashboard_boundary.operation_kind == "artifact_plan_projection"
+    assert dashboard_boundary.affected_projections == (
+        "project_brief",
+        "accepted_project",
+        "project_dashboard",
+        "compass",
+        "next_steps",
+    )
+
+    dashboard_proof = projection_repair_target_for_finding(
+        {
+            "target_path": "prewrite_package.project_dashboard_preview.product_story.release_contract[4].body",
+            "projection_id": "project_dashboard",
+        }
+    )
+    assert dashboard_proof is not None
+    assert dashboard_proof.target_layer == "semantic_model"
+    assert dashboard_proof.target_path == "semantic_model.domain_ontology.proof_boundary"
+    assert dashboard_proof.operation_kind == "semantic_proof_boundary"
 
 
 def test_artifact_plan_ir_contract_replaces_private_projection_maps_in_callers() -> None:

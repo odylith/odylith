@@ -1162,6 +1162,20 @@
   mechanism. The next acceptable fix must repair sanctioned `ArtifactPlanIR`
   facts or invoke schema-constrained host reasoning to produce a typed
   artifact-plan patch, then rerender and revalidate.
+  Follow-up implementation on 2026-06-30 added that missing projection-source
+  repair seam without restoring rendered-copy mutation. The new resolver maps
+  rendered preview quality findings back to executable SemanticModelIR or
+  ArtifactPlanIR source facts before PatchSet creation. Artifact-plan planner
+  envelopes now become `{path, value}` patches, the artifact-plan executor keeps
+  custody over sanctioned proposal roots, and scoped rerender includes the
+  Project dashboard preview as a downstream projection. The failed mechanism
+  also exposed a false-positive path: `mermaid_source` leaves inside
+  accepted-project previews were typed as free prose, so graph syntax could
+  trigger duplicate-word gates. They are now typed as Mermaid source and checked
+  through visible label units. Focused tests prove source-target mapping,
+  artifact-plan patch materialization, dashboard rerender, Mermaid source label
+  custody, and no rendered preview mutation. Source-local repros for all four
+  `de17cdda` failed cases now pass under 23s with committed governed writes.
 
 - Related Incidents/Bugs: CB-207
 

@@ -1476,7 +1476,13 @@ def test_post_confirm_engine_uses_scoped_prewrite_rerender_after_patch_ledger(
             {
                 "rerender_scope": "affected_projections",
                 "full_prewrite_required": False,
-                "rerender_projections": ("project_brief", "accepted_project", "compass", "next_steps"),
+                "rerender_projections": (
+                    "project_brief",
+                    "accepted_project",
+                    "project_dashboard",
+                    "compass",
+                    "next_steps",
+                ),
             }
         ]
         return repaired
@@ -1511,7 +1517,9 @@ def test_post_confirm_engine_uses_scoped_prewrite_rerender_after_patch_ledger(
 
     assert result.manifest["status"] == "passed"
     assert len(build_calls) == 1
-    assert rerender_calls == [("project_brief", "accepted_project", "compass", "next_steps")]
+    assert rerender_calls == [
+        ("project_brief", "accepted_project", "project_dashboard", "compass", "next_steps")
+    ]
 
 
 def test_greenfield_apply_result_carries_post_confirm_quality_manifest(

@@ -431,9 +431,18 @@ def test_package_repair_loop_preserves_indexed_and_dashboard_preview_copy_findin
     assert "project dashboard preview leaked adjacent duplicate word prose" in result.report.issues
 
 
-def test_package_quality_findings_emit_exact_preview_leaf_repair_path() -> None:
+def test_package_quality_findings_emit_source_fact_repair_path_for_preview_leaf() -> None:
     package = GreenfieldCompletionPackage(
-        proposal={},
+        proposal={
+            "intent": {
+                "first_path": "The operator records intake evidence and sees an accepted decision.",
+            },
+            "semantic_model": {
+                "first_path_contract": {
+                    "raw_path": "The operator records intake evidence and sees an accepted decision.",
+                },
+            },
+        },
         next_steps_preview={
             "implementation_prompt": "The next step stays attached attached to the accepted state.",
             "verification_commands": ["./.odylith/bin/odylith validate plan-workstream-binding --repo-root ."],
@@ -447,7 +456,202 @@ def test_package_quality_findings_emit_exact_preview_leaf_repair_path() -> None:
         "prewrite_package.next_steps_preview.implementation_prompt"
     ]
     patchset = patchset_request_from_findings(tuple(generated)).to_dict()
-    assert patchset["operations"][0]["target_path"] == "prewrite_package.next_steps_preview.implementation_prompt"
+    assert patchset["operations"][0]["target_layer"] == "semantic_model"
+    assert patchset["operations"][0]["target_path"] == "semantic_model.first_path_contract"
+    assert patchset["operations"][0]["semantic_node_id"] == "SemanticModelIR.first_path_contract"
+    assert patchset["operations"][0]["affected_projections"] == ("next_steps", "project_dashboard")
+
+
+def test_accepted_project_preview_proposal_copy_targets_artifact_plan_source() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "diagrams": [
+                {
+                    "slug": "first-path",
+                    "mermaid_source": "flowchart TD\n    A[\"State state remains visible\"]",
+                }
+            ]
+        },
+        accepted_project_preview={
+            "proposal": {
+                "diagrams": [
+                    {
+                        "slug": "first-path",
+                        "mermaid_source": "flowchart TD\n    A[\"State state remains visible\"]",
+                    }
+                ]
+            }
+        },
+    )
+
+    generated = [item for item in package_artifact_findings(package) if item.code == "generated_copy_quality"]
+
+    assert [item.target_path for item in generated] == [
+        "prewrite_package.accepted_project_preview.proposal.diagrams[0].mermaid_source"
+    ]
+    patchset = patchset_request_from_findings(tuple(generated)).to_dict()
+    assert patchset["operations"][0]["target_layer"] == "artifact_plan"
+    assert patchset["operations"][0]["target_path"] == "diagrams[0].mermaid_source"
+    assert patchset["operations"][0]["affected_projections"] == (
+        "atlas",
+        "accepted_project",
+        "project_dashboard",
+    )
+
+
+def test_mermaid_source_preview_units_inspect_visible_labels_not_graph_syntax() -> None:
+    clean_mermaid = (
+        "flowchart LR\n"
+        "  actor1[\"City Staff\"] --> component1\n"
+        "  component1[\"Flood Shelter Intake System<br/>Intake Register Service\"]\n"
+        "  component1 --> component2\n"
+        "  component2[\"Flood Shelter Intake System<br/>Review Workspace\"]\n"
+        "  class component1,component2 service;"
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={"diagrams": [{"mermaid_source": clean_mermaid}]},
+        accepted_project_preview={"proposal": {"diagrams": [{"mermaid_source": clean_mermaid}]}},
+    )
+
+    generated = [item for item in package_artifact_findings(package) if item.code == "generated_copy_quality"]
+
+    assert generated == []
+
+
+def test_project_dashboard_preview_contract_copy_targets_semantic_first_path() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "intent": {
+                "first_path": "The operator records intake evidence and receives a review proof.",
+            },
+            "semantic_model": {
+                "first_path_contract": {
+                    "raw_path": "The operator records intake evidence and receives a review proof.",
+                },
+            },
+        },
+        project_dashboard_preview={
+            "product_story": {
+                "release_contract": [
+                    {
+                        "label": "User Problem",
+                        "body": (
+                            "Operators need one clear place to collect evidence, understand progress, "
+                            "and avoid manual reconstruction before review begins."
+                        ),
+                    },
+                    {
+                        "label": "First Path",
+                        "body": "The operator records intake evidence and receives receives a review proof.",
+                    },
+                ],
+            }
+        },
+    )
+
+    generated = [item for item in package_artifact_findings(package) if item.code == "generated_copy_quality"]
+
+    assert [item.target_path for item in generated] == [
+        "prewrite_package.project_dashboard_preview.product_story.release_contract[1].body"
+    ]
+    patchset = patchset_request_from_findings(tuple(generated)).to_dict()
+    assert patchset["operations"][0]["target_layer"] == "semantic_model"
+    assert patchset["operations"][0]["target_path"] == "semantic_model.first_path_contract"
+    assert patchset["operations"][0]["operation_kind"] == "semantic_first_path"
+    assert patchset["operations"][0]["affected_projections"] == ("project_dashboard",)
+
+
+def test_project_dashboard_preview_boundary_card_targets_artifact_plan_not_first_path() -> None:
+    clean_body = (
+        "Operators need one clear place to collect evidence, understand progress, "
+        "and avoid manual reconstruction before review begins."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "project_brief": {
+                "operating_principle": (
+                    "The release stays limited to the first accepted path and leaves broader variants for later proof."
+                ),
+            },
+        },
+        project_dashboard_preview={
+            "product_story": {
+                "release_contract": [
+                    {"label": "User Problem", "body": clean_body},
+                    {"label": "First Path", "body": clean_body},
+                    {
+                        "label": "Product Boundary",
+                        "body": (
+                            "The release stays inside boundary boundary decisions until the next operating path "
+                            "has evidence that reviewers can inspect."
+                        ),
+                    },
+                    {"label": "Owned Capabilities", "body": clean_body},
+                    {"label": "Proof", "body": clean_body},
+                ],
+            }
+        },
+    )
+
+    generated = [item for item in package_artifact_findings(package) if item.code == "generated_copy_quality"]
+
+    assert [item.target_path for item in generated] == [
+        "prewrite_package.project_dashboard_preview.product_story.release_contract[2].body"
+    ]
+    patchset = patchset_request_from_findings(tuple(generated)).to_dict()
+    assert patchset["operations"][0]["target_layer"] == "artifact_plan"
+    assert patchset["operations"][0]["target_path"] == "project_brief.operating_principle"
+    assert patchset["operations"][0]["operation_kind"] == "artifact_plan_projection"
+    assert patchset["operations"][0]["affected_projections"] == (
+        "project_brief",
+        "accepted_project",
+        "project_dashboard",
+        "compass",
+        "next_steps",
+    )
+
+
+def test_project_dashboard_preview_proof_card_targets_proof_boundary() -> None:
+    clean_body = (
+        "Operators need one clear place to collect evidence, understand progress, "
+        "and avoid manual reconstruction before review begins."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {
+                    "proof_boundary": "The release proof links the saved result, reviewer context, and validation evidence.",
+                },
+            },
+        },
+        project_dashboard_preview={
+            "product_story": {
+                "release_contract": [
+                    {"label": "User Problem", "body": clean_body},
+                    {"label": "First Path", "body": clean_body},
+                    {"label": "Product Boundary", "body": clean_body},
+                    {"label": "Owned Capabilities", "body": clean_body},
+                    {
+                        "label": "Proof",
+                        "body": (
+                            "The proof proof keeps the accepted result, review context, and validation evidence "
+                            "visible before release."
+                        ),
+                    },
+                ],
+            }
+        },
+    )
+
+    generated = [item for item in package_artifact_findings(package) if item.code == "generated_copy_quality"]
+
+    assert [item.target_path for item in generated] == [
+        "prewrite_package.project_dashboard_preview.product_story.release_contract[4].body"
+    ]
+    patchset = patchset_request_from_findings(tuple(generated)).to_dict()
+    assert patchset["operations"][0]["target_layer"] == "semantic_model"
+    assert patchset["operations"][0]["target_path"] == "semantic_model.domain_ontology.proof_boundary"
+    assert patchset["operations"][0]["operation_kind"] == "semantic_proof_boundary"
 
 
 def test_package_report_suppresses_legacy_broad_repair_target_when_exact_leaf_exists() -> None:

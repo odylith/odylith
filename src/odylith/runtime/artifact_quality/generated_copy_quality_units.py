@@ -106,6 +106,22 @@ def _append_unit_text_quality_units(units: list[ArtifactQualityUnit], unit: Arti
     text = clean_text(unit.text)
     if not text:
         return
+    if unit.text_kind == "mermaid_source":
+        for index, label in enumerate(visible_mermaid_label_quality_texts(unit.text)):
+            if not label:
+                continue
+            units.append(
+                ArtifactQualityUnit(
+                    projection_id=unit.projection_id,
+                    surface=unit.surface,
+                    source_path=f"{unit.source_path}.label[{index}]",
+                    surface_role=f"{unit.surface_role}.label[{index}]",
+                    text_kind="mermaid_label",
+                    text=label,
+                    semantic_node_id=unit.semantic_node_id,
+                )
+            )
+        return
     if unit.text_kind in {"command", "metadata", "mermaid_label"}:
         units.append(_copy_unit(unit, text=text))
         return

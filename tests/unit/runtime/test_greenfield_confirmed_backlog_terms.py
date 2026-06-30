@@ -174,6 +174,27 @@ def test_confirmed_workstream_titles_compact_long_state_changer_without_pronoun_
     assert "Investigation Workspace Review Workspace" not in boundary
 
 
+def test_confirmed_workstream_titles_do_not_repeat_clear_when_state_already_names_clarity() -> None:
+    components = [
+        {"label": "Escalation Intake Register"},
+        {"label": "Escalation Review Workspace"},
+        {"label": "Escalation Proof Ledger"},
+    ]
+
+    _workflow, boundary, _proof = confirmed_workstream_titles(
+        label="Escalation Review",
+        components=components,
+        internal_systems=[],
+        first_path="Care coordinators give clinicians a clear escalation packet for review.",
+        state_object="Clear Escalation Packet",
+        proof_boundary="Release succeeds when the escalation packet is reviewable.",
+        human_actors=["Care Coordinators"],
+    )
+
+    assert boundary == "Keep Clear Escalation Packet Reviewable During Escalation Review Workspace"
+    assert "Clear Escalation Packet Clear" not in boundary
+
+
 def test_greenfield_quality_gate_allows_product_evidence_packet_language() -> None:
     proposal = {
         "intent": {

@@ -86,9 +86,9 @@ def confirmed_workstream_titles(
     state_changer = backlog_text.state_changer_label(labels, state_label=state_label)
     if state_changer:
         boundary_focus = backlog_text.state_boundary_focus(state_changer)
-        boundary = f"Keep {state_label} clear during {boundary_focus}"
+        boundary = _state_boundary_title(state_label, suffix=f"during {boundary_focus}")
     else:
-        boundary = f"Keep {state_label} clear and reviewable"
+        boundary = _state_boundary_title(state_label, suffix="and reviewable")
     proof_subject = state_label or backlog_text.proof_title_object(proof_boundary) or proof_label
     proof = f"Show why {proof_subject} can be trusted"
     return (
@@ -96,6 +96,17 @@ def confirmed_workstream_titles(
         _title_label(boundary) or boundary,
         _title_label(proof) or proof,
     )
+
+
+def _state_boundary_title(state_label: str, *, suffix: str) -> str:
+    quality = "reviewable" if _state_label_already_names_clarity(state_label) else "clear"
+    if quality == "reviewable" and suffix == "and reviewable":
+        return f"Keep {state_label} reviewable".strip()
+    return f"Keep {state_label} {quality} {suffix}".strip()
+
+
+def _state_label_already_names_clarity(value: str) -> bool:
+    return "clear" in {word.strip(".,:;!?()[]{}").casefold() for word in str(value or "").split()}
 
 
 def _workstream_title_label(value: str) -> str:

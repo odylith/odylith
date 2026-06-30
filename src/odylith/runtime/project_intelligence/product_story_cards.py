@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_mo
     outcome_action_phrase as _outcome_action_phrase,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.utils import display_text, sentence, strings
 
@@ -222,7 +223,7 @@ def _proof_card(ctx: _StoryCardContext) -> str:
 
 
 def _repair_card(*, label: str, body: str, ctx: _StoryCardContext) -> str:
-    text = _limit_card(_ensure_period(body), limit=620)
+    text = _limit_card(_ensure_period(collapse_adjacent_duplicate_terms(body)), limit=620)
     if not _weak_card(text, ctx):
         return text
     fallback = {
@@ -232,12 +233,14 @@ def _repair_card(*, label: str, body: str, ctx: _StoryCardContext) -> str:
         "Owned Capabilities": _owned_capabilities_card(ctx),
         "Proof": _proof_card(ctx),
     }.get(label, text)
-    fallback = _limit_card(_ensure_period(fallback), limit=620)
+    fallback = _limit_card(_ensure_period(collapse_adjacent_duplicate_terms(fallback)), limit=620)
     if not _weak_card(fallback, ctx):
         return fallback
     outcome = _outcome_phrase(ctx)
-    return _ensure_period(
-        f"{ctx.title} earns trust when {ctx.actor} can {_outcome_action_phrase(outcome)} and {ctx.participant} can understand what happened next"
+    return collapse_adjacent_duplicate_terms(
+        _ensure_period(
+            f"{ctx.title} earns trust when {ctx.actor} can {_outcome_action_phrase(outcome)} and {ctx.participant} can understand what happened next"
+        )
     )
 
 

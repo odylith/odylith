@@ -205,6 +205,38 @@ def test_host_guidance_recovery_does_not_invent_modal_actor_from_can_path() -> N
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_host_guidance_recovery_carries_actor_across_coordinated_action_clauses(tmp_path) -> None:
+    prompt = (
+        "Create a wearable health escalation review app where care coordinators inspect patient-generated trend evidence, "
+        "separate urgent review from routine coaching, preserve consent-aware notes, and give clinicians a clear escalation "
+        "packet for review."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert intent["first_path"] == (
+        "Care coordinators inspect patient-generated trend evidence. "
+        "Care coordinators separate urgent review from routine coaching. "
+        "Care coordinators preserve consent-aware notes. "
+        "Care coordinators give clinicians a clear escalation packet for review."
+    )
+    assert intent["human_actors"] == [
+        "Care Coordinators: need the product to inspect patient-generated trend evidence and keep the result visible and reviewable"
+    ]
+    assert "Separate Urgent" not in rendered
+    assert "Separate urgent preserves" not in rendered
+    assert "Clear Escalation Packet Clear" not in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_host_guidance_recovery_keeps_open_source_out_of_adapter_classification(tmp_path) -> None:
     prompt = (
         "Create a greenfield proposal for an open source security embargo room that receives vulnerability reports, "

@@ -1965,6 +1965,25 @@ vocabulary, or degraded packages.
       create passed in 15.770s with complete governed records and clean temp
       deletion. Remaining proof is packaged installed variance after rebuild,
       not another rendered-string patch.
+- [x] Fix coordinated-action actor recovery and repeated clarity titles found by
+      source-local artifact QA.
+      A wearable-health source-local simulation completed governed writes but
+      direct artifact inspection found a false `Separate Urgent` actor,
+      malformed carried-action clauses, and a `Clear ... Clear` Radar
+      state-boundary title shape. The mechanism is general: the provider-free
+      fallback grammar missed ordinary action verbs and the title owner added a
+      clarity modifier without checking the state label. Source now recognizes
+      the missing shared action verbs, carries the explicit actor across
+      coordinated sibling clauses, prevents repeated clarity modifiers, routes
+      Project dashboard card findings to card-specific source facts, and
+      rebuilds accepted-project/dashboard previews with fresh source-launch
+      context. Proof passed 48 recovery/backlog tests, 130 combined
+      recovery/projection tests, 100 post-confirm/install tests, source
+      leakage across 285 terms, and six source-local simulations at
+      19.455-21.543s with zero final issues, Atlas render passing, Registry
+      validation passing, no escaped bad strings, and temp cleanup after each
+      repo. Remaining proof is rebuilt installed matrix and fresh variance with
+      browser proof.
 - [x] Promote release/program/Compass/Casebook/shell payload readback into
       first-class quality evidence.
       Independent static review found that release/program quality is still
