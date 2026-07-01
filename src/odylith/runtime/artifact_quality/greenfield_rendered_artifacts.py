@@ -44,6 +44,19 @@ class RenderedPackageQualityFinding:
     message: str
     projection_id: str
     target_path: str
+    code: str = ""
+    surface: str = ""
+    semantic_node_id: str = ""
+    severity: str = ""
+    repairability: str = ""
+    owner: str = ""
+    source: str = ""
+    sample: str = ""
+    occurrence_count: int = 0
+    artifact_count: int = 0
+    occurrence_paths: tuple[str, ...] = ()
+    occurrence_projections: tuple[str, ...] = ()
+    occurrence_surfaces: tuple[str, ...] = ()
 
 
 def collect_rendered_package_artifacts(package: Any) -> list[RenderedArtifact]:
@@ -157,11 +170,42 @@ def artifact_quality_finding(artifact: RenderedArtifact, issue: str) -> Rendered
     )
 
 
-def package_quality_finding(issue: str) -> RenderedPackageQualityFinding:
+def package_quality_finding(
+    issue: str,
+    *,
+    projection_id: str = "artifact_draft_set",
+    target_path: str = "prewrite_package.package.copy_quality",
+    code: str = "",
+    surface: str = "",
+    semantic_node_id: str = "",
+    severity: str = "",
+    repairability: str = "",
+    owner: str = "",
+    source: str = "",
+    sample: str = "",
+    occurrence_count: int = 0,
+    artifact_count: int = 0,
+    occurrence_paths: tuple[str, ...] = (),
+    occurrence_projections: tuple[str, ...] = (),
+    occurrence_surfaces: tuple[str, ...] = (),
+) -> RenderedPackageQualityFinding:
     return RenderedPackageQualityFinding(
         message=issue,
-        projection_id="artifact_draft_set",
-        target_path="prewrite_package.package.copy_quality",
+        projection_id=projection_id,
+        target_path=target_path,
+        code=code,
+        surface=surface,
+        semantic_node_id=semantic_node_id,
+        severity=severity,
+        repairability=repairability,
+        owner=owner,
+        source=source,
+        sample=sample,
+        occurrence_count=occurrence_count,
+        artifact_count=artifact_count,
+        occurrence_paths=occurrence_paths,
+        occurrence_projections=occurrence_projections,
+        occurrence_surfaces=occurrence_surfaces,
     )
 
 

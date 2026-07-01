@@ -9,6 +9,7 @@ from typing import Mapping
 
 import pytest
 
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence import greenfield_apply_write
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_engine as engine
@@ -27,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_patchset import patchset_request_from_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_findings import package_review_findings
+from odylith.runtime.domain_intelligence.greenfield_post_confirm_package_findings import package_artifact_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
 from tests.unit.runtime.greenfield_proposal_fixtures import CONFIRMED_INTENT_TEXT
 from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governance_repo
@@ -451,6 +453,44 @@ def test_string_only_package_issues_fail_closed_instead_of_routing_semantics() -
     assert {finding.code for finding in legacy_findings} == {"legacy_package_artifact_gate"}
     assert {finding.repairability for finding in legacy_findings} == {"unrepairable"}
     assert {finding.owner for finding in legacy_findings} == {"typed_package_artifact_gate"}
+
+
+def test_source_package_repetition_uses_typed_finding_not_legacy_gate() -> None:
+    repeated_risk = "Combining intake, review, and approval state would hide failure recovery."
+    package = GreenfieldCompletionPackage(
+        proposal={},
+        backlog_result={
+            "idea_files": {
+                f"B-{index:03d}.md": f"## Risks\n- {repeated_risk}\n"
+                for index in range(1, 4)
+            }
+        },
+    )
+    package_issues = greenfield_rendered_package_quality_issues(package)
+    typed_findings = package_artifact_findings(package)
+
+    findings = package_review_findings(
+        package,
+        package_issues=package_issues,
+        package_findings=typed_findings,
+    )
+
+    repetition = [finding for finding in findings if finding.code == "package_repetition"]
+    assert len(repetition) == 1
+    assert not [finding for finding in findings if finding.source == "legacy_package_artifact_gate"]
+    finding = repetition[0]
+    assert finding.source == "package_repetition_quality"
+    assert finding.projection_id == "radar"
+    assert finding.target_path == "backlog"
+    assert finding.semantic_node_id == "ArtifactPlanIR.radar"
+    assert finding.repairability == "plan_patch"
+
+    patchset = patchset_request_from_findings(tuple(repetition)).to_dict()
+    operation = patchset["operations"][0]
+    assert operation["target_layer"] == "artifact_plan"
+    assert operation["target_path"] == "backlog"
+    assert operation["projection_kind"] == "radar"
+    assert operation["affected_projections"] == ("radar",)
 
 
 def test_package_report_emits_source_typed_semantic_coverage_findings() -> None:

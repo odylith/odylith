@@ -22,7 +22,7 @@ flowchart LR
       gerund_owner["Gerund action owner<br/>bounded proof-action phrasing"]
       actor_role_head_guard["Actor-role head guard<br/>shared role nouns only,<br/>object words do not become actors"]
       structural_filter["Structural-copy filter<br/>ids, paths, slugs,<br/>versions, URLs"]
-      repetition_gate["Semantic repetition gate<br/>allows sanctioned canonical facts,<br/>rejects unowned repeated tails<br/>and repeated sentence shape"]
+      repetition_gate["Semantic repetition gate<br/>allows sanctioned canonical facts,<br/>rejects unowned repeated tails<br/>and emits occurrence metadata<br/>for repeated package prose"]
     end
 
     subgraph projection_lane["Surface Projections"]
@@ -38,7 +38,7 @@ flowchart LR
       mermaid_source_units["Mermaid source custody<br/>source fields become visible-label units<br/>before prose quality checks"]
       canonical_facts["Canonical projection facts<br/>full events, sequence-step variants,<br/>and compact tails carry semantic node,<br/>source path, projection id, sanctioned surfaces"]
       tribunal_actors["Tribunal visible actors<br/>actor_source provenance,<br/>typed operator evidence,<br/>role-specific generated labels,<br/>shared label custody,<br/>persisted readback checked"]
-      package_findings["Typed package findings<br/>source path, projection id,<br/>repair owner"]
+      package_findings["Typed package findings<br/>source path, projection id,<br/>repair owner,<br/>occurrence paths and counts"]
     end
 
     subgraph repair_lane["Repair Custody"]
@@ -46,7 +46,7 @@ flowchart LR
       semantic_plan_patch["Semantic or plan patch<br/>source fact repair only"]
       projection_repair_targets["Projection-source repair targets<br/>preview leaves resolve to<br/>SemanticModelIR or ArtifactPlanIR"]
       dashboard_rerender["Project dashboard rerender<br/>source previews rebuild dashboard,<br/>not rendered body patches"]
-      package_inspection["Read-only package inspection<br/>duplicate words and dangling tails stay blockers<br/>until source or ArtifactPlanIR is repaired"]
+      package_inspection["Read-only package inspection<br/>duplicate words, dangling tails,<br/>and cross-artifact repetition stay source-owned<br/>until SemanticModelIR or ArtifactPlanIR is repaired"]
       final_gate["Final package gate<br/>same validators, no lowered bar"]
       governed_write["Governed writes<br/>only after manifest passes"]
     end

@@ -79,8 +79,20 @@ vocabulary, or degraded packages.
   cases at hard 10/10 with zero issues; browser proof; platform leakage proof
   across 213 generated terms; temp cleanup; max standard create time 28.062s;
   synthetic rescue at 33.620s; and natural structured rescue at 56.311s. CB-207
-  is closed; CB-208 remains open for structured package-repetition occurrence
-  metadata and typed repairability.
+  is closed. The next CB-208 cleanup then moved package-level semantic
+  repetition into source-owned structured findings: rendered package findings now
+  carry `package_repetition` code, occurrence paths, projections, surfaces,
+  counts, ArtifactPlanIR target roots for single-projection defects, and typed
+  post-confirm review routing instead of falling back to
+  `legacy_package_artifact_gate`. Source proof passed 14 focused
+  package-repetition/post-confirm tests, 64 repair and ArtifactPlanIR tests, the
+  full post-confirm engine suite passed 35 tests, the broader greenfield
+  artifact-quality suite passed 52 tests, py_compile passed for touched modules,
+  `git diff --check` passed, and the 285-term platform domain-leakage guard
+  passed. Follow-up import hygiene kept `greenfield_package_quality.py` at the
+  800-line soft ceiling, preserved `greenfield_package_repetition.py` at 472
+  lines, and the final focused post-confirm/repair suite passed 99 tests in
+  44.57s.
 
 - 2026-07-01 fresh installed variance against the final committed
   `925545d8` dist proved CB-207 was still open. Seven of eight new domains
@@ -96,9 +108,9 @@ vocabulary, or degraded packages.
   component/Registry/package proof passed 53 tests, and exact source-local
   replay of the failed intent committed governed records in 14.989s with zero
   final issues. Rebuilt installed proof remains required before release
-  readiness is reclaimed. The separate architecture debt remains that
-  package-level semantic repetition still lacks structured occurrence metadata
-  and repairable typed findings.
+  readiness is reclaimed. The separate package-repetition architecture debt has
+  source proof now; release readiness still requires rebuilt installed proof from
+  the committed code.
 
 - 2026-06-30 source leakage-boundary checkpoint: a strict audit found the
   installable 09e520b3 package clean, but Registry component forensics still

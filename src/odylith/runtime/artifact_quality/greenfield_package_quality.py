@@ -6,26 +6,21 @@ from collections.abc import Mapping, Sequence
 import re
 from typing import Any
 
+from odylith.runtime.artifact_quality import greenfield_package_repetition as _package_repetition
+from odylith.runtime.artifact_quality import greenfield_rendered_artifacts as _rendered_artifacts
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.artifact_quality.generated_copy_quality import has_inline_role_casing_drift
 from odylith.runtime.artifact_quality.greenfield_artifact_judgment import greenfield_artifact_judgment_issues
 from odylith.runtime.artifact_quality.greenfield_project_judgment import greenfield_project_judgment_issues
 from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import project_implementation_prompt_issues
-from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
-from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedPackageQualityFinding
-from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import artifact_quality_finding
-from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import collect_rendered_package_artifacts
-from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_mapping as _as_mapping
-from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_quality_finding
-from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import unique_package_quality_findings
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.common.value_coercion import normalize_string
-from odylith.runtime.domain_intelligence.greenfield_canonical_projection_facts import CanonicalProjectionFact
-from odylith.runtime.domain_intelligence.greenfield_canonical_projection_facts import canonical_projection_facts
-from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
+
+RenderedArtifact = _rendered_artifacts.RenderedArtifact
+RenderedPackageQualityFinding = _rendered_artifacts.RenderedPackageQualityFinding
 
 _BASE_FORM_CONTEXTS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "to", "will", "would"})
 _TO_NOUN_PRECEDER_VERBS = frozenset({"adds", "attaches", "connects", "links", "maps", "points", "relates", "replies", "responds", "routes", "sends"})
@@ -99,8 +94,6 @@ _INVALID_INFLECTIONS = frozenset({"flaging", "intaked", "runing", "seted", "stop
 _VAGUE_MISSING_SUBJECTS = frozenset({"anything", "something", "stuff", "things"})
 _CAPITALIZED_CLAUSE_STARTERS = frozenset({"How", "What", "When", "Where", "Whether", "Who", "Why"})
 _MERMAID_EDGE_OPERATORS = ("-->>", "-.->", "==>", "-->", "->>", "---")
-_REPETITION_MIN_WORDS = 9
-_REPETITION_MIN_CHARS = 68
 _COMPONENT_LABEL_MAX_WORDS = 8
 _EXPLANATORY_COMPONENT_CONNECTORS = frozenset(
     {"because", "that", "when", "where", "which", "while", "who", "without"}
@@ -129,32 +122,36 @@ def greenfield_rendered_package_quality_issues(package: Any) -> list[str]:
 def greenfield_rendered_package_quality_findings(package: Any) -> list[RenderedPackageQualityFinding]:
     """Return typed readability failures across a rendered package."""
 
-    artifacts = collect_rendered_package_artifacts(package)
+    artifacts = _rendered_artifacts.collect_rendered_package_artifacts(package)
     findings: list[RenderedPackageQualityFinding] = []
     for artifact in artifacts:
         findings.extend(
-            artifact_quality_finding(artifact, issue)
+            _rendered_artifacts.artifact_quality_finding(artifact, issue)
             for issue in _artifact_language_issues(artifact)
         )
         if artifact.kind == "mermaid":
             findings.extend(
-                artifact_quality_finding(artifact, issue)
+                _rendered_artifacts.artifact_quality_finding(artifact, issue)
                 for issue in _mermaid_connectivity_issues(artifact)
             )
+    findings.extend(_package_repetition.package_repetition_quality_findings(package, artifacts))
     findings.extend(
-        package_quality_finding(issue)
+        _rendered_artifacts.package_quality_finding(issue)
         for issue in (
             *tuple(_package_component_identity_issues(package)),
-            *tuple(_package_repetition_issues(package, artifacts)),
             *tuple(greenfield_artifact_judgment_issues(package)),
             *tuple(greenfield_project_judgment_issues(package)),
         )
     )
-    return unique_package_quality_findings(findings)
+    return _rendered_artifacts.unique_package_quality_findings(findings)
 
 
 def _artifact_language_issues(artifact: RenderedArtifact) -> list[str]:
-    chunks = _mermaid_label_chunks(artifact.text) if artifact.kind == "mermaid" else _narrative_chunks(artifact.text)
+    chunks = (
+        _package_repetition.mermaid_label_chunks(artifact.text, chunker=_narrative_chunks)
+        if artifact.kind == "mermaid"
+        else _narrative_chunks(artifact.text)
+    )
     issues: list[str] = []
     issues.extend(_artifact_surface_language_issues(artifact))
     for chunk in chunks:
@@ -187,11 +184,11 @@ def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
         issues.append(f"{artifact.identity} has clipped boundary phrase")
     if _has_repeated_visible_result_tail(artifact.text):
         issues.append(f"{artifact.identity} repeats the same visible result inside one sentence")
-    for token in _word_tokens(artifact.text):
+    for token in _package_repetition.word_tokens(artifact.text):
         if token.casefold().strip("'") in _INVALID_INFLECTIONS:
             issues.append(f"{artifact.identity} has invalid verb inflection near `{token}`")
     for chunk in _surface_terminal_chunks(artifact):
-        tokens = _word_tokens(chunk)
+        tokens = _package_repetition.word_tokens(chunk)
         if _has_clipped_terminal_modifier(tokens):
             issues.append(f"{artifact.identity} has clipped modifier phrase ending in `{tokens[-2]} {tokens[-1]}`")
         if _has_clipped_terminal_final_phrase(chunk, tokens):
@@ -203,10 +200,10 @@ def _artifact_surface_language_issues(artifact: RenderedArtifact) -> list[str]:
         if artifact.kind == "mermaid" and _has_clipped_terminal_action_label(chunk, tokens):
             issues.append(f"{artifact.identity} has clipped action phrase ending in `{tokens[-1]}`")
     for line in str(artifact.text or "").splitlines():
-        bullet = _markdown_bullet_body(line)
+        bullet = _package_repetition.markdown_bullet_body(line)
         if not bullet:
             continue
-        tokens = _word_tokens(bullet)
+        tokens = _package_repetition.word_tokens(bullet)
         if tokens and tokens[0].casefold() in _LOWERCASE_FRAGMENT_STARTS and tokens[0][:1].islower():
             issues.append(f"{artifact.identity} has sentence-fragment drift near `{_clip(bullet, 100)}`")
     return issues
@@ -234,7 +231,7 @@ def _chunk_language_issues(artifact: RenderedArtifact, chunk: str) -> list[str]:
     text = normalize_string(chunk).strip("`*_# ")
     if not text:
         return []
-    tokens = _word_tokens(text)
+    tokens = _package_repetition.word_tokens(text)
     if not tokens:
         return []
     issues: list[str] = []
@@ -443,25 +440,8 @@ def _capitalized_pronoun_is_inside_title_suffix(tokens: Sequence[str], index: in
 
 def _surface_terminal_chunks(artifact: RenderedArtifact) -> list[str]:
     if artifact.kind == "mermaid":
-        return _mermaid_label_surface_chunks(artifact.text)
-    return _repetition_chunks(artifact.text)
-
-
-def _mermaid_label_surface_chunks(value: str) -> list[str]:
-    labels: list[str] = []
-    for raw_line in str(value or "").splitlines():
-        line = raw_line.strip()
-        if not line or _skip_mermaid_line(line):
-            continue
-        labels.extend(_quoted_labels(line))
-        participant_label = _participant_label(line)
-        if participant_label:
-            labels.append(participant_label)
-    chunks: list[str] = []
-    for label in labels:
-        normalized = label.replace("<br/>", " ").replace("<br>", " ")
-        chunks.extend(_repetition_chunks(normalized))
-    return chunks
+        return _package_repetition.mermaid_label_chunks(artifact.text)
+    return _package_repetition.repetition_chunks(artifact.text)
 
 
 def _has_clipped_terminal_modifier(tokens: Sequence[str]) -> bool:
@@ -476,7 +456,7 @@ def _has_clipped_terminal_action_label(chunk: str, tokens: Sequence[str]) -> boo
     if len(tokens) < 6 or "," not in str(chunk or ""):
         return False
     tail_segment = str(chunk or "").rsplit(",", 1)[-1].strip(" .;:")
-    tail_tokens = _word_tokens(tail_segment)
+    tail_tokens = _package_repetition.word_tokens(tail_segment)
     if len(tail_tokens) != 1:
         return False
     tail = tail_tokens[0].casefold().strip(".,;:'")
@@ -494,43 +474,8 @@ def _has_clipped_terminal_key_label(chunk: str, tokens: Sequence[str]) -> bool:
     return "," in text or re.search(r"\bwith\s+[^,]+,\s*key$", text)
 
 
-def _package_repetition_issues(package: Any, artifacts: list[RenderedArtifact]) -> list[str]:
-    generic_allowed, canonical_allowed = _allowed_repetition_keys(package)
-    occurrences: dict[str, list[tuple[RenderedArtifact, str]]] = {}
-    for artifact in artifacts:
-        chunks = _mermaid_label_chunks(artifact.text) if artifact.kind == "mermaid" else _repetition_chunks(artifact.text)
-        for chunk in chunks:
-            key = _sentence_key(chunk)
-            if (
-                key
-                and not _allowed_repetition_chunk(chunk, key, generic_allowed, canonical_allowed, artifact)
-                and not _allowed_structured_repetition_key(key)
-            ):
-                occurrences.setdefault(key, []).append((artifact, normalize_string(chunk)))
-        if artifact.kind != "mermaid":
-            for chunk in _markdown_section_body_chunks(artifact.text):
-                key = _repetition_key(chunk)
-                if (
-                    key
-                    and not _allowed_repetition_chunk(chunk, key, generic_allowed, canonical_allowed, artifact)
-                    and not _allowed_structured_repetition_key(key)
-                ):
-                    occurrences.setdefault(key, []).append((artifact, normalize_string(chunk)))
-    issues: list[str] = []
-    for key, rows in occurrences.items():
-        identities = sorted({artifact.identity for artifact, _chunk in rows})
-        if len(identities) < 3 and not (len(identities) == 1 and len(rows) >= 4):
-            continue
-        sample = rows[0][1]
-        issues.append(
-            "greenfield rendered package repeats noncanonical prose across "
-            f"{len(identities)} artifact(s) and {len(rows)} occurrence(s): `{_clip(sample, 140)}`"
-        )
-    return issues
-
-
 def _has_repeated_visible_result_tail(value: str) -> bool:
-    for chunk in _repetition_chunks(value):
+    for chunk in _package_repetition.repetition_chunks(value):
         if _chunk_repeats_visible_result_tail(chunk):
             return True
     return False
@@ -580,81 +525,11 @@ def _visible_result_tail_terms(value: str) -> set[str]:
         "with",
         "without",
     }
-    return {token.casefold().strip(".,;:'") for token in _word_tokens(value) if token.casefold().strip(".,;:'") not in ignored}
-
-
-def _allowed_structured_repetition_key(key: str) -> bool:
-    return key.startswith(
-        (
-            "boundary ",
-            "control ",
-            "customer ",
-            "evidence ",
-            "evidence contents ",
-            "evidence record ",
-            "gate ",
-            "owner ",
-            "proof ",
-            "question ",
-            "readiness gate ",
-            "release wave ",
-            "recovery gate ",
-            "review condition ",
-            "risk ",
-            "scope gate ",
-            "state object ",
-            "state gate ",
-            "trace requirement ",
-            "validation gate ",
-        )
-    )
-
-
-def _allowed_repetition_chunk(
-    chunk: str,
-    key: str,
-    generic_allowed: set[str],
-    canonical_allowed: Mapping[str, tuple[CanonicalProjectionFact, ...]],
-    artifact: RenderedArtifact,
-) -> bool:
-    if key in generic_allowed or _canonical_repetition_allowed(key, canonical_allowed, artifact):
-        return True
-    body = _section_body_for_repetition(chunk)
-    if not body:
-        return False
-    body_key = _repetition_key(body)
-    return bool(
-        body_key
-        and (
-            body_key in generic_allowed
-            or _canonical_repetition_allowed(body_key, canonical_allowed, artifact)
-        )
-    )
-
-
-def _canonical_repetition_allowed(
-    key: str,
-    canonical_allowed: Mapping[str, tuple[CanonicalProjectionFact, ...]],
-    artifact: RenderedArtifact,
-) -> bool:
-    for fact in canonical_allowed.get(key, ()):
-        if artifact.projection_id in fact.allowed_projection_ids:
-            return True
-    return False
-
-
-def _section_body_for_repetition(chunk: str) -> str:
-    head, separator, body = normalize_string(chunk).partition(":")
-    if not separator:
-        return ""
-    head_tokens = _word_tokens(head)
-    if not 1 <= len(head_tokens) <= 5:
-        return ""
-    return body.strip(" .;-")
+    return {token.casefold().strip(".,;:'") for token in _package_repetition.word_tokens(value) if token.casefold().strip(".,;:'") not in ignored}
 
 
 def _package_component_identity_issues(package: Any) -> list[str]:
-    proposal = _as_mapping(getattr(package, "proposal", None))
+    proposal = _rendered_artifacts.package_mapping(getattr(package, "proposal", None))
     rows = proposal.get("components", [])
     if not isinstance(rows, Sequence) or isinstance(rows, str):
         return []
@@ -663,7 +538,7 @@ def _package_component_identity_issues(package: Any) -> list[str]:
         if not isinstance(row, Mapping):
             continue
         label = normalize_string(row.get("label"))
-        tokens = _word_tokens(label)
+        tokens = _package_repetition.word_tokens(label)
         if len(tokens) <= _COMPONENT_LABEL_MAX_WORDS:
             continue
         lowered = {token.casefold().strip("'") for token in tokens}
@@ -675,94 +550,13 @@ def _package_component_identity_issues(package: Any) -> list[str]:
     return issues
 
 
-def _allowed_repetition_keys(package: Any) -> tuple[set[str], dict[str, tuple[CanonicalProjectionFact, ...]]]:
-    proposal = _as_mapping(getattr(package, "proposal", None))
-    intent = _as_mapping(proposal.get("intent"))
-    semantic_model = _as_mapping(proposal.get("semantic_model"))
-    first_path = _as_mapping(semantic_model.get("first_path_contract"))
-    component_rows = proposal.get("components", [])
-    component_sequence = (
-        component_rows
-        if isinstance(component_rows, Sequence) and not isinstance(component_rows, str)
-        else []
-    )
-    components = [
-        row
-        for row in component_sequence
-        if isinstance(row, Mapping)
-    ]
-    values = [
-        intent.get("title"),
-        _actor_label_summary(text_values(intent.get("human_actors"))),
-        *_semantic_label_repetition_values(first_path),
-        *[
-            f"{component.get('component_id', '')} {component.get('label', '')}"
-            for component in components
-            if normalize_string(component.get("component_id")) and normalize_string(component.get("label"))
-        ],
-        *[
-            component.get("label")
-            for component in components
-            if normalize_string(component.get("label"))
-        ],
-    ]
-    keys: set[str] = set()
-    for value in values:
-        for chunk in _repetition_chunks(str(value or "")):
-            key = _repetition_key(chunk)
-            if key:
-                keys.add(key)
-    return keys, _canonical_repetition_keys(proposal)
-
-
-def _canonical_repetition_keys(proposal: Mapping[str, Any]) -> dict[str, tuple[CanonicalProjectionFact, ...]]:
-    rows: dict[str, list[CanonicalProjectionFact]] = {}
-    for fact in canonical_projection_facts(proposal):
-        for chunk in _repetition_chunks(fact.text):
-            key = _repetition_key(chunk)
-            if key:
-                rows.setdefault(key, []).append(fact)
-    return {key: tuple(facts) for key, facts in rows.items()}
-
-
-def _semantic_label_repetition_values(first_path: Mapping[str, Any]) -> list[str]:
-    short_values = [
-        normalize_string(first_path.get("capability")),
-        normalize_string(first_path.get("visible_result")),
-    ]
-    event_values: list[str] = []
-    events = first_path.get("events")
-    if isinstance(events, Sequence) and not isinstance(events, (str, bytes, bytearray)):
-        for item in events:
-            if not isinstance(item, Mapping):
-                continue
-            event_values.append(normalize_string(item.get("text") or item.get("mutation")))
-            short_values.append(normalize_string(item.get("target_entity")))
-    return [
-        *[value for value in short_values if value and len(_word_tokens(value)) <= 10],
-        *[value for value in event_values if value],
-    ]
-
-
-def _actor_label_summary(values: list[str]) -> str:
-    labels = []
-    for value in values:
-        label = normalize_string(value)
-        for separator in (" - ", " -- ", f" {chr(8212)} ", ":"):
-            label = label.split(separator, 1)[0]
-        label = label.strip(" .")
-        if label:
-            labels.append(label)
-    return ", ".join(labels[:4])
-
-
 def _mermaid_connectivity_issues(artifact: RenderedArtifact) -> list[str]:
     defined: set[str] = set()
     connected: set[str] = set()
     edge_count = 0
     for raw_line in artifact.text.splitlines():
         line = raw_line.strip()
-        if not line or _skip_mermaid_line(line):
+        if not line or _package_repetition.skip_mermaid_line(line):
             continue
         node = _defined_node_id(line)
         if node:
@@ -791,19 +585,19 @@ def _narrative_chunks(value: str) -> list[str]:
         if line.startswith("```"):
             in_code_fence = not in_code_fence
             continue
-        if in_code_fence or _skip_narrative_line(line):
+        if in_code_fence or _package_repetition.skip_narrative_line(line):
             continue
         for index, char in enumerate(line):
-            if _is_sentence_boundary_char(line, index):
-                _append_chunk(chunks, current)
+            if _package_repetition.is_sentence_boundary_char(line, index):
+                _package_repetition.append_chunk(chunks, current)
                 current = []
             elif char in ",;" and not _punctuation_continues_connector_clause(line, index, current):
-                _append_chunk(chunks, current)
+                _package_repetition.append_chunk(chunks, current)
                 _append_short_chunk(chunks, current)
                 current = []
             else:
                 current.append(char)
-        _append_chunk(chunks, current)
+        _package_repetition.append_chunk(chunks, current)
         current = []
     return chunks
 
@@ -813,7 +607,7 @@ def _punctuation_continues_connector_clause(line: str, index: int, current: Sequ
 
     if not current or index < 0 or index >= len(line) or line[index] != ",":
         return False
-    tokens = _word_tokens("".join(current))
+    tokens = _package_repetition.word_tokens("".join(current))
     if not tokens or tokens[-1].casefold().strip(".,;:'") not in {"and", "or"}:
         return False
     return _next_word(line[index + 1 :]) in _CONNECTOR_CONTINUATION_OPENERS
@@ -824,153 +618,10 @@ def _next_word(value: str) -> str:
     return match.group(0).casefold() if match else ""
 
 
-def _repetition_chunks(value: str) -> list[str]:
-    chunks: list[str] = []
-    current: list[str] = []
-    in_code_fence = False
-    for raw_line in str(value or "").splitlines():
-        line = raw_line.strip()
-        if line.startswith("```"):
-            in_code_fence = not in_code_fence
-            continue
-        if in_code_fence or _skip_narrative_line(line):
-            continue
-        for index, char in enumerate(line):
-            if _is_sentence_boundary_char(line, index):
-                _append_chunk(chunks, current)
-                current = []
-            else:
-                current.append(char)
-        _append_chunk(chunks, current)
-        current = []
-    return chunks
-
-
-def _markdown_section_body_chunks(value: str) -> list[str]:
-    chunks: list[str] = []
-    section = ""
-    for raw_line in str(value or "").splitlines():
-        line = raw_line.strip()
-        if not line:
-            continue
-        if line.startswith("## "):
-            section = line.lstrip("#").strip()
-            continue
-        if not section or line.startswith("#") or line.startswith("|") or line.startswith("```"):
-            continue
-        body = _markdown_bullet_body(line) or line.strip(" -*")
-        body = normalize_string(body).strip()
-        if not body:
-            continue
-        chunks.append(f"{section}: {body}")
-        section = ""
-    return chunks
-
-
-def _mermaid_label_chunks(value: str) -> list[str]:
-    labels: list[str] = []
-    for raw_line in str(value or "").splitlines():
-        line = raw_line.strip()
-        if not line or _skip_mermaid_line(line):
-            continue
-        labels.extend(_quoted_labels(line))
-        participant_label = _participant_label(line)
-        if participant_label:
-            labels.append(participant_label)
-    chunks: list[str] = []
-    for label in labels:
-        normalized = label.replace("<br/>", " ").replace("<br>", " ")
-        chunks.extend(_narrative_chunks(normalized))
-    return chunks
-
-
-def _quoted_labels(line: str) -> list[str]:
-    labels: list[str] = []
-    index = 0
-    while index < len(line):
-        start = line.find('["', index)
-        if start < 0:
-            break
-        label_start = start + 2
-        end = line.find('"]', label_start)
-        if end < 0:
-            break
-        labels.append(line[label_start:end])
-        index = end + 2
-    return labels
-
-
-def _participant_label(line: str) -> str:
-    prefix = "participant "
-    marker = " as "
-    lowered = line.casefold()
-    if not lowered.startswith(prefix) or marker not in lowered:
-        return ""
-    marker_index = lowered.find(marker)
-    return normalize_string(line[marker_index + len(marker) :])
-
-
-def _append_chunk(chunks: list[str], chars: list[str]) -> None:
-    text = normalize_string("".join(chars)).strip(" -#*_`|")
-    if len(_word_tokens(text)) >= 2:
-        chunks.append(text)
-
-
-def _is_sentence_boundary_char(line: str, index: int) -> bool:
-    char = line[index] if 0 <= index < len(line) else ""
-    if char in "?!\n\r":
-        return True
-    if char != ".":
-        return False
-    previous_char = line[index - 1] if index > 0 else ""
-    next_char = line[index + 1] if index + 1 < len(line) else ""
-    return not (previous_char.isdigit() and next_char.isdigit())
-
-
 def _append_short_chunk(chunks: list[str], chars: list[str]) -> None:
     text = normalize_string("".join(chars)).strip(" -#*_`|")
     if text.casefold() in _DANGLING_TAIL_WORDS:
         chunks.append(text)
-
-
-def _skip_narrative_line(line: str) -> bool:
-    if not line:
-        return True
-    if line.startswith("|") or line.startswith("```"):
-        return True
-    if line.startswith("<!--") or line.startswith("::"):
-        return True
-    if line.endswith(":") and "_" in line:
-        return True
-    if _looks_like_governance_metadata_line(line):
-        return True
-    return False
-
-
-def _looks_like_governance_metadata_line(value: str) -> bool:
-    key, separator, _body = str(value or "").partition(":")
-    if not separator:
-        return False
-    token = key.strip()
-    if not token or len(token) > 48:
-        return False
-    return all(char.islower() or char.isdigit() or char == "_" for char in token)
-
-
-def _skip_mermaid_line(line: str) -> bool:
-    lowered = line.casefold()
-    return bool(
-        lowered.startswith("%%")
-        or lowered.startswith("flowchart ")
-        or lowered.startswith("graph ")
-        or lowered.startswith("sequencediagram")
-        or lowered.startswith("class ")
-        or lowered.startswith("classdef ")
-        or lowered.startswith("style ")
-        or lowered.startswith("linkstyle ")
-        or lowered.startswith("subgraph ")
-        or lowered == "end"
-    )
 
 
 def _defined_node_id(line: str) -> str:
@@ -1058,55 +709,8 @@ def _node_id_from_tail(segment: str) -> str:
     return token if token and not token[0].isdigit() else ""
 
 
-def _word_tokens(value: str) -> list[str]:
-    tokens: list[str] = []
-    current: list[str] = []
-    for char in str(value or ""):
-        if char.isalnum() or char in {"'", "-"}:
-            current.append(char)
-            continue
-        if current:
-            tokens.append("".join(current).strip("-'"))
-            current = []
-    if current:
-        tokens.append("".join(current).strip("-'"))
-    return [token for token in tokens if token]
-
-
-def _markdown_bullet_body(value: str) -> str:
-    text = str(value or "").strip()
-    if text.startswith(("- ", "* ")):
-        return normalize_string(text[2:])
-    if len(text) > 3 and text[0].isdigit():
-        index = 1
-        while index < len(text) and text[index].isdigit():
-            index += 1
-        if index < len(text) - 1 and text[index] in {".", ")"} and text[index + 1] == " ":
-            return normalize_string(text[index + 2 :])
-    return ""
-
-
 def _looks_like_finite_verb(token: str) -> bool:
     return looks_like_finite_action(f"{token} placeholder")
-
-
-def _sentence_key(value: str) -> str:
-    tokens = [token.casefold() for token in _word_tokens(value)]
-    if len(tokens) < _REPETITION_MIN_WORDS:
-        return ""
-    key = " ".join(tokens)
-    return key if len(key) >= _REPETITION_MIN_CHARS else ""
-
-
-def _repetition_key(value: str) -> str:
-    sentence = _sentence_key(value)
-    if sentence:
-        return sentence
-    tokens = [token.casefold() for token in _word_tokens(value)]
-    if len(tokens) < 5:
-        return ""
-    key = " ".join(tokens)
-    return key if len(key) >= 36 else ""
 
 
 def _has_doubled_sentence_punctuation(value: str) -> bool:
@@ -1139,8 +743,8 @@ def _has_comma_spliced_capitalized_clause(value: str) -> bool:
 
 
 def _has_vague_missing_input_copy(value: str) -> bool:
-    for chunk in _repetition_chunks(value):
-        tokens = [token.casefold() for token in _word_tokens(chunk)]
+    for chunk in _package_repetition.repetition_chunks(value):
+        tokens = [token.casefold() for token in _package_repetition.word_tokens(chunk)]
         if len(tokens) < 3:
             continue
         if tokens[0] != "if":
@@ -1153,7 +757,7 @@ def _has_vague_missing_input_copy(value: str) -> bool:
 
 
 def _has_open_question_scope_boundary(value: str) -> bool:
-    for chunk in _repetition_chunks(value):
+    for chunk in _package_repetition.repetition_chunks(value):
         lowered = chunk.casefold()
         if "whether " in lowered and " in scope " in lowered and " until " in lowered:
             return True
@@ -1161,8 +765,8 @@ def _has_open_question_scope_boundary(value: str) -> bool:
 
 
 def _has_clipped_boundary_phrase(value: str) -> bool:
-    for chunk in _repetition_chunks(value):
-        tokens = [token.casefold() for token in _word_tokens(chunk)]
+    for chunk in _package_repetition.repetition_chunks(value):
+        tokens = [token.casefold() for token in _package_repetition.word_tokens(chunk)]
         if len(tokens) >= 2 and tokens[-2:] == ["outside", "boundary"]:
             return True
     return False

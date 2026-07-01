@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-06-30
+Last updated: 2026-07-01
 
 
 ## Overview
@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-01 · Implementation:** CB-208 package repetition now emits source-owned typed occurrence metadata and ArtifactPlanIR repair targets instead of legacy package string routing.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/artifact_quality/greenfield_package_repetition.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py
 - **2026-06-30 · Implementation:** CB-213 fixed in source: greenfield Registry component-contract quality findings now resolve to executable ArtifactPlanIR paths, deterministic source patching avoids host timeout for localized contract outputs, and semantic-model mirrors sync atomically; saved gene-expression confirm replay passed in 29.797s with governed writes.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-07-01-greenfield-artifact-plan-rescue-accepts-non-executable-row-patch-facts.md +1 more
@@ -37,9 +40,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-30 · Implementation:** Removed rendered-copy mutation from greenfield post-confirm repair custody, added idempotent host semantic adjudication ledger support, updated Casebook/Registry/Atlas governance, and captured the 261f00dc installed matrix natural-rescue regression while standard 13-case proof remained 10/10.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +4 more
-- **2026-06-30 · Implementation:** Greenfield natural structured-rescue proof failed on the first committed dist because high-effort PatchSet planning timed out at 25s; source fix now defaults PatchSet planning to medium local-provider effort with a larger bounded rescue slice and a retained source repro passed in 55.085s with structured_rescue_semantic_patch repaired.
-  - Scope: B-142
-  - Evidence: private/tmp/odylith-natural-source-create.stdout, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -61,8 +61,22 @@ This section captures synchronized requirement and contract signals derived from
   8/8 fresh high-variance standard cases and 13/13 maintained standard cases at
   hard 10/10, zero issues, browser proof, platform leakage proof, temp cleanup,
   max standard create time 28.062s, synthetic rescue under 34s, and natural
-  structured rescue under 57s. Package-level semantic repetition metadata
-  remains the next typed-finding cleanup under CB-208.
+  structured rescue under 57s.
+
+- 2026-07-01: Moved package-level semantic repetition into structured source-owned package findings. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagrams: D-043, D-045)
+  `greenfield_package_repetition.py` now owns package repetition decisions,
+  occurrence paths, surfaces, projection IDs, artifact and occurrence counts, and
+  sanctioned ArtifactPlanIR roots for single-projection defects. Rendered package
+  findings carry `package_repetition` metadata, and
+  `greenfield_post_confirm_package_findings.py` converts those source-owned
+  findings into typed review findings without parsing display strings. Raw
+  string-only package issues still fail closed through `legacy_package_artifact_gate`.
+  The former 1,196-line `greenfield_package_quality.py` owner is decomposed to
+  the 800-line soft ceiling, with repetition custody isolated in a 472-line
+  module. Source proof passed 15 package-repetition/post-confirm and forensics
+  tests, the 99-test post-confirm/repair focused suite, py_compile, diff
+  whitespace proof, source-local sync, and the 285-term platform domain-leakage
+  guard.
 
 - 2026-07-01: Closed a live post-confirm rescue escape with source-addressed, deterministic component-contract repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-213`; Diagram: D-043) Registry package findings now map rendered
   component spec quality failures back to the exact

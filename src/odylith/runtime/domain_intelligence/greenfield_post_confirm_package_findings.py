@@ -57,6 +57,7 @@ def package_artifact_findings(package: Any) -> tuple[GreenfieldReviewFinding, ..
         findings.extend(_project_brief_preview_semantic_findings(package, project_brief_preview))
     if clean_text(getattr(package, "release_selector", "")):
         findings.extend(_release_package_findings(package))
+    findings.extend(_package_repetition_findings(package))
     findings.extend(_mechanical_package_quality_findings(package))
     findings.extend(_plan_package_quality_findings(package))
     findings.extend(_registry_package_findings(package))
@@ -269,6 +270,8 @@ def _mechanical_package_quality_findings(package: Any) -> tuple[GreenfieldReview
             )
     for quality_finding in greenfield_rendered_package_quality_findings(package):
         message = quality_finding.message
+        if quality_finding.code == "package_repetition":
+            continue
         if not _mechanical_package_quality_issue(message):
             continue
         projection = quality_finding.projection_id
@@ -288,6 +291,28 @@ def _mechanical_package_quality_findings(package: Any) -> tuple[GreenfieldReview
                 owner=_plan_package_quality_owner(projection),
                 source="package_quality",
                 message=message,
+            )
+        )
+    return tuple(findings)
+
+
+def _package_repetition_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
+    findings: list[GreenfieldReviewFinding] = []
+    for quality_finding in greenfield_rendered_package_quality_findings(package):
+        if quality_finding.code != "package_repetition":
+            continue
+        findings.append(
+            review_finding(
+                code=quality_finding.code,
+                surface=quality_finding.surface or quality_finding.projection_id or "post_confirm_package",
+                target_path=quality_finding.target_path,
+                projection_id=quality_finding.projection_id,
+                semantic_node_id=quality_finding.semantic_node_id,
+                severity=quality_finding.severity or "medium",
+                repairability=quality_finding.repairability or "unrepairable",
+                owner=quality_finding.owner or "typed_package_artifact_gate",
+                source=quality_finding.source or "package_repetition_quality",
+                message=quality_finding.message,
             )
         )
     return tuple(findings)
@@ -398,6 +423,8 @@ def _plan_package_quality_findings(package: Any) -> tuple[GreenfieldReviewFindin
     findings: list[GreenfieldReviewFinding] = []
     for quality_finding in greenfield_rendered_package_quality_findings(package):
         message = quality_finding.message
+        if quality_finding.code == "package_repetition":
+            continue
         if _mechanical_package_quality_issue(message):
             continue
         if quality_finding.projection_id == "registry":
@@ -437,6 +464,8 @@ def _registry_package_findings(package: Any) -> tuple[GreenfieldReviewFinding, .
     if rendered_specs and not component_preview:
         findings.append(_registry_plan_finding("prewrite Registry package must include component authoring previews"))
     for quality_finding in greenfield_rendered_package_quality_findings(package):
+        if quality_finding.code == "package_repetition":
+            continue
         if quality_finding.projection_id == "registry" and not _mechanical_package_quality_issue(quality_finding.message):
             findings.append(
                 _registry_plan_finding(

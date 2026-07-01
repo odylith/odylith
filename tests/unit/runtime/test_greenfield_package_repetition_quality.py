@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_findings
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 
 
@@ -48,7 +49,7 @@ def test_repetition_gate_rejects_repeated_markdown_section_boilerplate() -> None
 
 
 def test_repetition_gate_rejects_repeated_risk_prose_across_child_artifacts() -> None:
-    repeated_risk = "Combining cart, payment, and order state would hide failure recovery."
+    repeated_risk = "Combining intake, review, and approval state would hide failure recovery."
     package = SimpleNamespace(
         proposal={},
         backlog_result={
@@ -64,8 +65,24 @@ def test_repetition_gate_rejects_repeated_risk_prose_across_child_artifacts() ->
     )
 
     issues = greenfield_rendered_package_quality_issues(package)
+    findings = greenfield_rendered_package_quality_findings(package)
+    repetition = next(finding for finding in findings if finding.code == "package_repetition")
 
     assert "repeats noncanonical prose" in "\n".join(issues)
+    assert repetition.projection_id == "radar"
+    assert repetition.target_path == "backlog"
+    assert repetition.semantic_node_id == "ArtifactPlanIR.radar"
+    assert repetition.repairability == "plan_patch"
+    assert repetition.owner == "radar_projector"
+    assert repetition.source == "package_repetition_quality"
+    assert repetition.occurrence_count == 3
+    assert repetition.artifact_count == 3
+    assert repetition.occurrence_projections == ("radar",)
+    assert repetition.occurrence_paths == (
+        "prewrite_package.backlog_result.idea_files::B-001.md",
+        "prewrite_package.backlog_result.idea_files::B-002.md",
+        "prewrite_package.backlog_result.idea_files::B-003.md",
+    )
 
 
 def test_repetition_gate_allows_shared_customer_metadata() -> None:

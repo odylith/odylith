@@ -408,9 +408,28 @@
   specs and surfaced only as `legacy_package_artifact_gate`, with no
   executable PatchSet operation. The immediate root cause was fixed upstream
   by preserving component-local semantic `unique_failure` facts through
-  specialized component profiles, but the failed mechanism remains open here:
-  package-level semantic repetition needs structured occurrence metadata and
-  source-owned repair targets instead of raw display strings.
+  specialized component profiles, but that checkpoint left the failed mechanism
+  open here: package-level semantic repetition still needed structured
+  occurrence metadata and source-owned repair targets instead of raw display
+  strings.
+  The 2026-07-01 source cleanup moved that package-level repetition path into
+  `greenfield_package_repetition.py`. Rendered package findings now carry the
+  `package_repetition` code, sample text, occurrence paths, occurrence
+  projections, occurrence surfaces, artifact/occurrence counts, owner, severity,
+  repairability, and a sanctioned ArtifactPlanIR target root when all occurrences
+  belong to one projection. `greenfield_post_confirm_package_findings.py`
+  converts those source-owned findings into typed `GreenfieldReviewFinding`
+  records before `package_review_findings` handles raw `package_issues`, so the
+  source-owned path no longer degrades to `legacy_package_artifact_gate`. Raw
+  string-only package issues remain fail-closed and unrepairable, preserving the
+  anti-regression guard against message-text routing.
+  Source proof for this cleanup: the final focused package-repetition,
+  post-confirm, and forensics-neutrality set passed 15 tests in 0.35s; the
+  post-confirm/repair focused suite passed 99 tests in 44.57s; the earlier repair
+  and ArtifactPlanIR pack passed 64 tests in 5.41s; the broader greenfield
+  artifact-quality suite passed 52 tests in 460.59s; py_compile passed for the
+  touched modules; source-local sync passed; `git diff --check` passed; and the
+  platform domain-leakage guard passed across 285 distinctive fixture terms.
   The same checkpoint wired rescue/deep host reasoning through
   `greenfield_post_confirm_rescue_planner.py` and
   `runtime/reasoning/tribunal_patch_planner.py`. The planner can fill only
