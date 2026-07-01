@@ -2254,3 +2254,19 @@ vocabulary, or degraded packages.
       projection, generated-copy slop detection, and manifest proof custody.
       Remaining proof: rerun the maintained installed matrix from a rebuilt
       dist with browser proof and real natural structured rescue enabled.
+- [x] Prove the typed package-repetition checkpoint through a rebuilt installed
+      dist.
+      Fresh dist `odylith-local-release-0.1.15-c6971540` from committed head
+      `c6971540` passed the release asset domain-leakage gate across 285
+      distinctive fixture terms and then passed the maintained installed
+      greenfield matrix after stale temp cleanup. The first matrix attempt
+      proved all 13 standard cases at hard 10/10 with zero issues, browser
+      proof, synthetic rescue, and natural rescue, but the aggregate run failed
+      because an older pre-existing temp root remained under `/Users/freedom/mock`.
+      After pruning that stale root, the clean rerun passed with status
+      `passed`: 13/13 standard creates, hard 10/10 scores, zero quality issues,
+      13/13 browser proof, generated-readback platform leakage proof across 213
+      terms, temp cleanup proof with no remaining paths, 22.712s minimum,
+      25.279s average, and 27.755s maximum standard create time. Synthetic
+      typed-probe rescue passed in 34.454s, and real provider-backed structured
+      rescue passed in 58.415s under the 90s rescue tier.
