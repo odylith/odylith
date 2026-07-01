@@ -2335,8 +2335,12 @@ vocabulary, or degraded packages.
       45-test post-confirm quality repair suite, the 27-test live simulation
       and semantic model suite, and the 93-test confirmed diagram/recovery/
       post-confirm suite. Source-local CLI replay of the saved failed intent
-      completed governed create in 26s with zero repeated result copy, and a
-      second thin scientific prompt replay completed in 23s with evidence-depth
+      completed governed create in 25s with zero repeated result copy, and a
+      second thin scientific prompt replay completed in 24s with evidence-depth
       terms present and no adjacent result/evidence duplicates. Remaining
-      proof: rebuild the committed-head installable dist and rerun installed
-      matrix or targeted installed replays before release closeout.
+      proof: the committed-head local release dist
+      `odylith-local-release-0.1.15-9bea5784` passed source-plus-dist leakage
+      proof after one transient feature-pack gzip I/O retry, installed replay
+      of the saved failed intent completed create in 32s, and installed thin
+      scientific propose-to-create completed in 28s. Full installed matrix
+      proof remains required before broad release readiness is reclaimed.

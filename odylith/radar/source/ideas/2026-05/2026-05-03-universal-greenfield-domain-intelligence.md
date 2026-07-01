@@ -2438,9 +2438,13 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   collapse generic result/output/outcome/artifact terms to the saved target,
   and Mermaid header/body label composition prevents fixed result wrappers from
   repeating body-leading words. Source-local replay of the saved failed intent
-  completed create in 26s with governed writes, and a second thin scientific
-  prompt replay completed in 23s with no adjacent result/evidence duplicates.
-  Installed dist proof remains required before release closure.
+  completed create in 25s with governed writes, and a second thin scientific
+  prompt replay completed in 24s with no adjacent result/evidence duplicates.
+  Fresh committed-head local release dist `odylith-local-release-0.1.15-9bea5784`
+  passed source-plus-dist leakage proof; installed saved-intent replay
+  completed create in 32s, and installed thin scientific propose-to-create
+  completed in 28s. Full installed matrix proof remains required before release
+  closure.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

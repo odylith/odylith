@@ -65,11 +65,15 @@ This section captures synchronized requirement and contract signals derived from
   Atlas/scientific replay tests, the 45-test post-confirm quality repair suite,
   the 27-test live simulation and semantic model quality suite, and the
   93-test confirmed diagram/recovery/post-confirm repair suite. Source-local
-  CLI replay of the saved failed intent completed create in 26s with governed
+  CLI replay of the saved failed intent completed create in 25s with governed
   records written and zero repeated result copy; a second thin scientific prompt
-  replay completed in 23s with evidence-depth terms present and zero
-  result/evidence adjacent duplicates. Installed release proof remains required
-  before release closeout.
+  replay completed in 24s with evidence-depth terms present and zero
+  result/evidence adjacent duplicates. Fresh committed-head local release dist
+  `odylith-local-release-0.1.15-9bea5784` passed the source-plus-dist 285-term
+  platform leakage gate, installed replay of the saved failed intent completed
+  create in 32s, and installed thin scientific propose-to-create completed in
+  28s with evidence-depth terms present. Full installed matrix proof remains
+  the broader release-readiness gate.
 
 - 2026-07-01: Fixed specialized component-profile failure-custody drift found by fresh installed variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-207`, `CB-208`; Diagram: D-043)
   Fresh installed proof against dist `odylith-local-release-0.1.15-925545d8`
