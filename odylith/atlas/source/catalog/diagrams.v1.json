@@ -8,7 +8,7 @@
       "kind": "flowchart",
       "status": "active",
       "owner": "product",
-      "last_reviewed_utc": "2026-06-30",
+      "last_reviewed_utc": "2026-07-01",
       "source_mmd": "odylith/atlas/source/odylith-product-governance-loop.mmd",
       "source_svg": "odylith/atlas/source/odylith-product-governance-loop.svg",
       "source_png": "odylith/atlas/source/odylith-product-governance-loop.png",
@@ -90,7 +90,7 @@
       "reviewed_watch_fingerprints": {
         "odylith/registry/source/component_registry.v1.json": "cccd494aaded4b8d11935747508a73fbf21f6f0d82cd5111fa3f1db896ca0875",
         "odylith/registry/source/components/odylith/CURRENT_SPEC.md": "19ab9190f680a1d9a59ec3ccf50e8ebafbb4479e5bdd7ef3720ba261f0bef66f",
-        "odylith/radar/source/INDEX.md": "5413c109265a1e4ee8df357e3fe62c1016802bf9b810ccf91aa2ca96e5b4ad92",
+        "odylith/radar/source/INDEX.md": "4ef9c244a9205cd9b00765f1e95c382057f75b9fa2ed9150c4f7b1346cc44419",
         "odylith/technical-plans/INDEX.md": "6a7a4d6de0e4efad4bea49962ca4873b45a836c87eba1072d701cf44bd5a327d"
       }
     },
@@ -4363,7 +4363,7 @@
         "odylith/registry/source/components/release/CURRENT_SPEC.md": "ae7272fdbfee75ee0c549e0dc493a743703dc6fff67313b365d18c563ceec37b",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "134e238bc4cddd8f7d2406e9c218dda9562f5f34141a940848f11e1798abe101",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "1899fe0afd2f204a9db569af16ec5da021acb2fdbafa3eaee4198dcbcee2483e",
-        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "110d2e19d4df6b9e595bffc892b05b4eeba9658ec593271a566636da687cef98"
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "e7ffee1193297eca224f6d35fa9f6721ff9016d407040c1e38beaffbe296883e"
       },
       "render_source_fingerprint": "bef9a4d33c99746918f07cd4e37b256d8643591b7b44834c0502118189723146"
     },

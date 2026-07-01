@@ -539,6 +539,28 @@ vocabulary, or degraded packages.
   specs and 20 trace nodes. Synthetic typed-probe rescue wiring passed in
   32.728s; natural host-model semantic rescue quality remains separate.
 
+## Current Completion Audit
+
+- 2026-07-01 audit result: the current committed release checkpoint is proven
+  for the known greenfield post-confirm failure classes, but this plan remains
+  active rather than globally complete. The committed `c6971540` dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-c6971540`
+  passed the installed matrix after stale temp cleanup with 13/13 standard
+  creates at hard 10/10, zero final quality issues, browser proof, generated
+  platform-leakage readback across 213 terms, no remaining temp simulation
+  roots, 22.712s minimum, 25.279s average, and 27.755s maximum standard create
+  time. Synthetic typed-probe rescue passed in 34.454s, and the real
+  provider-backed structured rescue passed in 58.415s under the 90s rescue
+  tier. Compass records the proof under the follow-up `851f0ab0` checkpoint.
+- The completion claim is intentionally finite: it proves the current
+  release-candidate package and the covered high-variance scenarios, not a
+  mathematical guarantee for every future domain. Remaining active work is the
+  architectural hardening still named below: finish the lossless IR schema
+  story for `ConfirmedIntentIR` / `ArtifactDraftSet` / stable source spans,
+  complete broader context-starved projection contracts such as the
+  `ProjectionLexicon`, and keep extending the hostile variance corpus whenever
+  new real-world failures appear.
+
 ## Implementation Slices
 
 - [ ] Define `ConfirmedIntentIR`, `SemanticModelIR`, `ArtifactPlanIR`,

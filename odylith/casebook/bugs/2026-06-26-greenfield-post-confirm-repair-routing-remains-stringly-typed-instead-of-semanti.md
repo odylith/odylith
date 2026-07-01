@@ -1219,6 +1219,21 @@
   rationale, rejected interpretations, decision summaries, and proof-delta
   explanations are normalized into safe plain ledger text before proposal or
   manifest custody.
+  Current proof update on 2026-07-01: the later committed `c6971540` release
+  dist, with follow-up proof recorded at `851f0ab0`, supersedes the `31ab2559`
+  natural-rescue failure. The release asset domain-leakage gate passed across
+  285 distinctive fixture terms, and the maintained installed matrix at
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-c6971540/greenfield-post-confirm-matrix.v1.json`
+  passed after stale temp cleanup with 13/13 standard creates at hard 10/10,
+  zero final issues, 13/13 browser proof, generated-readback platform leakage
+  proof across 213 terms, no remaining temp simulation roots, 22.712s minimum,
+  25.279s average, and 27.755s maximum standard create time. Synthetic
+  typed-probe rescue passed in 34.454s, and real provider-backed structured
+  rescue passed in 58.415s under the 90-second rescue tier. This closes the
+  specific host-ledger quote-slop and package-repetition release checkpoint for
+  the current dist, while CB-208 remains open as the umbrella architecture
+  guardrail against future stringly routing, rendered-prose mutation, and
+  incomplete typed IR/projection custody.
 
 - Related Incidents/Bugs: CB-207
 
