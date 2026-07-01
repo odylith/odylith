@@ -183,6 +183,9 @@ def _specialized_contract_with_semantic_proof(
     if not (_semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields)):
         return normalized
     normalized["local_proof"] = list(unique_text([*text_values(normalized.get("local_proof")), *text_values(semantic_fields.get("local_proof"))]))
+    semantic_failure = _sentence(semantic_fields.get("unique_failure"))
+    if semantic_failure:
+        normalized["unique_failure"] = semantic_failure
     return normalized
 
 

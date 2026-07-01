@@ -66,6 +66,24 @@ vocabulary, or degraded packages.
 
 ## Latest Simulation Evidence
 
+- 2026-07-01 fresh installed variance against the final committed
+  `925545d8` dist proved CB-207 was still open. Seven of eight new domains
+  passed at hard 10/10 with browser proof, complete governed records, standard
+  create times under 26s, leakage proof across 114 generated readback terms,
+  clean temp cleanup, synthetic rescue at 33.170s, and natural structured
+  rescue at 64.368s. The tribal broadband pole attachment case failed before
+  governed writes in 12.336s because specialized component-profile rebuilds
+  replaced three complete component-local semantic `unique_failure` facts with
+  one shared profile-level generated proof/risk sentence, which then repeated
+  across Registry specs and surfaced as `legacy_package_artifact_gate`. Source
+  now preserves semantic `unique_failure` through specialized profiles; focused
+  component/Registry/package proof passed 53 tests, and exact source-local
+  replay of the failed intent committed governed records in 14.989s with zero
+  final issues. Rebuilt installed proof remains required before release
+  readiness is reclaimed. The separate architecture debt remains that
+  package-level semantic repetition still lacks structured occurrence metadata
+  and repairable typed findings.
+
 - 2026-06-30 source leakage-boundary checkpoint: a strict audit found the
   installable 09e520b3 package clean, but Registry component forensics still
   retained raw high-variance simulation phrases from Compass timeline

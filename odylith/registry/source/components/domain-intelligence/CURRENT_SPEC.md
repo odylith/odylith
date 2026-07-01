@@ -44,6 +44,21 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-01: Fixed specialized component-profile failure-custody drift found by fresh installed variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-207`, `CB-208`; Diagram: D-043)
+  Fresh installed proof against dist `odylith-local-release-0.1.15-925545d8`
+  passed seven of eight new high-variance standard cases at hard 10/10, but
+  `tribal broadband pole dispute` failed before governed writes because
+  document/status-style component-profile rebuilds replaced distinct
+  component-local semantic `unique_failure` facts with one shared generated
+  proof/risk failure sentence. Domain Intelligence now preserves the complete
+  semantic contract's `unique_failure` when specialized profiles add their
+  local proof structure, so Registry specs keep component-local failure
+  custody instead of repeating one profile-level risk sentence across siblings.
+  Focused component/Registry/package proof passed 53 tests, and exact
+  source-local replay of the failed intent committed governed records in
+  14.989s with zero final issues. Package-level semantic repetition metadata
+  remains the next typed-finding cleanup under CB-208.
+
 - 2026-07-01: Closed a live post-confirm rescue escape with source-addressed, deterministic component-contract repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-213`; Diagram: D-043) Registry package findings now map rendered
   component spec quality failures back to the exact
   `components[n].component_contract.produced_outputs` ArtifactPlanIR path when

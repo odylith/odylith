@@ -403,6 +403,14 @@
   findings for semantic coverage, release drift, Registry preview/spec shape,
   and explicitly safe mechanical copy cleanup. This prevents a human-readable
   gate sentence from becoming the semantic routing API again.
+  A 2026-07-01 fresh installed variance proved the fallback still matters:
+  a generated Registry proof/risk sentence repeated across three component
+  specs and surfaced only as `legacy_package_artifact_gate`, with no
+  executable PatchSet operation. The immediate root cause was fixed upstream
+  by preserving component-local semantic `unique_failure` facts through
+  specialized component profiles, but the failed mechanism remains open here:
+  package-level semantic repetition needs structured occurrence metadata and
+  source-owned repair targets instead of raw display strings.
   The same checkpoint wired rescue/deep host reasoning through
   `greenfield_post_confirm_rescue_planner.py` and
   `runtime/reasoning/tribunal_patch_planner.py`. The planner can fill only
