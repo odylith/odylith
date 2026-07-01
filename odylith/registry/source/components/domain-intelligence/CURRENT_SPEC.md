@@ -44,6 +44,19 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-01: Closed a live post-confirm rescue escape with source-addressed, deterministic component-contract repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-213`; Diagram: D-043) Registry package findings now map rendered
+  component spec quality failures back to the exact
+  `components[n].component_contract.produced_outputs` ArtifactPlanIR path when
+  the rendered spec key identifies one proposal component row. The rescue
+  planner fills a deterministic source-derived replacement fact for localized
+  component contract output defects before invoking host reasoning, so host
+  planning remains reserved for ambiguous semantic repairs. The ArtifactPlanIR
+  patch executor now applies nested row paths and synchronizes changed component
+  contract fields into `semantic_model.components` in the same repair
+  transaction. Source-local replay of the saved confirmed
+  intent passed in 29.797s whole-project time with governed writes committed,
+  zero final issues, and the repaired `component_contract_quality` manifest
+  evidence retained.
 - 2026-06-30: Fixed structured-rescue custody for intentional list-valued semantic clears. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-211`, `CB-210`; Diagram: D-043)
   Domain Intelligence now applies explicit empty-list SemanticModelIR patches
   for list-valued semantic fields instead of treating every empty sequence as

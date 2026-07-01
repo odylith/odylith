@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import (
     GreenfieldPostConfirmRepairContext,
 )
@@ -31,6 +32,9 @@ def enrich_rescue_patchset_with_structured_plan(
     if repair_context.repair_tier not in {"rescue", "deep"}:
         return repair_context
     patchset = repair_context.patchset_request if isinstance(repair_context.patchset_request, Mapping) else {}
+    patchset = _with_deterministic_source_patch_facts(proposal, patchset)
+    if patchset is not repair_context.patchset_request:
+        repair_context = replace(repair_context, patchset_request=patchset)
     if isinstance(patchset.get("tribunal_patch_plan"), Mapping):
         return repair_context
     if not _needs_structured_patch_plan(patchset):
@@ -68,6 +72,108 @@ def enrich_rescue_patchset_with_structured_plan(
         repair_context,
         patchset_request=tribunal_patch_planner.merge_patch_plan_into_request(patchset, patch_plan),
     )
+
+
+def _with_deterministic_source_patch_facts(
+    proposal: Mapping[str, Any],
+    patchset: Mapping[str, Any],
+) -> Mapping[str, Any]:
+    operations = patchset.get("operations")
+    if not isinstance(operations, list):
+        return patchset
+    changed = False
+    next_operations: list[Any] = []
+    for operation in operations:
+        if not isinstance(operation, Mapping):
+            next_operations.append(operation)
+            continue
+        if not tribunal_patch_planner.replacement_fact_missing(operation.get("replacement_fact"), operation):
+            next_operations.append(operation)
+            continue
+        replacement = _deterministic_source_replacement_fact(proposal, operation)
+        if not replacement:
+            next_operations.append(operation)
+            continue
+        updated = dict(operation)
+        updated["replacement_fact"] = replacement
+        updated["decision_ledger_entry"] = {
+            "chosen_interpretation": "component contract output repaired from the localized component source fact",
+            "rationale": "the typed package finding already identified an executable ArtifactPlanIR component contract path",
+            "rejected_interpretations": ["rewriting rendered component spec prose directly"],
+        }
+        updated["proof_obligation_delta"] = {
+            "summary": "No proof obligation change; this patch only corrects the component contract projection source."
+        }
+        updated["confidence"] = max(_float_or_zero(operation.get("confidence")), 0.86)
+        next_operations.append(updated)
+        changed = True
+    if not changed:
+        return patchset
+    return {**dict(patchset), "operations": next_operations}
+
+
+def _deterministic_source_replacement_fact(
+    proposal: Mapping[str, Any],
+    operation: Mapping[str, Any],
+) -> dict[str, Any]:
+    if normalize_string(operation.get("target_layer")) != "artifact_plan":
+        return {}
+    target_path = normalize_string(operation.get("target_path"))
+    if not _component_contract_output_target(target_path):
+        return {}
+    value = _component_contract_output_patch_value(proposal, target_path)
+    if not value:
+        return {}
+    return {"path": target_path, "value": value}
+
+
+def _component_contract_output_target(target_path: str) -> bool:
+    return target_path.startswith("components[") and target_path.endswith(".component_contract.produced_outputs")
+
+
+def _component_contract_output_patch_value(proposal: Mapping[str, Any], target_path: str) -> str:
+    index = _component_index_from_path(target_path)
+    if index is None:
+        return ""
+    components = proposal.get("components")
+    if not isinstance(components, list) or index < 0 or index >= len(components):
+        return ""
+    row = components[index]
+    if not isinstance(row, Mapping):
+        return ""
+    base = _component_source_sentence(row) or normalize_string(projection_repair_target_value(proposal, target_path))
+    text = normalize_string(base).strip(" .")
+    if not text:
+        return ""
+    suffix = "blocked-state detail, reviewer explanation, next-step context, and handoff context"
+    if suffix.casefold() in text.casefold():
+        return text
+    return f"{text}, {suffix}"
+
+
+def _component_source_sentence(row: Mapping[str, Any]) -> str:
+    for key in ("source_system_description", "responsibility", "description", "boundary"):
+        value = normalize_string(row.get(key))
+        if value:
+            return value
+    return ""
+
+
+def _component_index_from_path(target_path: str) -> int | None:
+    prefix = "components["
+    if not target_path.startswith(prefix):
+        return None
+    raw_index = target_path[len(prefix) :].split("]", 1)[0]
+    if not raw_index.isdecimal():
+        return None
+    return int(raw_index)
+
+
+def _float_or_zero(value: Any) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
 
 
 def _needs_structured_patch_plan(patchset: Mapping[str, Any]) -> bool:

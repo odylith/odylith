@@ -146,6 +146,162 @@ def test_artifact_plan_patch_refuses_untargeted_row_mutation() -> None:
     assert "artifact_plan_patch_ledger" not in proposal
 
 
+def test_compact_registry_component_patch_updates_matched_component_contract() -> None:
+    proposal: dict[str, Any] = {
+        "components": [
+            {
+                "component_id": "assay-intake",
+                "label": "Assay Intake",
+                "responsibility": "Accepts assay files and metadata.",
+                "component_contract": {
+                    "owned_state": "assay intake state",
+                    "accepted_inputs": "assay files, metadata, authorized actor, validation context",
+                    "produced_outputs": "validated assay package, blocked-state detail, reviewer explanation, next-step context",
+                    "states_or_transitions": "assay received, assay validated, blocked, ready-for-next-step",
+                    "outside_boundary": "adjacent component state owned elsewhere",
+                    "local_proof": ["Successful path evidence for Assay Intake: assay package, required inputs, visible result, and reviewer explanation."],
+                    "upstream_truth": "No claimed upstream dependency.",
+                    "downstream_consumers": "Review Workspace.",
+                    "unique_failure": "Assay Intake can mislead users if assay intake state is missing.",
+                },
+            },
+            {
+                "component_id": "review-workspace",
+                "label": "Review Workspace",
+                "responsibility": "Shows reviewed results, quality flags, confidence, and downloadable evidence.",
+                "component_contract": {
+                    "owned_state": "quality flags, reviewed results, downloadable evidence, result review",
+                    "accepted_inputs": "reviewed results, downloadable evidence, result review input, authorized actor, validation context",
+                    "produced_outputs": "quality flags, downloadable evidence, result review evidence, state update",
+                    "states_or_transitions": "downloadable evidence received, requested, received, flagged, reviewed",
+                    "outside_boundary": "adjacent component state owned elsewhere",
+                    "local_proof": [
+                        "Successful path evidence for Review Workspace: result review, required inputs, visible result, and reviewer explanation."
+                    ],
+                    "upstream_truth": "Upstream Model Service ownership.",
+                    "downstream_consumers": "Evaluation and Proof Ledger.",
+                    "unique_failure": "Review Workspace can mislead users if result review is missing.",
+                },
+            },
+        ],
+    }
+    operations = [
+        {
+            "operation_id": "GF-PATCH-REGISTRY",
+            "target_layer": "artifact_plan",
+            "target_path": "prewrite_package.registry",
+            "semantic_node_id": "ArtifactPlanIR.registry",
+            "issue_code": "component_contract_quality",
+            "operation_kind": "artifact_plan_projection",
+            "repair_owner": "registry_renderer",
+            "projection_kind": "registry",
+            "affected_projections": ["registry"],
+            "replacement_fact": {
+                "review-workspace": "review outputs with quality flags, confidence, and downloadable evidence",
+            },
+        }
+    ]
+
+    changed = apply_artifact_plan_patch_operations(proposal, operations)
+
+    assert changed is True
+    component = proposal["components"][1]
+    assert component["responsibility"] == "review outputs with quality flags, confidence, and downloadable evidence"
+    assert component["component_id"] == "review-workspace"
+    assert component["component_contract"]["produced_outputs"] == (
+        "review outputs with quality flags, confidence, and downloadable evidence, "
+        "blocked-state detail, reviewer explanation, next-step context, and handoff context"
+    )
+    assert component["component_contract"]["owned_state"].startswith("quality flags")
+    ledger = proposal["artifact_plan_patch_ledger"][0]
+    assert ledger["operation_id"] == "GF-PATCH-REGISTRY"
+    assert "components[1].responsibility" in ledger["applied_paths"]
+    assert "components[1].component_contract.produced_outputs" in ledger["applied_paths"]
+
+
+def test_compact_registry_component_patch_refuses_unknown_row_key() -> None:
+    proposal: dict[str, Any] = {
+        "components": [
+            {
+                "component_id": "known-component",
+                "label": "Known Component",
+                "responsibility": "Keeps known component state reviewable.",
+                "component_contract": {"produced_outputs": "known component output"},
+            }
+        ],
+    }
+    operations = [
+        {
+            "operation_id": "GF-PATCH-UNKNOWN",
+            "target_layer": "artifact_plan",
+            "target_path": "prewrite_package.registry",
+            "semantic_node_id": "ArtifactPlanIR.registry",
+            "projection_kind": "registry",
+            "affected_projections": ["registry"],
+            "replacement_fact": {
+                "unknown-component": "replace a row that does not exist",
+            },
+        }
+    ]
+
+    changed = apply_artifact_plan_patch_operations(proposal, operations)
+
+    assert changed is False
+    assert proposal["components"][0]["responsibility"] == "Keeps known component state reviewable."
+    assert proposal["components"][0]["component_contract"]["produced_outputs"] == "known component output"
+    assert "artifact_plan_patch_ledger" not in proposal
+
+
+def test_path_value_patch_updates_nested_component_contract_field() -> None:
+    proposal: dict[str, Any] = {
+        "semantic_model": {
+            "components": [
+                {
+                    "component_id": "review-workspace",
+                    "produced_outputs": "old output",
+                }
+            ]
+        },
+        "components": [
+            {
+                "component_id": "review-workspace",
+                "label": "Review Workspace",
+                "responsibility": "Shows review state.",
+                "component_contract": {
+                    "produced_outputs": "old output",
+                },
+            }
+        ],
+    }
+    operations = [
+        {
+            "operation_id": "GF-PATCH-NESTED",
+            "target_layer": "artifact_plan",
+            "target_path": "components[0].component_contract.produced_outputs",
+            "semantic_node_id": "ArtifactPlanIR.components[0].component_contract.produced_outputs",
+            "projection_kind": "registry",
+            "affected_projections": ["registry"],
+            "replacement_fact": {
+                "path": "components[0].component_contract.produced_outputs",
+                "value": "clear review output with blocked-state detail",
+            },
+        }
+    ]
+
+    changed = apply_artifact_plan_patch_operations(proposal, operations)
+
+    assert changed is True
+    component = proposal["components"][0]
+    assert component["component_contract"]["produced_outputs"] == "clear review output with blocked-state detail"
+    assert proposal["semantic_model"]["components"][0]["produced_outputs"] == "clear review output with blocked-state detail"
+    assert "component_contract.produced_outputs" not in component
+    ledger = proposal["artifact_plan_patch_ledger"][0]
+    assert ledger["applied_paths"] == (
+        "components[0].component_contract.produced_outputs",
+        "semantic_model.components[0].produced_outputs",
+    )
+
+
 def test_patchset_repair_executes_artifact_plan_operations(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         greenfield_post_confirm_patch_apply,

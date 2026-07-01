@@ -211,6 +211,80 @@ def test_repair_payload_skips_structured_planner_on_standard_tier(
     assert captured["repair_context"] is context
 
 
+def test_rescue_patchset_uses_deterministic_component_contract_source_patch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        greenfield_post_confirm_rescue_planner.odylith_reasoning,
+        "provider_from_config",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("host planner should not be called")),
+    )
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=8.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("registry component contract grammar drift",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "artifact_plan",
+                    "target_path": "components[0].component_contract.produced_outputs",
+                    "semantic_node_id": "ArtifactPlanIR.components[0].component_contract.produced_outputs",
+                    "issue_code": "component_contract_quality",
+                    "source_finding": "package_artifact_gate",
+                    "affected_projections": ["registry"],
+                    "requested_action": "Return an artifact-plan patch.",
+                    "replacement_fact": "",
+                    "confidence": 0.2,
+                }
+            ],
+        },
+        quality_lenses={},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+    proposal = {
+        "components": [
+            {
+                "component_id": "review-workspace",
+                "source_system_description": "shows reviewed results with confidence and downloadable evidence",
+                "component_contract": {"produced_outputs": "Reviewed results to flags"},
+            }
+        ]
+    }
+
+    enriched = greenfield_post_confirm_rescue_planner.enrich_rescue_patchset_with_structured_plan(
+        proposal,
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    assert enriched is not None
+    operation = enriched.patchset_request["operations"][0]
+    assert operation["replacement_fact"] == {
+        "path": "components[0].component_contract.produced_outputs",
+        "value": (
+            "shows reviewed results with confidence and downloadable evidence, "
+            "blocked-state detail, reviewer explanation, next-step context, and handoff context"
+        ),
+    }
+    assert "tribunal_patch_plan" not in enriched.patchset_request
+    assert operation["confidence"] == 0.86
+
+
 def test_structured_patch_planner_uses_medium_effort_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ODYLITH_REASONING_CODEX_REASONING_EFFORT", raising=False)
     provider = SimpleNamespace(

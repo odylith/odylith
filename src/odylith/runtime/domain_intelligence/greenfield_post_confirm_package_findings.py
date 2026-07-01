@@ -7,6 +7,7 @@ from collections.abc import Sequence
 import re
 from typing import Any
 
+from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_findings
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import ArtifactQualityUnit
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_findings
@@ -26,6 +27,10 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_structured_resc
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_structural_copy import structural_copy_value
+
+
+_RENDERED_COMPONENT_SPEC_PREFIX = "prewrite_package.rendered_component_specs::"
+_COMPONENT_CONTRACT_OUTPUT_FIELD = "component_contract.produced_outputs"
 
 
 def package_artifact_findings(package: Any) -> tuple[GreenfieldReviewFinding, ...]:
@@ -433,7 +438,12 @@ def _registry_package_findings(package: Any) -> tuple[GreenfieldReviewFinding, .
         findings.append(_registry_plan_finding("prewrite Registry package must include component authoring previews"))
     for quality_finding in greenfield_rendered_package_quality_findings(package):
         if quality_finding.projection_id == "registry" and not _mechanical_package_quality_issue(quality_finding.message):
-            findings.append(_registry_plan_finding(quality_finding.message))
+            findings.append(
+                _registry_plan_finding(
+                    quality_finding.message,
+                    target_path=_registry_component_contract_target_path(package, quality_finding.target_path),
+                )
+            )
     return tuple(findings)
 
 
@@ -519,13 +529,42 @@ def _release_package_finding(message: str) -> GreenfieldReviewFinding:
     )
 
 
-def _registry_plan_finding(message: str) -> GreenfieldReviewFinding:
+def _registry_component_contract_target_path(package: Any, target_path: str) -> str:
+    spec_name = _rendered_component_spec_name(target_path)
+    if not spec_name:
+        return "prewrite_package.registry"
+    proposal = getattr(package, "proposal", {}) if isinstance(getattr(package, "proposal", {}), Mapping) else {}
+    rows = [row for row in proposal.get("components", []) if isinstance(row, Mapping)]
+    needle = slugify(spec_name)
+    matches = [
+        index
+        for index, row in enumerate(rows)
+        if needle and any(slugify(str(value or "")) == needle for value in _component_row_aliases(row))
+    ]
+    if len(matches) != 1:
+        return "prewrite_package.registry"
+    return f"components[{matches[0]}].{_COMPONENT_CONTRACT_OUTPUT_FIELD}"
+
+
+def _rendered_component_spec_name(target_path: str) -> str:
+    path = clean_text(target_path)
+    if not path.startswith(_RENDERED_COMPONENT_SPEC_PREFIX):
+        return ""
+    return clean_text(path[len(_RENDERED_COMPONENT_SPEC_PREFIX) :])
+
+
+def _component_row_aliases(row: Mapping[str, Any]) -> tuple[Any, ...]:
+    return (row.get("component_id"), row.get("id"), row.get("label"), row.get("name"))
+
+
+def _registry_plan_finding(message: str, *, target_path: str = "prewrite_package.registry") -> GreenfieldReviewFinding:
+    source_path = clean_text(target_path) or "prewrite_package.registry"
     return review_finding(
         code="component_contract_quality",
         surface="registry",
-        target_path="prewrite_package.registry",
+        target_path=source_path,
         projection_id="registry",
-        semantic_node_id="ArtifactPlanIR.registry",
+        semantic_node_id=f"ArtifactPlanIR.{source_path}" if source_path.startswith("components[") else "ArtifactPlanIR.registry",
         severity="medium",
         repairability="plan_patch",
         owner="registry_renderer",

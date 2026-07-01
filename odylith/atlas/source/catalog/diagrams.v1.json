@@ -4328,8 +4328,8 @@
         "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py": "abe4862a1c5cb94be87a019b6fd6b8864c95e1dc20dec21855cf6b1ba12c7b5c",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py": "3f0ffe4550f633cdd2693e3791936f1dcb9c50b5b7167fa5e501e8b5315efec5",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_findings.py": "d53a55c75ec924de076607ada53e57b2df21ff9401bb5f53e70df288417a13e9",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py": "d1e52468d1922ea3ab2ba0efa2f0ae7744815b86ae71320750996b0a41e49faf",
-        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py": "0790754211b5630d3eba17abf2f4d5c36a1cc56984073250c2ad351c9cb41117",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py": "a7311ed473f27508b435c2c3de5169579476730f612e1bf16156e1bddabaae81",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py": "a57ff07d2918c3bf05e602ea5782a0444644d77829ae133315c6721c550e40e9",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_patch_apply.py": "8f71a916fa1cdf571593b2edfd24904de8ab3b7ba120c071f53a425c02c05769",
         "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_completion.py": "d7189f0172444317f7d5fffbd565f9f1dfc31b0bef01728f1ff2e7046c8fb74f",
         "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_helpers.py": "83fcb96e165887ee460f53a44fc01387f52e0d371d44c8dfda79f5dad98819d6",
@@ -4344,7 +4344,7 @@
         "src/odylith/runtime/domain_intelligence/greenfield_sequence_terminal_labels.py": "e05817ceb36de543ef6bef3a4a394581f26b226f969dae0ecf2759752d57c11a",
         "src/odylith/runtime/domain_intelligence/greenfield_status_modifiers.py": "b821d2bfa914f45377acb382798a4ef044ad3a122928aab2d131ee3624d9df62",
         "src/odylith/runtime/domain_intelligence/greenfield_text.py": "a45cd09917eb4d1b5701a2467fe25f632f081419c1f48d4e424162d846357f83",
-        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py": "5cef3256b2540eb2e7f8481a48208f9ea507e7cf0c0707ceefb3683b6ad183a5",
+        "src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py": "29524a51af380b14f0493f1386afa395b2fb4d8749314be84c81d6fdb0390379",
         "src/odylith/runtime/artifact_quality/greenfield_project_prompt_quality.py": "0f81f035807cee54afaf0973ff05bcc95ec9eec2f7c2acd163a6d773e31f7c28",
         "src/odylith/runtime/project_intelligence/product_story.py": "ef6d9bf1959280b22c5b87c86cb1aafb754f9196f3a1d1d986d544b95982370f",
         "src/odylith/runtime/project_intelligence/utils.py": "1701b7017a8f511c34292509502412cf9f46f55245be0d3a2ca2c7aedf9876e9",
@@ -4357,13 +4357,13 @@
         "scripts/release/platform_domain_leakage_check.py": "bd12bad1b55b55a3fe4105103634a2dd093cc2f8e1eec18bf1678ef336bf2d8f",
         "src/odylith/runtime/governance/sync_component_spec_requirements.py": "3dab4a822a5a67eb386f0fcfcc25c5ea4548af40e204e74c690f2dc0e75e9f2e",
         "odylith/skills/odylith-greenfield-governance/SKILL.md": "dab865530a0472d8316edc5ac0a91d839fd8cdfa557910c30cd40c18f2fe6b33",
-        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "d9390f04ef1be39946fe9476aceaae73535a645248f41d587105125f9b787c73",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md": "71f3e12697e6986bd0f0fd7c250ec55c970dc345fe3f6feb866f57aed742e699",
         "odylith/registry/source/components/release/CURRENT_SPEC.md": "ae7272fdbfee75ee0c549e0dc493a743703dc6fff67313b365d18c563ceec37b",
         "odylith/registry/source/components/tribunal/CURRENT_SPEC.md": "134e238bc4cddd8f7d2406e9c218dda9562f5f34141a940848f11e1798abe101",
         "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md": "1899fe0afd2f204a9db569af16ec5da021acb2fdbafa3eaee4198dcbcee2483e",
         "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md": "769a651de55b6e35c310249b495b44cfe42403f3d79f4671d9fbf67675b10290"
       },
-      "render_source_fingerprint": "041afdf8280bf52934cc0e49dac5910f7ffa9441e1a084d2cc968d57b3ae3d2c"
+      "render_source_fingerprint": "32d8547afa97fc14594bba8ce3e89a3ee11b589343e50a132c630aa1a898db3e"
     },
     {
       "diagram_id": "D-044",

@@ -108,6 +108,7 @@ _SCAFFOLD_MARKERS: tuple[str, ...] = (
 _EXCLUDED_PUBLIC_KEYS = {
     "accepted_aliases",
     "apply_commands",
+    "artifact_plan_patch_ledger",
     "classification",
     "component_id",
     "evidence_tier",
