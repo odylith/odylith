@@ -136,6 +136,12 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             leakage_terms=("developer incident runbook", "mitigation steps", "deployment window"),
         ),
         GreenfieldMatrixCase(
+            name="assay drift prediction model",
+            prompt="Draft a product-first greenfield proposal for building an assay drift prediction model.",
+            required_terms=("assay", "drift", "prediction", "model"),
+            leakage_terms=("assay drift", "prediction model", "assay drift prediction"),
+        ),
+        GreenfieldMatrixCase(
             name="sparse disclosure confirmation",
             prompt=(
                 "Create a greenfield proposal for a cross-organization disclosure council that receives reports, "

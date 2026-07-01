@@ -24,9 +24,12 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-01 · Implementation:** CB-214 fixed in source: confirmed greenfield create now carries scientific evaluation depth into Product Intent and governed artifacts, Mermaid visible-result headers remove duplicated body-leading terms, saved-as result labels collapse generic result/output objects to their target artifact, and source-local grn-sim replay passed under 60s with governed writes.
+- **2026-07-01 · Implementation:** CB-214 source repair added scientific evaluation-depth intent custody, Atlas header/body result-label custody, and source-local create replays passed in 25s and 24s with governed writes and no adjacent result or evidence duplicates.
   - Scope: B-142
-  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_evaluation_semantics.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_labeling.py +3 more
+  - Evidence: odylith/casebook/bugs/2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md, src/odylith/runtime/domain_intelligence/greenfield_evaluation_semantics.py +1 more
+- **2026-07-01 · Implementation:** Greenfield post-confirm repair now requires exact ProjectionSourceAddress facts before ArtifactPlanIR plan patches; broad projection roots and preview summaries fail closed.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md, odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md +2 more
 - **2026-07-01 · Implementation:** CB-208 package repetition now emits source-owned typed occurrence metadata and ArtifactPlanIR repair targets instead of legacy package string routing.
   - Scope: B-142
   - Evidence: src/odylith/runtime/artifact_quality/greenfield_package_repetition.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py
@@ -38,14 +41,31 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: src/odylith/runtime/common/safe_ledger_text.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py +2 more
 - **2026-06-30 · Implementation:** Greenfield source-local artifact QA found and fixed coordinated-action actor drift, card-specific dashboard repair routing, fresh source-launch rerender parity, and repeated clarity title shape; six non-reused source-local simulations now pass under 22s with Atlas and Registry validation green.
   - Evidence: src/odylith/runtime/common/prose_grammar.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py +1 more
-- **2026-06-30 · Implementation:** Greenfield post-confirm source repair now maps preview-copy failures to SemanticModelIR or ArtifactPlanIR facts, refreshes project-dashboard projections, and clears the four prior source-local failed signatures under 23s.
-  - Evidence: src/odylith/runtime/artifact_quality/generated_copy_quality_units.py, src/odylith/runtime/domain_intelligence/greenfield_projection_repair_targets.py
-- **2026-06-30 · Implementation:** Removed rendered-copy mutation from greenfield post-confirm repair custody, added idempotent host semantic adjudication ledger support, updated Casebook/Registry/Atlas governance, and captured the 261f00dc installed matrix natural-rescue regression while standard 13-case proof remained 10/10.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +4 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-07-01: Repaired fresh scientific first-path material custody and evidence-depth scoring. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-045)
+  The confirmed greenfield path now preserves prompt-grounded material source
+  terms only for internally synthesized confirmations that lose a source step
+  before validation; explicit operator-edited confirmations remain
+  authoritative. First-path parsing recognizes the generic material action
+  `load`, and carried-subject extraction accepts explicit one-word human actors
+  without absorbing visible-result objects as the next subject.
+  Scientific/evaluation source paths preserve rich operator-supplied first
+  paths instead of replacing them with generic model/simulation scaffolding when
+  concrete steps are already present. The release matrix now independently
+  blocks the domain-expert lens for scientific/evaluation packages whose
+  governed readback omits IR-derived method/protocol, baseline/comparison,
+  uncertainty/tolerance, or reproducibility obligations.
+  Focused source proof passed the 84-test post-confirm/scientific/leakage pack,
+  including operator-edit authority and paraphrased IR evidence acceptance.
+  Source-local replay of the retained implant-fatigue prompt completed governed
+  create in 23.93s with retained material terms, scientific-depth evidence, and
+  zero repeated-result or broken subject-carry copy. Source-local replay of the
+  retained seismic-inversion prompt completed governed create in 24.57s with no
+  clipped `Around` tail and retained scientific evidence terms. Fresh installed
+  matrix proof remains required before closing CB-215.
 
 - 2026-07-01: Added generic scientific evaluation depth and fixed Atlas visible-result label repetition. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-214`; Diagrams: D-043, D-045)
   The confirmed greenfield path now treats scientific, research, model,

@@ -50,6 +50,33 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
+_PROMPT_MATERIAL_TERM_STOPWORDS = frozenset(
+    {
+        "accepted",
+        "action",
+        "artifact",
+        "complete",
+        "evidence",
+        "first",
+        "greenfield",
+        "intent",
+        "path",
+        "product",
+        "project",
+        "proof",
+        "proposal",
+        "record",
+        "release",
+        "result",
+        "review",
+        "source",
+        "state",
+        "system",
+        "user",
+        "workspace",
+    }
+)
+
 
 def load_confirmed_intent_file(path: Path, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
     """Load a host-visible Product Intent Confirmation from Markdown/text/JSON."""
@@ -176,6 +203,7 @@ def _complete_confirmed_intent_before_validation(intent: Mapping[str, Any]) -> d
 def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: str = "") -> dict[str, Any]:
     """Parse the human Product Intent Confirmation that the host already showed."""
 
+    generated_confirmation = _looks_like_host_guidance_envelope(text)
     text = _recover_host_guidance_confirmation(text, prompt=prompt)
     sections = _sections(text)
     raw_title_candidate = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
@@ -183,6 +211,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
         thin_source = _thin_operator_intent_source(text, prompt=prompt)
         if thin_source:
             text = confirmation_from_operator_intent(thin_source, prefer_product_title=True)
+            generated_confirmation = True
             sections = _sections(text)
     raw_title = _title_from_text(text) or _title_from_sections(sections) or _title_from_preamble(sections) or fallback_title
     title_normalization = normalize_project_title(raw_title, fallback=fallback_title or "Greenfield Project")
@@ -228,9 +257,58 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
         section_text=_section_text,
         context_text=_intent_context_text(result, strings=confirmed_text_values),
     )
+    result = _restore_prompt_material_first_path(result, generated_confirmation=generated_confirmation)
     result = _complete_confirmed_intent_before_validation(result)
     _validate_confirmed_intent(result)
     return result
+
+
+def _restore_prompt_material_first_path(
+    intent: Mapping[str, Any],
+    *,
+    generated_confirmation: bool,
+) -> dict[str, Any]:
+    """Restore a richer prompt first path only for internally synthesized confirmations."""
+
+    result = dict(intent)
+    if not generated_confirmation:
+        return result
+    prompt_source = _clean(result.get("prompt"))
+    if not prompt_source:
+        return result
+    prompt_first_path = _clean_first_path(prompt_first_path_source(prompt_source))
+    current_first_path = _clean_first_path(result.get("first_path"))
+    if not prompt_first_path or prompt_first_path.casefold() == current_first_path.casefold():
+        return result
+    prompt_model = first_path_model(prompt_first_path)
+    current_model = first_path_model(current_first_path)
+    if len(prompt_model.steps) < 2:
+        return result
+    source_terms = _material_prompt_terms(prompt_first_path)
+    accepted_terms = _material_prompt_terms(
+        " ".join(
+            str(result.get(key) or "")
+            for key in ("product_story", "state_object", "first_path", "proof_boundary")
+        )
+    )
+    missing_terms = source_terms - accepted_terms
+    lost_steps = len(prompt_model.steps) > max(1, len(current_model.steps))
+    lost_material_terms = len(missing_terms) >= max(2, min(4, len(source_terms) // 4))
+    if not (lost_steps or lost_material_terms):
+        return result
+    result["first_path"] = prompt_first_path
+    return result
+
+
+def _material_prompt_terms(value: Any) -> set[str]:
+    terms: set[str] = set()
+    for term in _label_terms(value):
+        for token in str(term).casefold().replace("-", " ").replace("/", " ").split():
+            token = token.strip(".,:;()[]{}\"'")
+            if len(token) < 4 or token in _PROMPT_MATERIAL_TERM_STOPWORDS:
+                continue
+            terms.add(token)
+    return terms
 
 
 def _recover_host_guidance_confirmation(text: str, *, prompt: str = "") -> str:

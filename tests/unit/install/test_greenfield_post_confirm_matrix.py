@@ -80,6 +80,10 @@ def test_default_matrix_keeps_open_source_security_escape_replay() -> None:
     assert "CHSH" in quantum_case.confirmed_intent_markdown
     assert "QBER" in quantum_case.confirmed_intent_markdown
     assert quantum_case.required_terms == ("quantum", "e91", "qber", "chsh")
+    assay_case = next(case for case in cases if case.name == "assay drift prediction model")
+    assert assay_case.confirmed_intent_markdown == ""
+    assert "assay drift prediction model" in assay_case.prompt
+    assert assay_case.required_terms == ("assay", "drift", "prediction", "model")
 
 
 def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
@@ -1695,6 +1699,61 @@ def test_quality_verdict_scores_premium_only_when_every_dimension_is_clean(monke
     assert verdict.score == 10
     assert all(score == 10 for score in verdict.scores.values())
     assert "all brutal release-quality dimensions scored 10" in verdict.score_explanation
+
+
+def test_quality_verdict_rejects_scientific_package_missing_evidence_obligations(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    package = _substantive_package()
+    package.proposal["semantic_model"]["evaluation_semantics"] = {
+        "schema_version": "odylith.greenfield.evaluation_semantics.v1",
+        "focus": "Assay Drift Prediction Model",
+    }
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=package,
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.scores["domain_expert"] == 0
+    assert any("scientific/evaluation readback missing evidence obligation" in issue for issue in verdict.issues)
+
+
+def test_quality_verdict_accepts_scientific_package_with_paraphrased_ir_evidence(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    package = _substantive_package()
+    package.proposal["semantic_model"]["evaluation_semantics"] = {
+        "schema_version": "odylith.greenfield.evaluation_semantics.v1",
+        "focus": "Assay Drift Prediction Model",
+        "method_or_protocol": "solver release identifier and analysis configuration used for the accepted run",
+        "reference_or_baseline": "control-run comparator and expected range reviewed with the result",
+        "uncertainty_or_tolerance": "error interval and acceptable range visible beside the result",
+        "reproducibility": "identical source inputs, context, parameter set, and rerun ledger can regenerate the accepted result",
+    }
+    package.rendered_component_specs["Evidence Review Ledger Service"] += (
+        "\n\nScientific review proof: the accepted run records the solver release identifier, "
+        "analysis configuration, control-run comparator, expected range, error interval, "
+        "acceptable range, identical source inputs, context, parameter set, and rerun ledger."
+    )
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=package,
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert verdict.passed
+    assert verdict.score == 10
+    assert verdict.scores["domain_expert"] == 10
 
 
 def test_quality_verdict_rejects_unattempted_browser_surface_proof(monkeypatch) -> None:

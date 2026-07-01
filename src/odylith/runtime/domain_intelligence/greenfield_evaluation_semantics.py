@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import word_count
 
@@ -16,6 +17,13 @@ _EVALUATION_SIGNAL_TERMS = frozenset(
     algorithm baseline benchmark calibration dataset experiment
     experimental inference lab measurement method metric model modeling prediction predictive protocol research researcher
     scientific simulate simulation simulator solver tolerance uncertainty variable
+    """.split()
+)
+_EVALUATION_STRONG_TERMS = _EVALUATION_SIGNAL_TERMS - {"benchmark", "research", "researcher"}
+_EVALUATION_CONTEXT_TERMS = frozenset(
+    """
+    baseline benchmark calibration confidence dataset experiment experimental inference lab measurement method metric model
+    modeling prediction predictive protocol research researcher scientific simulate simulation simulator solver tolerance uncertainty variable
     """.split()
 )
 _MODEL_ACTION_TERMS = frozenset(
@@ -100,17 +108,23 @@ def recovered_evaluation_context(*, source: str, title_source: str, first_path_s
         first_path_source=first_path_source,
     ):
         return RecoveredEvaluationContext()
-    focus = evaluation_focus_label(source_text, fallback="")
+    focus_seed = _drop_generic_title_wrapper(title_source) or _drop_generic_title_wrapper(first_path_source)
+    focus = (
+        evaluation_focus_label(focus_seed, fallback="")
+        if focus_seed
+        else evaluation_focus_label(source_text, fallback=title_source or first_path_source)
+    )
     if word_count(focus) < 2:
         focus = evaluation_focus_label(" ".join([first_path_source, title_source]), fallback=title_source)
     if word_count(focus) < 2:
         return RecoveredEvaluationContext()
     title = _evaluation_title_source(focus, existing=title_source)
     focus_ref = _lower_focus(focus)
-    first_path = (
+    recovered_first_path = (
         f"A researcher provides source data, defines the evaluation context and target, runs the model or simulation, "
         f"reviews the {focus_ref} result with uncertainty and comparison evidence, and saves a reproducible run record."
     )
+    first_path = _preserved_evaluation_first_path(first_path_source) or recovered_first_path
     story = (
         f"{title} helps researchers complete a bounded {focus_ref} evaluation from source evidence to a reviewable result. "
         "It keeps inputs, context, method version, assumptions, uncertainty, comparison evidence, and excluded claims visible "
@@ -155,7 +169,10 @@ def recovered_evaluation_context(*, source: str, title_source: str, first_path_s
 
 def evaluation_depth_required(value: Any) -> bool:
     tokens = {_word_key(word) for word in clean_text(value).replace("/", " ").split()}
-    return bool(tokens & _EVALUATION_SIGNAL_TERMS)
+    signals = tokens & _EVALUATION_SIGNAL_TERMS
+    if len(signals) >= 2 and signals & _EVALUATION_STRONG_TERMS:
+        return True
+    return bool(tokens & {"model", "prediction", "predictive", "simulate", "simulation", "simulator", "solver"} and tokens & _EVALUATION_CONTEXT_TERMS)
 
 
 def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_source: str) -> bool:
@@ -163,9 +180,15 @@ def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_so
     tokens = {_word_key(word) for word in text.replace("/", " ").split()}
     if not (tokens & {"model", "predict", "prediction", "simulate", "simulation"}):
         return False
-    title = _drop_generic_title_wrapper(title_source).casefold()
+    raw_title = clean_text(title_source).strip(" .")
+    title = _drop_generic_title_wrapper(raw_title).casefold()
     first_path = clean_text(first_path_source).casefold().strip(" .")
     if title in _GENERIC_MODEL_TITLES:
+        return True
+    if raw_title and title and title != raw_title.casefold() and word_count(title) >= 2:
+        return True
+    path_title = _drop_generic_title_wrapper(first_path)
+    if path_title and path_title != first_path and word_count(path_title) >= 2:
         return True
     if re.match(
         r"^(?:building|creating|designing|drafting|generating|making|planning|proposing|scaffolding|writing)\s+"
@@ -176,7 +199,19 @@ def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_so
     return bool(
         re.match(r"^(?:a|an|the)?\s*(?:ai[- ]?model|ml[- ]?model|model|simulation|simulator)\b", first_path)
         and re.search(r"\b(?:simulate|simulates|predict|predicts)\b", first_path)
-    )
+    ) or bool(evaluation_depth_required(text) and len(first_path_model(first_path_source).steps) >= 2)
+
+
+def _preserved_evaluation_first_path(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    if word_count(text) < 10:
+        return ""
+    model = first_path_model(text)
+    if len(model.steps) < 2:
+        return ""
+    if _drop_generic_title_wrapper(text).casefold() in _GENERIC_MODEL_TITLES:
+        return ""
+    return text
 
 
 def evaluation_focus_label(value: Any, *, fallback: str = "") -> str:
@@ -209,7 +244,7 @@ def _drop_generic_title_wrapper(value: str) -> str:
         flags=re.IGNORECASE,
     ).strip(" .")
     stripped = re.sub(r"^(?:a|an|the)\s+", "", stripped, flags=re.IGNORECASE).strip(" .")
-    return "" if stripped.casefold() in _GENERIC_MODEL_TITLES else text
+    return "" if stripped.casefold() in _GENERIC_MODEL_TITLES else stripped
 
 
 def _focus_after_model_action(value: str) -> str:

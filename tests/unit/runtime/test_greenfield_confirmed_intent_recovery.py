@@ -8,6 +8,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import bu
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import confirmation_from_operator_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
+from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evaluation_semantics_for_texts
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 
 
@@ -330,6 +332,133 @@ def test_scientific_model_prompt_recovery_preserves_evaluation_depth(tmp_path) -
     assert proposal["semantic_model"]["evaluation_semantics"]["focus"] == "Gene Expression Prediction Model"
     assert "baseline or comparison evidence" in rendered
     assert greenfield_quality_issues(proposal) == []
+
+
+def test_scientific_recovery_keeps_quantify_as_carried_actor_action() -> None:
+    prompt = (
+        "Create a greenfield proposal for a geophysics research platform where field scientists ingest "
+        "seismic survey traces, compare inversion models against calibration wells, quantify uncertainty "
+        "bands around subsurface velocity estimates, preserve parameter-set provenance, and let a principal "
+        "investigator approve a reproducible interpretation package without claiming drilling certainty."
+    )
+
+    text = confirmation_from_operator_intent(prompt, prefer_product_title=True)
+    lowered = text.casefold()
+
+    assert "field scientists ingest seismic survey traces" in lowered
+    assert "quantify uncertainty bands around subsurface velocity estimates" in lowered
+    assert "quantify uncertainty bands around subsurface velocity:" not in lowered
+    assert "needs the product to preserve parameter-set provenance" not in lowered
+    assert "product to quantify uncertainty bands around" not in lowered
+
+
+def test_scientific_recovery_preserves_loaded_measurement_source_step() -> None:
+    prompt = (
+        "Create a greenfield proposal for a biomedical engineering review platform where researchers load "
+        "orthopedic implant fatigue-test measurements, compare finite-element simulations against bench-test controls, "
+        "track mesh and material parameters, capture tolerance bands and failure modes, and let a review board approve "
+        "an evidence package without making clinical safety claims."
+    )
+
+    source = prompt_intent_source(prompt)
+    model = first_path_model(source.first_path)
+    text = confirmation_from_operator_intent(prompt, prefer_product_title=True)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+    lowered = text.casefold()
+
+    assert model.steps[0] == "Researchers load orthopedic implant fatigue-test measurements"
+    assert "load orthopedic implant fatigue-test measurements" in lowered
+    assert "compare finite-element simulations against bench-test controls" in lowered
+    for phrase in (
+        "method version",
+        "baseline comparison",
+        "uncertainty or tolerance",
+        "reproducibility evidence",
+    ):
+        assert phrase in lowered
+    assert "fatigue-test measurements" in rendered
+    assert "finite-element simulations against bench-test controls" in rendered
+    assert proposal["semantic_model"]["evaluation_semantics"]["focus"] == "Biomedical Engineering Review Platform"
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_operator_edited_confirmed_intent_wins_over_prompt_material_restore() -> None:
+    prompt = (
+        "Create a greenfield proposal for a biomedical engineering review platform where researchers load "
+        "orthopedic implant fatigue-test measurements, compare finite-element simulations against bench-test controls, "
+        "track mesh and material parameters, capture tolerance bands and failure modes, and let a review board approve "
+        "an evidence package without making clinical safety claims."
+    )
+    edited_confirmation = """
+# Biomedical Engineering Review Platform - Product Intent Confirmation
+
+Product story
+Biomedical Engineering Review Platform helps review boards compare simulation evidence against bench controls after source intake is handled elsewhere.
+
+State object
+A finite-element simulations against bench-test controls record tracks the actor, source input, status, owner, evidence, and version history.
+
+First complete path
+A biomedical engineering review platform user can compare finite-element simulations against bench-test controls. Track mesh and material parameters. Capture tolerance bands and failure modes. Let a review board approve an evidence package without making clinical safety claims.
+
+Human actors
+- Biomedical Engineering Review Platform User: needs the product to complete the first path and keep the result visible and reviewable
+
+Internal product systems
+- Biomedical Engineering Review Platform Intake Register — records source input and version history
+- Biomedical Engineering Review Platform Review Workspace — presents current state and next action
+- Biomedical Engineering Review Platform Proof Ledger — keeps validation results and replayable evidence
+
+Proof boundary
+Release 0.0.1 succeeds when the accepted first path is complete and the finite-element simulations against bench-test controls remain reviewable.
+""".strip()
+
+    intent = parse_confirmed_intent_text(edited_confirmation, prompt=prompt)
+
+    assert "load orthopedic implant fatigue-test measurements" not in intent["first_path"].casefold()
+    assert "compare finite-element simulations against bench-test controls" in intent["first_path"].casefold()
+    assert "track mesh and material parameters" in intent["first_path"].casefold()
+
+
+def test_evaluation_semantics_do_not_overfire_on_plain_research_or_benchmark_words() -> None:
+    assert (
+        evaluation_semantics_for_texts(
+            title="Research recruitment workspace",
+            state_object="Candidate outreach record",
+            first_path="Recruiter reviews applicants and schedules interviews.",
+            proof_boundary="One recruiter can review a candidate.",
+            prompt="Create a research recruitment workspace for hiring coordinators.",
+        )
+        is None
+    )
+    assert (
+        evaluation_semantics_for_texts(
+            title="Clinical benchmark dashboard",
+            state_object="Operations benchmark record",
+            first_path="Coordinator opens a dashboard and reviews clinic throughput.",
+            proof_boundary="One benchmark view opens for an operations reviewer.",
+            prompt="Create a clinical benchmark dashboard for operations teams.",
+        )
+        is None
+    )
+
+
+def test_command_led_scientific_title_wrapper_returns_stripped_title() -> None:
+    text = confirmation_from_operator_intent(
+        "Draft a greenfield proposal for building an assay drift prediction model.",
+        prefer_product_title=True,
+    )
+
+    assert "# Assay Drift Prediction Model Workspace - Product Intent Confirmation" in text
+    assert "Building An Assay Drift Prediction Model" not in text
 
 
 def test_prompt_title_source_recognizes_generic_product_containers() -> None:

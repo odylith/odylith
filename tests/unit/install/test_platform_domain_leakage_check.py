@@ -106,6 +106,26 @@ def test_source_text_terms_skip_platform_native_governance_phrases() -> None:
     assert "support team" not in terms
 
 
+def test_source_text_terms_skip_matrix_proof_vocabulary_that_is_not_domain_signal() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                prompt=(
+                    "Create a radio astronomy classifier where observers review telescope candidate events "
+                    "and compare finite-element simulations against bench-test controls."
+                ),
+                required_terms=("radio", "classifier", "finite"),
+                leakage_terms=("dispersion measure",),
+            )
+        )
+    )
+
+    assert "dispersion measure" in terms
+    assert "candidate events" not in terms
+    assert "simulations against" not in terms
+    assert "telescope candidate events" not in terms
+
+
 def test_source_text_terms_keep_domain_rich_phrases_without_declared_terms() -> None:
     terms = set(
         leakage.case_leakage_terms(

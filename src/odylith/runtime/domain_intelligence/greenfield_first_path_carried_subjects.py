@@ -76,7 +76,7 @@ def _actor_subject_prefix_candidate(prefix: str, *, full_text: str) -> str:
         return ""
     candidates = tuple(dict.fromkeys((_trim_trailing_unowned_action_tail(raw), raw)))
     for candidate in candidates:
-        if len(label_terms(candidate)) >= 2 and looks_like_actor_led_subject_prefix(candidate, full_text):
+        if label_terms(candidate) and looks_like_actor_led_subject_prefix(candidate, full_text):
             return candidate
     return ""
 

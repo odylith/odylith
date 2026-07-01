@@ -80,6 +80,24 @@ def test_first_path_steps_do_not_absorb_unknown_action_into_plural_actor_subject
     ]
 
 
+def test_carried_subject_does_not_absorb_visible_result_object_before_next_action() -> None:
+    steps = first_path_steps(
+        "Researchers load orthopedic implant fatigue-test measurements, compare finite-element simulations "
+        "against bench-test controls, track mesh and material parameters, capture tolerance bands and failure modes, "
+        "and let a review board approve an evidence package without making clinical safety claims."
+    )
+
+    assert carried_subject_prefix("Researchers compare finite-element simulations against bench-test controls") == "Researchers"
+    assert steps == (
+        "Researchers load orthopedic implant fatigue-test measurements",
+        "Researchers compare finite-element simulations against bench-test controls",
+        "Researchers track mesh and material parameters",
+        "Researchers capture tolerance bands and failure modes",
+        "Researchers let a review board approve an evidence package without making clinical safety claims",
+    )
+    assert not any("bench-test tracks" in step.casefold() for step in steps)
+
+
 def test_first_path_steps_split_carried_subject_finite_group_action() -> None:
     steps = first_path_steps(
         "A case board member opens one agenda item, reviews the parcel map and zoning overlays, "

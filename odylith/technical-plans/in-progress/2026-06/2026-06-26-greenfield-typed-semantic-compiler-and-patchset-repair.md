@@ -2344,3 +2344,35 @@ vocabulary, or degraded packages.
       of the saved failed intent completed create in 32s, and installed thin
       scientific propose-to-create completed in 28s. Full installed matrix
       proof remains required before broad release readiness is reclaimed.
+- [x] Repair fresh scientific variance term-loss and evidence-depth scoring for
+      CB-215 in source.
+      Fresh scientific variance against installed dist `82c539b4` showed that
+      Greenfield could still either fail before writes on clipped scientific
+      prose or commit shallow scientific artifacts. The source repair keeps the
+      fix generic: generated-confirmation recovery restores prompt-grounded
+      material steps only for internally synthesized confirmations while
+      explicit operator-edited confirmations stay authoritative; `load` is now
+      a domain-neutral material action; one-word human actors can own carried
+      sibling actions without letting a visible-result object become the next
+      subject; rich scientific/evaluation paths preserve their concrete
+      accepted first path while gaining EvaluationSemantics depth; and the
+      installed matrix's independent domain-expert readback now derives
+      evidence obligations from typed EvaluationSemantics fields instead of
+      hard-coded phrases. The maintained matrix now includes a thin
+      no-confirmed-intent assay-drift prediction prompt. Focused proof passed
+      84 tests in 123.51s, including operator-edited confirmation authority and
+      paraphrased IR-derived scientific evidence acceptance. Source-local
+      implant-fatigue replay completed governed create in 23.93s with manifest
+      passed, 3 Registry specs, 6 Atlas diagrams, retained fatigue evidence,
+      scientific-depth terms present, and zero `bench-test tracks` or
+      `result result`. Source-local seismic-inversion replay completed governed
+      create in 24.57s with manifest passed, no clipped `Around`, no repeated
+      result copy, and retained seismic/uncertainty evidence. Disposable replay
+      repos were deleted after evidence capture. Source-local Registry
+      forensics regeneration then passed check-only and the platform
+      domain-leakage guard passed across 285 distinctive fixture terms after the
+      known CB-209 pinned-runtime forensics posture risk was encountered and
+      corrected. Remaining proof: rebuild a fresh dist, rerun
+      high-variance installed scientific matrix with browser proof, rerun the
+      maintained installed matrix with rescue proof, and verify temp cleanup and
+      platform leakage before release readiness is reclaimed.

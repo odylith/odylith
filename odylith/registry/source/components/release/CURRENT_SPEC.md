@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-06-30
+Last updated: 2026-07-01
 
 
 Last updated (UTC): 2026-04-09
@@ -569,6 +569,16 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-07-01: Added scientific evidence-depth readback to greenfield release scoring. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-045)
+  The installed greenfield matrix now treats scientific/evaluation semantics as
+  a scored proof obligation, not a shallow domain-term hit. Package evidence
+  findings derive required evidence terms from typed `EvaluationSemantics`
+  fields and inspect governed readback for method/protocol,
+  baseline/comparison, uncertainty/tolerance, and reproducibility obligations
+  before the domain-expert lens can pass. This keeps release proof aligned with
+  the premium artifact bar while preserving generic platform vocabulary;
+  fixture terminology stays confined to matrix cases and evidence records.
+
 - 2026-06-30: Proved the structured-rescue clear-fact checkpoint through fresh installed release assets. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-211`; Diagram: D-043)
   Fresh dist `odylith-local-release-0.1.15-clear-list-fix` passed the platform
   domain-leakage build guard across 285 distinctive fixture terms. The

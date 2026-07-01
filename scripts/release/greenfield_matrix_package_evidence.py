@@ -57,6 +57,12 @@ _DOMAIN_DISTRIBUTION_SURFACES = (
     ("Atlas", ("Atlas Mermaid",)),
     ("Project prompts", ("Project implementation prompt",)),
 )
+_EVALUATION_EVIDENCE_FIELDS = (
+    ("method or protocol version", ("method_or_protocol",)),
+    ("baseline or comparison evidence", ("reference_or_baseline",)),
+    ("uncertainty or tolerance boundary", ("uncertainty_or_tolerance",)),
+    ("reproducibility evidence", ("reproducibility",)),
+)
 _TERM_STOPWORDS = frozenset(
     {
         "accepted",
@@ -100,6 +106,7 @@ def package_evidence_findings(package: Any) -> tuple[PackageEvidenceFinding, ...
     findings.extend(_project_prompt_findings(artifacts))
     findings.extend(_governed_readback_findings(package))
     findings.extend(_domain_readback_findings(package=package, artifacts=artifacts, proposal=proposal))
+    findings.extend(_evaluation_evidence_findings(artifacts=artifacts, proposal=proposal))
     return _unique_findings(findings)
 
 
@@ -367,6 +374,53 @@ def _domain_surface_distribution_findings(
                 )
             )
     return findings
+
+
+def _evaluation_evidence_findings(
+    *,
+    artifacts: Sequence[RenderedArtifact],
+    proposal: Mapping[str, Any],
+) -> list[PackageEvidenceFinding]:
+    semantic = package_mapping(proposal.get("semantic_model"))
+    evaluation = package_mapping(semantic.get("evaluation_semantics"))
+    if not evaluation:
+        return []
+    rendered_text = normalize_string(
+        " ".join(
+            artifact.text
+            for artifact in artifacts
+            if artifact.surface not in _DOMAIN_READBACK_EXCLUDED_SURFACES
+        )
+    )
+    rendered_terms = _terms(rendered_text)
+    obligation_terms = _evaluation_obligation_terms(evaluation)
+    missing = [
+        label
+        for label, required_terms in obligation_terms.items()
+        if not required_terms or not (required_terms & rendered_terms)
+    ]
+    if not missing:
+        return []
+    return [
+        _finding(
+            "domain_expert",
+            "scientific/evaluation readback missing evidence obligation(s): " + ", ".join(missing),
+        )
+    ]
+
+
+def _evaluation_obligation_terms(evaluation: Mapping[str, Any]) -> dict[str, set[str]]:
+    raw_terms: dict[str, set[str]] = {}
+    for label, fields in _EVALUATION_EVIDENCE_FIELDS:
+        raw_terms[label] = _terms(" ".join(text_values(tuple(evaluation.get(field) for field in fields))))
+    result: dict[str, set[str]] = {}
+    for label, terms in raw_terms.items():
+        sibling_terms: set[str] = set()
+        for sibling_label, sibling in raw_terms.items():
+            if sibling_label != label:
+                sibling_terms.update(sibling)
+        result[label] = terms - sibling_terms or terms
+    return result
 
 
 def _active_components(proposal: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
