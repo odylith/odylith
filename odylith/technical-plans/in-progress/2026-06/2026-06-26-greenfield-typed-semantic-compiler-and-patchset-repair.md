@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-06-30
+Updated: 2026-07-01
 
 Backlog: B-142
 
@@ -704,8 +704,21 @@ vocabulary, or degraded packages.
   - [ ] Mitigation: Every lens finding must carry a finding code, semantic node
         ID, source-map target, projection ID, severity, and repairability.
         The first shared `tribunal_lens.py` contract now pins that custody
-        metadata at judgment time for greenfield PM, architect, engineer, and
-        domain-expert lenses instead of reconstructing it later from prose.
+      metadata at judgment time for greenfield PM, architect, engineer, and
+      domain-expert lenses instead of reconstructing it later from prose.
+      The 2026-07-01 source-address checkpoint adds an executable
+      `ProjectionSourceAddress` contract in `greenfield_artifact_plan.py`:
+      dict projections require a named field, row projections require a row
+      index plus field, list projections may target whole-list facts or indexed
+      rows only, and broad roots such as `proposal.backlog`, `components`,
+      `project_brief`, non-indexed list tails, or preview-only paths cannot
+      become PatchSet operations. Package and lens findings now become plan
+      patches only when that source address exists;
+      identifiable Registry spec copy defects map back to
+      `components[n].component_contract.produced_outputs`, while unsupported
+      package repetition stays fail-closed instead of advertising a fake root
+      patch. This is the next typed-IR repair substrate step, but broader
+      renderer context starvation and full source-span IDs remain open.
 - [ ] Risk: The architecture record passes while generated artifacts remain
       below the premium human bar.
   - [ ] Mitigation: Completion requires fresh high-variance end-to-end
@@ -731,6 +744,18 @@ vocabulary, or degraded packages.
       rejected interpretations, projection isolation, and source-map targets.
 - [x] Unit tests proving typed findings classify failures and feed repair
       context without validator-message substring matching.
+- [x] Source-address PatchSet custody proof: focused ArtifactPlanIR,
+      artifact-plan executor, PatchSet payload, post-confirm engine,
+      quality-repair, source-addressed repair, quality-lens, and package
+      repetition tests passed 130 tests in 46.20s. Py-compile proof,
+      `git diff --check`, and the 285-term platform domain-leakage guard
+      passed for the changed source owners. The suite now proves broad
+      projection roots are not executable plan patches, exact source leaves
+      still route to `ArtifactPlanIR`, non-indexed list tails are rejected, and
+      source-owned Registry generated-copy findings resolve to component
+      contract facts before repair. Atlas freshness, Casebook source,
+      component Registry, plan/workstream binding, and plan risk/mitigation
+      validation also passed after the governed surface sync.
 - [ ] Unit tests proving `PatchSet` repair applies to `SemanticModelIR` or
       `ArtifactPlanIR`, rerenders only impacted projections, and never edits
       rendered artifacts directly. Current checkpoint proves the operation-level

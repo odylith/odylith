@@ -356,18 +356,22 @@ def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() ->
         (
             review_finding(
                 code="generated_copy_quality",
-                surface="Operator next steps",
-                target_path="next_steps",
+                surface="project_brief",
+                target_path="proposal.project_brief.project_outcome",
+                projection_id="project_brief",
+                semantic_node_id="ArtifactPlanIR.project_brief.project_outcome",
                 severity="medium",
                 repairability="plan_patch",
-                owner="operator_experience_renderer",
+                owner="project_brief_renderer",
                 source="generated_copy_quality",
-                message="Operator next steps has modal/base-form grammar drift near can submits.",
+                message="Project brief has modal/base-form grammar drift near can submits.",
             ),
             review_finding(
                 code="generated_copy_quality",
                 surface="registry",
-                target_path="prewrite_package.rendered_component_specs::spec.md",
+                target_path="components[0].component_contract.produced_outputs",
+                projection_id="registry",
+                semantic_node_id="ArtifactPlanIR.components[0].component_contract.produced_outputs",
                 severity="medium",
                 repairability="plan_patch",
                 owner="artifact_plan_projector",
@@ -379,10 +383,10 @@ def test_patchset_maps_typed_copy_findings_to_affected_artifact_projections() ->
 
     by_path = {operation["target_path"]: operation for operation in patchset["operations"]}
 
-    assert by_path["next_steps"]["target_layer"] == "artifact_plan"
-    assert by_path["next_steps"]["affected_projections"] == ("next_steps",)
-    assert by_path["prewrite_package.rendered_component_specs::spec.md"]["target_layer"] == "artifact_plan"
-    assert by_path["prewrite_package.rendered_component_specs::spec.md"]["affected_projections"] == ("registry",)
+    assert by_path["project_brief.project_outcome"]["target_layer"] == "artifact_plan"
+    assert by_path["project_brief.project_outcome"]["affected_projections"] == ("project_brief",)
+    assert by_path["components[0].component_contract.produced_outputs"]["target_layer"] == "artifact_plan"
+    assert by_path["components[0].component_contract.produced_outputs"]["affected_projections"] == ("registry",)
 
 
 def test_patchset_rejects_generic_semantic_targets_without_supported_slot() -> None:
@@ -408,7 +412,7 @@ def test_patchset_rejects_generic_semantic_targets_without_supported_slot() -> N
     assert patchset["operations"] == []
 
 
-def test_patchset_routes_proposal_projection_targets_to_artifact_plan() -> None:
+def test_patchset_rejects_broad_proposal_projection_targets() -> None:
     patchset = patchset_request_from_findings(
         (
             review_finding(
@@ -426,17 +430,8 @@ def test_patchset_routes_proposal_projection_targets_to_artifact_plan() -> None:
         )
     ).to_dict()
 
-    operation = patchset["operations"][0]
-
-    assert operation["target_layer"] == "artifact_plan"
-    assert operation["target_path"] == "proposal.backlog"
-    assert operation["semantic_node_id"] == "SemanticModelIR.workstream_contracts"
-    assert operation["operation_kind"] == "artifact_plan_projection"
-    assert operation["projection_kind"] == "radar"
-    assert operation["affected_projections"] == ("radar",)
-    assert operation["requested_action"] == (
-        "Return an artifact-plan patch that changes only sanctioned projection fields before rerender."
-    )
+    assert patchset["status"] == "no_repairable_operations"
+    assert patchset["operations"] == []
 
 
 def test_string_only_package_issues_fail_closed_instead_of_routing_semantics() -> None:
@@ -483,14 +478,11 @@ def test_source_package_repetition_uses_typed_finding_not_legacy_gate() -> None:
     assert finding.projection_id == "radar"
     assert finding.target_path == "backlog"
     assert finding.semantic_node_id == "ArtifactPlanIR.radar"
-    assert finding.repairability == "plan_patch"
+    assert finding.repairability == "unrepairable"
 
     patchset = patchset_request_from_findings(tuple(repetition)).to_dict()
-    operation = patchset["operations"][0]
-    assert operation["target_layer"] == "artifact_plan"
-    assert operation["target_path"] == "backlog"
-    assert operation["projection_kind"] == "radar"
-    assert operation["affected_projections"] == ("radar",)
+    assert patchset["status"] == "no_repairable_operations"
+    assert patchset["operations"] == []
 
 
 def test_package_report_emits_source_typed_semantic_coverage_findings() -> None:
@@ -637,19 +629,19 @@ def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: py
         semantic_model=True,
         artifact_counts={"workstreams": 1},
         tribunal_status="passed",
-        issues=("semantic alignment still missing a workstream contract",),
+        issues=("semantic alignment still missing a project outcome contract",),
         findings=(
             review_finding(
                 code="semantic_alignment",
-                surface="radar",
-                target_path="proposal.backlog",
-                projection_id="radar",
-                semantic_node_id="SemanticModelIR.workstream_contracts",
+                surface="project_brief",
+                target_path="project_brief.project_outcome",
+                projection_id="project_brief",
+                semantic_node_id="ArtifactPlanIR.project_brief.project_outcome",
                 severity="high",
-                repairability="semantic_patch",
-                owner="semantic_model_compiler",
-                source="semantic_workstream_alignment",
-                message="semantic alignment still missing a workstream contract",
+                repairability="plan_patch",
+                owner="artifact_plan_projector",
+                source="semantic_projection_alignment",
+                message="semantic alignment still missing a project outcome contract",
             ),
         ),
     )
@@ -1051,19 +1043,19 @@ def test_post_confirm_auto_tier_extends_to_rescue_after_repairable_failure(
             semantic_model=True,
             artifact_counts={"workstreams": 1},
             tribunal_status="passed",
-            issues=("semantic alignment missing first path contract",),
+            issues=("semantic alignment missing project outcome contract",),
             findings=(
                 review_finding(
                     code="semantic_alignment",
-                    surface="radar",
-                    target_path="proposal.backlog",
-                    projection_id="radar",
-                    semantic_node_id="SemanticModelIR.workstream_contracts",
+                    surface="project_brief",
+                    target_path="project_brief.project_outcome",
+                    projection_id="project_brief",
+                    semantic_node_id="ArtifactPlanIR.project_brief.project_outcome",
                     severity="high",
-                    repairability="semantic_patch",
-                    owner="semantic_model_compiler",
-                    source="semantic_workstream_alignment",
-                    message="semantic alignment missing first path contract",
+                    repairability="plan_patch",
+                    owner="artifact_plan_projector",
+                    source="semantic_projection_alignment",
+                    message="semantic alignment missing project outcome contract",
                 ),
             ),
         ),

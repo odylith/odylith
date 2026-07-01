@@ -10,7 +10,8 @@ from odylith.runtime.common.value_coercion import dedupe_by_key
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_affected_projections
-from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_projection_for_path
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_source_address_for_path
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import ProjectionSourceAddress
 from odylith.runtime.domain_intelligence.greenfield_projection_repair_targets import ProjectionRepairTarget
 from odylith.runtime.domain_intelligence.greenfield_projection_repair_targets import (
     projection_repair_target_for_finding,
@@ -102,7 +103,8 @@ def _operation_from_finding(
     if finding.repairability == "unrepairable":
         return None
     repair_target = projection_repair_target_for_finding(finding.to_dict())
-    target_layer = repair_target.target_layer if repair_target else _target_layer(finding)
+    source_address = None if repair_target else _source_address(finding)
+    target_layer = repair_target.target_layer if repair_target else _target_layer(finding, source_address=source_address)
     if not target_layer:
         return None
     probe_values = rescue_probe_patch_values(finding)
@@ -116,14 +118,19 @@ def _operation_from_finding(
     return GreenfieldPatchOperation(
         operation_id=f"GF-PATCH-{index:03d}",
         target_layer=target_layer,
-        target_path=_target_path(finding, repair_target=repair_target, target_layer=target_layer),
-        semantic_node_id=_semantic_node_id(finding, repair_target=repair_target),
+        target_path=_target_path(
+            finding,
+            repair_target=repair_target,
+            source_address=source_address,
+            target_layer=target_layer,
+        ),
+        semantic_node_id=_semantic_node_id(finding, repair_target=repair_target, source_address=source_address),
         issue_code=finding.code,
         source_finding=finding.source,
         operation_kind=operation_kind,
         repair_owner=finding.owner,
-        projection_kind=_projection_kind(finding, repair_target=repair_target),
-        affected_projections=_affected_projections(finding, repair_target=repair_target),
+        projection_kind=_projection_kind(finding, repair_target=repair_target, source_address=source_address),
+        affected_projections=_affected_projections(finding, repair_target=repair_target, source_address=source_address),
         requested_action=_requested_action(finding, target_layer=target_layer),
         replacement_fact=probe_values.get("replacement_fact", ""),
         decision_ledger_entry=probe_values.get("decision_ledger_entry", ""),
@@ -137,10 +144,13 @@ def _target_path(
     finding: GreenfieldReviewFinding,
     *,
     repair_target: ProjectionRepairTarget | None,
+    source_address: ProjectionSourceAddress | None,
     target_layer: str,
 ) -> str:
     if repair_target:
         return repair_target.target_path
+    if source_address:
+        return source_address.target_path
     return normalize_string(finding.target_path or finding.semantic_node_id) or target_layer
 
 
@@ -148,42 +158,52 @@ def _semantic_node_id(
     finding: GreenfieldReviewFinding,
     *,
     repair_target: ProjectionRepairTarget | None,
+    source_address: ProjectionSourceAddress | None,
 ) -> str:
     if repair_target:
         return repair_target.semantic_node_id
+    if source_address:
+        return source_address.semantic_node_id
     return normalize_string(finding.semantic_node_id)
 
 
-def _target_layer(finding: GreenfieldReviewFinding) -> str:
+def _target_layer(
+    finding: GreenfieldReviewFinding,
+    *,
+    source_address: ProjectionSourceAddress | None,
+) -> str:
     repairability = normalize_token(finding.repairability)
-    if repairability == "semantic_patch" and _artifact_plan_projection_target(finding):
+    if repairability == "semantic_patch" and source_address is not None:
         return "artifact_plan"
     if repairability == "semantic_patch":
         return "semantic_model"
-    if repairability == "plan_patch":
+    if repairability == "plan_patch" and source_address is not None:
         return "artifact_plan"
     return ""
 
 
 def _artifact_plan_projection_target(finding: GreenfieldReviewFinding) -> bool:
-    semantic_node = normalize_string(finding.semantic_node_id)
-    if semantic_node.startswith("ArtifactPlanIR."):
-        return True
-    target_path = normalize_string(finding.target_path)
-    if target_path.startswith(("semantic_model.", "proposal.semantic_model.")):
-        return False
-    if target_path.startswith(("proposal.", "prewrite_package.")) and _affected_projections(finding):
-        return True
-    return bool(artifact_plan_projection_for_path(target_path))
+    return _source_address(finding) is not None
+
+
+def _source_address(finding: GreenfieldReviewFinding) -> ProjectionSourceAddress | None:
+    return artifact_plan_source_address_for_path(
+        finding.target_path,
+        projection_id=finding.projection_id,
+        semantic_node_id=finding.semantic_node_id,
+    )
 
 
 def _affected_projections(
     finding: GreenfieldReviewFinding,
     *,
     repair_target: ProjectionRepairTarget | None = None,
+    source_address: ProjectionSourceAddress | None = None,
 ) -> tuple[str, ...]:
     if repair_target:
         return repair_target.affected_projections
+    if source_address:
+        return source_address.allowed_projections
     return artifact_plan_affected_projections(
         projection_id=finding.projection_id,
         target_path=finding.target_path,
@@ -195,9 +215,12 @@ def _projection_kind(
     finding: GreenfieldReviewFinding,
     *,
     repair_target: ProjectionRepairTarget | None = None,
+    source_address: ProjectionSourceAddress | None = None,
 ) -> str:
     if repair_target and repair_target.projection_kind:
         return repair_target.projection_kind
+    if source_address:
+        return source_address.projection_id
     projections = _affected_projections(finding)
     return projections[0] if len(projections) == 1 else "multi_projection" if projections else ""
 

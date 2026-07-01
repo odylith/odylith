@@ -10,6 +10,7 @@ from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import Rende
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_mapping as _as_mapping
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import package_quality_finding
 from odylith.runtime.common.value_coercion import normalize_string
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_source_address_for_path
 from odylith.runtime.domain_intelligence.greenfield_canonical_projection_facts import CanonicalProjectionFact
 from odylith.runtime.domain_intelligence.greenfield_canonical_projection_facts import canonical_projection_facts
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
@@ -58,6 +59,7 @@ def package_repetition_quality_findings(
         surfaces = tuple(dict.fromkeys(artifact.surface for artifact, _chunk in rows))
         projection = projections[0] if len(projections) == 1 else "artifact_draft_set"
         target_path = _single_projection_target(projection)
+        repairability = "plan_patch" if artifact_plan_source_address_for_path(target_path) else "unrepairable"
         findings.append(
             package_quality_finding(
                 "greenfield rendered package repeats noncanonical prose across "
@@ -68,7 +70,7 @@ def package_repetition_quality_findings(
                 surface=projection if projection != "artifact_draft_set" else "post_confirm_package",
                 semantic_node_id=_semantic_node_id(projection),
                 severity="medium",
-                repairability="plan_patch" if target_path else "unrepairable",
+                repairability=repairability,
                 owner=_owner(projection),
                 source="package_repetition_quality",
                 sample=sample,

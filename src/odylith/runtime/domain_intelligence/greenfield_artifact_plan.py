@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.common.value_coercion import normalize_string_list
@@ -20,6 +21,11 @@ ARTIFACT_PLAN_ROOT_ALIASES = {
     "registry": "components",
     "atlas": "diagrams",
     "release": "release_plan",
+}
+ARTIFACT_PLAN_ROW_ROOT_BY_PROJECTION = {
+    "atlas": "diagrams",
+    "radar": "backlog",
+    "registry": "components",
 }
 ARTIFACT_PLAN_IMMUTABLE_FIELDS = frozenset(
     {
@@ -61,7 +67,6 @@ _PROJECTION_ALIASES = {
     "risks": "project_brief",
     "validation_strategy": "project_brief",
 }
-_ARTIFACT_PLAN_ENVELOPE_PREFIXES = ("proposal_", "prewrite_package_", "artifactplanir_")
 _IGNORED_DIRECT_PROJECTIONS = frozenset({"review_report"})
 _PROJECTION_DEPENDENCIES = {
     "accepted_project": ("project_dashboard",),
@@ -73,6 +78,28 @@ _PROJECTION_DEPENDENCIES = {
     "program": ("accepted_project", "project_dashboard", "compass", "next_steps", "release"),
 }
 _FULL_PREWRITE_PROJECTIONS = frozenset({"radar", "program"})
+_ARTIFACT_PLAN_SOURCE_ENVELOPES = frozenset({"artifactplanir", "proposal"})
+_PREWRITE_PACKAGE_ROUTE_ALIASES = {
+    "accepted_project": "accepted_project",
+    "accepted_project_preview": "accepted_project",
+    "atlas": "atlas",
+    "backlog_result": "radar",
+    "compass": "compass",
+    "compass_memory_preview": "compass",
+    "next_steps": "next_steps",
+    "next_steps_preview": "next_steps",
+    "project_brief": "project_brief",
+    "project_brief_preview": "project_brief",
+    "project_dashboard": "project_dashboard",
+    "project_dashboard_preview": "project_dashboard",
+    "radar": "radar",
+    "registry": "registry",
+    "release": "release",
+    "release_assignment_result": "release",
+    "release_target_result": "release",
+    "rendered_atlas_sources": "atlas",
+    "rendered_component_specs": "registry",
+}
 _ARTIFACT_DRAFT_EXACT_TARGETS = frozenset(
     {
         "prewrite_package.backlog_result.backlog_index_text",
@@ -88,6 +115,19 @@ _ARTIFACT_DRAFT_EXACT_PREFIXES = (
     "prewrite_package.next_steps_preview.",
 )
 _PROJECT_DASHBOARD_PREVIEW_PREFIX = "prewrite_package.project_dashboard_preview."
+
+
+@dataclass(frozen=True)
+class ProjectionSourceAddress:
+    """Executable source fact address for an ArtifactPlanIR projection repair."""
+
+    target_layer: str
+    target_path: str
+    semantic_node_id: str
+    fact_id: str
+    projection_id: str
+    allowed_projections: tuple[str, ...]
+    text_kind: str
 
 
 def artifact_plan_canonical_root(value: Any) -> str:
@@ -108,6 +148,74 @@ def artifact_plan_root_kind(value: Any) -> str:
     return ""
 
 
+def artifact_plan_row_root_for_projection(value: Any) -> str:
+    projection = artifact_projection_id(value)
+    return ARTIFACT_PLAN_ROW_ROOT_BY_PROJECTION.get(projection, "")
+
+
+def artifact_plan_source_address_for_path(
+    value: Any,
+    *,
+    projection_id: Any = "",
+    semantic_node_id: Any = "",
+    text_kind: Any = "",
+) -> ProjectionSourceAddress | None:
+    """Return an executable ArtifactPlanIR source address, never a projection guess."""
+
+    source_path = artifact_plan_source_path(value)
+    if not artifact_plan_exact_source_path(source_path):
+        return None
+    projection = artifact_projection_id(projection_id) or artifact_plan_projection_for_path(source_path)
+    if not projection:
+        return None
+    fact_id = f"ArtifactPlanIR.{source_path}"
+    semantic_node = normalize_string(semantic_node_id)
+    if not semantic_node.startswith("ArtifactPlanIR."):
+        semantic_node = fact_id
+    return ProjectionSourceAddress(
+        target_layer="artifact_plan",
+        target_path=source_path,
+        semantic_node_id=semantic_node,
+        fact_id=fact_id,
+        projection_id=projection,
+        allowed_projections=(projection,),
+        text_kind=normalize_token(text_kind) or artifact_plan_root_kind(_source_root(source_path)) or "semantic_fact",
+    )
+
+
+def artifact_plan_source_path(value: Any) -> str:
+    path = normalize_string(value)
+    if not path:
+        return ""
+    for prefix in ("proposal.", "ArtifactPlanIR."):
+        if path.startswith(prefix):
+            path = path[len(prefix) :]
+            break
+    root = artifact_plan_canonical_root(_source_root(path))
+    if not root:
+        return ""
+    tail = _source_tail(path)
+    return f"{root}{tail}"
+
+
+def artifact_plan_exact_source_path(value: Any) -> bool:
+    path = normalize_string(value)
+    if not path:
+        return False
+    parts = _source_path_parts(path)
+    if not parts:
+        return False
+    root = artifact_plan_canonical_root(parts[0])
+    kind = artifact_plan_root_kind(root)
+    if kind == "dict":
+        return len(parts) >= 2
+    if kind == "list":
+        return len(parts) == 1 or (len(parts) >= 2 and parts[1].isdecimal())
+    if kind == "row":
+        return len(parts) >= 3 and parts[1].isdecimal()
+    return False
+
+
 def artifact_plan_is_immutable_field(value: Any) -> bool:
     return normalize_token(value) in ARTIFACT_PLAN_IMMUTABLE_FIELDS
 
@@ -120,30 +228,77 @@ def artifact_projection_id(value: Any) -> str:
 
 
 def artifact_plan_projection_for_path(value: Any) -> str:
-    token = normalize_token(value)
-    if not token:
+    path = normalize_string(value)
+    if not path:
         return ""
-    direct = artifact_projection_id(token)
+    direct = artifact_projection_id(path)
     if direct:
         return direct
-    route_token = token.replace("[", "_").replace("]", "").replace(".", "_")
-    for candidate in _artifact_plan_route_candidates(route_token):
-        for alias, projection in _PROJECTION_ALIASES.items():
-            if candidate == alias or candidate.startswith(f"{alias}_") or f"_{alias}_" in candidate:
-                return projection
-        root = artifact_plan_canonical_root(candidate.split("_", 1)[0])
-        projection = artifact_projection_id(root)
-        if projection:
-            return projection
-    return ""
+    parts = _artifact_plan_route_parts(path)
+    if not parts:
+        return ""
+    head = parts[0]
+    if head == "prewrite_package":
+        return _prewrite_package_route_projection(parts[1:])
+    if head in _ARTIFACT_PLAN_SOURCE_ENVELOPES:
+        return _artifact_plan_source_root_projection(parts[1:])
+    return _artifact_plan_source_root_projection(parts)
 
 
-def _artifact_plan_route_candidates(route_token: str) -> tuple[str, ...]:
-    candidates = [route_token]
-    for prefix in _ARTIFACT_PLAN_ENVELOPE_PREFIXES:
-        if route_token.startswith(prefix):
-            candidates.append(route_token[len(prefix) :])
-    return tuple(dict.fromkeys(candidate for candidate in candidates if candidate))
+def _artifact_plan_source_root_projection(parts: Sequence[str]) -> str:
+    if not parts:
+        return ""
+    root = artifact_plan_canonical_root(parts[0])
+    return artifact_projection_id(root)
+
+
+def _prewrite_package_route_projection(parts: Sequence[str]) -> str:
+    if not parts:
+        return ""
+    return _PREWRITE_PACKAGE_ROUTE_ALIASES.get(parts[0], "")
+
+
+def _artifact_plan_route_parts(value: str) -> tuple[str, ...]:
+    rows: list[str] = []
+    current: list[str] = []
+    for char in value:
+        if char.isalnum() or char in {"_", "-"}:
+            current.append(char)
+            continue
+        if current:
+            rows.append(normalize_token("".join(current)))
+            current = []
+    if current:
+        rows.append(normalize_token("".join(current)))
+    return tuple(row for row in rows if row)
+
+
+def _source_root(path: str) -> str:
+    return normalize_token(path.split("[", 1)[0].split(".", 1)[0])
+
+
+def _source_tail(path: str) -> str:
+    text = normalize_string(path)
+    boundaries = [index for index in (text.find("["), text.find(".")) if index >= 0]
+    if not boundaries:
+        return ""
+    return text[min(boundaries) :]
+
+
+def _source_path_parts(path: str) -> tuple[str, ...]:
+    text = normalize_string(path)
+    parts: list[str] = []
+    current: list[str] = []
+    for char in text:
+        if char.isalnum() or char in {"_", "-"}:
+            current.append(char)
+            continue
+        if current:
+            parts.append(normalize_token("".join(current)))
+            current = []
+    if current:
+        parts.append(normalize_token("".join(current)))
+    return tuple(part for part in parts if part)
 
 
 def artifact_plan_affected_projections(
@@ -230,15 +385,21 @@ __all__ = [
     "ARTIFACT_PLAN_IR_VERSION",
     "ARTIFACT_PLAN_LIST_ROOTS",
     "ARTIFACT_PLAN_ROW_ROOTS",
+    "ARTIFACT_PLAN_ROW_ROOT_BY_PROJECTION",
+    "ProjectionSourceAddress",
     "artifact_draft_exact_repair_path",
     "artifact_draft_repair_projection",
     "artifact_plan_affected_projections",
     "artifact_plan_canonical_root",
+    "artifact_plan_exact_source_path",
     "artifact_plan_expand_projection_scope",
     "artifact_plan_is_immutable_field",
     "artifact_plan_operation_affected_projections",
     "artifact_plan_projection_for_path",
+    "artifact_plan_row_root_for_projection",
     "artifact_plan_root_kind",
     "artifact_plan_scope_requires_full_prewrite",
+    "artifact_plan_source_address_for_path",
+    "artifact_plan_source_path",
     "artifact_projection_id",
 ]

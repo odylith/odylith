@@ -14,16 +14,12 @@ from odylith.runtime.domain_intelligence.greenfield_artifact_plan import ARTIFAC
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_canonical_root
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_is_immutable_field
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_projection_for_path
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_row_root_for_projection
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_projection_id
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _ARTIFACT_PLAN_LAYER = "artifact_plan"
 _LEDGER_KEY = "artifact_plan_patch_ledger"
-_ROW_ROOT_BY_PROJECTION = {
-    "atlas": "diagrams",
-    "radar": "backlog",
-    "registry": "components",
-}
 _ROW_TEXT_PATCH_FIELD = {
     "backlog": "product_view",
     "components": "responsibility",
@@ -192,7 +188,7 @@ def _operation_row_root(operation: Mapping[str, Any]) -> str:
     )
     for raw_projection in projections:
         projection = artifact_projection_id(raw_projection)
-        root = _ROW_ROOT_BY_PROJECTION.get(projection)
+        root = artifact_plan_row_root_for_projection(projection)
         if root:
             return root
     return ""

@@ -1234,6 +1234,29 @@
   the current dist, while CB-208 remains open as the umbrella architecture
   guardrail against future stringly routing, rendered-prose mutation, and
   incomplete typed IR/projection custody.
+  A 2026-07-01 architecture review found the next residual failed mechanism:
+  despite the earlier projection contract, `plan_patch` could still mean
+  "projection/root guess" instead of "one executable source fact." Broad targets
+  such as `proposal.backlog`, `components`, or rendered preview summaries could
+  appear repairable even though no deterministic or host-authored PatchSet could
+  safely edit them. The current source-address checkpoint adds
+  `ProjectionSourceAddress` in `greenfield_artifact_plan.py`, makes PatchSet
+  creation require an executable ArtifactPlanIR source fact for plan patches,
+  downgrades unsupported quality-lens plan patches to unrepairable, maps
+  identifiable Registry generated-copy defects to
+  `components[n].component_contract.produced_outputs`, and leaves broad
+  package-repetition roots fail-closed instead of applying root-level patches.
+  The follow-up exactness review also rejected non-indexed list tails so list
+  roots are either whole-list facts or indexed facts, not arbitrary nested
+  path guesses. Focused proof passed 130 source-address, PatchSet,
+  post-confirm engine, quality-repair, source-addressed repair, quality-lens,
+  and package-repetition tests in 46.20s; py-compile, `git diff --check`, the
+  285-term platform domain-leakage guard, Atlas 46/46 freshness, Casebook
+  source validation, component Registry validation, plan/workstream binding,
+  and plan risk/mitigation validation also passed. This removes another
+  stringly/root-patch mechanism but does not close CB-208: stable source-span
+  IDs, full ArtifactDraftSet schema, broader context-starved renderer
+  contracts, and high-variance installed proof still remain.
 
 - Related Incidents/Bugs: CB-207
 

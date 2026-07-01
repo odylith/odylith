@@ -279,13 +279,18 @@ def _mechanical_package_quality_findings(package: Any) -> tuple[GreenfieldReview
             continue
         if not artifact_draft_exact_repair_path(quality_finding.target_path):
             continue
+        target_path = quality_finding.target_path
+        if projection == "registry":
+            target_path = _registry_component_contract_target_path(package, quality_finding.target_path)
         findings.append(
             review_finding(
                 code="generated_copy_quality",
                 surface=projection,
-                target_path=quality_finding.target_path,
+                target_path=target_path,
                 projection_id=projection,
-                semantic_node_id=f"ArtifactPlanIR.{projection}",
+                semantic_node_id=f"ArtifactPlanIR.{target_path}"
+                if target_path.startswith("components[")
+                else f"ArtifactPlanIR.{projection}",
                 severity="medium",
                 repairability="plan_patch",
                 owner=_plan_package_quality_owner(projection),

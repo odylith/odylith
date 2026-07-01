@@ -161,7 +161,15 @@ def test_package_repair_does_not_mutate_addressed_artifact_leaf() -> None:
 
 def test_package_quality_findings_emit_exact_artifact_plan_target_path() -> None:
     package = GreenfieldCompletionPackage(
-        proposal={},
+        proposal={
+            "components": [
+                {
+                    "component_id": "spec.md",
+                    "label": "spec.md",
+                    "component_contract": {"produced_outputs": "accepted state"},
+                }
+            ]
+        },
         rendered_component_specs={
             "spec.md": "The record stays attached attached to the accepted state.",
         },
@@ -175,9 +183,10 @@ def test_package_quality_findings_emit_exact_artifact_plan_target_path() -> None
     assert finding.projection_id == "registry"
     assert finding.repairability == "plan_patch"
     assert finding.owner == "artifact_plan_projector"
-    assert finding.target_path == "prewrite_package.rendered_component_specs::spec.md"
+    assert finding.target_path == "components[0].component_contract.produced_outputs"
+    assert finding.semantic_node_id == "ArtifactPlanIR.components[0].component_contract.produced_outputs"
     assert operation["target_layer"] == "artifact_plan"
-    assert operation["target_path"] == "prewrite_package.rendered_component_specs::spec.md"
+    assert operation["target_path"] == "components[0].component_contract.produced_outputs"
     assert operation["affected_projections"] == ("registry",)
 
 

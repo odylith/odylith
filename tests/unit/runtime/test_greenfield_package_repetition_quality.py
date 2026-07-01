@@ -72,7 +72,7 @@ def test_repetition_gate_rejects_repeated_risk_prose_across_child_artifacts() ->
     assert repetition.projection_id == "radar"
     assert repetition.target_path == "backlog"
     assert repetition.semantic_node_id == "ArtifactPlanIR.radar"
-    assert repetition.repairability == "plan_patch"
+    assert repetition.repairability == "unrepairable"
     assert repetition.owner == "radar_projector"
     assert repetition.source == "package_repetition_quality"
     assert repetition.occurrence_count == 3

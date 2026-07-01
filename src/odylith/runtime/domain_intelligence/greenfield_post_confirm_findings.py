@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
 from odylith.runtime.domain_intelligence.greenfield_component_contract_targets import (
     operator_component_spec_issues,
 )
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_source_address_for_path
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import (
     GreenfieldReviewFinding,
 )
@@ -561,10 +562,12 @@ def _quality_lens_repairability(check: Mapping[str, Any], *, repair_owner: str) 
     if not repair_owner or repair_owner == "prewrite_gate":
         return "unrepairable"
     declared = clean_text(check.get("repairability"))
-    if declared in {"semantic_patch", "plan_patch"}:
+    if declared == "semantic_patch":
         return declared
+    if declared == "plan_patch":
+        return "plan_patch" if artifact_plan_source_address_for_path(check.get("target_path")) else "unrepairable"
     if repair_owner == "artifact_plan_projector":
-        return "plan_patch"
+        return "plan_patch" if artifact_plan_source_address_for_path(check.get("target_path")) else "unrepairable"
     if repair_owner == "semantic_model_compiler":
         return "semantic_patch"
     return "unrepairable"

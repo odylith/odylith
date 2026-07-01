@@ -9,7 +9,7 @@ from typing import Any
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_expand_projection_scope
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_projection_for_path
-from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_root_kind
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_source_address_for_path
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_projection_id
 
 
@@ -192,8 +192,7 @@ def _semantic_proof_boundary_target(*, projection_id: str) -> ProjectionRepairTa
 
 
 def _artifact_plan_source_path(path: str) -> bool:
-    root = path.split("[", 1)[0].split(".", 1)[0]
-    return bool(root and artifact_plan_root_kind(root))
+    return artifact_plan_source_address_for_path(path) is not None
 
 
 def _read_path(value: Any, path: str) -> Any:

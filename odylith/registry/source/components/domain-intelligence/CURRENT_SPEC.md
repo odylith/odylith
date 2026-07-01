@@ -1777,6 +1777,24 @@ This section captures synchronized requirement and contract signals derived from
   rescue passed in 35.531s and real installed structured rescue passed in
   62.307s with natural rescue quality proven under the 90-second rescue tier.
   Temp cleanup proof reported no remaining simulation roots.
+- Source-address contract update: artifact-plan repair authority is now
+  source-addressed rather than projection-root addressed. `ArtifactPlanIR`
+  exposes executable `ProjectionSourceAddress` records only for exact source
+  facts: dict projections require a named field, row projections require row
+  index plus field, and list projections may target whole-list facts or indexed
+  rows only. Broad roots, non-indexed list tails, and preview-only paths are
+  diagnostic blockers, not PatchSet targets.
+  PatchSet creation must fail closed without that address; quality-lens
+  plan-patch findings downgrade to unrepairable when the source fact is not
+  executable; Registry generated-copy defects map to component contract source
+  leaves when the component row is identifiable; and package repetition cannot
+  use root-level patches as a repair shortcut. Focused proof passed 130
+  source-address, PatchSet, post-confirm engine, quality-repair,
+  source-addressed repair, quality-lens, and package-repetition tests plus
+  py-compile, `git diff --check`, the 285-term platform domain-leakage guard,
+  and governed validation after Atlas sync. This checkpoint strengthens the
+  typed IR boundary but does not by itself prove a new installed release
+  matrix.
 
 ## Research Basis
 

@@ -7,12 +7,16 @@ from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifac
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_repair_projection
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_affected_projections
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_canonical_root
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_exact_source_path
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_expand_projection_scope
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_is_immutable_field
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_operation_affected_projections
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_projection_for_path
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_row_root_for_projection
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_root_kind
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_scope_requires_full_prewrite
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_source_address_for_path
+from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_plan_source_path
 from odylith.runtime.domain_intelligence.greenfield_projection_repair_targets import (
     projection_repair_target_for_finding,
 )
@@ -46,6 +50,10 @@ def test_artifact_plan_ir_maps_paths_to_projection_ids_without_surface_guessing(
     assert artifact_plan_projection_for_path("proposal.assumptions") == "project_brief"
     assert artifact_plan_projection_for_path("ArtifactPlanIR.assumptions") == "project_brief"
     assert artifact_plan_projection_for_path("prewrite_package.next_steps") == "next_steps"
+    assert artifact_plan_projection_for_path("prewrite_package.rendered_component_specs::spec.md") == "registry"
+    assert artifact_plan_projection_for_path("prewrite_package.project_dashboard_preview.overview.summary") == (
+        "project_dashboard"
+    )
 
     assert (
         artifact_plan_affected_projections(
@@ -57,6 +65,47 @@ def test_artifact_plan_ir_maps_paths_to_projection_ids_without_surface_guessing(
     )
     assert artifact_plan_affected_projections(target_path="proposal.assumptions") == ("project_brief",)
     assert artifact_plan_affected_projections(surface="product_manager") == ()
+
+
+def test_artifact_plan_ir_rejects_projection_substring_guessing() -> None:
+    assert artifact_plan_projection_for_path("proposal.semantic_model.first_path_contract") == ""
+    assert artifact_plan_projection_for_path("prewrite_package.product_manager.registry_note") == ""
+    assert artifact_plan_projection_for_path("diagnostics.rendered_component_specs_shadow") == ""
+    assert artifact_plan_projection_for_path("prewrite_package.project_dashboard_previewish.summary") == ""
+    assert artifact_plan_projection_for_path("notes.registry.release.atlas") == ""
+    assert artifact_plan_affected_projections(target_path="notes.registry.release.atlas") == ()
+
+
+def test_artifact_plan_ir_source_addresses_are_exact_source_facts() -> None:
+    address = artifact_plan_source_address_for_path(
+        "proposal.components[1].component_contract.produced_outputs",
+        semantic_node_id="ArtifactDraftSet.registry",
+    )
+
+    assert address is not None
+    assert address.target_layer == "artifact_plan"
+    assert address.target_path == "components[1].component_contract.produced_outputs"
+    assert address.semantic_node_id == "ArtifactPlanIR.components[1].component_contract.produced_outputs"
+    assert address.fact_id == "ArtifactPlanIR.components[1].component_contract.produced_outputs"
+    assert address.projection_id == "registry"
+    assert address.allowed_projections == ("registry",)
+
+    assert artifact_plan_source_path("ArtifactPlanIR.assumptions") == "assumptions"
+    assert artifact_plan_exact_source_path("assumptions") is True
+    assert artifact_plan_exact_source_path("project_brief.project_outcome") is True
+    assert artifact_plan_exact_source_path("project_brief") is False
+    assert artifact_plan_exact_source_path("components") is False
+    assert artifact_plan_exact_source_path("components[1]") is False
+    assert artifact_plan_exact_source_path("components[1].component_contract.produced_outputs") is True
+    assert artifact_plan_exact_source_path("release_plan") is False
+    assert artifact_plan_exact_source_path("release_plan.proof") is True
+    assert artifact_plan_exact_source_path("validation_strategy") is True
+    assert artifact_plan_exact_source_path("validation_strategy[0].proof") is True
+    assert artifact_plan_exact_source_path("validation_strategy.scope.proof") is False
+    assert artifact_plan_source_address_for_path("proposal.backlog.success_metrics") is None
+    assert artifact_plan_source_address_for_path("proposal.components") is None
+    assert artifact_plan_source_address_for_path("proposal.validation_strategy.scope.proof") is None
+    assert artifact_plan_source_address_for_path("prewrite_package.next_steps") is None
 
 
 def test_artifact_plan_ir_normalizes_artifact_draft_repair_projection_ids() -> None:
@@ -130,6 +179,8 @@ def test_artifact_plan_ir_expands_projection_dependencies_without_prose_routing(
     assert artifact_plan_scope_requires_full_prewrite(("radar",)) is True
     assert artifact_plan_scope_requires_full_prewrite(("program",)) is True
     assert artifact_plan_operation_affected_projections({"projection_kind": "product_manager"}) == ()
+    assert artifact_plan_row_root_for_projection("registry") == "components"
+    assert artifact_plan_row_root_for_projection("project_brief") == ""
 
 
 def test_projection_repair_targets_map_preview_findings_to_source_facts() -> None:
@@ -196,7 +247,9 @@ def test_artifact_plan_ir_contract_replaces_private_projection_maps_in_callers()
     assert "_SURFACE_DEFAULT_PROJECTIONS" not in (DOMAIN_INTELLIGENCE / "greenfield_artifact_plan.py").read_text(
         encoding="utf-8"
     )
+    assert "_ROW_ROOT_BY_PROJECTION" not in executor_source
     assert "_ROOT_ALIASES" not in executor_source
     assert "_IMMUTABLE_FIELDS" not in executor_source
     assert "artifact_plan_canonical_root" in executor_source
     assert "artifact_plan_is_immutable_field" in executor_source
+    assert "artifact_plan_row_root_for_projection" in executor_source

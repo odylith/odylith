@@ -22,6 +22,7 @@ flowchart LR
       direction TB
       rendered_package["Rendered package collector<br/>Radar, Registry, Atlas,<br/>Compass, Casebook, Project"]
       typed_units["Typed artifact-quality units<br/>projection id, source path,<br/>surface role, text kind"]
+      source_address_gate["Source-address gate<br/>repairable findings require exact<br/>SemanticModelIR or ArtifactPlanIR fact"]
       governed_readback["Governed readback parser<br/>release catalogs/events,<br/>program waves,<br/>Compass records,<br/>surface payload globals,<br/>persisted source-launch"]
       evidence_readback["Independent package evidence<br/>brief depth, Radar sections,<br/>Registry proof text,<br/>Atlas labels, prewrite safety,<br/>Project prompts from persisted payload,<br/>declared sentinel plus distinctive-anchor readback,<br/>guidance/catalog Markdown excluded"]
       surface_health["Surface health checks<br/>HTML, payload, routes,<br/>asset references"]
@@ -51,7 +52,8 @@ flowchart LR
     rendered_assets --> freshness_gate
     freshness_gate --> rendered_package
     rendered_package --> typed_units
-    typed_units --> governed_readback
+    typed_units --> source_address_gate
+    source_address_gate --> governed_readback
     governed_readback --> evidence_readback
     evidence_readback --> surface_health
     surface_health --> browser_state
@@ -67,7 +69,7 @@ flowchart LR
     classDef blocker fill:#FFF1F0,stroke:#F7B4AE,color:#17233A,stroke-width:1px;
     class final_manifest,prewrite_safety,governed_write,rollback_guard,dashboard_refresh,brand_assets write;
     class catalog_truth,mermaid_worker,static_renderer,rendered_assets,freshness_gate atlas;
-    class rendered_package,typed_units,governed_readback,evidence_readback,surface_health,browser_state,hard_score surface;
+    class rendered_package,typed_units,source_address_gate,governed_readback,evidence_readback,surface_health,browser_state,hard_score surface;
     class exact_blockers,no_release_claim,proof_checkpoint blocker;
 
     style write_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
