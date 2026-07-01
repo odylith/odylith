@@ -971,7 +971,7 @@ def test_glp1_greenfield_create_completes_without_actor_or_state_label_drift_und
     assert "Single User's Medication Journey" in generated_payload
     assert "GLP-1 Companion - Medication Tracking App" in visible_surface_payload
     assert "They optionally log their weight" in visible_surface_payload
-    assert "The app advances them along their titration schedule" in visible_surface_payload
+    assert "the app records it, advances them along their titration schedule" in visible_surface_payload
     assert "Caregiver: helping that person stay on schedule (later, not in the first path)" in generated_payload
     assert "Caregiver" in visible_surface_payload
     assert "deferred from the first path" in rendered_payload
@@ -1018,7 +1018,7 @@ def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_sco
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"
     assert len(payload["backlog"]) == 4
-    assert len(payload["components"]) == 4
+    assert len(payload["components"]) == 5
     assert len(payload["diagrams"]) == 6
     assert "the Bell inequality was violated" in first_path["visible_result"]
     assert "the QBER, and the established key" in first_path["visible_result"]
@@ -1030,7 +1030,7 @@ def test_greenfield_create_preserves_reported_saved_result_tail_and_deferred_sco
     assert "the key established" not in sequence_source
     assert "established key" in sequence_source
     component_labels = {row["label"] for row in payload["components"]}
-    assert "Live Telemetry Stream Service" not in component_labels
+    assert "Live Telemetry Stream Service" in component_labels
     for banned in (
         "semantic_model first_path_contract has no visible-result event",
         "confirmed Atlas flowchart `First Path Sequence` omits the tail",

@@ -117,10 +117,15 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
     actors = _role_candidates([*proposal_actors, *graph.actors])
     actor_pool = actors or _role_candidates(proposal_actors)
     first_path_actor = _first_path_contract_actor(proposal)
-    operators = _role_specific_candidates(
-        [*proposal_actors, *graph.operators, *graph.actors],
-        ("operator", "ops", "workflow", "maintainer", "coordinator", "lead"),
-        ownerish_fallback=False,
+    operators = unique_text(
+        [
+            *_role_specific_candidates(
+                [*proposal_actors, *graph.operators, *graph.actors],
+                ("operator", "ops", "workflow", "maintainer", "coordinator", "lead"),
+                ownerish_fallback=False,
+            ),
+            *_role_candidates(graph.operators),
+        ]
     )
     risk_owners = _role_specific_candidates(
         [*proposal_actors, *graph.risk_owners, *graph.actors],
@@ -146,12 +151,18 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
         ownerish_fallback=False,
     )
     primary_actor = _actor_label(actor_pool, fallback=first_path_actor or f"{compact} beneficiary advocate")
+    operator_fallback_lens = _actor_label_prefix(primary_actor) or compact
+    judgment_fallback_lens = (
+        _actor_label_prefix(primary_actor)
+        if _incompatible_judgment_role_suffix(label=primary_actor, role="beneficiary_advocate")
+        else compact
+    )
     domain_operator = _actor_label(
         operators,
         fallback=_best_role_actor(
             actor_pool,
             ("operator", "coordinator", "lead", "dispatcher", "liaison", "manager", "officer"),
-            fallback=first_path_actor or primary_actor,
+            fallback=_role_suffixed_label(operator_fallback_lens, _JUDGMENT_ROLE_REPAIR_SUFFIX["domain_operator"]),
         ),
     )
     names = {
@@ -162,7 +173,7 @@ def _domain_actor_names(graph: DomainIntelligenceGraph, *, proposal: Mapping[str
             fallback=_best_role_actor(
                 actor_pool,
                 ("commander", "chief", "director", "authority", "risk", "safety", "compliance", "security", "privacy", "manager", "owner", "officer", "lead"),
-                fallback=domain_operator or primary_actor,
+                fallback=_role_suffixed_label(judgment_fallback_lens, _JUDGMENT_ROLE_REPAIR_SUFFIX["risk_owner"]),
             ),
         ),
         "evidence_owner": _actor_label(

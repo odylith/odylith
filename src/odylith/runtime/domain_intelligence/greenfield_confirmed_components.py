@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_system_name,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_component_contract import (
     boundary_from_contract,
@@ -716,7 +717,7 @@ def _sentence_case(value: str) -> str:
 
 
 def _title_phrase(value: str) -> str:
-    return " ".join(_title_word(word, first=index == 0) for index, word in enumerate(_plain_text(value).split()))
+    return _title_label(_plain_text(value))
 
 
 def _plain_text(value: object) -> str:

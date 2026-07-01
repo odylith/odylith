@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** CB-213 fixed in source: greenfield Registry component-contract quality findings now resolve to executable ArtifactPlanIR paths, deterministic source patching avoids host timeout for localized contract outputs, and semantic-model mirrors sync atomically; saved gene-expression confirm replay passed in 29.797s with governed writes.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-07-01-greenfield-artifact-plan-rescue-accepts-non-executable-row-patch-facts.md +1 more
 - **2026-06-30 · Implementation:** Added safe host-ledger custody for greenfield natural structured rescue after 31ab2559 preserved standard benchmark wins but failed on raw rationale quote slop.
   - Scope: B-142
   - Evidence: src/odylith/runtime/common/safe_ledger_text.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py +2 more
@@ -37,9 +40,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-30 · Implementation:** Greenfield natural structured-rescue proof failed on the first committed dist because high-effort PatchSet planning timed out at 25s; source fix now defaults PatchSet planning to medium local-provider effort with a larger bounded rescue slice and a retained source repro passed in 55.085s with structured_rescue_semantic_patch repaired.
   - Scope: B-142
   - Evidence: private/tmp/odylith-natural-source-create.stdout, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py
-- **2026-06-30 · Implementation:** Greenfield natural structured-rescue hardening now preserves provider-backed PatchSet evidence through the final clean post-confirm manifest and adds a maintained natural rescue proof leg; focused source proof passed, installed committed-head proof remains pending.
-  - Scope: B-142
-  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -484,6 +484,7 @@ This section captures synchronized requirement and contract signals derived from
   repetition/sequence proof passed, and the request-handoff source-local CLI
   replay wrote 4 Radar records, 3 Registry specs, 6 Atlas diagrams, zero issues,
   and no `. Or` fragment in 19.609s with temp cleanup.
+- 2026-06-30: Fixed a source-local post-confirm quality regression in Tribunal visible actor projection and component label custody. `artifact_tribunal_actors.py` now treats typed operator rows as semantic operator evidence, prefers explicit role-labeled actor candidates over action-like operator rows, and derives missing generated operator/risk roles from a product or explicit-reviewer lens instead of reusing the primary beneficiary. `greenfield_confirmed_components.py` now delegates component title casing to the shared confirmed-text `title_label` helper so hyphen-bearing noun phrases render as natural component labels instead of local title-caser drift. Focused actor/component-label proof passed, the pattern/GLP/quantum retained integrations passed, and the broader greenfield integration pair passed 14 tests in 396.21s. Post-fix source-local matrix proof then passed 6 fresh high-variance domains at hard 10/10 with zero issues, browser proof attempted, 22.204-24.633s create times, governed readback present, and temp cleanup passed. Fresh installed release matrix proof remains required before release readiness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-198`)
 - 2026-06-29: Reopened installed release readiness after fresh recursive variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142)) (Bug: `CB-209`)
   A fresh recursive variance pass against
   `odylith-local-release-0.1.15-13b796e9` ran ten

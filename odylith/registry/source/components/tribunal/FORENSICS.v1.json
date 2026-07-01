@@ -30,12 +30,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 138,
-    "mapped_workstream_evidence_count": 124,
+    "explicit_event_count": 139,
+    "mapped_workstream_evidence_count": 125,
     "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 138
+    "timeline_event_count": 139
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -45,9 +45,40 @@
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifact_count": 1,
+      "artifacts": [],
+      "confidence": "high",
+      "event_index": 766,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Validation checkpoint passed for the Tribunal actor/component-label fix: governance validators passed, Atlas is 46/46 fresh, source-local matrix passed 6/6 at 10/10 under 25s, focused plus broader greenfield tests passed 19 in 371.12s, and platform domain leakage checks returned zero findings for fresh terms and passed 285 fixture terms.",
+      "ts_iso": "2026-06-30T21:31:52-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
       "artifacts": [
-        "tracked_artifact_1"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-f4792834/greenfield-post-confirm-matrix-20260701-f4792834.v1.json"
       ],
       "confidence": "high",
       "event_index": 761,
@@ -75,16 +106,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "B-142 release proof checkpoint: f4792834 local release dist passed 13/13 installed greenfield standard cases at 10/10 under 60s, browser proof passed, synthetic rescue 34.345s, and real host-planned rescue 65.787s under the 90s rescue tier.",
       "ts_iso": "2026-06-30T18:57:21-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-f4792834/greenfield-post-confirm-matrix-20260701-f4792834.v1.json"
       ],
       "confidence": "high",
       "event_index": 760,
@@ -100,17 +130,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Fresh f4792834 local release dist passed installed greenfield matrix: 13/13 standard 10/10 under 60s, synthetic rescue 34.345s, natural host-planned rescue 65.787s under 90s, browser proof passed, temp cleanup clean.",
       "ts_iso": "2026-06-30T18:56:06-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/runtime/common/safe_ledger_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
       ],
       "confidence": "high",
       "event_index": 759,
@@ -140,14 +169,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Added safe host-ledger custody for greenfield natural structured rescue after 31ab2559 preserved standard benchmark wins but failed on raw rationale quote slop.",
       "ts_iso": "2026-06-30T18:26:39-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 757,
@@ -177,14 +205,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Current-head greenfield/Tribunal/release-leakage focused suite passed 210 tests in 13:05 after CB-210 Project Brief readback parity and CB-211 typed empty-list structured rescue fixes; standard under-60 and bounded rescue benchmark constraints remain the release guardrails.",
       "ts_iso": "2026-06-30T17:29:09-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 756,
@@ -212,21 +239,20 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield structured rescue now accepts typed list-valued semantic clears; installed matrix proof passed 13/13 standard cases at 10/10, browser/leakage/temp cleanup passed, synthetic rescue 38.917s, natural rescue 60.926s.",
       "ts_iso": "2026-06-30T17:05:06-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py"
       ],
       "confidence": "high",
       "event_index": 751,
@@ -256,14 +282,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Removed rendered-copy mutation from greenfield post-confirm repair custody, added idempotent host semantic adjudication ledger support, updated Casebook/Registry/Atlas governance, and captured the 261f00dc installed matrix natural-rescue regression while standard 13-case proof remained 10/10.",
       "ts_iso": "2026-06-30T12:42:28-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 681,
@@ -291,20 +316,19 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Post-governance validation: fixed Tribunal audit-reviewer overcorrection, 5 targeted tests passed, 121-test greenfield/matrix/local-release pack passed, and governed surfaces refreshed.",
       "ts_iso": "2026-06-28T19:25:03-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 679,
@@ -332,18 +356,17 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Captured greenfield Tribunal actor provenance, persisted readback scoring, external-boundary semantic input, and simulation cleanup learning after clinical and biobank source-local false positives; source-local proof passed but installed release readiness remains unclaimed until rebuilt matrix proof.",
       "ts_iso": "2026-06-28T18:33:14-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 633,
@@ -369,17 +392,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Greenfield source-local variance proof passed eight new domains in the standard post-confirm path under 16s with governed records committed, all expert lenses passing, and temp repos removed after each case.",
       "ts_iso": "2026-06-26T21:41:11-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 632,
@@ -405,19 +427,18 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Controlled greenfield rescue-write proof passed: auto tier activated rescue after first-pass Radar semantic misses, real Codex gpt-5.4 structured planner repaired typed findings, second pass passed, and governed records committed in 39.768s under the 90s budget.",
       "ts_iso": "2026-06-26T21:30:17-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/reasoning/odylith_reasoning.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
       ],
       "confidence": "high",
       "event_index": 631,
@@ -443,20 +464,19 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Greenfield rescue structured-provider proof hardened Codex model selection and Tribunal strict patch-plan schemas; focused reasoning/planner tests passed and live Codex gpt-5.4 patch planning returned a validated operation.",
       "ts_iso": "2026-06-26T21:17:10-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 628,
@@ -484,21 +504,20 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Greenfield post-confirm cleanup proof passed: focused typed finding/rescue tests 17 passed, widened post-confirm suite 152 passed in 669.31s, Casebook/Registry/Radar/Atlas/plan/topology validators passed, and D-043 Atlas topology is fresh.",
       "ts_iso": "2026-06-26T20:00:11-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
       ],
       "confidence": "high",
       "event_index": 627,
@@ -524,17 +543,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Greenfield post-confirm repair cleanup demoted untyped issue strings to blockers, wired rescue through structured Tribunal patch planning, patched SemanticModelIR before intent mirrors, refreshed Registry, and replaced stale D-043 Atlas topology.",
       "ts_iso": "2026-06-26T19:43:22-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 624,
@@ -560,17 +578,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Current-tree broad greenfield proof passed 299 tests in 474.86s after typed Tribunal lens custody and high-variance semantic recovery fixes; temp Odylith simulation dirs were deleted.",
       "ts_iso": "2026-06-26T16:17:06-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
+        "src/odylith/runtime/reasoning/tribunal_lens.py"
       ],
       "confidence": "high",
       "event_index": 623,
@@ -596,19 +613,18 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Greenfield high-variance repair now separates actor/action/object/state predicates, refuses untargeted artifact-plan row patches, and adds typed Tribunal lens custody; source-local six-case matrix passed under 16s with all expert lenses.",
       "ts_iso": "2026-06-26T16:05:46-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/runtime/common/mermaid_text.py",
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py",
+        "tests/unit/runtime/test_greenfield_confirmed_surfaces.py",
+        "tests/unit/runtime/test_greenfield_tribunal_term_index.py"
       ],
       "confidence": "high",
       "event_index": 582,
@@ -634,18 +650,17 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Routed confirmed-artifact Tribunal flowchart step counting through shared Mermaid text so duplicate step nodes cannot inflate first-path event depth.",
       "ts_iso": "2026-06-04T07:41:26-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py",
+        "tests/unit/runtime/test_greenfield_tribunal_term_index.py"
       ],
       "confidence": "high",
       "event_index": 555,
@@ -671,17 +686,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Routed confirmed-artifact Tribunal accepted-text product phrase matching through shared label terms so the substance gate no longer carries a local accepted-term regex.",
       "ts_iso": "2026-06-04T01:03:01-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "src/odylith/runtime/domain_intelligence/proposal_tribunal_substance.py",
+        "tests/unit/runtime/test_greenfield_tribunal_term_index.py"
       ],
       "confidence": "high",
       "event_index": 537,
@@ -707,14 +721,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Routed confirmed artifact Tribunal substance term signatures through the shared greenfield domain term index while preserving focused, broad, and under-30s confirmed-create proof.",
       "ts_iso": "2026-06-03T19:54:48-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 521,
@@ -728,12 +741,11 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Implementation evidence linked this component to governed work.",
+      "summary": "Consolidated Domain Intelligence generated row coercion into greenfield_rows.py, removed private _mapping_rows clones from confirmed prewrite, Tribunal, title repair, apply-prewrite, and post-confirm callers, and proved the shared owner with focused, broad, and performance tests.",
       "ts_iso": "2026-06-03T15:35:13-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 517,
@@ -747,12 +759,11 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Implementation evidence linked this component to governed work.",
+      "summary": "Split Domain Intelligence artifact graph normalization and visible Tribunal actor projection out of artifact_enrichment.py; artifact enrichment now owns artifact projections only.",
       "ts_iso": "2026-06-03T14:10:31-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 514,
@@ -764,12 +775,11 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Implementation evidence linked this component to governed work.",
+      "summary": "Split confirmed generated-artifact substance checks into proposal_tribunal_substance.py; proposal_tribunal.py now stays at 522 lines while Tribunal artifact quality and confirmed-create performance proofs passed.",
       "ts_iso": "2026-06-03T12:14:34-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 466,
@@ -795,17 +805,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Hardened confirmed greenfield internal-system parsing so domain-specific evidence-review systems pass Tribunal-backed create while exact generic fallback scaffolds still fail closed under CB-202.",
       "ts_iso": "2026-05-19T14:04:11-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "src/odylith/runtime/domain_intelligence/greenfield_transaction.py",
+        "tests/unit/runtime/test_greenfield_proposals.py"
       ],
       "confidence": "high",
       "event_index": 462,
@@ -831,14 +840,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Hardened greenfield Tribunal/apply rollback and refreshed generated governance surfaces after migration, CLI, and headless-browser QA.",
       "ts_iso": "2026-05-06T15:18:38-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 461,
@@ -864,22 +872,21 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Hardened greenfield and routine governed artifact writes with zero-provider Tribunal posture gates; captured CB-175 and verified targeted tests plus sync check.",
       "ts_iso": "2026-05-06T13:38:08-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 7,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6",
-        "tracked_artifact_7"
+        "agents/bin/odylith-host-launcher.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_bundle.py",
+        "src/odylith/runtime/surfaces/claude_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/claude_host_session_brief.py",
+        "src/odylith/runtime/surfaces/codex_host_prompt_context.py",
+        "src/odylith/runtime/surfaces/codex_host_session_brief.py",
+        "src/odylith/runtime/surfaces/host_intervention_support.py"
       ],
       "confidence": "high",
       "event_index": 396,
@@ -908,14 +915,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 7 tracked artifact references retained.",
+      "summary": "Restored substrate-backed quiet prompt and SessionStart fast paths for B-141 while keeping conversation bundles off the low-signal path.",
       "ts_iso": "2026-05-01T15:22:30-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "low",
       "event_index": 387,
@@ -926,12 +932,11 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work.",
+      "summary": "Odylith Observation: Tribunal already has CB-122 on this path. Why it matters: Treat unseen Odylith moments as not delivered until the Markdown appears in chat.",
       "ts_iso": "2026-04-28T21:11:21Z",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 369,
@@ -971,7 +976,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-26T13:02:40Z",
       "workstreams": [
         "B-001",
@@ -1044,7 +1049,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 367,
@@ -1077,7 +1081,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Tribunal already has case-component-governance-intervention-engine on this path.",
       "ts_iso": "2026-04-26T12:46:32Z",
       "workstreams": [
         "B-096",
@@ -1090,7 +1094,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 362,
@@ -1118,14 +1121,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has case-component-governance-intervention-engine on this path. Governance Intervention Engine still needs review, but the missing evidence is more decisive than the visible surface activity. No named owned artifacts back the current ownership read.",
       "ts_iso": "2026-04-25T19:47:28Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 361,
@@ -1165,7 +1167,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T19:24:29Z",
       "workstreams": [
         "B-001",
@@ -1238,7 +1240,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 357,
@@ -1278,7 +1279,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T19:24:07Z",
       "workstreams": [
         "B-001",
@@ -1351,7 +1352,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 354,
@@ -1391,7 +1391,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T18:44:44Z",
       "workstreams": [
         "B-001",
@@ -1464,7 +1464,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 353,
@@ -1504,7 +1503,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T18:29:09Z",
       "workstreams": [
         "B-001",
@@ -1577,7 +1576,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 348,
@@ -1617,7 +1615,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T18:28:40Z",
       "workstreams": [
         "B-001",
@@ -1690,11 +1688,10 @@
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-04-24-benchmark-disposable-worktrees-resolve-validators-against-a-non-benchmark-ready-.md",
+        "odylith/runtime/odylith-benchmarks/latest-diagnostic.v1.json",
+        "odylith/runtime/odylith-benchmarks/latest-proof.v1.json"
       ],
       "confidence": "high",
       "event_index": 342,
@@ -1714,14 +1711,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Captured CB-124 for disposable-worktree validator toolchain drift after merged proof 2d8444952aef28d2 held on write-surface precision; benchmark tool-bin readiness fallback is now fixed in code and unit-tested.",
       "ts_iso": "2026-04-23T18:09:07-07:00",
       "workstreams": [
         "B-038"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 341,
@@ -1761,7 +1757,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has B-001 for this slice. Extend that workstream instead of creating a duplicate backlog record.",
       "ts_iso": "2026-04-22T05:42:21Z",
       "workstreams": [
         "B-001",
@@ -1834,7 +1830,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 340,
@@ -1874,7 +1869,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has B-001 for this slice. Extend that workstream instead of creating a duplicate backlog record.",
       "ts_iso": "2026-04-22T05:42:15Z",
       "workstreams": [
         "B-001",
@@ -1947,7 +1942,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 337,
@@ -1987,7 +1981,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-21T20:46:17Z",
       "workstreams": [
         "B-001",
@@ -2060,7 +2054,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 335,
@@ -2100,7 +2093,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T22:56:05Z",
       "workstreams": [
         "B-001",
@@ -2173,7 +2166,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 330,
@@ -2213,7 +2205,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T22:55:16Z",
       "workstreams": [
         "B-001",
@@ -2286,9 +2278,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/example.py"
       ],
       "confidence": "low",
       "event_index": 323,
@@ -2299,14 +2290,13 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Odylith Risks: Host-local visibility policy cannot be trusted without a delivery ledger proof. consume one broker decision across Context, Execution, Memory, and Tribunal signals.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": []
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/example.py"
       ],
       "confidence": "high",
       "event_index": 320,
@@ -2346,7 +2336,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": [
         "B-001",
@@ -2419,7 +2409,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 317,
@@ -2459,7 +2448,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T20:14:40Z",
       "workstreams": [
         "B-001",
@@ -2532,9 +2521,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 314,
@@ -2569,7 +2557,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
         "B-072",
@@ -2597,9 +2585,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 313,
@@ -2634,7 +2621,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": [
         "B-072",
@@ -2662,9 +2649,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 312,
@@ -2677,14 +2663,13 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:15Z",
       "workstreams": []
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 311,
@@ -2719,7 +2704,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
         "B-072",
@@ -2747,9 +2732,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 310,
@@ -2784,7 +2768,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": [
         "B-072",
@@ -2812,9 +2796,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 309,
@@ -2827,12 +2810,11 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:13Z",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 308,
@@ -2859,14 +2841,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
       "ts_iso": "2026-04-20T18:29:12Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 307,
@@ -2893,16 +2874,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
       "ts_iso": "2026-04-20T18:29:11Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 306,
@@ -2915,14 +2895,13 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": []
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 305,
@@ -2957,7 +2936,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
         "B-072",
@@ -2985,9 +2964,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 304,
@@ -3022,7 +3000,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:09Z",
       "workstreams": [
         "B-072",
@@ -3050,9 +3028,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 303,
@@ -3065,14 +3042,13 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": []
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 302,
@@ -3107,7 +3083,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
         "B-072",
@@ -3135,9 +3111,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 301,
@@ -3172,7 +3147,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:29:00Z",
       "workstreams": [
         "B-072",
@@ -3200,7 +3175,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 300,
@@ -3227,14 +3201,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
       "ts_iso": "2026-04-20T18:28:46Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 299,
@@ -3261,16 +3234,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
       "ts_iso": "2026-04-20T18:28:42Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 298,
@@ -3283,14 +3255,13 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": []
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 297,
@@ -3325,7 +3296,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
         "B-072",
@@ -3353,9 +3324,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 296,
@@ -3390,7 +3360,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:33Z",
       "workstreams": [
         "B-072",
@@ -3418,9 +3388,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 295,
@@ -3433,14 +3402,13 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "**Odylith Assist:** kept this on the shortest safe path instead of cracking open an `odylith_off`-style repo sweep by staying inside affected governance contracts [governance-intervention-engine](?tab=registry&component=governance-intervention-engine), then grounding the work to 1 candidate path. **Odylith Risks:** Tribunal already has Governance Intervention Engine in unsafe closeout, so capture the final reviewed checkpoint for B-096 and clear linked surfaces before closeout.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": []
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 294,
@@ -3475,7 +3443,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
         "B-072",
@@ -3503,9 +3471,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 293,
@@ -3540,7 +3507,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has case-component-governance-intervention-engine in the decision path.",
       "ts_iso": "2026-04-20T18:26:01Z",
       "workstreams": [
         "B-072",
@@ -3568,7 +3535,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 292,
@@ -3595,14 +3561,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
       "ts_iso": "2026-04-20T18:25:18Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 291,
@@ -3629,14 +3594,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has a governed slice for B-096. Odylith can extend the existing workstream instead of inventing duplicate backlog truth.",
       "ts_iso": "2026-04-20T18:25:05Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 285,
@@ -3676,7 +3640,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T14:13:41Z",
       "workstreams": [
         "B-001",
@@ -3749,7 +3713,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 283,
@@ -3789,7 +3752,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T14:12:53Z",
       "workstreams": [
         "B-001",
@@ -3862,7 +3825,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 279,
@@ -3902,7 +3864,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T03:27:29Z",
       "workstreams": [
         "B-001",
@@ -3975,9 +3937,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "AGENTS.md"
       ],
       "confidence": "high",
       "event_index": 278,
@@ -3989,14 +3950,13 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Odylith Risks: Host-local visibility policy cannot be trusted without a delivery ledger proof. consume one broker decision across Context, Execution, Memory, and Tribunal signals.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": []
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "AGENTS.md"
       ],
       "confidence": "high",
       "event_index": 275,
@@ -4040,7 +4000,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
         "B-001",
@@ -4164,7 +4124,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "low",
       "event_index": 273,
@@ -4175,12 +4134,11 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work.",
+      "summary": "Odylith Risks: Host-local visibility policy cannot be trusted without a delivery ledger proof. consume one broker decision across Context, Execution, Memory, and Tribunal signals.",
       "ts_iso": "2026-04-20T03:26:09Z",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 270,
@@ -4220,7 +4178,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:09Z",
       "workstreams": [
         "B-001",
@@ -4293,7 +4251,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 268,
@@ -4333,7 +4290,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T03:26:03Z",
       "workstreams": [
         "B-001",
@@ -4406,7 +4363,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 265,
@@ -4446,7 +4402,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T03:24:52Z",
       "workstreams": [
         "B-001",
@@ -4519,7 +4475,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 263,
@@ -4559,7 +4514,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T01:56:52Z",
       "workstreams": [
         "B-001",
@@ -4632,13 +4587,12 @@
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/discipline/benchmark.py",
+        "src/odylith/runtime/discipline/signals.py",
+        "src/odylith/runtime/discipline/support.py"
       ],
       "confidence": "high",
       "event_index": 262,
@@ -4686,17 +4640,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate discipline and validate guidance-behavior passed, quick discipline report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.",
       "ts_iso": "2026-04-17T20:20:18-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/runtime/source/optimization-evaluation-corpus.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
       "confidence": "high",
       "event_index": 261,
@@ -4742,16 +4695,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "B-110 Odylith Discipline hardening centralized signal/law policy, ranked open-world affordances, suppressed ephemeral practice refs, tagged Discipline benchmark scenarios to B-110, and proved zero-credit validators plus quick benchmark families with advisory widening at 0.0.",
       "ts_iso": "2026-04-17T20:06:43-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
       "confidence": "high",
       "event_index": 260,
@@ -4797,16 +4749,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "B-110 final browser QA rerun exposed and fixed Compass fixture voice fragility: fake narrator now normalizes governed phrases into plain maintainer wording before standup validation. Exact failing test passed, then final browser matrix passed 158 with 1 skipped after the final governed surface refresh.",
       "ts_iso": "2026-04-17T19:25:34-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
       "confidence": "high",
       "event_index": 259,
@@ -4852,24 +4803,23 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "B-110 aggressive QA closeout: discipline validator passed 19 cases with platform integration green and zero hot-path provider/model calls; guidance-behavior validator passed 6 cases and 11 checks; quick benchmarks passed hard gates for discipline report 70fd94f9eaa6b982 and guidance_behavior report 5ca4596788ef9804; browser regression matrix passed 158 with 1 skipped.",
       "ts_iso": "2026-04-17T19:10:12-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
-      "artifact_count": 9,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6",
-        "tracked_artifact_7",
-        "tracked_artifact_8",
-        "tracked_artifact_9"
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/discipline/laws.py",
+        "src/odylith/runtime/discipline/memory.py",
+        "src/odylith/runtime/discipline/pressure.py",
+        "src/odylith/runtime/governance/sync_workstream_artifacts.py",
+        "src/odylith/runtime/governance/validate_discipline.py",
+        "tests/unit/runtime/test_discipline.py",
+        "tests/unit/runtime/test_sync_cli_compat.py",
+        "tests/unit/runtime/test_validate_discipline.py"
       ],
       "confidence": "high",
       "event_index": 258,
@@ -4915,16 +4865,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 9 tracked artifact references retained.",
+      "summary": "B-110 aggressive QA hardened visible-proof command handling, transcript-safe practice memory, malformed counter validation, and structured refresh result coercion.",
       "ts_iso": "2026-04-17T18:55:55-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
       "confidence": "high",
       "event_index": 257,
@@ -4970,19 +4919,18 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "B-110 final QA recorded post-sync validators, quick benchmark family proof, and full browser surface regression for Odylith Discipline hardening.",
       "ts_iso": "2026-04-17T18:12:15-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/discipline/proof.py",
+        "src/odylith/runtime/discipline/voice.py",
+        "src/odylith/runtime/governance/validate_discipline.py"
       ],
       "confidence": "high",
       "event_index": 256,
@@ -5028,17 +4976,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "B-110 hardening connected Odylith Discipline proof obligations, live-voice evidence shaping, platform integration validation, and zero-credit benchmark metrics across Execution, Intervention, Memory, and Benchmark.",
       "ts_iso": "2026-04-17T18:05:11-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/atlas/source/odylith-adaptive-discipline-loop.mmd",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
       "confidence": "high",
       "event_index": 253,
@@ -5086,7 +5033,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "B-110 source-local closure proof passed after governed sync: character and guidance validators, quick benchmark families, focused unit/CLI tests, 78 browser regressions, and sync check-only are green; full release proof remains gated on pinned dogfood runtime repair and matched proof benchmark.",
       "ts_iso": "2026-04-17T16:27:58-07:00",
       "workstreams": [
         "B-110",
@@ -5100,12 +5047,11 @@
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/discipline/contract.py",
+        "src/odylith/runtime/governance/validate_discipline.py"
       ],
       "confidence": "high",
       "event_index": 252,
@@ -5151,7 +5097,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "B-110 Odylith Discipline source-local proof landed: zero-credit validator, guidance-behavior validator, quick benchmark family selection, and Discipline quick benchmark are green; pinned dogfood runtime proof remains blocked by managed runtime drift.",
       "ts_iso": "2026-04-17T16:17:00-07:00",
       "workstreams": [
         "B-110",
@@ -5164,7 +5110,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 251,
@@ -5206,14 +5151,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Updated v0.1.11 governance truth for B-096 so Guidance Behavior summaries, Context Engine, Execution Engine, Memory Contracts, Tribunal-ready evidence, the intervention value engine, benchmark validation, Atlas, Registry, Radar, Casebook, and Compass describe one low-latency visible-intervention contract.",
       "ts_iso": "2026-04-17T13:31:40-07:00",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 249,
@@ -5253,7 +5197,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Radar already has a governed slice for B-001.",
       "ts_iso": "2026-04-17T03:48:35Z",
       "workstreams": [
         "B-001",
@@ -5320,7 +5264,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 247,
@@ -5360,7 +5303,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-17T00:47:30Z",
       "workstreams": [
         "B-001",
@@ -5427,7 +5370,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 235,
@@ -5453,18 +5395,17 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-16T18:24:09Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "src/odylith/runtime/intervention_engine/visibility_broker.py",
+        "tests/integration/runtime/test_intervention_visibility_browser.py",
+        "tests/unit/runtime/test_intervention_visibility_broker.py"
       ],
       "confidence": "high",
       "event_index": 246,
@@ -5494,17 +5435,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Hardened intervention chat-visible delivery with a shared broker, assistant-render-required proof states, transcript confirmation, D-038 proposal visibility gating, and focused runtime/browser validation.",
       "ts_iso": "2026-04-16T17:27:55-07:00",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "tests/integration/runtime/test_context_execution_alignment_browser.py",
+        "tests/unit/runtime/test_component_registry_candidate_policy.py"
       ],
       "confidence": "high",
       "event_index": 244,
@@ -5535,20 +5475,19 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Hardened B-099 QA: execution hard-cut regression tests, full runtime unit suite 1918 passed, browser suite 139 passed/1 skipped, and sync check-only passed.",
       "ts_iso": "2026-04-16T16:47:23-07:00",
       "workstreams": [
         "B-099"
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "src/odylith/runtime/context_engine/execution_engine_handshake.py",
+        "src/odylith/runtime/context_engine/odylith_context_engine_packet_summary_runtime.py",
+        "src/odylith/runtime/orchestration/subagent_router_execution_engine_runtime.py",
+        "src/odylith/runtime/reasoning/remediator.py",
+        "tests/unit/runtime/test_execution_engine_handshake.py"
       ],
       "confidence": "high",
       "event_index": 243,
@@ -5585,17 +5524,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Context Engine and Execution Engine alignment hardened stale snapshot handling across packet summaries, router assessment, remediator execution, and benchmark proof with fail-closed canonical execution-engine identity checks; runtime, integration, registry, backlog, atlas, sync, and diff hygiene validation passed.",
       "ts_iso": "2026-04-16T16:13:46-07:00",
       "workstreams": [
         "B-099"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "src/odylith/runtime/context_engine/execution_engine_handshake.py",
+        "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
       ],
       "confidence": "high",
       "event_index": 242,
@@ -5627,14 +5565,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.",
       "ts_iso": "2026-04-16T15:19:46-07:00",
       "workstreams": [
         "B-099"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 241,
@@ -5666,7 +5603,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Hardened Context Engine to Execution Engine handshake: canonical execution-engine identity now fails closed on historical target ids before snapshot reuse, shared compact snapshots feed packet/runtime/remediator surfaces, execution benchmark gates enforce accuracy, false-admit/false-deny, and guard correctness before latency diagnostics, and sync validation is green for v0.1.11.",
       "ts_iso": "2026-04-16T14:54:04-07:00",
       "workstreams": [
         "B-099",
@@ -5678,7 +5615,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 240,
@@ -5710,7 +5646,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Completed B-099 Context Engine and Execution Engine alignment waves for v0.1.11: canonical execution-engine handshake, shared snapshot reuse, Codex/Claude parity, benchmark cost metrics, docs/specs/Atlas refresh, and sync validation.",
       "ts_iso": "2026-04-16T14:22:41-07:00",
       "workstreams": [
         "B-099",
@@ -5722,12 +5658,11 @@
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/radar/source/programs/B-099.execution-waves.v1.json",
+        "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
+        "odylith/registry/source/components/odylith-context-engine/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-16-execution-engine-benchmark-proof-and-canonical-cutover.md"
       ],
       "confidence": "high",
       "event_index": 239,
@@ -5763,7 +5698,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.",
       "ts_iso": "2026-04-16T13:15:08-07:00",
       "workstreams": [
         "B-099",
@@ -5771,9 +5706,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
       "event_index": 215,
@@ -5801,16 +5735,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T03:58:01Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
       "event_index": 214,
@@ -5838,16 +5771,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T03:57:49Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
       "event_index": 211,
@@ -5877,16 +5809,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T03:57:38Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
       "event_index": 210,
@@ -5914,16 +5845,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T03:57:38Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
       "event_index": 207,
@@ -5953,16 +5883,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:54:42Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
       "event_index": 206,
@@ -5990,16 +5919,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:54:42Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
       "event_index": 204,
@@ -6029,16 +5957,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:54:32Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/engine.py"
       ],
       "confidence": "high",
       "event_index": 203,
@@ -6066,16 +5993,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:54:32Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py"
       ],
       "confidence": "high",
       "event_index": 202,
@@ -6103,16 +6029,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-16T02:53:38Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 201,
@@ -6142,16 +6067,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:37:58Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 200,
@@ -6179,16 +6103,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:37:58Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 198,
@@ -6216,16 +6139,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-16T02:37:41Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 197,
@@ -6255,16 +6177,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-16T02:29:52Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 196,
@@ -6292,16 +6213,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:29:52Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 195,
@@ -6331,16 +6251,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas.",
       "ts_iso": "2026-04-16T02:29:51Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py"
       ],
       "confidence": "high",
       "event_index": 194,
@@ -6368,16 +6287,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-16T02:29:51Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "README.md"
       ],
       "confidence": "high",
       "event_index": 185,
@@ -6399,7 +6317,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-005.",
       "ts_iso": "2026-04-16T01:31:39Z",
       "workstreams": [
         "B-005",
@@ -6409,11 +6327,10 @@
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md",
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py",
+        "src/odylith/runtime/surfaces/host_visible_intervention.py"
       ],
       "confidence": "high",
       "event_index": 217,
@@ -6443,18 +6360,17 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Completed intervention chat-visibility hardening: Codex and Claude now report assistant-visible readiness, visible-intervention renders Observation/Proposal/Assist Markdown, Stop Assist recovers from validation proof without claiming artifacts, and CB-121 plus B-096 governance records were updated.",
       "ts_iso": "2026-04-15T21:35:01-07:00",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-04-16-intervention-hook-payloads-can-be-generated-but-never-reach-chat-visible-ux.md",
+        "src/odylith/runtime/intervention_engine/host_surface_runtime.py",
+        "src/odylith/runtime/surfaces/host_visible_intervention.py"
       ],
       "confidence": "high",
       "event_index": 216,
@@ -6486,16 +6402,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Fixed intervention chat visibility contract: assistant-render fallback, visible-intervention CLI, Codex Bash-only hook truth, Stop one-shot Assist recovery, and CB-121 casebook capture.",
       "ts_iso": "2026-04-15T21:20:30-07:00",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 177,
@@ -6523,16 +6438,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-15T07:01:00Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 176,
@@ -6560,16 +6474,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-15T07:00:59Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 175,
@@ -6599,16 +6512,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:58:39Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 174,
@@ -6636,16 +6548,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:58:39Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 173,
@@ -6673,16 +6584,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-15T06:58:38Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 172,
@@ -6712,16 +6622,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:57:32Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 171,
@@ -6749,16 +6658,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:57:32Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 170,
@@ -6786,16 +6694,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-15T06:57:30Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 169,
@@ -6823,16 +6730,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-15T06:56:55Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 168,
@@ -6860,16 +6766,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Odylith can already feel that this is not a cold start. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-15T06:56:54Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 167,
@@ -6899,16 +6804,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Previewing a governed proposal across Radar, Registry, Atlas, and 1 more.",
       "ts_iso": "2026-04-15T06:55:30Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 166,
@@ -6936,16 +6840,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-096.",
       "ts_iso": "2026-04-15T06:55:30Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 165,
@@ -6973,16 +6876,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-15T06:55:28Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 164,
@@ -7009,16 +6911,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Observation rendered.",
       "ts_iso": "2026-04-15T06:39:28Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 163,
@@ -7045,16 +6946,15 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Observation rendered.",
       "ts_iso": "2026-04-15T06:38:54Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/odylith/runtime/intervention_engine/voice.py"
       ],
       "confidence": "high",
       "event_index": 162,
@@ -7081,18 +6981,17 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Observation rendered.",
       "ts_iso": "2026-04-15T06:38:18Z",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md"
       ],
       "confidence": "high",
       "event_index": 151,
@@ -7122,14 +7021,13 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Plan binding: advanced B-096 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-14-conversation-observation-engine-governed-proposal-flow-and-human-intervention-voice-contract.md",
       "ts_iso": "2026-04-14T16:35:29-07:00",
       "workstreams": [
         "B-096"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 134,
@@ -7161,19 +7059,18 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "",
       "ts_iso": "2026-04-13T23:57:57Z",
       "workstreams": [
         "B-001"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
       ],
       "confidence": "high",
       "event_index": 55,
@@ -7206,19 +7103,18 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Kept the change benchmark-safe and proved the focused chatter plus benchmark guard lanes stayed green.",
       "ts_iso": "2026-04-07T09:59:30-07:00",
       "workstreams": [
         "B-031"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
       ],
       "confidence": "high",
       "event_index": 54,
@@ -7251,19 +7147,18 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Tightened the chatter hot path so one conversation-bundle pass reuses request metrics and context-artifact scans across ambient and closeout composition.",
       "ts_iso": "2026-04-07T09:59:30-07:00",
       "workstreams": [
         "B-031"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-30-odylith-first-turn-bootstrap-and-short-form-grounding-commands.md",
+        "src/odylith/runtime/orchestration/odylith_chatter_delivery_runtime.py",
+        "src/odylith/runtime/orchestration/odylith_chatter_runtime.py"
       ],
       "confidence": "high",
       "event_index": 53,
@@ -7296,20 +7191,19 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Hardened Tribunal-fed ambient chatter so malformed explicit and cached signal payloads degrade quietly, supplemental closeout lines stay suppressed without an Odylith Assist line, and closeout punctuation stays clean.",
       "ts_iso": "2026-04-07T09:59:30-07:00",
       "workstreams": [
         "B-031"
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "README.md",
+        "docs/benchmarks/README.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
       ],
       "confidence": "high",
       "event_index": 42,
@@ -7344,7 +7238,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.",
       "ts_iso": "2026-04-05T19:43:45-07:00",
       "workstreams": [
         "B-021",

@@ -45,9 +45,8 @@
   "spec_ref": "odylith/registry/source/components/release/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-f4792834/greenfield-post-confirm-matrix-20260701-f4792834.v1.json"
       ],
       "confidence": "high",
       "event_index": 761,
@@ -75,16 +74,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "B-142 release proof checkpoint: f4792834 local release dist passed 13/13 installed greenfield standard cases at 10/10 under 60s, browser proof passed, synthetic rescue 34.345s, and real host-planned rescue 65.787s under the 90s rescue tier.",
       "ts_iso": "2026-06-30T18:57:21-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-f4792834/greenfield-post-confirm-matrix-20260701-f4792834.v1.json"
       ],
       "confidence": "high",
       "event_index": 760,
@@ -100,17 +98,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Fresh f4792834 local release dist passed installed greenfield matrix: 13/13 standard 10/10 under 60s, synthetic rescue 34.345s, natural host-planned rescue 65.787s under 90s, browser proof passed, temp cleanup clean.",
       "ts_iso": "2026-06-30T18:56:06-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/runtime/common/safe_ledger_text.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py",
+        "src/odylith/runtime/reasoning/tribunal_patch_planner.py"
       ],
       "confidence": "high",
       "event_index": 759,
@@ -140,14 +137,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Added safe host-ledger custody for greenfield natural structured rescue after 31ab2559 preserved standard benchmark wins but failed on raw rationale quote slop.",
       "ts_iso": "2026-06-30T18:26:39-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 758,
@@ -173,14 +169,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Platform leakage preflight caught raw simulation terms in Registry forensics after a pinned dogfood refresh. Existing CB-209 fix was valid in source; rerunning component spec sync and Registry refresh through source-local regenerated neutral forensics, leakage passed across 285 terms, and source-local sync check passed.",
       "ts_iso": "2026-06-30T17:34:22-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 757,
@@ -210,14 +205,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Current-head greenfield/Tribunal/release-leakage focused suite passed 210 tests in 13:05 after CB-210 Project Brief readback parity and CB-211 typed empty-list structured rescue fixes; standard under-60 and bounded rescue benchmark constraints remain the release guardrails.",
       "ts_iso": "2026-06-30T17:29:09-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 756,
@@ -245,18 +239,17 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield structured rescue now accepts typed list-valued semantic clears; installed matrix proof passed 13/13 standard cases at 10/10, browser/leakage/temp cleanup passed, synthetic rescue 38.917s, natural rescue 60.926s.",
       "ts_iso": "2026-06-30T17:05:06-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2a389428/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 755,
@@ -272,12 +265,11 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Fresh local release dist odylith-local-release-0.1.15-2a389428 passed the maintained installed greenfield matrix: 13/13 standard cases at hard 10/10, max standard create 30.468s, average 27.801s, browser proof passed, platform leakage passed across 213 generated readback terms, temp cleanup passed, synthetic rescue passed in 37.493s, and real structured rescue passed in 62.894s under the 90s rescue tier. First full attempt hit a Python SIGBUS and left a temp root; cleanup plus one-case/three-case probes proved generated artifact quality before the final full retry passed.",
       "ts_iso": "2026-06-30T15:08:08-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 752,
@@ -291,19 +283,18 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Timeline evidence linked this component to governed work.",
+      "summary": "Installed dist de17cdda matrix failed release readiness: 9/13 standard cases passed 10/10, 4/13 failed before governed write on generated-copy plan_patch with no artifact-plan repair; natural structured rescue passed in 62.823s, leakage and temp cleanup passed.",
       "ts_iso": "2026-06-30T13:12:16-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_repair.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py"
       ],
       "confidence": "high",
       "event_index": 751,
@@ -333,17 +324,16 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Removed rendered-copy mutation from greenfield post-confirm repair custody, added idempotent host semantic adjudication ledger support, updated Casebook/Registry/Atlas governance, and captured the 261f00dc installed matrix natural-rescue regression while standard 13-case proof remained 10/10.",
       "ts_iso": "2026-06-30T12:42:28-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-dd718448/greenfield-post-confirm-matrix-20260630-dd718448.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
       ],
       "confidence": "high",
       "event_index": 750,
@@ -369,17 +359,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Committed-head installed proof for dd718448 closed CB-209: 13/13 standard greenfield creates passed at 10/10 under 33s, real host-planned natural rescue passed in 67.435s under the 90s tier, and browser, cleanup, leakage, and governed-write proofs were clean.",
       "ts_iso": "2026-06-30T11:42:59-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "private/tmp/odylith-natural-source-create.stdout",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py"
       ],
       "confidence": "high",
       "event_index": 748,
@@ -405,17 +394,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Greenfield natural structured-rescue proof failed on the first committed dist because high-effort PatchSet planning timed out at 25s; source fix now defaults PatchSet planning to medium local-provider effort with a larger bounded rescue slice and a retained source repro passed in 55.085s with structured_rescue_semantic_patch repaired.",
       "ts_iso": "2026-06-30T11:09:58-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py"
       ],
       "confidence": "high",
       "event_index": 747,
@@ -441,18 +429,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Greenfield natural structured-rescue hardening now preserves provider-backed PatchSet evidence through the final clean post-confirm manifest and adds a maintained natural rescue proof leg; focused source proof passed, installed committed-head proof remains pending.",
       "ts_iso": "2026-06-30T10:31:06-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-4750c7ec/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 746,
@@ -478,18 +465,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Fresh committed-head local release proof rebuilt odylith-local-release-0.1.15-4750c7ec from pushed commit 4750c7ec and passed the maintained installed greenfield matrix: 13/13 standard cases at 10/10, zero quality/browser/platform-leakage issues, browser proof passed for all 13 cases, 22.622s minimum, 26.394s average, 28.799s maximum create time, persisted temp-cleanup proof passed with no remaining paths, and synthetic typed-probe rescue smoke passed in 34.340s; natural host-model rescue remains unproven.",
       "ts_iso": "2026-06-30T09:54:30-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 745,
@@ -515,18 +501,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Greenfield release proof now accepts explicit external case files, persists per-case post-confirm manifest summaries, derives natural rescue proof only from non-probe provider-backed structured patch evidence, and gates matrix status on temp-cleanup proof; a three-case external variance run passed 10/10 with zero quality/browser/platform-leakage issues, 24.952s min, 25.405s average, 25.970s max, cleanup proof passed, and synthetic rescue smoke at 33.491s; natural host-rescue quality remains unproven.",
       "ts_iso": "2026-06-30T09:18:19-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 744,
@@ -552,19 +537,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Committed-head release 0.1.15-78787588 passed source-plus-dist domain-leakage proof and the installed greenfield matrix: 13/13 standard creates, zero platform-leakage findings, zero browser findings, zero quality issues, 22.690s min, 26.156s average, 29.050s max, and synthetic typed rescue smoke at 33.888s; natural host-rescue quality remains unproven by that smoke.",
       "ts_iso": "2026-06-30T08:51:12-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/governance/sync_component_spec_requirements.py"
       ],
       "confidence": "high",
       "event_index": 743,
@@ -590,17 +574,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Registry component forensics now project generic event summaries and neutral artifact counts; the platform leakage guard scans Registry component custody, while raw repro language remains limited to evidence surfaces.",
       "ts_iso": "2026-06-30T08:24:42-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 742,
@@ -626,20 +609,19 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Precommit installed greenfield matrix passed 13 standard cases with hard 10/10 scores, browser proof, generated-term platform leakage proof, complete governed records, max create time 28.697s, average 25.779s, synthetic rescue smoke 33.237s, and clean temp cleanup; final release proof still requires commit, push, committed-head rebuild, and rerun.",
       "ts_iso": "2026-06-30T07:39:27-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/registry/source/components/atlas/CURRENT_SPEC.md",
+        "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/surfaces/atlas_box_explanations.py"
       ],
       "confidence": "high",
       "event_index": 740,
@@ -667,16 +649,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Removed platform-facing retained-scenario vocabulary from current Registry specs and Atlas box-explanation runtime custody; leakage guard and strict platform-surface scan are clean outside intentional fixtures/evidence.",
       "ts_iso": "2026-06-30T07:01:42-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 739,
@@ -690,12 +671,11 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Domain-leakage release checkpoint: fresh local release assets in /tmp/odylith-domain-leakage-dist-0.1.15 built successfully and source-plus-dist platform custody scan passed with 361 distinctive fixture terms.",
       "ts_iso": "2026-06-30T05:01:05-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 737,
@@ -721,16 +701,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Release proof hardening found and fixed two residual greenfield proof weaknesses: partial leakage_terms could hide omitted case vocabulary, and matrix domain coverage used substring matching. The first broad source-text extractor overreached into generic phrases, so the final source fix uses conservative multi-token source-text leakage phrases plus declared sentinels and required anchors, and token-aware domain coverage. Proof passed 73 focused leakage/matrix tests, 448 install tests, and a strengthened source/dist leakage guard across 387 derived fixture terms against the 88df22be dist; rebuilt installed proof from the next commit remains required.",
       "ts_iso": "2026-06-30T03:07:08-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2ab8793f/greenfield-post-confirm-matrix-20260630-2ab8793f.v1.json"
       ],
       "confidence": "high",
       "event_index": 736,
@@ -756,16 +735,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "B-142 release proof updated: packaged 0.1.15 checkpoint 2ab8793f passed the 65-term build-time platform leakage gate and the installed 13-case maintained greenfield matrix with zero platform leakage issues across 54 generated readback terms, zero browser issues, 10/10 quality scores, 22.856-29.056s standard creates, rescue smoke in 34.430s, and clean temp cleanup.",
       "ts_iso": "2026-06-30T02:35:50-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2ab8793f/greenfield-post-confirm-matrix-20260630-2ab8793f.v1.json"
       ],
       "confidence": "high",
       "event_index": 735,
@@ -777,12 +755,11 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "summary": "Packaged 0.1.15 release 2ab8793f passed platform domain-leakage and installed greenfield matrix proof: 13/13 maintained cases passed, zero platform leakage issues across 54 generated readback terms, zero browser-surface issues, create seconds 22.856-29.056 avg 26.002, rescue smoke passed in 34.430s, and temp cleanup left no matrix/rescue/debug/source dirs.",
       "ts_iso": "2026-06-30T02:35:09-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 734,
@@ -794,12 +771,11 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Timeline evidence linked this component to governed work.",
+      "summary": "Fixed greenfield release leakage proof custody: release scripts now scan for domain terms, wrapped and identifier-shaped leaks are detected, generated-readback scans are unioned, and the tokenized source/dist corpus is cached for bounded repeated matrix checks.",
       "ts_iso": "2026-06-30T02:07:26-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 732,
@@ -825,16 +801,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Fresh variance reopened greenfield release readiness: leakage proof now uses declared sentinels only, actor-led gerund intent recovery source proof passed, rebuilt installed proof pending.",
       "ts_iso": "2026-06-29T22:26:51-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-aebe9245/greenfield-post-confirm-matrix-20260630-aebe9245.v1.json"
       ],
       "confidence": "high",
       "event_index": 731,
@@ -860,16 +835,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Rebuilt local release aebe9245 passed the maintained installed greenfield post-confirm matrix: 13/13 standard cases scored hard 10/10 under 60s with browser proof, zero quality/browser/leakage issues, generated-term leakage proof passed across 55 readback terms, synthetic auto-rescue smoke passed in 33.617s, and temp cleanup was clean.",
       "ts_iso": "2026-06-29T21:45:14-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 730,
@@ -895,19 +869,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Greenfield release proof must score Project brief and implementation prompts from persisted generated shell payloads and browser surfaces, not regenerated proof-harness payloads.",
       "ts_iso": "2026-06-29T20:56:41-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 729,
@@ -933,19 +906,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.",
       "ts_iso": "2026-06-29T20:25:32-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 728,
@@ -971,21 +943,20 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Proved 9a764dc7 installed greenfield matrix, then removed unconditional notification semantics from generic status-view Registry profiles after source domain-custody audit.",
       "ts_iso": "2026-06-29T20:17:44-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_component_kinds.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_actions.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_completion_text_model.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_completion.py"
       ],
       "confidence": "high",
       "event_index": 727,
@@ -1011,16 +982,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Tightened greenfield domain-custody proof: runtime helpers no longer hardcode historical example-domain nouns, the leak guard forbids them in protected source custody, component kind classification preserves accepted internal ownership, focused tests passed, and rebuilt dist proof remains pending.",
       "ts_iso": "2026-06-29T19:47:59-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e1f00464/greenfield-post-confirm-matrix-20260630-e1f00464.v1.json"
       ],
       "confidence": "high",
       "event_index": 726,
@@ -1046,17 +1016,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Fresh local release dist e1f00464 passed the 49-term platform domain-leakage guard and the 13-case installed greenfield matrix with hard 10/10 scores, zero issues, all expert lenses and browser proof passing, max standard create 29.110s, clean temp cleanup, and synthetic rescue wiring in 33.402s; natural host-rescue quality remains unproven.",
       "ts_iso": "2026-06-29T19:06:39-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-14f5102a/greenfield-post-confirm-matrix-20260629-14f5102a.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
       ],
       "confidence": "high",
       "event_index": 721,
@@ -1084,14 +1053,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Installed matrix on dist 14f5102a falsified release readiness: 4/13 greenfield post-confirm cases failed before governed writes because accepted-project or project-dashboard previews retained repairable adjacent duplicate-word prose; CB-209 updated before repair.",
       "ts_iso": "2026-06-29T16:53:57-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 720,
@@ -1117,14 +1085,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Fresh local release dist odylith-local-release-0.1.15-14f5102a rebuilt from commit 14f5102a and passed the strengthened 49-term platform domain-leakage build gate.",
       "ts_iso": "2026-06-29T16:28:07-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 719,
@@ -1150,16 +1117,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Broadened platform domain-leakage release guard: .codex/docs source custody, historical sentinel terms, and Odylith runtime tarball payload scanning now pass 49-term source+dist proof with zero findings.",
       "ts_iso": "2026-06-29T16:19:13-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 717,
@@ -1185,17 +1151,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Strengthened greenfield leakage proof from selected required-term mining to explicit per-case leakage terms; maintained matrix now scans 44 terms with zero missing cases and zero protected-custody findings.",
       "ts_iso": "2026-06-29T15:20:35-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 716,
@@ -1221,17 +1186,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Hardened greenfield matrix domain-leakage custody so selected custom simulation terms scan protected source, shipped guidance, and wheel custody before temp repos are created.",
       "ts_iso": "2026-06-29T15:12:43-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_platform_domain_leakage_check.py"
       ],
       "confidence": "high",
       "event_index": 713,
@@ -1257,17 +1221,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Captured and fixed domain-leakage guard false positive: persisted greenfield matrix proof JSON in the dist is evidence, not install payload; guard now excludes greenfield-post-confirm proof JSON while still scanning runtime wheel and text install assets.",
       "ts_iso": "2026-06-29T14:03:06-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91/greenfield-post-confirm-fresh-variance-20260629-3fbacb91.v1.json",
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91/greenfield-post-confirm-matrix-20260629-3fbacb91.v1.json"
       ],
       "confidence": "high",
       "event_index": 712,
@@ -1293,19 +1256,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Release dist 0.1.15-3fbacb91 passed platform domain-leakage build gate, maintained installed greenfield matrix, browser proof, synthetic rescue smoke, fresh ten-domain variance, and temp cleanup; max standard create 28.677s, max fresh variance create 29.269s.",
       "ts_iso": "2026-06-29T14:00:33-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "bin/_odylith.sh",
+        "bin/greenfield-post-confirm-matrix",
+        "bin/local-release-assets",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 711,
@@ -1331,17 +1293,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Added platform domain-leakage guard to local release build, standalone greenfield matrix, and shared release proof; guard derives distinctive fixture terms from the high-variance matrix and keeps domain vocabulary out of runtime and shipped guidance while allowing governed/evaluation evidence.",
       "ts_iso": "2026-06-29T13:22:52-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
       ],
       "confidence": "high",
       "event_index": 710,
@@ -1367,14 +1328,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Hardened greenfield release scoring against global domain-term soup by requiring local semantic grounding across Radar, Registry, Atlas, and Project prompt surfaces; focused scorer tests passed 36/36.",
       "ts_iso": "2026-06-29T13:05:14-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 701,
@@ -1400,19 +1360,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Fresh local release dist 0.1.15-c1fc18d8 passed the installed greenfield post-confirm matrix: 13/13 high-variance cases scored 10/10, max create time 26.581s, browser proof passed, rescue smoke passed, and temp repos cleaned.",
       "ts_iso": "2026-06-29T07:34:17-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent.py"
       ],
       "confidence": "high",
       "event_index": 698,
@@ -1438,21 +1397,20 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Live source-local warehouse near-miss replay verified the staged gerund actor-role and state-boundary title fix: confirmed create wrote 4 Radar workstreams, 3 Registry specs, 6 Atlas diagrams in 20.872s with zero manifest issues and no changes-it title copy; temp repo was deleted after proof.",
       "ts_iso": "2026-06-29T06:50:53-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 6,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_model.py"
       ],
       "confidence": "high",
       "event_index": 697,
@@ -1478,14 +1436,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 6 tracked artifact references retained.",
+      "summary": "Source-fixed adversarial greenfield gerund actor-role false positive and state-boundary pronoun-tail copy: focused tests passed and exact source-local replay wrote 4 Radar, 3 Registry, 6 Atlas records with zero manifest issues in 19.192s; rebuilt installed adversarial matrix remains required.",
       "ts_iso": "2026-06-29T06:31:25-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 696,
@@ -1499,12 +1456,11 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Timeline evidence linked this component to governed work.",
+      "summary": "B-142 installed proof passed from dist odylith-local-release-0.1.15-a4ede761: 13/13 standard greenfield creates scored 10/10 with zero issues, max create 27.078s, per-case browser proof passed, temp cleanup clean, and synthetic rescue wiring smoke passed in 33.430s.",
       "ts_iso": "2026-06-29T05:48:45-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 695,
@@ -1516,12 +1472,11 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Implementation evidence linked this component to governed work.",
+      "summary": "B-142 source-local greenfield checkpoint fixed actorless action-chain subject carry, shared actor-role custody, proof-ledger release-scope polarity, and matrix scorer public-artifact evidence; focused 95-test bundle, 52-test artifact-quality suite, and six source-local high-variance creates passed under 23s; rebuilt installed dist proof remains pending.",
       "ts_iso": "2026-06-29T05:16:31-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 694,
@@ -1533,12 +1488,11 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Timeline evidence linked this component to governed work.",
+      "summary": "Fresh recursive greenfield installed variance matrix reopened release quality: 10 non-reused cases on dist 0.1.15-13b796e9 produced 7 passes and 3 failures (domain readback miss, no-write space telescope slop gate, carbon MRV two-spec topology); independent review also found matrix 10/10 false-positive risks from runtime JSON/domain evidence, project-brief count inflation, and skipped-browser permissiveness.",
       "ts_iso": "2026-06-29T04:05:25-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 693,
@@ -1550,12 +1504,11 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Timeline evidence linked this component to governed work.",
+      "summary": "Greenfield installed release proof passed for local dist 0.1.15-13b796e9: 13 standard cases at 22.477-26.930s, hard 10/10 scores, browser proof, complete governed writes, clean temp cleanup; synthetic rescue wiring passed in 34.261s while natural host-model rescue quality remains a separate proof obligation.",
       "ts_iso": "2026-06-29T03:49:08-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 691,
@@ -1581,17 +1534,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield sparse model-lab escape fixed in source: dedicated sparse tests passed, live simulation suite passed 14 tests, source-local create passed in 19.232s with zero manifest issues and governed records; rebuilt installed matrix still required before release readiness.",
       "ts_iso": "2026-06-29T02:23:29-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e1dd08d6/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
       ],
       "confidence": "high",
       "event_index": 689,
@@ -1617,18 +1569,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Fresh local release dist e1dd08d6 passed the installed greenfield post-confirm matrix under the hardened scorer: 13/13 standard real consumer-lane creates scored 10/10 with zero issues, browser proof clean, strict temp cleanup, timings 22.581-27.010s; synthetic rescue wiring smoke passed in 34.942s. Natural rescue quality remains separate from this wiring proof.",
       "ts_iso": "2026-06-29T01:29:32-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "tests/unit/install/test_greenfield_post_confirm_matrix.py"
       ],
       "confidence": "high",
       "event_index": 688,
@@ -1656,18 +1607,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Captured and fixed hardened release-matrix proof defect: rebuilt dist def2f783 completed thirteen standard greenfield creates under 28s plus rescue smoke at 34.916s, but scorer falsely treated odylith/radar/source/CLAUDE.md as a Radar workstream. Casebook, Registry, Atlas, and plan now record the custody-boundary failure; collector excludes guidance/catalog Markdown and focused matrix proof passed 49 tests.",
       "ts_iso": "2026-06-29T01:09:40-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/artifact_quality/generated_copy_quality_units.py"
       ],
       "confidence": "high",
       "event_index": 687,
@@ -1693,18 +1643,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Hardened greenfield matrix scoring with independent package readback, typed artifact-quality units, and step-id Project prompt custody; source proof passed 49 focused tests plus the 228-test affected pack, while rebuilt installed proof remains required before release readiness.",
       "ts_iso": "2026-06-29T00:39:39-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-typed-custody-test/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 686,
@@ -1730,19 +1679,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "B-142 installed matrix proof passed after typed canonical projection custody and matrix evidence cleanup: 13 standard high-variance cases scored 10/10 under 60s, browser proof passed for all, quantum passed in 27.015s, sparse intent passed, rescue smoke passed in 35.012s, and temp cleanup was clean.",
       "ts_iso": "2026-06-28T23:40:46-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_canonical_projection_facts.py"
       ],
       "confidence": "high",
       "event_index": 685,
@@ -1768,14 +1716,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "B-142 canonical projection repetition custody now preserves typed fact provenance, release matrix keeps failed-create blocker evidence, and focused source proof is green; installed release readiness still awaits rebuilt matrix proof.",
       "ts_iso": "2026-06-28T23:03:43-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 684,
@@ -1801,14 +1748,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield first-path visible-result and sequence custody repair is source-local broad-green: slop/live 119 passed in 260.92s, component/general artifact quality 91 passed in 521.34s, and sparse/matrix guards 27 passed in 14.07s; installed release readiness remains pending fresh matrix/dist proof.",
       "ts_iso": "2026-06-28T22:03:10-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 683,
@@ -1834,18 +1780,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Sparse greenfield topology repair is source-local focused-green, but widened greenfield quality packs remain red; release readiness stays blocked pending typed sequence, prompt, and surface-custody fixes.",
       "ts_iso": "2026-06-28T20:29:15-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3d13f434/greenfield-post-confirm-matrix.v1.json",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 682,
@@ -1871,14 +1816,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Fresh installed dist odylith-local-release-0.1.15-3d13f434 failed the maintained thirteen-case greenfield matrix: 12 cases passed hard 10/10, synthetic rescue smoke passed, but sparse disclosure confirmation scored 0/10 from two Registry specs, three of four domain anchors, and failed architect/engineer/domain-expert lenses; release readiness remains blocked pending typed sparse-intent topology and domain-anchor obligations.",
       "ts_iso": "2026-06-28T20:03:03-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 681,
@@ -1906,20 +1850,19 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Post-governance validation: fixed Tribunal audit-reviewer overcorrection, 5 targeted tests passed, 121-test greenfield/matrix/local-release pack passed, and governed surfaces refreshed.",
       "ts_iso": "2026-06-28T19:25:03-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/atlas/source/domain-intelligence-greenfield-governance.mmd",
+        "odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md"
       ],
       "confidence": "high",
       "event_index": 679,
@@ -1947,14 +1890,13 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Captured greenfield Tribunal actor provenance, persisted readback scoring, external-boundary semantic input, and simulation cleanup learning after clinical and biobank source-local false positives; source-local proof passed but installed release readiness remains unclaimed until rebuilt matrix proof.",
       "ts_iso": "2026-06-28T18:33:14-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 675,
@@ -1974,12 +1916,11 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Implementation evidence linked this component to governed work.",
+      "summary": "Cross-surface governance learning captured for B-142/CB-208: Casebook, Registry, Atlas, Compass, technical plans, release proof, and prompts must be scored as governed artifact packages with source-owned facts, exact freshness, readable copy, traceable proof, and punitive multi-lens gates; count-based or rendered-prose fixes are banned.",
       "ts_iso": "2026-06-28T15:32:38-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 673,
@@ -2005,14 +1946,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Fresh local dist odylith-local-release-0.1.15-prompt-quality-proof passed the maintained thirteen-case installed greenfield matrix with zero issues, zero Project prompt findings, every browser proof attempted and passed, create times 20.666-23.468s, clean temp cleanup, and synthetic wiring-only rescue smoke at 27.399s; natural rescue quality remains unclaimed.",
       "ts_iso": "2026-06-28T06:15:28-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 671,
@@ -2038,14 +1978,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Fresh dist odylith-local-release-0.1.15-atlas-state-proof passed the twelve-case installed greenfield post-confirm matrix with per-case generated browser state proof: all cases 10/10, zero issues, max create 23.125s, all browser proof attempted, clean matrix temp cleanup, and wiring-only rescue 27.280s.",
       "ts_iso": "2026-06-28T04:05:38-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 670,
@@ -2071,14 +2010,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield release proof was tightened from heading-level shell checks to generated browser state proof with Atlas diagram state assertions, skipped-proof honesty, refreshed Atlas diagrams, focused proof, broad source regression proof, and governed sync; release component contract updated in the same checkpoint.",
       "ts_iso": "2026-06-28T03:46:35-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 669,
@@ -2106,17 +2044,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield release proof now includes Casebook generated surfaces, stricter surface asset wiring, first-path Project prompt custody, and per-case browser proof requested by maintained release wrappers.",
       "ts_iso": "2026-06-28T02:41:56-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-22e6fb37/greenfield-post-confirm-matrix.v1.json",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 668,
@@ -2130,20 +2067,19 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Final local dist proof for 22e6fb37: installed smoke passed; 12-case greenfield post-confirm matrix passed with zero issues, 10/10 lens scores, and 21.591s max create time; rescue remains synthetic wiring-only proof, not natural rescue quality proof.",
       "ts_iso": "2026-06-28T01:03:17-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 7,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5",
-        "tracked_artifact_6",
-        "tracked_artifact_7"
+        "bin/greenfield-post-confirm-matrix",
+        "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
+        "odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md",
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "src/odylith/install/agents.py",
+        "src/odylith/install/bootstrap_assets.py",
+        "src/odylith/install/migration_runtime.py"
       ],
       "confidence": "high",
       "event_index": 667,
@@ -2173,18 +2109,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 7 tracked artifact references retained.",
+      "summary": "Release proof and install custody hardening: standalone greenfield matrix now persists JSON proof, full install suite is green after guidance-budget compaction, and migration-runtime classification now blocks missing verification before already-current no-op while preserving verified same-version reinstall.",
       "ts_iso": "2026-06-28T00:44:33-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "bin/_odylith.sh",
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 666,
@@ -2210,18 +2145,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Release proof now treats the installed greenfield matrix as a canonical release gate: the default standard catalog is twelve domains, the matrix persists proof JSON, strict domain-anchor scoring is enforced, and rescue smoke is labeled wiring-only.",
       "ts_iso": "2026-06-28T00:20:47-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 664,
@@ -2247,14 +2181,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Fresh local release odylith-local-release-0.1.15-7e548d40 passed release smoke and the installed greenfield matrix: eight standard cases scored 10/10 in 19.887-22.399s with zero issues, quantum passed in 21.296s, and rescue smoke passed in 26.587s as wiring proof.",
       "ts_iso": "2026-06-27T23:05:24-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 660,
@@ -2280,14 +2213,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield post-confirm checkpoint fixed sparse confirmed-intent state-object grammar before validation, added the sparse confirmation shape to the installed matrix, and preserved the release blocker that rescue proof is still internal wiring-only until non-internal repair proof exists.",
       "ts_iso": "2026-06-27T20:46:38-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 659,
@@ -2313,14 +2245,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield post-confirm source checkpoint fixed open-source adapter drift, modal first-path grammar, and false two-component expert-lens failures; focused, quality, engine, and live-create tests pass, while natural non-internal rescue proof remains release-blocking.",
       "ts_iso": "2026-06-27T20:34:09-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 657,
@@ -2346,14 +2277,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Final f6a06af6 local release dist passed installed greenfield matrix: five standard cases scored 10/10 in 20.223-22.425s with zero issues and complete governed artifacts; installed CLI auto-rescue smoke passed in 26.842s with zero issues.",
       "ts_iso": "2026-06-27T18:57:24-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 655,
@@ -2379,14 +2309,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Installed 0.1.15 dist 265cc0cf passed five standard greenfield creates under 32s with 10/10 matrix scores, but release proof failed because packaged CLI auto-rescue smoke stayed on standard tier and did not record the typed rescue probe repair.",
       "ts_iso": "2026-06-27T18:32:09-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 654,
@@ -2412,14 +2341,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Broad greenfield post-confirm source proof passed after CLI auto-rescue hardening: 282 tests passed in 933.23s across post-confirm slop, component spec quality, general artifact quality, prewrite transaction, source-launch prompts, preview trimming, engine rescue, rescue probe, release matrix, and release bootstrap default-rescue coverage. Installed rebuilt dist proof remains pending.",
       "ts_iso": "2026-06-27T18:10:32-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 653,
@@ -2445,14 +2373,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield rescue proof hardened after review: canonical release matrix now runs installed CLI auto-rescue smoke by default, synthetic installed-engine probe was removed, semantic/plan repairs now populate manifest repaired issue codes, and a disposable source-local CLI auto-rescue probe committed governed records in 20.411s with post_confirm_rescue_probe repaired; rebuilt installed dist proof remains pending.",
       "ts_iso": "2026-06-27T17:51:00-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 652,
@@ -2478,18 +2405,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield Project prompt custody fix now suppresses duplicate action/outcome object restatement, routes proof fallback through cleaned first-path projection, and adds installed release rescue smoke for 90s rescue-tier proof; source and harness tests are green, rebuilt installed dist proof remains pending.",
       "ts_iso": "2026-06-27T17:29:58-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 649,
@@ -2515,20 +2441,19 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Fresh local release dist odylith-local-release-0.1.15-ddecaf5e passed the installed greenfield post-confirm matrix with hard-min 10/10 scores across five consumer-lane domains in 19.780-23.035s, zero issues, governed writes, all PM/architect/engineer/domain-expert lenses passing, and temp cleanup.",
       "ts_iso": "2026-06-27T13:37:35-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/registry/source/components/release/CURRENT_SPEC.md",
+        "src/odylith/runtime/common/prose_grammar.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
+        "tests/unit/install/test_greenfield_post_confirm_matrix.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
       ],
       "confidence": "high",
       "event_index": 647,
@@ -2554,14 +2479,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Greenfield post-confirm hard-min scoring now reports brutal 10/10 release dimensions; action-chain actor recovery rejects embedded action prefixes after the water-rights no-write repro, and the final ten-domain source-local cleanup-proof matrix passed with min score 10/10, max 16.935s, and all temp repos deleted.",
       "ts_iso": "2026-06-27T12:54:39-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 644,
@@ -2587,18 +2511,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Greenfield exact-path/projection custody passed installed consumer-lane matrix from temporary local release in 18.383-19.745s across five domains with governed writes, zero quality issues, all expert lenses passing, and temp cleanup.",
       "ts_iso": "2026-06-27T03:32:42-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 642,
@@ -2624,14 +2547,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Installed local-release greenfield matrix passed five consumer-lane domains in 18.489-20.286 seconds with zero quality issues, governed writes, all expert lenses passing, and temp cleanup verified.",
       "ts_iso": "2026-06-27T02:01:41-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 640,
@@ -2645,12 +2567,11 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Timeline evidence linked this component to governed work.",
+      "summary": "Final installed quality-lens custody matrix passed from /tmp/odylith-local-release-0.1.15-quality-lens-custody: five domains at 18.244-19.934s, governed writes, zero quality issues, all expert lenses passing, temp release pruned.",
       "ts_iso": "2026-06-27T01:07:46-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 637,
@@ -2664,17 +2585,16 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Timeline evidence linked this component to governed work.",
+      "summary": "Greenfield scoped artifact-plan rerender checkpoint corrected reviewer-found projection escapes: program remains full-prewrite, release rerender includes Compass, focused repair suite passed 66 tests in 24.12s, and widened post-confirm quality pack passed 242 tests in 360.05s.",
       "ts_iso": "2026-06-26T23:17:11-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-58a9b7c5",
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 634,
@@ -2700,16 +2620,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Fresh local dist 0.1.15-58a9b7c5 passed the installed greenfield post-confirm matrix across five consumer-lane domains in 18.368-20.393s with zero quality issues and governed records written.",
       "ts_iso": "2026-06-26T21:52:35-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith-local-release-0.1.15-d42f127c"
       ],
       "confidence": "high",
       "event_index": 629,
@@ -2735,16 +2654,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Greenfield post-confirm installed matrix proof from local release dist odylith-local-release-0.1.15-d42f127c: five high-variance consumer-lane creates passed in 20.107-23.147s with zero final quality issues, five Radar records, three Registry records, six Atlas diagrams, 18 trace nodes, governed records written, and temp repos deleted before the next scenario.",
       "ts_iso": "2026-06-26T20:14:53-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md"
       ],
       "confidence": "high",
       "event_index": 626,
@@ -2770,18 +2688,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "b0713a0a local release dist passed release smoke, standard installed greenfield matrix, and six-case high-variance installed matrix with every create under 19s and all expert lenses green.",
       "ts_iso": "2026-06-26T17:21:44-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 625,
@@ -2807,18 +2724,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Greenfield installed variance exposed release-readiness proof-control and passive object-tail actor defects; source fix narrows semantic custody and passes focused regressions, two source CLI repros, and 162 widened tests.",
       "ts_iso": "2026-06-26T16:54:08-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_recovery.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_system_completion.py",
+        "tests/unit/runtime/test_greenfield_confirmed_intent_recovery.py"
       ],
       "confidence": "high",
       "event_index": 622,
@@ -2844,14 +2760,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Greenfield source-local recovery now preserves explicit internal-system rows through completion and rejects actorless release steps as fake human actors.",
       "ts_iso": "2026-06-26T15:01:18-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 620,
@@ -2877,18 +2792,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Built local release assets for 0.1.15 from commit 2bf681ee into /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-2bf681ee and passed local_release_smoke fresh-install verification with temporary repo cleanup.",
       "ts_iso": "2026-06-26T13:47:56-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 619,
@@ -2914,18 +2828,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Greenfield final checkpoint after shared release-scope helper extraction: affected confirmed-intent/CLI paths passed 69 tests in 161.14s, greenfield quality pack passed 160 tests in 50.09s, heavy post-confirm suite passed 93 tests in 283.07s, and ten fresh source-local simulations passed in 13.970-15.504s with standard-tier manifests, zero issues, expert lenses passing, governed records written, and temp repos deleted after every scenario.",
       "ts_iso": "2026-06-26T13:32:37-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md",
+        "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md"
       ],
       "confidence": "high",
       "event_index": 618,
@@ -2951,14 +2864,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Greenfield final checkpoint: prompt-source guidance-envelope recovery and proof-boundary release-limit preservation passed affected confirmed-intent/CLI paths (69 tests), greenfield quality pack (160 tests), heavy post-confirm suite (93 tests), and ten fresh source-local simulations in 13.617-14.499s with standard-tier manifests, zero issues, expert lenses passing, governed records written, and temp repos deleted after every scenario.",
       "ts_iso": "2026-06-26T13:15:06-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 614,
@@ -2984,14 +2896,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Fresh faithful high-variance greenfield simulation after first-path repair: science, civic, developer-infra, and IoT passed create in 11.6-12.7s with validators and no simple red flags; wellness and finance failed on Radar index repeated visible-result copy; creative-media failed on missing backlog row risk; ambiguous record/case/model/release failed semantic slop actor-led action leakage. All temp repos were deleted after each scenario.",
       "ts_iso": "2026-06-26T00:44:49-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 613,
@@ -3017,19 +2928,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Faithful greenfield propose-then-confirm simulation sharpened CB-208: quantum tunneling passed in 11.668s, shelter capacity failed in 9.668s on first-path semantic coverage and repeated visible-result copy. Release architecture now requires host-authored semantic or artifact-plan PatchSet application, decision-ledger capture, and impacted-projection rerender before premium readiness claims.",
       "ts_iso": "2026-06-26T00:26:06-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-05-11-greenfield-child-artifacts-failed-product-manager-comprehension.md",
+        "src/odylith/runtime/artifact_quality/greenfield_package_quality.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_completion.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_confirmed_components.py"
       ],
       "confidence": "high",
       "event_index": 597,
@@ -3045,16 +2955,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 4 tracked artifact references retained.",
+      "summary": "Hardened confirmed greenfield artifact quality generically: deferred actors stay out of first-release scope, explanatory system clauses no longer become component identity, Radar enrichment avoids full-title repetition, and GLP-1 rich-intent create passes under 30s.",
       "ts_iso": "2026-06-09T00:44:59-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_programs.py",
+        "tests/unit/runtime/test_greenfield_program_terms.py"
       ],
       "confidence": "high",
       "event_index": 567,
@@ -3080,17 +2989,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Routed greenfield program wave-to-workstream matching through the shared domain term index so release waves use plural-aware generated-artifact terms instead of a local regex token loop.",
       "ts_iso": "2026-06-04T04:06:02-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "tests/unit/runtime/test_greenfield_semantic_quality_terms.py"
       ],
       "confidence": "high",
       "event_index": 552,
@@ -3116,18 +3024,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Routed semantic-quality raw overlap token extraction through the shared greenfield domain term index so release-scope and sentence-overlap gates no longer carry local regex token loops.",
       "ts_iso": "2026-06-04T00:14:54-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "src/odylith/runtime/domain_intelligence/greenfield_domain_term_index.py",
+        "src/odylith/runtime/domain_intelligence/greenfield_semantic_quality.py",
+        "tests/unit/runtime/test_greenfield_semantic_quality_terms.py"
       ],
       "confidence": "high",
       "event_index": 538,
@@ -3153,17 +3060,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Routed semantic-quality release-scope term signatures through the shared greenfield domain term index with caller-owned exact and prefix aliases while preserving focused, broad, and under-30s confirmed-create proof.",
       "ts_iso": "2026-06-03T20:11:23-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 492,
@@ -3183,16 +3089,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-05-30T08:16:00-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 467,
@@ -3214,15 +3119,14 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
       "ts_iso": "2026-05-19T16:16:54-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 457,
@@ -3242,16 +3146,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-05-04T14:30:03-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
+        "src/odylith/runtime/domain_intelligence/archetypes.py",
+        "src/odylith/runtime/domain_intelligence/proposal_planning.py"
       ],
       "confidence": "high",
       "event_index": 452,
@@ -3277,17 +3180,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Deepened B-142 Domain Intelligence with first-class science/math archetypes, greenfield UX/release planning module, refreshed governance surfaces, and full engine/install/browser proof.",
       "ts_iso": "2026-05-02T20:01:58-07:00",
       "workstreams": [
         "B-142"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 433,
@@ -3307,12 +3209,11 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-05-02T16:15:11-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 419,
@@ -3348,14 +3249,13 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Added automated Casebook release closeout for FixedPendingRelease records, gated by shipped release truth and validation evidence, and refreshed the v0.1.13 migration-observer markers.",
       "ts_iso": "2026-05-02T15:22:02-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 417,
@@ -3381,19 +3281,18 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Slimmed consumer-lane guidance and Claude model-invocable skill surface while preserving Odylith engine activation and keeping maintainer release gates separate.",
       "ts_iso": "2026-05-02T14:36:12-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md",
+        "src/odylith/install/casebook_metadata_migration.py",
+        "src/odylith/install/migration_runtime.py",
+        "tests/integration/install/test_lifecycle_simulator.py"
       ],
       "confidence": "high",
       "event_index": 413,
@@ -3422,18 +3321,17 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Registered the v0.1.13 Casebook compact-metadata migration, proved 0.1.10/0.1.11/0.1.12 upgrade paths, refreshed Casebook and Radar surfaces, and tightened migration_required gating so no-op registered migrations cannot satisfy future release manifests.",
       "ts_iso": "2026-05-02T11:56:48-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js"
       ],
       "confidence": "high",
       "event_index": 411,
@@ -3462,7 +3360,7 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "B-140/B-141 v0.1.13 dev-maintainer surfaces now keep source-local proof distinct from pinned 0.1.12 and default Release Targets to current/next aliases.",
       "ts_iso": "2026-05-02T10:44:13-07:00",
       "workstreams": [
         "B-140",
@@ -3470,11 +3368,10 @@
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-05-01-compass-default-governance-view-surfaces-completed-programs-and-shipped-releases.md",
+        "src/odylith/runtime/surfaces/codex_host_post_bash_checkpoint.py",
+        "src/odylith/runtime/surfaces/templates/compass_dashboard/compass-releases.v1.js"
       ],
       "confidence": "high",
       "event_index": 410,
@@ -3504,17 +3401,16 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "B-141 source-local QA tightened Compass Release Targets to current/next aliases, restored Codex live intervention checkpoint output, and reran browser/migration proof for v0.1.13.",
       "ts_iso": "2026-05-02T10:38:45-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 409,
@@ -3534,16 +3430,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-05-02T10:04:13-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md",
+        "tests/integration/install/test_lifecycle_simulator.py"
       ],
       "confidence": "high",
       "event_index": 408,
@@ -3570,14 +3465,13 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Proved v0.1.13 historical upgrade matrix for 0.1.10, 0.1.11, and 0.1.12 starts; release migration gate remains green.",
       "ts_iso": "2026-05-02T09:54:04-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 406,
@@ -3604,19 +3498,18 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Governance refresh for v0.1.13 B-141 cross-host latency and mixed-version fresh-host launcher compatibility: CB-147, CB-148, CB-149, CB-150, CB-151, and CB-152 remain FixedPendingRelease with single-word Casebook metadata.",
       "ts_iso": "2026-05-02T09:17:39-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "odylith/radar/source/ideas/2026-04/2026-04-29-consumer-surface-migration-observer-and-release-gate.md",
+        "odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md",
+        "odylith/radar/source/releases/releases.v1.json",
+        "odylith/technical-plans/in-progress/2026-05/2026-05-01-cross-host-hook-latency-and-migration-hardening.md"
       ],
       "confidence": "high",
       "event_index": 404,
@@ -3644,17 +3537,16 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "Aligned B-141, v0.1.13 release metadata, migration observer markers, and Casebook fixed-pending-release statuses across refreshed governance surfaces.",
       "ts_iso": "2026-05-02T08:12:09-07:00",
       "workstreams": [
         "B-141"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 394,
@@ -3674,18 +3566,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-29T16:14:29-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/casebook/bugs/2026-04-06-repair-and-reinstall-do-not-converge-after-partial-runtime-failure.md",
+        "odylith/technical-plans/done/2026-04/2026-04-27-repair-reinstall-partial-runtime-convergence.md",
+        "src/odylith/install/runtime_tree_policy.py",
+        "tests/integration/install/test_manager.py",
+        "tests/unit/install/test_runtime.py"
       ],
       "confidence": "high",
       "event_index": 386,
@@ -3699,17 +3590,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Closed B-050 and CB-055 by making partial runtime repair/reinstall residue cleanup literal, target-version scoped, and regression-covered for repeated repair and reinstall convergence.",
       "ts_iso": "2026-04-27T21:33:02-07:00",
       "workstreams": [
         "B-050"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/casebook/bugs/2026-04-27-upgrade-reviewability-still-needs-generated-change-manifest-and-lock-compaction.md",
+        "src/odylith/install/upgrade_reporting.py"
       ],
       "confidence": "high",
       "event_index": 385,
@@ -3731,17 +3621,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "CB-134 closed with tracked generated-change upgrade manifest, doctor visibility, and lock-hygiene regression coverage.",
       "ts_iso": "2026-04-27T20:20:06-07:00",
       "workstreams": [
         "B-005"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/radar/source/ideas/2026-04/2026-04-27-migration-runtime-release-gate.md",
+        "odylith/technical-plans/done/2026-04/2026-04-27-migration-runtime-release-gate.md"
       ],
       "confidence": "high",
       "event_index": 384,
@@ -3760,18 +3649,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "B-127 Migration Runtime Release Gate closed after migration-runtime proof and governance validation.",
       "ts_iso": "2026-04-27T18:15:04-07:00",
       "workstreams": [
         "B-127"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md",
+        "src/odylith/install/migration_runtime.py",
+        "tests/unit/install/test_migration_runtime.py"
       ],
       "confidence": "high",
       "event_index": 383,
@@ -3792,14 +3680,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "0.1.12 migration-runtime QA pass closed with full pytest, release migration gate, doctor, Casebook, and component-registry validation green.",
       "ts_iso": "2026-04-27T17:57:36-07:00",
       "workstreams": [
         "B-127"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 381,
@@ -3813,16 +3700,15 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Implementation evidence linked this component to governed work.",
+      "summary": "0.1.12 migration-runtime release gate implemented; dry-run/apply/doctor now share one MigrationPlan and release migration-gate is passing.",
       "ts_iso": "2026-04-27T16:32:34-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
+        "src/odylith/install/migration_runtime.py",
+        "tests/unit/install/test_migration_runtime.py"
       ],
       "confidence": "high",
       "event_index": 380,
@@ -3841,19 +3727,18 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Implemented the 0.1.12 migration-runtime release gate: dry-run/apply share one MigrationPlan, v0.1.11 value-engine migration routes through the registry, doctor reports ledger state, and release migration-gate validates fixture coverage and lifecycle bypasses.",
       "ts_iso": "2026-04-27T16:23:09-07:00",
       "workstreams": [
         "B-127"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/install/lock_hygiene.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/install/upgrade_reporting.py"
       ],
       "confidence": "high",
       "event_index": 379,
@@ -3875,19 +3760,18 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "summary": "v0.1.12 hardening: extracted upgrade reporting from CLI into install-owned helpers, added recursive lock hygiene with doctor repair, improved Sigstore warning summaries, and compacted 13715 stale zero-byte lock placeholders in this product repo.",
       "ts_iso": "2026-04-27T15:19:58-07:00",
       "workstreams": [
         "B-030"
       ]
     },
     {
-      "artifact_count": 4,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4"
+        "src/odylith/cli.py",
+        "src/odylith/install/manager.py",
+        "src/odylith/install/release_assets.py",
+        "src/odylith/runtime/governance/workstream_inference.py"
       ],
       "confidence": "high",
       "event_index": 378,
@@ -3905,12 +3789,11 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. 4 tracked artifact references retained.",
+      "summary": "v0.1.12 / CB-133: hardened upgrade lifecycle UX with exact dry-run target metadata, idempotent current-target planning, upgrade JSON/report persistence, clearer installed-local version wording, doctor trust/upgrade observability, OS metadata dirty-path filtering, and rollback scope closeout.",
       "ts_iso": "2026-04-27T14:24:28-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 369,
@@ -3950,7 +3833,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-26T13:02:40Z",
       "workstreams": [
         "B-001",
@@ -4023,7 +3906,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 361,
@@ -4063,7 +3945,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T19:24:29Z",
       "workstreams": [
         "B-001",
@@ -4136,7 +4018,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 357,
@@ -4176,7 +4057,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T19:24:07Z",
       "workstreams": [
         "B-001",
@@ -4249,7 +4130,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 354,
@@ -4289,7 +4169,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T18:44:44Z",
       "workstreams": [
         "B-001",
@@ -4362,7 +4242,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 353,
@@ -4402,7 +4281,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T18:29:09Z",
       "workstreams": [
         "B-001",
@@ -4475,7 +4354,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 348,
@@ -4515,7 +4393,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-25T18:28:40Z",
       "workstreams": [
         "B-001",
@@ -4588,7 +4466,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 341,
@@ -4628,7 +4505,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has B-001 for this slice. Extend that workstream instead of creating a duplicate backlog record.",
       "ts_iso": "2026-04-22T05:42:21Z",
       "workstreams": [
         "B-001",
@@ -4701,7 +4578,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 340,
@@ -4741,7 +4617,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Radar already has B-001 for this slice. Extend that workstream instead of creating a duplicate backlog record.",
       "ts_iso": "2026-04-22T05:42:15Z",
       "workstreams": [
         "B-001",
@@ -4814,7 +4690,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 337,
@@ -4854,7 +4729,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 on this path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-21T20:46:17Z",
       "workstreams": [
         "B-001",
@@ -4927,7 +4802,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 335,
@@ -4967,7 +4841,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T22:56:05Z",
       "workstreams": [
         "B-001",
@@ -5040,7 +4914,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 330,
@@ -5080,7 +4953,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T22:55:16Z",
       "workstreams": [
         "B-001",
@@ -5153,9 +5026,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "src/example.py"
       ],
       "confidence": "high",
       "event_index": 320,
@@ -5195,7 +5067,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T20:17:50Z",
       "workstreams": [
         "B-001",
@@ -5268,7 +5140,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 317,
@@ -5308,7 +5179,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T20:14:40Z",
       "workstreams": [
         "B-001",
@@ -5381,7 +5252,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 285,
@@ -5421,7 +5291,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T14:13:41Z",
       "workstreams": [
         "B-001",
@@ -5494,7 +5364,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 283,
@@ -5534,7 +5403,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T14:12:53Z",
       "workstreams": [
         "B-001",
@@ -5607,10 +5476,9 @@
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 326,
@@ -5630,15 +5498,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-20T13:41:27-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 325,
@@ -5658,15 +5525,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-20T13:38:02-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 290,
@@ -5686,16 +5552,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-20T11:22:31-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 287,
@@ -5717,12 +5582,11 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
       "ts_iso": "2026-04-20T08:43:11-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 279,
@@ -5762,7 +5626,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T03:27:29Z",
       "workstreams": [
         "B-001",
@@ -5835,9 +5699,8 @@
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "AGENTS.md"
       ],
       "confidence": "high",
       "event_index": 275,
@@ -5881,7 +5744,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:23Z",
       "workstreams": [
         "B-001",
@@ -6005,7 +5868,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 270,
@@ -6045,7 +5907,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Tribunal already has CB-122 in the decision path.",
       "ts_iso": "2026-04-20T03:26:09Z",
       "workstreams": [
         "B-001",
@@ -6118,7 +5980,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 268,
@@ -6158,7 +6019,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T03:26:03Z",
       "workstreams": [
         "B-001",
@@ -6231,7 +6092,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 265,
@@ -6271,7 +6131,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T03:24:52Z",
       "workstreams": [
         "B-001",
@@ -6344,7 +6204,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 263,
@@ -6384,7 +6243,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith is tracking this signal: Tribunal already has CB-122 in the decision path. Treat hidden hook payloads as non-visible until exact Markdown is confirmed in chat.",
       "ts_iso": "2026-04-20T01:56:52Z",
       "workstreams": [
         "B-001",
@@ -6457,13 +6316,12 @@
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/runtime/source/discipline-evaluation-corpus.v1.json",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md",
+        "src/odylith/runtime/discipline/benchmark.py",
+        "src/odylith/runtime/discipline/signals.py",
+        "src/odylith/runtime/discipline/support.py"
       ],
       "confidence": "high",
       "event_index": 262,
@@ -6511,20 +6369,19 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "B-110 hardening pass made Character signal extraction negation-aware and proof-execution aware, prevented false blocks for technical-plan authoring, release-proof execution, credit-safety work, and negated delegation, added modern Codex/Claude model alias coverage, expanded deterministic corpus to 24 cases, and added benchmark summary rates for false allow/block, unknown-pressure handling, stance vectors, noise suppression, intervention precision, and unseen-pressure generalization. Proof: 48 focused Character tests passed, 225 benchmark/corpus/guidance tests passed, 2120 runtime tests passed, validate discipline and validate guidance-behavior passed, quick discipline report 1be88ce4ead87770 passed, quick guidance_behavior report 61d3b6a2b1cbe33e passed; hot-path host/provider call counts remained zero.",
       "ts_iso": "2026-04-17T20:20:18-07:00",
       "workstreams": [
         "B-110"
       ]
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "odylith/technical-plans/in-progress/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+        "src/odylith/runtime/governance/backlog_authoring.py",
+        "src/odylith/runtime/governance/release_planning_authoring.py",
+        "tests/unit/runtime/test_backlog_authoring.py",
+        "tests/unit/test_cli.py"
       ],
       "confidence": "high",
       "event_index": 255,
@@ -6542,17 +6399,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Implemented and hardened B-126 conditional release-targeted backlog authoring with --release selector preflight, batch release events, queued-status preservation, Radar/Compass refresh reporting, and focused QA coverage.",
       "ts_iso": "2026-04-17T17:46:59-07:00",
       "workstreams": [
         "B-126"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/radar/source/ideas/2026-04/2026-04-18-conditional-release-targeted-backlog-authoring.md",
+        "odylith/radar/source/releases/release-assignment-events.v1.jsonl"
       ],
       "confidence": "high",
       "event_index": 254,
@@ -6570,17 +6426,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Queued B-126 Conditional Release-Targeted Backlog Authoring for v0.1.12 next release targeting; status remains queued and implementation is intentionally deferred out of the v0.1.11 lane.",
       "ts_iso": "2026-04-17T17:28:12-07:00",
       "workstreams": [
         "B-126"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/atlas/source/odylith-adaptive-discipline-loop.mmd",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-17-adaptive-discipline-credit-safe-and-benchmark-proved.md"
       ],
       "confidence": "high",
       "event_index": 253,
@@ -6628,7 +6483,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "B-110 source-local closure proof passed after governed sync: character and guidance validators, quick benchmark families, focused unit/CLI tests, 78 browser regressions, and sync check-only are green; full release proof remains gated on pinned dogfood runtime repair and matched proof benchmark.",
       "ts_iso": "2026-04-17T16:27:58-07:00",
       "workstreams": [
         "B-110",
@@ -6642,7 +6497,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 249,
@@ -6682,7 +6536,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Radar already has a governed slice for B-001.",
       "ts_iso": "2026-04-17T03:48:35Z",
       "workstreams": [
         "B-001",
@@ -6749,7 +6603,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 247,
@@ -6789,7 +6642,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Odylith can already see an existing governed thread here. One more corroborating signal and it can turn that into a proposal.",
       "ts_iso": "2026-04-17T00:47:30Z",
       "workstreams": [
         "B-001",
@@ -6856,10 +6709,9 @@
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "src/odylith/runtime/context_engine/execution_engine_handshake.py",
+        "src/odylith/runtime/execution_engine/runtime_lane_policy.py"
       ],
       "confidence": "high",
       "event_index": 242,
@@ -6891,16 +6743,15 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 2 tracked artifact references retained.",
+      "summary": "Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.",
       "ts_iso": "2026-04-16T15:19:46-07:00",
       "workstreams": [
         "B-099"
       ]
     },
     {
-      "artifact_count": 1,
       "artifacts": [
-        "tracked_artifact_1"
+        "README.md"
       ],
       "confidence": "high",
       "event_index": 185,
@@ -6922,7 +6773,7 @@
         "tribunal"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "summary": "Radar already has a governed slice for B-005.",
       "ts_iso": "2026-04-16T01:31:39Z",
       "workstreams": [
         "B-005",
@@ -6932,7 +6783,6 @@
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "medium",
       "event_index": 76,
@@ -6944,14 +6794,13 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Component evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "",
       "ts_iso": "2026-04-11T23:55:04Z",
       "workstreams": [
         "B-089"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 82,
@@ -6965,18 +6814,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "B-090 is closed.",
       "ts_iso": "2026-04-11T19:44:39-07:00",
       "workstreams": [
         "B-090"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
       ],
       "confidence": "high",
       "event_index": 80,
@@ -6992,18 +6840,17 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Phase advanced: Planning -> Implementation (Live)",
       "ts_iso": "2026-04-11T18:56:51-07:00",
       "workstreams": [
         "B-090"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md"
       ],
       "confidence": "high",
       "event_index": 79,
@@ -7023,14 +6870,13 @@
         "subagent-orchestrator"
       ],
       "meaningful": false,
-      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Plan binding: advanced B-090 from queued to planning for odylith/technical-plans/in-progress/2026-04/2026-04-12-bounded-test-contract-catch-up-for-orchestrator-profile-inference-benchmark-routing-and-governance-refactors.md",
       "ts_iso": "2026-04-11T18:56:48-07:00",
       "workstreams": [
         "B-090"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 77,
@@ -7044,18 +6890,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "B-089 has landed on 2026/freedom/v0.1.11 as the planned two-commit pair, working tree clean: 9402f5d \u2014 Mirror Codex host parity into Claude with baked CLI dispatchers (56 files:...",
       "ts_iso": "2026-04-11T17:40:14-07:00",
       "workstreams": [
         "B-089"
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "odylith/radar/source/INDEX.md",
+        "odylith/radar/source/ideas/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
+        "odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md"
       ],
       "confidence": "high",
       "event_index": 75,
@@ -7071,14 +6916,13 @@
         "release"
       ],
       "meaningful": false,
-      "summary": "Decision evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "summary": "Plan binding: advanced B-089 from queued to implementation for odylith/technical-plans/in-progress/2026-04/2026-04-11-claude-host-capability-layer-cli-backed-baked-hooks-and-compatibility-surface.md",
       "ts_iso": "2026-04-11T16:42:33-07:00",
       "workstreams": [
         "B-089"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 67,
@@ -7101,17 +6945,16 @@
         "subagent-router"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Bound B-083, B-084, and B-085 to release-0-1-11. Updated technical-plans/INDEX.md, B-083 workstream_children, and the B-084 parent plan Must-Ship state. Ran mutating selective sync and compass refresh so the release-target view shows all three Claude workstreams in the active 0.1.11 set. 44 runtime tests passed (test_host_runtime_contract, test_agent_runtime_contract, test_execution_governance, test_claude_host_statusline, test_claude_host_precompact_snapshot, test_claude_project_hooks).",
       "ts_iso": "2026-04-11T11:04:10-07:00",
       "workstreams": [
         "B-084"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 64,
@@ -7131,12 +6974,11 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-10T09:29:16-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 58,
@@ -7156,14 +6998,13 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Bound B-060 to the next release hardening plan covering benchmark re-proof, GitHub merge-identity cleanup, first-install shell refresh robustness, CI pin refresh, and clean post-publish dogfood.",
       "ts_iso": "2026-04-07T17:08:28-07:00",
       "workstreams": [
         "B-060"
       ]
     },
     {
-      "artifact_count": 0,
       "artifacts": [],
       "confidence": "high",
       "event_index": 57,
@@ -7183,17 +7024,16 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "summary": "Captured v0.1.10 release feedback under B-060 and moved the post-v0.1.9 dirty maintainer state onto branch 2026/freedom/v0.1.10.",
       "ts_iso": "2026-04-07T17:08:28-07:00",
       "workstreams": [
         "B-060"
       ]
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 50,
@@ -7213,16 +7053,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-06T11:04:54-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 49,
@@ -7244,15 +7083,14 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
       "ts_iso": "2026-04-05T22:24:37-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 48,
@@ -7272,15 +7110,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-05T22:21:07-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 47,
@@ -7300,15 +7137,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-05T22:19:16-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 45,
@@ -7328,16 +7164,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-05T20:36:11-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 44,
@@ -7359,15 +7194,14 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
       "ts_iso": "2026-04-05T20:35:50-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 43,
@@ -7387,18 +7221,17 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-05T20:33:45-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 5,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3",
-        "tracked_artifact_4",
-        "tracked_artifact_5"
+        "README.md",
+        "docs/benchmarks/README.md",
+        "odylith/registry/source/components/benchmark/CURRENT_SPEC.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-29-odylith-complex-repo-benchmark-corpus-expansion-and-frontier-improvement.md",
+        "odylith/technical-plans/in-progress/2026-03/2026-03-31-odylith-raw-codex-baseline-and-four-lane-benchmark-table.md"
       ],
       "confidence": "high",
       "event_index": 42,
@@ -7433,7 +7266,7 @@
         "tribunal"
       ],
       "meaningful": true,
-      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 5 tracked artifact references retained.",
+      "summary": "Refreshed the benchmark publication story to the April 5 source-local full proof pass 52aa3f76538cf12f: README, benchmark docs, registry spec, plans, and radar now reflect that odylith_on clears the hard gate and secondary guardrails against odylith_off while benchmark_compare still warns until the first shipped release baseline exists.",
       "ts_iso": "2026-04-05T19:43:45-07:00",
       "workstreams": [
         "B-021",
@@ -7441,11 +7274,10 @@
       ]
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 41,
@@ -7467,16 +7299,15 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
       "ts_iso": "2026-04-03T22:07:58-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 40,
@@ -7498,15 +7329,14 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
       "ts_iso": "2026-04-03T21:55:34-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 37,
@@ -7526,15 +7356,14 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-04-01T08:31:03-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 2,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 35,
@@ -7554,16 +7383,15 @@
         "release"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "summary": "Switched the Odylith product repo into detached source-local self-host mode; release gating stays blocked until the active runtime returns to the repo pin.",
       "ts_iso": "2026-03-31T20:36:09-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 31,
@@ -7583,16 +7411,15 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
       "ts_iso": "2026-03-27T16:19:09-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 30,
@@ -7612,16 +7439,15 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
       "ts_iso": "2026-03-27T16:12:16-07:00",
       "workstreams": []
     },
     {
-      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2",
-        "tracked_artifact_3"
+        "github/workflows/release.yml",
+        "odylith/install.json",
+        "odylith/runtime/source/product-version.v1.json"
       ],
       "confidence": "high",
       "event_index": 29,
@@ -7641,7 +7467,7 @@
         "security"
       ],
       "meaningful": true,
-      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "summary": "Self-host release preflight failed because the product repo is not in pinned dogfood posture.",
       "ts_iso": "2026-03-27T16:07:04-07:00",
       "workstreams": []
     }
