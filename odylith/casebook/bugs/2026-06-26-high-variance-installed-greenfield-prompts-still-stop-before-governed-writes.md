@@ -136,6 +136,15 @@
   and neutral artifact reference labels. The platform leakage guard now scans
   `odylith/registry/source/components` as protected custody, so future raw
   project-domain phrases in component specs or forensics fail release proof.
+  Failed mechanism captured later on 2026-06-30: after source code already
+  contained scenario-neutral forensics, a release build still failed because
+  the committed sidecars had been regenerated through the pinned dogfood
+  launcher, which emitted raw Compass event summaries such as prior
+  high-variance project names. For unreleased source-side forensics custody
+  changes, the sidecars must be regenerated and checked with the explicit
+  source-local runtime before packaging; otherwise the source implementation
+  and committed governed records can disagree and the build leakage gate will
+  correctly fail.
 
 - Rollback/Forward Fix: Forward fix only
 
