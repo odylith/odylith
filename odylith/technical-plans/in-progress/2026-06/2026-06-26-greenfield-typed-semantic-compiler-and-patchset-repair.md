@@ -2113,3 +2113,43 @@ vocabulary, or degraded packages.
       retry passed. Follow-up hardening remains to persist incremental matrix
       results and isolate browser/rescue proof legs so harness-native crashes
       cannot erase completed evidence.
+- [x] Repair intentional empty-list structured rescue and prove the fresh
+      installed checkpoint.
+      The next natural structured-rescue proof failed before governed writes
+      even though the provider chose the right semantic interpretation: the
+      planner could not distinguish a missing replacement fact from an
+      intentional clear of a list-valued semantic boundary, so the operation was
+      rejected as `replacement_fact is empty`. The fix keeps the architecture
+      typed and fail-closed: Tribunal materializes explicit `value_kind=list`
+      envelopes for list-valued SemanticModelIR fields even when the list is
+      empty, rescue planning treats those facts as executable, and the semantic
+      executor applies the empty list to intent plus semantic ontology while
+      recording the host decision ledger. Blank, absent, prose-only, moved, and
+      non-list empty facts still fail closed. A separate release-harness custody
+      fix keeps top-level rescue-proof JSON classified as evidence so the
+      platform leakage scanner still scans source, wheel, and runtime archives
+      without treating generated proof evidence as platform code. Focused proof
+      passed 67 Tribunal/PatchSet/semantic-engine tests plus leakage proof
+      tests and the prior project-brief boundary tests. Fresh dist
+      `odylith-local-release-0.1.15-clear-list-fix` passed 13/13 maintained
+      installed standard cases with hard 10/10 quality scores, zero quality,
+      browser, and platform-leakage issues, 13/13 browser proof, max standard
+      create 30.563s, average standard create 27.854s, synthetic rescue at
+      38.917s, and real provider-backed natural structured rescue at 60.926s
+      with `structured_rescue_semantic_patch`, one accepted Tribunal operation,
+      no rejections, committed governed writes, and temp cleanup.
+- [x] Preserve Registry forensics neutrality through source-local regeneration.
+      A pre-commit leakage scan caught old simulation terms in component
+      `FORENSICS.v1.json` sidecars after a pinned dogfood Registry refresh.
+      The source fix from CB-209 was still correct: forensics projection emits
+      generic event summaries and neutral artifact reference labels, while raw
+      repro language remains in Casebook/Compass evidence. The failure was a
+      lane-posture mismatch: checked-in source-owned forensics must be
+      regenerated through detached source-local code before pinned/dogfood
+      release proof. Source-local component-spec sync rewrote all forensics
+      sidecars, source-local Registry refresh updated the surface, the
+      component-spec sync check passed with zero stale forensics, the platform
+      leakage guard passed across 285 distinctive fixture terms, the focused
+      forensics/leakage suite passed 33 tests, and the source-local broad sync
+      check passed with Registry, Atlas, Casebook, backlog, plan, and delivery
+      gates clean.

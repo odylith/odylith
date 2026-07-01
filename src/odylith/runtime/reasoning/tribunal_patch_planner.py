@@ -28,6 +28,7 @@ _REPLACEMENT_FACT_KEYS_BY_OPERATION_KIND = {
     "semantic_external_systems": "external_systems",
     "semantic_internal_systems": "internal_systems",
 }
+_LIST_REPLACEMENT_FACT_KEYS = frozenset({"human_actors", "external_systems", "internal_systems"})
 _REPLACEMENT_FACT_KEYS_BY_TARGET = {
     "semantic_model.first_path_contract": "first_path",
     "semantic_model.first_path_contract.raw_path": "first_path",
@@ -166,6 +167,7 @@ def plan_structured_patch(
                 "Preserve operation_id, target_layer, target_path, and semantic_node_id from the request.",
                 "Fill replacement_fact with the smallest semantic or artifact-plan fact that fixes the finding.",
                 "Use replacement_fact.value_kind=text for one text fact, list for a list of text facts, or mapping for named field facts.",
+                "When the correct semantic repair is to clear a list-valued fact, return value_kind=list with an empty list_values array; do not omit the operation.",
                 "For mapping replacement facts, use keys already implied by the target path, semantic node, or requested action.",
                 "Use decision_ledger_entry.chosen_interpretation for the selected meaning.",
                 "Use decision_ledger_entry.rationale for the evidence-backed reason.",
@@ -278,7 +280,7 @@ def _validated_operation(raw_operation: Mapping[str, Any], requested: Mapping[st
     if normalize_string(raw_operation.get("semantic_node_id")) != normalize_string(requested.get("semantic_node_id")):
         return {}, "semantic_node_id does not match the PatchSet request"
     replacement = _materialize_replacement_fact(raw_operation.get("replacement_fact"), requested)
-    if _empty_patch_value(replacement):
+    if replacement_fact_missing(replacement, requested):
         return {}, "replacement_fact is empty"
     confidence = _confidence(raw_operation.get("confidence"))
     if confidence <= 0:
@@ -353,8 +355,6 @@ def _materialize_replacement_fact(value: Any, requested: Mapping[str, Any]) -> A
         return entries
     if value_kind == "list":
         items = normalize_string_list(value.get("list_values"))
-        if not items:
-            return []
         if requested_layer == "artifact_plan":
             return {"path": normalize_string(requested.get("target_path")), "value": items}
         key = _replacement_fact_leaf_key(requested)
@@ -421,6 +421,28 @@ def _empty_patch_value(value: Any) -> bool:
     return False
 
 
+def replacement_fact_missing(value: Any, requested: Mapping[str, Any]) -> bool:
+    """Return true when a replacement fact is absent, not intentionally empty."""
+
+    if _is_explicit_semantic_list_fact(value, requested):
+        return False
+    return _empty_patch_value(value)
+
+
+def _is_explicit_semantic_list_fact(value: Any, requested: Mapping[str, Any]) -> bool:
+    if normalize_token(requested.get("target_layer")) != "semantic_model":
+        return False
+    leaf_key = _replacement_fact_leaf_key(requested)
+    if leaf_key not in _LIST_REPLACEMENT_FACT_KEYS:
+        return False
+    if isinstance(value, Mapping):
+        if leaf_key not in value:
+            return False
+        item = value.get(leaf_key)
+        return isinstance(item, Sequence) and not isinstance(item, (str, bytes, bytearray))
+    return isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray))
+
+
 def _empty_plan(
     *,
     status: str,
@@ -442,5 +464,6 @@ __all__ = [
     "TRIBUNAL_PATCH_PLAN_VERSION",
     "merge_patch_plan_into_request",
     "plan_structured_patch",
+    "replacement_fact_missing",
     "validate_structured_patch_plan",
 ]

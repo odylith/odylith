@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "8470722cc41896f26da3409e091b0e52c43f87d307da095ce4b9f13a38235198",
+    "digest": "80132efa84e800e2e54e622bae08c9d2022a5d02c26b32b99f4a4c92f55eb2aa",
     "file_count": 314,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -13587,6 +13587,7 @@
         "Tribunal patch planner",
         "Radar",
         "Registry",
+        "Registry forensics custody",
         "Atlas",
         "Compass",
         "Release proof",
@@ -24746,5 +24747,5 @@
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-06-30 10:08:09Z"
+  "generated_utc": "2026-07-01 00:37:05Z"
 }

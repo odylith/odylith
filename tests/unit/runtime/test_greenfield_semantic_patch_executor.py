@@ -132,6 +132,50 @@ def test_semantic_patch_executor_routes_external_systems_without_rewriting_inter
     }
 
 
+def test_semantic_patch_executor_applies_empty_external_system_clear_with_ledger() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "external_systems": ["Unsupported Report Boundary"],
+        },
+        "semantic_model": {
+            "domain_ontology": {
+                "external_systems": ["Unsupported Report Boundary"],
+            }
+        },
+    }
+
+    result = apply_semantic_patch_operations_detailed(
+        proposal,
+        [
+            {
+                "operation_id": "external-system-clear",
+                "target_layer": "semantic_model",
+                "target_path": "semantic_model.domain_ontology.external_systems",
+                "semantic_node_id": "SemanticModelIR.domain_ontology.external_systems",
+                "issue_code": "structured_rescue_semantic_patch",
+                "operation_kind": "semantic_external_systems",
+                "replacement_fact": {"external_systems": []},
+                "decision_ledger_entry": {
+                    "chosen_interpretation": "No external system boundary is supported.",
+                    "rationale": "The accepted evidence describes an input artifact rather than a system.",
+                    "rejected_interpretations": ["Keep the unsupported report as an external system."],
+                },
+                "confidence": 0.88,
+            }
+        ],
+    )
+
+    assert result.changed is True
+    assert result.applied_fields == ("semantic_model.domain_ontology.external_systems",)
+    assert proposal["intent"]["external_systems"] == []
+    assert proposal["semantic_model"]["domain_ontology"]["external_systems"] == []
+    assert proposal["semantic_patch_ledger"][0]["issue_code"] == "structured_rescue_semantic_patch"
+    assert proposal["semantic_patch_ledger"][0]["applied_field"] == (
+        "semantic_model.domain_ontology.external_systems"
+    )
+
+
 def test_semantic_patch_executor_records_host_adjudication_for_idempotent_fact() -> None:
     proposal: dict[str, Any] = {
         "intent": {
@@ -519,6 +563,7 @@ def test_patchset_repair_skips_completion_for_scoped_non_first_path_semantic_pat
     assert application["rerender_projections"] == (
         "project_brief",
         "accepted_project",
+        "project_dashboard",
         "compass",
         "next_steps",
     )

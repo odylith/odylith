@@ -39,12 +39,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 120,
+    "explicit_event_count": 122,
     "mapped_workstream_evidence_count": 68,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 21,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 121
+    "timeline_event_count": 122
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -55,20 +55,52 @@
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifact_count": 1,
+      "artifact_count": 3,
       "artifacts": [
-        "tracked_artifact_1"
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
       ],
       "confidence": "high",
-      "event_index": 745,
-      "explicit_components": [],
-      "kind": "workspace_activity",
+      "event_index": 754,
+      "explicit_components": [
+        "atlas",
+        "dashboard",
+        "domain-intelligence",
+        "registry"
+      ],
+      "kind": "implementation",
       "mapped_components": [
-        "dashboard"
+        "atlas",
+        "dashboard",
+        "domain-intelligence",
+        "registry"
       ],
       "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
-      "ts_iso": "2026-06-30T08:16:56-07:00",
+      "summary": "Implementation evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "ts_iso": "2026-06-30T14:22:26-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 2,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2"
+      ],
+      "confidence": "high",
+      "event_index": 753,
+      "explicit_components": [
+        "dashboard",
+        "domain-intelligence"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "dashboard",
+        "domain-intelligence"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. 2 tracked artifact references retained.",
+      "ts_iso": "2026-06-30T13:49:50-07:00",
       "workstreams": []
     },
     {

@@ -83,6 +83,7 @@ class GreenfieldCompletionPackage:
     rendered_atlas_sources: Mapping[str, str] | None = None
     component_registry_preview: tuple[Mapping[str, Any], ...] = ()
     project_brief_preview: Mapping[str, Any] | None = None
+    project_brief_record_text: str = ""
     tribunal_preview: Mapping[str, Any] | None = None
     accepted_project_preview: Mapping[str, Any] | None = None
     project_dashboard_preview: Mapping[str, Any] | None = None

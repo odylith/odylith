@@ -97,10 +97,11 @@ def collect_rendered_package_artifacts(package: Any) -> list[RenderedArtifact]:
             )
         )
 
-    project_brief = normalize_string(getattr(package, "project_brief_record_text", ""))
+    project_brief_record_text = getattr(package, "project_brief_record_text", "")
+    project_brief = str(project_brief_record_text or "")
     project_brief_name = "project-brief.v1.md"
     project_brief_path = "prewrite_package.project_brief_readback"
-    if not project_brief:
+    if not normalize_string(project_brief):
         project_brief = _preview_text(getattr(package, "project_brief_preview", None))
         project_brief_name = "project_brief"
         project_brief_path = "prewrite_package.project_brief_preview"

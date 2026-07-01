@@ -409,6 +409,13 @@ def test_scan_dist_allows_matrix_proof_json_as_evidence(tmp_path: Path) -> None:
     assert leakage.scan_dist(tmp_path, terms=("quantum",)) == ()
 
 
+def test_scan_dist_allows_rescue_proof_json_as_evidence(tmp_path: Path) -> None:
+    proof = tmp_path / "greenfield-rescue-proof-20260630.v1.json"
+    proof.write_text('{"case": "cross organization disclosure council"}\\n', encoding="utf-8")
+
+    assert leakage.scan_dist(tmp_path, terms=("cross organization disclosure council",)) == ()
+
+
 def test_main_returns_failed_status_for_platform_leak(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     platform_file = tmp_path / "src" / "odylith" / "runtime" / "example.py"
     platform_file.parent.mkdir(parents=True)

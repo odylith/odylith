@@ -491,13 +491,18 @@ governed subsystem.
   missing semantic-patch ledger evidence for an idempotent provider-confirmed
   fact, or a clean standard matrix plus synthetic rescue smoke is not enough to
   claim natural rescue quality.
+  Explicit empty-list replacement facts are valid only when the PatchSet target
+  is a list-valued semantic field and the structured plan records a provider
+  decision ledger; a blank, absent, or prose-only replacement fact remains a
+  release blocker.
 - The local release asset builder, standalone greenfield matrix target, and
   shared release proof lane must run the platform domain-leakage guard against
   current runtime/source guidance, release tooling, and built release assets
   before accepting a release proof. The guard must detect phrase leakage across
   line boundaries plus identifier-shaped leaks such as camelCase or compacted
   multi-word terms. Distinctive fixture vocabulary belongs in tests, explicit
-  release fixture catalogs, governed evidence, evaluation corpora, and release
+  release fixture catalogs, governed evidence, top-level matrix or rescue proof
+  JSON, evaluation corpora, and release
   notes; it must not leak into runtime code, shipped agent guidance, release
   tooling behavior, or bundled default behavior.
 - The greenfield release matrix must not rely on hand-curated leakage
@@ -543,6 +548,15 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Greenfield natural structured-rescue hardening now preserves provider-backed PatchSet evidence through the final clean post-confirm manifest and adds a maintained natural rescue proof leg; focused source proof passed, installed committed-head proof remains pending.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
+- **2026-06-30 · Implementation:** Greenfield release proof now accepts explicit external case files, persists per-case post-confirm manifest summaries, derives natural rescue proof only from non-probe provider-backed structured patch evidence, and gates matrix status on temp-cleanup proof; a three-case external variance run passed 10/10 with zero quality/browser/platform-leakage issues, 24.952s min, 25.405s average, 25.970s max, cleanup proof passed, and synthetic rescue smoke at 33.491s; natural host-rescue quality remains unproven.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +1 more
+- **2026-06-30 · Implementation:** Committed-head release 0.1.15-78787588 passed source-plus-dist domain-leakage proof and the installed greenfield matrix: 13/13 standard creates, zero platform-leakage findings, zero browser findings, zero quality issues, 22.690s min, 26.156s average, 29.050s max, and synthetic typed rescue smoke at 33.888s; natural host-rescue quality remains unproven by that smoke.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
 - **2026-06-30 · Implementation:** Registry component forensics now project generic event summaries and neutral artifact counts; the platform leakage guard scans Registry component custody, while raw repro language remains limited to evidence surfaces.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +2 more
@@ -552,18 +566,23 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-29 · Decision:** Greenfield release proof must score Project brief and implementation prompts from persisted generated shell payloads and browser surfaces, not regenerated proof-harness payloads.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md
-- **2026-06-29 · Implementation:** Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
-- **2026-06-29 · Implementation:** Proved 9a764dc7 installed greenfield matrix, then removed unconditional notification semantics from generic status-view Registry profiles after source domain-custody audit.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
-- **2026-06-29 · Implementation:** Tightened greenfield domain-custody proof: runtime helpers no longer hardcode historical example-domain nouns, the leak guard forbids them in protected source custody, component kind classification preserves accepted internal ownership, focused tests passed, and rebuilt dist proof remains pending.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +4 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-06-30: Proved the structured-rescue clear-fact checkpoint through fresh installed release assets. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-211`; Diagram: D-043)
+  Fresh dist `odylith-local-release-0.1.15-clear-list-fix` passed the platform
+  domain-leakage build guard across 285 distinctive fixture terms. The
+  installed release matrix then passed 13/13 maintained standard cases with
+  hard 10/10 brutal quality scores, zero quality/browser/platform-leakage
+  findings, browser proof attempted and passed for every case, complete
+  governed records, max standard create time 30.563s, average standard create
+  time 27.854s, generated-term leakage proof across 213 readback terms, and
+  clean temp cleanup. Synthetic auto-rescue passed in 38.917s. The real
+  installed natural structured-rescue leg passed in 60.926s under the 90s
+  rescue budget with `structured_rescue_semantic_patch` repaired, a
+  provider-backed Tribunal plan with one accepted operation and no rejections,
+  committed governed writes, and natural rescue quality proven.
+
 - 2026-06-30: Promoted governed readback parsing into the greenfield release-matrix score contract. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
   The release proof harness now reads persisted release catalogs/events, program
   wave records, Compass source/runtime records, generated surface payload

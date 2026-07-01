@@ -7,10 +7,12 @@ from types import SimpleNamespace
 import pytest
 
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import collect_rendered_package_artifacts
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_write
+from odylith.runtime.domain_intelligence import proposal_memory
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion import complete_confirmed_proposal
@@ -1341,6 +1343,35 @@ def test_greenfield_package_repetition_rejects_repeated_proof_boundary_source_te
     assert "repeats noncanonical prose" in "\n".join(issues)
 
 
+def test_project_brief_record_quality_preserves_markdown_boundaries() -> None:
+    project_brief = """# Film Festival Accessibility Screening Planner Project Brief
+
+## Project Design Board
+- First path: Programmers can publish accessible screening readiness
+  - Why: A narrow first path keeps the first release testable and prevents broad platform drift.
+"""
+    package = SimpleNamespace(
+        proposal={"intent": {"title": "Film Festival Accessibility Screening Planner"}},
+        backlog_result={},
+        rendered_component_specs={},
+        rendered_atlas_sources={},
+        project_brief_record_text=project_brief,
+        project_brief_preview={},
+        next_steps_preview={},
+    )
+
+    project_artifacts = [
+        artifact
+        for artifact in collect_rendered_package_artifacts(package)
+        if artifact.surface == "Project brief"
+    ]
+    assert project_artifacts and "\n  - Why:" in project_artifacts[0].text
+    assert not any(
+        "coordinated modal grammar drift" in issue
+        for issue in greenfield_rendered_package_quality_issues(package)
+    )
+
+
 def test_greenfield_package_gate_rejects_staged_paths_in_accepted_project_preview(tmp_path: Path) -> None:
     proposal = _proposal(tmp_path)
     component_preview = _staged_component_preview(proposal)
@@ -1580,6 +1611,35 @@ def test_greenfield_apply_rolls_back_when_final_component_spec_drifts_after_prew
     assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md")) == []
     assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md")) == []
     assert list((tmp_path / "odylith/atlas/source").glob("*.mmd")) == []
+
+
+def test_greenfield_apply_final_gate_reads_persisted_project_brief_record(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    proposal = _proposal(tmp_path)
+    _disable_refreshes(monkeypatch)
+
+    def write_bad_project_brief(**kwargs):
+        path = kwargs["repo_root"] / "odylith/runtime/source/project-brief.v1.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            "# Project Brief\n\n"
+            "- First path: Programmers can publish accessible screening readiness - "
+            "Why: A narrow first path keeps the first release testable and prevents broad platform drift.\n",
+            encoding="utf-8",
+        )
+        return path
+
+    monkeypatch.setattr(proposal_memory, "_write_project_brief_source", write_bad_project_brief)
+
+    with pytest.raises(ValueError, match="Project brief.*coordinated modal grammar drift"):
+        greenfield_proposals.apply_greenfield_proposal(
+            repo_root=tmp_path,
+            proposal=proposal,
+            confirm=True,
+            release_selector="0.0.1",
+        )
 
 
 def test_greenfield_apply_prewrite_failure_does_not_bootstrap_target_repo(tmp_path: Path, monkeypatch) -> None:

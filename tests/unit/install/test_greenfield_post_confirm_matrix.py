@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe import (
     RESCUE_PROBE_ENV,
 )
@@ -1156,6 +1157,25 @@ def test_project_brief_record_count_requires_persisted_brief_source(tmp_path: Pa
     _write(tmp_path / "odylith/runtime/source/project-brief.v1.md", _substantive_project_brief_record_text())
     persisted = module.collect_artifact_counts(repo_root=tmp_path, package=package, required_terms=())
     assert persisted.project_brief_records == 1
+
+
+def test_collect_artifact_package_keeps_project_brief_markdown_boundaries(tmp_path: Path) -> None:
+    module = _module()
+    project_brief = """# Film Festival Accessibility Screening Planner Project Brief
+
+## Project Design Board
+- First path: Programmers can publish accessible screening readiness
+  - Why: A narrow first path keeps the first release testable and prevents broad platform drift.
+"""
+    _write(tmp_path / "odylith/runtime/source/project-brief.v1.md", project_brief)
+
+    package = module.collect_artifact_package(repo_root=tmp_path, create_payload={})
+
+    assert package.project_brief_record_text == project_brief
+    assert not any(
+        "coordinated modal grammar drift" in issue
+        for issue in greenfield_rendered_package_quality_issues(package)
+    )
 
 
 def test_package_evidence_rejects_preview_only_project_brief() -> None:

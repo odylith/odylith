@@ -387,6 +387,7 @@ def _raise_for_final_package_quality(
         rendered_atlas_sources=_actual_atlas_sources(root=root, rows=diagram_rows),
         component_registry_preview=tuple(dict(row) for row in component_rows),
         project_brief_preview=proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {},
+        project_brief_record_text=_read_text(root / "odylith/runtime/source/project-brief.v1.md"),
         tribunal_preview=tribunal.to_dict(),
         accepted_project_preview=accepted_project_preview,
         project_dashboard_preview=project_dashboard_preview,
@@ -460,6 +461,12 @@ def _read_json_mapping(path: Path) -> Mapping[str, Any]:
     except json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, Mapping) else {}
+
+
+def _read_text(path: Path) -> str:
+    if not path.is_file():
+        return ""
+    return path.read_text(encoding="utf-8")
 
 
 def _scaffold_proposal_diagram(

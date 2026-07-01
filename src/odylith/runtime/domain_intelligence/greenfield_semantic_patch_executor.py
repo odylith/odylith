@@ -108,24 +108,30 @@ def _apply_semantic_operation(proposal: dict[str, Any], operation: Mapping[str, 
             record_noop=record_noop,
         )
     if target == "human_actors":
+        rows, explicit = _replacement_list_fact(replacement, _ACTOR_KEYS)
         return _set_domain_ontology_list(
             proposal,
             "human_actors",
-            _replacement_list(replacement, _ACTOR_KEYS),
+            rows,
+            explicit_empty=explicit,
             record_noop=record_noop,
         )
     if target == "external_systems":
+        rows, explicit = _replacement_list_fact(replacement, _EXTERNAL_SYSTEM_KEYS)
         return _set_domain_ontology_list(
             proposal,
             "external_systems",
-            _replacement_list(replacement, _EXTERNAL_SYSTEM_KEYS),
+            rows,
+            explicit_empty=explicit,
             record_noop=record_noop,
         )
     if target == "internal_systems":
+        rows, explicit = _replacement_list_fact(replacement, _INTERNAL_SYSTEM_KEYS)
         return _set_domain_ontology_list(
             proposal,
             "internal_systems",
-            _replacement_list(replacement, _INTERNAL_SYSTEM_KEYS),
+            rows,
+            explicit_empty=explicit,
             record_noop=record_noop,
         )
     return ""
@@ -196,10 +202,11 @@ def _set_domain_ontology_list(
     key: str,
     values: Sequence[str],
     *,
+    explicit_empty: bool = False,
     record_noop: bool = False,
 ) -> str:
     rows = [normalize_string(value) for value in values if normalize_string(value)]
-    if not rows:
+    if not rows and not explicit_empty:
         return ""
     ontology = _domain_ontology_dict(proposal)
     intent = _intent_dict(proposal)
@@ -250,22 +257,42 @@ def _replacement_text(value: Any, keys: Sequence[str]) -> str:
     return normalize_string(value)
 
 
-def _replacement_list(value: Any, keys: Sequence[str]) -> list[str]:
+def _replacement_list_fact(value: Any, keys: Sequence[str]) -> tuple[list[str], bool]:
     if isinstance(value, Mapping):
         for key in keys:
+            if key not in value:
+                continue
+            item = value.get(key)
+            if isinstance(item, Sequence) and not isinstance(item, (str, bytes, bytearray)):
+                return [normalize_string(row) for row in item if normalize_string(row)], True
             rows = [normalize_string(row) for row in text_values(value.get(key)) if normalize_string(row)]
             if rows:
-                return rows
-        return []
-    return [normalize_string(row) for row in text_values(value) if normalize_string(row)]
+                return rows, True
+        return [], False
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return [normalize_string(row) for row in value if normalize_string(row)], True
+    rows = [normalize_string(row) for row in text_values(value) if normalize_string(row)]
+    return rows, bool(rows)
 
 
 def _records_host_adjudication(operation: Mapping[str, Any]) -> bool:
-    if not _replacement_has_value(operation.get("replacement_fact")):
+    if not _operation_replacement_has_semantic_fact(operation):
         return False
     if not isinstance(operation.get("decision_ledger_entry"), Mapping):
         return False
     return _confidence(operation.get("confidence")) > 0.0
+
+
+def _operation_replacement_has_semantic_fact(operation: Mapping[str, Any]) -> bool:
+    replacement = operation.get("replacement_fact")
+    target = _semantic_target(operation)
+    if target == "human_actors":
+        return _replacement_list_fact(replacement, _ACTOR_KEYS)[1]
+    if target == "external_systems":
+        return _replacement_list_fact(replacement, _EXTERNAL_SYSTEM_KEYS)[1]
+    if target == "internal_systems":
+        return _replacement_list_fact(replacement, _INTERNAL_SYSTEM_KEYS)[1]
+    return _replacement_has_value(replacement)
 
 
 def _replacement_has_value(value: Any) -> bool:

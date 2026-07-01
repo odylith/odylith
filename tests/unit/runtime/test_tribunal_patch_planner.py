@@ -188,6 +188,49 @@ def test_replacement_fact_envelope_uses_operation_kind_for_leaf_key() -> None:
     }
 
 
+def test_structured_patch_plan_accepts_explicit_empty_list_semantic_fact() -> None:
+    patch_plan = validate_structured_patch_plan(
+        {
+            "version": TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "planned",
+            "decision_summary": "Clear the unsupported external boundary.",
+            "operations": [
+                _valid_plan_operation(
+                    target_path="semantic_model.domain_ontology.external_systems",
+                    semantic_node_id="SemanticModelIR.domain_ontology.external_systems",
+                    replacement_fact={
+                        "value_kind": "list",
+                        "text_value": "",
+                        "list_values": [],
+                        "mapping_entries": [],
+                    },
+                    decision_ledger_entry={
+                        "chosen_interpretation": "No external system is supported by the accepted evidence.",
+                        "rationale": "The named report is accepted input evidence, not a system boundary.",
+                        "rejected_interpretations": ["Treat the input report as an external system."],
+                        "evidence_ids": ["review_report"],
+                    },
+                )
+            ],
+        },
+        patchset_request={
+            **_patchset_request(),
+            "operations": [
+                {
+                    **_patchset_request()["operations"][0],
+                    "target_path": "semantic_model.domain_ontology.external_systems",
+                    "semantic_node_id": "SemanticModelIR.domain_ontology.external_systems",
+                    "operation_kind": "semantic_external_systems",
+                }
+            ],
+        },
+    )
+
+    assert patch_plan["status"] == "planned"
+    assert patch_plan["operations"][0]["replacement_fact"] == {"external_systems": []}
+    assert not patch_plan["rejections"]
+
+
 def test_artifact_plan_replacement_fact_envelope_materializes_path_value_patch() -> None:
     patch_plan = validate_structured_patch_plan(
         {

@@ -79,20 +79,8 @@ def _needs_structured_patch_plan(patchset: Mapping[str, Any]) -> bool:
             continue
         if str(operation.get("target_layer", "")).strip() not in {"semantic_model", "artifact_plan"}:
             continue
-        if _empty_patch_value(operation.get("replacement_fact")):
+        if tribunal_patch_planner.replacement_fact_missing(operation.get("replacement_fact"), operation):
             return True
-    return False
-
-
-def _empty_patch_value(value: Any) -> bool:
-    if value is None:
-        return True
-    if isinstance(value, str):
-        return not value.strip()
-    if isinstance(value, Mapping):
-        return not any(not _empty_patch_value(item) for item in value.values())
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
-        return not any(not _empty_patch_value(item) for item in value)
     return False
 
 

@@ -245,6 +245,39 @@ def test_structured_patch_planner_keeps_rescue_timeout_inside_budget() -> None:
     assert greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(12.0) == 0.0
 
 
+def test_structured_patch_planner_treats_empty_list_semantic_fact_as_executable() -> None:
+    assert (
+        greenfield_post_confirm_rescue_planner._needs_structured_patch_plan(
+            {
+                "operations": [
+                    {
+                        "target_layer": "semantic_model",
+                        "target_path": "semantic_model.domain_ontology.external_systems",
+                        "operation_kind": "semantic_external_systems",
+                        "replacement_fact": {"external_systems": []},
+                    }
+                ]
+            }
+        )
+        is False
+    )
+    assert (
+        greenfield_post_confirm_rescue_planner._needs_structured_patch_plan(
+            {
+                "operations": [
+                    {
+                        "target_layer": "semantic_model",
+                        "target_path": "semantic_model.domain_ontology.external_systems",
+                        "operation_kind": "semantic_external_systems",
+                        "replacement_fact": "",
+                    }
+                ]
+            }
+        )
+        is True
+    )
+
+
 def test_repair_payload_consumes_structured_semantic_patch_targets(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(greenfield_post_confirm_patch_apply, "normalize_host_reasoned_proposal", lambda proposal: dict(proposal))
     monkeypatch.setattr(greenfield_post_confirm_patch_apply, "validate_host_reasoned_proposal", lambda _proposal: None)

@@ -1,11 +1,13 @@
 # Bug Index
 
-Last updated (UTC): 2026-06-30
+Last updated (UTC): 2026-07-01
 
 ## Open Bugs
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-211 | 2026-06-30 | Structured rescue rejects intentional empty list semantic patches | P2 | tribunal,domain-intelligence | FixedPendingRelease | [2026-06-30-structured-rescue-rejects-intentional-empty-list-semantic-patches.md](2026-06-30-structured-rescue-rejects-intentional-empty-list-semantic-patches.md) |
+| CB-210 | 2026-06-30 | Greenfield package readback collapses project brief boundaries and misses final | P1 | domain-intelligence | FixedPendingRelease | [2026-06-30-greenfield-package-readback-collapses-project-brief-boundaries-and-misses-final-.md](2026-06-30-greenfield-package-readback-collapses-project-brief-boundaries-and-misses-final-.md) |
 | CB-208 | 2026-06-26 | Greenfield post confirm repair routing remains stringly typed instead of semanti | P1 | domain-intelligence | Open | [2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md](2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md) |
 | CB-207 | 2026-06-26 | Greenfield post confirm package repair repeats risk prose across surfaces | P1 | domain-intelligence | Open | [2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md](2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md) |
 | CB-206 | 2026-06-26 | Agent guidance did not require failed mechanism capture before repeated fixes | P1 | odylith-chatter | Open | [2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md](2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md) |

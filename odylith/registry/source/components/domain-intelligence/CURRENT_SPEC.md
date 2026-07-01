@@ -24,27 +24,42 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Greenfield source-local artifact QA found and fixed coordinated-action actor drift, card-specific dashboard repair routing, fresh source-launch rerender parity, and repeated clarity title shape; six non-reused source-local simulations now pass under 22s with Atlas and Registry validation green.
+  - Evidence: src/odylith/runtime/common/prose_grammar.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py +1 more
+- **2026-06-30 · Implementation:** Greenfield post-confirm source repair now maps preview-copy failures to SemanticModelIR or ArtifactPlanIR facts, refreshes project-dashboard projections, and clears the four prior source-local failed signatures under 23s.
+  - Evidence: src/odylith/runtime/artifact_quality/generated_copy_quality_units.py, src/odylith/runtime/domain_intelligence/greenfield_projection_repair_targets.py
+- **2026-06-30 · Implementation:** Removed rendered-copy mutation from greenfield post-confirm repair custody, added idempotent host semantic adjudication ledger support, updated Casebook/Registry/Atlas governance, and captured the 261f00dc installed matrix natural-rescue regression while standard 13-case proof remained 10/10.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/atlas/source/greenfield-first-path-semantic-copy-custody.mmd +4 more
+- **2026-06-30 · Implementation:** Greenfield natural structured-rescue proof failed on the first committed dist because high-effort PatchSet planning timed out at 25s; source fix now defaults PatchSet planning to medium local-provider effort with a larger bounded rescue slice and a retained source repro passed in 55.085s with structured_rescue_semantic_patch repaired.
+  - Scope: B-142
+  - Evidence: private/tmp/odylith-natural-source-create.stdout, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_rescue_planner.py
+- **2026-06-30 · Implementation:** Greenfield natural structured-rescue hardening now preserves provider-backed PatchSet evidence through the final clean post-confirm manifest and adds a maintained natural rescue proof leg; focused source proof passed, installed committed-head proof remains pending.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
 - **2026-06-30 · Implementation:** Removed platform-facing retained-scenario vocabulary from current Registry specs and Atlas box-explanation runtime custody; leakage guard and strict platform-surface scan are clean outside intentional fixtures/evidence.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/atlas/CURRENT_SPEC.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
-- **2026-06-29 · Implementation:** Built fresh local release dist 3c616936 after status-profile neutralization; source and dist domain-leakage guard passed 52 terms.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
-- **2026-06-29 · Implementation:** Proved 9a764dc7 installed greenfield matrix, then removed unconditional notification semantics from generic status-view Registry profiles after source domain-custody audit.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md +2 more
-- **2026-06-29 · Implementation:** Tightened greenfield domain-custody proof: runtime helpers no longer hardcode historical example-domain nouns, the leak guard forbids them in protected source custody, component kind classification preserves accepted internal ownership, focused tests passed, and rebuilt dist proof remains pending.
-  - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +4 more
-- **2026-06-29 · Implementation:** Tightened greenfield auto-rescue custody so unsupported semantic roots no longer emit no-op PatchSet operations; focused post-confirm proof passed 97 tests.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +2 more
-- **2026-06-29 · Implementation:** Fixed greenfield post-confirm artifact-draft repair routing: project-dashboard preview leaves are exact repair targets and indexed preview paths now reach scalar leaves; focused tests, Casebook validation, leakage guard, four failed-case installed replay, and full 13-case installed matrix passed with max standard create 29.244s.
-  - Scope: B-142
-  - Evidence: Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-repair-routing-precommit-matrix.v1.json, src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py +2 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-06-30: Fixed structured-rescue custody for intentional list-valued semantic clears. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-211`, `CB-210`; Diagram: D-043)
+  Domain Intelligence now applies explicit empty-list SemanticModelIR patches
+  for list-valued semantic fields instead of treating every empty sequence as
+  a missing replacement fact. The semantic executor updates the accepted intent
+  and semantic ontology to the typed empty list, records the host decision
+  ledger when confidence and a decision ledger are present, and keeps blank
+  strings or absent facts fail-closed. The final greenfield package gate also
+  reads the persisted project brief record without collapsing Markdown
+  boundaries into synthetic prose, so final transaction custody and installed
+  matrix readback inspect the same governed artifact shape. Focused proof
+  passed 67 Tribunal/PatchSet/semantic-engine tests plus the project-brief
+  boundary tests; installed dist `odylith-local-release-0.1.15-clear-list-fix`
+  passed 13/13 maintained standard cases with hard 10/10 quality scores,
+  13/13 browser proof, zero platform leakage findings, max standard create
+  30.563s, average standard create 27.854s, synthetic rescue at 38.917s, and
+  natural host-planned structured rescue at 60.926s with governed writes.
 
 - 2026-06-30: Proved the source-owned repair and actor-custody checkpoint in the installed consumer lane. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-046)
   Fresh local release dist `odylith-local-release-0.1.15-2a389428` passed the

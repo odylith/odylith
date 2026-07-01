@@ -74,6 +74,7 @@ EVALUATION_EVIDENCE_FILES = frozenset(
 )
 DIST_EVIDENCE_PREFIXES = (
     "greenfield-post-confirm-",
+    "greenfield-rescue-proof-",
 )
 GENERIC_PRODUCT_TERMS = frozenset(
     {
