@@ -699,6 +699,17 @@ This section captures synchronized requirement and contract signals derived from
   generic status-view Registry profiles; fresh local release dist
   `odylith-local-release-0.1.15-3c616936` passed the platform domain-leakage
   build gate across 52 distinctive fixture terms.
+- 2026-06-30: Preserved standard-path release benchmark wins while reopening natural-rescue release proof for host-ledger custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-208`; Diagram: D-043)
+  Fresh dist
+  `odylith-local-release-0.1.15-31ab2559` passed 13/13 maintained standard
+  greenfield cases with hard 10/10 scores, zero package/browser/platform
+  leakage issues, max standard create time 27.835s, and synthetic typed-probe
+  rescue at 34.084s. The real provider-backed natural structured rescue leg
+  failed after 69.399s because raw host rationale entered
+  `proposal.semantic_patch_ledger` and was correctly rejected by the final
+  semantic-slop gate before governed writes. Release readiness remains blocked
+  until a rebuilt dist proves the safe host-ledger projection fix through the
+  maintained installed matrix with browser proof and natural rescue enabled.
 - 2026-05-03: Added the v0.1.14 release-planning target and made `next` point to `release-0-1-14`; B-141 and B-142 are active there, while B-140 is recorded as completed release history for migration-observer proof. Greenfield project proposals now default omitted consumer project release selectors to `0.0.1` so first-release planning does not borrow Odylith's own `next` alias. (Plans: [B-141](odylith/radar/radar.html?view=plan&workstream=B-141), [B-142](odylith/radar/radar.html?view=plan&workstream=B-142))
 - 2026-03-27: Added a first-class maintainer release subsystem with sticky version sessions, stable semver auto-tagging, canonical commit-bound release dispatch, and a dedicated release runbook. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))
 - 2026-03-28: Reset the local relaunch narrative to restart preview at `v0.1.0`, made split managed assets part of the canonical release lane while keeping install full-stack by default, and blocked dispatch on local hosted-asset installer proof. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005))

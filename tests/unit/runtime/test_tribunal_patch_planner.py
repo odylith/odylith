@@ -231,6 +231,46 @@ def test_structured_patch_plan_accepts_explicit_empty_list_semantic_fact() -> No
     assert not patch_plan["rejections"]
 
 
+def test_structured_patch_plan_projects_ledger_fields_as_safe_plain_text() -> None:
+    patch_plan = validate_structured_patch_plan(
+        {
+            "version": TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "planned",
+            "decision_summary": 'Repair after rejecting "unsupported scope',
+            "operations": [
+                _valid_plan_operation(
+                    decision_ledger_entry={
+                        "chosen_interpretation": "Use the accepted state object.",
+                        "rationale": 'Reject the unsupported "extra delivery channel',
+                        "rejected_interpretations": ["Keep 'unsupported channel as a system."],
+                        "evidence_ids": ["review_report"],
+                    },
+                    proof_obligation_delta={
+                        "summary": 'No proof change for "unsupported scope',
+                        "added_obligations": [],
+                        "removed_obligations": [],
+                        "unchanged_obligations": ["Keep don't-repeat proof."],
+                    },
+                    rejected_interpretation='Treat "extra delivery channel as accepted scope',
+                )
+            ],
+        },
+        patchset_request=_patchset_request(),
+    )
+
+    assert patch_plan["decision_summary"] == "Repair after rejecting unsupported scope"
+    operation = patch_plan["operations"][0]
+    assert operation["decision_ledger_entry"]["rationale"] == (
+        "Reject the unsupported extra delivery channel"
+    )
+    assert operation["decision_ledger_entry"]["rejected_interpretations"] == [
+        "Keep unsupported channel as a system."
+    ]
+    assert operation["proof_obligation_delta"]["summary"] == "No proof change for unsupported scope"
+    assert operation["proof_obligation_delta"]["unchanged_obligations"] == ["Keep don't-repeat proof."]
+    assert operation["rejected_interpretation"] == "Treat extra delivery channel as accepted scope"
+
+
 def test_artifact_plan_replacement_fact_envelope_materializes_path_value_patch() -> None:
     patch_plan = validate_structured_patch_plan(
         {

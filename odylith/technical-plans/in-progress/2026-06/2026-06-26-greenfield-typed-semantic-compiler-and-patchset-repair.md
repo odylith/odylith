@@ -2153,3 +2153,21 @@ vocabulary, or degraded packages.
       forensics/leakage suite passed 33 tests, and the source-local broad sync
       check passed with Registry, Atlas, Casebook, backlog, plan, and delivery
       gates clean.
+- [x] Add a safe host-ledger custody boundary for natural structured rescue.
+      Fresh dist `odylith-local-release-0.1.15-31ab2559` preserved the
+      post-0.1.14 standard-path benchmark gains: 13/13 maintained standard
+      cases passed hard 10/10 under 60 seconds, with max create time 27.835s,
+      zero package/browser/platform-leakage issues, and synthetic typed-probe
+      rescue in 34.084s. The real provider-backed natural rescue leg still
+      failed before governed writes after 69.399s because host-authored
+      `decision_ledger_entry.rationale` crossed into
+      `proposal.semantic_patch_ledger` with unbalanced quoted text. The fix
+      keeps replacement facts authoritative and leaves the semantic slop gate
+      intact: Tribunal planner validation, semantic patch application, and
+      post-confirm manifest proof now project host rationale, rejected
+      interpretations, proof-delta prose, and decision summaries as safe plain
+      ledger text while preserving `replacement_fact` payloads unchanged.
+      Focused proof currently covers planner validation, semantic ledger
+      projection, generated-copy slop detection, and manifest proof custody.
+      Remaining proof: rerun the maintained installed matrix from a rebuilt
+      dist with browser proof and real natural structured rescue enabled.

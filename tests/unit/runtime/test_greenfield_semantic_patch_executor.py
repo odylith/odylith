@@ -7,6 +7,7 @@ import pytest
 from odylith.runtime.domain_intelligence import greenfield_post_confirm_patch_apply
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmRepairContext
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionReport
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import apply_semantic_patch_operations
 from odylith.runtime.domain_intelligence.greenfield_semantic_patch_executor import (
     apply_semantic_patch_operations_detailed,
@@ -174,6 +175,45 @@ def test_semantic_patch_executor_applies_empty_external_system_clear_with_ledger
     assert proposal["semantic_patch_ledger"][0]["applied_field"] == (
         "semantic_model.domain_ontology.external_systems"
     )
+
+
+def test_semantic_patch_executor_projects_host_ledger_text_as_safe_plain_copy() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "state_object": "Old state.",
+        },
+        "semantic_model": {"domain_ontology": {"state_object": "Old state."}},
+    }
+
+    result = apply_semantic_patch_operations_detailed(
+        proposal,
+        [
+            {
+                "operation_id": "state-object-repair",
+                "target_layer": "semantic_model",
+                "target_path": "semantic_model.domain_ontology.state_object",
+                "semantic_node_id": "SemanticModelIR.domain_ontology.state_object",
+                "issue_code": "structured_rescue_semantic_patch",
+                "operation_kind": "semantic_state_object",
+                "replacement_fact": {"state_object": "A decision record with owner, status, and result."},
+                "decision_ledger_entry": {
+                    "chosen_interpretation": "Use the accepted state object.",
+                    "rationale": 'Reject the unsupported "extra delivery channel',
+                    "rejected_interpretations": ["Keep 'unsupported channel as a system."],
+                },
+                "rejected_interpretation": 'Treat "extra delivery channel as accepted scope',
+                "confidence": 0.87,
+            }
+        ],
+    )
+
+    assert result.changed is True
+    ledger = proposal["semantic_patch_ledger"][0]
+    assert ledger["rationale"] == "Reject the unsupported extra delivery channel"
+    assert ledger["rejected_interpretations"] == ["Keep unsupported channel as a system."]
+    assert ledger["rejected_interpretation"] == "Treat extra delivery channel as accepted scope"
+    assert not generated_semantic_slop_issues(proposal, root="proposal")
 
 
 def test_semantic_patch_executor_records_host_adjudication_for_idempotent_fact() -> None:

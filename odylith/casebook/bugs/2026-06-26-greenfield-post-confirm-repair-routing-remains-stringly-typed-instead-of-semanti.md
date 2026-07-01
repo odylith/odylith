@@ -1176,6 +1176,22 @@
   artifact-plan patch materialization, dashboard rerender, Mermaid source label
   custody, and no rendered preview mutation. Source-local repros for all four
   `de17cdda` failed cases now pass under 23s with committed governed writes.
+  A later installed local-release proof at `31ab2559` preserved the post-0.1.14
+  standard-path benchmark wins but exposed another rescue custody gap. Thirteen
+  standard post-confirm cases passed hard 10/10 under 60 seconds with a maximum
+  create time of 27.835 seconds, and the synthetic typed rescue probe committed
+  governed records in 34.084 seconds. The real provider-backed natural
+  structured rescue still failed after 69.399 seconds with no governed records
+  because `proposal.semantic_patch_ledger.0.rationale` contained unbalanced
+  quoted host prose. The typed patch plan had crossed the correct boundary, but
+  explanatory `decision_ledger_entry` text from the host still entered the
+  proposal ledger as raw prose and was then correctly rejected by the final
+  semantic-slop gate. This must not weaken the slop gate or add project-specific
+  quote cleanup. The acceptable fix is a generic ledger-projection custody
+  boundary: replacement facts remain authoritative semantic inputs, while host
+  rationale, rejected interpretations, decision summaries, and proof-delta
+  explanations are normalized into safe plain ledger text before proposal or
+  manifest custody.
 
 - Related Incidents/Bugs: CB-207
 
@@ -1226,6 +1242,7 @@
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan.py
 - src/odylith/runtime/domain_intelligence/greenfield_prewrite_projection_rerender.py
 - src/odylith/runtime/domain_intelligence/greenfield_semantic_patch_executor.py
+- src/odylith/runtime/common/safe_ledger_text.py
 - src/odylith/runtime/domain_intelligence/greenfield_artifact_plan_patch_executor.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog_text_model.py
 - src/odylith/runtime/reasoning/tribunal_engine.py

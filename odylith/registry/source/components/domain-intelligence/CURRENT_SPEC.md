@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-06-30 · Implementation:** Added safe host-ledger custody for greenfield natural structured rescue after 31ab2559 preserved standard benchmark wins but failed on raw rationale quote slop.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/common/safe_ledger_text.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py +2 more
 - **2026-06-30 · Implementation:** Greenfield source-local artifact QA found and fixed coordinated-action actor drift, card-specific dashboard repair routing, fresh source-launch rerender parity, and repeated clarity title shape; six non-reused source-local simulations now pass under 22s with Atlas and Registry validation green.
   - Evidence: src/odylith/runtime/common/prose_grammar.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py +1 more
 - **2026-06-30 · Implementation:** Greenfield post-confirm source repair now maps preview-copy failures to SemanticModelIR or ArtifactPlanIR facts, refreshes project-dashboard projections, and clears the four prior source-local failed signatures under 23s.
@@ -37,9 +40,6 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-30 · Implementation:** Greenfield natural structured-rescue hardening now preserves provider-backed PatchSet evidence through the final clean post-confirm manifest and adds a maintained natural rescue proof leg; focused source proof passed, installed committed-head proof remains pending.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
-- **2026-06-30 · Implementation:** Removed platform-facing retained-scenario vocabulary from current Registry specs and Atlas box-explanation runtime custody; leakage guard and strict platform-surface scan are clean outside intentional fixtures/evidence.
-  - Scope: B-142
-  - Evidence: odylith/registry/source/components/atlas/CURRENT_SPEC.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
 <!-- registry-requirements:end -->
 
 ## Feature History
@@ -1703,6 +1703,17 @@ This section captures synchronized requirement and contract signals derived from
   through visible label units, not through graph syntax. Current source-local
   proof clears the four prior failed signatures in 19.406s, 20.957s, 21.309s,
   and 22.103s with committed writes; installed release proof is still required
+  before this contract can be called shipped.
+- Source follow-up after the `31ab2559` natural-rescue falsification adds a
+  host-ledger custody boundary to the Domain Intelligence contract. The
+  semantic patch executor must keep `replacement_fact` as the authoritative
+  semantic payload, but host-authored rationale, rejected interpretations,
+  proof-delta explanations, and decision summaries must enter proposal and
+  manifest custody only as safe plain ledger text. The final semantic-slop gate
+  remains fail-closed for unbalanced quoted public copy; the fix is not a gate
+  relaxation and not rendered-prose repair. Current source proof covers
+  semantic ledger projection, manifest proof custody, planner validation, and
+  generated-copy quote detection; installed release proof is still required
   before this contract can be called shipped.
 
 ## Research Basis

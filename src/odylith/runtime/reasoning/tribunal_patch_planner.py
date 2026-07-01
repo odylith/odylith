@@ -11,6 +11,8 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.common.safe_ledger_text import safe_ledger_text
+from odylith.runtime.common.safe_ledger_text import safe_ledger_value
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_string_list
 from odylith.runtime.common.value_coercion import normalize_token
@@ -221,7 +223,7 @@ def validate_structured_patch_plan(
     return {
         "version": TRIBUNAL_PATCH_PLAN_VERSION,
         "status": status,
-        "decision_summary": normalize_string(plan.get("decision_summary")),
+        "decision_summary": safe_ledger_text(plan.get("decision_summary")),
         "operation_count": len(accepted),
         "operations": accepted,
         "rejections": rejections,
@@ -262,7 +264,7 @@ def merge_patch_plan_into_request(
         "version": normalize_string(patch_plan.get("version")) or TRIBUNAL_PATCH_PLAN_VERSION,
         "status": normalize_string(patch_plan.get("status")),
         "operation_count": int(patch_plan.get("operation_count") or 0),
-        "decision_summary": normalize_string(patch_plan.get("decision_summary")),
+        "decision_summary": safe_ledger_text(patch_plan.get("decision_summary")),
         "rejections": list(patch_plan.get("rejections", [])) if isinstance(patch_plan.get("rejections"), list) else [],
         "provider": dict(patch_plan.get("provider", {})) if isinstance(patch_plan.get("provider"), Mapping) else {},
     }
@@ -300,11 +302,11 @@ def _validated_operation(raw_operation: Mapping[str, Any], requested: Mapping[st
             "affected_projections": requested_projections,
             "requested_action": normalize_string(requested.get("requested_action")),
             "replacement_fact": replacement,
-            "decision_ledger_entry": _mapping_or_empty(raw_operation.get("decision_ledger_entry")),
-            "proof_obligation_delta": _mapping_or_empty(raw_operation.get("proof_obligation_delta")),
+            "decision_ledger_entry": _safe_ledger_mapping(raw_operation.get("decision_ledger_entry")),
+            "proof_obligation_delta": _safe_ledger_mapping(raw_operation.get("proof_obligation_delta")),
             "rejected_interpretation": (
-                normalize_string(raw_operation.get("rejected_interpretation"))
-                or normalize_string(requested.get("rejected_interpretation"))
+                safe_ledger_text(raw_operation.get("rejected_interpretation"))
+                or safe_ledger_text(requested.get("rejected_interpretation"))
             ),
             "confidence": confidence,
         },
@@ -398,8 +400,9 @@ def _replacement_fact_leaf_key(requested: Mapping[str, Any]) -> str:
     return normalize_token(target_path.rsplit(".", 1)[-1]) if target_path else ""
 
 
-def _mapping_or_empty(value: Any) -> dict[str, Any]:
-    return dict(value) if isinstance(value, Mapping) else {}
+def _safe_ledger_mapping(value: Any) -> dict[str, Any]:
+    clean = safe_ledger_value(value)
+    return dict(clean) if isinstance(clean, Mapping) else {}
 
 
 def _confidence(value: Any) -> float:
@@ -452,7 +455,7 @@ def _empty_plan(
     return {
         "version": TRIBUNAL_PATCH_PLAN_VERSION,
         "status": status,
-        "decision_summary": normalize_string(reason),
+        "decision_summary": safe_ledger_text(reason),
         "operation_count": 0,
         "operations": [],
         "rejections": [],

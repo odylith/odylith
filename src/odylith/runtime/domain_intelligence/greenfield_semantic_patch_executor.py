@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from odylith.runtime.common.safe_ledger_text import safe_ledger_value
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_token
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
@@ -308,7 +309,7 @@ def _replacement_has_value(value: Any) -> bool:
 
 
 def _ledger_entry(operation: Mapping[str, Any], *, applied_field: str) -> dict[str, Any]:
-    entry = operation.get("decision_ledger_entry")
+    entry = _ledger_value(operation.get("decision_ledger_entry"))
     base = dict(entry) if isinstance(entry, Mapping) else {}
     proof_delta = _ledger_value(operation.get("proof_obligation_delta"))
     if proof_delta:
@@ -320,7 +321,7 @@ def _ledger_entry(operation: Mapping[str, Any], *, applied_field: str) -> dict[s
             "target_path": normalize_string(operation.get("target_path")),
             "semantic_node_id": normalize_string(operation.get("semantic_node_id")),
             "issue_code": normalize_token(operation.get("issue_code")),
-            "rejected_interpretation": normalize_string(operation.get("rejected_interpretation")),
+            "rejected_interpretation": _ledger_value(operation.get("rejected_interpretation")),
             "confidence": _confidence(operation.get("confidence")),
         }
     )
@@ -328,18 +329,7 @@ def _ledger_entry(operation: Mapping[str, Any], *, applied_field: str) -> dict[s
 
 
 def _ledger_value(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        return {normalize_string(key): _ledger_value(item) for key, item in value.items() if normalize_string(key)}
-    if isinstance(value, (list, tuple)):
-        rows = []
-        for item in value:
-            ledger_item = _ledger_value(item)
-            if not _empty_ledger_value(ledger_item):
-                rows.append(ledger_item)
-        return rows
-    if isinstance(value, str):
-        return normalize_string(value)
-    return value
+    return safe_ledger_value(value)
 
 
 def _confidence(value: Any) -> float:

@@ -799,7 +799,12 @@ def test_post_confirm_manifest_preserves_provider_backed_repair_patchset(
     ) -> engine.GreenfieldPostConfirmRepairContext:
         operation = {
             **dict(context.patchset_request["operations"][0]),
-            "replacement_fact": {"external_systems": ["source system named in the accepted path"]},
+            "replacement_fact": {"external_systems": ['source system named "exactly" in the accepted path']},
+            "decision_ledger_entry": {
+                "rationale": 'Reject unsupported "extra boundary',
+                "rejected_interpretations": ["Keep 'unsupported boundary as accepted."],
+            },
+            "rejected_interpretation": 'Treat "extra boundary as accepted',
             "confidence": 0.91,
         }
         return replace(
@@ -811,7 +816,7 @@ def test_post_confirm_manifest_preserves_provider_backed_repair_patchset(
                     "version": "odylith.greenfield.tribunal_patch_plan.v1",
                     "status": "planned",
                     "operation_count": 1,
-                    "decision_summary": "Preserve the external boundary as a semantic fact.",
+                    "decision_summary": 'Preserve the external boundary and reject "extra boundary',
                     "provider": {"provider": "codex-cli", "last_failure_code": ""},
                 },
             },
@@ -844,8 +849,19 @@ def test_post_confirm_manifest_preserves_provider_backed_repair_patchset(
     assert repair_patchset["status"] == "repairable"
     assert repair_patchset["tribunal_patch_plan"]["status"] == "planned"
     assert repair_patchset["tribunal_patch_plan"]["operation_count"] == 1
+    assert repair_patchset["tribunal_patch_plan"]["decision_summary"] == (
+        "Preserve the external boundary and reject extra boundary"
+    )
     assert repair_patchset["tribunal_patch_plan"]["provider"]["provider"] == "codex-cli"
-    assert repair_patchset["operations"][0]["replacement_fact"]["external_systems"]
+    operation = repair_patchset["operations"][0]
+    assert operation["replacement_fact"]["external_systems"] == [
+        'source system named "exactly" in the accepted path'
+    ]
+    assert operation["decision_ledger_entry"]["rationale"] == "Reject unsupported extra boundary"
+    assert operation["decision_ledger_entry"]["rejected_interpretations"] == [
+        "Keep unsupported boundary as accepted."
+    ]
+    assert operation["rejected_interpretation"] == "Treat extra boundary as accepted"
     assert "semantic_alignment" in result.manifest["repaired_issue_codes"]
 
 

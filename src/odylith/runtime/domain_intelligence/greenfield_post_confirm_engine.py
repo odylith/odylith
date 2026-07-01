@@ -12,6 +12,7 @@ import json
 import time
 from typing import Any
 
+from odylith.runtime.common.safe_ledger_text import safe_ledger_value
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_string_list
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
@@ -547,10 +548,29 @@ def build_greenfield_post_confirm_manifest(
         },
     }
     if last_repair_patchset_request is not None:
-        manifest["last_repair_patchset_request"] = dict(last_repair_patchset_request)
+        manifest["last_repair_patchset_request"] = _safe_manifest_patchset_request(last_repair_patchset_request)
     if whole_project_elapsed_seconds is not None:
         manifest["whole_project_elapsed_seconds"] = round(float(whole_project_elapsed_seconds), 3)
     return manifest
+
+
+def _safe_manifest_patchset_request(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        result: dict[str, Any] = {}
+        for key, item in value.items():
+            clean_key = normalize_string(key)
+            if not clean_key:
+                continue
+            if clean_key == "replacement_fact":
+                result[clean_key] = item
+                continue
+            result[clean_key] = _safe_manifest_patchset_request(item)
+        return result
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return [_safe_manifest_patchset_request(item) for item in value]
+    if isinstance(value, str):
+        return safe_ledger_value(value)
+    return value
 
 
 def finalize_greenfield_post_confirm_manifest(
