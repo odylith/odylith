@@ -2445,6 +2445,29 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   completed create in 32s, and installed thin scientific propose-to-create
   completed in 28s. Full installed matrix proof remains required before release
   closure.
+- 2026-07-01 follow-up source proof repaired a second grn-sim Atlas projection
+  defect without weakening gates. First-path Mermaid step labels now convert
+  finite coordinated actions through the shared prose grammar owner instead of
+  a local Atlas action table, and typed Mermaid-label quality checks reject
+  mixed finite/base labels such as `Uploads or select`. A subagent QA pass found
+  that token-only conversion would corrupt noun coordinations such as
+  `methods and controls`, so the shared owner now distinguishes action clauses
+  from plural object lists before converting or rejecting label copy. A later
+  source pressure test found one more leading-action ambiguity, so labels such
+  as `checks and controls for drift` now stay action coordination while plural
+  object lists remain intact. The saved grn-sim confirmed intent replay
+  completed governed create in about 24.00s with 4 backlog
+  records, 5 Registry components, 6 Atlas diagrams, final manifest passed,
+  Registry validation passed, Atlas render passed, and zero repeated-copy or
+  known clipped-copy hits across generated artifacts. Fresh working-tree
+  local-release proof from
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-label-qa2`
+  then passed the maintained installed matrix with 14/14 varied standard cases
+  at hard 10/10 in 23.594-28.426 seconds, all generated browser-surface checks
+  passing, synthetic rescue passing in 34.934 seconds, natural structured
+  rescue passing in 66.245 seconds, platform domain-leakage proof passing across
+  213 generated readback terms, and no remaining temp roots. Final
+  committed-head installed release proof remains pending.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

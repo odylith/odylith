@@ -90,6 +90,23 @@ flowchart LR
     assert generated_public_copy_issues("mermaid", mermaid) == ()
 
 
+def test_generated_copy_quality_blocks_mixed_action_coordination_in_visible_labels() -> None:
+    assert generated_public_copy_issues("good label", 'S1["Upload or select a small dataset"]') == ()
+    assert generated_public_copy_issues("action label", 'S1["Check and control for drift"]') == ()
+    assert generated_public_copy_issues("ordinary prose", "The researcher uploads or selects a small dataset.") == ()
+    assert generated_public_copy_issues("methods label", 'S1["Choose methods and controls for comparison"]') == ()
+    assert generated_public_copy_issues("records label", 'S1["Upload controls and records for later review"]') == ()
+    assert generated_public_copy_issues("bad control label", 'S1["Checks and control for drift"]') == (
+        "bad control label leaked mixed finite/base action in visible label",
+    )
+    assert generated_public_copy_issues("bad label", 'S1["Uploads or select a small dataset"]') == (
+        "bad label leaked mixed finite/base action in visible label",
+    )
+    assert generated_public_copy_issues("bad action label", 'S1["Upload controls and records results"]') == (
+        "bad action label leaked mixed finite/base action in visible label",
+    )
+
+
 def test_generated_copy_quality_allows_structured_memory_context_delimiters() -> None:
     context = (
         "reasoning_mode=odylith_confirmed_governed_proposal; source_posture=confirmed_intent_only; "

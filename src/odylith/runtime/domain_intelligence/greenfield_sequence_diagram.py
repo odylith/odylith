@@ -8,6 +8,7 @@ from typing import Any
 from odylith.runtime.common import display_text
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.common.prose_grammar import action_base_verb_pattern
+from odylith.runtime.common.prose_grammar import base_following_action_verbs
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
@@ -673,100 +674,7 @@ def _strip_primary_actor_subject(value: str) -> str:
 
 def _imperative_handoff_focus(value: str) -> str:
     text = _compact_text(value).strip(" .")
-    replacements = {
-        "accepts": "accept",
-        "adds": "add",
-        "attaches": "attach",
-        "assigns": "assign",
-        "captures": "capture",
-        "calculates": "calculate",
-        "checks": "check",
-        "chooses": "choose",
-        "closes": "close",
-        "collects": "collect",
-        "compares": "compare",
-        "completes": "complete",
-        "computes": "compute",
-        "confirms": "confirm",
-        "creates": "create",
-        "decides": "decide",
-        "dismisses": "dismiss",
-        "enters": "enter",
-        "evaluates": "evaluate",
-        "exports": "export",
-        "fetches": "fetch",
-        "finds": "find",
-        "gets": "get",
-        "groups": "group",
-        "highlights": "highlight",
-        "imports": "import",
-        "notifies": "notify",
-        "lets": "let",
-        "links": "link",
-        "logs": "log",
-        "displays": "display",
-        "offers": "offer",
-        "opens": "open",
-        "orders": "order",
-        "persists": "persist",
-        "plays": "play",
-        "produces": "produce",
-        "publishes": "publish",
-        "ranks": "rank",
-        "reads": "read",
-        "receives": "receive",
-        "renders": "render",
-        "returns": "return",
-        "records": "record",
-        "requests": "request",
-        "resolves": "resolve",
-        "reviews": "review",
-        "routes": "route",
-        "saves": "save",
-        "sees": "see",
-        "selects": "select",
-        "shows": "show",
-        "screens": "screen",
-        "sends": "send",
-        "schedules": "schedule",
-        "stores": "store",
-        "submits": "submit",
-        "taps": "tap",
-        "tracks": "track",
-        "validates": "validate",
-        "verifies": "verify",
-        "votes": "vote",
-        "explains": "explain",
-        "hands": "hand",
-        "preserves": "preserve",
-    }
-    first, sep, rest = text.partition(" ")
-    replacement = replacements.get(first.casefold())
-    if replacement:
-        text = f"{replacement}{sep}{rest}".strip()
-    text = re.sub(
-        r"^(manually\s+)(logs|enters|selects|submits|saves|chooses|clicks|accepts|dismisses|records|captures|reviews)\b",
-        lambda match: match.group(1)
-        + {
-            "logs": "log",
-            "enters": "enter",
-            "selects": "select",
-            "submits": "submit",
-            "saves": "save",
-            "chooses": "choose",
-            "clicks": "click",
-            "accepts": "accept",
-            "dismisses": "dismiss",
-            "records": "record",
-            "captures": "capture",
-            "reviews": "review",
-        }[match.group(2).casefold()],
-        text,
-        flags=re.IGNORECASE,
-    )
-    for source, target in replacements.items():
-        text = re.sub(rf"((?:[,;]|\band\b|\bor\b)\s+){re.escape(source)}\b", rf"\1{target}", text, flags=re.IGNORECASE)
-    return text
+    return base_following_action_verbs(text)
 
 def _sequence_terms(value: object) -> set[str]:
     return set(

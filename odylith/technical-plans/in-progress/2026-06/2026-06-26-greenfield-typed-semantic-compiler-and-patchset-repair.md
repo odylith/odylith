@@ -2376,3 +2376,39 @@ vocabulary, or degraded packages.
       high-variance installed scientific matrix with browser proof, rerun the
       maintained installed matrix with rescue proof, and verify temp cleanup and
       platform leakage before release readiness is reclaimed.
+- [x] Repair the grn-sim Atlas coordinated-action label escape in source.
+      The exact saved grn-sim replay exposed a second Atlas projection defect
+      after the repeated-result fix: subject-stripped first-path labels could
+      mix finite and base coordinated actions such as `Uploads or select`.
+      The source repair removes the local Atlas action replacement table,
+      routes label imperative conversion through the shared prose grammar owner,
+      and adds a typed Mermaid-label public-copy guard backed by shared
+      base/finite action-token classification. Read-only subagent QA then
+      found that the first shared-grammar version still treated plural nouns
+      such as `orders`, `offers`, `controls`, and `records` as coordinated
+      verbs inside object lists. The corrected repair adds one shared
+      clause-versus-object discriminator, preserving labels such as
+      `Choose methods and controls for comparison` while still converting
+      real action chains such as `enters a form and submits`. Focused proof
+      passed the
+      mixed-label quality regression and the gene-expression live simulation
+      regression. A fresh source-local replay of the saved grn-sim confirmed
+      intent completed governed create in about 24.00s with final manifest
+      passed, issue_count 0, 4 backlog records, 5 Registry components, 6 Atlas
+      diagrams, Registry validation passed, Atlas render passed, and zero
+      repeated-copy or known clipped-copy signatures across 40 generated files.
+      A later local source pressure test found one more over-preservation
+      ambiguity, so leading action chains such as `checks and controls for
+      drift` now stay action coordination while plural object lists remain
+      intact.
+      Fresh working-tree local-release proof then passed the maintained
+      installed matrix from
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-label-qa2`:
+      14/14 varied standard creates scored hard 10/10 in 23.594-28.426
+      seconds, browser proof passed for every generated repo, synthetic rescue
+      passed in 34.934 seconds, natural structured rescue passed in 66.245
+      seconds, platform domain-leakage proof passed across 213 generated
+      readback terms, and temp cleanup had no remaining roots. Remaining proof
+      is final release-level: after checkpoint spacing permits commit/push,
+      rebuild a committed-head dist and rerun the maintained installed matrix
+      before claiming release posture.

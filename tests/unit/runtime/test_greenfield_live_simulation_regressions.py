@@ -622,6 +622,10 @@ Release 0.0.1 succeeds when a researcher can run one gene expression prediction,
     assert proposal["semantic_model"]["evaluation_semantics"]["focus"] == "Gene Expression Simulation Model"
     assert "Proof result<br/>Saved reviewable experiment" in atlas
     assert "Visible result<br/>Saved reviewable experiment" in atlas
+    assert "Upload or select an expression<br/>dataset" in atlas
+    assert "Define the biological context<br/>and prediction target" in atlas
+    assert "Run the simulation" in atlas
+    assert "Uploads or select" not in atlas
     assert "result result" not in atlas.casefold()
     rendered_lower = rendered.casefold()
     for term in ("baseline", "comparison", "uncertainty", "tolerance", "method", "model version", "reproducibility"):

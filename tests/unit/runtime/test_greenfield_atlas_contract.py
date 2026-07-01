@@ -100,6 +100,11 @@ def test_greenfield_apply_allows_styled_flowchart_without_forced_lanes(tmp_path,
     monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.component_authoring.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
     monkeypatch.setattr(greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh, "raise_for_failed_refresh", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped-unit-render"},
+    )
     proposal = _host_reasoned_ecommerce_proposal()
     proposal["diagrams"][0]["mermaid_source"] = (
         "flowchart LR\n"

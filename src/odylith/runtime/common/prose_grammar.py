@@ -93,6 +93,7 @@ _INFINITIVE_TO_FINITE = {
     "group": "groups",
     "guide": "guides",
     "handle": "handles",
+    "hand": "hands",
     "highlight": "highlights",
     "hold": "holds",
     "identify": "identifies",
@@ -117,7 +118,9 @@ _INFINITIVE_TO_FINITE = {
     "normalize": "normalizes",
     "notify": "notifies",
     "open": "opens",
+    "offer": "offers",
     "organize": "organizes",
+    "order": "orders",
     "optimize": "optimizes",
     "own": "owns",
     "pay": "pays",
@@ -199,6 +202,7 @@ _INFINITIVE_TO_FINITE = {
     "visit": "visits",
     "validate": "validates",
     "verify": "verifies",
+    "vote": "votes",
     "watch": "watches",
     "write": "writes",
 }
@@ -238,7 +242,7 @@ _FINITE_ACTION_SUFFIX_FALSE_POSITIVES = frozenset(
 _MODAL_BASE_FORM_MARKERS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "will", "would"})
 _MODAL_COORDINATORS = frozenset({"and", "or"})
 _MODAL_COORDINATED_PLURAL_OBJECT_TERMS = frozenset(
-    {"blocks", "checks", "controls", "moves", "records", "requests", "runs", "signals", "updates"}
+    {"blocks", "checks", "controls", "moves", "offers", "orders", "records", "requests", "runs", "signals", "updates"}
 )
 _MODAL_COORDINATED_OBJECT_BOUNDARIES = frozenset(
     {"", "after", "and", "because", "before", "for", "from", "if", "into", "or", "then", "through", "to", "until", "when", "where", "which", "while", "with", "without"}
@@ -381,6 +385,39 @@ def looks_like_base_action_token(value: str) -> bool:
     return _clean_word_token(value) in _INFINITIVE_TO_FINITE
 
 
+def action_token_form(value: str) -> str:
+    """Return ``base`` or ``finite`` when a token is a recognized action shape."""
+
+    if looks_like_base_action_token(value):
+        return "base"
+    if looks_like_finite_action_token(value):
+        return "finite"
+    return ""
+
+
+def coordinated_action_form_after_connector(tokens: tuple[str, ...] | list[str], connector_index: int) -> str:
+    """Return the action form after a connector when it is a clause action.
+
+    The shared verb table includes words that are also ordinary plural nouns
+    such as ``records`` and ``controls``. This helper keeps those nouns out of
+    coordinated action repair unless the surrounding phrase looks like another
+    action clause.
+    """
+
+    lowered = tuple(_clean_word_token(token) for token in tokens)
+    for index in range(connector_index + 1, min(len(lowered), connector_index + 4)):
+        token = lowered[index]
+        if _connector_filler_token(token):
+            continue
+        form = action_token_form(token)
+        if not form:
+            return ""
+        if form == "finite" and _coordinated_candidate_is_plural_object_context(lowered, index, connector_index):
+            return ""
+        return form
+    return ""
+
+
 def _modal_segments(value: str) -> list[str]:
     return [segment for segment in re.split(r"[.!?;:,]+", str(value or "")) if segment.strip()]
 
@@ -395,7 +432,7 @@ def _clean_word_token(value: str) -> str:
 
 def _next_modal_candidate(tokens: list[str], start: int, end: int) -> int | None:
     index = start
-    while index < end and tokens[index].endswith("ly"):
+    while index < end and _connector_filler_token(tokens[index]):
         index += 1
     return index if index < end else None
 
@@ -580,6 +617,8 @@ def base_following_action_verbs(value: str) -> str:
         connector = match.group("connector")
         modifier = match.group("modifier") or ""
         verb = match.group("verb")
+        if _coordinated_action_match_is_plural_object_context(text, match):
+            return match.group(0)
         base = _FINITE_TO_BASE.get(verb.casefold(), verb.casefold())
         return f"{connector} {modifier}{base}"
 
@@ -658,6 +697,82 @@ def _base_action_part(value: str) -> str:
         base = verb
     suffix = f" {rest.strip()}" if separator else ""
     return f"{leading}{prefix}{base}{suffix}"
+
+
+def _coordinated_action_match_is_plural_object_context(text: str, match: re.Match[str]) -> bool:
+    token_rows = _word_token_spans(text)
+    candidate_index = next(
+        (
+            index
+            for index, (_token, start, end) in enumerate(token_rows)
+            if start <= match.start("verb") < end
+        ),
+        -1,
+    )
+    if candidate_index < 0:
+        return False
+    connector_index = candidate_index - 1
+    connector_start = match.start("connector")
+    for index, (token, start, end) in enumerate(token_rows):
+        if start <= connector_start < end and token in _MODAL_COORDINATORS:
+            connector_index = index
+            break
+    return _coordinated_candidate_is_plural_object_context(
+        tuple(token for token, _start, _end in token_rows),
+        candidate_index,
+        connector_index,
+    )
+
+
+def _coordinated_candidate_is_plural_object_context(
+    tokens: tuple[str, ...],
+    candidate_index: int,
+    connector_index: int,
+) -> bool:
+    token = tokens[candidate_index] if 0 <= candidate_index < len(tokens) else ""
+    if token not in _MODAL_COORDINATED_PLURAL_OBJECT_TERMS:
+        return False
+    previous, previous_index = _previous_non_filler_token_with_index(tokens, connector_index)
+    if _token_is_leading_action(tokens, previous_index):
+        return False
+    next_token = tokens[candidate_index + 1] if candidate_index + 1 < len(tokens) else ""
+    if next_token in _MODAL_COORDINATED_OBJECT_BOUNDARIES:
+        return True
+    return not next_token and (
+        previous in _MODAL_COORDINATED_PLURAL_OBJECT_TERMS
+        or (previous.endswith("s") and previous not in _FINITE_ACTION_SUFFIX_FALSE_POSITIVES)
+    )
+
+
+def _previous_non_filler_token(tokens: tuple[str, ...], before_index: int) -> str:
+    token, _index = _previous_non_filler_token_with_index(tokens, before_index)
+    return token
+
+
+def _previous_non_filler_token_with_index(tokens: tuple[str, ...], before_index: int) -> tuple[str, int]:
+    for index in range(before_index - 1, -1, -1):
+        token = tokens[index]
+        if _connector_filler_token(token):
+            continue
+        return token, index
+    return "", -1
+
+
+def _token_is_leading_action(tokens: tuple[str, ...], index: int) -> bool:
+    if index < 0 or not action_token_form(tokens[index]):
+        return False
+    return all(_connector_filler_token(token) for token in tokens[:index])
+
+
+def _connector_filler_token(token: str) -> bool:
+    return token == "then" or token.endswith("ly")
+
+
+def _word_token_spans(value: str) -> list[tuple[str, int, int]]:
+    return [
+        (_clean_word_token(match.group(0)), match.start(), match.end())
+        for match in re.finditer(r"[A-Za-z0-9][A-Za-z0-9'-]*", str(value or ""))
+    ]
 
 
 def _base_gerund_part(value: str) -> tuple[str, bool]:

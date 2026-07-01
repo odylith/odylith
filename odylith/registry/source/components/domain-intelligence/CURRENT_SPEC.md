@@ -1846,6 +1846,33 @@ This section captures synchronized requirement and contract signals derived from
   and governed validation after Atlas sync. This checkpoint strengthens the
   typed IR boundary but does not by itself prove a new installed release
   matrix.
+- Source follow-up for Atlas action-label grammar: first-path Mermaid label
+  projection now treats coordinated action inflection as shared prose-grammar
+  custody, not an Atlas-local replacement table. The Atlas sequence renderer
+  calls the shared base-action conversion owner for imperative labels, while
+  generated-copy quality checks typed `mermaid_label` units for mixed
+  finite/base coordinated actions using the shared base/finite action token
+  classifiers. Subagent QA found that token-only conversion would corrupt
+  action-shaped plural object lists, so the shared grammar owner now applies a
+  clause-versus-object discriminator before either converting or rejecting
+  coordinated labels. The guard fails labels such as `Uploads or select` but
+  allows correct imperative labels, ordinary prose such as `uploads or
+  selects`, noun coordinations such as `methods and controls`, and leading
+  action chains such as `checks and controls for drift`.
+  Focused proof passed the mixed-label quality regression and gene-expression
+  live simulation regression. Exact source-local replay of the saved grn-sim
+  confirmed intent wrote governed records in about 24.00s with final manifest
+  passed, 4 Radar records, 5 Registry components, 6 Atlas diagrams, Registry
+  validation passed, Atlas render passed, and no repeated-copy or known
+  clipped-copy signatures across 40 generated files. Fresh working-tree
+  local-release proof from
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-label-qa2`
+  then passed the maintained installed matrix: 14/14 standard creates scored
+  hard 10/10 in 23.594-28.426 seconds, browser proof passed for every generated
+  repo, synthetic rescue passed in 34.934 seconds, natural structured rescue
+  passed in 66.245 seconds, platform domain-leakage proof passed across 213
+  generated readback terms, and temp cleanup had no remaining roots. Final
+  committed-head installed release proof remains pending.
 
 ## Research Basis
 

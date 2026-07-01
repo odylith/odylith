@@ -2473,6 +2473,14 @@ def test_first_path_clauses_compile_actions_outcomes_and_noun_lists() -> None:
     assert "their first" not in dash_explainer.capability_chain
     assert "rates today's status" not in dash_explainer.capability_chain
     assert base_action_clause("logs progress and reviews weekly status") == "log progress and review weekly status"
+    assert base_action_clause("enters a form and submits") == "enter a form and submit"
+    assert base_action_clause("checks and controls for drift") == "check and control for drift"
+    assert base_action_clause("reviews orders and offers") == "review orders and offers"
+    assert base_action_clause("chooses methods and controls for comparison") == "choose methods and controls for comparison"
+    assert (
+        base_action_clause("uploads controls and records for later review")
+        == "upload controls and records for later review"
+    )
     assert (
         base_action_clause("requests a slot, receives confirmation, and records next steps")
         == "request a slot, receive confirmation, and record next steps"

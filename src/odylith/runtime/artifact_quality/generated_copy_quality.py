@@ -9,6 +9,8 @@ from typing import Any
 
 from odylith.runtime.artifact_quality.generated_copy_quality_units import raw_text_units
 from odylith.runtime.artifact_quality.generated_copy_quality_units import text_quality_units
+from odylith.runtime.common.prose_grammar import action_token_form
+from odylith.runtime.common.prose_grammar import coordinated_action_form_after_connector
 from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import actor_led_finite_action_inside_user_can
 from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import gerund_actor_role_finite_action_splice
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -132,6 +134,13 @@ def generated_public_copy_findings(scope: str, value: Any) -> tuple[GeneratedCop
             findings.append(GeneratedCopyFinding("mixed_action_inflection", f"{scope} leaked mixed finite/base action prose"))
         if _has_mixed_compact_action_inflection(text):
             findings.append(GeneratedCopyFinding("compact_action_inflection", f"{scope} leaked compact path mixed action prose"))
+        if unit.text_kind == "mermaid_label" and _has_mixed_label_action_coordination(lowered):
+            findings.append(
+                GeneratedCopyFinding(
+                    "mixed_label_action_inflection",
+                    f"{scope} leaked mixed finite/base action in visible label",
+                )
+            )
         if _has_saved_destination_result_slop(text):
             findings.append(GeneratedCopyFinding("saved_destination_result", f"{scope} leaked saved-destination result prose"))
         if _has_possessive_result_list_slop(text):
@@ -529,6 +538,39 @@ def _has_mixed_compact_action_inflection(text: str) -> bool:
         flags=re.IGNORECASE,
     )
     return bool(pattern.search(text))
+
+
+def _has_mixed_label_action_coordination(tokens: tuple[str, ...]) -> bool:
+    if len(tokens) < 3:
+        return False
+    for index, token in enumerate(tokens):
+        if token not in {"and", "or"}:
+            continue
+        right_form = coordinated_action_form_after_connector(tokens, index)
+        if not right_form:
+            continue
+        left_form = _left_action_form_before_label_connector(tokens, index)
+        if left_form and left_form != right_form:
+            return True
+    return False
+
+
+def _left_action_form_before_label_connector(tokens: tuple[str, ...], connector_index: int) -> str:
+    first_form = action_token_form(tokens[0])
+    if first_form:
+        return first_form
+    for index in range(connector_index - 1, max(-1, connector_index - 6), -1):
+        token = tokens[index]
+        if _label_connector_filler(token):
+            continue
+        form = action_token_form(token)
+        if form:
+            return form
+    return ""
+
+
+def _label_connector_filler(token: str) -> bool:
+    return token in {"then"} or token.endswith("ly")
 
 
 def _has_saved_destination_result_slop(text: str) -> bool:
