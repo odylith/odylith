@@ -234,6 +234,20 @@ def test_normalize_legacy_backlog_index_is_idempotent_after_bridge(tmp_path: Pat
     assert backlog_index.read_text(encoding="utf-8") == normalized
 
 
+def test_normalize_legacy_backlog_index_defaults_last_updated_to_utc_date(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    repo_root = _seed_repo(
+        tmp_path,
+        founder_override="no",
+        rationale_lines=["- why now: keep the current explanation."],
+    )
+    monkeypatch.setattr(legacy_backlog_normalization, "_utc_today", lambda: dt.date(2026, 7, 1))
+
+    legacy_backlog_normalization.normalize_legacy_backlog_index(repo_root=repo_root)
+    text = (repo_root / "odylith" / "radar" / "source" / "INDEX.md").read_text(encoding="utf-8")
+
+    assert "Last updated (UTC): 2026-07-01" in text
+
+
 def test_backlog_next_action_prefers_metadata_repairs_over_hidden_rationale_noise() -> None:
     action = legacy_backlog_normalization.backlog_next_action(
         errors=(

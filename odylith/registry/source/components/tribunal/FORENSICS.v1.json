@@ -30,12 +30,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 136,
-    "mapped_workstream_evidence_count": 123,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 138,
+    "mapped_workstream_evidence_count": 124,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 137
+    "timeline_event_count": 138
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -44,6 +44,66 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 761,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 1 tracked artifact reference retained.",
+      "ts_iso": "2026-06-30T18:57:21-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 760,
+      "explicit_components": [
+        "domain-intelligence",
+        "release",
+        "tribunal"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "domain-intelligence",
+        "release",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-06-30T18:56:06-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 4,
       "artifacts": [
@@ -85,23 +145,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifact_count": 1,
-      "artifacts": [
-        "tracked_artifact_1"
-      ],
-      "confidence": "high",
-      "event_index": 762,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "tribunal"
-      ],
-      "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
-      "ts_iso": "2026-06-30T18:15:54-07:00",
-      "workstreams": []
     },
     {
       "artifact_count": 0,

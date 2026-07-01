@@ -5,10 +5,10 @@
   B-111 through B-117. The surface should show the umbrella, execution waves,
   release target `release-0-1-11`, and proof gates without turning Odylith Discipline
   into noisy task theater.
-Last updated: 2026-06-04
+Last updated: 2026-07-01
 
 
-Last updated (UTC): 2026-04-15
+Last updated (UTC): 2026-07-01
 
 ## Purpose
 Radar is Odylith's authoritative workstream backlog and execution-evidence
@@ -145,6 +145,11 @@ Problem, Opportunity, Product View, and Success Metrics.
 
 The practical effect is that Radar doubles as both the visual backlog surface
 and the contract gate for workstream authoring quality.
+
+Radar legacy backlog normalization may update `Last updated (UTC)` in
+`odylith/radar/source/INDEX.md`, but UTC-labeled metadata must be derived from a
+UTC clock. Local calendar dates are not acceptable for UTC freshness fields,
+especially near local/UTC day boundaries.
 
 In the Odylith product repo, workstream `title` should name the slice directly
 and must not be prefixed with `Odylith`; Radar is already product-scoped, so

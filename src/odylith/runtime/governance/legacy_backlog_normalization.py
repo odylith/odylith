@@ -49,6 +49,10 @@ class LegacyBacklogNormalizationResult:
     normalized_table_sections: tuple[str, ...] = ()
 
 
+def _utc_today() -> dt.date:
+    return dt.datetime.now(tz=dt.UTC).date()
+
+
 def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | None = None) -> LegacyBacklogNormalizationResult:
     root = Path(repo_root).expanduser().resolve()
     backlog_index = truth_root_path(repo_root=root, key="radar_source") / "INDEX.md"
@@ -62,7 +66,7 @@ def normalize_legacy_backlog_index(*, repo_root: str | Path, today: dt.date | No
             normalized_idea_specs=(),
             normalized_table_sections=(),
         )
-    current_day = today or dt.date.today()
+    current_day = today or _utc_today()
     normalized_idea_specs = _normalize_legacy_idea_specs(idea_root=idea_root)
     ideas, _idea_errors = backlog_contract._validate_idea_specs(idea_root)  # noqa: SLF001
     snapshot = backlog_contract.load_backlog_index_snapshot(backlog_index)
