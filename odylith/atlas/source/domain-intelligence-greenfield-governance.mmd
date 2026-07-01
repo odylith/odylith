@@ -17,6 +17,7 @@ flowchart LR
       apply_input["Typed apply-semantic input<br/>source paths, provenance,<br/>legacy proposal bridge"]
       compiler["Deterministic semantic compiler<br/>provider-free common path"]
       semantic_ir["SemanticModelIR<br/>first-path contract,<br/>ontology, event graph,<br/>proof obligations"]
+      evaluation_semantics["EvaluationSemanticsIR<br/>scientific, research, model,<br/>simulation, prediction, and evaluation depth<br/>source evidence, method boundary,<br/>baseline, uncertainty, reproducibility,<br/>excluded claims"]
       actor_role_owner["Shared actor-role owner<br/>role nouns feed recovery,<br/>fragments, and actor signatures"]
       actor_path_role["Actor path-role owner<br/>accepted-path descriptions,<br/>suffix-subject stripping,<br/>preposition/action-led role cleanup"]
       external_boundary["External boundary semantics<br/>explicit systems, inferred first-path boundary,<br/>or typed deferred manual/fixture boundary"]
@@ -29,6 +30,7 @@ flowchart LR
       canonical_facts["CanonicalProjectionFactIR<br/>source layer, semantic node,<br/>source path, repair owner,<br/>allowed projection IDs,<br/>sequence-step and supporting-tail variants"]
       projection_contract["Projection contract owner<br/>roots, aliases,<br/>envelope paths,<br/>affected projections"]
       projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof<br/>Atlas terminal labels keep event terms<br/>before long result wrappers"]
+      atlas_label_custody["Atlas header/body label custody<br/>fixed wrappers do not repeat<br/>semantic result body terms"]
       state_boundary_titles["Radar state-boundary titles<br/>compact review/action focus,<br/>no mechanical pronoun tails<br/>no repeated clarity modifiers"]
       next_steps["Operator next steps<br/>governed start workstream,<br/>readiness gates, validation commands"]
       project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>persisted into tooling payload"]
@@ -85,7 +87,7 @@ flowchart LR
     end
 
     visible_intent --> confirmable_stdout --> confirm --> source_guard --> prompt_recovery --> confirmed_ir --> non_goal_owner --> sparse_systems --> public_system_copy
-    public_system_copy --> apply_input --> compiler --> semantic_ir --> actor_role_owner --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> projections --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
+    public_system_copy --> apply_input --> compiler --> semantic_ir --> evaluation_semantics --> actor_role_owner --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> projections --> atlas_label_custody --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
     draft_set --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
@@ -116,7 +118,7 @@ flowchart LR
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirmable_stdout,confirm,source_guard,prompt_recovery,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
-    class apply_input,compiler,semantic_ir,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
+    class apply_input,compiler,semantic_ir,evaluation_semantics,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
     class repairable,patchset,executable_target,deterministic_source_patch,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,semantic_mirror_sync,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
     class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
 

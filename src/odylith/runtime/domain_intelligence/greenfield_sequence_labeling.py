@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_wor
 
 
 _BASE_ACTION_VERB_PATTERN = action_base_verb_pattern()
+_LEADING_LABEL_ARTICLES = frozenset({"a", "an", "the"})
 
 
 def flow_label(value: str, *, width: int, max_lines: int, limit: int) -> str:
@@ -25,6 +26,25 @@ def flow_label(value: str, *, width: int, max_lines: int, limit: int) -> str:
         if expanded and not wrapped_label_has_dangling_tail(expanded):
             wrapped = expanded
     return without_ellipsis(strip_wrapped_dangling_tail(wrapped))
+
+
+def header_body_label(header: str, body: str) -> str:
+    """Return a node-body label that does not restate the fixed header tail."""
+
+    header_tail = _label_word_key(_last_label_word(header))
+    body_text = compact_text(body).strip(" .")
+    if not header_tail or not body_text:
+        return body_text
+    words = body_text.split()
+    if not words:
+        return body_text
+    first_index = 1 if len(words) > 1 and _label_word_key(words[0]) in _LEADING_LABEL_ARTICLES else 0
+    if first_index >= len(words) or _label_word_key(words[first_index]) != header_tail:
+        return body_text
+    trimmed_words = words[first_index + 1 :]
+    if trimmed_words and _label_word_key(trimmed_words[0]) == "as":
+        trimmed_words = trimmed_words[1:]
+    return " ".join(trimmed_words).strip(" .") or body_text
 
 
 def wrapped_label_has_dangling_tail(value: str) -> bool:
@@ -128,6 +148,21 @@ def compact_text(value: str) -> str:
     return " ".join(str(value or "").split()).strip()
 
 
+def _last_label_word(value: str) -> str:
+    for word in reversed(compact_text(value).split()):
+        cleaned = word.strip(".,:;()[]{}\"'")
+        if cleaned:
+            return cleaned
+    return ""
+
+
+def _label_word_key(value: str) -> str:
+    token = str(value or "").casefold().strip(".,:;()[]{}\"'")
+    if token.endswith("s") and len(token) > 4:
+        return token[:-1]
+    return token
+
+
 def node_id(prefix: str, index: int) -> str:
     return f"{prefix}{index}"
 
@@ -135,6 +170,7 @@ def node_id(prefix: str, index: int) -> str:
 __all__ = [
     "compact_text",
     "flow_label",
+    "header_body_label",
     "node_id",
     "strip_dangling_tail",
     "trim",

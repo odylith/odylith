@@ -548,6 +548,88 @@ The first proof is a working one-dimensional quantum tunneling lab for a rectang
     assert first_user_option == "Confirm who participates in the first path: Physics Learner and Instructor."
 
 
+def test_gene_expression_confirmed_intent_finishes_without_repeated_result_atlas_copy(tmp_path: Path) -> None:
+    prompt = "Draft a product-first greenfield proposal for building an AI-model that simulates gene expression prediction."
+    intent = parse_confirmed_intent_text(
+        """
+# Gene Expression Simulation Model - Product Intent Confirmation
+
+Product story
+Gene Expression Simulation Model helps researchers run and review gene expression prediction experiments with a bounded first release.
+
+State object
+A gene expression simulation run tracks input dataset, organism or cell type, selected genes or features, perturbation or condition, model version, predicted expression outputs, uncertainty or confidence, comparison evidence, run status, and review notes.
+
+First complete path
+A researcher uploads or selects an expression dataset, defines the biological context and prediction target, runs the simulation, reviews predicted expression values against baseline or held-out truth with uncertainty, and saves the result as a reviewable experiment.
+
+Human actors
+- Researcher: runs and reviews prediction experiments.
+- Scientific reviewer: checks assumptions, uncertainty, and comparison evidence.
+
+External systems
+- Source datasets for expression measurements.
+
+Internal product systems
+- Dataset Intake Register.
+- Model Execution Record.
+- Results Review Workspace.
+- Experiment Proof Ledger.
+
+Critical assumptions
+- Release 0.0.1 proves one bounded prediction workflow before broader automation.
+
+Ambiguities
+- Exact organism, model family, reference baseline, and tolerance thresholds can be refined after the first proof path is accepted.
+
+Proof boundary
+Release 0.0.1 succeeds when a researcher can run one gene expression prediction, review inputs, model version, predicted outputs, uncertainty, baseline comparison, and reopen the saved run. It must not claim biological truth or broader model performance beyond the accepted evidence.
+""",
+        prompt=prompt,
+    )
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=False,
+    )
+    tribunal = run_greenfield_tribunal(proposal, release_selector="0.0.1")
+    prewrite = greenfield_apply_prewrite.build_prewrite_completion_package(
+        root=tmp_path,
+        proposal=proposal,
+        release_selector="0.0.1",
+        backlog_args=greenfield_proposals._backlog_apply_args(proposal, release_selector="0.0.1"),
+        validation_gate=tribunal.to_dict(),
+        release_assignment_note=greenfield_apply_write.release_assignment_note(selector="0.0.1"),
+    )
+    report = build_greenfield_package_report(prewrite.package)
+    atlas = json.dumps(prewrite.package.rendered_atlas_sources, sort_keys=True)
+    rendered = json.dumps(
+        {
+            "proposal": proposal,
+            "radar": prewrite.package.backlog_result,
+            "registry": prewrite.package.rendered_component_specs,
+            "atlas": prewrite.package.rendered_atlas_sources,
+            "brief": prewrite.package.project_brief_preview,
+        },
+        default=str,
+        sort_keys=True,
+    )
+
+    assert tribunal.passed, tribunal.issues
+    assert proposal["semantic_model"]["first_path_contract"]["visible_result"] == "Saved reviewable experiment"
+    assert proposal["semantic_model"]["evaluation_semantics"]["focus"] == "Gene Expression Simulation Model"
+    assert "Proof result<br/>Saved reviewable experiment" in atlas
+    assert "Visible result<br/>Saved reviewable experiment" in atlas
+    assert "result result" not in atlas.casefold()
+    rendered_lower = rendered.casefold()
+    for term in ("baseline", "comparison", "uncertainty", "tolerance", "method", "model version", "reproducibility"):
+        assert term in rendered_lower
+    assert report.issues == ()
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+
+
 def test_review_and_adjustment_prompts_avoid_generic_handoff_and_recommendation_drift(tmp_path: Path) -> None:
     tenant_prompt = (
         "Create a greenfield product for tenant aid coordinators who intake housing requests, verify "

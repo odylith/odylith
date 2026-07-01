@@ -287,6 +287,9 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
             embedded_actor, embedded_action = _helper_relative_actor_action(tail_words)
             if embedded_actor and embedded_action:
                 return embedded_actor, f"{embedded_actor} {embedded_action}".strip(" .")
+            use_actor, use_action = _use_to_actor_action(tail_words)
+            if use_actor and use_action:
+                return use_actor, f"{use_actor} {use_action}".strip(" .")
             action = base_action_clause(_smooth_request_first_path_clause(" ".join(tail_words)), force_leading_finite=True)
             if action:
                 actor = " ".join(actor_words).strip(" .")
@@ -295,6 +298,30 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
                     return actor, f"{actor} {connector} {action}".strip(" .")
                 return actor, f"{actor} {action}".strip(" .")
     return "", ""
+
+
+def _use_to_actor_action(words: list[str]) -> tuple[str, str]:
+    for use_index, word in enumerate(words[:-2]):
+        if _word_key(word) not in {"use", "uses", "used"} or _word_key(words[use_index + 1]) != "to":
+            continue
+        actor_words = words[:use_index]
+        action_words = words[use_index + 2 :]
+        if not actor_words or not action_words or not _looks_like_use_to_actor_left(actor_words):
+            continue
+        action = base_action_clause(_smooth_request_first_path_clause(" ".join(action_words)), force_leading_finite=True)
+        if action:
+            return _strip_leading_actor_article(" ".join(actor_words)), action
+    return "", ""
+
+
+def _looks_like_use_to_actor_left(words: list[str]) -> bool:
+    if _looks_like_actor_purpose_left(words):
+        return True
+    tail = _actor_purpose_tail(words)
+    if not tail or len(tail) > 4:
+        return False
+    last = tail[-1].casefold().strip(".,:;")
+    return len(last) > 3 and last.endswith("s") and last not in _REQUEST_PRODUCT_WORDS
 
 
 def _helper_relative_actor_action(words: list[str]) -> tuple[str, str]:

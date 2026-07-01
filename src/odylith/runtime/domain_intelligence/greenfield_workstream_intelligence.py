@@ -13,6 +13,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_s
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import project_specific_actor_labels
+from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import EvaluationSemantics
+from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evaluation_semantics_for_texts
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms_tree
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -176,6 +178,12 @@ def build_workstream_domain_intelligence(
     validation_summary = join_brief_items(validation, limit=3, item_limit=150)
     actor_labels = project_specific_actor_labels({"title": label, "human_actors": actors})
     actor_summary = _join_actor_labels(actor_labels) or _join_actor_labels(actors) or join_items(actors)
+    evaluation = evaluation_semantics_for_texts(
+        title=label,
+        state_object=state_object,
+        first_path=first_path,
+        proof_boundary=proof_boundary,
+    )
     packet = {
         "schema_version": "odylith.greenfield.workstream_intelligence.v1",
         "family": slugify(label).replace("-", "_") or "confirmed_product",
@@ -215,6 +223,7 @@ def build_workstream_domain_intelligence(
         "evidence_model": [
             f"Review evidence belongs in {evidence_record}; proof checks stay separate from narrative claims.",
             f"{evidence_record} must show the accepted input, changed state, validation result, decision, and visible outcome.",
+            *_evaluation_evidence_rows(evaluation),
         ],
         "decisions": [
             f"Decide whether {row_title} delivers the visible result, blocked-input signal, recovery path, and reviewable explanation.",
@@ -238,6 +247,7 @@ def build_workstream_domain_intelligence(
         ],
         "validation_obligations": [
             *(validation or []),
+            *_evaluation_validation_rows(evaluation),
             f"Validate that this slice preserves {state_object} and {evidence_record} in domain terms.",
             "Validate that this slice proves success, blocked input, recovery, and next-step context without restating the full component contract.",
             "Validate that this slice handles a blocked or recovery path without hiding missing information.",
@@ -269,6 +279,7 @@ def build_workstream_domain_intelligence(
         "invalidation_rules": [
             f"If {row_title} cannot run or be reviewed in product terms, release readiness stays blocked.",
             f"If the review record cannot explain {state_object}, {evidence_record}, or non-goals, this slice is incomplete.",
+            *_evaluation_invalidation_rows(evaluation),
         ],
         "conflict_model": [
             f"Confirmed product intent beats generic builder fallback for {row_title}.",
@@ -298,6 +309,35 @@ def _join_actor_labels(values: list[str] | None, *, limit: int = 5) -> str:
     if len(rows) == 1:
         return rows[0]
     return f"{', '.join(rows[:-1])}, {rows[-1]}"
+
+
+def _evaluation_evidence_rows(value: EvaluationSemantics | None) -> list[str]:
+    if value is None:
+        return []
+    return [
+        f"Evidence sources must preserve {join_items(list(value.evidence_sources))}.",
+        f"Evaluation proof must show {value.method_or_protocol}, {value.reference_or_baseline}, and {value.uncertainty_or_tolerance}.",
+        f"Reproducibility proof: {value.reproducibility}.",
+    ]
+
+
+def _evaluation_validation_rows(value: EvaluationSemantics | None) -> list[str]:
+    if value is None:
+        return []
+    return [
+        f"Validate {value.focus} against baseline or comparison evidence before treating the result as reviewable.",
+        f"Validate uncertainty, tolerance, confidence, or limitation language before accepting the release claim.",
+        f"Validate reproducibility from the same inputs, context, method version, and parameters.",
+    ]
+
+
+def _evaluation_invalidation_rows(value: EvaluationSemantics | None) -> list[str]:
+    if value is None:
+        return []
+    return [
+        f"If {value.focus} lacks source evidence, method version, baseline comparison, uncertainty, or reproducibility proof, release readiness stays blocked.",
+        "If output copy claims scientific truth, production authority, or broader performance beyond the accepted evidence, the artifact is invalid.",
+    ]
 
 
 def _render_layer(value: Any) -> list[str]:

@@ -32,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import (
     actor_phrase_for_sentence as _actor_phrase_for_sentence,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import append_suffix_once as _append_suffix_once
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_helpers import (
     ensure_text as _ensure_text,
 )
@@ -343,7 +344,7 @@ def _reconcile_backlog_with_components(proposal: dict[str, Any]) -> bool:
             changed = True
         if _sequence_needs_repair(row.get("success_metrics"), required_tokens=("success", "block", "evidence"), min_items=3):
             metrics = [
-                f"{label} owns {focus} evidence, review rules, and result visibility.",
+                f"{label} owns {_append_suffix_once(focus, 'evidence')}, review rules, and result visibility.",
                 f"{label} blocks incomplete evidence before presenting a result, then explains what has to change for {focus}.",
                 (
                     f"{row_title} keeps actor, source, status, result, and recovery context attached to "

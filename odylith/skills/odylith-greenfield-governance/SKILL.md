@@ -75,10 +75,16 @@ mechanism-level learning.
 7. Preserve the evidence boundary: observed source, user intent, and Odylith
    assumptions must stay distinct. For consumer apps, include proportional
    security, privacy, abuse, accessibility, data-retention, compliance, and
-   operational risk posture instead of generic risk copy. For science and math, reason from the
-   domain named by the user and propose correctness obligations such as proof
-   checking, reproducibility, units, tolerances, derivation review, datasets,
-   independent review, or validation fixtures only when they actually fit.
+   operational risk posture instead of generic risk copy. For science, math,
+   research, model, simulation, prediction, or evaluation requests, preserve
+   deep evidence semantics in both the visible Product Intent Confirmation and
+   post-confirm artifacts: observed quantity, source data or evidence, method
+   or model boundary, variables or parameters, baseline or comparison,
+   uncertainty or tolerance, reproducibility proof, and excluded claims. Reason
+   from the domain named by the user, do not invent scientific facts, and add
+   correctness obligations such as proof checking, reproducibility, units,
+   tolerances, derivation review, datasets, independent review, or validation
+   fixtures only when they actually fit.
 8. For vague or broad prompts, preserve the project-first and
    program-formation contract without forcing a fixed bucket: show the parent
    workstream, child-boundary strategy, wave-to-workstream policy,

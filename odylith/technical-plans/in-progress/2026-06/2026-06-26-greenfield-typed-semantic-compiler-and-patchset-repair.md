@@ -2317,3 +2317,26 @@ vocabulary, or degraded packages.
       25.279s average, and 27.755s maximum standard create time. Synthetic
       typed-probe rescue passed in 34.454s, and real provider-backed structured
       rescue passed in 58.415s under the 90s rescue tier.
+- [x] Repair scientific-depth intent and Atlas result-label custody for the
+      CB-214 replay.
+      A live consumer create failed before governed writes because two Atlas
+      diagrams composed fixed result headers with a semantic body that already
+      began with result language. The source fix keeps the final gate intact
+      and moves custody earlier: Mermaid labels now use generic header/body
+      composition, saved-as result-object semantics collapse generic
+      result/output/outcome/artifact objects to the saved target, and the
+      confirmed intent path carries optional EvaluationSemanticsIR for
+      scientific, research, model, simulation, prediction, and evaluation
+      requests. The host Product Intent prompt now asks for observed quantity,
+      source evidence, method or model boundary, variables, baseline or
+      comparison, uncertainty or tolerance, reproducibility, and excluded
+      claims so post-confirm artifacts preserve depth without inventing facts.
+      Focused source proof passed the Atlas/scientific replay tests, the
+      45-test post-confirm quality repair suite, the 27-test live simulation
+      and semantic model suite, and the 93-test confirmed diagram/recovery/
+      post-confirm suite. Source-local CLI replay of the saved failed intent
+      completed governed create in 26s with zero repeated result copy, and a
+      second thin scientific prompt replay completed in 23s with evidence-depth
+      terms present and no adjacent result/evidence duplicates. Remaining
+      proof: rebuild the committed-head installable dist and rerun installed
+      matrix or targeted installed replays before release closeout.

@@ -360,7 +360,8 @@ def human_label(value: str) -> str:
 
 def workstream_problem(*, label: str, action: str, outcome: str, state: str) -> str:
     return _sentence(
-        f"{label} matters because users do not get value from {action} until it produces {outcome} and leaves {state} understandable when something is missing or corrected.",
+        f"{label} matters because users do not get value from {action} until the visible result is reviewable: {outcome}. "
+        f"{state} must remain understandable when something is missing or corrected.",
         limit=520,
     )
 

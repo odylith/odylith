@@ -300,6 +300,38 @@ def test_operator_intent_recovery_does_not_canonize_actorless_action_chain_as_su
     assert "routes science lead publishes" not in lowered
 
 
+def test_scientific_model_prompt_recovery_preserves_evaluation_depth(tmp_path) -> None:
+    prompt = "Draft a product-first greenfield proposal for building an AI-model that simulates gene expression prediction."
+
+    text = confirmation_from_operator_intent(prompt, prefer_product_title=True)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True)
+
+    assert "# Gene Expression Prediction Model Workspace - Product Intent Confirmation" in text
+    assert "Building an AI Model Workspace" not in text
+    for phrase in (
+        "source data",
+        "method or model version",
+        "baseline or reference comparison",
+        "uncertainty or confidence",
+        "reproducibility evidence",
+        "must not claim scientific truth",
+    ):
+        assert phrase in text
+    assert intent["title"] == "Gene Expression Prediction Model Workspace"
+    assert "gene expression prediction result with uncertainty and comparison evidence" in intent["first_path"]
+    assert proposal["semantic_model"]["evaluation_semantics"]["focus"] == "Gene Expression Prediction Model"
+    assert "baseline or comparison evidence" in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_prompt_title_source_recognizes_generic_product_containers() -> None:
     assert (
         prompt_project_title_source(

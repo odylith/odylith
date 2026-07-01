@@ -53,6 +53,20 @@ def path_phrase(value: str) -> str:
     return text if text.split()[-1].casefold().strip(".,;:") == "path" else f"{text} path"
 
 
+def append_suffix_once(value: str, suffix: str) -> str:
+    """Append a suffix word unless the phrase already ends with that word."""
+
+    text = clean_generated_text(value).strip(" .")
+    suffix_text = clean_generated_text(suffix).strip(" .")
+    if not text:
+        return suffix_text
+    if not suffix_text:
+        return text
+    tail = text.split()[-1].casefold().strip(".,;:")
+    suffix_key = suffix_text.split()[0].casefold().strip(".,;:")
+    return text if tail == suffix_key else f"{text} {suffix_text}"
+
+
 def actor_phrase_for_sentence(value: str) -> str:
     """Join actor labels into a sentence-ready phrase."""
 
@@ -94,6 +108,7 @@ def _security_posture_role(label: str) -> str:
 
 __all__ = [
     "actor_phrase_for_sentence",
+    "append_suffix_once",
     "ensure_text",
     "path_phrase",
     "repair_bad_scalar",

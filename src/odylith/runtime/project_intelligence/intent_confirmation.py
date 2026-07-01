@@ -57,6 +57,7 @@ def build_product_intent_confirmation(
                 "the critical assumptions you are making about origin, maturity, safety, money, data, runtime, or integrations",
                 "the few ambiguities that would materially change the first path, risk posture, topology, or proof bar",
                 "the proof boundary: what would count as evidence and what must not be claimed yet",
+                "for scientific, research, model, simulation, prediction, or evaluation requests: name the observed quantity, source data or evidence, method or model boundary, variables or parameters, baseline or comparison expectation, uncertainty or tolerance, reproducibility proof, and excluded claims so the final governed artifacts preserve scientific depth without inventing facts",
                 "a clear Next step block with three separate bullet lines for Confirm, Edit, and Reject; each choice must say exactly what happens next",
                 "after confirmation, write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md so create can preserve it and normalize structured intent internally",
             ],
@@ -74,6 +75,7 @@ def build_product_intent_confirmation(
             "reasoning_standard": (
                 "Infer the product shape live from the operator prompt and any observed repo source. "
                 "If the prompt is broad, name the strongest plausible interpretation and only the few questions that change the first path, risk posture, topology, or proof bar. "
+                "When the request is scientific, research, model, simulation, prediction, or evaluation oriented, preserve scientific depth without inventing domain facts: carry source evidence, method boundaries, variables, uncertainty, baselines, reproducibility, and excluded claims into the confirmation so create can project them into Radar, Registry, Atlas, and proof artifacts. "
                 "Keep the answer human and product-first: no scaffolding language, no copied prompt-as-title, no artifact inventory before the product makes sense."
             ),
         },

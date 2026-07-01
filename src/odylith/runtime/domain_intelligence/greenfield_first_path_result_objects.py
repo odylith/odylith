@@ -16,9 +16,13 @@ def saved_destination_result_object(verb: str, value: str) -> str:
     }.get(verb.casefold().strip(".,:;"))
     if not participle:
         return ""
+    clean_value = clean_text(value).strip(" .")
+    as_result = _saved_as_result_object(participle, clean_value)
+    if as_result:
+        return as_result
     match = re.match(
         r"(?P<object>.+?)\s+(?:to|in)\s+(?P<destination>history|log|ledger|journal|timeline|archive)\b(?P<tail>.*)$",
-        clean_text(value).strip(" ."),
+        clean_value,
         flags=re.IGNORECASE,
     )
     if not match:
@@ -74,6 +78,19 @@ def _drop_leading_article(value: str) -> str:
     if separator and first.casefold() in {"a", "an", "the"}:
         return rest.strip()
     return clean_text(value).strip(" .")
+
+
+def _saved_as_result_object(participle: str, value: str) -> str:
+    match = re.match(r"(?P<object>.+?)\s+as\s+(?P<target>.+)$", clean_text(value).strip(" ."), flags=re.IGNORECASE)
+    if not match:
+        return ""
+    item = _drop_leading_article(match.group("object")).strip(" .")
+    target = _drop_leading_article(match.group("target")).strip(" .")
+    if not item or not target:
+        return ""
+    if item.casefold() in {"artifact", "artifacts", "output", "outputs", "outcome", "outcomes", "result", "results"}:
+        return f"{participle} {target}".strip()
+    return f"{participle} {item} as {target}".strip()
 
 
 __all__ = ["drop_result_recipient", "is_routing_pronoun_result", "saved_destination_result_object"]

@@ -24,6 +24,9 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-01 · Implementation:** CB-214 fixed in source: confirmed greenfield create now carries scientific evaluation depth into Product Intent and governed artifacts, Mermaid visible-result headers remove duplicated body-leading terms, saved-as result labels collapse generic result/output objects to their target artifact, and source-local grn-sim replay passed under 60s with governed writes.
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_evaluation_semantics.py, src/odylith/runtime/domain_intelligence/greenfield_sequence_labeling.py +3 more
 - **2026-07-01 · Implementation:** CB-208 package repetition now emits source-owned typed occurrence metadata and ArtifactPlanIR repair targets instead of legacy package string routing.
   - Scope: B-142
   - Evidence: src/odylith/runtime/artifact_quality/greenfield_package_repetition.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py
@@ -43,6 +46,30 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-07-01: Added generic scientific evaluation depth and fixed Atlas visible-result label repetition. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-214`; Diagrams: D-043, D-045)
+  The confirmed greenfield path now treats scientific, research, model,
+  simulation, prediction, and evaluation requests as evidence-depth requests
+  without adding project-specific platform vocabulary. The no-write Product
+  Intent prompt asks the host to preserve observed quantities, source evidence,
+  method or model boundary, variables, baseline or comparison, uncertainty or
+  tolerance, reproducibility, and excluded claims. Source-local recovery for
+  thin model requests materializes those facts as optional
+  `EvaluationSemantics` IR, and workstream intelligence projects them into
+  evidence, validation, and invalidation obligations. The Atlas label path now
+  composes fixed headers and semantic result bodies through one header/body
+  helper, so labels such as Proof result and Visible result do not repeat a
+  body-leading result word. Saved-as result-object semantics collapse generic
+  result/output/outcome/artifact objects to the saved target label before
+  diagrams and proof copy render. Source proof passed the focused
+  Atlas/scientific replay tests, the 45-test post-confirm quality repair suite,
+  the 27-test live simulation and semantic model quality suite, and the
+  93-test confirmed diagram/recovery/post-confirm repair suite. Source-local
+  CLI replay of the saved failed intent completed create in 26s with governed
+  records written and zero repeated result copy; a second thin scientific prompt
+  replay completed in 23s with evidence-depth terms present and zero
+  result/evidence adjacent duplicates. Installed release proof remains required
+  before release closeout.
 
 - 2026-07-01: Fixed specialized component-profile failure-custody drift found by fresh installed variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-207`, `CB-208`; Diagram: D-043)
   Fresh installed proof against dist `odylith-local-release-0.1.15-925545d8`

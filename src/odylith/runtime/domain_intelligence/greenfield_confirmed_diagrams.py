@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import acti
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label as wrapped_flow_label
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import header_body_label
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 
 
@@ -467,10 +468,11 @@ def _proof_review_mermaid(
     proof_label = diagram_text.semantic_proof_checkpoint(semantic_model) or diagram_text.proof_checkpoint_label(proof_text) or "first-path evidence, state replay, blocked-path proof"
     proof_label = diagram_text.diagram_sentence_label(proof_label) or proof_label
     outcome_label = diagram_text.semantic_visible_result_label(semantic_model) or proof_label or "promised outcome"
+    outcome_body = header_body_label("Visible result", outcome_label)
     evidence_label = diagram_text.proof_evidence_label(components=components, fallback=evidence_record)
     lines = [
         "flowchart LR",
-        f'  outcome["Visible result<br/>{_diagram_label(outcome_label, limit=120, fallback="Promised outcome")}"] --> domain_state',
+        f'  outcome["Visible result<br/>{_diagram_label(outcome_body, limit=120, fallback="Promised outcome")}"] --> domain_state',
         f'  domain_state["Domain state<br/>{_diagram_label(state_object, limit=96, fallback="Domain state")}"] --> evidence_record',
         f'  evidence_record["Evidence record<br/>{_diagram_label(evidence_label, limit=160, fallback="Evidence record", width=80, max_lines=2)}"] --> proof_gate',
         f'  proof_gate["Proof checkpoint<br/>{_diagram_label(proof_label, limit=160, fallback="Proof checkpoint", width=80, max_lines=2)}"] --> release_decision',

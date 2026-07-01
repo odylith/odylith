@@ -22,6 +22,8 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import EvaluationSemantics
+from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evaluation_semantics_for_texts
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -160,6 +162,7 @@ class GreenfieldSemanticModel:
     workstreams: tuple[WorkstreamContractRef, ...]
     diagram_event_graph: DiagramEventGraph
     proof_obligations: tuple[ProofObligation, ...]
+    evaluation_semantics: EvaluationSemantics | None
 
 
 def build_greenfield_semantic_model(
@@ -233,6 +236,12 @@ def build_greenfield_semantic_model(
             first_path_contract=path_contract,
             proof_boundary=proof_boundary,
             components=component_refs,
+        ),
+        evaluation_semantics=evaluation_semantics_for_texts(
+            title=title,
+            state_object=state_object,
+            first_path=first_path,
+            proof_boundary=proof_boundary,
         ),
     )
 

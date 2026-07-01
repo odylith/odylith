@@ -1,7 +1,6 @@
 """Sequence-diagram routing for confirmed greenfield Atlas output."""
 
 from __future__ import annotations
-
 from collections.abc import Mapping
 import re
 from typing import Any
@@ -14,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import compact_result_object_label as _compact_result_object_label, strip_actor_role_subject as _strip_actor_role_subject
-from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import compact_text as _compact_text, flow_label as _flow_label, node_id as _node_id, strip_dangling_tail as _strip_dangling_tail, trim as _trim, without_ellipsis as _without_ellipsis
+from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import compact_text as _compact_text, flow_label as _flow_label, header_body_label as _header_body_label, node_id as _node_id, strip_dangling_tail as _strip_dangling_tail, trim as _trim, without_ellipsis as _without_ellipsis
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import ACTION_VERB_PATTERN as _ACTION_VERB_PATTERN
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
 from odylith.runtime.domain_intelligence.greenfield_sequence_terminal_labels import terminal_step_loses_distinctive_tail, terminal_step_prefers_visible_result
@@ -133,7 +132,8 @@ def first_path_flowchart_mermaid(
         lines.append(f"  {previous} --> {step_node}")
         lines.append(f"  {step_node} --> {owner}")
         previous = owner
-    proof_label = _flow_label(terminal_outcome, width=30, max_lines=5, limit=168) if terminal_outcome else "state, evidence, and next action stay visible"
+    proof_body = _header_body_label("Proof result", terminal_outcome)
+    proof_label = _flow_label(proof_body, width=30, max_lines=5, limit=168) if proof_body else "state, evidence, and next action stay visible"
     lines.append(f'  proof["Proof result<br/>{proof_label}"]')
     lines.append(f"  {previous} --> proof")
     lines.extend(

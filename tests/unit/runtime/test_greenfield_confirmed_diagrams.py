@@ -111,6 +111,38 @@ def test_atlas_component_cards_explain_specific_boundary_without_path_boilerplat
     assert "`" not in encoded
 
 
+def test_atlas_visible_result_headers_do_not_repeat_body_result_word() -> None:
+    semantic_model = {
+        "first_path_contract": {
+            "visible_result": "result as a reviewable experiment",
+            "events": [{"text": "A researcher saves the result as a reviewable experiment", "visible_result": True}],
+        }
+    }
+    flowchart = first_path_flowchart_mermaid(
+        label="Research Model",
+        actors=["Researcher: reviews model output"],
+        components=[{"component_id": "review", "label": "Review Workspace", "release_scope": "first_path_required"}],
+        first_path="A researcher saves the result as a reviewable experiment.",
+        semantic_model=semantic_model,
+    )
+    diagrams = confirmed_diagrams(
+        label="Research Model",
+        diagram_slugs=_diagram_slugs(),
+        components=[{"component_id": "review", "label": "Review Workspace", "release_scope": "first_path_required"}],
+        first_path="A researcher saves the result as a reviewable experiment.",
+        state_object="A model run record tracks input, output, and review evidence.",
+        evidence_record="A review evidence record",
+        proof_boundary="Release succeeds when the saved result can be reviewed.",
+        human_actors=["Researcher: reviews model output"],
+        semantic_model=semantic_model,
+    )
+    encoded = json.dumps({"flowchart": flowchart, "diagrams": diagrams}, sort_keys=True)
+
+    assert "result result" not in encoded.casefold()
+    assert "Proof result<br/>a reviewable experiment" in flowchart
+    assert "Visible result<br/>a reviewable experiment" in encoded
+
+
 def test_confirmed_diagram_text_model_stays_in_dedicated_owner() -> None:
     repo_root = Path(__file__).resolve().parents[3]
     diagram_owner = repo_root / "src/odylith/runtime/domain_intelligence/greenfield_confirmed_diagrams.py"

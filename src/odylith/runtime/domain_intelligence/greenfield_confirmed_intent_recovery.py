@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import recovered_evaluation_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import semantic_first_path_from_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import nominal_visible_result_object
@@ -167,8 +168,13 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     prompt_source = prompt_intent_source(raw_source)
     recovered_first_path_source = prompt_source.first_path or prompt_first_path_source(raw_source)
     title_source = _recover_title_source(raw_source) if prefer_product_title else ""
-    title = _recovered_title(title_source or first_path_outcome_phrase(recovered_first_path_source, fallback=""))
-    first_path_source = _usable_first_path_source(
+    evaluation = recovered_evaluation_context(
+        source=raw_source,
+        title_source=title_source or prompt_source.title,
+        first_path_source=recovered_first_path_source,
+    )
+    title = _recovered_title(evaluation.title_source or title_source or first_path_outcome_phrase(recovered_first_path_source, fallback=""))
+    first_path_source = evaluation.first_path_source or _usable_first_path_source(
         recovered_first_path_source,
         title=title,
         preserve_one_line=bool(prompt_source.command_led and prompt_source.title and prompt_source.actor),
@@ -189,10 +195,20 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     outcome_object = _object_result_phrase(outcome)
     lead_actor_ref = _actor_reference(lead_actor)
     lead_needs = _actor_verb(lead_actor, singular="needs", plural="need")
+    force_actor_modal = bool(prompt_source.actor and prompt_source.command_led)
+    actor_words = _words(prompt_source.actor)
+    if (
+        force_actor_modal
+        and actor_words
+        and _looks_plural(actor_words[-1])
+        and first_path_source.casefold().startswith(f"{prompt_source.actor.casefold()} ")
+        and re.search(rf"\b{re.escape(prompt_source.actor)}\s+uses?\s+to\b", raw_source, flags=re.IGNORECASE)
+    ):
+        force_actor_modal = False
     first_path_inline = _embedded_first_path_clause(
         first_path_source.rstrip("."),
         actor=lead_actor_ref,
-        force_actor_modal=bool(prompt_source.actor and prompt_source.command_led),
+        force_actor_modal=force_actor_modal,
     )
     first_path = _sentence_start(first_path_inline)
     story = _recovered_story_text(
@@ -207,6 +223,12 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
         "blocker, handoff, evidence, and version history for the first path."
     )
     proof = _recovered_proof_text(first_path_inline=first_path_inline, outcome_object=outcome_object)
+    if evaluation.story:
+        story = evaluation.story
+    if evaluation.state_object:
+        state = evaluation.state_object
+    if evaluation.proof_boundary:
+        proof = evaluation.proof_boundary
     problem = (
         f"{lead_actor} {lead_needs} a dependable way to {lead_action.rstrip('.')} and trust the result without stitching "
         "together scattered context."
@@ -215,8 +237,17 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
         f"{title} earns trust when {lead_actor_ref} can {lead_action.rstrip('.')} and the result remains "
         "visible, blocked when needed, and reviewable."
     )
+    success_metrics = evaluation.success_metrics or (
+        f"{lead_actor} can {lead_action.rstrip('.')} and see the visible result.",
+        "Missing or invalid input produces a clear blocker instead of a false success.",
+        f"Review evidence backs {outcome_object} with replayable proof.",
+    )
+    assumptions = evaluation.assumptions or ("Release 0.0.1 proves the first path before broader automation or live integrations.",)
+    ambiguities = evaluation.ambiguities or (
+        "The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
+    )
     actor_lines = "\n".join(f"- {row}" for row in actor_rows)
-    system_lines = "\n".join(f"- {row}" for row in _internal_system_rows_from_recovered_title(title))
+    system_lines = "\n".join(f"- {row}" for row in (evaluation.internal_systems or tuple(_internal_system_rows_from_recovered_title(title))))
     return "\n\n".join(
         (
             f"# {title} - Product Intent Confirmation",
@@ -230,15 +261,9 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
             "Opportunity\n" + f"Prove the smallest complete {title.lower()} path before broader automation expands.",
             "Product view\n" + product_view,
             "Success metrics\n"
-            + "\n".join(
-                (
-                    f"- {lead_actor} can {lead_action.rstrip('.')} and see the visible result.",
-                    "- Missing or invalid input produces a clear blocker instead of a false success.",
-                    f"- Review evidence backs {outcome_object} with replayable proof.",
-                )
-            ),
-            "Critical assumptions\n- Release 0.0.1 proves the first path before broader automation or live integrations.",
-            "Ambiguities\n- The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
+            + "\n".join(f"- {row}" for row in success_metrics),
+            "Critical assumptions\n" + "\n".join(f"- {row}" for row in assumptions),
+            "Ambiguities\n" + "\n".join(f"- {row}" for row in ambiguities),
             "Proof boundary\n" + proof,
         )
     )

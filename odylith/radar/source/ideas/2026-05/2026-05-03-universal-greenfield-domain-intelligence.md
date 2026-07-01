@@ -2428,6 +2428,19 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   leakage check with zero protected-custody findings. Fresh local release dist
   `odylith-local-release-0.1.15-14f5102a` then rebuilt from the committed
   checkpoint and passed the same 49-term platform domain-leakage build gate.
+- 2026-07-01 CB-214 reopened the source-local proof loop after a scientific
+  model request failed post-confirm before governed writes because Atlas labels
+  rendered adjacent repeated result copy. The fix keeps the final quality gate
+  intact and moves custody into typed/generic owners: Product Intent guidance
+  and source recovery now preserve scientific evaluation depth, optional
+  EvaluationSemanticsIR projects evidence/method/baseline/uncertainty/
+  reproducibility obligations into governed artifacts, saved-as result objects
+  collapse generic result/output/outcome/artifact terms to the saved target,
+  and Mermaid header/body label composition prevents fixed result wrappers from
+  repeating body-leading words. Source-local replay of the saved failed intent
+  completed create in 26s with governed writes, and a second thin scientific
+  prompt replay completed in 23s with no adjacent result/evidence duplicates.
+  Installed dist proof remains required before release closure.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.
