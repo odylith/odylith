@@ -92,6 +92,19 @@ vocabulary, or degraded packages.
   `sync-component-spec-requirements --check-only` for forensics custody changes
   before the dist leakage gate can be trusted.
 
+- 2026-06-30 committed release-dist proof: checkpoint `5c5fd0ed` rebuilt into
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-5c5fd0ed`
+  after source-local forensics regeneration and the actor/component-label
+  checkpoint. The build passed the 285-term platform domain-leakage guard. The
+  installed matrix proof at `/tmp/greenfield-post-confirm-matrix-5c5fd0ed.v1.json`
+  passed 13/13 maintained standard cases with hard 10/10 scores, zero issues,
+  all product-manager, architect, engineer, and domain-expert lenses passing,
+  per-case browser proof passing, complete governed records, five
+  implementation prompts per project with zero prompt findings, max standard
+  create time 28.685s, synthetic typed-probe rescue passing in 34.851s, and
+  real installed structured rescue passing in 61.940s under the 90-second
+  rescue tier. Platform leakage proof and temp-cleanup proof both passed.
+
 - 2026-06-30 precommit release-dist proof:
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-1ef33083-precommit`
   rebuilt from the current working tree after governed readback scoring,

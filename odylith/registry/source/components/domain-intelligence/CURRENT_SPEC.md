@@ -1716,10 +1716,10 @@ This section captures synchronized requirement and contract signals derived from
   downstream `project_dashboard` previews when accepted-project, Atlas, release,
   project-brief, or explicit dashboard projection facts change. Mermaid source
   fields in preview packages are typed as `mermaid_source` and quality-checked
-  through visible label units, not through graph syntax. Current source-local
-  proof clears the four prior failed signatures in 19.406s, 20.957s, 21.309s,
-  and 22.103s with committed writes; installed release proof is still required
-  before this contract can be called shipped.
+  through visible label units, not through graph syntax. That source-local
+  proof cleared the four prior failed signatures in 19.406s, 20.957s, 21.309s,
+  and 22.103s with committed writes; installed release proof still belonged to
+  the follow-up committed-dist checkpoint below.
 - Source follow-up after the `31ab2559` natural-rescue falsification adds a
   host-ledger custody boundary to the Domain Intelligence contract. The
   semantic patch executor must keep `replacement_fact` as the authoritative
@@ -1727,10 +1727,22 @@ This section captures synchronized requirement and contract signals derived from
   proof-delta explanations, and decision summaries must enter proposal and
   manifest custody only as safe plain ledger text. The final semantic-slop gate
   remains fail-closed for unbalanced quoted public copy; the fix is not a gate
-  relaxation and not rendered-prose repair. Current source proof covers
-  semantic ledger projection, manifest proof custody, planner validation, and
-  generated-copy quote detection; installed release proof is still required
-  before this contract can be called shipped.
+  relaxation and not rendered-prose repair. That source proof covered semantic
+  ledger projection, manifest proof custody, planner validation, and
+  generated-copy quote detection; installed release proof belongs to the
+  committed-dist checkpoint below.
+- Current committed release proof: dist `odylith-local-release-0.1.15-5c5fd0ed`
+  passed the release build's 285-term platform domain-leakage guard and the
+  maintained installed matrix proof at
+  `/tmp/greenfield-post-confirm-matrix-5c5fd0ed.v1.json`. Thirteen standard
+  installed cases passed at hard 10/10 in 22.939-28.685s with zero quality,
+  prompt, browser, and leakage issues; every case wrote complete governed
+  records, passed product-manager, architect, engineer, and domain-expert
+  lenses, rendered six generated surfaces with browser proof, and produced five
+  implementation prompts with zero prompt findings. Synthetic typed-probe
+  rescue passed in 34.851s and real installed structured rescue passed in
+  61.940s with natural rescue quality proven under the 90-second rescue tier.
+  Temp cleanup proof reported no remaining simulation roots.
 
 ## Research Basis
 
