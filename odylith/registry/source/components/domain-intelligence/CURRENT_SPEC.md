@@ -1731,17 +1731,17 @@ This section captures synchronized requirement and contract signals derived from
   ledger projection, manifest proof custody, planner validation, and
   generated-copy quote detection; installed release proof belongs to the
   committed-dist checkpoint below.
-- Current committed release proof: dist `odylith-local-release-0.1.15-5c5fd0ed`
+- Current committed release proof: dist `odylith-local-release-0.1.15-925545d8`
   passed the release build's 285-term platform domain-leakage guard and the
   maintained installed matrix proof at
-  `/tmp/greenfield-post-confirm-matrix-5c5fd0ed.v1.json`. Thirteen standard
-  installed cases passed at hard 10/10 in 22.939-28.685s with zero quality,
+  `/tmp/greenfield-post-confirm-matrix-925545d8.v1.json`. Thirteen standard
+  installed cases passed at hard 10/10 in 24.630-29.643s with zero quality,
   prompt, browser, and leakage issues; every case wrote complete governed
   records, passed product-manager, architect, engineer, and domain-expert
   lenses, rendered six generated surfaces with browser proof, and produced five
   implementation prompts with zero prompt findings. Synthetic typed-probe
-  rescue passed in 34.851s and real installed structured rescue passed in
-  61.940s with natural rescue quality proven under the 90-second rescue tier.
+  rescue passed in 35.531s and real installed structured rescue passed in
+  62.307s with natural rescue quality proven under the 90-second rescue tier.
   Temp cleanup proof reported no remaining simulation roots.
 
 ## Research Basis

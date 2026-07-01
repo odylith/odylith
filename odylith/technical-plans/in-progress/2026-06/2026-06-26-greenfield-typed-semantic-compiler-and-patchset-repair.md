@@ -105,6 +105,20 @@ vocabulary, or degraded packages.
   real installed structured rescue passing in 61.940s under the 90-second
   rescue tier. Platform leakage proof and temp-cleanup proof both passed.
 
+- 2026-06-30 final committed release-dist proof: checkpoint `925545d8` rebuilt
+  into `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-925545d8`
+  after the exact proof-governance checkpoint was committed and pushed. The
+  build passed the 285-term platform domain-leakage guard. The installed matrix
+  proof at `/tmp/greenfield-post-confirm-matrix-925545d8.v1.json` passed 13/13
+  maintained standard cases with hard 10/10 scores, zero issues, all
+  product-manager, architect, engineer, and domain-expert lenses passing,
+  per-case browser proof passing, complete governed records, five
+  implementation prompts per project with zero prompt findings, max standard
+  create time 29.643s, average standard create time 27.049s, synthetic
+  typed-probe rescue passing in 35.531s, and real installed structured rescue
+  passing in 62.307s under the 90-second rescue tier. Matrix generated-term
+  leakage proof and temp-cleanup proof both passed.
+
 - 2026-06-30 precommit release-dist proof:
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-1ef33083-precommit`
   rebuilt from the current working tree after governed readback scoring,

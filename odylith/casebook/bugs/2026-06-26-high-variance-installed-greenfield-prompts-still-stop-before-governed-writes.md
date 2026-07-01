@@ -38,6 +38,8 @@
 
 - Environment Update: 2026-06-30 committed checkpoint 5c5fd0ed rebuilt local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-5c5fd0ed after actor-label custody and source-local Registry forensics regeneration. Maintained installed matrix proof persisted at /tmp/greenfield-post-confirm-matrix-5c5fd0ed.v1.json: 13/13 standard cases passed with hard 10/10 scores, zero quality/browser/leakage/prompt issues, complete governed records, per-case browser proof, max standard create time 28.685s, average standard create time 25.844s, platform-domain leakage proof passed across generated readback terms, temp-cleanup proof passed with no remaining simulation roots, synthetic typed-probe rescue passed in 34.851s, and the real installed structured-rescue leg passed in 61.940s with a provider-authored `structured_rescue_semantic_patch` under the 90s rescue budget.
 
+- Environment Update: 2026-06-30 final committed checkpoint 925545d8 rebuilt local release dist /Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-925545d8 after recording proof governance. Maintained installed matrix proof persisted at /tmp/greenfield-post-confirm-matrix-925545d8.v1.json: 13/13 standard cases passed with hard 10/10 scores, zero quality/browser/leakage/prompt issues, complete governed records, per-case browser proof, max standard create time 29.643s, average standard create time 27.049s, matrix-generated-term leakage proof passed across 213 generated readback terms, temp-cleanup proof passed with no remaining simulation roots, synthetic typed-probe rescue passed in 35.531s, and the real installed structured-rescue leg passed in 62.307s with natural rescue quality proven under the 90s rescue budget.
+
 - Detected By: Custom high-variance installed greenfield matrix after release smoke and standard installed matrix passed
 
 - Failure Signature: autonomous warehouse safety state and federated agent incident command returned create_returncode=2 in the earlier installed matrix; post-confirm quality manifest missing; Radar workstreams 1, Registry specs 0, Atlas sources 0, release records 0, trace nodes 0. A later installed matrix on cedafc79 fixed those two cases but exposed two additional platform failures: indigenous data sovereignty review returned create_returncode=2 before governed writes, and spacecraft anomaly triage committed records but failed rendered package quality because multiple Radar titles ended with a clipped article phrase `a`. The 33bdb122 installed matrix then reopened this bug: pediatric agency practice and security disclosure council returned create_returncode=2 before governed writes, with no quality manifest, one Radar workstream, zero Registry specs, zero Atlas sources, zero release/program records, zero trace nodes, and zero Project implementation prompts. The 3d13f434 installed matrix reopened the release gate again: 12 of 13 cases passed with hard 10/10 scores, browser proof, and complete records, but sparse disclosure confirmation scored 0/10 after governed writes because it produced only two Registry component specs, carried only three of four required domain anchors, and failed architect, engineer, and domain-expert matrix lenses.
@@ -1564,15 +1566,15 @@
   cleanup. Treat this as release-harness/runtime fragility to harden with
   incremental proof persistence and stronger subprocess isolation; do not
   mistake the bus error for a generated-artifact semantic failure.
-  Latest committed-dist proof from 5c5fd0ed passed the maintained installed
-  release matrix from `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-5c5fd0ed`
-  with persisted proof at `/tmp/greenfield-post-confirm-matrix-5c5fd0ed.v1.json`:
+  Latest committed-dist proof from 925545d8 passed the maintained installed
+  release matrix from `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-925545d8`
+  with persisted proof at `/tmp/greenfield-post-confirm-matrix-925545d8.v1.json`:
   13/13 standard cases passed at hard 10/10, zero quality issues, zero browser
   issues, zero prompt findings, platform-domain leakage proof passed, complete
   governed records were read back, per-case browser proof passed, temp cleanup
   reported no remaining simulation roots, max standard create time was
-  28.685s, synthetic rescue passed in 34.851s, and real installed structured
-  rescue passed in 61.940s with natural rescue quality proven under the 90s
+  29.643s, synthetic rescue passed in 35.531s, and real installed structured
+  rescue passed in 62.307s with natural rescue quality proven under the 90s
   rescue tier.
 
 - Related Incidents/Bugs: CB-208
