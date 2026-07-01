@@ -1,6 +1,6 @@
 - Bug ID: CB-207
 
-- Status: Open
+- Status: Closed
 
 - Created: 2026-06-26
 
@@ -20,17 +20,19 @@
 
 - Environment Update: 2026-07-01 fresh installed variance against `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-925545d8` persisted proof at `/tmp/greenfield-post-confirm-fresh-variance-925545d8.v1.json`. Seven of eight new domains passed with hard 10/10 scores, browser proof, complete governed records, standard create times of 24.648-25.706s, leakage proof across 114 generated terms, clean temp cleanup, synthetic rescue at 33.170s, and natural structured rescue at 64.368s. One document/status-style dispute workflow failed before governed writes in 12.336s because all three Registry component specs repeated the same generated `The product failure to guard against` sentence and the blocker surfaced as `legacy_package_artifact_gate`.
 
+- Closure Update: 2026-07-01 rebuilt dist `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-5b94bd8f` passed both final installed proof lanes. Fresh high-variance proof passed 8/8 standard cases at 10/10 with zero issues, browser proof, platform leakage proof across 131 generated terms, temp cleanup, max standard create time 25.701s, synthetic rescue at 33.288s, and natural structured rescue at 56.548s. Maintained release proof passed 13/13 standard cases at 10/10 with zero issues, browser proof, platform leakage proof across 213 generated terms, temp cleanup, max standard create time 28.062s, synthetic rescue at 33.620s, and natural structured rescue at 56.311s.
+
 - Detected By: Focused greenfield proposal regression tests after artifact quality hardening; maintained installed greenfield matrix for the v0.1.15 release gate.
 
 - Failure Signature: greenfield rendered package repeats noncanonical prose across 3 artifact(s): Risks: Combining cart, payment, and order state would hide failure recovery.
-  Fresh installed signature on 2026-06-29: `security disclosure council` failed before governed writes in 12.96s with `greenfield rendered package repeats noncanonical prose across 3 artifact(s)` for the repeated object-list tail beginning `Affected partner review, embargo decisions, evidence custody, legal signoff, and public advisory release readiness...`.
+  Fresh installed signature on 2026-06-29: a coordinated disclosure workflow failed before governed writes in 12.96s with `greenfield rendered package repeats noncanonical prose across 3 artifact(s)` for the repeated object-list tail beginning with affected review scope, decision scope, evidence custody, signoff, and release-readiness terms.
   Fresh installed signature on 2026-07-01: a document/status-style dispute workflow failed before governed writes with `greenfield rendered package repeats noncanonical prose across 3 artifact(s)` for the repeated generated Registry proof/risk sentence beginning `The product failure to guard against: Explanation context can be attached to the wrong review record...`.
 
 - Trigger Path: .venv/bin/python -m pytest tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_shapes_radar_specs_with_domain_intelligence_substrate tests/unit/runtime/test_greenfield_proposals.py::test_greenfield_apply_commits_records_with_dashboard_warning_when_refresh_fails -q
 
 - Ownership: Greenfield post-confirm semantic package repair, package repetition gate, and artifact projection boundaries.
 
-- Timeline: Captured 2026-06-26 through `odylith bug capture`; reopened as release-blocking installed proof on 2026-06-29 against dist `odylith-local-release-0.1.15-e7bc3be3`.
+- Timeline: Captured 2026-06-26 through `odylith bug capture`; reopened as release-blocking installed proof on 2026-06-29 against dist `odylith-local-release-0.1.15-e7bc3be3`; closed on 2026-07-01 after rebuilt installed proof passed fresh high-variance and maintained release matrices.
 
 - Blast Radius: Confirmed greenfield create, Radar/project/package previews, operator release-readiness proof, and arbitrary domains where one semantic risk is projected into multiple surfaces.
 
@@ -46,7 +48,7 @@
 
 - Solution: Repair semantic projection custody so compact action-complement and object-list tail variants preserve canonical fact identity, semantic node/source path, projection id, and sanctioned surface roles before package repetition scoring. Preserve component-local semantic contract failure facts when applying specialized component profiles, so profile structure does not stamp one shared generated risk sentence across siblings. Do not add disclosure/security, temporary-case vocabulary, profile-phrase vocabulary, regex allowlists, or weaker repetition thresholds.
 
-- Verification: Focused greenfield proposal tests must pass, followed by broad post-confirm quality tests and fresh live simulations. Source proof for the 2026-07-01 profile-contract fix passed 53 component/Registry/package tests and exact source-local replay of the saved failed intent committed governed records in 14.989s with zero final issues. Release proof must rerun the installed matrix against a rebuilt dist, including the fresh failed case, with governed writes, hard 10/10 standard cases, rescue proof, browser proof, leakage proof, and temp cleanup.
+- Verification: Focused greenfield proposal tests must pass, followed by broad post-confirm quality tests and fresh live simulations. Source proof for the 2026-07-01 profile-contract fix passed 53 component/Registry/package tests and exact source-local replay of the saved failed intent committed governed records in 14.989s with zero final issues. Final release proof passed on rebuilt dist `odylith-local-release-0.1.15-5b94bd8f`: fresh high-variance installed matrix at `/tmp/greenfield-post-confirm-fresh-variance-5b94bd8f.v1.json` passed 8/8 standard cases at hard 10/10 with zero issues, max standard create 25.701s, browser proof, leakage proof, temp cleanup, synthetic rescue, and natural structured rescue; maintained installed matrix at `/tmp/greenfield-post-confirm-matrix-5b94bd8f.v1.json` passed 13/13 standard cases at hard 10/10 with zero issues, max standard create 28.062s, browser proof, leakage proof, temp cleanup, synthetic rescue, and natural structured rescue.
 
 - Prevention: Before future repetition fixes, search Casebook for prior package-repetition guardrails and avoid adding local regex token loops, domain-specific risk/security exceptions, or rendered-string allowances that bypass typed projection custody.
 

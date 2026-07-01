@@ -56,7 +56,12 @@ This section captures synchronized requirement and contract signals derived from
   custody instead of repeating one profile-level risk sentence across siblings.
   Focused component/Registry/package proof passed 53 tests, and exact
   source-local replay of the failed intent committed governed records in
-  14.989s with zero final issues. Package-level semantic repetition metadata
+  14.989s with zero final issues. Rebuilt installed release proof against
+  `odylith-local-release-0.1.15-5b94bd8f` then passed both final proof lanes:
+  8/8 fresh high-variance standard cases and 13/13 maintained standard cases at
+  hard 10/10, zero issues, browser proof, platform leakage proof, temp cleanup,
+  max standard create time 28.062s, synthetic rescue under 34s, and natural
+  structured rescue under 57s. Package-level semantic repetition metadata
   remains the next typed-finding cleanup under CB-208.
 
 - 2026-07-01: Closed a live post-confirm rescue escape with source-addressed, deterministic component-contract repair. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-213`; Diagram: D-043) Registry package findings now map rendered

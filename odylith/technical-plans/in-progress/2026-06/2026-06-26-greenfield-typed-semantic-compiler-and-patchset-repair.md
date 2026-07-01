@@ -66,6 +66,22 @@ vocabulary, or degraded packages.
 
 ## Latest Simulation Evidence
 
+- 2026-07-01 rebuilt installed release proof against committed checkpoint
+  `5b94bd8f` reclaimed the CB-207 package-repetition gate. The fresh
+  high-variance installed matrix at
+  `/tmp/greenfield-post-confirm-fresh-variance-5b94bd8f.v1.json` passed 8/8
+  standard cases at hard 10/10 with zero quality, browser, prompt, or platform
+  leakage issues; complete governed records; browser proof; platform leakage
+  proof across 131 generated terms; temp cleanup; max standard create time
+  25.701s; synthetic rescue at 33.288s; and natural structured rescue at
+  56.548s. The maintained installed release matrix at
+  `/tmp/greenfield-post-confirm-matrix-5b94bd8f.v1.json` passed 13/13 standard
+  cases at hard 10/10 with zero issues; browser proof; platform leakage proof
+  across 213 generated terms; temp cleanup; max standard create time 28.062s;
+  synthetic rescue at 33.620s; and natural structured rescue at 56.311s. CB-207
+  is closed; CB-208 remains open for structured package-repetition occurrence
+  metadata and typed repairability.
+
 - 2026-07-01 fresh installed variance against the final committed
   `925545d8` dist proved CB-207 was still open. Seven of eight new domains
   passed at hard 10/10 with browser proof, complete governed records, standard
