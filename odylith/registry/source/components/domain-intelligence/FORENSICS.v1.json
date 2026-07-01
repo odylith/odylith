@@ -7,12 +7,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 271,
-    "mapped_workstream_evidence_count": 249,
+    "explicit_event_count": 272,
+    "mapped_workstream_evidence_count": 250,
     "recent_path_match_count": 1,
     "spec_history_event_count": 205,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 272
+    "timeline_event_count": 273
   },
   "name": "Domain Intelligence",
   "path_prefixes": [
@@ -21,21 +21,51 @@
   "spec_ref": "odylith/registry/source/components/domain-intelligence/CURRENT_SPEC.md",
   "timeline": [
     {
-      "artifact_count": 2,
-      "artifacts": [
-        "tracked_artifact_1",
-        "tracked_artifact_2"
-      ],
+      "artifact_count": 0,
+      "artifacts": [],
       "confidence": "high",
       "event_index": 771,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved.",
+      "ts_iso": "2026-06-30T23:25:16-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 772,
       "explicit_components": [],
       "kind": "workspace_activity",
       "mapped_components": [
         "domain-intelligence"
       ],
       "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 2 tracked artifact references retained.",
-      "ts_iso": "2026-06-30T23:14:47-07:00",
+      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-06-30T23:24:41-07:00",
       "workstreams": []
     },
     {

@@ -47,8 +47,8 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-07-01: Fixed specialized component-profile failure-custody drift found by fresh installed variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-207`, `CB-208`; Diagram: D-043)
   Fresh installed proof against dist `odylith-local-release-0.1.15-925545d8`
   passed seven of eight new high-variance standard cases at hard 10/10, but
-  `tribal broadband pole dispute` failed before governed writes because
-  document/status-style component-profile rebuilds replaced distinct
+  one document/status-style dispute workflow failed before governed writes
+  because specialized component-profile rebuilds replaced distinct
   component-local semantic `unique_failure` facts with one shared generated
   proof/risk failure sentence. Domain Intelligence now preserves the complete
   semantic contract's `unique_failure` when specialized profiles add their

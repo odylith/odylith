@@ -71,7 +71,7 @@ vocabulary, or degraded packages.
   passed at hard 10/10 with browser proof, complete governed records, standard
   create times under 26s, leakage proof across 114 generated readback terms,
   clean temp cleanup, synthetic rescue at 33.170s, and natural structured
-  rescue at 64.368s. The tribal broadband pole attachment case failed before
+  rescue at 64.368s. One document/status-style dispute workflow failed before
   governed writes in 12.336s because specialized component-profile rebuilds
   replaced three complete component-local semantic `unique_failure` facts with
   one shared profile-level generated proof/risk sentence, which then repeated
