@@ -66,7 +66,16 @@ This section captures synchronized requirement and contract signals derived from
   regressions. Working-tree installed proof passed six non-reused scientific
   variance creates with browser proof at 10/10, zero issues, 27.485-31.323s
   create times, platform leakage proof across 285 fixture terms, and clean temp
-  cleanup. Committed-head dist proof remains the release closure gate.
+  cleanup. Committed-head dist `odylith-local-release-0.1.15-3bd4d233` then
+  passed the maintained 14-case installed matrix at 10/10 with 26.068-30.873s
+  standard create times, synthetic rescue at 40.269s, natural structured
+  rescue at 68.976s, browser proof, platform leakage proof, and clean temp
+  cleanup. The same dist passed the final six-case scientific variance at
+  10/10 with 27.126-30.865s create times and zero issues. The exact saved
+  grn-sim confirmed intent replay passed from the same installed dist in
+  23.253s with a committed write transaction, 4 Radar workstreams, 5 Registry
+  components, 6 Atlas diagrams, all expert lenses passed, and zero repeated
+  result/output/proof signatures across a 456-file artifact scan.
 
 - 2026-07-01: Repaired fresh scientific first-path material custody and evidence-depth scoring. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-045)
   The confirmed greenfield path now preserves prompt-grounded material source

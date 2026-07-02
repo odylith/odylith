@@ -75,6 +75,49 @@ def _run(cmd: Sequence[str]) -> None:
     subprocess.run(list(cmd), check=True)
 
 
+def _git_output(args: Sequence[str]) -> str:
+    try:
+        completed = subprocess.run(
+            ["git", *args],
+            cwd=REPO_ROOT,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+    return completed.stdout.strip()
+
+
+def _local_git_sha(*, allow_local: bool) -> str:
+    github_sha = str(os.getenv("GITHUB_SHA") or "").strip()
+    if github_sha:
+        return github_sha
+    if not allow_local:
+        return ""
+    return _git_output(("rev-parse", "HEAD"))
+
+
+def _local_source_tree(*, allow_local: bool) -> dict[str, Any]:
+    if not allow_local:
+        return {}
+    status_output = _git_output(("status", "--porcelain"))
+    status_lines = tuple(
+        line
+        for line in status_output.splitlines()
+        if line.strip()
+    )
+    head = _local_git_sha(allow_local=True)
+    branch = _git_output(("branch", "--show-current"))
+    return {
+        "branch": branch,
+        "dirty": bool(status_lines),
+        "dirty_file_count": len(status_lines),
+        "head": head,
+    }
+
+
 def _repo_signer_identity(repo: str) -> str:
     return f"https://github.com/{repo}/{WORKFLOW_PATH}@{WORKFLOW_REF}"
 
@@ -1153,8 +1196,9 @@ def _write_provenance(
             "ref": WORKFLOW_REF,
             "run_id": os.getenv("GITHUB_RUN_ID", ""),
             "run_attempt": os.getenv("GITHUB_RUN_ATTEMPT", ""),
-            "sha": os.getenv("GITHUB_SHA", ""),
+            "sha": _local_git_sha(allow_local=allow_local),
         },
+        "source_tree": _local_source_tree(allow_local=allow_local),
         "artifacts": {
             "wheel": {
                 "name": wheel.name,

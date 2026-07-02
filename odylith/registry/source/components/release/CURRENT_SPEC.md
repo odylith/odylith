@@ -363,6 +363,12 @@ governed subsystem.
   success-path output.
 - Release assets are authoritative only when the signed manifest, provenance,
   and SBOM all verify for the canonical signer identity.
+- Maintainer-local release assets are not closure proof unless
+  `build-provenance.v1.json` binds the package to the local git `HEAD` and
+  records the local source-tree posture, including branch, dirty flag, and
+  dirty-file count. A local dist with an empty provenance commit can be useful
+  for debugging, but it cannot support a release-readiness or local-install
+  handoff claim.
 - Consumer posture must reject maintainer-only localhost asset overrides and
   Sigstore-bypass toggles; those controls are rehearsal-only and valid only in
   the product-repo maintainer lane.
@@ -548,6 +554,12 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-01 · Implementation:** Local release provenance writer smoke proved workflow sha is populated from git HEAD and source_tree records branch plus dirty posture in the active maintainer workspace.
+  - Scope: B-142
+  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, tests/unit/install/test_release_bootstrap.py
+- **2026-07-01 · Implementation:** Release closure review found local dist provenance was not commit-bound; local release builder now records git HEAD and source-tree posture before final greenfield install handoff.
+  - Scope: B-142
+  - Evidence: odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +2 more
 - **2026-06-30 · Implementation:** Greenfield natural structured-rescue hardening now preserves provider-backed PatchSet evidence through the final clean post-confirm manifest and adds a maintained natural rescue proof leg; focused source proof passed, installed committed-head proof remains pending.
   - Scope: B-142
   - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
@@ -560,15 +572,20 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-06-30 · Implementation:** Registry component forensics now project generic event summaries and neutral artifact counts; the platform leakage guard scans Registry component custody, while raw repro language remains limited to evidence surfaces.
   - Scope: B-142
   - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +2 more
-- **2026-06-30 · Implementation:** Removed platform-facing retained-scenario vocabulary from current Registry specs and Atlas box-explanation runtime custody; leakage guard and strict platform-surface scan are clean outside intentional fixtures/evidence.
-  - Scope: B-142
-  - Evidence: odylith/registry/source/components/atlas/CURRENT_SPEC.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
-- **2026-06-29 · Decision:** Greenfield release proof must score Project brief and implementation prompts from persisted generated shell payloads and browser surfaces, not regenerated proof-harness payloads.
-  - Scope: B-142
-  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-07-01: Bound maintainer-local release provenance to the source git head. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-209`, `CB-215`; Diagram: D-023)
+  Independent closure review found that the greenfield committed-head dist
+  carried strong behavioral proof but weak local provenance: the generated
+  `build-provenance.v1.json` retained the canonical workflow identity while
+  leaving `workflow.sha` empty. The release asset builder now records the local
+  `HEAD` as the provenance SHA for maintainer-local builds and adds a
+  `source_tree` block with branch, dirty state, dirty-file count, and head.
+  Hosted release builds keep the GitHub-provided SHA. Local install handoff now
+  requires a rebuilt dist from the post-fix commit before release-readiness
+  claims continue.
+
 - 2026-07-01: Added scientific evidence-depth readback to greenfield release scoring. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-045)
   The installed greenfield matrix now treats scientific/evaluation semantics as
   a scored proof obligation, not a shallow domain-term hit. Package evidence

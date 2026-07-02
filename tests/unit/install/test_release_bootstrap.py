@@ -1187,6 +1187,18 @@ def test_release_manifest_carries_registered_migration_policy(tmp_path: Path) ->
 def test_local_provenance_defaults_to_authoritative_actor_for_canonical_repo(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     monkeypatch.delenv("GITHUB_ACTOR", raising=False)
+    monkeypatch.delenv("GITHUB_SHA", raising=False)
+
+    def fake_git_output(args) -> str:
+        if tuple(args) == ("rev-parse", "HEAD"):
+            return "abc123localhead"
+        if tuple(args) == ("branch", "--show-current"):
+            return "2026/freedom/provenance"
+        if tuple(args) == ("status", "--porcelain"):
+            return " M odylith/casebook/example.md\n"
+        return ""
+
+    monkeypatch.setattr(module, "_git_output", fake_git_output)
 
     output_path = tmp_path / "build-provenance.v1.json"
     wheel = tmp_path / "odylith-1.2.3-py3-none-any.whl"
@@ -1216,6 +1228,13 @@ def test_local_provenance_defaults_to_authoritative_actor_for_canonical_repo(tmp
 
     payload = json.loads(output_path.read_text(encoding="utf-8"))
     assert payload["actor"] == "freedom-research"
+    assert payload["workflow"]["sha"] == "abc123localhead"
+    assert payload["source_tree"] == {
+        "branch": "2026/freedom/provenance",
+        "dirty": True,
+        "dirty_file_count": 1,
+        "head": "abc123localhead",
+    }
 
 
 def test_publish_release_assets_uses_supported_macos_wheel_tags() -> None:

@@ -5,7 +5,7 @@
   affected component spec names its faculty, hot-path boundary, proof duty,
   and surface duty so the Odylith Discipline layer remains cross-cutting rather than a
   runtime-only feature.
-Last updated: 2026-04-15
+Last updated: 2026-07-01
 
 
 Last updated (UTC): 2026-04-15
@@ -122,6 +122,14 @@ This is why every component in the manifest must point at a meaningful `spec_ref
 `sync_component_spec_requirements.py` also writes the component-local
 `FORENSICS.v1.json` sidecars so Registry source keeps a per-component evidence
 snapshot next to the current spec.
+
+In the Odylith product repo, source-change closure must regenerate these
+forensics sidecars with the current source runtime when the slice touches
+Registry forensics, platform leakage, component evidence projection, or
+governance-learning policy. Pinned dogfood remains the shipped-runtime proof
+posture, but it can be older than the active source fix; using it for these
+source-owned forensics writes can reintroduce historical scenario vocabulary
+into platform Registry custody before the fix ships.
 
 The result is a component-centric dashboard where each detail panel can show:
 - what the component is
@@ -246,6 +254,9 @@ exhaustive regardless of rung.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-01 · Implementation:** Repeated CB-209 mechanism observed: pinned-runtime Registry forensics sync reintroduced historical scenario terms; source-local regeneration cleared the 285-term leakage guard and must be used for source-change forensics closure.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/registry/CURRENT_SPEC.md
 - **2026-03-17 · Implementation:** Added quick-tooltip metadata to Registry component spec inline links and code spans for hover parity in the Current Spec pane.
   - Evidence: odylith/registry/source/components/registry/CURRENT_SPEC.md, src/odylith/runtime/surfaces/render_registry_dashboard.py
 - **2026-03-04 · Implementation:** Shipped Registry dashboard rendering plus governance and traceability sync updates, and refreshed generated Radar, Atlas, and Compass shells.
@@ -255,6 +266,14 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-07-01: Captured source-change forensics regeneration posture. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
+  During release-provenance closure, pinned-runtime Registry forensics sync
+  repeated the known CB-209 failure mode by reintroducing historical scenario
+  terms into component `FORENSICS.v1.json` sidecars. Source-local regeneration
+  from the current code cleared the 285-term platform leakage guard. Registry
+  now treats source-local forensics regeneration as the correct maintainer
+  posture when source changes touch forensics projection, leakage custody, or
+  governance-learning evidence.
 - 2026-03-26: Moved the authoritative Odylith product component inventory into the public repo so product components stop depending on consumer-local registry truth. (Plan: [B-001](odylith/radar/radar.html?view=plan&workstream=B-001))
 - 2026-04-07: Promoted the hidden memory-substrate seams into first-class Registry components so projection bundle, projection snapshot, remote retrieval, and memory contracts have explicit governed ownership and rendered detail instead of one coarse backend silhouette. (Plan: [B-058](odylith/radar/radar.html?view=plan&workstream=B-058))
 - 2026-04-09: Bound Registry default operational ordering to Delivery Intelligence's shared Scope Signal Ladder so low-signal churn can stay visible in forensics without outranking real execution or blocker evidence. (Plan: [B-071](odylith/radar/radar.html?view=plan&workstream=B-071); Bug: `CB-090`)

@@ -1576,6 +1576,29 @@
   29.643s, synthetic rescue passed in 35.531s, and real installed structured
   rescue passed in 62.307s with natural rescue quality proven under the 90s
   rescue tier.
+  Release-provenance proof gap on 2026-07-01: independent closure review found
+  that the committed-head local dist `odylith-local-release-0.1.15-3bd4d233`
+  passed behavioral greenfield proof but its `build-provenance.v1.json` left
+  `workflow.sha` empty. That weakens release-readiness custody because the
+  local installable package was not self-describing enough to prove which
+  source commit produced it. The failed mechanism is treating local release
+  smoke plus matrix pass as sufficient without checking provenance commit
+  binding. Forward fix: local release provenance now records the local git
+  `HEAD` and source-tree posture; a fresh dist from the post-fix commit must
+  be rebuilt and rerun before final install commands are handed off.
+  Repeated forensics mechanism on 2026-07-01: running the pinned dogfood
+  `sync-component-spec-requirements` command after the provenance governance
+  update regenerated component forensics with old raw event projection and
+  reintroduced protected historical scenario terms into Registry custody.
+  The source-local command
+  `PYTHONPATH=src .venv/bin/python -m odylith.cli governance sync-component-spec-requirements --repo-root .`
+  regenerated the same sidecars through the current neutralized forensics
+  projector; the 285-term platform leakage guard then passed and the leaked
+  terms disappeared from `odylith/registry/source/components`. Guardrail: in
+  product-repo source-change slices, use source-local regeneration for
+  forensics/leakage/governance-learning sidecars until the source fix is
+  shipped, then prove the shipped pinned runtime separately through installed
+  release artifacts.
 
 - Related Incidents/Bugs: CB-208
 
@@ -1595,6 +1618,9 @@
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_actor_path_role.py
 - src/odylith/runtime/domain_intelligence/greenfield_confirmed_non_goals.py
 - src/odylith/runtime/domain_intelligence/greenfield_generated_prose_shape.py
+- src/odylith/runtime/governance/sync_component_spec_requirements.py
+- src/odylith/runtime/governance/component_registry_intelligence.py
+- scripts/release/publish_release_assets.py
 - tests/unit/runtime/test_greenfield_confirmed_surfaces.py
 - tests/unit/runtime/test_greenfield_project_brief_rendering.py
 - tests/integration/runtime/test_greenfield_hiit_post_confirm_quality.py
