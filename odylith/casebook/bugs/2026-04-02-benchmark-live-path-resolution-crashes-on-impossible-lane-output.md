@@ -9,7 +9,7 @@
 
 
 
-- Status: Closed
+- Status: FixedPendingRelease
 
 - Created: 2026-04-02
 
@@ -125,6 +125,22 @@ human-visible governance surface must treat extracted path-like text as
 untrusted until it resolves safely, and invalid path tokens must degrade the
 single link rather than aborting the whole governed refresh.
 
+2026-07-02 follow-up recurrence: the source-local helper guard proved the
+renderer boundary safe, but Casebook refresh still exposed the upstream
+projection-snapshot missed mechanism while refreshing B-142 governance. The
+context-engine Casebook snapshot builder extracted path references from raw bug
+prose, and `_extract_path_refs` admitted multiline or whitespace-bearing
+sentence fragments as repo paths because the token contained a real path
+elsewhere in the text. The pinned dashboard then attempted to stat the
+prose-sized token and failed with the same `OSError: [Errno 63] File name too
+long`. The forward fix adds a generic repo-path token guard in the projection
+search owner: path candidates with whitespace, newlines, impossible overall
+length, or filesystem-impossible segment length are ignored before link
+classification. Regression coverage proves that a real `src/odylith/...` path
+inside prose is still extracted while the surrounding multiline sentence is
+not. Source-local Casebook refresh then passed with 213 cases and 119 open
+cases.
+
 - Version/Build: `v0.1.7` live benchmark harness hardening wave on 2026-04-02.
 
 - Config/Flags: `odylith benchmark --repo-root . --profile proof`
@@ -134,7 +150,11 @@ single link rather than aborting the whole governed refresh.
   authoritative.
 
 - Code References: `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
-  `tests/unit/runtime/test_odylith_benchmark_live_execution.py`
+  `src/odylith/runtime/context_engine/odylith_context_engine_projection_search_runtime.py`,
+  `src/odylith/runtime/surfaces/surface_path_helpers.py`,
+  `tests/unit/runtime/test_odylith_benchmark_live_execution.py`,
+  `tests/unit/runtime/test_context_grounding_hardening.py`,
+  `tests/unit/runtime/test_surface_path_helpers.py`
 
 - Runbook References: `odylith/registry/source/components/benchmark/CURRENT_SPEC.md`
 

@@ -478,6 +478,10 @@ def _looks_like_repo_path(token: str) -> bool:
     value = str(token or "").strip()
     if not value or "://" in value:
         return False
+    if any(char.isspace() for char in value):
+        return False
+    if len(value) > 512 or any(len(part) > 240 for part in context_engine_store.Path(value).parts):
+        return False
     if value.startswith("Plan: [") or value.startswith("["):
         return False
     return "/" in value or value.endswith((".py", ".md", ".json", ".jsonl", ".mmd", ".mk", ".yml", ".yaml", ".svg", ".png"))

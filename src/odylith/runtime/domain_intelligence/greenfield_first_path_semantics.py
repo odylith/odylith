@@ -89,7 +89,6 @@ _FIRST_PATH_PREFIXES = (
     r"^first path\s*:?\s*",
 )
 
-
 def first_path_model(value: Any) -> FirstPathModel:
     raw = _clean(value)
     steps = tuple(_first_path_steps(raw))
@@ -104,11 +103,9 @@ def first_path_model(value: Any) -> FirstPathModel:
         recovery_action=recovery,
     )
 
-
 def material_first_path_action(value: Any, *, fallback: str = "") -> str:
     model = first_path_model(value)
     return model.material_action or _clean(fallback)
-
 
 def first_path_steps(value: Any) -> tuple[str, ...]:
     return first_path_model(value).steps
@@ -268,7 +265,6 @@ def _strip_first_path_frame(value: str) -> str:
         return tail.strip(" .:")
     return text
 
-
 def _first_path_frame_head(value: str) -> bool:
     words = {
         word.strip(".,:;()[]{}").casefold()
@@ -280,7 +276,6 @@ def _first_path_frame_head(value: str) -> bool:
     if not words & {"first", "release", "complete", "accepted"}:
         return False
     return bool(words & {"prove", "proves", "proven", "show", "shows", "demonstrate", "demonstrates", "validate", "validates"})
-
 
 def _material_action(steps: Sequence[str]) -> str:
     if not steps:
@@ -294,7 +289,6 @@ def _material_action(steps: Sequence[str]) -> str:
         if _MATERIAL_ACTION_RE.search(step):
             return _sentence_case(_action_chain_fragment(step))
     return _sentence_case(_action_chain_fragment(steps[0]))
-
 
 def _visible_outcome(steps: Sequence[str]) -> str:
     terminal_choice = _terminal_choice_outcome(steps)
@@ -546,7 +540,6 @@ def _split_action_pieces(value: str) -> list[str]:
                     pieces.append(current.strip(" .,;:"))
     return pieces
 
-
 def _merge_status_modifier_parts(parts: Sequence[str]) -> list[str]:
     rows = [_clean(part).strip(" .,;:") for part in parts if _clean(part).strip(" .,;:")]
     if len(rows) < 2:
@@ -563,11 +556,9 @@ def _merge_status_modifier_parts(parts: Sequence[str]) -> list[str]:
         index += 1
     return merged
 
-
 def _is_article_status_fragment(value: str) -> bool:
     words = [word.strip(".,:;()[]{}").casefold() for word in _clean(value).split() if word.strip(".,:;()[]{}")]
     return len(words) == 2 and words[0] in {"a", "an", "the"} and words[1] in RESULT_STATUS_MODIFIERS
-
 
 def _ends_with_article_status_fragment(value: str) -> bool:
     words = [word.strip(".,:;()[]{}").casefold() for word in _clean(value).split() if word.strip(".,:;()[]{}")]
@@ -589,7 +580,6 @@ def _split_purpose_action_tail(value: str) -> list[str]:
     head = text[: match.start()].strip(" ,")
     tail = _compact_final_list_comma(_normalize_role_can_step(match.group("tail").strip(" ,")))
     return [part for part in (head, tail) if part]
-
 
 def _split_temporal_action_tail(value: str) -> list[str]:
     text = _clean(value).strip(" .")
@@ -664,6 +654,8 @@ def _with_carried_subject(value: str, subject_prefix: str) -> str:
         )
     action = re.match(rf"^(?P<verb>{_ACTION_BASE_VERB_PATTERN})\b(?P<tail>.*)$", text, flags=re.IGNORECASE)
     if action and _MATERIAL_ACTION_RE.match(action.group("verb")):
+        if action.group("verb").casefold() in {"choose", "select"}:
+            return text
         return f"{subject_prefix} {_carried_subject_action_verb(subject_prefix, action.group('verb'))}{action.group('tail')}"
     if subject_prefix and _connector_core_starts_action_clause(text):
         return f"{subject_prefix} {text[:1].lower()}{text[1:]}"
@@ -717,6 +709,11 @@ def _starts_new_action_clause(value: str) -> bool:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not text:
         return False
+    words = [word.strip(".,:;()[]{}") for word in text.split() if word.strip(".,:;()[]{}")]
+    if len(words) >= 3 and any(
+        _MATERIAL_ACTION_RE.match(" ".join(words[index:])) for index in range(1, min(3, len(words) - 1))
+    ):
+        return True
     if _starts_with_compound_noun_object(text):
         return False
     if _starts_with_result_object_modifier(text):
@@ -767,7 +764,6 @@ def _valid_step(value: str) -> bool:
 
 def _is_scope_or_deferred_statement(value: str) -> bool:
     """Return whether a clause describes release limits, not first-path behavior."""
-
     text = _clean(value).strip(" .")
     if not text:
         return False

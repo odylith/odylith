@@ -536,12 +536,11 @@ def _first_path_readiness_summary(
     )
     capability = _dedupe_repeated_capability(clauses.capability_chain)
     text = _prefer_more_complete_action_summary(structured_action, capability or clauses.action_chain) or fallback
-    full_text = text
-    text = _readiness_action_head(text)
+    if not structured_action:
+        text = _readiness_action_head(text)
     outcome = compact_text(clauses.visible_result).strip(" .")
     if (
         outcome
-        and text == full_text
         and not _result_terms_covered(outcome, text)
         and not _outcome_action_covered(outcome, text)
     ):

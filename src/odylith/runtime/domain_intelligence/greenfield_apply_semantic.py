@@ -230,6 +230,8 @@ def _first_path_has_visible_result(value: str, *, proof_boundary: str) -> bool:
     candidate = select_visible_result_candidate(value, proof_boundary=proof_boundary)
     if not candidate.source_path.startswith("first_path."):
         return False
+    if candidate.source_path.startswith("first_path.events.") and candidate.confidence >= 0.55 and word_count(candidate.text) >= 2:
+        return True
     if candidate.source_kind == "first_path_event" and candidate.confidence < _VISIBLE_RESULT_CONFIDENCE_FLOOR:
         return _has_compound_first_path_result_shape(candidate.text) and (
             candidate.confidence >= _FIRST_PATH_EVENT_VISIBLE_RESULT_CONFIDENCE_FLOOR

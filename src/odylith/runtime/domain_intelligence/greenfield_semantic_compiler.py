@@ -27,6 +27,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
     nominal_visible_result_object,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    nominal_action_result_object,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     visible_result_object,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
@@ -144,7 +147,7 @@ def select_visible_result_candidate(
         candidates.append(proof_candidate)
     accepted = [candidate for candidate in candidates if _candidate_is_product_result(candidate.text)]
     if accepted:
-        accepted.sort(key=lambda item: item.confidence, reverse=True)
+        accepted.sort(key=lambda item: (_candidate_source_priority(item), item.confidence), reverse=True)
         best = accepted[0]
         if proof_candidate and _proof_candidate_refines_pronoun_result(best, proof_candidate, path_model=path_model):
             return _refined_pronoun_result_candidate(best, proof_candidate)
@@ -263,6 +266,8 @@ def _product_result_from_visible_outcome(value: Any) -> str:
     if not text:
         return ""
     candidate = visible_result_object(text) or nominal_visible_result_object(text) or text
+    if word_count(candidate) < 2:
+        candidate = nominal_action_result_object(text, candidate) or candidate
     candidate = _confirmed_result_object(source=text, result=candidate)
     candidate = _binary_actor_action_result_object(candidate) or candidate
     candidate = _resolve_result_anaphora(candidate)
@@ -410,6 +415,16 @@ def _candidate_confidence(value: str, *, source_kind: str) -> float:
     if word_count(value) >= 4:
         score += 0.05
     return score
+
+
+def _candidate_source_priority(candidate: GreenfieldSemanticCandidate) -> int:
+    if candidate.source_kind == "first_path.visible_result":
+        return 3
+    if candidate.source_kind.startswith("first_path"):
+        return 2
+    if candidate.source_kind == "proof_boundary":
+        return 1
+    return 0
 
 
 def _step_visible_result_confidence(result: str, *, step: str, path_model: FirstPathModel) -> float:

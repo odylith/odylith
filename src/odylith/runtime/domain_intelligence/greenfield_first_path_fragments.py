@@ -351,6 +351,32 @@ def nominal_visible_result_object(value: str) -> str:
         return "the tracked metric trend view"
     return text
 
+def nominal_action_result_object(value: str, result: str = "") -> str:
+    """Return an action-state object for terse terminal results like `published proof`."""
+
+    text = clean_first_path_text(value).strip(" .")
+    result_object = _drop_leading_article(result or visible_result_object(text)).strip(" .")
+    if not text or not result_object:
+        return ""
+    action = "|".join(re.escape(verb) for verb in sorted(_RESULT_ACTION_NOMINALS, key=len, reverse=True))
+    object_pattern = re.escape(result_object)
+    object_pattern = object_pattern.replace(r"\ ", r"\s+")
+    match = re.search(
+        rf"\b(?P<verb>{action})\s+(?P<object>(?:(?:a|an|the)\s+)?{object_pattern})$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    verb_start = match.start("verb")
+    if action_word_inside_compound_noun(text, verb_start):
+        return ""
+    nominal = _RESULT_ACTION_NOMINALS.get(match.group("verb").casefold().strip(".,:;"))
+    object_text = _drop_leading_article(match.group("object"))
+    if not nominal or not object_text:
+        return ""
+    return f"{nominal} {object_text}".strip(" .")
+
 _RESULT_ACTION_NOMINALS = {
     "capture": "captured",
     "captures": "captured",
@@ -714,6 +740,6 @@ def _replace_word_token(value: str, replacement: str) -> str:
 
 __all__ = [
     "MATERIAL_ACTION_RE", "action_chain_fragment", "actor_signature", "base_adverbial_note_action", "clean_first_path_text", "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment", "is_system_generated_action", "is_trivial_start",
-    "leading_subject_prefix", "looks_like_visible_result", "lowercase_leading_article", "modal_action_fragment", "modal_actor_action_parts", "nominal_visible_result_object", "outcome_capability_fragment", "primary_actor_signature",
+    "leading_subject_prefix", "looks_like_visible_result", "lowercase_leading_article", "modal_action_fragment", "modal_actor_action_parts", "nominal_action_result_object", "nominal_visible_result_object", "outcome_capability_fragment", "primary_actor_signature",
     "strip_action_subject", "visible_action_clause", "visible_result_object",
 ]

@@ -46,6 +46,23 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-02: Fixed semantic result source-priority and terminal-event custody for sparse confirmed paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-045)
+  Greenfield semantic compilation now nominalizes terse terminal event results
+  such as `publishes proof` into action-state visible results, ranks valid
+  first-path event candidates ahead of proof-boundary candidates, and lets the
+  apply-semantic bridge trust explicit `first_path.events.N` results without
+  appending the synthetic `accepted result for review` fallback. First-path
+  parsing also preserves lower-case subject/action event splits, keeps
+  generated temporal choice tails subjectless, and Project Brief readiness
+  gates now keep curated middle and terminal actions instead of clipping to
+  the first comma. Actor completion derives missing first-path participants
+  from partial accepted actor lists while skipping prefixed duplicates. Proof:
+  semantic compiler, semantic model, post-confirm engine, and full
+  post-confirm slop regression suites passed; sparse disclosure source-local
+  create completed in 24.268 seconds with a passed manifest, zero issues,
+  governed records written, `published proof` preserved, no accepted-result
+  fallback, and temp cleanup.
+
 - 2026-07-02: Preserved command-led action/object paths while keeping completion-priority custody narrow. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`; Diagram: D-043)
   Confirmed greenfield create now distinguishes repairable projection-copy debt
   from semantic custody. Typed package repetition may become explicit

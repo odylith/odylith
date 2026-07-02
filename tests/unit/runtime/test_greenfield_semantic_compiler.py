@@ -54,6 +54,45 @@ def test_semantic_compiler_accepts_release_readiness_as_first_path_result() -> N
     assert candidate.text == "Release readiness for shared cultural records"
 
 
+def test_semantic_compiler_nominalizes_terse_terminal_result_before_proof_boundary() -> None:
+    first_path = "Reporter submits a report; owner reviews it; council publishes proof."
+    proof = "Evidence custody and embargo decision."
+
+    candidate = select_visible_result_candidate(first_path, proof_boundary=proof)
+    report = compile_greenfield_semantics(
+        {
+            "intent": {"first_path": first_path, "proof_boundary": proof},
+            "semantic_model": {"first_path_contract": {"visible_result": proof}},
+        }
+    )
+
+    assert candidate.source_kind == "first_path_event"
+    assert candidate.source_path == "first_path.events.2"
+    assert candidate.text == "published proof"
+    assert report.status == "passed"
+    assert report.quality_scores["proof_result_separation"] == 1.0
+
+
+def test_semantic_compiler_prioritizes_terminal_first_path_result_over_long_proof_result() -> None:
+    first_path = (
+        "The home cook picks a recipe, the controller validates that ingredients are staged and sensors are live, "
+        "runs the step sequence with closed-loop heat and timing control, shows progress, and reaches a finished "
+        "safe-to-serve state with emergency stop available throughout."
+    )
+    proof = (
+        "Release 0.0.1 succeeds when a home cook can load a structured recipe, run its cooking steps with "
+        "closed-loop heat and timing, reach a safe finished state, and trigger emergency stop at any point "
+        "in a hardware simulator."
+    )
+
+    candidate = select_visible_result_candidate(first_path, proof_boundary=proof)
+
+    assert candidate.source_kind == "first_path_event"
+    assert candidate.source_path == "first_path.events.5"
+    assert candidate.text == "a finished safe-to-serve state with emergency stop available throughout"
+    assert "hardware simulator" not in candidate.text.casefold()
+
+
 def test_confirmed_intent_completion_rebuilds_proof_poisoned_product_fields() -> None:
     intent = _lifecycle_intent()
     poison = "the visible result produced by version 0.0.1 is proven when an event can be viewed across its full lifecycle"
@@ -172,6 +211,24 @@ def test_apply_semantic_input_records_source_paths_and_semantic_visibility_fallb
     assert persisted_input["schema_version"] == APPLY_SEMANTIC_INPUT_VERSION
     assert persisted_input["first_path"].endswith("then shows the accepted result for review.")
     assert persisted_input["source_paths"]["first_path"] == "intent.first_path+semantic_visible_result_fallback"
+
+
+def test_apply_semantic_input_trusts_terminal_first_path_event_visible_result() -> None:
+    proposal = {
+        "intent": {
+            "title": "Disclosure Council",
+            "state_object": "Report",
+            "first_path": "Reporter submits a report; owner reviews it; council publishes proof.",
+            "proof_boundary": "Evidence custody and embargo decision.",
+        },
+    }
+
+    compiler_input = greenfield_apply_semantic_input(proposal)
+    ensured = ensure_apply_semantic_model(proposal, refresh=True)
+
+    assert compiler_input.first_path == "Reporter submits a report; owner reviews it; council publishes proof."
+    assert dict(compiler_input.source_paths)["first_path"] == "intent.first_path"
+    assert ensured["semantic_model"]["first_path_contract"]["visible_result"] == "published proof"
 
 
 def test_apply_semantic_accepts_first_path_event_visible_result_below_proof_boundary_floor(monkeypatch) -> None:

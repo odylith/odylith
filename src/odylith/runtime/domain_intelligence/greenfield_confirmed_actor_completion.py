@@ -65,9 +65,9 @@ def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     rows = [row for row in confirmed_text_values(intent.get("human_actors")) if not _actor_row_is_meta(row)]
     labels = [_actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label and not _actor_label_has_clause_lead(label)]
-    derived_labels = [] if labels else _derived_actor_labels(intent, title=title, allow_generic_fallback=True)
+    derived_labels = _derived_actor_labels(intent, title=title, allow_generic_fallback=not labels)
     for label in derived_labels:
-        if label and label.casefold() not in {existing.casefold() for existing in labels}:
+        if label and not _actor_label_duplicates_existing(label, labels):
             labels.append(label)
     labels = list(unique_text(labels))[:8]
 
@@ -95,6 +95,17 @@ def actor_labels(intent: Mapping[str, Any]) -> list[str]:
     for row in confirmed_text_values(intent.get("human_actors")):
         labels.append(_clean(row.split("—", 1)[0].split(":", 1)[0]))
     return [label for label in labels if label]
+
+
+def _actor_label_duplicates_existing(label: str, existing_labels: Sequence[str]) -> bool:
+    candidate = _clean(label).casefold()
+    if not candidate:
+        return True
+    for existing in existing_labels:
+        current = _clean(existing).casefold()
+        if candidate == current or candidate.endswith(f" {current}"):
+            return True
+    return False
 
 
 def project_specific_actor_labels(intent: Mapping[str, Any]) -> list[str]:

@@ -357,6 +357,19 @@ def test_path_ref_extraction_trims_src_line_and_colon_suffixes(tmp_path: Path) -
     ]
 
 
+def test_path_ref_extraction_ignores_multiline_prose_around_casebook_paths(tmp_path: Path) -> None:
+    refs = projection_search_runtime._extract_path_refs(  # noqa: SLF001
+        text=(
+            "`Prompt-source recovery mentions src/odylith/runtime/domain_intelligence/greenfield_apply.py before "
+            "promoting prose into the canonical title and every generated system label.\n"
+            "- Invariant: product wrapper words must not become generated labels.`"
+        ),
+        repo_root=tmp_path,
+    )
+
+    assert refs == ["src/odylith/runtime/domain_intelligence/greenfield_apply.py"]
+
+
 def test_turn_context_path_seed_includes_surfaces_and_visible_text() -> None:
     seed = packet_session_runtime._turn_context_path_seed(  # noqa: SLF001
         intent="Fix startup target recognition.",

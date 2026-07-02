@@ -26,6 +26,17 @@ governance engine. It compiles repo truth into a reusable read model, exposes
 packet-oriented CLI reads for coding agents and surfaces, manages session
 claims, and optionally materializes faster local and remote retrieval layers.
 
+## Feature History
+
+- 2026-07-02: Hardened Casebook path-reference extraction against prose-sized tokens. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-035`)
+  The Casebook snapshot path-reference extractor now treats raw bug prose as
+  untrusted input: multiline, whitespace-bearing, overly long, or
+  filesystem-impossible path candidates are dropped before classification and
+  rendering. This prevents governance surface refresh from crashing with
+  `ENAMETOOLONG` while preserving real repo paths embedded in prose. Proof:
+  focused path-extraction regression passed, and source-local Casebook refresh
+  completed with 213 cases and 119 open cases.
+
 ## Scope And Non-Goals
 ### The Context Engine owns
 - Projection compilation from tracked markdown, JSON, code, tests, and runtime

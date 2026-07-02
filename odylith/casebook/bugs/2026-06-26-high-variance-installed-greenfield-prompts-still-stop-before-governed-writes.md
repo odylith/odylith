@@ -1,6 +1,6 @@
 - Bug ID: CB-209
 
-- Status: Closed
+- Status: FixedPendingRelease
 
 - Created: 2026-06-26
 
@@ -1626,6 +1626,37 @@
   forensics/leakage/governance-learning sidecars until the source fix is
   shipped, then prove the shipped pinned runtime separately through installed
   release artifacts.
+  Fresh installed proof against
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e4441a43`
+  reopened the matrix on 2026-07-02 after the exact grn-sim source-local
+  replay passed. Thirteen of fourteen installed standard cases completed at
+  hard 10/10, but `sparse disclosure confirmation` failed before governed
+  writes in 12.504s because `GreenfieldSemanticCompiler` selected the proof
+  boundary as `semantic_model.first_path_contract.visible_result` when the
+  accepted first path ended with a terse terminal event:
+  `council publishes proof`. The failed mechanism was generic source-priority
+  custody, not disclosure vocabulary: one-word terminal result objects such as
+  `proof` were rejected, the apply-semantic bridge appended the synthetic
+  `accepted result for review` fallback even when a real terminal event existed,
+  and the compiler ranked a long proof-boundary candidate above valid
+  first-path event candidates by a 0.01 confidence margin. The source repair
+  nominalizes terse terminal event objects into action-state results such as
+  `published proof`, ranks first-path event candidates ahead of proof-boundary
+  candidates, lets the apply-semantic bridge trust explicit
+  `first_path.events.N` results without fallback poisoning, keeps lower-case
+  subject/action first-path splits such as `compliance records review evidence`
+  intact, preserves subjectless generated choice tails, keeps curated Project
+  Brief readiness summaries from losing middle and terminal actions, and
+  derives missing actors from partial accepted actor lists while rejecting
+  prefixed duplicate actor labels. Focused proof passed
+  `tests/unit/runtime/test_greenfield_semantic_compiler.py`,
+  `tests/unit/runtime/test_greenfield_semantic_model_quality.py`,
+  `tests/unit/runtime/test_greenfield_post_confirm_engine.py`, the full
+  `test_greenfield_post_confirm_slop_regressions.py` file, and syntax proof
+  for the touched source. Source-local replay of the sparse confirmed intent
+  then completed in 24.268s with a passed manifest, zero issues, 4 Radar
+  records, 3 Registry specs, 6 Atlas diagrams, no `result result`, preserved
+  `published proof`, no `accepted result for review` fallback, and temp cleanup.
 
 - Related Incidents/Bugs: CB-208
 

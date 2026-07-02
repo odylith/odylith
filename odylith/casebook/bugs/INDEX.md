@@ -14,6 +14,7 @@ Last updated (UTC): 2026-07-02
 | CB-215 | 2026-07-01 | Fresh scientific greenfield variance still fails post confirm quality | P1 | domain-intelligence | FixedPendingRelease | [2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md](2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md) |
 | CB-211 | 2026-06-30 | Structured rescue rejects intentional empty list semantic patches | P2 | tribunal,domain-intelligence | FixedPendingRelease | [2026-06-30-structured-rescue-rejects-intentional-empty-list-semantic-patches.md](2026-06-30-structured-rescue-rejects-intentional-empty-list-semantic-patches.md) |
 | CB-210 | 2026-06-30 | Greenfield package readback collapses project brief boundaries and misses final | P1 | domain-intelligence | FixedPendingRelease | [2026-06-30-greenfield-package-readback-collapses-project-brief-boundaries-and-misses-final-.md](2026-06-30-greenfield-package-readback-collapses-project-brief-boundaries-and-misses-final-.md) |
+| CB-209 | 2026-06-26 | High variance installed greenfield prompts still stop before governed writes | P1 | domain-intelligence | FixedPendingRelease | [2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md](2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md) |
 | CB-208 | 2026-06-26 | Greenfield post confirm repair routing remains stringly typed instead of semanti | P1 | domain-intelligence | Open | [2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md](2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md) |
 | CB-206 | 2026-06-26 | Agent guidance did not require failed mechanism capture before repeated fixes | P1 | odylith-chatter | Open | [2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md](2026-06-26-agent-guidance-did-not-require-failed-mechanism-capture-before-repeated-fixes.md) |
 | CB-205 | 2026-06-09 | Greenfield post-confirm create blocked by generated sentence fragments and question-impact repetition | P1 | domain-intelligence | FixedPendingRelease | [2026-06-09-greenfield-post-confirm-create-blocked-by-generated-sentence-fragments-and-quest.md](2026-06-09-greenfield-post-confirm-create-blocked-by-generated-sentence-fragments-and-quest.md) |
@@ -199,6 +200,9 @@ Last updated (UTC): 2026-07-02
   disposable package integrity, validator-backed proof accounting. | Open | [2026-04-02-benchmark-scoped-workspace-snapshot-omits-dirty-same-package-python-dependencies.md](2026-04-02-benchmark-scoped-workspace-snapshot-omits-dirty-same-package-python-dependencies.md) |
 | CB-045 | 2026-04-02 | Benchmark live result recovery drops schema valid agent message when last message file is missing | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   structured-output recovery contract, proof-lane completion accounting. | Open | [2026-04-02-benchmark-live-result-recovery-drops-schema-valid-agent-message-when-last-message-file-is-missing.md](2026-04-02-benchmark-live-result-recovery-drops-schema-valid-agent-message-when-last-message-file-is-missing.md) |
+| CB-035 | 2026-04-02 | Benchmark live path resolution crashes on impossible lane output | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
+  live observed-path attribution, candidate-write detection, benchmark proof
+  stability. | FixedPendingRelease | [2026-04-02-benchmark-live-path-resolution-crashes-on-impossible-lane-output.md](2026-04-02-benchmark-live-path-resolution-crashes-on-impossible-lane-output.md) |
 | CB-027 | 2026-04-01 | Benchmark live runner inherits ambient user state and breaks raw codex isolation | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, benchmark
   component integrity contract, temp worktree provisioning, validator
@@ -247,7 +251,6 @@ Last updated (UTC): 2026-07-02
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
-| CB-209 | 2026-06-26 | High variance installed greenfield prompts still stop before governed writes | P1 | domain-intelligence | Closed | [2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md](2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md) |
 | CB-207 | 2026-06-26 | Greenfield post confirm package repair repeats risk prose across surfaces | P1 | domain-intelligence | Closed | [2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md](2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md) |
 | CB-196 | 2026-05-11 | Radar execution wave summary wastes wide empty space | P2 | radar | Closed | [2026-05-11-radar-execution-wave-summary-wastes-wide-empty-space.md](2026-05-11-radar-execution-wave-summary-wastes-wide-empty-space.md) |
 | CB-137 | 2026-04-29 | Install still surfaces raw trusted root key warning during verification | P1 | release | Closed | [2026-04-29-install-still-surfaces-raw-trusted-root-key-warning-during-verification.md](2026-04-29-install-still-surfaces-raw-trusted-root-key-warning-during-verification.md) |
@@ -532,9 +535,6 @@ Last updated (UTC): 2026-07-02
 | CB-039 | 2026-04-02 | Benchmark live prompt surfaced routing metadata instead of concrete focus | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_prompt.py`,
   `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`, proof prompt
   contract, architecture benchmark handoff, benchmark README and SVG wording. | Closed | [2026-04-02-benchmark-live-prompt-surfaced-routing-metadata-instead-of-concrete-focus.md](2026-04-02-benchmark-live-prompt-surfaced-routing-metadata-instead-of-concrete-focus.md) |
-| CB-035 | 2026-04-02 | Benchmark live path resolution crashes on impossible lane output | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_live_execution.py`,
-  live observed-path attribution, candidate-write detection, benchmark proof
-  stability. | Closed | [2026-04-02-benchmark-live-path-resolution-crashes-on-impossible-lane-output.md](2026-04-02-benchmark-live-path-resolution-crashes-on-impossible-lane-output.md) |
 | CB-037 | 2026-04-02 | Benchmark diagnostic probes could reenter live codex and leak temp state | P0 | `src/odylith/runtime/evaluation/odylith_benchmark_runner.py`,
   diagnostic latency probes, benchmark runtime hygiene contract, benchmark
   publication semantics. | Closed | [2026-04-02-benchmark-diagnostic-probes-could-reenter-live-codex-and-leak-temp-state.md](2026-04-02-benchmark-diagnostic-probes-could-reenter-live-codex-and-leak-temp-state.md) |
