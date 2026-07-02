@@ -28,6 +28,26 @@ def test_repetition_gate_allows_shared_release_wave_labels() -> None:
     assert "repeats a noncanonical sentence" not in "\n".join(issues)
 
 
+def test_atlas_visible_label_quality_rejects_adjacent_duplicate_words() -> None:
+    package = SimpleNamespace(
+        proposal={},
+        backlog_result={},
+        rendered_component_specs={},
+        rendered_atlas_sources={
+            "atlas/source/example-first-path.mmd": """
+flowchart LR
+  actor["Researcher"] --> proof["Proof result<br/>result result reviewable experiment"]
+"""
+        },
+        project_brief_preview={},
+        next_steps_preview={},
+    )
+
+    issues = greenfield_rendered_package_quality_issues(package)
+
+    assert any("Atlas Mermaid `atlas/source/example-first-path.mmd` leaked adjacent duplicate word prose" in issue for issue in issues)
+
+
 def test_repetition_gate_rejects_repeated_markdown_section_boilerplate() -> None:
     package = SimpleNamespace(
         proposal={},

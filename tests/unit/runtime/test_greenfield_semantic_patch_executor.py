@@ -393,6 +393,50 @@ def test_semantic_patch_executor_uses_exact_compatibility_paths_without_token_sp
     )
 
 
+def test_semantic_patch_executor_applies_registered_domain_ontology_list_target() -> None:
+    proposal: dict[str, Any] = {
+        "intent": {
+            "title": "Evidence Decision Workspace",
+            "non_goals": ["Unscoped analytics"],
+        },
+        "semantic_model": {
+            "domain_ontology": {
+                "non_goals": ["Unscoped analytics"],
+            },
+        },
+    }
+
+    result = apply_semantic_patch_operations_detailed(
+        proposal,
+        [
+            {
+                "operation_id": "non-goal-repair",
+                "target_layer": "semantic_model",
+                "target_path": "semantic_model.domain_ontology.non_goals",
+                "semantic_node_id": "SemanticModelIR.domain_ontology.non_goals",
+                "issue_code": "semantic_alignment",
+                "replacement_fact": {"non_goals": ["Deferred analytics remain outside the first release."]},
+                "decision_ledger_entry": {
+                    "chosen_interpretation": "Keep the accepted deferral as a semantic non-goal.",
+                    "rationale": "The accepted intent excludes analytics from the first governed path.",
+                    "rejected_interpretations": ["Render analytics as a first-release feature."],
+                },
+                "confidence": 0.87,
+            }
+        ],
+    )
+
+    assert result.changed is True
+    assert result.applied_fields == ("semantic_model.domain_ontology.non_goals",)
+    assert result.affected_projections == ("radar", "atlas", "project_brief")
+    assert proposal["intent"]["non_goals"] == ["Deferred analytics remain outside the first release."]
+    assert proposal["non_goals"] == ["Deferred analytics remain outside the first release."]
+    assert proposal["semantic_model"]["domain_ontology"]["non_goals"] == [
+        "Deferred analytics remain outside the first release."
+    ]
+    assert proposal["semantic_patch_ledger"][0]["operation_id"] == "non-goal-repair"
+
+
 def test_semantic_patch_executor_reports_scoped_non_first_path_application() -> None:
     proposal: dict[str, Any] = {
         "intent": {

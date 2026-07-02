@@ -20,6 +20,7 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_rescue_probe im
     rescue_probe_patch_values,
 )
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
+from odylith.runtime.domain_intelligence.greenfield_semantic_patch_targets import semantic_patch_operation_kind
 
 
 POST_CONFIRM_PATCHSET_VERSION = "odylith.greenfield.post_confirm.patchset_request.v1"
@@ -230,43 +231,10 @@ def _operation_kind(finding: GreenfieldReviewFinding, *, target_layer: str) -> s
         return "artifact_plan_projection"
     if target_layer != "semantic_model":
         return ""
-    target_path = normalize_string(finding.target_path)
-    semantic_node = normalize_string(finding.semantic_node_id)
-    if target_path in {
-        "semantic_model.first_path_contract",
-        "semantic_model.first_path_contract.raw_path",
-        "proposal.semantic_model.first_path_contract",
-    } or semantic_node in {
-        "SemanticModelIR.first_path_contract",
-        "SemanticModelIR.first_path_contract.raw_path",
-    }:
-        return "semantic_first_path"
-    if target_path in {
-        "semantic_model.domain_ontology.proof_boundary",
-        "proposal.semantic_model.domain_ontology.proof_boundary",
-    } or semantic_node == "SemanticModelIR.domain_ontology.proof_boundary":
-        return "semantic_proof_boundary"
-    if target_path in {
-        "semantic_model.domain_ontology.state_object",
-        "proposal.semantic_model.domain_ontology.state_object",
-    } or semantic_node == "SemanticModelIR.domain_ontology.state_object":
-        return "semantic_state_object"
-    if target_path in {
-        "semantic_model.domain_ontology.human_actors",
-        "proposal.semantic_model.domain_ontology.human_actors",
-    } or semantic_node == "SemanticModelIR.domain_ontology.human_actors":
-        return "semantic_human_actors"
-    if target_path in {
-        "semantic_model.domain_ontology.external_systems",
-        "proposal.semantic_model.domain_ontology.external_systems",
-    } or semantic_node == "SemanticModelIR.domain_ontology.external_systems":
-        return "semantic_external_systems"
-    if target_path in {
-        "semantic_model.domain_ontology.internal_systems",
-        "proposal.semantic_model.domain_ontology.internal_systems",
-    } or semantic_node == "SemanticModelIR.domain_ontology.internal_systems":
-        return "semantic_internal_systems"
-    return ""
+    return semantic_patch_operation_kind(
+        target_path=finding.target_path,
+        semantic_node_id=finding.semantic_node_id,
+    )
 
 
 def _requested_action(finding: GreenfieldReviewFinding, *, target_layer: str) -> str:

@@ -21,6 +21,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_components
 from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
@@ -89,6 +90,14 @@ def build_prewrite_completion_package(
 ) -> GreenfieldPrewriteBuild:
     """Render the full confirmed-create package in a staged repo before writes."""
 
+    source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
+    if source_text:
+        restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
+            proposal,
+            source_text=source_text,
+        )
+        if isinstance(restored_proposal, Mapping):
+            proposal = restored_proposal
     backlog_rows = [row for row in proposal.get("backlog", []) if isinstance(row, Mapping)]
     previous_greenfield_ids = accepted_greenfield_workstream_ids(root)
     with staged_greenfield_prewrite_root(root) as prewrite_root:
@@ -222,27 +231,29 @@ def build_prewrite_completion_package(
             release_target_result=preview_release_target,
             release_assignment_result=preview_release_assignment,
         )
-        return GreenfieldPrewriteBuild(
+        package = GreenfieldCompletionPackage(
+            proposal=package_proposal,
+            release_selector=release_selector,
+            rendered_component_specs=rendered_component_specs,
+            rendered_atlas_sources=rendered_atlas_sources,
+            component_registry_preview=component_registry_preview,
+            project_brief_preview=project_brief,
+            tribunal_preview=validation_gate,
+            accepted_project_preview=accepted_project_preview,
+            project_dashboard_preview=project_dashboard_preview,
+            compass_memory_preview=compass_memory_preview,
+            next_steps_preview=next_steps_preview,
             backlog_result=backlog_result,
-            package=GreenfieldCompletionPackage(
-                proposal=package_proposal,
-                release_selector=release_selector,
-                rendered_component_specs=rendered_component_specs,
-                rendered_atlas_sources=rendered_atlas_sources,
-                component_registry_preview=component_registry_preview,
-                project_brief_preview=project_brief,
-                tribunal_preview=validation_gate,
-                accepted_project_preview=accepted_project_preview,
-                project_dashboard_preview=project_dashboard_preview,
-                compass_memory_preview=compass_memory_preview,
-                next_steps_preview=next_steps_preview,
-                backlog_result=backlog_result,
-                program_result=preview_program_result,
-                prewrite_safety_preview=prewrite_safety_preview,
-                release_target_result=preview_release_target,
-                release_assignment_result=preview_release_assignment,
-                release_workstream_ids=tuple(first_release_workstreams),
-            ),
+            program_result=preview_program_result,
+            prewrite_safety_preview=prewrite_safety_preview,
+            release_target_result=preview_release_target,
+            release_assignment_result=preview_release_assignment,
+            release_workstream_ids=tuple(first_release_workstreams),
+        )
+        package = greenfield_source_casing.package_with_source_casing(package)
+        return GreenfieldPrewriteBuild(
+            backlog_result=package.backlog_result or backlog_result,
+            package=package,
         )
 
 

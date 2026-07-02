@@ -15,6 +15,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_traceability
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_authoring_responsibility
 from odylith.runtime.domain_intelligence.greenfield_apply_components import component_dependency_lines
@@ -52,6 +53,22 @@ def write_greenfield_proposal(
 ) -> dict[str, Any]:
     """Apply accepted Radar, Registry, Atlas, release, and memory records."""
 
+    source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
+    if source_text:
+        restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
+            proposal,
+            source_text=source_text,
+        )
+        if isinstance(restored_proposal, Mapping):
+            proposal = restored_proposal
+        restored_backlog_result = greenfield_source_casing.restore_source_casing_in_public_copy(
+            backlog_result,
+            source_text=source_text,
+        )
+        if isinstance(restored_backlog_result, Mapping):
+            backlog_result = restored_backlog_result
+        if prewrite_package is not None:
+            prewrite_package = greenfield_source_casing.package_with_source_casing(prewrite_package)
     release_bootstrap = None
     release_targeting = None
     rendered_atlas_sources = dict(prewrite_package.rendered_atlas_sources or {}) if prewrite_package else {}
@@ -199,6 +216,13 @@ def write_greenfield_proposal(
         program_result=program_result,
         release_selector=release_selector,
     )
+    if source_text:
+        restored_next_steps = greenfield_source_casing.restore_source_casing_in_public_copy(
+            next_steps,
+            source_text=source_text,
+        )
+        if isinstance(restored_next_steps, Mapping):
+            next_steps = restored_next_steps
     _raise_for_final_next_steps_quality(next_steps)
     memory_record = record_greenfield_acceptance(
         repo_root=root,

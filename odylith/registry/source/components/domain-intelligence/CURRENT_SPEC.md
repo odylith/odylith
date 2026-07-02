@@ -45,6 +45,29 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-01: Added schema-owned semantic patch targets and visible-copy source-casing custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-043)
+  Greenfield post-confirm semantic repair targets are now registered through a
+  central `SemanticPatchTarget` contract instead of local path maps spread
+  across PatchSet conversion, Tribunal planning, and semantic execution. Each
+  registered target declares the operation kind, canonical semantic path,
+  replacement keys, accepted-intent mirror paths, affected projections, and
+  whether a full prewrite completion is required. List-valued semantic
+  ontology patches, including non-goals, now update the accepted source
+  proposal and `semantic_model` atomically so repair reruns do not resurrect
+  stale source truth.
+  Greenfield prewrite, scoped rerender, and final write now restore accepted
+  source token casing for public copy while preserving structural references
+  such as component IDs, path fields, `component_focus`, and
+  `component_sequence`. This closes the CRISPR/cRISPR scientific artifact
+  escape without adding project-specific vocabulary and without allowing
+  casing custody to rewrite semantic graph references. Focused proof passed
+  the 112-test semantic patch, Tribunal planner, projection rerender, rescue,
+  package repetition, and source-casing pack plus the semantic-drift
+  regressions. Working-tree installed proof passed six non-reused scientific
+  variance creates with browser proof at 10/10, zero issues, 27.485-31.323s
+  create times, platform leakage proof across 285 fixture terms, and clean temp
+  cleanup. Committed-head dist proof remains the release closure gate.
+
 - 2026-07-01: Repaired fresh scientific first-path material custody and evidence-depth scoring. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-045)
   The confirmed greenfield path now preserves prompt-grounded material source
   terms only for internally synthesized confirmations that lose a source step

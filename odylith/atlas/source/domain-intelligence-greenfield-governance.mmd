@@ -29,12 +29,14 @@ flowchart LR
       release_scope["Release-scope classifier<br/>affirmative proof and evidence support<br/>survives unrelated negative scope tails"]
       canonical_facts["CanonicalProjectionFactIR<br/>source layer, semantic node,<br/>source path, repair owner,<br/>allowed projection IDs,<br/>sequence-step and supporting-tail variants"]
       projection_contract["Projection contract owner<br/>roots, aliases,<br/>envelope paths,<br/>affected projections"]
+      semantic_patch_targets["Semantic patch target registry<br/>operation kind, canonical path,<br/>source mirrors, affected projections,<br/>completion posture"]
       projections["Context-starved projections<br/>Radar, Registry, Atlas,<br/>Compass, release proof<br/>Atlas terminal labels keep event terms<br/>before long result wrappers"]
       atlas_label_custody["Atlas header/body label custody<br/>fixed wrappers do not repeat<br/>semantic result body terms"]
       state_boundary_titles["Radar state-boundary titles<br/>compact review/action focus,<br/>no mechanical pronoun tails<br/>no repeated clarity modifiers"]
       next_steps["Operator next steps<br/>governed start workstream,<br/>readiness gates, validation commands"]
       project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>persisted into tooling payload"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
+      source_casing_custody["Source-casing custody<br/>accepted acronym and mixed-case tokens<br/>restored in visible copy only;<br/>IDs, paths, component refs stay structural"]
       artifact_units["ArtifactQualityUnit stream<br/>projection id, source path,<br/>surface role, text kind,<br/>semantic node"]
       visible_actor_projection["Tribunal visible actor projection<br/>actor_source provenance,<br/>typed operator evidence,<br/>explicit many-hat allowance,<br/>role-specific generated labels,<br/>shared label custody"]
       validators["Deterministic validators<br/>schema, traceability,<br/>grammar, typed canonical repetition,<br/>source-owned package repetition,<br/>topology, Project prompt quality,<br/>typed generated-copy units,<br/>clipped terminal tails"]
@@ -87,8 +89,8 @@ flowchart LR
     end
 
     visible_intent --> confirmable_stdout --> confirm --> source_guard --> prompt_recovery --> confirmed_ir --> non_goal_owner --> sparse_systems --> public_system_copy
-    public_system_copy --> apply_input --> compiler --> semantic_ir --> evaluation_semantics --> actor_role_owner --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> projections --> atlas_label_custody --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
-    draft_set --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
+    public_system_copy --> apply_input --> compiler --> semantic_ir --> evaluation_semantics --> actor_role_owner --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> semantic_patch_targets --> projections --> atlas_label_custody --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
+    draft_set --> source_casing_custody --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
@@ -100,6 +102,8 @@ flowchart LR
     custody_check --> plan_apply
     custody_check --> package_inspection
     source_addresses -. "no broad roots, preview summaries,<br/>or substring-derived targets" .-> patchset
+    semantic_patch_targets -. "registered operation kinds,<br/>source mirrors, and projection scope" .-> patchset
+    semantic_patch_targets -. "registered semantic paths" .-> semantic_apply
     projection_contract -. "sanctioned roots + envelopes" .-> source_addresses
     projection_contract -. "sanctioned roots + envelopes" .-> plan_apply
     projection_contract -. "dependency scope" .-> scope_ledger
@@ -118,7 +122,7 @@ flowchart LR
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
     class visible_intent,confirmable_stdout,confirm,source_guard,prompt_recovery,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
-    class apply_input,compiler,semantic_ir,evaluation_semantics,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,projections,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
+    class apply_input,compiler,semantic_ir,evaluation_semantics,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,semantic_patch_targets,projections,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,source_casing_custody,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
     class repairable,patchset,executable_target,deterministic_source_patch,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,semantic_mirror_sync,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
     class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
 

@@ -16,36 +16,15 @@ from odylith.runtime.common.safe_ledger_text import safe_ledger_value
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_string_list
 from odylith.runtime.common.value_coercion import normalize_token
+from odylith.runtime.domain_intelligence.greenfield_semantic_patch_targets import semantic_list_replacement_keys
+from odylith.runtime.domain_intelligence.greenfield_semantic_patch_targets import semantic_replacement_leaf_key
 from odylith.runtime.reasoning import odylith_reasoning
 
 
 TRIBUNAL_PATCH_PLAN_VERSION = "odylith.tribunal.structured_patch_plan.v1"
 
 _PATCHABLE_LAYERS = frozenset({"semantic_model", "artifact_plan"})
-_REPLACEMENT_FACT_KEYS_BY_OPERATION_KIND = {
-    "semantic_first_path": "first_path",
-    "semantic_proof_boundary": "proof_boundary",
-    "semantic_state_object": "state_object",
-    "semantic_human_actors": "human_actors",
-    "semantic_external_systems": "external_systems",
-    "semantic_internal_systems": "internal_systems",
-}
-_LIST_REPLACEMENT_FACT_KEYS = frozenset({"human_actors", "external_systems", "internal_systems"})
-_REPLACEMENT_FACT_KEYS_BY_TARGET = {
-    "semantic_model.first_path_contract": "first_path",
-    "semantic_model.first_path_contract.raw_path": "first_path",
-    "proposal.semantic_model.first_path_contract": "first_path",
-    "semantic_model.domain_ontology.proof_boundary": "proof_boundary",
-    "proposal.semantic_model.domain_ontology.proof_boundary": "proof_boundary",
-    "semantic_model.domain_ontology.state_object": "state_object",
-    "proposal.semantic_model.domain_ontology.state_object": "state_object",
-    "semantic_model.domain_ontology.human_actors": "human_actors",
-    "proposal.semantic_model.domain_ontology.human_actors": "human_actors",
-    "semantic_model.domain_ontology.external_systems": "external_systems",
-    "proposal.semantic_model.domain_ontology.external_systems": "external_systems",
-    "semantic_model.domain_ontology.internal_systems": "internal_systems",
-    "proposal.semantic_model.domain_ontology.internal_systems": "internal_systems",
-}
+_LIST_REPLACEMENT_FACT_KEYS = semantic_list_replacement_keys()
 _REPLACEMENT_FACT_ENTRY_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
@@ -390,13 +369,13 @@ def _is_replacement_fact_envelope(value: Any) -> bool:
 
 
 def _replacement_fact_leaf_key(requested: Mapping[str, Any]) -> str:
-    operation_key = _REPLACEMENT_FACT_KEYS_BY_OPERATION_KIND.get(normalize_token(requested.get("operation_kind")))
+    operation_key = semantic_replacement_leaf_key(
+        operation_kind=requested.get("operation_kind"),
+        target_path=requested.get("target_path"),
+    )
     if operation_key:
         return operation_key
     target_path = normalize_string(requested.get("target_path"))
-    target_key = _REPLACEMENT_FACT_KEYS_BY_TARGET.get(target_path)
-    if target_key:
-        return target_key
     return normalize_token(target_path.rsplit(".", 1)[-1]) if target_path else ""
 
 

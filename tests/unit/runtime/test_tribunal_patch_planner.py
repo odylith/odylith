@@ -231,6 +231,45 @@ def test_structured_patch_plan_accepts_explicit_empty_list_semantic_fact() -> No
     assert not patch_plan["rejections"]
 
 
+def test_structured_patch_plan_materializes_registered_semantic_list_fact() -> None:
+    patch_plan = validate_structured_patch_plan(
+        {
+            "version": TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "planned",
+            "decision_summary": "Repair the deferred scope boundary.",
+            "operations": [
+                _valid_plan_operation(
+                    target_path="semantic_model.domain_ontology.non_goals",
+                    semantic_node_id="SemanticModelIR.domain_ontology.non_goals",
+                    replacement_fact={
+                        "value_kind": "list",
+                        "text_value": "",
+                        "list_values": ["Forecasting automation remains deferred."],
+                        "mapping_entries": [],
+                    },
+                )
+            ],
+        },
+        patchset_request={
+            **_patchset_request(),
+            "operations": [
+                {
+                    **_patchset_request()["operations"][0],
+                    "target_path": "semantic_model.domain_ontology.non_goals",
+                    "semantic_node_id": "SemanticModelIR.domain_ontology.non_goals",
+                    "operation_kind": "semantic_non_goals",
+                }
+            ],
+        },
+    )
+
+    assert patch_plan["status"] == "planned"
+    assert patch_plan["operations"][0]["replacement_fact"] == {
+        "non_goals": ["Forecasting automation remains deferred."]
+    }
+    assert not patch_plan["rejections"]
+
+
 def test_structured_patch_plan_projects_ledger_fields_as_safe_plain_text() -> None:
     patch_plan = validate_structured_patch_plan(
         {

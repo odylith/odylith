@@ -842,6 +842,12 @@ def restore_source_acronym_number_tokens(label: str, source: str) -> str:
     return _restore_source_acronym_number_tokens(label, source)
 
 
+def restore_source_token_casing(label: str, source: str) -> str:
+    """Preserve source-owned acronym and mixed-case tokens after sentence shaping."""
+
+    return _restore_source_mixed_case_tokens(restore_source_acronym_number_tokens(label, source), source)
+
+
 def _restore_source_acronym_number_tokens(label: str, source: str) -> str:
     text = label
     for match in re.finditer(r"\b[A-Z]{2,}(?:[/-][A-Za-z0-9]+)*\b", source):

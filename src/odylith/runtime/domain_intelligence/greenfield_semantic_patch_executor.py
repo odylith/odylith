@@ -14,6 +14,10 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_repair import fir
 from odylith.runtime.domain_intelligence.greenfield_patch_projection_scope import (
     patch_operation_explicit_affected_projections,
 )
+from odylith.runtime.domain_intelligence.greenfield_semantic_patch_targets import SemanticPatchTarget
+from odylith.runtime.domain_intelligence.greenfield_semantic_patch_targets import (
+    semantic_patch_target_for_operation,
+)
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
 _SEMANTIC_LAYER = "semantic_model"
@@ -55,18 +59,19 @@ def apply_semantic_patch_operations_detailed(
     for operation in operations:
         if normalize_token(operation.get("target_layer")) != _SEMANTIC_LAYER:
             continue
-        target = _semantic_target(operation)
+        target = semantic_patch_target_for_operation(operation)
         applied_field = _apply_semantic_operation(proposal, operation, target=target)
         if not applied_field:
             continue
         operation_id = normalize_string(operation.get("operation_id"))
         explicit_scope = patch_operation_explicit_affected_projections(operation)
+        affected_scope = tuple(dict.fromkeys((*explicit_scope, *target.affected_projections)))
         changed = True
         applied_fields.append(applied_field)
         if operation_id:
             operation_ids.append(operation_id)
-        affected_projections.extend(explicit_scope)
-        completion_required = completion_required or target == "first_path" or not explicit_scope
+        affected_projections.extend(affected_scope)
+        completion_required = completion_required or target.completion_required or not affected_scope
         applied_entries.append(_ledger_entry(operation, applied_field=applied_field))
     if applied_entries:
         ledger = proposal.setdefault(_LEDGER_KEY, [])
@@ -83,70 +88,44 @@ def apply_semantic_patch_operations_detailed(
     )
 
 
-def _apply_semantic_operation(proposal: dict[str, Any], operation: Mapping[str, Any], *, target: str = "") -> str:
-    target = target or _semantic_target(operation)
+def _apply_semantic_operation(
+    proposal: dict[str, Any],
+    operation: Mapping[str, Any],
+    *,
+    target: SemanticPatchTarget | None = None,
+) -> str:
+    target = target or semantic_patch_target_for_operation(operation)
+    if target is None:
+        return ""
     replacement = operation.get("replacement_fact")
     record_noop = _records_host_adjudication(operation)
-    if target == "first_path":
+    if target.value_kind == "first_path":
         return _set_first_path_contract(
             proposal,
-            _replacement_text(replacement, _FIRST_PATH_KEYS),
+            _replacement_text(replacement, target.replacement_keys),
             require_action=True,
             record_noop=record_noop,
         )
-    if target == "proof_boundary":
+    if target.value_kind == "text":
         return _set_domain_ontology_text(
             proposal,
-            "proof_boundary",
-            _replacement_text(replacement, _PROOF_BOUNDARY_KEYS),
+            target.target_id,
+            _replacement_text(replacement, target.replacement_keys),
+            intent_key=target.intent_key,
+            source_mirror_paths=target.source_mirror_paths,
             record_noop=record_noop,
         )
-    if target == "state_object":
-        return _set_domain_ontology_text(
-            proposal,
-            "state_object",
-            _replacement_text(replacement, _STATE_OBJECT_KEYS),
-            record_noop=record_noop,
-        )
-    if target == "human_actors":
-        rows, explicit = _replacement_list_fact(replacement, _ACTOR_KEYS)
+    if target.value_kind == "list":
+        rows, explicit = _replacement_list_fact(replacement, target.replacement_keys)
         return _set_domain_ontology_list(
             proposal,
-            "human_actors",
+            target.target_id,
             rows,
             explicit_empty=explicit,
+            intent_key=target.intent_key,
+            source_mirror_paths=target.source_mirror_paths,
             record_noop=record_noop,
         )
-    if target == "external_systems":
-        rows, explicit = _replacement_list_fact(replacement, _EXTERNAL_SYSTEM_KEYS)
-        return _set_domain_ontology_list(
-            proposal,
-            "external_systems",
-            rows,
-            explicit_empty=explicit,
-            record_noop=record_noop,
-        )
-    if target == "internal_systems":
-        rows, explicit = _replacement_list_fact(replacement, _INTERNAL_SYSTEM_KEYS)
-        return _set_domain_ontology_list(
-            proposal,
-            "internal_systems",
-            rows,
-            explicit_empty=explicit,
-            record_noop=record_noop,
-        )
-    return ""
-
-
-def _semantic_target(operation: Mapping[str, Any]) -> str:
-    operation_kind = normalize_token(operation.get("operation_kind"))
-    target = _TARGET_BY_OPERATION_KIND.get(operation_kind)
-    if target:
-        return target
-    for key in ("target_path", "semantic_node_id"):
-        target = _TARGET_BY_EXACT_PATH.get(normalize_token(operation.get(key)))
-        if target:
-            return target
     return ""
 
 
@@ -182,6 +161,8 @@ def _set_domain_ontology_text(
     key: str,
     value: str,
     *,
+    intent_key: str = "",
+    source_mirror_paths: Sequence[str] = (),
     record_noop: bool = False,
 ) -> str:
     text = normalize_string(value)
@@ -189,12 +170,15 @@ def _set_domain_ontology_text(
         return ""
     ontology = _domain_ontology_dict(proposal)
     intent = _intent_dict(proposal)
+    intent_key = intent_key or key
     current_ontology = normalize_string(ontology.get(key))
-    current_intent = normalize_string(intent.get(key))
-    if current_ontology == text and current_intent == text:
+    current_intent = normalize_string(intent.get(intent_key))
+    mirror_current = all(_path_text(proposal, path) == text for path in source_mirror_paths)
+    if current_ontology == text and current_intent == text and mirror_current:
         return f"semantic_model.domain_ontology.{key}" if record_noop else ""
     ontology[key] = text
-    intent[key] = text
+    intent[intent_key] = text
+    _set_source_mirror_paths(proposal, source_mirror_paths, text)
     return f"semantic_model.domain_ontology.{key}"
 
 
@@ -204,6 +188,8 @@ def _set_domain_ontology_list(
     values: Sequence[str],
     *,
     explicit_empty: bool = False,
+    intent_key: str = "",
+    source_mirror_paths: Sequence[str] = (),
     record_noop: bool = False,
 ) -> str:
     rows = [normalize_string(value) for value in values if normalize_string(value)]
@@ -211,12 +197,15 @@ def _set_domain_ontology_list(
         return ""
     ontology = _domain_ontology_dict(proposal)
     intent = _intent_dict(proposal)
+    intent_key = intent_key or key
     ontology_current = [normalize_string(value) for value in text_values(ontology.get(key))]
-    current = [normalize_string(value) for value in text_values(intent.get(key))]
-    if ontology_current == rows and current == rows:
+    current = [normalize_string(value) for value in text_values(intent.get(intent_key))]
+    mirror_current = all(_path_text_list(proposal, path) == rows for path in source_mirror_paths)
+    if ontology_current == rows and current == rows and mirror_current:
         return f"semantic_model.domain_ontology.{key}" if record_noop else ""
     ontology[key] = rows
-    intent[key] = rows
+    intent[intent_key] = rows
+    _set_source_mirror_paths(proposal, source_mirror_paths, list(rows))
     return f"semantic_model.domain_ontology.{key}"
 
 
@@ -246,6 +235,40 @@ def _intent_dict(proposal: dict[str, Any]) -> dict[str, Any]:
         intent = {}
         proposal["intent"] = intent
     return intent
+
+
+def _set_source_mirror_paths(proposal: dict[str, Any], paths: Sequence[str], value: Any) -> None:
+    for raw_path in paths:
+        path = normalize_string(raw_path)
+        if not path:
+            continue
+        current: dict[str, Any] = proposal
+        parts = [part for part in path.split(".") if part]
+        for part in parts[:-1]:
+            child = current.get(part)
+            if not isinstance(child, dict):
+                child = {}
+                current[part] = child
+            current = child
+        if parts:
+            current[parts[-1]] = value
+
+
+def _path_text(proposal: Mapping[str, Any], path: str) -> str:
+    return normalize_string(_path_value(proposal, path))
+
+
+def _path_text_list(proposal: Mapping[str, Any], path: str) -> list[str]:
+    return [normalize_string(value) for value in text_values(_path_value(proposal, path)) if normalize_string(value)]
+
+
+def _path_value(proposal: Mapping[str, Any], path: str) -> Any:
+    current: Any = proposal
+    for part in (part for part in normalize_string(path).split(".") if part):
+        if not isinstance(current, Mapping):
+            return ""
+        current = current.get(part)
+    return current
 
 
 def _replacement_text(value: Any, keys: Sequence[str]) -> str:
@@ -286,13 +309,9 @@ def _records_host_adjudication(operation: Mapping[str, Any]) -> bool:
 
 def _operation_replacement_has_semantic_fact(operation: Mapping[str, Any]) -> bool:
     replacement = operation.get("replacement_fact")
-    target = _semantic_target(operation)
-    if target == "human_actors":
-        return _replacement_list_fact(replacement, _ACTOR_KEYS)[1]
-    if target == "external_systems":
-        return _replacement_list_fact(replacement, _EXTERNAL_SYSTEM_KEYS)[1]
-    if target == "internal_systems":
-        return _replacement_list_fact(replacement, _INTERNAL_SYSTEM_KEYS)[1]
+    target = semantic_patch_target_for_operation(operation)
+    if target and target.value_kind == "list":
+        return _replacement_list_fact(replacement, target.replacement_keys)[1]
     return _replacement_has_value(replacement)
 
 
@@ -341,54 +360,6 @@ def _confidence(value: Any) -> float:
 
 def _empty_ledger_value(value: Any) -> bool:
     return value is None or value == "" or value == []
-
-
-_FIRST_PATH_KEYS = ("first_path", "raw_path", "corrected_interpretation", "replacement", "text")
-_PROOF_BOUNDARY_KEYS = ("proof_boundary", "release_boundary", "corrected_interpretation", "replacement", "text")
-_STATE_OBJECT_KEYS = ("state_object", "state", "corrected_interpretation", "replacement", "text")
-_ACTOR_KEYS = ("human_actors", "actors", "actor", "corrected_interpretation", "replacement")
-_INTERNAL_SYSTEM_KEYS = ("internal_systems", "systems", "system", "corrected_interpretation", "replacement")
-_EXTERNAL_SYSTEM_KEYS = ("external_systems", "systems", "system", "corrected_interpretation", "replacement")
-_TARGET_BY_OPERATION_KIND = {
-    "semantic_external_systems": "external_systems",
-    "semantic_first_path": "first_path",
-    "semantic_human_actors": "human_actors",
-    "semantic_internal_systems": "internal_systems",
-    "semantic_proof_boundary": "proof_boundary",
-    "semantic_state_object": "state_object",
-}
-_TARGET_BY_EXACT_PATH = {
-    "proposal.semantic_model.domain_ontology.external_systems": "external_systems",
-    "proposal.semantic_model.domain_ontology.human_actors": "human_actors",
-    "proposal.semantic_model.domain_ontology.internal_systems": "internal_systems",
-    "proposal.semantic_model.domain_ontology.proof_boundary": "proof_boundary",
-    "proposal.semantic_model.domain_ontology.state_object": "state_object",
-    "proposal.semantic_model.first_path_contract": "first_path",
-    "semantic_model.domain_ontology.external_systems": "external_systems",
-    "semantic_model.domain_ontology.human_actors": "human_actors",
-    "semantic_model.domain_ontology.internal_systems": "internal_systems",
-    "semantic_model.domain_ontology.proof_boundary": "proof_boundary",
-    "semantic_model.domain_ontology.state_object": "state_object",
-    "semantic_model.external_systems": "external_systems",
-    "semantic_model.first_path_contract": "first_path",
-    "semantic_model.first_path_contract.raw_path": "first_path",
-    "semantic_model.human_actors": "human_actors",
-    "semantic_model.internal_systems": "internal_systems",
-    "semantic_model.proof_boundary": "proof_boundary",
-    "semantic_model.state_object": "state_object",
-    "semanticmodelir.domain_ontology.external_systems": "external_systems",
-    "semanticmodelir.domain_ontology.human_actors": "human_actors",
-    "semanticmodelir.domain_ontology.internal_systems": "internal_systems",
-    "semanticmodelir.domain_ontology.proof_boundary": "proof_boundary",
-    "semanticmodelir.domain_ontology.state_object": "state_object",
-    "semanticmodelir.external_systems": "external_systems",
-    "semanticmodelir.first_path_contract": "first_path",
-    "semanticmodelir.first_path_contract.raw_path": "first_path",
-    "semanticmodelir.human_actors": "human_actors",
-    "semanticmodelir.internal_systems": "internal_systems",
-    "semanticmodelir.proof_boundary": "proof_boundary",
-    "semanticmodelir.state_object": "state_object",
-}
 
 
 __all__ = ["SemanticPatchApplication", "apply_semantic_patch_operations", "apply_semantic_patch_operations_detailed"]

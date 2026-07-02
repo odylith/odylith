@@ -13,6 +13,7 @@ from odylith.runtime.domain_intelligence import greenfield_apply_diagrams
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
+from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.governance import release_planning_authoring
 
 
@@ -41,10 +42,15 @@ def rerender_prewrite_package_projections(
     release_assignment_result = package.release_assignment_result
     release_workstream_ids = package.release_workstream_ids
     prewrite_safety_preview = package.prewrite_safety_preview
-    updates: dict[str, Any] = {
-        "proposal": package_proposal,
-        "tribunal_preview": validation_gate,
-    }
+    source_text = greenfield_source_casing.proposal_source_casing_text(package_proposal)
+    if source_text:
+        restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
+            package_proposal,
+            source_text=source_text,
+        )
+        if isinstance(restored_proposal, Mapping):
+            package_proposal = restored_proposal
+    updates: dict[str, Any] = {"proposal": package_proposal, "tribunal_preview": validation_gate}
 
     if "atlas" in scope:
         updates["rendered_atlas_sources"] = greenfield_apply_diagrams.render_prewrite_atlas_sources(package_proposal)
@@ -169,10 +175,11 @@ def rerender_prewrite_package_projections(
             release_assignment_result=release_assignment_result,
         )
 
+    restored_package = greenfield_source_casing.package_with_source_casing(replace(package, **updates))
     return replace(
         previous_prewrite_build,
-        package=replace(package, **updates),
-        backlog_result=backlog_result,
+        package=restored_package,
+        backlog_result=restored_package.backlog_result or backlog_result,
     )
 
 
