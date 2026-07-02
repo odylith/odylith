@@ -22,7 +22,7 @@
 
 - Failure Signature: greenfield public product content leaks Odylith control-plane term Radar at program.blueprint.child_workstreams.0, program.waves.0.workstream_titles.0, release_plan.target_workstream_titles.0, +23 more
 
-- Trigger Path: PYTHONPATH=src .venv/bin/python -m odylith.cli greenfield create --repo-root <temp-repo> --prompt <source-grounded homonym request> --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1 --json
+- Trigger Path: odylith greenfield create --repo-root <temp-repo> --prompt <source-grounded homonym request> --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1 --json
 
 - Ownership: Domain Intelligence greenfield quality gate and accepted-intent source-term custody.
 

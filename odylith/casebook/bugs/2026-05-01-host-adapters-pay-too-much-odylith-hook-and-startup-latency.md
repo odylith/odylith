@@ -170,6 +170,39 @@
   guidelines, and component specs. Proof: `tests/unit/install` passed with 383
   tests, and the mirror/guidance runtime slice passed with 100 tests.
 
+- Follow-up Finding: A 2026-07-02 `make dev-validate` pass exposed a related
+  install-guidance parity failure: generated consumer `odylith/AGENTS.md`
+  carried the newer governance/commentary contract, but the generated repo-root
+  managed block in `src/odylith/install/agents.py` still used shortened wording
+  for Odylith mention rules, closeout evidence, and governance-learning
+  "search existing truth first" text. The failure surfaced through
+  `tests/integration/install/test_manager.py::test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_bundle`,
+  then the adjacent upgrade and product-repo install tests.
+- Follow-up Root Cause: The prior guidance compaction split root and scoped
+  guidance ownership correctly, but left exact contract parity dependent on
+  hand-kept strings across `install/agents.py` and `install/bootstrap_assets.py`.
+  The failed mechanism would have been either weakening the install assertions
+  or copying the entire scoped contract into the root block; both would repeat
+  earlier mistakes by hiding drift or growing always-loaded guidance.
+- Follow-up Solution: Keep root and scoped guidance intentionally distinct, but
+  make the install generators preserve the same behaviorally pinned contract:
+  task-term progress, no routine command narration, rare Insight/History/Risks
+  labels, evidence-backed closeout, consumer diagnosis boundaries, governance
+  learning, and exact "search existing truth first" custody. Do not add a new
+  prose tower; keep the proof in install/upgrade regression tests.
+- Follow-up Verification: The install guidance cluster passed on 2026-07-02:
+  `tests/integration/install/test_manager.py::test_install_bundle_bootstraps_customer_owned_tree_without_copying_product_bundle`,
+  `test_upgrade_install_resyncs_consumer_guidance_and_skills`,
+  `test_install_bundle_product_repo_preserves_source_owned_odylith_guidance_and_activates_maintainer_overlay`,
+  and `test_upgrade_resyncs_guidance_from_activated_runtime_assets`. The
+  confirmed-backlog decomposition import regression also passed via
+  `tests/unit/runtime/test_greenfield_confirmed_backlog_terms.py::test_greenfield_phrase_quality_normalizes_use_action_splices`.
+- Follow-up Guardrail: Guidance behavior validation also caught that root
+  guidance must carry the exact visible-intervention proof phrase
+  `show that Markdown directly`; generated root guidance must preserve that
+  phrase alongside `intervention-status` and `visible-intervention` rather than
+  paraphrasing it.
+
 - Prevention Update: Source-local maintainer launchers must not silently fall
   back to a pinned managed interpreter when proving unreleased engine work.
   Consumer installs keep the managed feature pack, but maintainer

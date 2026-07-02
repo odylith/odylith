@@ -1618,7 +1618,7 @@
   update regenerated component forensics with old raw event projection and
   reintroduced protected historical scenario terms into Registry custody.
   The source-local command
-  `PYTHONPATH=src .venv/bin/python -m odylith.cli governance sync-component-spec-requirements --repo-root .`
+  `odylith governance sync-component-spec-requirements --repo-root .`
   regenerated the same sidecars through the current neutralized forensics
   projector; the 285-term platform leakage guard then passed and the leaked
   terms disappeared from `odylith/registry/source/components`. Guardrail: in

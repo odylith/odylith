@@ -101,17 +101,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         description="Render odylith/atlas/atlas.html from catalog metadata",
     )
     parser.add_argument("--repo-root", default=".", help="Repository root")
-    parser.add_argument(
-        "--catalog",
-        default="odylith/atlas/source/catalog/diagrams.v1.json",
-        help="Diagram catalog metadata path",
-    )
+    parser.add_argument("--catalog", default="odylith/atlas/source/catalog/diagrams.v1.json", help="Diagram catalog metadata path")
     parser.add_argument("--output", default="odylith/atlas/atlas.html", help="HTML output path")
-    parser.add_argument(
-        "--traceability-graph",
-        default="odylith/radar/traceability-graph.v1.json",
-        help="Shared workstream traceability graph JSON path.",
-    )
+    parser.add_argument("--traceability-graph", default="odylith/radar/traceability-graph.v1.json", help="Shared workstream traceability graph JSON path.")
     parser.add_argument(
         "--max-review-age-days",
         type=int,
@@ -123,11 +115,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Fail with non-zero exit when one or more diagrams are stale",
     )
-    parser.add_argument(
-        "--check-only",
-        action="store_true",
-        help="Validate catalog + freshness without writing odylith/atlas/atlas.html.",
-    )
+    parser.add_argument("--check-only", action="store_true", help="Validate catalog + freshness without writing odylith/atlas/atlas.html.")
     parser.add_argument(
         "--diagram-id",
         action="append",

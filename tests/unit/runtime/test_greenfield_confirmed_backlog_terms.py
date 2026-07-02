@@ -3,9 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog import (
-    _proof_focus_summary,
     confirmed_backlog_rows,
     confirmed_workstream_titles,
+)
+from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language import (
+    proof_focus_summary,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import (
     looks_mechanical_summary,
@@ -90,7 +92,7 @@ def test_greenfield_phrase_quality_normalizes_use_action_splices() -> None:
     ) == "operator approval"
     assert looks_mechanical_summary("required actor identity and required validation context")
     assert word_occurrences("Required proof, source evidence, and required signoff.", "required") == 2
-    assert _proof_focus_summary("and final approval status") == "final approval status"
+    assert proof_focus_summary("and final approval status") == "final approval status"
 
 
 def test_confirmed_backlog_public_text_collapses_duplicate_neighbor_terms_generically() -> None:

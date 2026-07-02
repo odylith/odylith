@@ -22,7 +22,7 @@
 
 - Failure Signature: Last updated (UTC) header derived from local date instead of UTC date.
 
-- Trigger Path: PYTHONPATH=src .venv/bin/python -m odylith.cli sync --repo-root . --force --registry-policy-mode enforce-critical --enforce-deep-skills
+- Trigger Path: odylith sync --repo-root . --force --registry-policy-mode enforce-critical --enforce-deep-skills
 
 - Ownership: Radar legacy backlog normalization and governed sync.
 
