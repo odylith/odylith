@@ -564,6 +564,7 @@ def apply_greenfield_proposal(
     if isinstance(prewrite_build.package.proposal, Mapping):
         proposal = prewrite_build.package.proposal
     backlog_result = prewrite_build.backlog_result
+    completion_priority_write_policy = greenfield_apply_write.completion_priority_write_policy_from_manifest(post_confirm_manifest)
     with GreenfieldApplyTransaction(root) as transaction:
         ensure_greenfield_create_baseline(root)
         result = greenfield_apply_write.write_greenfield_proposal(
@@ -573,15 +574,30 @@ def apply_greenfield_proposal(
             tribunal=tribunal,
             backlog_result=backlog_result,
             prewrite_package=prewrite_build.package,
+            completion_priority_write_policy=completion_priority_write_policy,
         )
         transaction.commit()
-        result["post_confirm_quality_manifest"] = finalize_greenfield_post_confirm_manifest(
+        final_manifest = finalize_greenfield_post_confirm_manifest(
             post_confirm_manifest,
             whole_project_elapsed_seconds=time.perf_counter() - post_confirm_started,
             write_transaction_status="committed",
         )
+        final_write_debt = result.get("completion_priority_quality_debt")
+        if final_write_debt:
+            final_manifest["status"] = "passed_with_quality_debt"
+            final_manifest["stop_reason"] = "completion_priority_quality_debt"
+            completion_priority = (
+                dict(final_manifest["completion_priority"])
+                if isinstance(final_manifest.get("completion_priority"), Mapping)
+                else dict(completion_priority_write_policy or {})
+            )
+            completion_priority["final_write_quality_debt"] = list(final_write_debt)
+            completion_priority["final_write_quality_debt_count"] = len(final_write_debt)
+            completion_priority.setdefault("status", "write_allowed_with_projection_quality_debt")
+            completion_priority.setdefault("hard_blocker_count", 0)
+            final_manifest["completion_priority"] = completion_priority
+        result["post_confirm_quality_manifest"] = final_manifest
         return result
-
 
 def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="odylith greenfield", description="Preview and apply confirmation-gated greenfield product records.")

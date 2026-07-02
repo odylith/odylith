@@ -24,6 +24,15 @@ records only after explicit confirmation.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-01 · Implementation:** Fixed confirmed-intent inline label parsing for greenfield post-confirm create
+  - Scope: B-142
+  - Evidence: src/odylith/runtime/domain_intelligence/greenfield_confirmed_intent_sections.py
+- **2026-07-01 · Implementation:** Greenfield quality gates now allow Odylith-surface homonyms only when grounded in structured accepted intent, fixing a disposable create that falsely rejected a domain radar term while preserving ungrounded control-plane leak rejection.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-07-02-greenfield-control-plane-leak-gate-rejects-source-grounded-domain-homonyms.md, src/odylith/runtime/domain_intelligence/greenfield_quality_gate.py +1 more
+- **2026-07-01 · Implementation:** Greenfield post-confirm create now commits typed non-critical projection quality debt instead of rolling back governed records, while semantic, Tribunal, release, untyped, and quality-lens blockers still fail closed.
+  - Scope: B-142
+  - Evidence: odylith/casebook/bugs/2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md, odylith/casebook/bugs/2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md +2 more
 - **2026-07-01 · Implementation:** CB-214 source repair added scientific evaluation-depth intent custody, Atlas header/body result-label custody, and source-local create replays passed in 25s and 24s with governed writes and no adjacent result or evidence duplicates.
   - Scope: B-142
   - Evidence: odylith/casebook/bugs/2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md, src/odylith/runtime/domain_intelligence/greenfield_evaluation_semantics.py +1 more
@@ -33,17 +42,68 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-07-01 · Implementation:** CB-208 package repetition now emits source-owned typed occurrence metadata and ArtifactPlanIR repair targets instead of legacy package string routing.
   - Scope: B-142
   - Evidence: src/odylith/runtime/artifact_quality/greenfield_package_repetition.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_package_findings.py
-- **2026-06-30 · Implementation:** CB-213 fixed in source: greenfield Registry component-contract quality findings now resolve to executable ArtifactPlanIR paths, deterministic source patching avoids host timeout for localized contract outputs, and semantic-model mirrors sync atomically; saved gene-expression confirm replay passed in 29.797s with governed writes.
-  - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-07-01-greenfield-artifact-plan-rescue-accepts-non-executable-row-patch-facts.md +1 more
-- **2026-06-30 · Implementation:** Added safe host-ledger custody for greenfield natural structured rescue after 31ab2559 preserved standard benchmark wins but failed on raw rationale quote slop.
-  - Scope: B-142
-  - Evidence: src/odylith/runtime/common/safe_ledger_text.py, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py +2 more
-- **2026-06-30 · Implementation:** Greenfield source-local artifact QA found and fixed coordinated-action actor drift, card-specific dashboard repair routing, fresh source-launch rerender parity, and repeated clarity title shape; six non-reused source-local simulations now pass under 22s with Atlas and Registry validation green.
-  - Evidence: src/odylith/runtime/common/prose_grammar.py, src/odylith/runtime/domain_intelligence/greenfield_confirmed_backlog.py +1 more
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-07-02: Split confirmed-intent section parsing into a dedicated owner and fixed inline label-value confirmations. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-206`; Diagram: D-043)
+  The post-confirm create path now treats ordinary Product Intent Confirmation
+  lines such as `Title: ...`, `State object: ...`, `First complete path: ...`,
+  and `Proof boundary: ...` as structured sections instead of preamble or
+  previous-list continuation text. This prevents accepted human intent from
+  being polluted before SemanticModelIR and artifact plans are built. The
+  parser boundary now lives in `greenfield_confirmed_intent_sections.py`,
+  reducing `greenfield_confirmed_intent.py` below the 800-line soft limit and
+  pinning both heading-style and inline-label confirmations. The exact
+  scientific replay that previously failed before governed writes completed in
+  29.768 seconds with a clean passed manifest, zero issues, committed write
+  transaction, 4 Radar workstreams, 4 Registry specs, 6 Atlas diagrams, and
+  temp cleanup.
+
+- 2026-07-02: Fixed source-grounded control-plane homonym false positives. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-216`)
+  Greenfield quality gates still reject ungrounded Odylith surface names in
+  public product fields, but they now trust structured accepted-intent terms
+  across prompt, title, story, product view, state object, first path, proof
+  boundary, actors, systems, assumptions, ambiguities, and non-goals. The
+  arbitrary top-term cap was removed so short legitimate domain homonyms are
+  not lost behind verbose generated intent. A disposable source-local create
+  that previously failed on a grounded homonym completed in 27.511 seconds
+  with a clean passed manifest, committed writes, 4 backlog records, 3
+  components, 6 diagrams, and temp cleanup, while the existing ungrounded
+  control-plane leak regression still passes.
+
+- 2026-07-01: Added completion-priority quality-debt custody for post-confirm create. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-214`, `CB-215`; Diagrams: D-043, D-045)
+  Post-confirm create now distinguishes clean premium completion from governed
+  completion with explicit projection quality debt. The engine returns
+  `passed_with_quality_debt` only when every remaining issue is typed,
+  non-critical, projection-owned, and outside semantic, Tribunal, release,
+  untyped, and quality-lens custody after repair/rerender cannot make progress.
+  The final write phase receives the same policy, so component-spec,
+  next-step, and final package quality gates record final-write debt instead
+  of rolling back all governed records after they are staged. Clean prewrite
+  manifests also allow late persisted-projection copy debt to commit with
+  `completion_priority.final_write_quality_debt`; this keeps creation
+  first-priority without claiming a clean premium artifact pass. Focused proof
+  passed the post-confirm engine suite, projection-rerender/quality-repair
+  pack, selected hard-blocker checks, and apply-level create regressions for
+  prewrite-detected and final-write-only projection debt.
+
+- 2026-07-01: Clarified confirmed-create completion priority and proved deeper adversarial installed variance. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagrams: D-043, D-045, D-046)
+  Post-confirm governed projection completion is now the first invariant for
+  repairable failures: premium quality gates remain mandatory, but repairable
+  final-gate failures should drive bounded semantic or plan repair and retry
+  rather than strand the operator with only confirmed intent. This does not
+  weaken gates; it clarifies that fail-closed no-write is reserved for
+  genuinely non-repairable, unsafe, external, or budget-exhausted blockers.
+  Additional installed proof against the committed `da2643ed` local dist passed
+  eight fresh adversarial scientific, safety, security, environmental, and
+  engineering domains at hard 10/10 with zero issues, 32.544-34.524s standard
+  create times, complete governed records, browser proof, zero prompt findings,
+  and PM/architect/engineer/domain-expert lens passes. The first adversarial
+  run also captured a failed simulation mechanism: leakage fixtures must use
+  distinctive domain vocabulary, because generic phrases such as `reviewers
+  inspect` overlap legitimate platform prose and should be corrected in the
+  case file rather than weakening platform leakage custody.
 
 - 2026-07-01: Added schema-owned semantic patch targets and visible-copy source-casing custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-043)
   Greenfield post-confirm semantic repair targets are now registered through a

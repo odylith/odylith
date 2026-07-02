@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_project_intelligence import 
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import render_project_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks
 from odylith.runtime.domain_intelligence.greenfield_product_risks import risk_text_has_framework_leak
+from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
 from odylith.runtime.domain_intelligence.greenfield_transaction import GreenfieldApplyTransaction
 from odylith.runtime.domain_intelligence.greenfield_workstream_intelligence import render_domain_intelligence_section
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import proposal_risk_lines
@@ -1197,6 +1198,29 @@ def test_greenfield_apply_rejects_control_plane_terms_in_consumer_product_fields
     assert "greenfield public product content leaks Odylith control-plane term `Registry`" in message
     assert "greenfield public product content leaks Odylith control-plane term `Atlas`" in message
     assert "greenfield public product content leaks Odylith control-plane term `Compass`" in message
+
+
+def test_greenfield_quality_gate_allows_control_plane_homonym_from_accepted_intent() -> None:
+    proposal = {
+        "intent": {
+            "title": "Landslide Warning Review",
+            "first_path": (
+                "Field hydrologists combine rainfall radar, slope sensor readings, "
+                "soil moisture estimates, and inspection notes before publishing a warning status."
+            ),
+            "state_object": "Hillside segment warning record with rainfall radar evidence.",
+        },
+        "backlog": [
+            {
+                "title": "Let Field Hydrologists Review Rainfall Radar",
+                "problem": "Rainfall radar evidence is hard to compare with field inspection notes.",
+            }
+        ],
+    }
+
+    issues = greenfield_quality_issues(proposal)
+
+    assert not any("control-plane term `Radar`" in issue for issue in issues)
 
 
 def test_greenfield_apply_reports_validation_issues_in_one_batch(tmp_path) -> None:

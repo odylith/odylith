@@ -5,6 +5,7 @@ flowchart LR
       confirmable_stdout["Confirmable propose stdout<br/>concrete product intent,<br/>no host instructions or CLI envelope"]
       confirm["Single operator confirmation"]
       source_guard["Intent source boundary guard<br/>Original user intent block only,<br/>no host guidance or CLI envelope"]
+      intent_section_parser["Confirmed-intent section parser<br/>heading sections and inline label-value rows<br/>become structured intent fields<br/>before semantic projection"]
       prompt_recovery["Prompt-source recovery owner<br/>direct product containers,<br/>helper-relative actor/action clauses,<br/>actor-led gerund paths,<br/>semicolon purpose context,<br/>source punctuation preserved<br/>before generic fallback"]
       confirmed_ir["ConfirmedIntentIR<br/>section IDs, source spans,<br/>hash, provenance,<br/>grammatical object phrases"]
       non_goal_owner["Non-goal derivation owner<br/>proof, assumption, and ambiguity exclusions<br/>outside the completion parent"]
@@ -37,6 +38,7 @@ flowchart LR
       project_dashboard["Project dashboard preview<br/>fragment-safe source-launch prompts<br/>persisted into tooling payload"]
       draft_set["ArtifactDraftSet<br/>human-visible governed drafts"]
       source_casing_custody["Source-casing custody<br/>accepted acronym and mixed-case tokens<br/>restored in visible copy only;<br/>IDs, paths, component refs stay structural"]
+      control_plane_homonyms["Control-plane homonym custody<br/>Odylith surface names are blocked<br/>unless grounded in structured<br/>accepted product intent"]
       artifact_units["ArtifactQualityUnit stream<br/>projection id, source path,<br/>surface role, text kind,<br/>semantic node"]
       visible_actor_projection["Tribunal visible actor projection<br/>actor_source provenance,<br/>typed operator evidence,<br/>explicit many-hat allowance,<br/>role-specific generated labels,<br/>shared label custody"]
       validators["Deterministic validators<br/>schema, traceability,<br/>grammar, typed canonical repetition,<br/>source-owned package repetition,<br/>topology, Project prompt quality,<br/>typed generated-copy units,<br/>clipped terminal tails"]
@@ -86,13 +88,17 @@ flowchart LR
       natural_rescue_proof["Natural structured rescue proof<br/>explicit provider,<br/>non-probe repaired issue,<br/>safe planned Tribunal patch summary,<br/>typed clear operation allowed,<br/>90s budget gate"]
       selected_case_leakage["Release domain leakage custody<br/>declared case sentinels,<br/>filtered distinctive anchors,<br/>historical sentinels,<br/>and generated readback<br/>scan protected source, shipped guidance,<br/>wheel, and runtime archives;<br/>top-level proof JSON stays evidence"]
       registry_forensics_custody["Registry forensics custody<br/>component sidecars keep generic summaries,<br/>workstream scope, component IDs,<br/>and artifact counts only<br/>raw scenario prose stays in evidence surfaces"]
+      completion_debt["Completion-priority quality debt<br/>typed, non-critical projection issues only;<br/>semantic, Tribunal, release, untyped,<br/>and quality-lens findings still block"]
+      final_write_debt["Final-write debt ledger<br/>component-spec, next-step,<br/>or persisted package projection debt<br/>records without transaction rollback"]
     end
 
-    visible_intent --> confirmable_stdout --> confirm --> source_guard --> prompt_recovery --> confirmed_ir --> non_goal_owner --> sparse_systems --> public_system_copy
+    visible_intent --> confirmable_stdout --> confirm --> source_guard --> intent_section_parser --> prompt_recovery --> confirmed_ir --> non_goal_owner --> sparse_systems --> public_system_copy
     public_system_copy --> apply_input --> compiler --> semantic_ir --> evaluation_semantics --> actor_role_owner --> actor_path_role --> external_boundary --> sequence_owner --> subject_carry_guard --> result_language --> prose_shape_guard --> artifact_plan --> release_scope --> canonical_facts --> projection_contract --> semantic_patch_targets --> projections --> atlas_label_custody --> state_boundary_titles --> next_steps --> project_dashboard --> draft_set
-    draft_set --> source_casing_custody --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
+    draft_set --> source_casing_custody --> control_plane_homonyms --> artifact_units --> mermaid_source_units --> visible_actor_projection --> validators --> expert_lenses --> persisted_readback --> governed_readback --> evidence_readback --> typed_findings --> source_addresses --> projection_targets --> final_manifest
     typed_findings -- "untyped or legacy-only evidence" --> legacy_blockers --> rollback
     final_manifest -- "pass" --> writes --> proof_log --> surface_custody --> matrix_scorer --> release_matrix --> natural_rescue_proof --> selected_case_leakage --> registry_forensics_custody
+    final_manifest -- "typed projection quality debt" --> completion_debt --> writes
+    writes --> final_write_debt --> proof_log
     final_manifest -- "rendered scope drift" --> projection_rerender --> rerender
     final_manifest -- "repairable typed failure" --> repairable --> projection_targets --> source_addresses --> patchset --> executable_target
     executable_target -- "localized exact source fact" --> deterministic_source_patch --> plan_apply
@@ -121,10 +127,10 @@ flowchart LR
     classDef standard fill:#F8FAFC,stroke:#CBD5E1,color:#17233A,stroke-width:1.2px;
     classDef rescue fill:#FFF7ED,stroke:#FDBA74,color:#17233A,stroke-width:1.2px;
     classDef write fill:#F0FDF4,stroke:#86EFAC,color:#17233A,stroke-width:1.2px;
-    class visible_intent,confirmable_stdout,confirm,source_guard,prompt_recovery,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
-    class apply_input,compiler,semantic_ir,evaluation_semantics,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,semantic_patch_targets,projections,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,source_casing_custody,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
+    class visible_intent,confirmable_stdout,confirm,source_guard,intent_section_parser,prompt_recovery,confirmed_ir,non_goal_owner,sparse_systems,public_system_copy intent;
+    class apply_input,compiler,semantic_ir,evaluation_semantics,actor_role_owner,actor_path_role,external_boundary,sequence_owner,subject_carry_guard,result_language,prose_shape_guard,artifact_plan,release_scope,canonical_facts,projection_contract,semantic_patch_targets,projections,atlas_label_custody,state_boundary_titles,next_steps,project_dashboard,draft_set,source_casing_custody,control_plane_homonyms,artifact_units,mermaid_source_units,visible_actor_projection,validators,expert_lenses,persisted_readback,governed_readback,evidence_readback,typed_findings,source_addresses,projection_targets,legacy_blockers,final_manifest standard;
     class repairable,patchset,executable_target,deterministic_source_patch,rescue_budget,tribunal_planner,provider_adapter,strict_schema,custody_check,repair_manifest,semantic_apply,plan_apply,semantic_mirror_sync,scope_ledger,dashboard_rerender,projection_rerender,package_inspection,rerender rescue;
-    class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody write;
+    class writes,rollback,blockers,proof_log,surface_custody,matrix_scorer,release_matrix,natural_rescue_proof,selected_case_leakage,registry_forensics_custody,completion_debt,final_write_debt write;
 
     style accepted_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
     style standard_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#334155

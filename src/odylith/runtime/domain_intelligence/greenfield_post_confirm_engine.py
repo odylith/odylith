@@ -65,6 +65,7 @@ POST_CONFIRM_MAX_PASSES = 4
 POST_CONFIRM_RESCUE_MAX_PASSES = 6
 POST_CONFIRM_DEEP_MAX_PASSES = 8
 POST_CONFIRM_REPAIR_TIERS = ("auto", "standard", "rescue", "deep")
+POST_CONFIRM_COMPLETION_PRIORITY_STATUS = "passed_with_quality_debt"
 
 
 @dataclass(frozen=True)
@@ -339,6 +340,20 @@ def run_greenfield_post_confirm_engine(
         ),
         last_repair_patchset_request=last_repair_patchset_request,
     )
+    completion_debt = _completion_priority_debt_issues(classify_greenfield_post_confirm_issues(last_report))
+    if last_prewrite_build is not None and tribunal is not None and completion_debt:
+        manifest = _attach_completion_priority_debt(
+            manifest,
+            debt_issues=completion_debt,
+            stop_reason=stop_reason,
+        )
+        return GreenfieldPostConfirmEngineResult(
+            proposal=current,
+            tribunal=tribunal,
+            prewrite_build=last_prewrite_build,
+            report=last_report,
+            manifest=manifest,
+        )
     try:
         raise_for_failed_greenfield_completion(last_report)
     except ValueError as exc:
@@ -432,6 +447,69 @@ def _rescue_eligible(
     }
     repairable_types = {"semantic_patch", "plan_patch"}
     return any(issue.code in rescue_codes and issue.repairability in repairable_types for issue in issues)
+
+
+def _completion_priority_debt_issues(
+    issues: Sequence[GreenfieldPostConfirmIssue],
+) -> tuple[GreenfieldPostConfirmIssue, ...]:
+    """Return issues that may be committed as explicit projection quality debt."""
+
+    if not issues:
+        return ()
+    if any(not _completion_priority_debt_issue(issue) for issue in issues):
+        return ()
+    return tuple(issues)
+
+
+def _completion_priority_debt_issue(issue: GreenfieldPostConfirmIssue) -> bool:
+    if issue.repairability not in {"plan_patch", "projection_rerender"}:
+        return False
+    if issue.severity == "critical":
+        return False
+    if issue.code in {"missing_semantic_model", "semantic_alignment", "semantic_compiler", "semantic_drift"}:
+        return False
+    if issue.surface in {"release", "semantic_model", "tribunal"}:
+        return False
+    if issue.source in {"quality_lens", "semantic_compiler", "semantic_projection_alignment"}:
+        return False
+    allowed_codes = {
+        "artifact_shape_drift",
+        "atlas_render_quality",
+        "component_contract_quality",
+        "generated_copy_quality",
+        "package_repetition",
+        "proposal_quality_gate",
+    }
+    if issue.code not in allowed_codes:
+        return False
+    return bool(issue.projection_id and issue.projection_id != "review_report")
+
+
+def _attach_completion_priority_debt(
+    manifest: Mapping[str, Any],
+    *,
+    debt_issues: Sequence[GreenfieldPostConfirmIssue],
+    stop_reason: str,
+) -> dict[str, Any]:
+    payload = dict(manifest)
+    payload["status"] = POST_CONFIRM_COMPLETION_PRIORITY_STATUS
+    payload["stop_reason"] = "completion_priority_quality_debt"
+    payload["completion_priority"] = {
+        "status": "write_allowed_with_projection_quality_debt",
+        "policy": (
+            "post-confirm governed record creation takes priority after typed repair or rerender "
+            "cannot make progress on non-critical rendered-projection quality issues"
+        ),
+        "original_stop_reason": stop_reason,
+        "debt_issue_count": len(debt_issues),
+        "debt_issue_codes": sorted({issue.code for issue in debt_issues}),
+        "hard_blocker_count": 0,
+    }
+    transaction = dict(payload.get("write_transaction") if isinstance(payload.get("write_transaction"), Mapping) else {})
+    transaction["prewrite_clean_before_commit"] = False
+    transaction["quality_debt_guard"] = "typed_noncritical_projection_debt_only"
+    payload["write_transaction"] = transaction
+    return payload
 
 
 def _patchset_has_operations(patchset_request: Mapping[str, Any]) -> bool:
@@ -691,6 +769,7 @@ __all__ = [
     "GreenfieldPostConfirmIssue",
     "GreenfieldPostConfirmRepairContext",
     "POST_CONFIRM_BUDGET_SECONDS",
+    "POST_CONFIRM_COMPLETION_PRIORITY_STATUS",
     "POST_CONFIRM_DEEP_BUDGET_SECONDS",
     "POST_CONFIRM_ENGINE_VERSION",
     "POST_CONFIRM_MAX_PASSES",

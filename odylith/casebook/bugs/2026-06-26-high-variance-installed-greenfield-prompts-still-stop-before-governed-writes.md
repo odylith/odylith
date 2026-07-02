@@ -928,6 +928,33 @@
   `/Users/freedom/mock` after the runs. Natural host-model semantic rescue
   quality is still not proven by this synthetic rescue smoke and must stay a
   separate release-risk class.
+  Fresh source-local scientific variance on 2026-07-01 reopened the
+  post-confirm completion invariant. A gene-regulatory-network perturbation
+  review workspace failed before governed writes in about 25s because the final
+  gate reported `proposal.risks.2.statement leaked mixed actor-role casing`
+  and the confirmed Atlas `First Path Sequence` omitted the tail of the
+  accepted first path. This repeats the actor-role semantic slop and first-path
+  tail failure classes, but the new architectural learning is priority
+  ordering: non-critical projection quality findings must not strand a
+  confirmed project with only `confirmed-intent.md`. Semantic custody should
+  still be repaired at the model or typed-projection layer, but post-confirm
+  completion must commit governed records with an explicit quality-debt ledger
+  whenever the remaining findings are typed, non-critical projection defects.
+  Do not repeat failed mechanisms by adding domain vocabulary, weakening
+  semantic slop detection globally, or string-patching rendered prose after the
+  fact.
+  Source-local root-cause fix evidence: the failed scientific replay was not a
+  domain-generation failure after all; the confirmed-intent Markdown parser
+  failed to recognize ordinary inline section labels such as `Title: ...`,
+  `State object: ...`, `First complete path: ...`, and `Proof boundary: ...`.
+  That contaminated title, story, ambiguity, and first-path facts before
+  artifact projection. Section parsing now has a dedicated owner that accepts
+  both heading sections and inline label-value rows, and
+  `greenfield_confirmed_intent.py` no longer owns that parser block locally.
+  The exact source-local replay passed in 29.768s with a clean passed manifest,
+  zero issues, committed write transaction, 4 Radar workstreams, 4 Registry
+  specs, 6 Atlas diagrams, and temp repo cleanup. Regression proof:
+  `tests/unit/runtime/test_greenfield_confirmed_intent.py::test_confirmed_intent_parser_preserves_inline_label_sections_for_scientific_intent`.
   Post-proof scorer hardening evidence: `greenfield_matrix_package_evidence.py`
   now checks domain semantic term distribution across Radar, Registry, Atlas,
   and Project prompt surfaces. The regression fixture proves a globally

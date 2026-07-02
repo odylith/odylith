@@ -369,6 +369,11 @@ governed subsystem.
   dirty-file count. A local dist with an empty provenance commit can be useful
   for debugging, but it cannot support a release-readiness or local-install
   handoff claim.
+- Maintainer-local `*.sigstore.json` files are not production attestation proof
+  when they are placeholder `{}` payloads. Local install instructions may use
+  an explicit localhost skip-verify posture, but release-readiness narration
+  must distinguish checksum/provenance proof from canonical signed-attestation
+  proof.
 - Consumer posture must reject maintainer-only localhost asset overrides and
   Sigstore-bypass toggles; those controls are rehearsal-only and valid only in
   the product-repo maintainer lane.
@@ -585,6 +590,10 @@ This section captures synchronized requirement and contract signals derived from
   Hosted release builds keep the GitHub-provided SHA. Local install handoff now
   requires a rebuilt dist from the post-fix commit before release-readiness
   claims continue.
+  The follow-up `da2643ed` local dist passed that contract with clean
+  commit-bound provenance, 14/14 maintained installed matrix cases, 6/6
+  scientific variance cases, exact `grn-sim` replay, and explicit notation that
+  placeholder local Sigstore sidecars are not canonical attestation proof.
 
 - 2026-07-01: Added scientific evidence-depth readback to greenfield release scoring. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-045)
   The installed greenfield matrix now treats scientific/evaluation semantics as

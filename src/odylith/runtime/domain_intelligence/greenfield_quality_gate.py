@@ -76,6 +76,23 @@ _DIRECTIVE_LEAKS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("repo-root", re.compile(r"--repo-root\b", re.IGNORECASE)),
 )
 
+_INTENT_DOMAIN_TERM_KEYS = (
+    "prompt",
+    "title",
+    "summary",
+    "product_story",
+    "product_view",
+    "state_object",
+    "first_path",
+    "proof_boundary",
+    "human_actors",
+    "external_systems",
+    "internal_systems",
+    "assumptions",
+    "ambiguities",
+    "non_goals",
+)
+
 _GOVERNANCE_PREP_PHRASES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("execution spine before source exists", re.compile(r"\bexecution\s+spine\s+before\s+source\s+exists\b", re.IGNORECASE)),
     ("trace to product intent", re.compile(r"\btrace\s+to\s+product\s+intent\b", re.IGNORECASE)),
@@ -646,11 +663,8 @@ def _prompt_terms(proposal: Mapping[str, Any]) -> tuple[str, ...]:
     intent = proposal.get("intent")
     values: list[str] = []
     if isinstance(intent, Mapping):
-        values.extend(
-            clean_text(intent.get(key))
-            for key in ("prompt", "title", "summary")
-            if clean_text(intent.get(key))
-        )
+        for key in _INTENT_DOMAIN_TERM_KEYS:
+            values.extend(text_values(intent.get(key)))
     return _meaningful_terms(" ".join(values))
 
 
@@ -661,7 +675,7 @@ def _meaningful_terms(text: str) -> tuple[str, ...]:
             stopwords=_TERM_STOPWORDS,
             minimum=3,
             preserve_terms=_SHORT_DOMAIN_TERMS,
-        )[:12]
+        )
     )
 
 

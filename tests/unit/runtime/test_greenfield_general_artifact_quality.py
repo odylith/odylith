@@ -24,7 +24,6 @@ from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion impo
     build_greenfield_completion_report,
     build_greenfield_package_report,
 )
-from odylith.runtime.domain_intelligence.greenfield_post_confirm_engine import GreenfieldPostConfirmEngineError
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_semantic_drift import (
     contrastive_domain_drift_issues as _contrastive_domain_drift_issues,
 )
@@ -1329,7 +1328,10 @@ def test_greenfield_post_confirm_completion_fails_near_duplicate_generated_sente
     assert "semantic repetition" in "\n".join(report.issues)
 
 
-def test_greenfield_apply_fails_closed_when_renderer_keeps_emitting_malformed_copy(tmp_path: Path, monkeypatch) -> None:
+def test_greenfield_apply_commits_with_quality_debt_when_renderer_keeps_emitting_malformed_copy(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
     _seed_empty_governance_repo(tmp_path)
     proposal = _trip_comparison_proposal(tmp_path)
     original = greenfield_apply_components.render_prewrite_component_specs
@@ -1341,6 +1343,22 @@ def test_greenfield_apply_fails_closed_when_renderer_keeps_emitting_malformed_co
         return rendered
 
     monkeypatch.setattr(greenfield_apply_components, "render_prewrite_component_specs", corrupt_rendered_copy)
+    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_apply_write.component_authoring.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped_in_unit_test"},
+    )
     monkeypatch.setattr(
         greenfield_apply_write,
         "_refresh_greenfield_dashboard",
@@ -1351,21 +1369,81 @@ def test_greenfield_apply_fails_closed_when_renderer_keeps_emitting_malformed_co
         },
     )
 
-    with pytest.raises(GreenfieldPostConfirmEngineError) as exc_info:
-        greenfield_proposals.apply_greenfield_proposal(
-            repo_root=tmp_path,
-            proposal=proposal,
-            confirm=True,
-            release_selector="0.0.1",
-        )
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
 
-    manifest = exc_info.value.manifest
-    assert manifest["status"] == "failed"
-    assert manifest["write_transaction"]["status"] == "not_started"
+    manifest = result["post_confirm_quality_manifest"]
+    assert manifest["status"] == "passed_with_quality_debt"
+    assert manifest["validation_status"] == "failed"
+    assert manifest["write_transaction"]["status"] == "committed"
+    assert manifest["write_transaction"]["prewrite_clean_before_commit"] is False
+    assert manifest["completion_priority"]["status"] == "write_allowed_with_projection_quality_debt"
     assert "component_contract_quality" in manifest["issue_codes"]
     assert "safe_package_repair" not in json.dumps(manifest, sort_keys=True)
-    assert not list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
-    assert not list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
+
+
+def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_projection(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    _seed_empty_governance_repo(tmp_path)
+    proposal = _trip_comparison_proposal(tmp_path)
+
+    monkeypatch.setattr(greenfield_apply_write.owned_surface_refresh, "raise_for_failed_refreshes", lambda **_kwargs: None)
+    monkeypatch.setattr(
+        greenfield_apply_write.component_authoring.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        greenfield_apply_write.scaffold_mermaid_diagram.owned_surface_refresh,
+        "raise_for_failed_refresh",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_raise_for_greenfield_rendered_surface_custody",
+        lambda **_kwargs: {"status": "skipped_in_unit_test"},
+    )
+    monkeypatch.setattr(
+        greenfield_apply_write,
+        "_refresh_greenfield_dashboard",
+        lambda **_kwargs: {
+            "status": "passed",
+            "surfaces": ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"],
+            "view": "odylith/index.html?tab=project",
+        },
+    )
+
+    def final_copy_issues(scope: str, _value: object) -> tuple[str, ...]:
+        if scope == "operator next-steps final memory":
+            return ("operator next-steps final memory leaked adjacent duplicate word prose",)
+        return ()
+
+    monkeypatch.setattr(greenfield_apply_write, "generated_public_copy_issues", final_copy_issues)
+
+    result = greenfield_proposals.apply_greenfield_proposal(
+        repo_root=tmp_path,
+        proposal=proposal,
+        confirm=True,
+        release_selector="0.0.1",
+    )
+
+    manifest = result["post_confirm_quality_manifest"]
+    assert manifest["status"] == "passed_with_quality_debt"
+    assert manifest["validation_status"] == "passed"
+    assert manifest["write_transaction"]["status"] == "committed"
+    assert manifest["completion_priority"]["final_write_quality_debt"] == [
+        "final next steps quality: operator next-steps final memory leaked adjacent duplicate word prose"
+    ]
+    assert list((tmp_path / "odylith/radar/source/ideas").glob("**/*.md"))
+    assert list((tmp_path / "odylith/registry/source/components").glob("*/CURRENT_SPEC.md"))
 
 
 def _prewrite_backlog_result(proposal: dict[str, object]) -> dict[str, object]:

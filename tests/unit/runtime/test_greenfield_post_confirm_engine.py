@@ -675,6 +675,61 @@ def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: py
     assert len(manifest["pass_records"]) == 2
 
 
+def test_post_confirm_engine_commits_noncritical_projection_quality_debt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    package = GreenfieldCompletionPackage(proposal={}, release_selector="0.0.1")
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"rendered_atlas_sources": 2},
+        tribunal_status="passed",
+        issues=("Atlas Mermaid `flow.mmd` repeats adjacent word near `result result`",),
+        findings=(
+            review_finding(
+                code="generated_copy_quality",
+                surface="atlas",
+                target_path="prewrite_package.rendered_atlas_sources::flow.mmd",
+                projection_id="atlas",
+                semantic_node_id="ArtifactPlanIR.atlas",
+                severity="medium",
+                repairability="plan_patch",
+                owner="atlas_renderer",
+                source="package_quality",
+                message="Atlas Mermaid `flow.mmd` repeats adjacent word near `result result`",
+            ),
+        ),
+    )
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        engine,
+        "inspect_greenfield_package",
+        lambda current: SimpleNamespace(package=current, initial_report=report, report=report, passes=0, changed=False),
+    )
+
+    result = engine.run_greenfield_post_confirm_engine(
+        proposal={},
+        release_selector="0.0.1",
+        build_prewrite=lambda _proposal, _tribunal: SimpleNamespace(package=package, backlog_result={}),
+        repair_proposal=lambda current, _context: current,
+        proposal_ready=True,
+        max_passes=3,
+    )
+
+    manifest = result.manifest
+    assert manifest["status"] == engine.POST_CONFIRM_COMPLETION_PRIORITY_STATUS
+    assert manifest["validation_status"] == "failed"
+    assert manifest["stop_reason"] == "completion_priority_quality_debt"
+    assert manifest["completion_priority"]["status"] == "write_allowed_with_projection_quality_debt"
+    assert manifest["completion_priority"]["debt_issue_codes"] == ["generated_copy_quality"]
+    assert manifest["completion_priority"]["hard_blocker_count"] == 0
+    assert manifest["write_transaction"]["prewrite_clean_before_commit"] is False
+    assert manifest["write_transaction"]["quality_debt_guard"] == "typed_noncritical_projection_debt_only"
+
+
 def test_post_confirm_engine_passes_quality_lens_context_to_semantic_repair(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -53,6 +53,8 @@ flowchart LR
       dashboard_rerender["Project dashboard rerender<br/>source previews rebuild dashboard,<br/>not rendered body patches"]
       package_inspection["Read-only package inspection<br/>duplicate words, dangling tails,<br/>and cross-artifact repetition stay source-owned<br/>until SemanticModelIR or ArtifactPlanIR is repaired"]
       final_gate["Final package gate<br/>same validators, no lowered bar"]
+      quality_debt["Completion-priority quality debt<br/>typed non-critical projection debt<br/>after repair/rerender no-progress<br/>or late persisted-copy quality"]
+      debt_manifest["Explicit debt manifest<br/>passed_with_quality_debt,<br/>final-write debt ledger,<br/>no clean premium claim"]
       governed_write["Governed writes<br/>only after manifest passes"]
     end
 
@@ -101,6 +103,7 @@ flowchart LR
     package_findings --> package_inspection
     dashboard_rerender --> final_gate
     package_inspection --> final_gate
+    final_gate -- "typed projection debt only" --> quality_debt --> debt_manifest --> governed_write
     final_gate --> governed_write
 
     classDef intent fill:#EFF6FF,stroke:#BFD7FE,color:#17233A,stroke-width:1px;
@@ -110,7 +113,7 @@ flowchart LR
     class accepted_path,prompt_material_custody,actor_roles,actor_recovery,actor_path_role,subject_carry_guard,purpose_context,action_boundary,semantic_contract,external_boundary,sequence_owner,tail_custody,visible_result_owner,modal_owner intent;
     class shape_checks,gerund_owner,actor_role_head_guard,structural_filter,repetition_gate prose;
     class radar_projection,state_boundary_titles,actor_choice_copy,atlas_projection,mermaid_label_custody,label_action_grammar,next_step_prompts,overlap_projection,artifact_units,mermaid_label_gate,mermaid_source_units,canonical_facts,tribunal_actors,evaluation_readback,package_findings projection;
-    class semantic_plan_patch,source_address,projection_repair_targets,dashboard_rerender,package_inspection,final_gate,governed_write repair;
+    class semantic_plan_patch,source_address,projection_repair_targets,dashboard_rerender,package_inspection,final_gate,quality_debt,debt_manifest,governed_write repair;
 
     style intent_lane fill:#FBFDFF,stroke:#BFD7FE,stroke-width:1px,color:#334155
     style prose_lane fill:#FBFDFF,stroke:#CBD5E1,stroke-width:1px,color:#334155

@@ -50,9 +50,11 @@ def write_greenfield_proposal(
     tribunal: Any,
     backlog_result: Mapping[str, Any],
     prewrite_package: GreenfieldCompletionPackage | None = None,
+    completion_priority_write_policy: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Apply accepted Radar, Registry, Atlas, release, and memory records."""
 
+    completion_quality_debt: list[str] = []
     source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
     if source_text:
         restored_proposal = greenfield_source_casing.restore_source_casing_in_public_copy(
@@ -204,7 +206,13 @@ def write_greenfield_proposal(
             rendered_component_specs=rendered_component_specs,
         )
         components_created.append(created.as_dict())
-    _raise_for_component_spec_quality(root=root, proposal=proposal, components=components_created)
+    _raise_for_component_spec_quality(
+        root=root,
+        proposal=proposal,
+        components=components_created,
+        completion_priority_write_policy=completion_priority_write_policy,
+        completion_quality_debt=completion_quality_debt,
+    )
 
     release_id = "none"
     if isinstance(release_targeting, Mapping):
@@ -223,7 +231,11 @@ def write_greenfield_proposal(
         )
         if isinstance(restored_next_steps, Mapping):
             next_steps = restored_next_steps
-    _raise_for_final_next_steps_quality(next_steps)
+    _raise_for_final_next_steps_quality(
+        next_steps,
+        completion_priority_write_policy=completion_priority_write_policy,
+        completion_quality_debt=completion_quality_debt,
+    )
     memory_record = record_greenfield_acceptance(
         repo_root=root,
         proposal=proposal,
@@ -249,6 +261,8 @@ def write_greenfield_proposal(
         diagram_rows=diagram_rows,
         memory_record=memory_record,
         next_steps=next_steps,
+        completion_priority_write_policy=completion_priority_write_policy,
+        completion_quality_debt=completion_quality_debt,
     )
     brand_asset_paths = brand_assets.ensure_brand_assets(repo_root=root)
     try:
@@ -285,6 +299,7 @@ def write_greenfield_proposal(
         "prewrite_safety": dict(prewrite_package.prewrite_safety_preview or {}) if prewrite_package else {},
         "release_bootstrap": release_bootstrap or {"created": False, "release": {}},
         "release_target": release_targeting or {"selector": release_selector, "release_id": "none", "events": []},
+        "completion_priority_quality_debt": completion_quality_debt,
     }
 
 
@@ -398,6 +413,8 @@ def _raise_for_final_package_quality(
     diagram_rows: Sequence[Mapping[str, Any]],
     memory_record: Mapping[str, Any],
     next_steps: Mapping[str, Any],
+    completion_priority_write_policy: Mapping[str, Any] | None = None,
+    completion_quality_debt: list[str] | None = None,
 ) -> None:
     accepted_project_preview = _read_json_mapping(root / "odylith/runtime/source/accepted-project.v1.json")
     project_dashboard_preview = project_intelligence_builder.build_project_intelligence_payload(
@@ -438,17 +455,32 @@ def _raise_for_final_package_quality(
         ]
     )
     if issues:
-        detail = "\n".join(f"- {issue}" for issue in issues)
-        raise ValueError(f"greenfield post-confirm final write quality failed with {len(issues)} issue(s):\n{detail}")
+        _record_or_raise_completion_quality_debt(
+            issues,
+            error_prefix="greenfield post-confirm final write quality failed",
+            debt_prefix="final write quality",
+            completion_priority_write_policy=completion_priority_write_policy,
+            completion_quality_debt=completion_quality_debt,
+        )
 
 
-def _raise_for_final_next_steps_quality(next_steps: Mapping[str, Any]) -> None:
+def _raise_for_final_next_steps_quality(
+    next_steps: Mapping[str, Any],
+    *,
+    completion_priority_write_policy: Mapping[str, Any] | None = None,
+    completion_quality_debt: list[str] | None = None,
+) -> None:
     issues = dedupe_strings(
         generated_public_copy_issues("operator next-steps final memory", next_steps)
     )
     if issues:
-        detail = "\n".join(f"- {issue}" for issue in issues)
-        raise ValueError(f"greenfield post-confirm final next steps quality failed with {len(issues)} issue(s):\n{detail}")
+        _record_or_raise_completion_quality_debt(
+            issues,
+            error_prefix="greenfield post-confirm final next steps quality failed",
+            debt_prefix="final next steps quality",
+            completion_priority_write_policy=completion_priority_write_policy,
+            completion_quality_debt=completion_quality_debt,
+        )
 
 
 def _actual_component_specs(*, root: Path, components: Sequence[Mapping[str, Any]]) -> dict[str, str]:
@@ -676,6 +708,8 @@ def _raise_for_component_spec_quality(
     root: Path,
     proposal: Mapping[str, Any],
     components: Sequence[Mapping[str, Any]],
+    completion_priority_write_policy: Mapping[str, Any] | None = None,
+    completion_quality_debt: list[str] | None = None,
 ) -> None:
     specs: dict[str, str] = {}
     for component in components:
@@ -691,11 +725,65 @@ def _raise_for_component_spec_quality(
     title = str(intent.get("title", "")).strip()
     issues = rendered_component_spec_quality_issues(specs, project_title=title)
     if issues:
-        detail = "\n".join(f"- {issue}" for issue in operator_component_spec_issues(issues))
-        raise ValueError(f"greenfield component spec quality gate failed with {len(issues)} issue(s):\n{detail}")
+        _record_or_raise_completion_quality_debt(
+            operator_component_spec_issues(issues),
+            error_prefix="greenfield component spec quality gate failed",
+            debt_prefix="component spec quality",
+            completion_priority_write_policy=completion_priority_write_policy,
+            completion_quality_debt=completion_quality_debt,
+        )
+
+
+def _record_or_raise_completion_quality_debt(
+    issues: Sequence[str],
+    *,
+    error_prefix: str,
+    debt_prefix: str,
+    completion_priority_write_policy: Mapping[str, Any] | None,
+    completion_quality_debt: list[str] | None,
+) -> None:
+    if not issues:
+        return
+    issue_rows = dedupe_strings(str(issue) for issue in issues if str(issue).strip())
+    if not issue_rows:
+        return
+    if _completion_priority_write_allowed(completion_priority_write_policy):
+        if completion_quality_debt is not None:
+            completion_quality_debt.extend(f"{debt_prefix}: {issue}" for issue in issue_rows)
+        return
+    detail = "\n".join(f"- {issue}" for issue in issue_rows)
+    raise ValueError(f"{error_prefix} with {len(issue_rows)} issue(s):\n{detail}")
+
+
+def _completion_priority_write_allowed(policy: Mapping[str, Any] | None) -> bool:
+    return bool(
+        isinstance(policy, Mapping)
+        and str(policy.get("status", "")).strip() == "write_allowed_with_projection_quality_debt"
+        and int(policy.get("hard_blocker_count", 1) or 0) == 0
+    )
+
+
+def completion_priority_write_policy_from_manifest(manifest: Mapping[str, Any]) -> Mapping[str, Any] | None:
+    priority = manifest.get("completion_priority") if isinstance(manifest.get("completion_priority"), Mapping) else None
+    if priority is not None:
+        return priority
+    if str(manifest.get("status", "")).strip() != "passed":
+        return None
+    return {
+        "status": "write_allowed_with_projection_quality_debt",
+        "policy": (
+            "post-confirm governed record creation takes priority when a final persisted-projection "
+            "quality gate finds non-critical debt after a clean prewrite manifest"
+        ),
+        "original_stop_reason": str(manifest.get("stop_reason", "")).strip() or "passed",
+        "debt_issue_count": 0,
+        "debt_issue_codes": [],
+        "hard_blocker_count": 0,
+    }
 
 
 __all__ = [
+    "completion_priority_write_policy_from_manifest",
     "release_assignment_note",
     "write_greenfield_proposal",
 ]

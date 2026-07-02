@@ -30,12 +30,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 139,
-    "mapped_workstream_evidence_count": 125,
+    "explicit_event_count": 140,
+    "mapped_workstream_evidence_count": 126,
     "recent_path_match_count": 0,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 139
+    "timeline_event_count": 140
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -44,6 +44,46 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 4,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3",
+        "tracked_artifact_4"
+      ],
+      "confidence": "high",
+      "event_index": 805,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "kind": "implementation",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release",
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Implementation evidence linked this component to governed work. workstream scope preserved; 4 tracked artifact references retained.",
+      "ts_iso": "2026-07-01T20:45:36-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 0,
       "artifacts": [],

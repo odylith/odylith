@@ -54,6 +54,26 @@ vocabulary, or degraded packages.
 - Do not grow regex/template towers as the semantic repair strategy. Regex may
   support mechanical parsing and tokenization only behind named owners.
 
+## Current Architecture Risk
+
+- Behavioral proof is strong, but a perfect brittleness claim is not yet
+  honest. A 2026-07-01 source audit across
+  `src/odylith/runtime/domain_intelligence`, `src/odylith/runtime/artifact_quality`,
+  and `scripts/release` found 105 of 172 scanned files with regex, template,
+  or direct string-repair markers and 1,568 marker lines. Some of those uses are
+  acceptable mechanical parsing or tokenization, but the remaining cleanup must
+  separate mechanical parsing from semantic authority more aggressively before
+  the architecture can claim zero-brittle posture.
+- Source-size pressure remains material in the same slice: 15 scanned files are
+  above the 800-line soft limit and one release script is above 1200 lines.
+  Future hardening should decompose by ownership and remove semantic decision
+  authority from regex-heavy modules without disturbing the proven
+  post-confirm completion path.
+- The next architecture pass should preserve the completion-first invariant:
+  repairable post-confirm quality failures must prefer bounded semantic or plan
+  repair and retry over no-write failure, while keeping no-write failure for
+  non-repairable, unsafe, external, or budget-exhausted blockers.
+
 ## Related Bugs
 
 - [CB-207](../../../casebook/bugs/2026-06-26-greenfield-post-confirm-package-repair-repeats-risk-prose-across-surfaces.md)
@@ -65,6 +85,27 @@ vocabulary, or degraded packages.
   rendered-prose mutation.
 
 ## Latest Simulation Evidence
+
+- 2026-07-01 committed-head dist `da2643edecc66e403a9e070d7976a2033248e5bd`
+  is behaviorally release-strong for local skip-verify installation: maintained
+  installed proof passed 14/14 standard domains at 27.616-34.472s, synthetic
+  rescue at 42.568s, and natural structured rescue at 74.053s; scientific
+  variance passed 6/6 at 29.023-33.698s; exact saved `grn-sim` replay committed
+  governed records in 31.15s with 4 Radar, 5 Registry, 6 Atlas, all expert
+  lenses, Atlas refresh, and zero repeated visible-copy signatures. A follow-up
+  adversarial installed matrix added eight fresh domains -- neural prosthetic
+  calibration, wildfire smoke assimilation, quantum error correction,
+  groundwater contaminant plume, pharmacovigilance signal adjudication,
+  cryptographic protocol verification, crop heat stress genomics, and surgical
+  robotics validation -- and passed 8/8 at hard 10/10 with zero issues,
+  browser proof, complete governed records, zero prompt findings, and
+  32.544-34.524s standard create times. One failed simulation mechanism was
+  captured before the pass: selected leakage vocabulary must be distinctive
+  domain vocabulary, not generic source-overlapping phrases such as `reviewers
+  inspect`. Product priority is now explicit: for repairable failures,
+  post-confirm governed projection completion outranks stopping on quality; the
+  quality gate should trigger bounded repair and retry, while no-write remains
+  reserved for non-repairable, unsafe, external, or budget-exhausted blockers.
 
 - 2026-07-01 rebuilt installed release proof against committed checkpoint
   `5b94bd8f` reclaimed the CB-207 package-repetition gate. The fresh
@@ -2412,3 +2453,57 @@ vocabulary, or degraded packages.
       is final release-level: after checkpoint spacing permits commit/push,
       rebuild a committed-head dist and rerun the maintained installed matrix
       before claiming release posture.
+- [x] Implement completion-priority quality-debt custody for non-critical
+      projection defects.
+      Product priority was clarified: post-confirm governed record creation is
+      the first invariant, while premium artifact quality remains mandatory and
+      visible as debt when it is not clean. The root cause was two-layered:
+      `run_greenfield_post_confirm_engine` refused to return when only typed
+      rendered-projection quality findings remained after repair/rerender
+      no-progress, and `write_greenfield_proposal` could still raise inside
+      `GreenfieldApplyTransaction` on component-spec, next-step, or final
+      package quality after records were staged, rolling everything back. The
+      source fix adds a `passed_with_quality_debt` manifest state for typed,
+      non-critical, projection-owned debt only. Critical, semantic, Tribunal,
+      release, untyped, and quality-lens findings still block. Final writes
+      carry the same policy and record `completion_priority.final_write_quality_debt`
+      instead of erasing the project for late persisted-projection polish
+      failures. This is explicitly not a clean premium pass; it is governed
+      completion plus an exact debt ledger. Focused proof passed the new engine
+      debt regression plus semantic/no-executable hard-blocker checks, the full
+      post-confirm engine suite, the projection-rerender and quality-repair
+      pack, selected package hard-blocker checks, and two apply-level create
+      regressions proving prewrite-detected component-contract debt and
+      final-write-only next-step debt both commit governed records while
+      exposing the debt in the manifest.
+- [x] Fix source-grounded control-plane homonym false positives.
+      A disposable source-local landslide validation create exposed CB-216:
+      a legitimate domain word that is also an Odylith surface name was
+      present in accepted intent, but the quality gate's trusted term cone was
+      too narrow and truncated ordered source terms to twelve entries. The
+      gate then misclassified the grounded homonym as Odylith control-plane
+      leakage and stopped before governed writes. The fix expands the trusted
+      source cone to structured accepted-intent fields and removes the
+      arbitrary top-term cap, while preserving ungrounded Radar, Registry,
+      Atlas, Compass, and Tribunal leak rejection. Targeted proof passed the
+      homonym allowance and ungrounded control-plane rejection tests, and the
+      original disposable create then completed in 27.511 seconds outer time
+      with manifest passed, validation passed, issue_count 0, committed write
+      transaction, 4 backlog records, 3 components, 6 diagrams, and temp
+      cleanup.
+- [x] Fix confirmed-intent inline label parsing before semantic projection.
+      Fresh scientific variance reopened CB-206 because the Markdown
+      confirmed-intent loader recognized heading-only sections but not common
+      inline label-value rows such as `Title: ...`, `State object: ...`,
+      `First complete path: ...`, and `Proof boundary: ...`. The accepted
+      intent was therefore contaminated before the semantic compiler saw it:
+      title labels leaked into title text, state/proof copy moved into adjacent
+      fields, and the generated package failed on actor-role semantic slop plus
+      First Path Sequence tail loss. The fix extracts confirmed-intent section
+      parsing into `greenfield_confirmed_intent_sections.py`, supports both
+      heading sections and inline label rows, and leaves
+      `greenfield_confirmed_intent.py` below the 800-line soft limit. Targeted
+      regression proof passed, and the exact source-local scientific replay
+      completed in 29.768 seconds with a clean passed manifest, zero issues,
+      committed write transaction, 4 Radar workstreams, 4 Registry specs,
+      6 Atlas diagrams, and temp cleanup.

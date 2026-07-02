@@ -138,6 +138,72 @@ Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prom
     assert intent["internal_systems"]
 
 
+def test_confirmed_intent_parser_preserves_inline_label_sections_for_scientific_intent(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield project for a gene regulatory network perturbation review workspace that helps "
+        "computational biologists compare intervention simulations against expression evidence, uncertainty bands, "
+        "baseline models, and reproducibility checks before a lab lead approves follow-up experiments."
+    )
+    intent = parse_confirmed_intent_text(
+        """# Product Intent Confirmation
+
+Title: Gene Regulatory Network Perturbation Review Workspace
+
+Product story: Computational biologists need a workspace that compares gene regulatory network intervention simulations against observed expression evidence, baseline models, uncertainty bands, and reproducibility checks before a lab lead approves follow-up experiments. The product should help reviewers understand which simulated perturbations are supported, which assumptions remain weak, and what evidence must be reproduced before any experimental recommendation is made.
+
+State object: Perturbation review record containing the candidate intervention, target genes, input expression dataset reference, baseline model, simulation parameters, uncertainty interval, reviewer decision, and reproducibility proof status.
+
+First complete path: A computational biologist imports a candidate perturbation, selects the expression evidence and baseline model, runs or records the simulation comparison, reviews uncertainty and sensitivity notes, flags unsupported claims, and sends the review record to the lab lead for approval or rejection.
+
+Human actors:
+- Computational biologist
+- Lab lead
+- Reproducibility reviewer
+
+External systems:
+- Expression evidence repository
+- Simulation runtime
+- Versioned notebook or model registry
+
+Internal product systems:
+- Perturbation review workspace
+- Evidence comparison ledger
+- Uncertainty and reproducibility checklist
+- Approval record publisher
+
+Critical assumptions:
+- The product tracks evidence and review state; it does not claim biological truth on its own.
+- Simulation outputs must be traceable to parameters, model version, and input data reference.
+- Lab approval depends on reproducibility and uncertainty review, not only a high-scoring model output.
+
+Ambiguities:
+- Whether the first release imports expression evidence directly or records external dataset references.
+- Which simulation runtime is canonical for the first release.
+
+Proof boundary: The first release is proven when a reviewer can create a perturbation review record, attach expression evidence and baseline metadata, compare simulation output with uncertainty notes, route the record for lab-lead approval, and preserve reproducibility evidence without making unsupported scientific claims.
+""",
+        prompt=prompt,
+    )
+
+    assert intent["title"] == "Gene Regulatory Network Perturbation Review Workspace"
+    assert not intent["title"].startswith("Title:")
+    assert intent["state_object"].startswith("Perturbation review record")
+    assert intent["first_path"].startswith("A computational biologist imports")
+    assert intent["proof_boundary"].startswith("The first release is proven")
+    assert not any("Proof boundary:" in ambiguity for ambiguity in intent["ambiguities"])
+
+    proposal = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+        require_completion_ready=True,
+    )
+    report = build_greenfield_completion_report(proposal, release_selector="0.0.1")
+
+    assert report.passed, "\n".join(report.issues)
+
+
 def test_confirmed_intent_parser_classifies_deferred_system_rows_as_external() -> None:
     intent = parse_confirmed_intent_text(
         """# Regional Drone Corridor Safety Console
