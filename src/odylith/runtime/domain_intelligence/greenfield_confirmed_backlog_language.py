@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 import re
 
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
@@ -14,6 +15,8 @@ from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import h
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import _has_mechanical_need_to_turn
+from odylith.runtime.domain_intelligence.greenfield_text import clean_text as _clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import text_values as _text_values
 
 
 _BACKLOG_TERM_STOPWORDS = frozenset(
@@ -218,6 +221,111 @@ def proof_focus_phrase(value: str, *, fallback: str) -> str:
         return fallback
     candidates.sort(reverse=True)
     return candidates[0][2]
+
+
+def compact_workstream_title_connector(value: str) -> str:
+    text = value.strip()
+    marker = "while keeping "
+    search_from = 0
+    while True:
+        index = text.casefold().find(marker, search_from)
+        if index < 0:
+            return text
+        if index > 0 and text[index - 1].isalnum():
+            search_from = index + len(marker)
+            continue
+        before = text[:index].rstrip()
+        after = text[index + len(marker) :].lstrip()
+        text = f"{before} with {after}".strip() if before else f"with {after}".strip()
+        search_from = max(len(before), 0)
+
+
+def dedupe_capability_phrase(value: str) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
+    if not text:
+        return ""
+    clauses = [part.strip(" ,") for part in re.split(r",\s+|\s+and\s+", text) if part.strip(" ,")]
+    if len(clauses) <= 1:
+        return text
+    seen: set[str] = set()
+    unique: list[str] = []
+    for clause in clauses:
+        key = _capability_clause_key(clause)
+        if key and key in seen:
+            continue
+        if key:
+            seen.add(key)
+        unique.append(clause)
+    if len(unique) == len(clauses):
+        return text
+    if len(unique) == 1:
+        return unique[0]
+    if len(unique) == 2:
+        return f"{unique[0]} and {unique[1]}"
+    return f"{', '.join(unique[:-1])}, and {unique[-1]}"
+
+
+def metric_capability_summary(value: str) -> str:
+    text = _strip_leading_connector(_clean_text(value).strip(" ."))
+    if text.casefold().startswith("the "):
+        tail = text[4:].strip(" .")
+        first_tail_word = tail.split(maxsplit=1)[0] if tail else ""
+        if first_tail_word[:1].islower():
+            text = tail
+    if not text:
+        return "the promised first-path result"
+    parts = []
+    for part in _text_values(text, split_scalar=True, split_commas=True):
+        part = part.strip(" .")
+        part = _strip_leading_connector(part)
+        if part:
+            parts.append(part)
+    if len(parts) >= 2 and any(looks_like_action_clause(part) for part in parts):
+        return "the completed first-path actions"
+    if len(parts) >= 3:
+        return f"{parts[0]} through the promised result"
+    if len(parts) == 2:
+        return f"{parts[0]} and {parts[1]}"
+    return parts[0] if parts else text
+
+
+def evidence_scope_phrase(value: str, *, actor: str) -> str:
+    text = _strip_leading_connector(_clean_text(value).strip(" ."))
+    if not text:
+        return "the promised first-path result"
+    lowered = text.casefold()
+    if lowered.startswith(("a ", "an ", "one ", "the ", "this ", "that ")):
+        return text
+    actor_subject = _clean_text(actor).strip(" .") or "the user"
+    if re.match(r"^(?:a|an|the|one|this|that|each)\s+", actor_subject, flags=re.IGNORECASE):
+        actor_subject = actor_subject[:1].casefold() + actor_subject[1:]
+    elif re.match(r"^(?:people|users|customers|operators|reviewers)\b", actor_subject, flags=re.IGNORECASE):
+        actor_subject = actor_subject[:1].casefold() + actor_subject[1:]
+    else:
+        actor_subject = f"the {actor_subject[:1].casefold()}{actor_subject[1:]}"
+    if lowered.startswith("can "):
+        return f"the path where {actor_subject} {text}"
+    if looks_like_action_clause(text):
+        return f"the path where {actor_subject} can {text}"
+    return f"the first-path evidence for {text}"
+
+
+def proof_focus_summary(value: str) -> str:
+    text = _strip_leading_connector(_clean_text(value).strip(" ."))
+    if not text:
+        return "review evidence"
+    parts: list[str] = []
+    for part in _text_values(text, split_scalar=True, split_commas=True):
+        parts.extend(
+            normalized
+            for candidate in part.split(" and ")
+            if (normalized := _strip_leading_connector(candidate.strip(" .")))
+        )
+    if len(parts) >= 3:
+        return f"{parts[0]}, {parts[1]}, and {parts[2]}"
+    if len(parts) == 2:
+        return f"{parts[0]} and {parts[1]}"
+    return parts[0] if parts else text
 
 
 def rationale_lines(
@@ -539,12 +647,39 @@ def _too_similar(left: str, right: str) -> bool:
     return overlap >= 0.65
 
 
+def _strip_leading_connector(value: str) -> str:
+    text = _clean_text(value).strip(" .")
+    lowered = text.casefold()
+    for connector in ("and", "or", "then", "but"):
+        prefix = f"{connector} "
+        if lowered.startswith(prefix):
+            return text[len(prefix) :].strip(" .")
+    return text
+
+
+def _capability_clause_key(value: str) -> str:
+    tokens: list[str] = []
+    for raw in re.sub(r"[-/]", " ", str(value or "")).split():
+        token = raw.strip(".,:;()[]{}").casefold()
+        if len(token) < 4:
+            continue
+        if token in {"prove", "proves", "proved", "proven", "proof"}:
+            token = "proof"
+        tokens.append(token)
+    return " ".join(tokens)
+
+
 __all__ = [
+    "compact_workstream_title_connector",
+    "dedupe_capability_phrase",
     "drop_adjacent_duplicate_words",
+    "evidence_scope_phrase",
     "has_problem_tension",
     "looks_mechanical_summary",
+    "metric_capability_summary",
     "proof_claim_summary",
     "proof_focus_phrase",
+    "proof_focus_summary",
     "rationale_deferred_focus",
     "rationale_lines",
     "rationale_proof_focus",

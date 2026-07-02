@@ -138,9 +138,9 @@ def _context(
     story = _product_sentence(intent.get("product_story")) or _product_sentence(objective)
     problem = _product_sentence(intent.get("problem")) or _project_line(project, "problem") or _problem_from_story(story)
     resolved_outcome = (
-        _outcome_from_text(first_path)
-        or _product_sentence(outcome)
+        _product_sentence(outcome)
         or _project_line(project, "user or stakeholder outcome")
+        or _outcome_from_text(first_path)
         or _outcome_from_text(story)
         or _product_sentence(intent.get("state_object"))
     )

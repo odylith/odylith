@@ -7,8 +7,8 @@ import re
 from typing import Any
 
 from odylith.runtime.analysis_engine.types import slugify
-from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_actions as backlog_actions
+from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_language as backlog_language
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
     outcome_action_phrase as _outcome_action_phrase,
@@ -30,8 +30,6 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label as _title_label
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
-from odylith.runtime.domain_intelligence.greenfield_text import clean_text as _clean_text
-from odylith.runtime.domain_intelligence.greenfield_text import text_values as _text_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
@@ -110,25 +108,8 @@ def _state_label_already_names_clarity(value: str) -> bool:
 
 
 def _workstream_title_label(value: str) -> str:
-    text = _compact_workstream_title_connector(str(value or ""))
+    text = backlog_language.compact_workstream_title_connector(str(value or ""))
     return _title_label(text) or text
-
-
-def _compact_workstream_title_connector(value: str) -> str:
-    text = value.strip()
-    marker = "while keeping "
-    search_from = 0
-    while True:
-        index = text.casefold().find(marker, search_from)
-        if index < 0:
-            return text
-        if index > 0 and text[index - 1].isalnum():
-            search_from = index + len(marker)
-            continue
-        before = text[:index].rstrip()
-        after = text[index + len(marker) :].lstrip()
-        text = f"{before} with {after}".strip() if before else f"with {after}".strip()
-        search_from = max(len(before), 0)
 
 
 def _malformed_workflow_title_action(value: str) -> bool:
@@ -303,7 +284,7 @@ def confirmed_backlog_rows(
     evidence_label = _domain_object_label(evidence_record, fallback=evidence_record)
     first_release_human_actors = backlog_text.first_release_actor_rows(human_actors)
     problem_summary = _problem_text(label=label, problem=problem, product_story=product_story, first_path=first_path)
-    problem_summary = _first_release_problem_summary(problem_summary, human_actors)
+    problem_summary = backlog_text.first_release_problem_summary(problem_summary, human_actors)
     opportunity_summary = _short_summary(opportunity, limit=360)
     product_view_summary = _short_summary(product_view, limit=360)
     first_path_summary = _short_summary(first_path, limit=380)
@@ -339,7 +320,7 @@ def confirmed_backlog_rows(
     first_path_capability = backlog_text.capability_action_clause(
         primary_user_action or backlog_text.sentence_fragment(clauses.capability_chain) or first_path_entry_text
     )
-    first_path_full_capability = _dedupe_capability_phrase(
+    first_path_full_capability = backlog_language.dedupe_capability_phrase(
         backlog_text.capability_action_clause(backlog_text.sentence_fragment(clauses.capability_chain) or first_path_capability)
     )
     outcome_summary = backlog_text.sentence_fragment(clauses.visible_result) or backlog_text.first_path_outcome(first_path_summary, proof_boundary=proof_boundary)
@@ -348,7 +329,7 @@ def confirmed_backlog_rows(
     state_responsibility = backlog_actions.state_responsibility_label(state_label)
     dependency_outcome = outcome_summary or "the promised first-path result"
     first_path_action = backlog_text.capability_action_clause(primary_user_action or first_path_entry_text or first_path_capability)
-    first_path_proof_capability = _dedupe_capability_phrase(
+    first_path_proof_capability = backlog_language.dedupe_capability_phrase(
         first_path_capability_phrase(
             first_path_for_clauses,
             fallback=first_path_action,
@@ -369,10 +350,10 @@ def confirmed_backlog_rows(
         max_steps=5,
         include_visible_results=True,
     )
-    metric_first_path_proof_capability = _metric_capability_summary(metric_first_path_proof_text)
+    metric_first_path_proof_capability = backlog_language.metric_capability_summary(metric_first_path_proof_text)
     path_entry_story = backlog_text.sentence_fragment(first_path_entry_text or first_path_capability or first_path_summary)
     workflow_actor_label = backlog_text.lead_actor_label(first_release_human_actors) or f"{label} user"
-    metric_evidence_scope = _evidence_scope_phrase(
+    metric_evidence_scope = backlog_language.evidence_scope_phrase(
         metric_first_path_proof_capability,
         actor=workflow_actor_label,
     )
@@ -485,7 +466,7 @@ def confirmed_backlog_rows(
         if actor_owned_outcome_event
         else (
             "keeps the saved result reviewable"
-            if _outcome_repeats_action(
+            if backlog_text.outcome_repeats_action(
                 action=workflow_action,
                 outcome=outcome_summary,
                 outcome_action=outcome_action,
@@ -499,7 +480,7 @@ def confirmed_backlog_rows(
         if actor_owned_outcome_event
         else (
             f"The first interaction proves this path: {metric_first_path_proof_capability}. It also keeps the saved result reviewable."
-            if _outcome_repeats_action(
+            if backlog_text.outcome_repeats_action(
                 action=metric_first_path_proof_capability,
                 outcome=outcome_summary,
                 outcome_action=outcome_action,
@@ -643,7 +624,7 @@ def confirmed_backlog_rows(
         ),
         product_view=(
             f"{proof_component} explains why the outcome can be trusted. "
-            f"It connects {state_label}, validation output, and {_proof_focus_summary(proof_focus)} to the promised result: {outcome_summary}."
+            f"It connects {state_label}, validation output, and {backlog_language.proof_focus_summary(proof_focus)} to the promised result: {outcome_summary}."
         ),
         first_slice=(
             f"Produce one {proof_record_label} that links the first path, {_sentence_label(state_label)}, and validation result to release scope."
@@ -676,141 +657,6 @@ def confirmed_backlog_rows(
         non_goals=non_goals,
     )
     return [parent, workflow, boundary, proof]
-
-
-def _first_release_problem_summary(value: str, human_actors: list[str]) -> str:
-    if not value:
-        return ""
-    deferred_labels = [
-        backlog_text.actor_label(actor)
-        for actor in human_actors
-        if backlog_text.is_deferred_actor(actor) and backlog_text.actor_label(actor)
-    ]
-    if _mentions_actor_label(value, deferred_labels):
-        return ""
-    return value
-
-
-def _mentions_actor_label(value: str, labels: list[str]) -> bool:
-    text = str(value or "").casefold()
-    for label in labels:
-        normalized = str(label or "").strip(" .").casefold()
-        if normalized and normalized in text:
-            return True
-    return False
-
-
-def _dedupe_capability_phrase(value: str) -> str:
-    text = re.sub(r"\s+", " ", str(value or "")).strip(" .")
-    if not text:
-        return ""
-    clauses = [part.strip(" ,") for part in re.split(r",\s+|\s+and\s+", text) if part.strip(" ,")]
-    if len(clauses) <= 1:
-        return text
-    seen: set[str] = set()
-    unique: list[str] = []
-    for clause in clauses:
-        key = _capability_clause_key(clause)
-        if key and key in seen:
-            continue
-        if key:
-            seen.add(key)
-        unique.append(clause)
-    if len(unique) == len(clauses):
-        return text
-    if len(unique) == 1:
-        return unique[0]
-    if len(unique) == 2:
-        return f"{unique[0]} and {unique[1]}"
-    return f"{', '.join(unique[:-1])}, and {unique[-1]}"
-
-
-def _metric_capability_summary(value: str) -> str:
-    text = _strip_leading_connector(_clean_text(value).strip(" ."))
-    if text.casefold().startswith("the "):
-        tail = text[4:].strip(" .")
-        first_tail_word = tail.split(maxsplit=1)[0] if tail else ""
-        if first_tail_word[:1].islower():
-            text = tail
-    if not text:
-        return "the promised first-path result"
-    parts = []
-    for part in _text_values(text, split_scalar=True, split_commas=True):
-        part = part.strip(" .")
-        part = _strip_leading_connector(part)
-        if part:
-            parts.append(part)
-    if len(parts) >= 2 and any(looks_like_action_clause(part) for part in parts):
-        return "the completed first-path actions"
-    if len(parts) >= 3:
-        return f"{parts[0]} through the promised result"
-    if len(parts) == 2:
-        return f"{parts[0]} and {parts[1]}"
-    return parts[0] if parts else text
-
-
-def _evidence_scope_phrase(value: str, *, actor: str) -> str:
-    text = _strip_leading_connector(_clean_text(value).strip(" ."))
-    if not text:
-        return "the promised first-path result"
-    lowered = text.casefold()
-    if lowered.startswith(("a ", "an ", "one ", "the ", "this ", "that ")):
-        return text
-    actor_subject = backlog_text.problem_actor_subject(actor, fallback="the user").casefold()
-    if lowered.startswith("can "):
-        return f"the path where {actor_subject} {text}"
-    if looks_like_action_clause(text):
-        return f"the path where {actor_subject} can {text}"
-    return f"the first-path evidence for {text}"
-
-
-def _proof_focus_summary(value: str) -> str:
-    text = _strip_leading_connector(_clean_text(value).strip(" ."))
-    if not text:
-        return "review evidence"
-    parts: list[str] = []
-    for part in _text_values(text, split_scalar=True, split_commas=True):
-        parts.extend(
-            normalized
-            for candidate in part.split(" and ")
-            if (normalized := _strip_leading_connector(candidate.strip(" .")))
-        )
-    if len(parts) >= 3:
-        return f"{parts[0]}, {parts[1]}, and {parts[2]}"
-    if len(parts) == 2:
-        return f"{parts[0]} and {parts[1]}"
-    return parts[0] if parts else text
-
-
-def _strip_leading_connector(value: str) -> str:
-    text = _clean_text(value).strip(" .")
-    lowered = text.casefold()
-    for connector in ("and", "or", "then", "but"):
-        prefix = f"{connector} "
-        if lowered.startswith(prefix):
-            return text[len(prefix) :].strip(" .")
-    return text
-
-
-def _capability_clause_key(value: str) -> str:
-    tokens: list[str] = []
-    for raw in re.sub(r"[-/]", " ", str(value or "")).split():
-        token = raw.strip(".,:;()[]{}").casefold()
-        if len(token) < 4:
-            continue
-        if token in {"prove", "proves", "proved", "proven", "proof"}:
-            token = "proof"
-        tokens.append(token)
-    return " ".join(tokens)
-
-
-def _outcome_repeats_action(*, action: str, outcome: str, outcome_action: str) -> bool:
-    return bool(
-        (outcome and backlog_text.result_terms_covered(outcome, action))
-        or (outcome_action and backlog_text.result_terms_covered(outcome_action, action))
-        or (outcome and backlog_text.shares_product_terms(action, outcome))
-        or (outcome_action and backlog_text.shares_product_terms(action, outcome_action))
-    )
 
 
 __all__ = [

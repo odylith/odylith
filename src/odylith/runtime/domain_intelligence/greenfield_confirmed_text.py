@@ -230,6 +230,31 @@ _TITLE_HYPHEN_MODIFIERS = {
     "user",
     "write",
 }
+_TITLE_HYPHEN_ROLE_TERMS = {
+    "admin",
+    "administrator",
+    "advocate",
+    "analyst",
+    "author",
+    "chair",
+    "coordinator",
+    "editor",
+    "engineer",
+    "lead",
+    "maintainer",
+    "manager",
+    "member",
+    "operator",
+    "owner",
+    "researcher",
+    "reviewer",
+    "scientist",
+    "user",
+}
+_TITLE_HYPHEN_OBJECT_HEADS = {
+    "model",
+    "timeline",
+}
 
 
 def compact_text(value: str) -> str:
@@ -746,11 +771,13 @@ def _system_label_split_clips_noun_phrase(candidate: str, tail: str) -> bool:
 
 def title_label(value: str) -> str:
     words = []
-    for index, word in enumerate(compact_text(value).strip(" .").split()):
+    raw_words = compact_text(value).strip(" .").split()
+    for index, word in enumerate(raw_words):
         lower = word.casefold()
         if index == 0 and lower in {"a", "an", "the"}:
             continue
-        label_word = _title_label_word(word)
+        next_word = raw_words[index + 1] if index + 1 < len(raw_words) else ""
+        label_word = _title_label_word(word, next_word=next_word)
         if _append_slash_conjunction_title_word(words, raw_word=word, label_word=label_word):
             continue
         if lower in _TITLE_CONNECTOR_WORDS and words:
@@ -778,7 +805,7 @@ def _append_slash_conjunction_title_word(words: list[str], *, raw_word: str, lab
     return True
 
 
-def _title_label_word(value: str) -> str:
+def _title_label_word(value: str, *, next_word: str = "") -> str:
     word = value.strip()
     if not word:
         return ""
@@ -804,7 +831,7 @@ def _title_label_word(value: str) -> str:
         return prefix + word + suffix
     if lower in _TITLE_ACRONYMS:
         return prefix + lower.upper() + suffix
-    if _should_split_human_hyphen_label(word):
+    if _should_split_human_hyphen_label(word, next_word=next_word):
         return prefix + " ".join(_title_label_word(part) for part in word.split("-") if part) + suffix
     return prefix + word[:1].upper() + word[1:] + suffix
 
@@ -895,7 +922,7 @@ def _strip_state_object_predicate(value: str) -> str:
     return text
 
 
-def _should_split_human_hyphen_label(value: str) -> bool:
+def _should_split_human_hyphen_label(value: str, *, next_word: str = "") -> bool:
     if "-" not in value or "/" in value:
         return False
     parts = [part for part in value.split("-") if part]
@@ -907,6 +934,13 @@ def _should_split_human_hyphen_label(value: str) -> bool:
     if lowered[0] in _TITLE_HYPHEN_MODIFIERS:
         return False
     if any(part.endswith(("ed", "ing")) for part in lowered[1:]):
+        return False
+    next_lower = clean_confirmed_text(next_word).casefold().strip(".,;:()[]{}")
+    if not (
+        set(lowered) & _TITLE_HYPHEN_ROLE_TERMS
+        or next_lower in _TITLE_HYPHEN_ROLE_TERMS
+        or next_lower in _TITLE_HYPHEN_OBJECT_HEADS
+    ):
         return False
     return all(re.fullmatch(r"[A-Za-z0-9]+(?:'[A-Za-z0-9]+)?", part) for part in parts)
 

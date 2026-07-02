@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from odylith.runtime.domain_intelligence import greenfield_component_semantic_context as semantic_context
+from odylith.runtime.domain_intelligence import greenfield_component_semantic_contract_support as contract_support
 from odylith.runtime.domain_intelligence.greenfield_component_contract_fields import (
     accepted_inputs_text as _accepted_inputs_text,
     component_shell_artifact as _component_shell_artifact,
@@ -50,36 +51,8 @@ from odylith.runtime.domain_intelligence.greenfield_component_term_windows impor
     literal_label_terms as _literal_label_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
-from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_action_splice_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
-
-_PROOF_OBLIGATION_TERMS = frozenset(
-    {
-        "access",
-        "actor",
-        "audit",
-        "authorized",
-        "blocked",
-        "cannot",
-        "consent",
-        "hidden",
-        "invalid",
-        "missing",
-        "mutate",
-        "permission",
-        "privacy",
-        "reject",
-        "rejected",
-        "required",
-        "role",
-        "safety",
-        "traceable",
-        "unauthorized",
-        "visible",
-        "view",
-    }
-)
 
 
 @dataclass(frozen=True)
@@ -121,7 +94,11 @@ def derive_component_semantic_contract(
     description_phrases = unique_text([*relation_phrases, *protected_description_phrases, *description_phrases])
     label_terms = _content_terms(label)
     description_terms = _content_terms(description)
-    context_terms = _context_contract_terms(proposal_context, label_terms=label_terms, description_terms=description_terms)
+    context_terms = contract_support.context_contract_terms(
+        proposal_context,
+        label_terms=label_terms,
+        description_terms=description_terms,
+    )
     contract_terms = (*label_terms, *description_terms, *context_terms)
     context_phrases = semantic_context.context_object_phrases(
         proposal_context,
@@ -231,10 +208,10 @@ def derive_component_semantic_contract(
         context_text=transition_context,
         anchor_terms=unique_text([*label_terms, *description_terms]),
     )
-    transition_result = _result_like_transition_phrase(states)
+    transition_result = contract_support.result_like_transition_phrase(states)
     critical = _component_kind_echo_safe_phrase(
         label=label,
-        phrase=transition_result or _result_like_phrase(output_focus) or critical,
+        phrase=transition_result or contract_support.result_like_phrase(output_focus) or critical,
     )
     sibling_label = _label(sibling) if isinstance(sibling, Mapping) else ""
     handoff_label = next_label or "release review"
@@ -251,7 +228,7 @@ def derive_component_semantic_contract(
     proof = unique_text(
         [
             *proof,
-            *_local_proof_boundary_rows(
+            *contract_support.local_proof_boundary_rows(
                 label=label,
                 proof_boundary=proof_boundary,
                 label_terms=label_terms,
@@ -298,7 +275,7 @@ def derive_component_semantic_contract(
         else "built from the wrong inputs"
     )
     critical_noun = _noun_slot_artifact_phrase(critical)
-    fields = _sanitize_contract_fields(
+    fields = contract_support.sanitize_contract_fields(
         {
             "owned_state": _contract_list_text(*owned_seed),
             "accepted_inputs": _accepted_inputs_text(input_focus),
@@ -309,81 +286,14 @@ def derive_component_semantic_contract(
             "upstream_truth": _upstream_truth(previous_label),
             "downstream_consumers": next_label or "release review",
             "unique_failure": (
-                f"{label} can mislead users if {critical_noun} {_present_verb(critical_noun, singular='is', plural='are')} missing, stale, {failure_cause}, "
+                f"{label} can mislead users if {critical_noun} {contract_support.present_verb(critical_noun, singular='is', plural='are')} missing, stale, {failure_cause}, "
                 "or shown without enough explanation to recover"
             ),
         }
     )
+    fields = contract_support.restore_protected_phrase_surface(fields, protected_description_phrases)
     confidence = len(object_phrases) * 3 + len(action_terms) * 2 + min(len(local_terms), 8)
     return SemanticComponentContract(fields=fields, confidence=confidence, local_terms=tuple(local_terms))
-
-
-def _sanitize_contract_fields(fields: Mapping[str, Any]) -> dict[str, Any]:
-    sanitized: dict[str, Any] = {}
-    for key, value in fields.items():
-        if isinstance(value, list):
-            sanitized[key] = [normalize_action_splice_phrase(str(item)) for item in value]
-        elif isinstance(value, tuple):
-            sanitized[key] = tuple(normalize_action_splice_phrase(str(item)) for item in value)
-        elif isinstance(value, str):
-            sanitized[key] = normalize_action_splice_phrase(value)
-        else:
-            sanitized[key] = value
-    return sanitized
-
-
-def _result_like_phrase(value: str) -> str:
-    result_terms = {
-        "answer",
-        "decision",
-        "estimate",
-        "evidence",
-        "number",
-        "outcome",
-        "output",
-        "recommendation",
-        "result",
-        "score",
-        "suggestion",
-        "summary",
-    }
-    best_score = 0
-    best = ""
-    for part in _clean(value).split(","):
-        text = _dedupe_adjacent_words(_clean_artifact_phrase(part))
-        if not text or _status_only_artifact_fragment(text):
-            continue
-        terms = set(_content_terms(text))
-        score = len(terms & result_terms) * 10
-        if "result" in terms:
-            score += 20
-        if "recommendation" in terms or "suggestion" in terms or "decision" in terms:
-            score += 12
-        if score > best_score:
-            best_score = score
-            best = text
-    return best
-
-
-def _result_like_transition_phrase(value: str) -> str:
-    result = _result_like_phrase(value)
-    pattern = (
-        r"\s+(?:accepted|blocked|calculated|computed|converted|created|generated|logged|"
-        r"received|returned|shown|updated|validated)\b$"
-    )
-    return re.sub(pattern, "", result, flags=re.IGNORECASE).strip(" .") if result else ""
-
-
-def _dedupe_adjacent_words(value: str) -> str:
-    words = _clean(value).split()
-    result: list[str] = []
-    for word in words:
-        current = word.casefold().strip(".,;:")
-        previous = result[-1].casefold().strip(".,;:") if result else ""
-        if current and current == previous:
-            continue
-        result.append(word)
-    return " ".join(result).strip(" .,;")
 
 
 def _label(row: Mapping[str, Any] | None) -> str:
@@ -464,67 +374,6 @@ def _proof_boundary_text(proposal: Mapping[str, Any]) -> str:
         )
         if _clean(value)
     )
-
-
-def _local_proof_boundary_rows(
-    *,
-    label: str,
-    proof_boundary: str,
-    label_terms: Sequence[str],
-    description_terms: Sequence[str],
-) -> list[str]:
-    local_terms = set(label_terms) | set(description_terms)
-    if not proof_boundary or not local_terms:
-        return []
-    rows: list[str] = []
-    for clause in semantic_context.clauses(_proof_boundary_obligation_text(proof_boundary)):
-        if not _proof_boundary_clause_belongs_to_component(clause, local_terms=local_terms):
-            continue
-        rows.append(f"Proof boundary evidence for {label}: {_sentence_clause(clause)}")
-        if len(rows) >= 2:
-            break
-    return rows
-
-
-def _proof_boundary_obligation_text(value: str) -> str:
-    text = _clean(value).strip(" .")
-    text = re.sub(
-        r"^(?:the\s+)?(?:first\s+)?release(?:\s+[A-Za-z0-9_.-]+)?\s+"
-        r"(?:succeeds|works|passes|is\s+trusted|is\s+proven)\s+when\s+",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    )
-    return text.strip(" .")
-
-
-def _proof_boundary_clause_belongs_to_component(clause: str, *, local_terms: set[str]) -> bool:
-    terms = set(_content_terms(clause))
-    if len(terms) < 3:
-        return False
-    obligation_overlap = bool(terms & _PROOF_OBLIGATION_TERMS)
-    local_overlap = terms & local_terms
-    return obligation_overlap and (len(local_overlap) >= 2 or (len(local_overlap) >= 1 and len(terms) <= 8))
-
-
-def _sentence_clause(value: str) -> str:
-    text = _clean(value).strip(" .")
-    if not text:
-        return "local proof obligation remains reviewable."
-    return f"{text.rstrip('.')}."
-
-
-def _context_contract_terms(value: str, *, label_terms: Sequence[str], description_terms: Sequence[str]) -> tuple[str, ...]:
-    context_terms = set(_content_terms(value))
-    local_terms = set(label_terms) | set(description_terms)
-    if context_terms & {"adjust", "adjusted", "adjusting", "adjustment"} and local_terms & {
-        "decision",
-        "plan",
-        "rationale",
-        "target",
-    }:
-        return ("adjustment",)
-    return ()
 
 
 def _object_phrases(clauses: Sequence[str], *, fallback: str) -> list[str]:
@@ -885,18 +734,6 @@ def _drop_subsumed_singletons(values: Sequence[str]) -> list[str]:
 
 def _clean(value: Any) -> str:
     return clean_artifact_text(value, split_parentheses=True)
-
-
-def _present_verb(value: str, *, singular: str, plural: str) -> str:
-    words = [word.casefold() for word in re.findall(r"[a-z][a-z'-]*", _clean(value))]
-    if not words:
-        return singular
-    head = next((word for word in reversed(words) if word not in {"context", "detail", "evidence", "state"}), words[-1])
-    if head.endswith("s") and head not in {"status", "process"}:
-        return plural
-    if " and " in f" {_clean(value).casefold()} ":
-        return plural
-    return singular
 
 
 __all__ = ["SemanticComponentContract", "derive_component_semantic_contract"]

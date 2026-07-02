@@ -9,6 +9,7 @@ from typing import Any
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence import greenfield_component_contract_profiles as contract_profiles
+from odylith.runtime.domain_intelligence import greenfield_component_semantic_contract_support as contract_support
 from odylith.runtime.domain_intelligence.greenfield_component_contract_quality import (
     CONTRACT_KEYS,
     component_contract_issues,
@@ -190,13 +191,17 @@ def _specialized_contract_with_semantic_proof(
     semantic_fields: Mapping[str, Any],
     label: str,
 ) -> dict[str, Any]:
-    normalized = normalize_contract(contract)
+    profile_fields = normalize_contract(contract)
     if not (_semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields)):
-        return _with_required_local_proof_floor(normalized, label=label)
-    normalized["local_proof"] = list(unique_text([*text_values(normalized.get("local_proof")), *text_values(semantic_fields.get("local_proof"))]))
-    semantic_failure = _sentence(semantic_fields.get("unique_failure"))
-    if semantic_failure:
-        normalized["unique_failure"] = semantic_failure
+        return _with_required_local_proof_floor(profile_fields, label=label)
+    normalized = dict(semantic_fields)
+    normalized["local_proof"] = contract_support.prioritize_local_proof_rows(
+        unique_text([*text_values(normalized.get("local_proof")), *text_values(profile_fields.get("local_proof"))])
+    )
+    normalized = contract_support.restore_protected_phrase_surface(
+        normalized,
+        tuple(getattr(semantic_contract, "local_terms", ()) or ()),
+    )
     return _with_required_local_proof_floor(normalized, label=label)
 
 

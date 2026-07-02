@@ -125,6 +125,28 @@ def first_release_actor_rows(values: list[str] | None) -> list[str]:
     return first_release or rows
 
 
+def first_release_problem_summary(value: str, human_actors: list[str]) -> str:
+    if not value:
+        return ""
+    deferred_labels = [
+        actor_label(actor)
+        for actor in human_actors
+        if is_deferred_actor(actor) and actor_label(actor)
+    ]
+    if _mentions_actor_label(value, deferred_labels):
+        return ""
+    return value
+
+
+def _mentions_actor_label(value: str, labels: list[str]) -> bool:
+    text = str(value or "").casefold()
+    for label in labels:
+        normalized = str(label or "").strip(" .").casefold()
+        if normalized and normalized in text:
+            return True
+    return False
+
+
 def is_deferred_actor(value: str) -> bool:
     text = _compact_text(value).casefold()
     return bool(text and any(marker in text for marker in _DEFERRED_ACTOR_MARKERS))
@@ -441,6 +463,15 @@ def problem_actor_subject(actors: str, *, fallback: str) -> str:
     if re.match(r"^(?:people|users|customers|operators|reviewers)\b", lowered):
         return text[:1].upper() + text[1:]
     return f"The {_lower_actor_label_start(text)}"
+
+
+def outcome_repeats_action(*, action: str, outcome: str, outcome_action: str) -> bool:
+    return bool(
+        (outcome and result_terms_covered(outcome, action))
+        or (outcome_action and result_terms_covered(outcome_action, action))
+        or (outcome and shares_product_terms(action, outcome))
+        or (outcome_action and shares_product_terms(action, outcome_action))
+    )
 
 
 def inline_actor_subject(value: str, *, fallback: str = "the user") -> str:

@@ -2507,3 +2507,26 @@ vocabulary, or degraded packages.
       completed in 29.768 seconds with a clean passed manifest, zero issues,
       committed write transaction, 4 Radar workstreams, 4 Registry specs,
       6 Atlas diagrams, and temp cleanup.
+- [x] Make specialized Registry component contracts semantic-first.
+      The broader source-local quality suite exposed a remaining CB-217
+      mechanism after the proof-floor fix: specialized document/status profiles
+      could still replace ready semantic component contracts, flatten protected
+      source phrase surfaces, and bury explicit proof-boundary/access
+      obligations after supplemental profile proof rows. The fix keeps
+      `greenfield_component_contract.py` below the 800-line guard, moves source
+      phrase restoration and proof-row ordering into
+      `greenfield_component_semantic_contract_support.py`, and makes ready
+      semantic contracts authoritative while profiles provide fallback fields or
+      supplemental proof only. Targeted profile/proof regressions passed, and
+      the widened greenfield quality suite passed 129 tests in 28.00 seconds.
+
+- [x] Make shared confirmed title labels context-aware instead of globally
+      splitting or preserving hyphenated tokens.
+      The widened confirmed-surface suite exposed a CB-198 label-custody
+      failure where `revision-round management` was flattened by an over-broad
+      human-label splitter, while the first fix over-preserved object labels
+      such as neck-pain timelines and titration-schedule models. The confirmed
+      text owner now uses adjacent title-token context to split human-role and
+      object-head compounds while preserving source-owned workflow compounds.
+      Focused label regressions passed 23 tests in 15.71 seconds, and the
+      widened confirmed artifact suite passed 74 tests in 631.93 seconds.

@@ -46,6 +46,26 @@ This section captures synchronized requirement and contract signals derived from
 
 ## Feature History
 
+- 2026-07-02: Tightened confirmed title-label hyphen custody with contextual semantics. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-198`; Diagram: D-043)
+  Confirmed-text label projection now distinguishes human-role compounds,
+  object-head compounds, and source-owned workflow compounds before deciding
+  whether a hyphenated token should become visible spacing. This keeps
+  peer-review workflow labels such as `revision-round management` source-faithful
+  while retaining readable object labels such as neck-pain timelines and
+  titration-schedule models. Focused label regressions passed 23 tests, and the
+  widened confirmed artifact suite passed 74 tests in 631.93 seconds.
+
+- 2026-07-02: Made specialized Registry component contracts semantic-first. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-217`; Diagram: D-043)
+  Specialized document/status component profiles now use complete semantic
+  component contracts as the returned source of truth instead of replacing
+  them with profile-shaped prose. Profile contracts remain available as
+  fallback and supplemental proof only. The shared semantic-contract support
+  owner restores protected source phrase surfaces from the compiler term
+  ledger and orders local proof rows so explicit proof-boundary and access
+  obligations stay visible in rendered Registry specs. Focused profile/proof
+  regressions passed, and the widened greenfield quality suite passed 129
+  tests in 28.00 seconds.
+
 - 2026-07-02: Fixed semantic result source-priority and terminal-event custody for sparse confirmed paths. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`; Diagrams: D-043, D-045)
   Greenfield semantic compilation now nominalizes terse terminal event results
   such as `publishes proof` into action-state visible results, ranks valid
