@@ -15,6 +15,9 @@ from typing import Any
 from odylith.runtime.common.safe_ledger_text import safe_ledger_value
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_string_list
+from odylith.runtime.artifact_quality.greenfield_package_repetition import (
+    package_repetition_sample_matches_source_truth,
+)
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import (
     GreenfieldCompletionReport,
 )
@@ -340,7 +343,10 @@ def run_greenfield_post_confirm_engine(
         ),
         last_repair_patchset_request=last_repair_patchset_request,
     )
-    completion_debt = _completion_priority_debt_issues(classify_greenfield_post_confirm_issues(last_report))
+    completion_debt = _completion_priority_debt_issues(
+        classify_greenfield_post_confirm_issues(last_report),
+        package=last_prewrite_build.package if last_prewrite_build is not None else None,
+    )
     if last_prewrite_build is not None and tribunal is not None and completion_debt:
         manifest = _attach_completion_priority_debt(
             manifest,
@@ -451,17 +457,21 @@ def _rescue_eligible(
 
 def _completion_priority_debt_issues(
     issues: Sequence[GreenfieldPostConfirmIssue],
+    *,
+    package: Any | None = None,
 ) -> tuple[GreenfieldPostConfirmIssue, ...]:
     """Return issues that may be committed as explicit projection quality debt."""
 
     if not issues:
         return ()
-    if any(not _completion_priority_debt_issue(issue) for issue in issues):
+    if any(not _completion_priority_debt_issue(issue, package=package) for issue in issues):
         return ()
     return tuple(issues)
 
 
-def _completion_priority_debt_issue(issue: GreenfieldPostConfirmIssue) -> bool:
+def _completion_priority_debt_issue(issue: GreenfieldPostConfirmIssue, *, package: Any | None = None) -> bool:
+    if issue.repairability == "unrepairable" and _typed_projection_repetition_debt_issue(issue, package=package):
+        return True
     if issue.repairability not in {"plan_patch", "projection_rerender"}:
         return False
     if issue.severity == "critical":
@@ -485,6 +495,40 @@ def _completion_priority_debt_issue(issue: GreenfieldPostConfirmIssue) -> bool:
     return bool(issue.projection_id and issue.projection_id != "review_report")
 
 
+def _typed_projection_repetition_debt_issue(
+    issue: GreenfieldPostConfirmIssue,
+    *,
+    package: Any | None = None,
+) -> bool:
+    if issue.code != "package_repetition":
+        return False
+    if issue.source != "package_repetition_quality":
+        return False
+    if issue.severity not in {"low", "medium"}:
+        return False
+    if not issue.projection_id or issue.projection_id == "review_report":
+        return False
+    if issue.surface in {"release", "semantic_model", "tribunal"}:
+        return False
+    if not issue.semantic_node_id.startswith("ArtifactPlanIR."):
+        return False
+    if package is not None and package_repetition_sample_matches_source_truth(
+        package,
+        _package_repetition_sample_from_message(issue.message),
+    ):
+        return False
+    return bool(issue.owner == "typed_package_artifact_gate" or issue.owner.endswith("_renderer"))
+
+
+def _package_repetition_sample_from_message(message: str) -> str:
+    text = normalize_string(message)
+    _head, marker, tail = text.partition("`")
+    if not marker:
+        return ""
+    sample, _end, _rest = tail.partition("`")
+    return normalize_string(sample)
+
+
 def _attach_completion_priority_debt(
     manifest: Mapping[str, Any],
     *,
@@ -494,6 +538,7 @@ def _attach_completion_priority_debt(
     payload = dict(manifest)
     payload["status"] = POST_CONFIRM_COMPLETION_PRIORITY_STATUS
     payload["stop_reason"] = "completion_priority_quality_debt"
+    payload["hard_blocker"] = None
     payload["completion_priority"] = {
         "status": "write_allowed_with_projection_quality_debt",
         "policy": (

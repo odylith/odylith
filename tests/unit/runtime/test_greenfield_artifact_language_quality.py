@@ -156,6 +156,49 @@ def test_greenfield_story_cards_normalize_clause_like_proof_outcomes() -> None:
     assert "advanced simulations" in boundary.casefold()
 
 
+def test_greenfield_story_cards_preserve_object_tail_first_path_without_sentence_fragment() -> None:
+    first_path = (
+        "A cryogenic microscope control room console user can coordinate vacuum pumps, stage motion, "
+        "thermal drift readings, image capture windows, operator overrides, and recovery proof before "
+        "a sample run is accepted."
+    )
+    cards = {
+        row["label"]: row["body"]
+        for row in build_greenfield_story_cards(
+            title="Cryogenic Microscope Control Room Console",
+            intent={
+                "product_story": (
+                    "Cryogenic Microscope Control Room Console helps a cryogenic microscope control room "
+                    "console user complete the first accepted control-room path."
+                ),
+                "proof_boundary": (
+                    "Release succeeds when the user can coordinate vacuum pumps, stage motion, thermal drift "
+                    "readings, image capture windows, operator overrides, and recovery proof before a sample run "
+                    "is accepted."
+                ),
+            },
+            project={},
+            objective="",
+            outcome="",
+            first_path=first_path,
+            actors=(
+                (
+                    "primary",
+                    "Cryogenic Microscope Control Room Console User",
+                    "Coordinates the control-room path.",
+                ),
+            ),
+            validation=(),
+        )
+    }
+
+    assert "operator overrides. Recovery proof" not in cards["First Path"]
+    assert (
+        "operator overrides, and recovery proof before a sample run is accepted"
+        in cards["First Path"]
+    )
+
+
 def test_state_store_specs_do_not_render_as_configuration_policy() -> None:
     contract = {
         "owned_state": "asset history, asset profile, usage entry, blocker state, and next-step context",

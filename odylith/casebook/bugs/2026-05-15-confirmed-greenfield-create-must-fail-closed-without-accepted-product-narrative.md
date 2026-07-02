@@ -1059,3 +1059,35 @@
 - Required Guardrail: `greenfield_semantic_model.py` must not reintroduce `def _actor_terms`, `actor_terms=`, `seen: set[str]`, or `seen.add(...)` for unused actor-term dedupe.
 - Verification Added: `tests/unit/runtime/test_greenfield_intelligence_schema.py::test_semantic_model_term_extraction_uses_shared_domain_index` now pins the absence of dead actor-term extraction and local `seen` loops while preserving semantic model terms and proof checkpoint rendering. Replayable proof: syntax proof passed for the touched module and test; focused semantic-model regression passed (`1 passed in 0.15s`); owning schema proof passed (`3 passed in 0.12s`); wider greenfield artifact proof passed (`194 passed in 200.15s`); confirmed-create performance proof passed (`1 passed in 11.01s`).
 - Agent Guardrails: For future semantic model term work, keep active term extraction in `greenfield_domain_term_index` or a live semantic-model consumer; do not compute unused actor terms or carry local dedupe loops as inert scaffolding.
+
+## 2026-07-01 Recurrence: Prompt Wrapper Recovery Leaked `Project For` Into Confirmed Intent
+
+Fresh failure signature. A five-case source-local variance pass found two post-confirm failures before release packaging. A resource-allocation prompt stopped before governed writes with `greenfield rendered package repeats noncanonical prose across 3 artifact(s) and 4 occurrence(s): Project for ... Intake`. A separate incident-replay prompt stopped immediately with `missing or too thin: internal_systems` even though the generated Product Intent Confirmation contained visible internal-system bullets.
+
+Generic trigger path. Run `odylith greenfield propose --repo-root . --prompt "Create a greenfield project for ..."` and then save the visible Product Intent Confirmation to `.odylith/runtime/greenfield/confirmed-intent.md`; run `odylith greenfield create --repo-root . --prompt "<same request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1 --json`.
+
+Root cause. Prompt-source recovery stripped `greenfield proposal for` and `greenfield product for` wrappers, but not `greenfield project for`. The fallback confirmation therefore promoted `Project for ...` into the canonical title and every generated system label. That bloated repeated Atlas labels enough for the package-repetition gate to block writes, and it also produced generic-looking system rows that the confirmed-intent validator correctly rejected as too scaffolded.
+
+Invariant. Product wrapper words such as proposal, product, or project are command/request scaffolding when they are followed by `for`; they must not become the generated product title, system names, Atlas labels, or Registry vocabulary. The validator should stay strict, but fallback confirmation synthesis must feed it clean product facts.
+
+Guardrail. Keep wrapper extraction in the prompt-source owner and make it grammar-based over request scaffolding, not project-domain exceptions. Do not weaken the confirmed-intent validator or package-repetition gate to accept repeated `Project for ...` labels.
+
+Verification required. Add regression coverage for `Create a greenfield project for ...` title recovery, fallback confirmation create success for the two failed shapes, and a focused source-local high-variance replay that proves governed writes under 60 seconds with zero final manifest issues and temp cleanup.
+
+Agent guardrails. When a generated Product Intent Confirmation fails validation or package repetition, inspect prompt-source recovery before adding downstream renderer exceptions. Do not repeat prior failed mechanisms that patched rendered strings instead of cleaning the accepted semantic source.
+
+## 2026-07-02 Recurrence: Action/Object Tail Fragments Survived In Confirmed Create Surfaces
+
+Fresh failure signature. A source-local cryogenic control-room replay completed post-confirm writes in under 30 seconds, but the generated Project tab first-path card split the accepted path into `operator overrides. Recovery proof before a sample run is accepted`. A related safety-compliance replay proved completion under 31 seconds and full governed counts, but confirmed-intent and renderer review exposed how prompt/source metadata can be mistaken for title leakage unless visible governed surfaces are inspected separately from source-truth trace fields.
+
+Generic trigger path. Confirm a command-led greenfield request whose first path is a single action with a comma-rich object list and an outcome object tail, then run `odylith greenfield create --repo-root . --prompt "<request>" --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1`.
+
+Root cause. First-path sequence derivation is useful for true multi-step flows, but some renderers treated parser-emitted object tails as independent sentences or actor candidates. Actor-path role selection also matched generic `X User` labels against object terms, and inline section parsing treated sentence-like state-object labels before a colon as headings.
+
+Invariant. Post-confirm creation must not fail for repairable projection copy, but accepted intent, Project dashboard cards, project brief readiness gates, actor rows, and runtime JSON must still preserve semantic clarity and avoid clipped object-tail fragments.
+
+Guardrail. Keep completion-priority downgrades typed and projection-owned; fix accepted semantic sources and projection renderers for readability instead of adding issue-message regex towers or project-domain exceptions. Treat command-led action/object lists as one accepted path unless the parser has real actor/action step evidence.
+
+Verification added. Focused confirmed-title/recovery/project-brief/ownership proof passed (`77 passed in 170.38s`); completion-priority and Project tab focused proof passed (`23 passed, 150 deselected in 62.48s`); compile and whitespace checks passed; fresh source-local replays for cryogenic control-room and export-control compliance both wrote 4 Radar ideas, 3 Registry specs, and 6 Atlas diagrams in 28.138s and 30.089s respectively, with no visible governed-surface hits for the prior clipped-fragment failures and temp repos deleted after inspection.
+
+Agent guardrails. For future post-confirm quality work, distinguish visible governed artifact defects from legitimate source-truth trace text, and run at least one real create replay plus rendered text search before claiming premium quality.

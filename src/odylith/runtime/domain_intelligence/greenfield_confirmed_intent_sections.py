@@ -50,6 +50,9 @@ def confirmed_intent_inline_heading_value(line: str) -> tuple[str, str] | None:
     label, value = text.split(":", 1)
     if len(label.split()) > 8:
         return None
+    normalized_label = normalize_confirmed_intent_heading(label)
+    if re.search(r"\b(?:are|contains?|is|tracks?)\b", normalized_label):
+        return None
     heading = classify_confirmed_intent_heading(label.strip())
     if not heading:
         return None

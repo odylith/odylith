@@ -6,6 +6,7 @@ Last updated (UTC): 2026-07-02
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-217 | 2026-07-02 | Greenfield registry semantic contracts can miss canonical blocked input proof ro | P1 | domain-intelligence | FixedPendingRelease | [2026-07-02-greenfield-registry-semantic-contracts-can-miss-canonical-blocked-input-proof-ro.md](2026-07-02-greenfield-registry-semantic-contracts-can-miss-canonical-blocked-input-proof-ro.md) |
 | CB-216 | 2026-07-02 | Greenfield control plane leak gate rejects source grounded domain homonyms | P1 | domain-intelligence | Open | [2026-07-02-greenfield-control-plane-leak-gate-rejects-source-grounded-domain-homonyms.md](2026-07-02-greenfield-control-plane-leak-gate-rejects-source-grounded-domain-homonyms.md) |
 | CB-212 | 2026-07-01 | Radar backlog normalization labels utc header with local date | P2 | radar | Open | [2026-07-01-radar-backlog-normalization-labels-utc-header-with-local-date.md](2026-07-01-radar-backlog-normalization-labels-utc-header-with-local-date.md) |
 | CB-214 | 2026-07-01 | Greenfield atlas labels can repeat visible result copy after confirmation | P2 | domain-intelligence | FixedPendingRelease | [2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md](2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md) |

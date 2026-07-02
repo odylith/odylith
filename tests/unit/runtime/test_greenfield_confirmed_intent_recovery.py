@@ -1126,6 +1126,95 @@ def test_confirmed_recovery_uses_actor_subject_for_public_response_prompt(tmp_pa
     assert greenfield_quality_issues(completed) == []
 
 
+def test_confirmed_recovery_keeps_instrument_objects_out_of_human_actors(tmp_path) -> None:
+    prompt = (
+        "Build a cryogenic microscope control-room console that coordinates vacuum pumps, stage motion, "
+        "thermal drift readings, image capture windows, operator overrides, and recovery proof before "
+        "a sample run is accepted."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    completed = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+    expected_path = (
+        "coordinate vacuum pumps, stage motion, thermal drift readings, image capture windows, "
+        "operator overrides, and recovery proof before a sample run is accepted"
+    )
+
+    assert not any(row.startswith("Image:") for row in intent["human_actors"])
+    assert not any(row.startswith("Room Console User:") for row in intent["human_actors"])
+    assert not any(row.startswith("Windows Operator:") for row in intent["human_actors"])
+    assert len(intent["human_actors"]) == 1
+    assert expected_path in intent["first_path"]
+    assert "image can coordinate" not in rendered.casefold()
+    assert "user can image coordinates" not in rendered.casefold()
+    assert "image coordinates" not in rendered.casefold()
+    assert "operator overrides. Recovery proof" not in rendered
+    assert expected_path in rendered
+    assert greenfield_quality_issues(completed) == []
+
+
+def test_confirmed_recovery_keeps_anomalous_change_orders_as_object_phrase(tmp_path) -> None:
+    prompt = (
+        "Create a civic budget transparency analysis pipeline for city procurement data that detects "
+        "vendor concentration, anomalous change orders, and publishes explainable dashboards for residents."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    completed = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert not any(row.startswith("Anomalous:") for row in intent["human_actors"])
+    assert not any(row.startswith("Anomalous Change:") for row in intent["human_actors"])
+    assert "anomalous can change orders" not in rendered.casefold()
+    assert "anomalous change publishes" not in rendered.casefold()
+    assert "detect vendor concentration, anomalous change orders, and publish explainable dashboards" in rendered
+    assert greenfield_quality_issues(completed) == []
+
+
+def test_confirmed_recovery_keeps_organization_actor_and_including_context_readable(tmp_path) -> None:
+    prompt = (
+        "Design an end-to-end export-control and data-handling compliance workflow for a research lab "
+        "processing mixed classified and unclassified files, including review gates, audit trail, "
+        "incident response, and least-privilege automation."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    completed = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert intent["human_actors"] == [
+        "Research Lab: needs the product to process mixed classified and unclassified files with review gates, audit trail, incident response, and least-privilege automation and keep the result visible and reviewable"
+    ]
+    assert (
+        "a research lab can process mixed classified and unclassified files with review gates, audit trail, incident response, and least-privilege automation"
+        in rendered
+    )
+    assert (
+        "The accepted product story names the user problem: End-to-end Export Control and Data-handling Compliance Workflow Workspace helps a research lab complete a first path where a research lab can process mixed classified and unclassified files with review gates, audit trail, incident response, and least-privilege automation."
+        in rendered
+    )
+    assert "Research Lab Processing Mixed Classified" not in rendered
+    assert "Files Including" not in rendered
+    assert "process mixed classified and keep" not in rendered
+    assert greenfield_quality_issues(completed) == []
+
+
 def test_confirmed_recovery_fallback_actor_does_not_emit_participant(tmp_path) -> None:
     prompt = "incident intake console where analysts wrangle incoming reports"
 

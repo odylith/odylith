@@ -783,6 +783,9 @@ def _implementation_narrative(
 
 
 def _clean_proof_sentence(proof: str, *, label: str, index: int) -> str:
+    canonical = _canonical_proof_sentence(proof)
+    if canonical:
+        return canonical
     text = _sentence(_clean_fragment(proof, proof=True)).rstrip(".")
     if not text:
         return ""
@@ -837,10 +840,25 @@ def _clean_transition_fragment(value: Any) -> str:
 def _proof_items(value: Any) -> tuple[str, ...]:
     values: list[str] = []
     for raw in text_values(value):
+        canonical = _canonical_proof_sentence(raw)
+        if canonical:
+            values.append(canonical)
+            continue
         cleaned = _clean_fragment(raw, proof=True)
         if cleaned:
             values.append(_sentence(cleaned))
     return unique_text(values)
+
+
+def _canonical_proof_sentence(value: Any) -> str:
+    text = clean_text(display_text.strip_inline_markdown_emphasis_tokens(str(value or ""))).strip(" .;:")
+    if not re.match(
+        r"^(?:Successful path evidence|Blocked input evidence|Replay evidence|Handoff evidence|Access evidence|Freshness evidence)\s+for\b",
+        text,
+        flags=re.I,
+    ):
+        return ""
+    return _sentence(text)
 
 
 def _clean_fragment(value: Any, *, proof: bool = False) -> str:

@@ -23,8 +23,12 @@ def actor_path_role(*, label: str, first_path: str, state: str) -> str:
     terms = _actor_path_terms(label)
     if not terms or not _clean(first_path):
         return ""
+    if _generic_user_label(label):
+        return ""
     scored: list[tuple[int, int, int, str]] = []
     for index, clause in enumerate(_path_clauses(first_path)):
+        if _generic_user_label(label) and not (leading_subject_prefix(clause) or _explicit_clause_subject(clause)):
+            continue
         if not _clause_subject_matches_actor(clause, label=label):
             continue
         overlap = len(terms & _actor_match_terms(clause))
@@ -46,6 +50,11 @@ def actor_path_role(*, label: str, first_path: str, state: str) -> str:
         readable_action_chain_phrase(clause, fallback=capability_action_clause(clause), limit=170, max_steps=3)
     )
     return f"uses the product to {action}; the outcome stays clear enough to choose the next step"
+
+
+def _generic_user_label(label: str) -> bool:
+    terms = _actor_match_terms(label)
+    return "user" in terms and len(_actor_path_terms(label)) <= 1
 
 
 def _sentence_action_fragment(value: str) -> str:

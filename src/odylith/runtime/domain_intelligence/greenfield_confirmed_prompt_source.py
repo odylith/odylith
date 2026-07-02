@@ -240,9 +240,20 @@ def _project_title_before_sentence_boundary(words: list[str], *, start: int) -> 
 
 def _skip_proposal_wrapper(words: list[str], start: int) -> int:
     index = start
+    saw_request_wrapper = False
     while index < len(words) and words[index].casefold().strip(",:;") in {"greenfield", "new", "product-first"}:
+        saw_request_wrapper = True
         index += 1
-    if index < len(words) and words[index].casefold().strip(",:;") == "proposal":
+    if index < len(words) and words[index].casefold().strip(",:;") in {"proposal", "product"}:
+        index += 1
+    elif (
+        index < len(words)
+        and words[index].casefold().strip(",:;") == "project"
+        and (
+            saw_request_wrapper
+            or (index + 1 < len(words) and words[index + 1].casefold().strip(",:;") == "for")
+        )
+    ):
         index += 1
     if index < len(words) and words[index].casefold().strip(",:;") == "for":
         index += 1

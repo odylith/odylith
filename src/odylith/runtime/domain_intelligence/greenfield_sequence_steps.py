@@ -16,6 +16,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import leading_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import starts_with_compound_noun_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_visible_results import starts_with_result_object_modifier
 from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import drop_release_proof_control_steps
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_sentence
@@ -363,8 +364,26 @@ def _expand_compound_steps(values: list[str]) -> list[str]:
                 )
                 if segment.strip(" .")
             )
-        expanded.extend(_sentence(part).rstrip(".") for part in _carry_subject_across_parts(split_parts) if part)
+        expanded.extend(
+            _sentence(part).rstrip(".")
+            for part in _merge_compound_object_parts(_carry_subject_across_parts(split_parts))
+            if part
+        )
     return expanded
+
+
+def _merge_compound_object_parts(values: list[str]) -> list[str]:
+    rows: list[str] = []
+    for value in values:
+        text = _compact_text(value).strip(" .")
+        if not text:
+            continue
+        tail = re.sub(r"^(?:and|or)\s+", "", text, flags=re.IGNORECASE).strip(" .")
+        if rows and starts_with_compound_noun_object(tail):
+            rows[-1] = f"{rows[-1].rstrip(' .,;')} and {tail[:1].lower()}{tail[1:]}".strip()
+            continue
+        rows.append(text)
+    return rows
 
 
 def _modal_actor_capability_step(value: str) -> bool:

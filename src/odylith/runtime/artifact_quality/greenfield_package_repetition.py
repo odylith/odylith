@@ -225,6 +225,47 @@ def _allowed_repetition_keys(package: Any) -> tuple[set[str], dict[str, tuple[Ca
     return keys, _canonical_repetition_keys(proposal)
 
 
+def package_repetition_sample_matches_source_truth(package: Any, sample: str) -> bool:
+    """Return whether a repeated package sample is accepted source-truth copy."""
+
+    sample_text = normalize_string(sample)
+    sample_key = repetition_key(sample_text)
+    if not sample_text or not sample_key:
+        return False
+    proposal = _as_mapping(getattr(package, "proposal", None))
+    for value in _source_truth_repetition_values(proposal):
+        value_text = normalize_string(value)
+        if not value_text:
+            continue
+        if sample_text.casefold() in value_text.casefold() or value_text.casefold() in sample_text.casefold():
+            return True
+        for chunk in repetition_chunks(value_text):
+            if repetition_key(chunk) == sample_key:
+                return True
+    return False
+
+
+def _source_truth_repetition_values(proposal: Mapping[str, Any]) -> list[str]:
+    intent = _as_mapping(proposal.get("intent"))
+    project_brief = _as_mapping(proposal.get("project_brief"))
+    values: list[str] = []
+    for source in (intent, project_brief):
+        for key in (
+            "first_path",
+            "problem",
+            "product_story",
+            "product_view",
+            "project_outcome",
+            "proof_boundary",
+            "purpose",
+            "state_object",
+        ):
+            values.append(normalize_string(source.get(key)))
+    values.extend(text_values(intent.get("assumptions")))
+    values.extend(text_values(intent.get("success_metrics")))
+    return [value for value in values if value]
+
+
 def _canonical_repetition_keys(proposal: Mapping[str, Any]) -> dict[str, tuple[CanonicalProjectionFact, ...]]:
     rows: dict[str, list[CanonicalProjectionFact]] = {}
     for fact in canonical_projection_facts(proposal):
@@ -465,6 +506,7 @@ __all__ = [
     "markdown_bullet_body",
     "markdown_section_body_chunks",
     "mermaid_label_chunks",
+    "package_repetition_sample_matches_source_truth",
     "package_repetition_quality_findings",
     "repetition_chunks",
     "sentence_key",

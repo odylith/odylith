@@ -7,6 +7,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import pars
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import carried_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.proposal_normalization import normalize_host_reasoned_proposal
@@ -96,6 +97,21 @@ def test_carried_subject_does_not_absorb_visible_result_object_before_next_actio
         "Researchers let a review board approve an evidence package without making clinical safety claims",
     )
     assert not any("bench-test tracks" in step.casefold() for step in steps)
+
+
+def test_first_path_steps_keep_compound_review_outcomes_inside_object_list() -> None:
+    path = (
+        "correlates robot telemetry, operator commands, safety envelopes, obstacle detections, "
+        "replay timelines, and engineering review outcomes before a fix is approved"
+    )
+    model = first_path_model(path)
+
+    assert model.steps == (
+        "Correlate robot telemetry, operator commands, safety envelopes, obstacle detections, replay timelines and engineering review outcomes before a fix is approved",
+    )
+    assert model.material_action.startswith("Correlate robot telemetry")
+    assert model.visible_outcome.startswith("Robot telemetry")
+    assert model.material_action != "Review a fix is approved"
 
 
 def test_first_path_steps_split_carried_subject_finite_group_action() -> None:

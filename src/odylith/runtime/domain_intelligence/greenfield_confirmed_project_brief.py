@@ -71,7 +71,7 @@ def confirmed_project_brief(
         "owned state, and reviewable proof."
     )
     story_brief = _brief_clause(story, limit=420)
-    story_gate = _story_readiness_summary(story, fallback=story_brief, limit=260)
+    story_gate = _story_readiness_summary(story, fallback=story_brief, limit=420)
     first = _first_path_brief(
         first_path
         or f"The first release proves one {label_lower} path from intake through state update and evidence review.",
@@ -450,7 +450,7 @@ def _drop_trailing_clause_or_words(value: str, *, drop_words: int) -> str:
 
 def _first_path_brief(value: str, *, human_actors: list[str] | None = None, label: str = "", limit: int = 180) -> str:
     steps = sequence_event_steps(value)
-    if steps:
+    if steps and _sequence_steps_are_structural_actions(steps):
         text = base_adverbial_note_action(_first_path_step_summary(list(steps), limit=limit))
     else:
         text = base_adverbial_note_action(value)
@@ -464,6 +464,16 @@ def _first_path_brief(value: str, *, human_actors: list[str] | None = None, labe
         ),
         limit=limit,
     )
+
+
+def _sequence_steps_are_structural_actions(steps: list[str]) -> bool:
+    if not steps:
+        return False
+    for step in steps:
+        action = action_chain_fragment(step)
+        if not action or not looks_like_action_clause(action):
+            return False
+    return True
 
 
 def _first_path_step_summary(steps: list[str], *, limit: int) -> str:
@@ -526,10 +536,25 @@ def _first_path_readiness_summary(
     )
     capability = _dedupe_repeated_capability(clauses.capability_chain)
     text = _prefer_more_complete_action_summary(structured_action, capability or clauses.action_chain) or fallback
+    full_text = text
+    text = _readiness_action_head(text)
     outcome = compact_text(clauses.visible_result).strip(" .")
-    if outcome and not _result_terms_covered(outcome, text) and not _outcome_action_covered(outcome, text):
+    if (
+        outcome
+        and text == full_text
+        and not _result_terms_covered(outcome, text)
+        and not _outcome_action_covered(outcome, text)
+    ):
         text = f"{text} and validate the promised result: {outcome}"
     return _brief_clause(base_adverbial_note_action(text), limit=limit)
+
+
+def _readiness_action_head(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    if text.count(",") < 4:
+        return text
+    head = text.split(",", 1)[0].strip(" .")
+    return head if head and looks_like_action_clause(head) else text
 
 
 def _outcome_action_covered(outcome: str, text: str) -> bool:

@@ -48,10 +48,13 @@ def path_link(
     """Return one surface path/href row for a referenced repo token."""
 
     path = str(token or "").strip()
-    target = resolve_repo_path(repo_root=repo_root, token=path)
     href = ""
-    if target.exists() or allow_missing:
-        href = repo_path_resolver.relative_href(repo_root=repo_root, output_path=output_path, value=target)
+    try:
+        target = resolve_repo_path(repo_root=repo_root, token=path)
+        if target.exists() or allow_missing:
+            href = repo_path_resolver.relative_href(repo_root=repo_root, output_path=output_path, value=target)
+    except OSError:
+        href = ""
     return {
         "path": path,
         "href": href,

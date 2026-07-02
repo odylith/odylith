@@ -81,7 +81,7 @@ def ensure_component_contract(
                     next_label=next_label,
                     workstream_title=workstream_title,
                 )
-            return normalized
+            return _with_required_local_proof_floor(normalized, label=_label(row))
     return build_component_contract(
         row,
         proposal=proposal or {},
@@ -149,7 +149,12 @@ def build_component_contract(
             previous_label=previous_label,
             next_label=next_label,
         )
-        return _specialized_contract_with_semantic_proof(contract, semantic_contract=semantic_contract, semantic_fields=semantic_fields)
+        return _specialized_contract_with_semantic_proof(
+            contract,
+            semantic_contract=semantic_contract,
+            semantic_fields=semantic_fields,
+            label=label,
+        )
     elif profile == "status_view":
         contract = contract_profiles.status_view_contract(
             label=label,
@@ -158,9 +163,14 @@ def build_component_contract(
             previous_label=previous_label,
             next_label=next_label,
         )
-        return _specialized_contract_with_semantic_proof(contract, semantic_contract=semantic_contract, semantic_fields=semantic_fields)
+        return _specialized_contract_with_semantic_proof(
+            contract,
+            semantic_contract=semantic_contract,
+            semantic_fields=semantic_fields,
+            label=label,
+        )
     if _semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields):
-        return semantic_fields
+        return _with_required_local_proof_floor(semantic_fields, label=label)
     contract = _generic_contract(
         label=label,
         kind=kind,
@@ -170,7 +180,7 @@ def build_component_contract(
         previous_label=previous_label,
         next_label=next_label,
     )
-    return normalize_contract(contract)
+    return _with_required_local_proof_floor(normalize_contract(contract), label=label)
 
 
 def _specialized_contract_with_semantic_proof(
@@ -178,14 +188,41 @@ def _specialized_contract_with_semantic_proof(
     *,
     semantic_contract: Any,
     semantic_fields: Mapping[str, Any],
+    label: str,
 ) -> dict[str, Any]:
     normalized = normalize_contract(contract)
     if not (_semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields)):
-        return normalized
+        return _with_required_local_proof_floor(normalized, label=label)
     normalized["local_proof"] = list(unique_text([*text_values(normalized.get("local_proof")), *text_values(semantic_fields.get("local_proof"))]))
     semantic_failure = _sentence(semantic_fields.get("unique_failure"))
     if semantic_failure:
         normalized["unique_failure"] = semantic_failure
+    return _with_required_local_proof_floor(normalized, label=label)
+
+
+def _with_required_local_proof_floor(contract: Mapping[str, Any], *, label: str) -> dict[str, Any]:
+    normalized = dict(contract)
+    existing_rows = [_sentence(item) for item in text_values(normalized.get("local_proof")) if _clean(item)]
+    required = (
+        (
+            "successful path evidence",
+            f"Successful path evidence for {label}: accepted input, visible result, persisted explanation, and reviewer context.",
+        ),
+        (
+            "blocked input evidence",
+            f"Blocked input evidence for {label}: missing or malformed input, stops before a trusted result, and recovery explanation.",
+        ),
+        (
+            "replay evidence",
+            f"Replay evidence for {label}: actor, input facts, status, explanation, and proof trail.",
+        ),
+    )
+    proof_rows: list[str] = []
+    for marker, row in required:
+        existing = next((item for item in existing_rows if marker in item.casefold()), "")
+        proof_rows.append(existing or _sentence(row))
+    proof_rows.extend(existing_rows)
+    normalized["local_proof"] = list(unique_text(proof_rows))
     return normalized
 
 

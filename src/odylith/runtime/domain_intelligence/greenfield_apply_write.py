@@ -10,7 +10,11 @@ from typing import Any
 
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
-from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_issues
+from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_findings
+from odylith.runtime.artifact_quality.greenfield_package_repetition import (
+    package_repetition_sample_matches_source_truth,
+)
+from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedPackageQualityFinding
 from odylith.runtime.domain_intelligence import greenfield_apply_prewrite
 from odylith.runtime.domain_intelligence import greenfield_component_registry_scope
 from odylith.runtime.domain_intelligence import greenfield_experience
@@ -264,6 +268,8 @@ def write_greenfield_proposal(
         completion_priority_write_policy=completion_priority_write_policy,
         completion_quality_debt=completion_quality_debt,
     )
+    if completion_quality_debt:
+        _persist_completion_quality_debt(root=root, debt=completion_quality_debt)
     brand_asset_paths = brand_assets.ensure_brand_assets(repo_root=root)
     try:
         dashboard_refresh = _refresh_greenfield_dashboard(repo_root=root)
@@ -446,10 +452,21 @@ def _raise_for_final_package_quality(
         rendered_component_specs=package.rendered_component_specs,
         tribunal_preview=package.tribunal_preview,
     )
+    package_findings = greenfield_rendered_package_quality_findings(package)
+    package_debt_messages = [
+        finding.message
+        for finding in package_findings
+        if _structured_package_repetition_debt_allowed(finding, package=package)
+    ]
+    package_blocker_messages = [
+        finding.message
+        for finding in package_findings
+        if finding.message not in set(package_debt_messages)
+    ]
     issues = dedupe_strings(
         [
             *completion.issues,
-            *greenfield_rendered_package_quality_issues(package),
+            *package_blocker_messages,
             *generated_public_copy_issues("accepted-project final memory", accepted_project_preview),
             *generated_public_copy_issues("Compass final memory", package.compass_memory_preview),
         ]
@@ -457,6 +474,15 @@ def _raise_for_final_package_quality(
     if issues:
         _record_or_raise_completion_quality_debt(
             issues,
+            error_prefix="greenfield post-confirm final write quality failed",
+            debt_prefix="final write quality",
+            completion_priority_write_policy=completion_priority_write_policy,
+            completion_quality_debt=completion_quality_debt,
+            projection_copy_debt_allowed=True,
+        )
+    if package_debt_messages:
+        _record_or_raise_structured_completion_quality_debt(
+            package_debt_messages,
             error_prefix="greenfield post-confirm final write quality failed",
             debt_prefix="final write quality",
             completion_priority_write_policy=completion_priority_write_policy,
@@ -480,6 +506,7 @@ def _raise_for_final_next_steps_quality(
             debt_prefix="final next steps quality",
             completion_priority_write_policy=completion_priority_write_policy,
             completion_quality_debt=completion_quality_debt,
+            projection_copy_debt_allowed=True,
         )
 
 
@@ -731,6 +758,7 @@ def _raise_for_component_spec_quality(
             debt_prefix="component spec quality",
             completion_priority_write_policy=completion_priority_write_policy,
             completion_quality_debt=completion_quality_debt,
+            projection_copy_debt_allowed=True,
         )
 
 
@@ -741,13 +769,19 @@ def _record_or_raise_completion_quality_debt(
     debt_prefix: str,
     completion_priority_write_policy: Mapping[str, Any] | None,
     completion_quality_debt: list[str] | None,
+    projection_copy_debt_allowed: bool = False,
 ) -> None:
     if not issues:
         return
     issue_rows = dedupe_strings(str(issue) for issue in issues if str(issue).strip())
     if not issue_rows:
         return
-    if _completion_priority_write_allowed(completion_priority_write_policy):
+    if _completion_priority_write_allowed(
+        completion_priority_write_policy,
+        debt_prefix=debt_prefix,
+        issue_rows=issue_rows,
+        projection_copy_debt_allowed=projection_copy_debt_allowed,
+    ):
         if completion_quality_debt is not None:
             completion_quality_debt.extend(f"{debt_prefix}: {issue}" for issue in issue_rows)
         return
@@ -755,12 +789,153 @@ def _record_or_raise_completion_quality_debt(
     raise ValueError(f"{error_prefix} with {len(issue_rows)} issue(s):\n{detail}")
 
 
-def _completion_priority_write_allowed(policy: Mapping[str, Any] | None) -> bool:
+def _record_or_raise_structured_completion_quality_debt(
+    issues: Sequence[str],
+    *,
+    error_prefix: str,
+    debt_prefix: str,
+    completion_priority_write_policy: Mapping[str, Any] | None,
+    completion_quality_debt: list[str] | None,
+) -> None:
+    issue_rows = dedupe_strings(str(issue) for issue in issues if str(issue).strip())
+    if not issue_rows:
+        return
+    if _completion_priority_policy_base_allowed(completion_priority_write_policy):
+        if completion_quality_debt is not None:
+            completion_quality_debt.extend(f"{debt_prefix}: {issue}" for issue in issue_rows)
+        return
+    detail = "\n".join(f"- {issue}" for issue in issue_rows)
+    raise ValueError(f"{error_prefix} with {len(issue_rows)} issue(s):\n{detail}")
+
+
+def _completion_priority_write_allowed(
+    policy: Mapping[str, Any] | None,
+    *,
+    debt_prefix: str,
+    issue_rows: Sequence[str],
+    projection_copy_debt_allowed: bool,
+) -> bool:
+    if not _completion_priority_policy_base_allowed(policy):
+        return False
+    if not projection_copy_debt_allowed:
+        return False
+    return all(_late_projection_copy_debt_issue(debt_prefix=debt_prefix, issue=issue) for issue in issue_rows)
+
+
+def _completion_priority_policy_base_allowed(policy: Mapping[str, Any] | None) -> bool:
     return bool(
         isinstance(policy, Mapping)
         and str(policy.get("status", "")).strip() == "write_allowed_with_projection_quality_debt"
         and int(policy.get("hard_blocker_count", 1) or 0) == 0
     )
+
+
+def _structured_package_repetition_debt_allowed(
+    finding: RenderedPackageQualityFinding,
+    *,
+    package: GreenfieldCompletionPackage,
+) -> bool:
+    if finding.code != "package_repetition":
+        return False
+    if finding.source != "package_repetition_quality":
+        return False
+    if finding.severity not in {"low", "medium"}:
+        return False
+    if not finding.projection_id or finding.projection_id in {"release", "review_report"}:
+        return False
+    if finding.surface in {"release", "semantic_model", "tribunal"}:
+        return False
+    if not finding.semantic_node_id.startswith("ArtifactPlanIR."):
+        return False
+    if package_repetition_sample_matches_source_truth(package, finding.sample):
+        return False
+    return bool(finding.owner == "typed_package_artifact_gate" or finding.owner.endswith("_renderer"))
+
+
+def _late_projection_copy_debt_issue(*, debt_prefix: str, issue: str) -> bool:
+    text = str(issue or "").casefold()
+    prefix = str(debt_prefix or "").casefold()
+    if any(
+        marker in text
+        for marker in (
+            "missing proof contract",
+            "project implementation prompt",
+            "release package",
+            "semantic",
+            "source token",
+            "domain term",
+            "accepted assumption",
+        )
+    ):
+        return False
+    if prefix == "final next steps quality":
+        return _mechanical_projection_copy_issue(text)
+    if prefix in {"component spec quality", "final write quality"}:
+        return _mechanical_projection_copy_issue(text)
+    return False
+
+
+def _mechanical_projection_copy_issue(text: str) -> bool:
+    if any(
+        marker in text
+        for marker in (
+            "adjacent duplicate word",
+            "repeats adjacent word",
+            "clipped or dangling",
+            "clipped action phrase",
+            "clipped boundary phrase",
+            "malformed ownership verb pair",
+            "malformed connector sequence",
+            "sentence-fragment drift",
+            "invalid verb inflection",
+            "doubled sentence punctuation",
+            "comma-spliced capitalized clause",
+            "repeats the same visible result",
+        )
+    ):
+        return True
+    return _mechanical_generated_prose_issue(text)
+
+
+_MECHANICAL_GENERATED_PROSE_LABELS = (
+    "malformed ownership verb pair",
+    "malformed ownership sentence",
+    "duplicated evidence word",
+    "dangling close-parenthesis token",
+    "missing sentence boundary before proof obligation",
+)
+
+
+def _mechanical_generated_prose_issue(text: str) -> bool:
+    prefix = "generated prose uses "
+    if not text.startswith(prefix):
+        return False
+    return any(text.startswith(f"{prefix}{label}") for label in _MECHANICAL_GENERATED_PROSE_LABELS)
+
+
+def _persist_completion_quality_debt(*, root: Path, debt: Sequence[str]) -> None:
+    rows = dedupe_strings(str(item) for item in debt if str(item).strip())
+    if not rows:
+        return
+    path = root / "odylith/runtime/source/accepted-project.v1.json"
+    payload = dict(_read_json_mapping(path))
+    if not payload:
+        return
+    ledger = {
+        "status": "recorded",
+        "guard": "typed_noncritical_projection_debt_only",
+        "count": len(rows),
+        "items": rows,
+    }
+    payload["completion_priority_quality_debt"] = ledger
+    source_launch = payload.get("source_launch")
+    if isinstance(source_launch, Mapping):
+        source_launch_payload = dict(source_launch)
+    else:
+        source_launch_payload = {}
+    source_launch_payload["completion_priority_quality_debt"] = ledger
+    payload["source_launch"] = source_launch_payload
+    path.write_text(f"{json.dumps(payload, indent=2, sort_keys=True)}\n", encoding="utf-8")
 
 
 def completion_priority_write_policy_from_manifest(manifest: Mapping[str, Any]) -> Mapping[str, Any] | None:

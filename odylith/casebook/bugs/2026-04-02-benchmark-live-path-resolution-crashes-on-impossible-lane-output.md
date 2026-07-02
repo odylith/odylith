@@ -111,6 +111,20 @@
 - Related Incidents/Bugs:
   `2026-04-01-benchmark-observed-path-attribution-counts-transitive-links-from-doc-content.md`
 
+2026-07-02 recurrence: the same path-token trust boundary escaped into the
+Casebook dashboard path-link helper. A generated Casebook row contained a
+prose-sized token that was treated as a filesystem path, and source-local
+`odylith casebook refresh --repo-root .` crashed with
+`OSError: [Errno 63] File name too long` before publishing refreshed surfaces.
+The forward fix wraps path resolution and existence checks in
+`src/odylith/runtime/surfaces/surface_path_helpers.py`, returns an empty href
+for unsafe tokens, and proves the behavior with
+`tests/unit/runtime/test_surface_path_helpers.py::test_path_link_does_not_stat_prose_sized_tokens`.
+The durable guardrail is broader than the original benchmark lane: every
+human-visible governance surface must treat extracted path-like text as
+untrusted until it resolves safely, and invalid path tokens must degrade the
+single link rather than aborting the whole governed refresh.
+
 - Version/Build: `v0.1.7` live benchmark harness hardening wave on 2026-04-02.
 
 - Config/Flags: `odylith benchmark --repo-root . --profile proof`

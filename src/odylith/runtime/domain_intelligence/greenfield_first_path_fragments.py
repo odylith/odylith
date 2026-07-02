@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE, clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase, lowercase_leading_article
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import action_word_inside_compound_noun
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects import (
     drop_result_recipient,
@@ -78,7 +79,7 @@ def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
     return bool(
         re.search(
-            r"\b(?:compare|compares|confirm|confirms|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|keep|keeps|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|store|stores|surfaces|update|updates|view|views|receive|receives)\b",
+            r"\b(?:compare|compares|confirm|confirms|correlate|correlates|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|keep|keeps|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|store|stores|surfaces|update|updates|view|views|receive|receives)\b",
             text,
             re.IGNORECASE,
         )
@@ -274,11 +275,14 @@ def visible_result_object(value: str) -> str:
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
         r"(?<![A-Za-z0-9_-])(?P<verb>sends?|publishes?|returns?|delivers?)\s+or\s+"
         r"(?:sends?|publishes?|returns?|delivers?)\s+(?P<object>.+)$",
-        r"(?<![A-Za-z0-9_-])(?P<verb>closes?|compares?|confirms?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"(?<![A-Za-z0-9_-])(?P<verb>closes?|compares?|confirms?|correlates?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
         if match:
+            verb_start = match.start("verb") if "verb" in match.groupdict() else -1
+            if verb_start >= 0 and action_word_inside_compound_noun(text, verb_start):
+                continue
             result = match.group("object")
             verb = match.groupdict().get("verb", "")
             if is_routing_pronoun_result(verb, result):
@@ -354,6 +358,8 @@ _RESULT_ACTION_NOMINALS = {
     "closes": "closed",
     "confirm": "confirmed",
     "confirms": "confirmed",
+    "correlate": "correlated",
+    "correlates": "correlated",
     "export": "exported",
     "exports": "exported",
     "emit": "emitted",

@@ -121,6 +121,7 @@ def _intent_title(prompt: str) -> str:
             break
     text = re.sub(r"^(?:a|an)\s+", "", text, flags=re.IGNORECASE).strip()
     text = _strip_greenfield_directives(text).strip(" .")
+    text = _strip_title_target_context(text)
     if not text or len(text) < 4:
         return "Greenfield Project"
     words = [_title_token(word) for word in text.split()]
@@ -160,6 +161,40 @@ def _strip_greenfield_directives(text: str) -> str:
     stripped = _GREENFIELD_DIRECTIVE_RE.sub("", text).strip()
     stripped = re.sub(r"\b(for me|please)\b\.?$", "", stripped, flags=re.IGNORECASE).strip()
     return stripped or text
+
+
+def _strip_title_target_context(text: str) -> str:
+    """Remove target-context tails from command-derived fallback titles."""
+
+    product_containers = (
+        "app",
+        "application",
+        "assistant",
+        "board",
+        "console",
+        "dashboard",
+        "desk",
+        "engine",
+        "hub",
+        "pipeline",
+        "platform",
+        "portal",
+        "service",
+        "tool",
+        "tracker",
+        "workflow",
+        "workspace",
+    )
+    container_pattern = "|".join(re.escape(term) for term in product_containers)
+    match = re.match(
+        rf"^(?P<head>.+?\b(?:{container_pattern}))\s+for\s+(?:a|an|the)\s+.+?\b(?:including|with|[A-Za-z]+ing)\b.*$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return text
+    head = match.group("head").strip(" .")
+    return head if len(head.split()) >= 3 else text
 
 
 _TITLE_ACRONYMS = {

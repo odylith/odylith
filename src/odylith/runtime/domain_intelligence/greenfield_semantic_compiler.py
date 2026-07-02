@@ -21,6 +21,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
     action_chain_fragment,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
+    actor_signature,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     nominal_visible_result_object,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
@@ -123,7 +126,7 @@ def select_visible_result_candidate(
                 text=result,
                 source_kind="first_path_event",
                 source_path=f"first_path.events.{index}",
-                confidence=_candidate_confidence(result, source_kind="first_path_event") - 0.05,
+                confidence=_step_visible_result_confidence(result, step=step, path_model=path_model),
                 provenance=(step,),
                 limit=limit,
             )
@@ -406,6 +409,17 @@ def _candidate_confidence(value: str, *, source_kind: str) -> float:
         score -= 0.12
     if word_count(value) >= 4:
         score += 0.05
+    return score
+
+
+def _step_visible_result_confidence(result: str, *, step: str, path_model: FirstPathModel) -> float:
+    score = _candidate_confidence(result, source_kind="first_path_event") - 0.05
+    if (
+        clean_first_path_text(path_model.visible_outcome)
+        and clean_first_path_text(step).casefold() != clean_first_path_text(path_model.visible_outcome).casefold()
+        and actor_signature(step)
+    ):
+        score -= 0.3
     return score
 
 

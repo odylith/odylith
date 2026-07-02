@@ -1,5 +1,5 @@
 # Domain Intelligence
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 
 ## Overview
@@ -45,6 +45,39 @@ This section captures synchronized requirement and contract signals derived from
 <!-- registry-requirements:end -->
 
 ## Feature History
+
+- 2026-07-02: Preserved command-led action/object paths while keeping completion-priority custody narrow. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-202`; Diagram: D-043)
+  Confirmed greenfield create now distinguishes repairable projection-copy debt
+  from semantic custody. Typed package repetition may become explicit
+  completion-quality debt only when source-owned metadata proves it is
+  renderer-owned projection copy, while source-truth repetition, untyped
+  strings, release/semantic/Tribunal surfaces, proof drift, and quality-lens
+  failures still block writes. Confirmed-intent recovery, actor completion,
+  Project story cards, and project-brief readiness gates now preserve
+  command-led action/object lists as accepted product paths when the parser
+  lacks real actor/action step evidence, reject object-tail actor hallucination,
+  keep public/person actor rows on lawful-records wording, and avoid treating
+  sentence-like state-object labels as inline headings. Focused proof passed
+  the 77-test confirmed title/recovery/project-brief/ownership set, the
+  23-test completion-priority and Project tab focused pack, compile and
+  whitespace checks, and two source-local real create replays at 28.138s and
+  30.089s with full governed counts and temp cleanup.
+
+- 2026-07-02: Promoted Registry proof-floor custody and narrowed completion-priority final-write debt. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-217`; Diagram: D-043)
+  Greenfield component contracts now promote the universal successful-path,
+  blocked-input, and replay proof rows before profile-specific proof rows
+  across existing-contract, semantic, specialized, and fallback paths. Registry
+  narrative rendering preserves those canonical proof labels instead of
+  normalizing them into generic copy, so premium engineer readback can verify
+  the proof contract that implementation prompts depend on. Post-confirm
+  completion priority now records non-critical projection-copy debt into the
+  accepted-project/source-launch ledger and prints it in the normal closeout,
+  while substantive prompt, proof, semantic, release, domain-term, and
+  quality-lens findings still roll back. Source-local replay of the saved
+  grn-sim confirmed intent completed in 26.254 seconds with a passed manifest,
+  zero issues, no rescue, committed governed records, and expert lenses at
+  10/10 except browser proof, which was intentionally not attempted in that
+  source-local check.
 
 - 2026-07-02: Split confirmed-intent section parsing into a dedicated owner and fixed inline label-value confirmations. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-206`; Diagram: D-043)
   The post-confirm create path now treats ordinary Product Intent Confirmation

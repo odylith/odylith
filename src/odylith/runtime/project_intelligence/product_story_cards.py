@@ -7,10 +7,12 @@ from dataclasses import dataclass
 import re
 from typing import Any
 
+from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
     outcome_action_phrase as _outcome_action_phrase,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
@@ -252,9 +254,25 @@ def _weak_card(value: str, ctx: _StoryCardContext) -> bool:
         return True
     if _specific_term_count(text, ctx) < 3:
         return True
-    if text.count(",") >= 5 and len(re.findall(r"\b(?:accepts?|checks?|chooses?|creates?|does|enters?|gives|keeps|makes|produces?|records?|returns?|reviews?|sends?|shows?|uses)\b", text, flags=re.IGNORECASE)) < 2:
+    if (
+        text.count(",") >= 5
+        and len(
+            re.findall(
+                r"\b(?:accepts?|checks?|chooses?|creates?|does|enters?|gives|keeps|makes|produces?|records?|returns?|reviews?|sends?|shows?|uses)\b",
+                text,
+                flags=re.IGNORECASE,
+            )
+        )
+        < 2
+        and not _comma_rich_action_path(text)
+    ):
         return True
     return False
+
+
+def _comma_rich_action_path(value: str) -> bool:
+    action = action_chain_fragment(value)
+    return bool(action and len(action.split()) >= 6 and looks_like_action_clause(action))
 
 
 def _specific_enough(value: str, ctx: _StoryCardContext) -> bool:
@@ -299,9 +317,17 @@ def _clean_first_path(value: str) -> str:
             steps = [_subjectify_story_step(step) for step in steps]
         if len(steps) >= 2 and _same_visible_outcome(steps[-2], steps[-1]):
             steps = steps[:-1]
-        if steps:
+        if steps and _story_steps_are_action_semantic(steps):
             return _ensure_period(_join_steps(steps[:5]))
     return _ensure_period(text) if text else ""
+
+
+def _story_steps_are_action_semantic(steps: Sequence[str]) -> bool:
+    for step in steps:
+        action = action_chain_fragment(step)
+        if not action or not looks_like_action_clause(action):
+            return False
+    return True
 
 
 def _story_step(value: str) -> str:

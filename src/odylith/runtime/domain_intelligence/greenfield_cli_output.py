@@ -22,6 +22,7 @@ def print_apply_result(result: Mapping[str, Any], *, verb: str) -> None:
         workstreams = release_target.get("workstream_ids", [])
         count = len(workstreams) if isinstance(workstreams, list) else 0
         print(f"- release: {release_target.get('release_id')} ({count} targeted workstreams)")
+    _print_completion_quality_debt(result)
     _print_created_surfaces(result)
     next_steps = result.get("next_steps", {})
     if isinstance(next_steps, Mapping):
@@ -38,6 +39,17 @@ def print_apply_result(result: Mapping[str, Any], *, verb: str) -> None:
             print(f"- dashboard: refreshed {surfaces}")
         print(f"- view: {dashboard.get('view')}")
         print("- reflected in: progress lane, workstreams, candidate component specs, and draft architecture topology")
+
+
+def _print_completion_quality_debt(result: Mapping[str, Any]) -> None:
+    debt = result.get("completion_priority_quality_debt")
+    if not isinstance(debt, list) or not debt:
+        return
+    print(f"- quality debt: {len(debt)} non-critical projection issue(s) recorded after governed write")
+    for item in debt[:3]:
+        print(f"  - {item}")
+    if len(debt) > 3:
+        print(f"  - {len(debt) - 3} more quality debt item(s)")
 
 
 def _print_created_surfaces(result: Mapping[str, Any]) -> None:

@@ -1,0 +1,82 @@
+"""Compound noun disambiguation for first-path action parsing."""
+
+from __future__ import annotations
+
+import re
+
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
+
+_ACTION_NOUNS = frozenset({"audit", "capture", "change", "control", "record", "report", "review", "test"})
+_OBJECT_HEADS = frozenset(
+    {
+        "case",
+        "cases",
+        "decision",
+        "decisions",
+        "evidence",
+        "finding",
+        "findings",
+        "note",
+        "notes",
+        "outcome",
+        "outcomes",
+        "order",
+        "orders",
+        "package",
+        "packages",
+        "proof",
+        "record",
+        "records",
+        "result",
+        "results",
+        "signoff",
+        "state",
+        "status",
+        "summary",
+        "timeline",
+        "timelines",
+        "window",
+        "windows",
+    }
+)
+
+
+def starts_with_compound_noun_object(value: str) -> bool:
+    """Return true when an action-looking token is a noun modifier in an object phrase."""
+
+    return _compound_noun_index(value) is not None
+
+
+def action_word_inside_compound_noun(value: str, action_start: int) -> bool:
+    """Return true when a matched action word is actually inside a compound noun."""
+
+    words = _word_spans(value)
+    for index, (_word, start, end) in enumerate(words):
+        if start <= action_start < end:
+            return _compound_noun_index(value, required_index=index) is not None
+    return False
+
+
+def _compound_noun_index(value: str, *, required_index: int | None = None) -> int | None:
+    words = _word_spans(value)
+    if len(words) < 3:
+        return None
+    for index, (word, _start, _end) in enumerate(words[1:-1], start=1):
+        if required_index is not None and index != required_index:
+            continue
+        if word not in _ACTION_NOUNS:
+            continue
+        if words[index + 1][0] in _OBJECT_HEADS:
+            return index
+    return None
+
+
+def _word_spans(value: str) -> list[tuple[str, int, int]]:
+    text = clean_first_path_text(value)
+    return [
+        (match.group(0).casefold(), match.start(), match.end())
+        for match in re.finditer(r"[A-Za-z][A-Za-z0-9']*", text)
+    ]
+
+
+__all__ = ["action_word_inside_compound_noun", "starts_with_compound_noun_object"]

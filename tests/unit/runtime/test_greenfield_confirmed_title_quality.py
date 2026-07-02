@@ -107,6 +107,20 @@ def test_confirmed_create_repairs_prompt_shaped_title_before_quality_gate(tmp_pa
     assert not greenfield_quality_issues(proposal)
 
 
+def test_intent_title_uses_prompt_boundary_instead_of_clipped_target_tail() -> None:
+    prompt = (
+        "Design an end-to-end export-control and data-handling compliance workflow for a research lab "
+        "processing mixed classified and unclassified files, including review gates, audit trail, "
+        "incident response, and least-privilege automation."
+    )
+
+    title = greenfield_proposals._intent_title(prompt)
+
+    assert title.casefold() == "end-to-end export-control and data-handling compliance workflow"
+    assert "Research Lab Processing" not in title
+    assert "Unclassified Files" not in title
+
+
 def test_confirmed_create_keeps_list_signal_journal_and_guardrail_components_local(tmp_path) -> None:
     prompt = (
         "Draft a product-first greenfield proposal for a people activity tracker app that captures "

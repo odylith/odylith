@@ -91,10 +91,28 @@ _HUMAN_ACTOR_TERMS = frozenset(
         "worker",
     }
 )
+_ORGANIZATION_ACTOR_TERMS = frozenset(
+    {
+        "agency",
+        "association",
+        "clinic",
+        "company",
+        "department",
+        "firm",
+        "group",
+        "institution",
+        "lab",
+        "office",
+        "organization",
+        "school",
+        "unit",
+    }
+)
 _HUMAN_ROLE_SUFFIXES = ("ant", "ent", "er", "ian", "ist", "or", "ee", "owner")
 _MATERIAL_FRAGMENT_ACTION_WORDS = frozenset(
     {
         "approval",
+        "capture",
         "context",
         "decision",
         "design",
@@ -281,6 +299,7 @@ def _usable_first_path_source(value: str, *, title: str, preserve_one_line: bool
         if (
             preserve_one_line
             or _preserve_one_line_capability_source(text)
+            or _preserve_one_line_action_source(text)
             or _preserve_one_line_sequence_source(text)
             or _preserve_one_line_relative_actor_source(text)
         ):
@@ -321,6 +340,13 @@ def _preserve_one_line_sequence_source(value: str) -> bool:
         return False
     tokens = {word.casefold().strip(".,:;") for word in text.split()}
     return "then" in tokens and first_path_has_action_signal(text)
+
+
+def _preserve_one_line_action_source(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text or any(mark in text for mark in ".!?"):
+        return False
+    return first_path_has_action_signal(text) and _starts_with_action_without_actor(text)
 
 
 def _preserve_one_line_relative_actor_source(value: str) -> bool:
@@ -575,7 +601,11 @@ def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[st
     if rows:
         return rows[:3]
     actor = _fallback_actor_label(title)
-    action = _actorless_modal_action(value) or "complete the first path"
+    action = (
+        _actorless_modal_action(value)
+        or (base_action_clause(value).strip(" .") if looks_like_action_clause(value) else "")
+        or "complete the first path"
+    )
     return [f"{actor}: needs the product to {action} and keep the result visible and reviewable"]
 
 
@@ -601,7 +631,8 @@ def _first_path_actor_clauses(value: str) -> list[str]:
     text = _clean(value)
     if not text:
         return []
-    clauses = _split_actor_candidate_clauses(text)
+    clauses = [text] if _actor_gerund_action_parts(text)[0] else []
+    clauses.extend(_split_actor_candidate_clauses(text))
     model_steps = [_clean(step) for step in first_path_model(text).steps if _clean(step)]
     if model_steps:
         clauses.extend(model_steps)
@@ -669,7 +700,7 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
         return _human_actor_row(purpose_actor, purpose_action)
     gerund_actor, gerund_action = _actor_gerund_action_parts(clause)
     if gerund_actor and gerund_action:
-        return _human_actor_row(gerund_actor, gerund_action)
+        return _human_actor_row(gerund_actor, gerund_action, preserve_full_action=True)
     if _starts_with_action_without_actor(clause):
         return ""
     marker_index = _first_word_index(words, _MODAL_MARKERS)
@@ -684,6 +715,8 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
         if _actor_prefix_contains_embedded_action(actor_words):
             return ""
         if _looks_like_passive_object_subject(actor_words, _words(action)):
+            return ""
+        if _looks_like_material_actor_fragment(actor_words, _words(action)):
             return ""
         return _human_actor_row(" ".join(actor_words), action)
     action_index = _action_start_index(words)
@@ -854,6 +887,8 @@ def _gerund_action_clause(value: str) -> str:
     converted = base_gerund_clause(text).strip(" .")
     if not converted or converted.casefold() == text.casefold():
         return ""
+    if re.search(r",\s+including\b", text, flags=re.IGNORECASE):
+        converted = re.sub(r",\s+include\b", " with", converted, count=1, flags=re.IGNORECASE)
     return converted
 
 
@@ -954,7 +989,7 @@ def _primary_actor_action_segment(value: str) -> str:
 def _looks_like_non_human_actor(value: str) -> bool:
     terms = {term.casefold() for term in label_terms(value)}
     role_terms = terms | {term[:-1] for term in terms if term.endswith("s")}
-    if role_terms & _HUMAN_ACTOR_TERMS:
+    if role_terms & (_HUMAN_ACTOR_TERMS | _ORGANIZATION_ACTOR_TERMS):
         return False
     return bool(terms & _NON_HUMAN_ACTOR_TERMS)
 
@@ -974,7 +1009,7 @@ def _plural_subject_fallback(words: Sequence[str], *, allow_single_subject: bool
 
 def _looks_plural(value: str) -> bool:
     token = str(value or "").casefold().strip(".,:;")
-    return len(token) > 3 and token.endswith("s") and not token.endswith("ss")
+    return len(token) > 3 and token.endswith("s") and not token.endswith(("ous", "ss"))
 
 
 def _lead_actor_label(actor_rows: Sequence[str]) -> str:
@@ -1058,6 +1093,7 @@ def _state_record_subject(value: str) -> str:
     action_object = _actor_action_object(text)
     if action_object:
         text = nominal_visible_result_object(action_object).strip(" .") or action_object
+    text = re.sub(r"\s+\b(?:after|before|during|when|where|while)\b.+$", "", text, flags=re.IGNORECASE).strip(" .")
     words = _strip_leading_articles(_words(text))
     if len(words) >= 3 and words[0].casefold() == "only":
         words = words[1:]
@@ -1091,7 +1127,8 @@ def _looks_like_actor_subject(words: Sequence[str]) -> bool:
         return False
     last = cleaned[-1].casefold().strip(".,:;")
     singular = last[:-1] if last.endswith("s") else last
-    if singular in _HUMAN_ACTOR_TERMS or last in _HUMAN_ACTOR_TERMS:
+    actor_terms = _HUMAN_ACTOR_TERMS | _ORGANIZATION_ACTOR_TERMS
+    if singular in actor_terms or last in actor_terms:
         return True
     if any(singular.endswith(suffix) or last.endswith(suffix) for suffix in _HUMAN_ROLE_SUFFIXES):
         return True

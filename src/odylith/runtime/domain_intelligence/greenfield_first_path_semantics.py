@@ -32,6 +32,9 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     clean_visible_result_phrase as _clean_visible_result_phrase,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import (
+    starts_with_compound_noun_object as _starts_with_compound_noun_object,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import is_trivial_start as _is_trivial_start
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     leading_subject_prefix as _leading_subject_prefix,
@@ -713,6 +716,8 @@ def _connector_core_starts_action_clause(value: str) -> bool:
 def _starts_new_action_clause(value: str) -> bool:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not text:
+        return False
+    if _starts_with_compound_noun_object(text):
         return False
     if _starts_with_result_object_modifier(text):
         return False

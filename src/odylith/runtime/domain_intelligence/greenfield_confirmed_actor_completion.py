@@ -65,11 +65,7 @@ def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     rows = [row for row in confirmed_text_values(intent.get("human_actors")) if not _actor_row_is_meta(row)]
     labels = [_actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label and not _actor_label_has_clause_lead(label)]
-    if labels and _generated_partial_actor_rows(rows):
-        first_path_labels = _derived_first_path_actor_labels(intent, title=title)
-        derived_labels = first_path_labels if len(first_path_labels) > len(labels) else []
-    else:
-        derived_labels = [] if labels else _derived_actor_labels(intent, title=title, allow_generic_fallback=True)
+    derived_labels = [] if labels else _derived_actor_labels(intent, title=title, allow_generic_fallback=True)
     for label in derived_labels:
         if label and label.casefold() not in {existing.casefold() for existing in labels}:
             labels.append(label)
@@ -146,12 +142,13 @@ def _actor_row_is_meta(value: str) -> bool:
 
 def _actor_description(*, label: str, index: int, title: str, first_path: str, state: str) -> str:
     label_text = label.casefold()
+    if re.search(r"\b(public\s+figure|public\s+person|tracked|being\s+tracked|subject|official|executive|creator)\b", label_text):
+        body = "is represented by lawful source records, evidence, confidence, and privacy limits; the product must not imply private access, endorsement, or guaranteed outcome"
+        return f"{label}: {body}."
     path_role = actor_path_role(label=label, first_path=first_path, state=state)
     if path_role:
         return f"{label}: {path_role}."
-    if re.search(r"\b(public\s+figure|public\s+person|tracked|being\s+tracked|subject|official|executive|creator)\b", label_text):
-        body = "is represented by lawful source records, evidence, confidence, and privacy limits; the product must not imply private access, endorsement, or guaranteed outcome"
-    elif re.search(r"\b(compliance|policy|privacy|legal|risk|safety)\b", label_text):
+    if re.search(r"\b(compliance|policy|privacy|legal|risk|safety)\b", label_text):
         body = "reviews access, privacy, policy, risk, and evidence boundaries"
     elif re.search(r"\b(user|person|people|individual|researcher|investor|analyst|operator)\b", label_text):
         body = f"uses {title} to complete the first product path, review the result, and decide what to do next"
@@ -178,14 +175,6 @@ def _actor_description(*, label: str, index: int, title: str, first_path: str, s
 
 def _actor_row_has_usable_description(value: str) -> bool:
     return bool(actor_row_description(value))
-
-
-def _generated_partial_actor_rows(rows: Sequence[str]) -> bool:
-    return bool(rows) and all(
-        re.search(r"\bneeds?\s+the\s+product\s+to\b", _clean(row), flags=re.IGNORECASE)
-        and re.search(r"\bkeep\s+the\s+result\s+visible\s+and\s+reviewable\b", _clean(row), flags=re.IGNORECASE)
-        for row in rows
-    )
 
 
 def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generic_fallback: bool = True) -> list[str]:
@@ -221,16 +210,6 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generi
             ]
         )
     return list(unique_text(labels))
-
-
-def _derived_first_path_actor_labels(intent: Mapping[str, Any], *, title: str) -> list[str]:
-    labels: list[str] = []
-    for candidate in _role_candidates(_clean(intent.get("first_path"))):
-        if _word_count(candidate) <= 5:
-            label = _title_case(candidate)
-            if _actor_label_is_usable(label) and _derived_actor_label_has_human_signal(label):
-                labels.append(label)
-    return _dedupe_actor_labels(list(unique_text(labels)))
 
 
 def _derived_actor_label_has_human_signal(value: str) -> bool:

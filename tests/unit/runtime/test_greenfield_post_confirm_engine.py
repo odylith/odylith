@@ -730,6 +730,179 @@ def test_post_confirm_engine_commits_noncritical_projection_quality_debt(
     assert manifest["write_transaction"]["quality_debt_guard"] == "typed_noncritical_projection_debt_only"
 
 
+def test_post_confirm_engine_commits_typed_package_repetition_projection_debt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    package = GreenfieldCompletionPackage(proposal={}, release_selector="0.0.1")
+    message = (
+        "greenfield rendered package repeats noncanonical prose across 3 artifact(s) and 3 occurrence(s): "
+        "`It should carry state from one step to the next with visible progress`"
+    )
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"components": 3},
+        tribunal_status="passed",
+        issues=(message,),
+        findings=(
+            review_finding(
+                code="package_repetition",
+                surface="registry",
+                target_path="components",
+                projection_id="registry",
+                semantic_node_id="ArtifactPlanIR.registry",
+                severity="medium",
+                repairability="unrepairable",
+                owner="registry_renderer",
+                source="package_repetition_quality",
+                message=message,
+            ),
+        ),
+    )
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        engine,
+        "inspect_greenfield_package",
+        lambda current: SimpleNamespace(package=current, initial_report=report, report=report, passes=0, changed=False),
+    )
+
+    result = engine.run_greenfield_post_confirm_engine(
+        proposal={},
+        release_selector="0.0.1",
+        build_prewrite=lambda _proposal, _tribunal: SimpleNamespace(package=package, backlog_result={}),
+        repair_proposal=lambda current, _context: current,
+        proposal_ready=True,
+        max_passes=3,
+    )
+
+    manifest = result.manifest
+    assert manifest["status"] == engine.POST_CONFIRM_COMPLETION_PRIORITY_STATUS
+    assert manifest["stop_reason"] == "completion_priority_quality_debt"
+    assert manifest["hard_blocker"] is None
+    assert manifest["completion_priority"]["debt_issue_codes"] == ["package_repetition"]
+    assert manifest["completion_priority"]["hard_blocker_count"] == 0
+    assert manifest["write_transaction"]["quality_debt_guard"] == "typed_noncritical_projection_debt_only"
+
+
+def test_post_confirm_engine_rejects_source_truth_package_repetition_debt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repeated = (
+        "Version 0.0.1 is proven when a record moves across its full lifecycle, appears as a scheduled item, "
+        "shows a live status with an event timeline, and settles into a finished result that remains browsable."
+    )
+    package = GreenfieldCompletionPackage(
+        proposal={"intent": {"title": "Lifecycle Review", "proof_boundary": repeated}},
+        release_selector="0.0.1",
+    )
+    message = (
+        "greenfield rendered package repeats noncanonical prose across 3 artifact(s) and 3 occurrence(s): "
+        f"`{repeated}`"
+    )
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"components": 3},
+        tribunal_status="passed",
+        issues=(message,),
+        findings=(
+            review_finding(
+                code="package_repetition",
+                surface="registry",
+                target_path="components",
+                projection_id="registry",
+                semantic_node_id="ArtifactPlanIR.registry",
+                severity="medium",
+                repairability="unrepairable",
+                owner="registry_renderer",
+                source="package_repetition_quality",
+                message=message,
+            ),
+        ),
+    )
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        engine,
+        "inspect_greenfield_package",
+        lambda current: SimpleNamespace(package=current, initial_report=report, report=report, passes=0, changed=False),
+    )
+
+    with pytest.raises(engine.GreenfieldPostConfirmEngineError) as exc:
+        engine.run_greenfield_post_confirm_engine(
+            proposal={},
+            release_selector="0.0.1",
+            build_prewrite=lambda _proposal, _tribunal: SimpleNamespace(package=package, backlog_result={}),
+            repair_proposal=lambda current, _context: current,
+            proposal_ready=True,
+            max_passes=3,
+        )
+
+    manifest = exc.value.manifest
+    assert manifest["status"] == "failed"
+    assert manifest["stop_reason"] == "not_rescue_eligible"
+    assert manifest["hard_blocker"]["code"] == "package_repetition"
+    assert "completion_priority" not in manifest
+
+
+def test_post_confirm_engine_rejects_untyped_package_repetition_debt(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    package = GreenfieldCompletionPackage(proposal={}, release_selector="0.0.1")
+    message = "greenfield rendered package repeats unsupported package prose"
+    report = GreenfieldCompletionReport(
+        status="failed",
+        version="greenfield-post-confirm-completion-v1",
+        semantic_model=True,
+        artifact_counts={"components": 3},
+        tribunal_status="passed",
+        issues=(message,),
+        findings=(
+            review_finding(
+                code="package_repetition",
+                surface="semantic_model",
+                target_path="semantic_model",
+                projection_id="review_report",
+                semantic_node_id="SemanticModelIR.intent",
+                severity="medium",
+                repairability="unrepairable",
+                owner="semantic_compiler",
+                source="semantic_projection_alignment",
+                message=message,
+            ),
+        ),
+    )
+
+    monkeypatch.setattr(engine, "run_greenfield_tribunal", lambda *_args, **_kwargs: _PassingTribunal())
+    monkeypatch.setattr(engine, "assert_greenfield_completion_ready", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        engine,
+        "inspect_greenfield_package",
+        lambda current: SimpleNamespace(package=current, initial_report=report, report=report, passes=0, changed=False),
+    )
+
+    with pytest.raises(engine.GreenfieldPostConfirmEngineError) as exc:
+        engine.run_greenfield_post_confirm_engine(
+            proposal={},
+            release_selector="0.0.1",
+            build_prewrite=lambda _proposal, _tribunal: SimpleNamespace(package=package, backlog_result={}),
+            repair_proposal=lambda current, _context: current,
+            proposal_ready=True,
+            max_passes=3,
+        )
+
+    manifest = exc.value.manifest
+    assert manifest["status"] == "failed"
+    assert manifest["stop_reason"] == "not_rescue_eligible"
+    assert manifest["hard_blocker"]["code"] == "package_repetition"
+    assert "completion_priority" not in manifest
+
+
 def test_post_confirm_engine_passes_quality_lens_context_to_semantic_repair(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
