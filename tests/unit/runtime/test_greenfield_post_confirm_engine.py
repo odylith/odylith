@@ -450,6 +450,51 @@ def test_string_only_package_issues_fail_closed_instead_of_routing_semantics() -
     assert {finding.owner for finding in legacy_findings} == {"typed_package_artifact_gate"}
 
 
+def test_atlas_first_path_coverage_uses_structured_contract_projection_facts() -> None:
+    proposal = {
+        "intent": {"reasoning_mode": "odylith_confirmed_governed_proposal"},
+        "semantic_model": {
+            "first_path_contract": {
+                "capability": (
+                    "using a long accepted path with additional domain controls and review obligations "
+                    "that should not need to appear verbatim inside Atlas"
+                ),
+                "action": "tune",
+                "entity": "saved experiment state",
+                "mutation": "Tune model settings or compare saved runs",
+                "visible_result": "saved comparison result",
+                "events": [
+                    {"action": "tune", "target_entity": "model settings", "text": "Tune model settings"},
+                    {"action": "compare", "target_entity": "saved runs", "text": "Compare saved runs"},
+                    {"action": "show", "target_entity": "saved comparison result", "text": "Show saved comparison result"},
+                ],
+            },
+            "diagram_event_graph": {
+                "proof_checkpoint": "Proven when saved comparison result is visible for review"
+            },
+        },
+    }
+    package = GreenfieldCompletionPackage(
+        proposal=proposal,
+        rendered_atlas_sources={
+            "scientific-review-first-path.mmd": (
+                "flowchart LR\n"
+                "  S1[\"Tune model settings\"] --> S2[\"Compare saved runs\"]\n"
+                "  S2 --> outcome[\"Visible result<br/>saved comparison result\"]\n"
+                "  S2 --> proof[\"Proof checkpoint<br/>saved comparison result is visible for review\"]\n"
+            )
+        },
+    )
+
+    findings = package_artifact_findings(package)
+
+    assert not [
+        finding
+        for finding in findings
+        if finding.message == "prewrite Atlas package missing semantic coverage for FirstPathContract"
+    ]
+
+
 def test_source_package_repetition_uses_typed_finding_not_legacy_gate() -> None:
     repeated_risk = "Combining intake, review, and approval state would hide failure recovery."
     package = GreenfieldCompletionPackage(

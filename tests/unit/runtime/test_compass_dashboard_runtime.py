@@ -860,6 +860,88 @@ def test_scoped_standup_fact_packet_trims_dangling_generated_fragments() -> None
     assert not why_context["architecture_consequence"].endswith((" at.", " to."))
 
 
+def test_scientific_greenfield_why_context_uses_complete_clauses() -> None:
+    row = {
+        "idea_id": "B-001",
+        "title": "Prove One Complete Research Simulation Path",
+        "status": "queued",
+        "why": {
+            "problem": (
+                "Researcher and reviewer need a dependable way to understand the simulation run and decide the "
+                "next step from the saved reviewable experiment; without it, the work stays scattered, hard to "
+                "interpret, and easy to misuse."
+            ),
+            "customer": "Researcher, reviewer, model engineer, data steward",
+            "proposed_solution": (
+                "First implementation step: Prove one first-release path: upload or select a small measurement "
+                "dataset; define the context and prediction target; run a simulation; review predicted values "
+                "against a baseline or held-out truth; preserve run parameters and review notes, then let the "
+                "researcher see the saved reviewable experiment."
+            ),
+            "opportunity": (
+                "Prove the first release path: upload or select a small measurement dataset; define the context "
+                "and prediction target; run a simulation; review predicted values against a baseline or held-out "
+                "truth; preserve run parameters and review notes, then let the researcher see the saved reviewable "
+                "experiment."
+            ),
+        },
+        "plan": {"progress_ratio": 0.0, "done_tasks": 0, "total_tasks": 0},
+        "timeline": {"last_activity_iso": "2026-04-11T07:30:00Z"},
+    }
+
+    why_context = runtime._ws_why_context(row)
+
+    assert "without it, the work stays." not in why_context["use_story"]
+    assert "without it, the work stays scattered, hard to interpret, and easy to misuse" in why_context["use_story"]
+    assert "then let the researcher see." not in why_context["benefit"]
+    assert "then let the researcher see the saved reviewable experiment" in why_context["benefit"]
+    assert "review predicted values against a baseline or held-out truth" in why_context["benefit"]
+    assert "First implementation step" not in why_context["architecture_consequence"]
+    assert "against, which" not in why_context["architecture_consequence"]
+    assert not why_context["use_story"].endswith((" stays.", " against.", " see."))
+    assert not why_context["architecture_consequence"].endswith((" against.", " see."))
+
+
+def test_global_standup_portfolio_posture_keeps_sentence_boundary() -> None:
+    row = {
+        "idea_id": "B-001",
+        "title": "Prove One Complete Research Simulation Path",
+        "status": "queued",
+        "why": {
+            "problem": "Researcher needs a clear simulation record.",
+            "customer": "Researcher",
+            "proposed_solution": "Prove the first simulation workflow.",
+            "opportunity": "Give the researcher a reviewable result.",
+        },
+        "plan": {"progress_ratio": 0.0, "done_tasks": 0, "total_tasks": 0},
+        "timeline": {"last_activity_iso": "2026-04-11T07:30:00Z"},
+    }
+    packet = runtime._build_global_standup_fact_packet(
+        ws_rows=[row],
+        ws_index={"B-001": row},
+        active_ws_rows=[],
+        event_counts_by_ws={"B-001": 4},
+        next_actions=[],
+        recent_completed=[],
+        window_events=[],
+        window_transactions=[],
+        execution_updates=[],
+        transaction_updates=[],
+        window_hours=24,
+        risk_rows={"bugs": [], "traceability": [], "stale_diagrams": []},
+        risk_summary="Risk posture: no critical blockers are currently surfaced.",
+        kpis={},
+        self_host_snapshot={},
+        self_host_risks=[],
+        now=dt.datetime(2026, 4, 11, 8, 0, 0, tzinfo=dt.timezone.utc),
+    )
+
+    current_execution = next(section for section in packet["sections"] if section["key"] == "current_execution")
+    portfolio_fact = next(fact for fact in current_execution["facts"] if fact["kind"] == "portfolio_posture")
+    assert "right now. Heaviest movement" in portfolio_fact["text"]
+    assert "right now Heaviest movement" not in portfolio_fact["text"]
+
+
 def test_build_global_standup_fact_packet_surfaces_live_self_host_risk() -> None:
     risks = runtime._self_host_risk_rows(
         snapshot={

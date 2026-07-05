@@ -12,6 +12,7 @@ from odylith.runtime.common.prose_grammar import action_verb_pattern
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
+from odylith.runtime.common.prose_grammar import strip_clipped_terminal_fragment
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
@@ -116,8 +117,13 @@ _PROMPT_DANGLING_TAILS = frozenset(
         "while",
         "with",
         "without",
+        "keep",
+        "keeps",
+        "return",
+        "returns",
     }
 )
+_MODAL_ACTION_PREFIXES = frozenset({"can", "could", "may", "might", "must", "should", "will", "would"})
 
 
 def build_source_launch_handoff(
@@ -136,12 +142,17 @@ def build_source_launch_handoff(
 
     context = source_launch_context if isinstance(source_launch_context, Mapping) else {}
     product = _clean_title(title)
-    path = _prompt_clause(_first_path_phrase(first_path), fallback="the accepted first product path", limit=360)
+    actor_labels = _actor_labels(actors)
+    path = _prompt_clause(
+        _first_path_phrase(first_path, actor_labels=actor_labels),
+        fallback="the accepted first product path",
+        limit=360,
+    )
     actor = _primary_actor(actors)
     participant = _secondary_actor(actors)
-    capabilities = _capability_phrase(components=components, first_path=first_path)
+    capabilities = _capability_phrase(components=components, first_path=first_path, actor_labels=actor_labels)
     risk = _risk_phrase(risks)
-    proof = _proof_phrase(validation=validation, first_path=first_path)
+    proof = _proof_phrase(validation=validation, first_path=first_path, actor_labels=actor_labels)
     excluded = _exclusion_phrase(non_goals)
     boundary = _source_boundary_hint(product)
     language = _language_signal(repo_root)
@@ -411,6 +422,23 @@ def _command_purpose(value: object) -> str:
     return "listed verification command"
 
 
+def _actor_labels(actors: Sequence[tuple[str, str, str]]) -> tuple[str, ...]:
+    labels: list[str] = []
+    for row in actors:
+        try:
+            text = sentence(row[1])
+        except IndexError:
+            continue
+        label = _actor_label_from_text(text)
+        if label and label not in labels:
+            labels.append(label)
+    return tuple(labels)
+
+
+def _actor_label_from_text(value: str) -> str:
+    return re.split(r"\s+[—-]\s+|:", sentence(value), maxsplit=1)[0].strip(" .")
+
+
 def _language_signal(repo_root: Path) -> _LanguageSignal | None:
     markers: dict[str, int] = {}
     suffixes: dict[str, int] = {}
@@ -459,15 +487,19 @@ def _actor_at(actors: Sequence[tuple[str, str, str]], index: int) -> str:
         text = sentence(actors[index][1])
     except IndexError:
         return ""
-    text = re.split(r"\s+[—-]\s+|:", text, maxsplit=1)[0].strip(" .")
-    return text
+    return _actor_label_from_text(text)
 
 
-def _capability_phrase(*, components: Sequence[Mapping[str, Any]], first_path: str) -> str:
-    action = first_path_action_phrase(first_path, fallback="", limit=110, max_fragments=1)
+def _capability_phrase(
+    *,
+    components: Sequence[Mapping[str, Any]],
+    first_path: str,
+    actor_labels: Sequence[str] = (),
+) -> str:
+    action = _material_action_phrase(first_path, actor_labels=actor_labels, limit=110)
     outcome = first_path_outcome_phrase(first_path, fallback="", limit=110)
     action = _drop_embedded_outcome(action)
-    outcome = _sentence_case_fragment(_prompt_fragment(outcome))
+    outcome = _received_outcome_phrase(outcome)
     if _outcome_starts_with_actor_action(outcome) or _outcome_restates_action(action, outcome):
         outcome = ""
     if action and outcome:
@@ -501,12 +533,13 @@ def _risk_phrase(risks: Sequence[Any]) -> str:
             first_sentence = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)[0].strip()
             if first_sentence:
                 text = first_sentence
+            text = _compact_generated_risk_sentence(text)
             return _prompt_phrase(text, fallback="the real-world failure modes named by the accepted product direction", limit=260)
     return "the real-world failure modes named by the accepted product direction"
 
 
-def _proof_phrase(*, validation: Sequence[str], first_path: str) -> str:
-    semantic_clause = _first_path_proof_clause(first_path)
+def _proof_phrase(*, validation: Sequence[str], first_path: str, actor_labels: Sequence[str] = ()) -> str:
+    semantic_clause = _first_path_proof_clause(first_path, actor_labels=actor_labels)
     if semantic_clause:
         return semantic_clause
     for row in validation:
@@ -539,13 +572,43 @@ def _proof_result_sentence(proof: str) -> str:
     return f"Tests and validation evidence that the accepted path can {clean}."
 
 
-def _first_path_proof_clause(first_path: str) -> str:
+def _material_action_phrase(first_path: str, *, actor_labels: Sequence[str], limit: int) -> str:
+    model = first_path_model(first_path)
+    candidates = [model.material_action, *(str(step) for step in model.steps[:2])]
+    for candidate in candidates:
+        text = _clean_fragment(candidate)
+        if not text:
+            continue
+        actor_action = _actor_led_base_action_from_step(text, actor_labels=actor_labels)
+        if actor_action:
+            return short(actor_action, limit=limit)
+        if looks_like_action_clause(text):
+            action = base_action_clause(text)
+            if action:
+                return short(_drop_embedded_outcome(_prompt_fragment(action)), limit=limit)
+    return first_path_action_phrase(first_path, fallback="", limit=limit, max_fragments=1)
+
+
+def _compact_generated_risk_sentence(value: object) -> str:
+    text = sentence(value)
+    lowered = text.casefold()
+    if " can be wrong or misleading when " not in lowered:
+        return text
+    if "information behind it" not in lowered and "information behind them" not in lowered:
+        return text
+    return (
+        "The promised result can mislead users when required information is incomplete, stale, "
+        "inconsistent, or interpreted incorrectly."
+    )
+
+
+def _first_path_proof_clause(first_path: str, *, actor_labels: Sequence[str] = ()) -> str:
     """Render proof obligations from first-path actions without gerundizing nouns."""
 
     rows: list[str] = []
     seen: set[str] = set()
     for step in first_path_model(first_path).steps:
-        action = _base_action_from_step(str(step))
+        action = _base_action_from_step(str(step), actor_labels=actor_labels)
         key = action.casefold()
         if not action or key in seen:
             continue
@@ -558,11 +621,11 @@ def _first_path_proof_clause(first_path: str) -> str:
     return short(_join(rows), limit=260).rstrip(" .!?;:")
 
 
-def _base_action_from_step(value: str) -> str:
+def _base_action_from_step(value: str, *, actor_labels: Sequence[str] = ()) -> str:
     text = _clean_fragment(value)
     if not text:
         return ""
-    actor_action = _actor_led_base_action_from_step(text)
+    actor_action = _actor_led_base_action_from_step(text, actor_labels=actor_labels)
     if actor_action:
         return actor_action
     tokens = text.split()
@@ -590,20 +653,27 @@ def _source_boundary_hint(product: str) -> str:
     return slug or "the first product module"
 
 
-def _first_path_phrase(value: str) -> str:
+def _first_path_phrase(value: str, *, actor_labels: Sequence[str] = ()) -> str:
     text = _clean_fragment(value)
-    action = first_path_action_phrase(text, fallback="", limit=180, max_fragments=1)
+    action = _material_action_phrase(text, actor_labels=actor_labels, limit=180)
     outcome = first_path_outcome_phrase(text, fallback="", limit=150)
     action = _drop_embedded_outcome(action)
-    outcome = _sentence_case_fragment(_prompt_fragment(outcome))
+    outcome = _received_outcome_phrase(outcome)
     if _outcome_starts_with_actor_action(outcome) or _outcome_restates_action(action, outcome):
         outcome = ""
     if action and outcome:
-        subject_action = _first_actor_led_subject_action(text) or _subjectify_path_step(action)
+        subject_action = _first_actor_led_subject_action(text, actor_labels=actor_labels) or _subjectify_path_step(
+            action,
+            actor_labels=actor_labels,
+        )
         joiner = "and receive" if re.search(r"\bcan\s+\w+", subject_action, flags=re.IGNORECASE) else "and receives"
         return short(f"{subject_action} {joiner} {outcome}", limit=320)
     if action:
-        return short(_first_actor_led_subject_action(text) or _subjectify_path_step(action), limit=260)
+        return short(
+            _first_actor_led_subject_action(text, actor_labels=actor_labels)
+            or _subjectify_path_step(action, actor_labels=actor_labels),
+            limit=260,
+        )
     model = first_path_model(text)
     if model.steps:
         rows: list[str] = []
@@ -613,7 +683,7 @@ def _first_path_phrase(value: str) -> str:
                 continue
             if not rows and re.search(r"\bopens?\s+(?:the\s+)?(?:app|web app|application|site|website)\b", clean, flags=re.I):
                 continue
-            rows.append(_subjectify_path_step(clean))
+            rows.append(_subjectify_path_step(clean, actor_labels=actor_labels))
             if len(rows) >= 3:
                 break
         if rows:
@@ -621,12 +691,12 @@ def _first_path_phrase(value: str) -> str:
     return short(text, limit=360) if text else "the accepted first product path"
 
 
-def _subjectify_path_step(value: str) -> str:
+def _subjectify_path_step(value: str, *, actor_labels: Sequence[str] = ()) -> str:
     text = _clean_fragment(value)
     if not text:
         return ""
     text = _normalize_embedded_action_verbs(text)
-    actor_led = _actor_led_modal_step(text)
+    actor_led = _actor_led_modal_step(text, actor_labels=actor_labels)
     if actor_led:
         return actor_led
     if looks_like_action_clause(text):
@@ -635,16 +705,19 @@ def _subjectify_path_step(value: str) -> str:
     return text
 
 
-def _first_actor_led_subject_action(first_path: str) -> str:
+def _first_actor_led_subject_action(first_path: str, *, actor_labels: Sequence[str] = ()) -> str:
     for step in first_path_model(first_path).steps:
-        actor_led = _actor_led_modal_step(_clean_fragment(step))
+        actor_led = _actor_led_modal_step(_clean_fragment(step), actor_labels=actor_labels)
         if actor_led:
             return actor_led
     return ""
 
 
-def _actor_led_modal_step(value: str) -> str:
+def _actor_led_modal_step(value: str, *, actor_labels: Sequence[str] = ()) -> str:
     text = _clean_fragment(value)
+    source_owned = _source_owned_actor_modal_step(text, actor_labels=actor_labels)
+    if source_owned:
+        return source_owned
     for match in re.finditer(rf"(?<![A-Za-z0-9_-])(?:{_FINITE_ACTION_VERB_PATTERN})(?![A-Za-z0-9_-])", text, flags=re.IGNORECASE):
         if match.start() <= 0:
             continue
@@ -658,8 +731,11 @@ def _actor_led_modal_step(value: str) -> str:
     return ""
 
 
-def _actor_led_base_action_from_step(value: str) -> str:
+def _actor_led_base_action_from_step(value: str, *, actor_labels: Sequence[str] = ()) -> str:
     text = _clean_fragment(value)
+    source_owned = _source_owned_actor_action(text, actor_labels=actor_labels)
+    if source_owned:
+        return source_owned
     for match in re.finditer(rf"(?<![A-Za-z0-9_-])(?:{_FINITE_ACTION_VERB_PATTERN})(?![A-Za-z0-9_-])", text, flags=re.IGNORECASE):
         if match.start() <= 0:
             continue
@@ -670,6 +746,87 @@ def _actor_led_base_action_from_step(value: str) -> str:
         if action:
             return _drop_embedded_outcome(_prompt_fragment(action))
     return ""
+
+
+def _source_owned_actor_modal_step(value: str, *, actor_labels: Sequence[str]) -> str:
+    parts = _source_owned_actor_action_parts(value, actor_labels=actor_labels)
+    if not parts:
+        return ""
+    actor, action = parts
+    subject = _actor_subject_phrase(actor)
+    if _starts_with_modal_action(action):
+        return f"{subject} {action}"
+    return f"{subject} can {action}"
+
+
+def _source_owned_actor_action(value: str, *, actor_labels: Sequence[str]) -> str:
+    parts = _source_owned_actor_action_parts(value, actor_labels=actor_labels)
+    return _base_action_without_leading_modal(parts[1]) if parts else ""
+
+
+def _source_owned_actor_action_parts(value: str, *, actor_labels: Sequence[str]) -> tuple[str, str] | None:
+    text = _clean_fragment(value)
+    if not text or not actor_labels:
+        return None
+    spans = list(re.finditer(r"[A-Za-z0-9][A-Za-z0-9'-]*", text))
+    text_tokens = [span.group(0) for span in spans]
+    for label in sorted((_actor_label_from_text(label) for label in actor_labels), key=lambda item: len(item), reverse=True):
+        label_tokens = re.findall(r"[A-Za-z0-9][A-Za-z0-9'-]*", label)
+        if not label_tokens or len(label_tokens) >= len(text_tokens):
+            continue
+        if not _token_prefix_matches(text_tokens, label_tokens):
+            continue
+        tail = text[spans[len(label_tokens)].start() :].strip(" .,;:")
+        if not _usable_source_owned_action_tail(tail):
+            continue
+        if looks_like_action_clause(tail):
+            action = base_action_clause(tail)
+        else:
+            action = tail
+        action = repair_modal_base_form_drift(_prompt_fragment(action))
+        action = _drop_embedded_outcome(action)
+        if action:
+            return (label, action)
+    return None
+
+
+def _token_prefix_matches(tokens: Sequence[str], prefix: Sequence[str]) -> bool:
+    if len(prefix) > len(tokens):
+        return False
+    return all(_actor_token_equivalent(tokens[index], prefix[index]) for index in range(len(prefix)))
+
+
+def _actor_token_equivalent(left: str, right: str) -> bool:
+    left_key = _actor_token_key(left)
+    right_key = _actor_token_key(right)
+    return bool(left_key and right_key and left_key == right_key)
+
+
+def _actor_token_key(value: str) -> str:
+    token = str(value or "").casefold().strip(".,:;()[]{}'\"")
+    if len(token) > 4 and token.endswith("s") and not token.endswith(("ics", "ss", "us")):
+        return token[:-1]
+    return token
+
+
+def _usable_source_owned_action_tail(value: str) -> bool:
+    words = [word.strip(".,:;") for word in str(value or "").split() if word.strip(".,:;")]
+    if len(words) < 2:
+        return False
+    first = words[0].casefold()
+    return first not in {"and", "or", "before", "after", "when", "while", "without"}
+
+
+def _starts_with_modal_action(value: str) -> bool:
+    words = [word.strip(".,:;").casefold() for word in str(value or "").split() if word.strip(".,:;")]
+    return len(words) >= 2 and words[0] in _MODAL_ACTION_PREFIXES
+
+
+def _base_action_without_leading_modal(value: str) -> str:
+    words = str(value or "").split()
+    if len(words) >= 2 and words[0].strip(".,:;").casefold() in _MODAL_ACTION_PREFIXES:
+        return " ".join(words[1:]).strip(" .")
+    return str(value or "").strip(" .")
 
 
 def _actor_subject_phrase(value: str) -> str:
@@ -693,13 +850,70 @@ def _prompt_phrase(value: object, *, fallback: str, limit: int = 180) -> str:
         return fallback
     text = re.sub(r"\b(?:proof gates?|validation points?)\s+for\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\bThe weak inputs are\s*[. ]*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"\s+(?:and|or|asks?|check|checks)\s*$", "", text, flags=re.IGNORECASE).strip(" .,;:")
+    text = re.sub(
+        r"\s+(?:and|or|asks?|check|checks|keep|keeps|return|returns)\s*$",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .,;:")
     text = re.sub(r"\.\.+", ".", text)
-    return _prompt_fragment(short(text, limit=limit, fallback=fallback))
+    return _prompt_fragment(strip_clipped_terminal_fragment(short(text, limit=limit, fallback=fallback)))
 
 
 def _prompt_clause(value: object, *, fallback: str, limit: int = 180) -> str:
     return _prompt_phrase(value, fallback=fallback, limit=limit).rstrip(" .!?;:")
+
+
+def _received_outcome_phrase(value: object) -> str:
+    text = _sentence_case_fragment(_prompt_fragment(value))
+    if not text:
+        return ""
+    result_object = _action_outcome_result_object(text)
+    return result_object or text
+
+
+def _action_outcome_result_object(value: str) -> str:
+    text = _prompt_fragment(value)
+    if not looks_like_action_clause(text):
+        return ""
+    action = base_action_clause(text, force_leading_finite=True).strip(" .")
+    verb, separator, obj = action.partition(" ")
+    if not separator:
+        return ""
+    verb_key = verb.casefold().strip(".,:;")
+    obj = obj.strip(" .")
+    if not obj:
+        return ""
+    if verb_key in {"receive", "return"}:
+        return obj
+    past = _past_action_verb(verb_key)
+    if not past:
+        return ""
+    obj = re.sub(r"^(?:a|an|the|one)\s+", "", obj, flags=re.IGNORECASE).strip(" .")
+    return f"the {past} {obj}".strip() if obj else ""
+
+
+def _past_action_verb(value: str) -> str:
+    verb = str(value or "").casefold().strip(" .")
+    if not verb:
+        return ""
+    irregular = {
+        "choose": "chosen",
+        "find": "found",
+        "run": "run",
+        "see": "seen",
+        "send": "sent",
+        "set": "set",
+        "show": "shown",
+        "submit": "submitted",
+    }
+    if verb in irregular:
+        return irregular[verb]
+    if verb.endswith("e"):
+        return f"{verb}d"
+    if verb.endswith("y") and len(verb) > 1 and verb[-2] not in {"a", "e", "i", "o", "u"}:
+        return f"{verb[:-1]}ied"
+    return f"{verb}ed"
 
 
 def _prompt_fragment(value: object) -> str:

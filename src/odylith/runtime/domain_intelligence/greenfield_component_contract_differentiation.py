@@ -9,6 +9,7 @@ from typing import Any
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence import greenfield_component_contract_targets as contract_targets
+from odylith.runtime.domain_intelligence import greenfield_component_semantic_contract_support as contract_support
 from odylith.runtime.domain_intelligence.greenfield_actor_terms import starts_with_generic_actor_label
 from odylith.runtime.domain_intelligence.greenfield_component_axes import (
     ComponentAxis,
@@ -315,7 +316,14 @@ def _repair_row(
         previous_label=previous_label,
         next_label=next_label,
     )
-    if _profile_contract_preserves_status_lifecycle(row=row, contract=profile_contract):
+    if _profile_contract_preserves_status_lifecycle(
+        row=row,
+        contract=profile_contract,
+    ) or contract_support.material_profile_obligations_survive(
+        label=label,
+        description=_clean(row.get("source_system_description")),
+        contract=profile_contract,
+    ):
         contract = normalize_contract(profile_contract)
         preserve_first_path_signal_terms(contract, first_path=_proposal_text(proposal, "intent.first_path", "first_path"))
         row["component_contract"] = contract

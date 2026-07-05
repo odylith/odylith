@@ -8,6 +8,8 @@ from odylith.runtime.artifact_quality.generated_copy_quality import generated_pu
 from odylith.runtime.artifact_quality.greenfield_project_prompt_quality import project_implementation_prompt_issues
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import RenderedArtifact
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_action_subject
+from odylith.runtime.domain_intelligence.greenfield_experience import _preview_safe_validation_item
+from odylith.runtime.domain_intelligence.greenfield_experience import _readiness_gates
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.project_intelligence.source_launch import build_source_launch_handoff
 
@@ -97,6 +99,79 @@ def test_greenfield_source_launch_prompts_keep_fragments_clause_safe(tmp_path: P
     assert "and receive Pediatric therapy agency practice workspace user coordinates" not in encoded
     for row in handoff["prompts"]:
         assert generated_public_copy_issues(f"Project implementation prompt `{row['label']}`", row) == ()
+
+
+def test_greenfield_source_launch_trims_dangling_readiness_gate_verbs(tmp_path: Path) -> None:
+    handoff = build_source_launch_handoff(
+        repo_root=tmp_path,
+        title="Offender Reentry Service Plan Workspace",
+        first_path=(
+            "Reentry case manager can turn an ambiguous service plan case into a review-ready record using risk, "
+            "housing, and program evidence, explicit reentry review, auditable decisions, and a final service plan approval."
+        ),
+        actors=(("", "Reentry Case Manager: needs the product to keep the result visible", ""),),
+        components=(
+            {
+                "label": "Offender Reentry Service Plan Workspace Intake Register",
+                "responsibility": (
+                    "Captures the information needed to turn an ambiguous service plan case into a review-ready record."
+                ),
+            },
+        ),
+        risks=(
+            {
+                "statement": (
+                    "Explicit reentry review, auditable decisions, and a final service plan approval can be wrong or "
+                    "misleading when the information behind it is incomplete, stale, inconsistent, or interpreted incorrectly."
+                )
+            },
+        ),
+        validation=("Success proof includes turning the service plan case into a review-ready record.",),
+        non_goals=("Authentication, billing, full UI, database persistence, and external APIs.",),
+        source_launch_context={
+            "start_workstream_id": "B-002",
+            "start_workstream_title": (
+                "Let Reentry Case Manager Turn an Ambiguous Service Plan Case Into a Review-ready Record Using Risk, "
+                "Housing and Program Evidence, Explicit Reentry Review, Auditable Decisions and a Final Service Plan Approval"
+            ),
+            "release_selector": "0.0.1",
+            "coding_readiness_gates": [
+                (
+                    "Let Reentry Case Manager Turn an Ambiguous Service Plan Case Into a Review-ready Record Using Risk, "
+                    "Housing and Program Evidence, Explicit Reentry Review, Auditable Decisions and a Final Service Plan Approval keeps"
+                )
+            ],
+            "validation_gates": [
+                (
+                    "Let Reentry Case Manager Turn an Ambiguous Service Plan Case Into a Review-ready Record Using Risk, "
+                    "Housing and Program Evidence, Explicit Reentry Review, Auditable Decisions and a Final Service Plan Approval keeps"
+                )
+            ],
+            "verification_commands": ["odylith validate plan-traceability --repo-root ."],
+        },
+    )
+    encoded = json.dumps(handoff, sort_keys=True)
+
+    assert "keeps." not in encoded
+    assert "can be wrong or misleading when the information behind it is incomplete, stale, inconsistent." not in encoded
+    for row in handoff["prompts"]:
+        assert generated_public_copy_issues(f"Project implementation prompt `{row['label']}`", row) == ()
+
+
+def test_greenfield_next_steps_gate_copy_trims_terminal_action_verbs() -> None:
+    raw_gate = (
+        "Let Reentry Case Manager Turn an Ambiguous Service Plan Case Into a Review-ready Record Using Risk, "
+        "Housing and Program Evidence, Explicit Reentry Review, Auditable Decisions and a Final Service Plan Approval keeps"
+    )
+
+    validation_item = _preview_safe_validation_item(raw_gate)
+    readiness_items = _readiness_gates({"coding_readiness_gates": [raw_gate]})
+
+    assert validation_item
+    assert readiness_items
+    assert not validation_item.casefold().endswith("keeps")
+    assert not readiness_items[0].casefold().endswith("keeps")
+    assert generated_public_copy_issues("next steps validation", [validation_item, *readiness_items]) == ()
 
 
 def test_greenfield_source_launch_prompts_suppress_repeated_action_outcome(tmp_path: Path) -> None:
@@ -363,6 +438,100 @@ def test_greenfield_source_launch_actor_led_path_uses_modal_base_grammar(tmp_pat
             "\n".join(str(row.get(key, "")) for key in ("label", "when", "prompt", "result", "stop")),
             fields={**row, "position": str(handoff["prompts"].index(row) + 1)},
         )
+        assert project_implementation_prompt_issues(artifact) == []
+
+
+def test_greenfield_source_launch_source_owned_actor_base_action_does_not_leak_inside_user_can(tmp_path: Path) -> None:
+    first_path = (
+        "Engineers replay signal states, track circuit readings, weather context, maintenance history, "
+        "fault injection parameters, and review evidence before accepting an anomaly result."
+    )
+    handoff = build_source_launch_handoff(
+        repo_root=tmp_path,
+        title="Rail Signal Anomaly Simulator",
+        first_path=first_path,
+        actors=(
+            ("", "Engineers: replay signal evidence", ""),
+            ("", "Reviewer: reviews anomaly result", ""),
+        ),
+        components=(),
+        risks=("An anomaly result can be wrong when track circuit readings are stale.",),
+        validation=("Validate replayed signal states and anomaly result explanation.",),
+        non_goals=("External APIs.",),
+        source_launch_context={
+            "start_workstream_id": "B-001",
+            "start_workstream_title": "Replay signal states",
+            "release_selector": "0.0.1",
+        },
+    )
+    encoded = json.dumps(handoff, sort_keys=True)
+
+    assert "engineers can replay signal states and receive the accepted anomaly result" in encoded
+    assert "the user can review Engineers replay signal states" not in encoded
+    assert "receive accept an anomaly result" not in encoded
+    assert "capture the information needed to replay signal states and return the accepted anomaly result" in encoded
+    for row in handoff["prompts"]:
+        artifact = RenderedArtifact(
+            "Project implementation prompt",
+            row["label"],
+            "\n".join(str(row.get(key, "")) for key in ("label", "when", "prompt", "result", "stop")),
+            fields={**row, "position": str(handoff["prompts"].index(row) + 1)},
+        )
+        assert generated_public_copy_issues(f"Project implementation prompt `{row['label']}`", row) == ()
+        assert project_implementation_prompt_issues(artifact) == []
+
+
+def test_greenfield_source_launch_does_not_double_existing_actor_modal(tmp_path: Path) -> None:
+    first_path = (
+        "Mission operators can import orbit covariance, maneuver windows, fuel constraints, probability thresholds, "
+        "track provenance and approval notes. Mission operators publish a conjunction result."
+    )
+    handoff = build_source_launch_handoff(
+        repo_root=tmp_path,
+        title="Space Debris Conjunction Planner",
+        first_path=first_path,
+        actors=(
+            (
+                "",
+                (
+                    "Mission Operators: need the product to import orbit covariance, maneuver windows, fuel constraints, "
+                    "probability thresholds, track provenance and approval notes. Mission operators publish a conjunction "
+                    "result and keep the result visible and reviewable"
+                ),
+                "",
+            ),
+        ),
+        components=(
+            {
+                "label": "Intake Register",
+                "responsibility": "Records source input, current status, owner, blocker, handoff, and version history.",
+            },
+        ),
+        risks=("A conjunction result can be wrong when the orbit evidence is stale.",),
+        validation=(
+            "Release 0.0.1 succeeds when the accepted first path is complete, reviewable, and blocked when required.",
+        ),
+        non_goals=("Do not expand into adjacent automation before the first path is proven.",),
+        source_launch_context={
+            "start_workstream_id": "B-001",
+            "start_workstream_title": "Import orbit covariance and publish a conjunction result",
+            "release_selector": "0.0.1",
+        },
+    )
+    encoded = json.dumps(handoff, sort_keys=True)
+
+    assert "mission operators can import orbit covariance" in encoded.casefold()
+    assert "can can" not in encoded.casefold()
+    assert "needed to can import" not in encoded.casefold()
+    assert "capture the information needed to import orbit covariance" in encoded.casefold()
+    for index, row in enumerate(handoff["prompts"], start=1):
+        artifact = RenderedArtifact(
+            "Project implementation prompt",
+            row["label"],
+            "\n".join(str(row.get(key, "")) for key in ("label", "when", "prompt", "result", "stop")),
+            fields={**row, "position": str(index)},
+        )
+        assert generated_public_copy_issues(f"Project implementation prompt `{row['label']}`", row) == ()
         assert project_implementation_prompt_issues(artifact) == []
 
 

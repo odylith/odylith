@@ -25,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import (
     looks_generated_system_description,
 )
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
 
@@ -275,13 +276,13 @@ def _system_obligation_duplicates(candidate: str, rows: list[str]) -> bool:
 
 
 def _focus_system_name(focus: str, suffix: str) -> str:
-    focus_text = _clean(focus)
+    focus_text = collapse_repeated_phrase_units(_clean(focus))
     focus_terms = {term.casefold().strip(".,;:") for term in focus_text.split() if term.strip(".,;:")}
     suffix_words = [word for word in _clean(suffix).split() if word.casefold().strip(".,;:") not in focus_terms]
     suffix_text = " ".join(suffix_words).strip()
     if not suffix_text:
         return focus_text
-    return f"{focus_text} {suffix_text}".strip()
+    return collapse_repeated_phrase_units(f"{focus_text} {suffix_text}".strip())
 
 
 def _clean_system_description(value: str) -> str:
@@ -312,7 +313,7 @@ def _clean_system_description(value: str) -> str:
 
 
 def _system_label_head(value: str) -> str:
-    head = _flatten_parenthetical_label(_clean(value.split("—", 1)[0].split(":", 1)[0]))
+    head = collapse_repeated_phrase_units(_flatten_parenthetical_label(_clean(value.split("—", 1)[0].split(":", 1)[0])))
     head = _strip_relative_system_label_clause(head)
     split = re.search(
         r"\s+(?=(?:owned\s+by|captures?|capturing|validates?|validating|computes?|computing|evaluates?|evaluating|"
@@ -329,7 +330,7 @@ def _system_label_head(value: str) -> str:
 
 
 def _system_label(row: str, *, title: str) -> str:
-    raw = _flatten_parenthetical_label(_clean(row))
+    raw = collapse_repeated_phrase_units(_flatten_parenthetical_label(_clean(row)))
     raw = re.sub(r"^(?:a|an|the)\s+", "", raw, flags=re.IGNORECASE)
     raw = _strip_relative_system_label_clause(raw)
     raw = _repair_system_label_tail(raw)
@@ -339,7 +340,7 @@ def _system_label(row: str, *, title: str) -> str:
 
 
 def _title_case_system_name(value: str) -> str:
-    text = _clean(value).strip(" .,:;")
+    text = collapse_repeated_phrase_units(_clean(value)).strip(" .,:;")
     text = re.sub(
         r"^Reviewer\s+(?=(?:Dashboard|Export|Surface|View|Portal|Report|Package)\b)",
         "Review ",
@@ -359,7 +360,7 @@ def _title_case_system_name(value: str) -> str:
             words.append("-".join([_title_case_system_token(head), *tail]))
         else:
             words.append(_title_case(word))
-    return _clean(" ".join(words))
+    return collapse_repeated_phrase_units(_clean(" ".join(words)))
 
 
 def _preserve_system_slash_token(value: str) -> bool:

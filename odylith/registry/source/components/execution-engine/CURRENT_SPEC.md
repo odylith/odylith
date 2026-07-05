@@ -26,7 +26,7 @@
   host model calls", must admit allowed authored governance work without
   CLI-writer evidence, and must still defer/block the corresponding unsafe
   moves when they are actually requested.
-Last updated: 2026-04-18
+Last updated: 2026-07-04
 
 Last updated (UTC): 2026-04-18
 
@@ -778,12 +778,12 @@ relevant Context Engine packet tests and host-runtime contract tests.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-04-16 · Implementation:** Hardened Context Engine to Execution Engine alignment with canonical identity propagation, identity-first guard blocking, benchmark identity gates, and refreshed release-proof surfaces.
+- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-099
-  - Evidence: src/odylith/runtime/context_engine/execution_engine_handshake.py, src/odylith/runtime/execution_engine/runtime_lane_policy.py
-- **2026-04-16 · Implementation:** Hard-cut Context Engine and Execution Engine alignment Wave 1 to canonical execution-engine identity; focused execution tests, broader runtime benchmark tests, registry/backlog validators, sync check, Atlas freshness, and diff check pass.
+  - Evidence: 2 tracked artifact references retained
+- **2026-04-16 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
   - Scope: B-099, B-100
-  - Evidence: odylith/radar/source/programs/B-099.execution-waves.v1.json, odylith/registry/source/components/execution-engine/CURRENT_SPEC.md +2 more
+  - Evidence: 4 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

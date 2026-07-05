@@ -1,6 +1,6 @@
 # Bug Index
 
-Last updated (UTC): 2026-07-02
+Last updated (UTC): 2026-07-05
 
 ## Open Bugs
 
@@ -9,9 +9,9 @@ Last updated (UTC): 2026-07-02
 | CB-217 | 2026-07-02 | Greenfield registry semantic contracts can miss canonical blocked input proof ro | P1 | domain-intelligence | FixedPendingRelease | [2026-07-02-greenfield-registry-semantic-contracts-can-miss-canonical-blocked-input-proof-ro.md](2026-07-02-greenfield-registry-semantic-contracts-can-miss-canonical-blocked-input-proof-ro.md) |
 | CB-216 | 2026-07-02 | Greenfield control plane leak gate rejects source grounded domain homonyms | P1 | domain-intelligence | Open | [2026-07-02-greenfield-control-plane-leak-gate-rejects-source-grounded-domain-homonyms.md](2026-07-02-greenfield-control-plane-leak-gate-rejects-source-grounded-domain-homonyms.md) |
 | CB-212 | 2026-07-01 | Radar backlog normalization labels utc header with local date | P2 | radar | Open | [2026-07-01-radar-backlog-normalization-labels-utc-header-with-local-date.md](2026-07-01-radar-backlog-normalization-labels-utc-header-with-local-date.md) |
-| CB-214 | 2026-07-01 | Greenfield atlas labels can repeat visible result copy after confirmation | P2 | domain-intelligence | FixedPendingRelease | [2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md](2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md) |
+| CB-214 | 2026-07-01 | Greenfield atlas labels can repeat visible result copy after confirmation | P1 | domain-intelligence | Open | [2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md](2026-07-01-greenfield-atlas-labels-can-repeat-visible-result-copy-after-confirmation.md) |
 | CB-213 | 2026-07-01 | Greenfield artifact plan rescue accepts non executable row patch facts | P2 | domain-intelligence | FixedPendingRelease | [2026-07-01-greenfield-artifact-plan-rescue-accepts-non-executable-row-patch-facts.md](2026-07-01-greenfield-artifact-plan-rescue-accepts-non-executable-row-patch-facts.md) |
-| CB-215 | 2026-07-01 | Fresh scientific greenfield variance still fails post confirm quality | P1 | domain-intelligence | FixedPendingRelease | [2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md](2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md) |
+| CB-215 | 2026-07-01 | Fresh scientific greenfield variance still fails post confirm quality | P1 | domain-intelligence | Open | [2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md](2026-07-01-fresh-scientific-greenfield-variance-still-fails-post-confirm-quality.md) |
 | CB-211 | 2026-06-30 | Structured rescue rejects intentional empty list semantic patches | P2 | tribunal,domain-intelligence | FixedPendingRelease | [2026-06-30-structured-rescue-rejects-intentional-empty-list-semantic-patches.md](2026-06-30-structured-rescue-rejects-intentional-empty-list-semantic-patches.md) |
 | CB-210 | 2026-06-30 | Greenfield package readback collapses project brief boundaries and misses final | P1 | domain-intelligence | FixedPendingRelease | [2026-06-30-greenfield-package-readback-collapses-project-brief-boundaries-and-misses-final-.md](2026-06-30-greenfield-package-readback-collapses-project-brief-boundaries-and-misses-final-.md) |
 | CB-209 | 2026-06-26 | High variance installed greenfield prompts still stop before governed writes | P1 | domain-intelligence | FixedPendingRelease | [2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md](2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md) |

@@ -48,6 +48,21 @@
 
 - Verification: Targeted tests passed for source-grounded homonym allowance and ungrounded control-plane leakage rejection. The original disposable create then completed in 27.511s outer time with manifest passed, validation_status passed, issue_count 0, write transaction committed, 4 backlog records, 3 components, 6 diagrams, and temp cleanup.
 
+- Follow-up Learning: The high-volume seeded batch on 2026-07-02 exposed a
+  related but stronger homonym custody failure. Once source-title recovery
+  preserved legitimate product frames such as `weather radar calibration setup`
+  and `geologic atlas field mapping setup`, the control-plane leak gate still
+  treated public product uses of `Radar` and `Atlas` as Odylith leakage because
+  term-normalized source matching was too coarse (`atlas` could normalize away
+  from the literal leak label, and `radar scan` could appear with adjacent
+  action context rather than only the title context). The repair moved homonym
+  custody from whole-term membership to local source-grounded token windows:
+  product uses are allowed only when each visible occurrence overlaps accepted
+  prompt, source-title, title, or first-path context, while ungrounded
+  `Atlas diagram` / `Radar` control-plane copy remains blocked. Focused proof
+  passed the source-grounded `Atlas` domain case, the ungrounded Atlas diagram
+  rejection case, and the full confirmed-intent recovery suite.
+
 - Prevention: Do not use arbitrary top-N source-term caps for semantic leak detection. Prefer structured accepted-intent evidence and keep control-plane leakage rejection tied to whether the term is grounded in user-accepted product meaning.
 
 - Agent Guardrails: When a platform leak gate flags a word that is also ordinary domain vocabulary, first check accepted-intent grounding before adding a term exception or weakening the gate.

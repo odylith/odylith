@@ -1,5 +1,5 @@
 # Migration Runtime
-Last updated: 2026-06-28
+Last updated: 2026-07-04
 
 
 ## Overview
@@ -131,21 +131,21 @@ contract.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-28 · Implementation:** Release proof and install custody hardening: standalone greenfield matrix now persists JSON proof, full install suite is green after guidance-budget compaction, and migration-runtime classification now blocks missing verification before already-current no-op while preserving verified same-version reinstall.
+- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: bin/greenfield-post-confirm-matrix, odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md +5 more
-- **2026-05-02 · Implementation:** Registered the v0.1.13 Casebook compact-metadata migration, proved 0.1.10/0.1.11/0.1.12 upgrade paths, refreshed Casebook and Radar surfaces, and tightened migration_required gating so no-op registered migrations cannot satisfy future release manifests.
+  - Evidence: 7 tracked artifact references retained
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
   - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-casebook-renders-prose-status-and-type-chips.md, src/odylith/install/casebook_metadata_migration.py +2 more
-- **2026-04-27 · Implementation:** 0.1.12 migration-runtime QA pass closed with full pytest, release migration gate, doctor, Casebook, and component-registry validation green.
+  - Evidence: 4 tracked artifact references retained
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-127
-  - Evidence: odylith/casebook/bugs/2026-04-27-scattered-migration-logic-makes-upgrade-state-non-authoritative.md, src/odylith/install/migration_runtime.py +1 more
-- **2026-04-27 · Implementation:** 0.1.12 migration runtime gate hardened with legacy root routing, explicit fixture markers, active-state classification, and expanded edge-case tests.
+  - Evidence: 3 tracked artifact references retained
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-127
-  - Evidence: odylith/technical-plans/in-progress/2026-04/2026-04-27-migration-runtime-release-gate.md, src/odylith/install/migration_runtime.py +1 more
-- **2026-04-27 · Implementation:** Implemented the 0.1.12 migration-runtime release gate: dry-run/apply share one MigrationPlan, v0.1.11 value-engine migration routes through the registry, doctor reports ledger state, and release migration-gate validates fixture coverage and lifecycle bypasses.
+  - Evidence: 3 tracked artifact references retained
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-127
-  - Evidence: odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md, src/odylith/install/migration_runtime.py +1 more
+  - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

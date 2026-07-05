@@ -25,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import verb_
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase as _transfer_object_phrase
 
 
 def clauses(value: str) -> list[str]:
@@ -198,9 +199,19 @@ def needs_context_backfill(
         return True
     if description_phrases and len(local_terms) >= 5:
         return False
-    if any(set(_content_terms(phrase)) & _ARTIFACT_CARRIER_TERMS for phrase in description_phrases):
+    if any(_has_visible_artifact_carrier(phrase) for phrase in description_phrases):
         return False
     return bool(len(description_phrases) <= 3 and context_required_phrases)
+
+
+def _has_visible_artifact_carrier(value: str) -> bool:
+    return bool(
+        {
+            word.casefold().strip(".,;:")
+            for word in re.findall(r"[A-Za-z][A-Za-z'-]*", _clean(value))
+        }
+        & _ARTIFACT_CARRIER_TERMS
+    )
 
 
 def context_anchor_compounds(value: str, *, anchor_terms: Sequence[str], limit: int = 8) -> list[str]:
@@ -249,6 +260,7 @@ def owned_context_detail_phrases(
 ) -> tuple[str, ...]:
     rows: list[str] = []
     label_term_set = set(label_terms)
+    strong_label_terms = label_term_set - _WEAK_CONTEXT_ANCHOR_TERMS
     for phrase in (*context_phrases, *context_compound_phrases):
         terms = list(_content_terms(phrase))
         terms = _preserve_explicit_detail_carrier(terms, phrase)
@@ -257,11 +269,11 @@ def owned_context_detail_phrases(
         if set(terms) & {"ignore", "ignored"}:
             continue
         decision_detail = bool(
-            label_term_set & {"decision", "journal", "ledger"}
+            strong_label_terms & {"decision", "journal", "ledger"}
             and "decision" in terms
             and terms[0] not in {"first", "local", "next", "product", "release", "review", "source", "validation"}
         )
-        overlap_detail = bool(label_term_set & set(terms) and terms[0] not in {"first", "local", "next", "product", "release"})
+        overlap_detail = bool(strong_label_terms & set(terms) and terms[0] not in {"first", "local", "next", "product", "release"})
         if (
             terms[0] not in {"accepted", "current", "incomplete", "missing", "recent", "required", "selected", "unavailable"}
             and not decision_detail
@@ -277,7 +289,10 @@ def owned_context_detail_phrases(
         rows.append(" ".join(terms[:4]))
         if len(rows) >= 8:
             break
-    return tuple(sorted(unique_text(rows), key=lambda value: _owned_context_detail_rank(value, label_term_set)))
+    return tuple(sorted(unique_text(rows), key=lambda value: _owned_context_detail_rank(value, strong_label_terms or label_term_set)))
+
+
+_WEAK_CONTEXT_ANCHOR_TERMS = frozenset({"adapter", "data", "engine", "model", "service", "system", "view", "workspace"})
 
 
 def description_owned_phrases(value: str) -> tuple[str, ...]:
@@ -335,6 +350,7 @@ def _preserved_compound_phrase(value: str) -> str:
         return ""
     text = re.sub(r"^(?:a|an|the|and|or)\s+", "", text, flags=re.IGNORECASE).strip(" .,;:")
     text = re.sub(r"^(?:owns?|records?|keeps?|tracks?|stores?|captures?|validates?|verifies?)\s+", "", text, flags=re.IGNORECASE)
+    text = _transfer_object_phrase(text) or text
     text = re.sub(r"\s+", " ", text).strip(" .,;:")
     if not text:
         return ""
@@ -523,7 +539,9 @@ def expanded_context_anchors(anchors: set[str]) -> set[str]:
         expanded.update({"aligned", "data", "reading", "readiness", "signal", "summary", "timeline", "trend", "value"})
     if {"quality", "review", "assessment", "check"} & anchors:
         expanded.update({"check", "evidence", "rule", "uncertainty", "validation"})
-    if {"decision", "ledger", "journal", "rationale"} & anchors:
+    if "ledger" in anchors and not (anchors & {"decision", "journal", "rationale"}):
+        expanded.update({"audit", "evidence", "proof", "provenance", "replay", "review", "source"})
+    if {"decision", "journal", "rationale"} & anchors:
         expanded.update({"decide", "decision", "outcome", "rationale", "recheck", "release"})
     return expanded
 

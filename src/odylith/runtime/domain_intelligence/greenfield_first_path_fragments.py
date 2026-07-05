@@ -13,11 +13,18 @@ from odylith.runtime.common.prose_grammar import (
     looks_like_finite_action,
 )
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import looks_like_actor_role_term
+from odylith.runtime.domain_intelligence.greenfield_actor_led_open_action import (
+    actor_led_open_action_parts as _actor_led_open_action_parts,
+)
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE, clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase, lowercase_leading_article
+from odylith.runtime.domain_intelligence.greenfield_first_path_action_results import nominal_action_result_object
+from odylith.runtime.domain_intelligence.greenfield_first_path_action_results import nominalize_leading_result_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import action_word_inside_compound_noun
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import action_word_starts_result_list_noun
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects import (
     drop_result_recipient,
@@ -25,6 +32,8 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_result_objects im
     saved_destination_result_object,
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_routing import routing_action_clause as _routing_action_clause
+from odylith.runtime.domain_intelligence.greenfield_first_path_display_results import display_carrier_result_object
+from odylith.runtime.domain_intelligence.greenfield_first_path_short_results import short_nominal_result_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_text_case import lower_initial_for_fragment as _lower_initial_for_fragment
 from odylith.runtime.domain_intelligence.greenfield_gerund_actions import GERUND_ACTION_VERBS
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns, normalize_visible_result_language
@@ -65,7 +74,7 @@ def is_system_generated_action(value: str) -> bool:
     if not text:
         return False
     system_verb = (
-        r"advances?|applies?|asks?|assigns?|calculates?|captures?|checks?|computes?|controls?|derives?|displays?|emits?|evaluates?|generates?|ingests?|marks?|monitors?|normalizes?|notifies?|presents?|preserves?|processes?|records?|renders?|returns?|routes?|runs?|tracks?|turns?|"
+        r"advances?|applies?|asks?|assigns?|calculates?|captures?|checks?|computes?|confirms?|controls?|derives?|displays?|emits?|evaluates?|generates?|ingests?|marks?|monitors?|normalizes?|notifies?|presents?|preserves?|processes?|publishes?|records?|renders?|returns?|routes?|runs?|saves?|tracks?|turns?|"
         r"persists?|pulls?|pushes?|saves?|scores?|shows?|stores?|transforms?|updates?|validates?"
     )
     system_subject = (
@@ -79,7 +88,7 @@ def looks_like_visible_result(value: str) -> bool:
     text = clean_first_path_text(value)
     return bool(
         re.search(
-            r"\b(?:compare|compares|confirm|confirms|correlate|correlates|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|keep|keeps|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|store|stores|surfaces|update|updates|view|views|receive|receives)\b",
+            r"\b(?:compare|compares|confirm|confirms|correlate|correlates|decide|decides|display|displays|emit|emits|export|exports|find|finds|highlight|highlights|keep|keeps|prepare|prepares|present|presents|produce|produces|publish|publishes|recompute|recomputes|report|reports|render|renders|return|returns|save|saves|see|sees|show|shows|store|stores|surfaces|update|updates|view|views|receive|receives)\b",
             text,
             re.IGNORECASE,
         )
@@ -163,6 +172,9 @@ def action_chain_fragment(value: str) -> str:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+and,\s+if\b.+$", "", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+if\b.+$", "", text, flags=re.IGNORECASE)
+    result_list_fragment = _result_list_capability_fragment(text)
+    if result_list_fragment:
+        return result_list_fragment
     _modal_actor, modal_action = _modal_actor_action_parts(text)
     if modal_action:
         text = modal_action
@@ -180,6 +192,11 @@ def action_chain_fragment(value: str) -> str:
             flags=re.IGNORECASE,
         ):
             return base_action_clause(stripped).strip(" .")
+        if _is_transformation_action_clause(stripped):
+            return base_action_clause(stripped).strip(" .")
+        material_result_action = _material_result_action_clause(stripped, source=text)
+        if material_result_action:
+            return material_result_action
         if "," in stripped and MATERIAL_ACTION_RE.match(stripped):
             return base_action_clause(stripped).strip(" .")
         return f"review {lowercase_leading_article(outcome)}".strip(" .")
@@ -261,9 +278,21 @@ def _drop_launcher_prefix(value: str) -> str:
 
 def visible_result_object(value: str) -> str:
     text = clean_visible_result_phrase(value) or clean_first_path_text(value)
+    display_result = display_carrier_result_object(text, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
+    if display_result:
+        return display_result
+    short_nominal = short_nominal_result_phrase(text, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
+    if short_nominal:
+        return short_nominal
     nominal = nominal_visible_result_object(text)
     if nominal.casefold().startswith("the tracked metric trend view"):
         return nominal
+    result_list_object = _result_list_visible_object(text)
+    if result_list_object:
+        return result_list_object
+    transformation_object = _transformation_result_object(text)
+    if transformation_object:
+        return transformation_object
     text = strip_action_subject(text)
     if _routing_action_clause(text, strip_subject=strip_action_subject):
         return ""
@@ -275,7 +304,7 @@ def visible_result_object(value: str) -> str:
         r"(?:sees?|views?|receives?|gets?|reads?)\s+(?P<object>.+)$",
         r"(?<![A-Za-z0-9_-])(?P<verb>sends?|publishes?|returns?|delivers?)\s+or\s+"
         r"(?:sends?|publishes?|returns?|delivers?)\s+(?P<object>.+)$",
-        r"(?<![A-Za-z0-9_-])(?P<verb>closes?|compares?|confirms?|correlates?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
+        r"(?<![A-Za-z0-9_-])(?P<verb>closes?|compares?|confirms?|correlates?|decides?|delivers?|displays?|emits?|finds?|highlights?|keeps?|prepares?|presents?|produces?|publishes?|reports?|renders?|returns?|saves?|sends?|sees?|shows?|stores?|surfaces|views?|receives?|gets?|reads?|reaches?|reviews?|checks?|uses?|inspects?)\s+(?P<object>.+)$",
     )
     for pattern in patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)
@@ -321,6 +350,66 @@ def visible_result_object(value: str) -> str:
         )
     return ""
 
+def _result_list_capability_fragment(value: str) -> str:
+    result_object = _result_list_visible_object(value)
+    return f"see {_lower_initial_for_fragment(result_object)}".strip(" .") if result_object else ""
+
+
+def _result_list_visible_object(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .")
+    for match in MATERIAL_ACTION_RE.finditer(text):
+        if action_word_starts_result_list_noun(text, match.start()):
+            result = focused_visible_result_object(nominal_visible_result_object(text))
+            return clip_first_path_phrase(result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
+    return ""
+
+def _transformation_result_object(value: str) -> str:
+    """Return the target object from transformation clauses such as `turn X into Y using Z`."""
+
+    text = clean_first_path_text(value).strip(" .")
+    if not text:
+        return ""
+    match = re.search(
+        r"\b(?:turn|turns|convert|converts|transform|transforms)\b.+?\binto\s+(?P<object>.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    result = re.split(
+        r"\s+\b(?:using|with|from|based\s+on|backed\s+by|supported\s+by)\b\s+",
+        match.group("object"),
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    result = re.split(r"(?<=[.!?])\s+", result, maxsplit=1)[0]
+    result = result.strip(" ,.;:")
+    if not result:
+        return ""
+    result = focused_visible_result_object(nominal_visible_result_object(result))
+    return clip_first_path_phrase(result, limit=_VISIBLE_RESULT_OBJECT_LIMIT)
+
+
+def _is_transformation_action_clause(value: str) -> bool:
+    text = clean_first_path_text(value).strip(" .")
+    first = text.split(maxsplit=1)[0].casefold().strip(".,:;") if text.split() else ""
+    return first in {"convert", "converts", "transform", "transforms", "turn", "turns"} and " into " in f" {text.casefold()} "
+
+
+def _material_result_action_clause(value: str, *, source: str = "") -> str:
+    text = clean_first_path_text(value).strip(" .")
+    if source and is_system_generated_action(source):
+        return ""
+    for match in MATERIAL_ACTION_RE.finditer(text):
+        verb = match.group(0).casefold().strip(".,:;")
+        if verb not in {"confirm", "confirms", "publish", "publishes", "record", "records", "save", "saves"}:
+            continue
+        if action_word_inside_compound_noun(text, match.start()):
+            continue
+        return base_action_clause(text[match.start() :]).strip(" .")
+    return ""
+
+
 def _decision_result_object(verb: str, result: str) -> str:
     token = str(verb or "").casefold().strip(".,:;")
     text = clean_first_path_text(result).strip(" .")
@@ -333,7 +422,7 @@ def nominal_visible_result_object(value: str) -> str:
     if not text:
         return ""
     text = normalize_reviewed_result_nouns(text).strip(" .")
-    nominal = _nominalize_leading_result_action(text)
+    nominal = nominalize_leading_result_action(text)
     if nominal:
         return nominal
     if re.fullmatch(
@@ -350,80 +439,6 @@ def nominal_visible_result_object(value: str) -> str:
     ):
         return "the tracked metric trend view"
     return text
-
-def nominal_action_result_object(value: str, result: str = "") -> str:
-    """Return an action-state object for terse terminal results like `published proof`."""
-
-    text = clean_first_path_text(value).strip(" .")
-    result_object = _drop_leading_article(result or visible_result_object(text)).strip(" .")
-    if not text or not result_object:
-        return ""
-    action = "|".join(re.escape(verb) for verb in sorted(_RESULT_ACTION_NOMINALS, key=len, reverse=True))
-    object_pattern = re.escape(result_object)
-    object_pattern = object_pattern.replace(r"\ ", r"\s+")
-    match = re.search(
-        rf"\b(?P<verb>{action})\s+(?P<object>(?:(?:a|an|the)\s+)?{object_pattern})$",
-        text,
-        flags=re.IGNORECASE,
-    )
-    if not match:
-        return ""
-    verb_start = match.start("verb")
-    if action_word_inside_compound_noun(text, verb_start):
-        return ""
-    nominal = _RESULT_ACTION_NOMINALS.get(match.group("verb").casefold().strip(".,:;"))
-    object_text = _drop_leading_article(match.group("object"))
-    if not nominal or not object_text:
-        return ""
-    return f"{nominal} {object_text}".strip(" .")
-
-_RESULT_ACTION_NOMINALS = {
-    "capture": "captured",
-    "captures": "captured",
-    "close": "closed",
-    "closes": "closed",
-    "confirm": "confirmed",
-    "confirms": "confirmed",
-    "correlate": "correlated",
-    "correlates": "correlated",
-    "export": "exported",
-    "exports": "exported",
-    "emit": "emitted",
-    "emits": "emitted",
-    "preserve": "preserved",
-    "preserves": "preserved",
-    "prove": "proven",
-    "proves": "proven",
-    "publish": "published",
-    "publishes": "published",
-    "record": "recorded",
-    "records": "recorded",
-    "report": "reported",
-    "reports": "reported",
-    "save": "saved",
-    "saves": "saved",
-    "select": "selected",
-    "selects": "selected",
-    "store": "stored",
-    "stores": "stored",
-}
-
-def _nominalize_leading_result_action(value: str) -> str:
-    text = clean_first_path_text(value).strip(" .")
-    first, separator, rest = text.partition(" ")
-    nominal = _RESULT_ACTION_NOMINALS.get(first.casefold().strip(".,:;"))
-    if not nominal or not separator:
-        return ""
-    result = _drop_leading_article(rest.strip())
-    if nominal == "proven":
-        result = re.sub(r"^(?:all|each|every)\s+", "", result, flags=re.IGNORECASE).strip()
-    return f"{nominal} {result}".strip()
-
-def _drop_leading_article(value: str) -> str:
-    first, separator, rest = clean_first_path_text(value).strip(" .").partition(" ")
-    if separator and first.casefold() in {"a", "an", "the"}:
-        return rest.strip()
-    return clean_first_path_text(value).strip(" .")
 
 def outcome_capability_fragment(value: str) -> str:
     text = clean_first_path_text(value).strip(" .")
@@ -446,6 +461,9 @@ def strip_action_subject(value: str) -> str:
     if modal_action:
         return modal_action
     _actor, actor_action = _actor_led_finite_action_parts(text)
+    if actor_action:
+        return actor_action
+    _actor, actor_action = _actor_led_open_action_parts(text)
     if actor_action:
         return actor_action
     match = MATERIAL_ACTION_RE.search(text)
@@ -488,11 +506,13 @@ def actor_signature(value: str) -> str:
         modal_actor, _modal_action = _modal_actor_action_parts(text)
         if not subject and modal_actor:
             subject = modal_actor
-        actor, _actor_action = _actor_led_finite_action_parts(text)
+        actor, _actor_action = _actor_led_action_parts(text)
         if not subject and actor:
             subject = actor
         match = MATERIAL_ACTION_RE.search(text)
         if not subject and match and match.start() > 0:
+            if action_word_starts_result_list_noun(text, match.start()):
+                return ""
             candidate = text[: match.start()].strip(" ,")
             modal_actor = _modal_actor_prefix(candidate)
             if modal_actor:
@@ -520,10 +540,24 @@ def _actor_led_finite_action_parts(value: str) -> tuple[str, str]:
         prefix = text[: match.start()].strip(" ,")
         if not _looks_like_actor_subject_prefix(prefix):
             continue
+        if action_word_starts_result_list_noun(text, match.start()):
+            continue
         action = text[match.start() :].strip(" .")
-        if looks_like_finite_action(action):
+        if looks_like_finite_action(action) or looks_like_action_clause(action):
             return prefix, action
     return "", ""
+
+
+def _actor_led_action_parts(value: str) -> tuple[str, str]:
+    actor, action = _actor_led_finite_action_parts(value)
+    if actor and action:
+        return actor, base_action_clause(action)
+    return _actor_led_open_action_parts(value)
+
+
+def actor_led_action_parts(value: str) -> tuple[str, str]:
+    return _actor_led_action_parts(value)
+
 
 def _modal_actor_prefix(value: str) -> str:
     words = [word.strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
@@ -576,11 +610,13 @@ def modal_action_fragment(value: str) -> str:
 def _looks_like_actor_prefix(value: str) -> bool:
     text = clean_first_path_text(value).strip(" .")
     terms = {term.casefold() for term in label_terms(value)}
-    return bool(terms and len(terms) <= 6 and (not terms & _SYSTEM_SUBJECT_TERMS or has_actor_role_word(text)))
+    return bool(terms and len(terms) <= 6 and (not terms & _SYSTEM_SUBJECT_TERMS or _has_actor_role_signal(text)))
 
 def _looks_like_actor_subject_prefix(value: str) -> bool:
     text = clean_first_path_text(value).strip(" .")
     if not text or not _looks_like_actor_prefix(text):
+        return False
+    if re.search(r"[,;]", text):
         return False
     if _has_unowned_action_tail(text):
         return False
@@ -588,23 +624,31 @@ def _looks_like_actor_subject_prefix(value: str) -> bool:
         return False
     if re.search(r"\b(?:at|by|for|from|in|of|on|through|to|via|with|without)\b", text, flags=re.IGNORECASE):
         return False
-    if has_actor_role_word(text):
+    if _has_actor_role_signal(text):
         return True
     terms = [term.casefold() for term in label_terms(text)]
     return len(terms) == 1 and _looks_like_plural_actor_term(terms[0])
 
 def _has_unowned_action_tail(value: str) -> bool:
     words = [word.casefold().strip(".,:;") for word in clean_first_path_text(value).split() if word.strip(".,:;")]
+    if words and looks_like_action_clause(f"{words[0]} placeholder") and not any(
+        looks_like_actor_role_term(word) for word in words[1:]
+    ):
+        return True
     for index in range(1, len(words)):
         token = words[index]
-        if has_actor_role_word(token):
+        if looks_like_actor_role_term(token):
             continue
         if not looks_like_action_clause(f"{token} placeholder"):
             continue
-        if has_actor_role_word(" ".join(words[index + 1 :])):
+        if any(looks_like_actor_role_term(word) for word in words[index + 1 :]):
             continue
         return True
     return False
+
+
+def _has_actor_role_signal(value: str) -> bool:
+    return any(looks_like_actor_role_term(word) for word in clean_first_path_text(value).replace("-", " ").split())
 
 
 def _looks_like_plural_actor_term(value: str) -> bool:
@@ -721,9 +765,7 @@ def _looks_like_ambiguous_artifact_noun(
 
 def _looks_like_nominal_object_tail(value: str) -> bool:
     first = str(value or "").strip().split(" ", 1)[0].strip(".,:;").casefold()
-    if not first:
-        return False
-    if first in {"a", "an", "the", "this", "that", "their", "its", "our", "your"}:
+    if not first or first in {"a", "an", "the", "this", "that", "their", "its", "our", "your"}:
         return False
     if first.endswith("ly"):
         return False
@@ -738,8 +780,4 @@ def _replace_word_token(value: str, replacement: str) -> str:
         value = value[:-1]
     return f"{replacement}{suffix}"
 
-__all__ = [
-    "MATERIAL_ACTION_RE", "action_chain_fragment", "actor_signature", "base_adverbial_note_action", "clean_first_path_text", "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment", "is_system_generated_action", "is_trivial_start",
-    "leading_subject_prefix", "looks_like_visible_result", "lowercase_leading_article", "modal_action_fragment", "modal_actor_action_parts", "nominal_action_result_object", "nominal_visible_result_object", "outcome_capability_fragment", "primary_actor_signature",
-    "strip_action_subject", "visible_action_clause", "visible_result_object",
-]
+__all__ = ["MATERIAL_ACTION_RE", "action_chain_fragment", "actor_led_action_parts", "actor_signature", "base_adverbial_note_action", "clean_first_path_text", "clean_visible_result_phrase", "clip_first_path_phrase", "gerund_action_fragment", "is_system_generated_action", "is_trivial_start", "leading_subject_prefix", "looks_like_visible_result", "lowercase_leading_article", "modal_action_fragment", "modal_actor_action_parts", "nominal_action_result_object", "nominal_visible_result_object", "outcome_capability_fragment", "primary_actor_signature", "strip_action_subject", "visible_action_clause", "visible_result_object"]

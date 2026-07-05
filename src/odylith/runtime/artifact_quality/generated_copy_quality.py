@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 import re
 from typing import Any
 
@@ -11,6 +11,7 @@ from odylith.runtime.artifact_quality.generated_copy_quality_units import raw_te
 from odylith.runtime.artifact_quality.generated_copy_quality_units import text_quality_units
 from odylith.runtime.common.prose_grammar import action_token_form
 from odylith.runtime.common.prose_grammar import coordinated_action_form_after_connector
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import ACTOR_ROLE_NOUNS
 from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import actor_led_finite_action_inside_user_can
 from odylith.runtime.domain_intelligence.greenfield_generated_prose_shape import gerund_actor_role_finite_action_splice
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -91,6 +92,7 @@ def generated_public_copy_findings(scope: str, value: Any) -> tuple[GeneratedCop
     """Return public-copy failures classified by generated-prose shape."""
 
     findings: list[GeneratedCopyFinding] = []
+    actor_labels = _semantic_actor_labels(value)
     for unit in raw_text_units(value):
         if unit.text_kind in {"metadata"}:
             continue
@@ -118,7 +120,7 @@ def generated_public_copy_findings(scope: str, value: Any) -> tuple[GeneratedCop
             findings.append(GeneratedCopyFinding("actor_action_splice", f"{scope} leaked actor/action splice prose"))
         if actor_led_finite_action_inside_user_can(text):
             findings.append(GeneratedCopyFinding("actor_led_modal_splice", f"{scope} leaked actor-led finite action inside user-can prose"))
-        if gerund_actor_role_finite_action_splice(text):
+        if gerund_actor_role_finite_action_splice(text, actor_labels=actor_labels):
             findings.append(GeneratedCopyFinding("gerund_actor_role_splice", f"{scope} leaked gerundized actor-role action prose"))
         if _has_terminal_result_chain(lowered):
             findings.append(GeneratedCopyFinding("terminal_result_chain", f"{scope} leaked terminal action inside result prose"))
@@ -196,6 +198,56 @@ def _unique_findings(findings: Sequence[GeneratedCopyFinding]) -> tuple[Generate
         seen.add(key)
         result.append(finding)
     return tuple(result)
+
+
+def _semantic_actor_labels(value: Any) -> frozenset[str]:
+    labels: list[str] = []
+    _collect_actor_labels(value, labels)
+    return frozenset(_actor_label_key(label) for label in labels if _actor_label_key(label))
+
+
+def _collect_actor_labels(value: Any, labels: list[str]) -> None:
+    if isinstance(value, Mapping):
+        for key, nested in value.items():
+            key_text = str(key or "").casefold()
+            if key_text in {"actor", "label", "name", "role"}:
+                label = clean_text(nested)
+                if label and _looks_like_actor_label_key(key_text, label):
+                    labels.append(label)
+            elif key_text == "human_actors" and isinstance(nested, (list, tuple)):
+                labels.extend(_actor_label_from_row(row) for row in nested)
+            else:
+                _collect_actor_labels(nested, labels)
+        return
+    if isinstance(value, (list, tuple, set)):
+        for nested in value:
+            _collect_actor_labels(nested, labels)
+
+
+def _looks_like_actor_label_key(key: str, label: str) -> bool:
+    if key == "actor":
+        return True
+    if key not in {"label", "name", "role"}:
+        return False
+    tokens = [token.casefold() for token in _word_tokens(label)]
+    return bool(tokens and tokens[-1] in ACTOR_ROLE_NOUNS)
+
+
+def _actor_label_from_row(row: Any) -> str:
+    if isinstance(row, Mapping):
+        for key in ("label", "actor", "name", "role"):
+            label = clean_text(row.get(key))
+            if label:
+                return label
+        return ""
+    text = clean_text(row)
+    if ":" in text:
+        return text.split(":", 1)[0].strip()
+    return text
+
+
+def _actor_label_key(value: str) -> str:
+    return " ".join(token.casefold() for token in _word_tokens(value))
 
 
 def has_inline_role_casing_drift(value: Any) -> bool:
@@ -350,6 +402,8 @@ def _has_adjacent_duplicate_word(tokens: tuple[_WordToken, ...]) -> bool:
 def _has_clipped_terminal_public_copy(tokens: tuple[str, ...]) -> bool:
     if len(tokens) < 5:
         return False
+    if tokens[-1] in {"remain", "remains"} and any(token in {"what", "which"} for token in tokens[-8:-1]):
+        return False
     return tokens[-1] in {
         "include",
         "includes",
@@ -371,10 +425,22 @@ def _has_awkward_visible_result_action(tokens: tuple[_WordToken, ...]) -> bool:
             continue
         if _token_is_title_label_word(tokens, index):
             continue
-        if token.text.casefold() in {"reach", "use"} and any(
-            item in result_words for item in lowered[index + 1 : min(len(lowered), index + 5)]
-        ):
+        if token.text.casefold() not in {"reach", "use"}:
+            continue
+        if token.text.casefold() == "use" and not _use_token_is_action(tokens, index):
+            continue
+        if any(item in result_words for item in lowered[index + 1 : min(len(lowered), index + 5)]):
             return True
+    return False
+
+
+def _use_token_is_action(tokens: tuple[_WordToken, ...], index: int) -> bool:
+    next_token = tokens[index + 1].text.casefold().strip(".,;:'") if index + 1 < len(tokens) else ""
+    if next_token in {"a", "an", "the", "this", "that", "their", "its", "result", "results"}:
+        return True
+    previous = tokens[index - 1].text.casefold().strip(".,;:'") if index > 0 else ""
+    if previous in {"can", "cannot", "could", "may", "might", "must", "should", "to", "will", "would"}:
+        return True
     return False
 
 

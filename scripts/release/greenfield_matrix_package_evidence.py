@@ -89,6 +89,20 @@ _TERM_STOPWORDS = frozenset(
         "workstream",
     }
 )
+_EVALUATION_TERM_STOPWORDS = _TERM_STOPWORDS | frozenset(
+    {
+        "accepted",
+        "beside",
+        "context",
+        "input",
+        "result",
+        "reviewed",
+        "source",
+        "used",
+        "visible",
+        "with",
+    }
+)
 
 
 def package_evidence_findings(package: Any) -> tuple[PackageEvidenceFinding, ...]:
@@ -399,12 +413,45 @@ def _evaluation_evidence_findings(
         for label, required_terms in obligation_terms.items()
         if not required_terms or not (required_terms & rendered_terms)
     ]
-    if not missing:
+    findings = []
+    if missing:
+        findings.append(
+            _finding(
+                "domain_expert",
+                "scientific/evaluation readback missing evidence obligation(s): " + ", ".join(missing),
+            )
+        )
+    findings.extend(_evaluation_surface_distribution_findings(artifacts=artifacts, obligation_terms=obligation_terms))
+    return findings
+
+
+def _evaluation_surface_distribution_findings(
+    *,
+    artifacts: Sequence[RenderedArtifact],
+    obligation_terms: Mapping[str, set[str]],
+) -> list[PackageEvidenceFinding]:
+    if not obligation_terms:
+        return []
+    carried_by_surface: dict[str, set[str]] = {}
+    for label, surfaces in _DOMAIN_DISTRIBUTION_SURFACES:
+        surface_text = normalize_string(
+            " ".join(artifact.text for artifact in artifacts if artifact.surface in surfaces)
+        )
+        surface_terms = _terms(surface_text)
+        carried = {
+            obligation
+            for obligation, required_terms in obligation_terms.items()
+            if required_terms and required_terms & surface_terms
+        }
+        if carried:
+            carried_by_surface[label] = carried
+    non_registry_surfaces = {label for label in carried_by_surface if label != "Registry"}
+    if len(carried_by_surface) >= 2 and non_registry_surfaces:
         return []
     return [
         _finding(
             "domain_expert",
-            "scientific/evaluation readback missing evidence obligation(s): " + ", ".join(missing),
+            "scientific/evaluation readback concentrates method, baseline, uncertainty, and reproducibility evidence on one surface instead of distributing it across governed artifacts",
         )
     ]
 
@@ -412,7 +459,10 @@ def _evaluation_evidence_findings(
 def _evaluation_obligation_terms(evaluation: Mapping[str, Any]) -> dict[str, set[str]]:
     raw_terms: dict[str, set[str]] = {}
     for label, fields in _EVALUATION_EVIDENCE_FIELDS:
-        raw_terms[label] = _terms(" ".join(text_values(tuple(evaluation.get(field) for field in fields))))
+        raw_terms[label] = _terms(
+            " ".join(text_values(tuple(evaluation.get(field) for field in fields))),
+            stopwords=_EVALUATION_TERM_STOPWORDS,
+        )
     result: dict[str, set[str]] = {}
     for label, terms in raw_terms.items():
         sibling_terms: set[str] = set()
@@ -471,11 +521,11 @@ def _domain_source_terms(proposal: Mapping[str, Any]) -> set[str]:
     )
 
 
-def _terms(value: str) -> set[str]:
+def _terms(value: str, *, stopwords: frozenset[str] = _TERM_STOPWORDS) -> set[str]:
     return set(
         ordered_terms(
             value,
-            stopwords=_TERM_STOPWORDS,
+            stopwords=stopwords,
             minimum=4,
             preserve_terms={"ai", "api", "ev", "glp", "ml", "sms", "ui", "ux"},
             stem_ing=True,

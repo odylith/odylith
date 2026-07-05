@@ -657,6 +657,8 @@ def test_component_contract_phrase_helpers_stay_in_terms_owner() -> None:
     assert clean_artifact_phrase("value relevant condition") == "relevant condition"
     assert clean_artifact_phrase("body composition data such") == "body composition data"
     assert clean_artifact_phrase("combines reference ranges") == "reference ranges"
+    assert clean_artifact_phrase("hand extracted evidence into assessment") == "extracted evidence"
+    assert clean_artifact_phrase("hand hygiene record") == "hand hygiene record"
     assert clean_artifact_phrase("home cook pick recipe") == ""
     assert clean_artifact_phrase("runs step sequence until") == "step sequence"
     assert clean_artifact_phrase("sequence until cooking reach") == ""

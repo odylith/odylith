@@ -204,6 +204,55 @@ Proof boundary: The first release is proven when a reviewer can create a perturb
     assert report.passed, "\n".join(report.issues)
 
 
+def test_confirmed_intent_parser_dedupes_adjacent_words_before_projection() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Product Intent Confirmation
+
+## Title
+Climate Assimilation Review Experiment Readiness
+
+## Product story
+A climate scientist needs a governed workspace for climate data assimilation. The product captures setup, validates evidence, compares forecast residuals against a declared baseline, and publishes a reproducible review packet.
+
+## State object
+Assimilation Run: source data, method parameters, baseline version, measured signals, uncertainty notes, review status, exclusions, and reproducibility evidence.
+
+## First complete path
+A climate scientist creates an assimilation run, attaches data and method context, runs the assimilation quality review review, inspects forecast residual and observation-fit error, resolves flagged quality issues, and publishes a review-ready forecast evidence packet.
+
+## Human actors
+- Research lead - defines the scientific question, baseline, and acceptance threshold.
+- Analyst - prepares data, reviews quality flags, and publishes the evidence packet.
+
+## External systems
+- Laboratory or field data source for the measured evidence.
+- Reference dataset or baseline registry used for comparison.
+
+## Internal product systems
+- Study setup and state tracker.
+- Data quality and method-readiness review.
+- Review and publication workflow.
+
+## Critical assumptions
+- The first release governs evidence and review, not autonomous scientific conclusions.
+
+## Ambiguities
+- Which reviewer role has final signoff authority?
+
+## Proof boundary
+The product is proven when a reviewer can trace one assimilation run from source data through method review, baseline comparison, uncertainty notes, reproducibility evidence, and final publication decision.
+
+## Success metrics
+- The first release proves the first path: create an assimilation run, attach data and method context, review review, and resolve flagged quality issues.
+""",
+        prompt="",
+    )
+
+    rendered = json.dumps(intent, sort_keys=True)
+    assert "review review" not in rendered.casefold()
+    assert "runs the assimilation quality review" in intent["first_path"]
+
+
 def test_confirmed_intent_parser_classifies_deferred_system_rows_as_external() -> None:
     intent = parse_confirmed_intent_text(
         """# Regional Drone Corridor Safety Console
@@ -1535,6 +1584,47 @@ Release 0.0.1 succeeds when a reviewer can inspect one evidence case, trace the 
     assert intent["opportunity"]
     assert intent["product_view"]
     assert "missing or too thin" not in json.dumps(intent)
+
+
+def test_confirmed_intent_preserves_long_explicit_internal_system_rows() -> None:
+    intent = parse_confirmed_intent_text(
+        """# Industrial Catalyst Sintering Monitor Simulation Review Board - Product Intent Confirmation
+
+Product story
+Industrial Catalyst Sintering Monitor Simulation Review Board helps researchers complete a bounded simulation review from source evidence to a reviewable result. It keeps inputs, context, method version, assumptions, uncertainty, comparison evidence, and excluded claims visible so the result can be trusted without overstating what the model proves.
+
+State object
+A run record tracks source data, domain context, variables or parameters, method or model version, baseline or reference comparison, predicted or simulated output, uncertainty or confidence, validation status, review notes, and reproducibility evidence.
+
+First complete path
+Chemical engineer can submit a scenario, inspect controls and assumptions, execute the simulation, review confidence and residuals, route exceptions, and publish readiness proof.
+
+Human actors
+- Chemical Engineer: needs the product to submit a scenario and keep the result visible and reviewable
+
+Internal product systems
+- Industrial Catalyst Sintering Monitor Simulation Review Board Evidence Intake — captures source data, provenance, evaluation context, variables, and constraints for each run
+- Industrial Catalyst Sintering Monitor Simulation Review Board Method Execution Record — records method or model version, parameters, assumptions, and run status
+- Industrial Catalyst Sintering Monitor Simulation Review Board Review and Reproducibility Workspace — shows outputs, uncertainty, baseline comparison, review notes, and replay evidence
+
+Success metrics
+- A researcher can complete the accepted evaluation path and see the reviewable result with input provenance.
+- The result names method or model version, variables or parameters, baseline comparison, and uncertainty or tolerance.
+- A saved run can be reproduced from the same inputs, context, method version, and review evidence.
+
+Proof boundary
+Release 0.0.1 succeeds when a researcher can complete one bounded run, review inputs, method version, baseline comparison, uncertainty or tolerance, and reproduce the saved result. It must not claim scientific truth, production validity, clinical or safety authority, or broader model performance beyond the accepted proof evidence.
+""",
+        prompt="Create a greenfield proposal for an industrial simulation review board.",
+    )
+
+    systems = intent["internal_systems"]
+    assert len(systems) >= 3
+    assert any("Method Execution Record — records method or model version" in row for row in systems)
+    assert any("Review and Reproducibility Workspace — shows outputs" in row for row in systems)
+    assert not any("Method Execution — Record" in row for row in systems)
+    assert not any("Review and — Reproducibility Workspace" in row for row in systems)
+    assert all(row.count("—") == 1 for row in systems[:3])
 
 
 def test_confirmed_greenfield_create_completes_thin_intent_before_governed_records(

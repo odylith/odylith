@@ -6,7 +6,7 @@
   route-ready contract exists.
 - Discipline checks may recommend routing affordances but must not spawn
   subagents or call host models to classify pressure.
-Last updated: 2026-04-09
+Last updated: 2026-07-04
 
 
 Last updated (UTC): 2026-04-09
@@ -311,16 +311,16 @@ prompt templates.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-23 · Decision:** Successor created: B-276 reopens B-275 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
-- **2026-03-16 · Implementation:** Implemented family-aware adaptive tuning, low-confidence GPT-5.4 promotion, smarter hard gates, and broader-coordination rescope handling in the Subagent Router.
-  - Evidence: src/odylith/runtime/orchestration/subagent_router.py
-- **2026-03-16 · Decision:** Deepened Subagent Router with task-family assessment, route-confidence backstops, and escalation refusal that can return control to the main thread.
-  - Evidence: src/odylith/runtime/orchestration/subagent_router.py
-- **2026-03-16 · Implementation:** Implemented the Subagent Router runtime, the thin router skill, the component spec and runbook, and the Atlas routing topology diagrams.
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
-- **2026-03-16 · Decision:** keep Subagent Router accuracy-first, hard-gated, and first-class in Registry and Atlas instead of hiding delegation policy in prompt folklore.
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
+- **2026-03-23 · Decision:** Decision evidence linked this component to governed work with 4 tracked artifact references retained.
+  - Evidence: 4 tracked artifact references retained
+- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 1 tracked artifact reference retained.
+  - Evidence: 1 tracked artifact reference retained
+- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 1 tracked artifact reference retained.
+  - Evidence: 1 tracked artifact reference retained
+- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
+- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

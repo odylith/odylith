@@ -14,6 +14,43 @@ from odylith.runtime.domain_intelligence.greenfield_component_terms import clean
 from odylith.runtime.domain_intelligence.greenfield_component_terms import content_terms as _content_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import normalize_action_splice_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text
+from odylith.runtime.domain_intelligence.greenfield_text import text_values
+from odylith.runtime.domain_intelligence.greenfield_text import unique_text
+from odylith.runtime.domain_intelligence.greenfield_text import visible_words
+
+_PROFILE_SUPPLEMENT_NOISE_TERMS = frozenset(
+    {
+        "and",
+        "context",
+        "history",
+        "local",
+        "metadata",
+        "state",
+        "states",
+        "status",
+        "the",
+    }
+)
+
+_PROFILE_SOURCE_CONTEXT_TERMS = frozenset({"attachment", "document", "file", "packet", "upload"})
+
+_PROFILE_MATERIAL_OBLIGATION_TERMS = frozenset(
+    {
+        "access",
+        "attachment",
+        "blocker",
+        "blockers",
+        "completeness",
+        "complete",
+        "missing",
+        "provenance",
+        "required",
+        "restricted",
+        "sensitive",
+        "uploaded",
+        "validation",
+    }
+)
 
 _PROOF_OBLIGATION_TERMS = frozenset(
     {
@@ -97,6 +134,113 @@ def prioritize_local_proof_rows(rows: Sequence[str]) -> list[str]:
         else:
             supplemental.append(row)
     return [f"{row.rstrip('.')}." for row in [*core, *obligations, *handoff, *supplemental]]
+
+
+def merge_profile_contract_fields(
+    base_fields: Mapping[str, Any],
+    profile_fields: Mapping[str, Any],
+    *,
+    protected_phrases: Sequence[str] = (),
+    field_limit: int = 12,
+) -> dict[str, Any]:
+    """Preserve profile custody obligations while keeping semantic fields authoritative."""
+
+    normalized = dict(base_fields)
+    for key in ("owned_state", "accepted_inputs", "produced_outputs"):
+        normalized[key] = semantic_field_with_profile_supplements(
+            normalized.get(key),
+            profile_fields.get(key),
+            limit=field_limit,
+        )
+    normalized["states_or_transitions"] = ", ".join(
+        unique_text(contract_list_fragments(normalized.get("states_or_transitions"), profile_fields.get("states_or_transitions")))
+    )
+    normalized["local_proof"] = prioritize_local_proof_rows(
+        unique_text([*text_values(normalized.get("local_proof")), *text_values(profile_fields.get("local_proof"))])
+    )
+    return restore_protected_phrase_surface(normalized, tuple(protected_phrases))
+
+
+def semantic_field_with_profile_supplements(base_value: Any, profile_value: Any, *, limit: int = 12) -> str:
+    base_fragments = list(contract_list_fragments(base_value))
+    profile_fragments = list(contract_list_fragments(profile_value))
+    if not base_fragments:
+        return ", ".join(unique_text(profile_fragments)[:limit])
+    selected_terms = _contract_content_terms(base_fragments)
+    supplements: list[str] = []
+    for fragment in profile_fragments:
+        material_terms = set(visible_words(fragment.casefold())) - _PROFILE_SUPPLEMENT_NOISE_TERMS
+        if not material_terms:
+            continue
+        if material_terms <= selected_terms:
+            continue
+        supplements.append(fragment)
+        selected_terms.update(material_terms)
+    if not supplements:
+        return ", ".join(unique_text(base_fragments))
+    supplement_limit = min(len(supplements), max(3, limit // 2))
+    selected_supplements = supplements[:supplement_limit]
+    return ", ".join(unique_text([*base_fragments, *selected_supplements]))
+
+
+def with_required_local_proof_floor(contract: Mapping[str, Any], *, label: str) -> dict[str, Any]:
+    normalized = dict(contract)
+    existing_rows = [_sentence_clause(item) for item in text_values(normalized.get("local_proof")) if _clean(item)]
+    required = (
+        (
+            "successful path evidence",
+            f"Successful path evidence for {label}: accepted input, visible result, persisted explanation, and reviewer context.",
+        ),
+        (
+            "blocked input evidence",
+            f"Blocked input evidence for {label}: missing or malformed input, stops before a trusted result, and recovery explanation.",
+        ),
+        (
+            "replay evidence",
+            f"Replay evidence for {label}: actor, input facts, status, explanation, and proof trail.",
+        ),
+    )
+    proof_rows: list[str] = []
+    for marker, row in required:
+        existing = next((item for item in existing_rows if marker in item.casefold()), "")
+        proof_rows.append(existing or _sentence_clause(row))
+    proof_rows.extend(existing_rows)
+    normalized["local_proof"] = list(unique_text(proof_rows))
+    return normalized
+
+
+def material_profile_obligations_survive(*, label: str, description: str, contract: Mapping[str, Any]) -> bool:
+    source_text = f"{label} {description}".casefold()
+    source_terms = set(visible_words(source_text))
+    if not (source_terms & _PROFILE_SOURCE_CONTEXT_TERMS or "context handling" in source_text):
+        return False
+    contract_terms = set(
+        visible_words(
+            " ".join(
+                text
+                for key in ("owned_state", "accepted_inputs", "produced_outputs", "states_or_transitions")
+                for text in text_values(contract.get(key))
+            ).casefold()
+        )
+    )
+    return len(contract_terms & _PROFILE_MATERIAL_OBLIGATION_TERMS) >= 3
+
+
+def contract_list_fragments(*values: Any) -> tuple[str, ...]:
+    rows: list[str] = []
+    for value in values:
+        for item in text_values(value, split_scalar=True, split_commas=True, strip_bullets=True):
+            token = _clean(item).strip(" .,;:")
+            if token:
+                rows.append(token)
+    return unique_text(rows)
+
+
+def _contract_content_terms(fragments: Sequence[str]) -> set[str]:
+    terms: set[str] = set()
+    for fragment in fragments:
+        terms.update(visible_words(str(fragment).casefold()))
+    return terms
 
 
 def result_like_phrase(value: str) -> str:
@@ -284,12 +428,17 @@ def _proof_family(value: str) -> str:
 
 
 __all__ = [
+    "contract_list_fragments",
     "context_contract_terms",
     "local_proof_boundary_rows",
+    "material_profile_obligations_survive",
+    "merge_profile_contract_fields",
     "present_verb",
     "prioritize_local_proof_rows",
     "result_like_phrase",
     "result_like_transition_phrase",
     "restore_protected_phrase_surface",
     "sanitize_contract_fields",
+    "semantic_field_with_profile_supplements",
+    "with_required_local_proof_floor",
 ]

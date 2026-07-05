@@ -5,7 +5,7 @@
   Recurring false allows, false blocks, proofless claims, visible-UX misses,
   or governance-bypass patterns should become Casebook bugs only when evidence
   is concrete enough to prevent rediscovery.
-Last updated: 2026-05-03
+Last updated: 2026-07-04
 
 
 Last updated (UTC): 2026-04-16
@@ -219,11 +219,11 @@ It is the product learning archive, not just a list of open bugs.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-02 · Implementation:** Tightened Casebook selected-bug detail gutters, restored media-block ownership, captured CB-153, and proved compact metadata plus browser layout for v0.1.13.
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-140
-  - Evidence: odylith/casebook/bugs/2026-05-02-casebook-detail-view-leaves-excessive-left-gutter.md, src/odylith/runtime/surfaces/render_casebook_dashboard.py +1 more
-- **2026-03-20 · Decision:** Successor created: B-266 reopens B-265 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/casebook/CURRENT_SPEC.md +1 more
+  - Evidence: 3 tracked artifact references retained
+- **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

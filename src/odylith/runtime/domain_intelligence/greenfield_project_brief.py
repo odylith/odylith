@@ -77,9 +77,14 @@ def project_outcome_text(
     ):
         text = _readable_project_outcome(clean_text(candidate), intent=intent, release_selector=release_selector)
         text = _brief_field_text(text, limit=_PROJECT_OUTCOME_LIMIT)
+        if text and text[-1] not in ".!?":
+            text = f"{text}."
         if word_count(text) >= PROJECT_OUTCOME_MIN_WORDS and not _looks_like_clipped_project_outcome(text):
             return text
-    return _brief_field_text(value or fallback, limit=_PROJECT_OUTCOME_LIMIT)
+    text = _brief_field_text(value or fallback, limit=_PROJECT_OUTCOME_LIMIT)
+    if text and text[-1] not in ".!?":
+        text = f"{text}."
+    return text
 
 
 def project_brief_issues(value: Any) -> list[str]:
@@ -211,8 +216,8 @@ def _readable_project_outcome(value: str, *, intent: Mapping[str, Any], release_
     state_object = _brief_state_label(clean_text(intent.get("state_object")) or "the product state")
     release = clean_text(release_selector) or "the first release"
     return (
-        f"Release {release} proves one accepted {title} path. "
-        f"The visible result and {state_object} stay connected with blocked-path and review evidence."
+        f"Release {release} proves one accepted first path for {title}. "
+        f"Reviewers can inspect the visible result, {state_object}, blocked-path evidence, and review evidence together."
     )
 
 
@@ -432,7 +437,17 @@ def _brief_list_fragment(value: str) -> str:
     operational_prefix = "operational scale until "
     if lowered.startswith(operational_prefix):
         return f"Operational scale stays deferred until {text[len(operational_prefix):].strip(' .')}"
-    return f"{text[:1].upper()}{text[1:]}" if text and text[:1].islower() else text
+    if text and text[:1].islower() and not _starts_with_source_mixed_case_token(text):
+        return f"{text[:1].upper()}{text[1:]}"
+    return text
+
+
+def _starts_with_source_mixed_case_token(value: str) -> bool:
+    match = re.match(r"\s*(?P<token>[A-Za-z][A-Za-z0-9_/-]*)\b", str(value or ""))
+    if not match:
+        return False
+    token = match.group("token")
+    return bool(token[:1].islower() and any(char.isupper() for char in token[1:]))
 
 
 def _project_checkpoint_lines(value: Any) -> list[str]:

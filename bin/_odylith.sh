@@ -289,6 +289,14 @@ print(value)
 PY
 }
 
+require_current_component_forensics() {
+  local output
+  if ! output="$(PYTHONPATH="$odylith_repo_root/src${PYTHONPATH:+:$PYTHONPATH}" "$odylith_python" -m odylith.cli governance sync-component-spec-requirements --repo-root "$odylith_repo_root" --check-only 2>&1)"; then
+    printf '%s\n' "$output" >&2
+    die "Registry component forensics are stale for the checked-out source. Run: PYTHONPATH=src .venv/bin/python -m odylith.cli governance sync-component-spec-requirements --repo-root ."
+  fi
+}
+
 run_release_proof_steps() {
   local resolved_version="$1"
   local dist_dir="$2"
@@ -301,6 +309,7 @@ run_release_proof_steps() {
   "$odylith_host_repo_root/bin/validate"
   git diff --quiet --ignore-submodules HEAD -- || die "release proof validation mutated tracked files; commit them before release"
   git diff --quiet --ignore-submodules --cached -- || die "release proof validation staged tracked files; commit them before release"
+  require_current_component_forensics
   odylith_cli validate self-host-posture --repo-root . --mode release --expected-tag "$tag"
   "$odylith_python" -m hatch build --target wheel "$dist_dir"
   "$odylith_python" scripts/release/publish_release_assets.py --repo odylith/odylith --tag "$tag" --dist-dir "$dist_dir" --allow-local
@@ -346,6 +355,7 @@ PY
     --version "$resolved_version" \
     --dist-dir "$dist_dir" \
     --temp-parent "$matrix_temp_parent" \
+    --proof-tier release \
     --include-natural-rescue-proof \
     --include-browser-proof \
     --output-json "$dist_dir/greenfield-post-confirm-matrix.v1.json"

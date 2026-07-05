@@ -983,6 +983,33 @@ def test_atlas_box_explanations_sanitize_greenfield_component_and_scope_copy() -
     assert [box.label for box in boxes].count("Proof boundary") == 1
 
 
+def test_atlas_box_explanations_preserve_lower_first_source_symbol_descriptions() -> None:
+    boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
+        "\n".join(
+            [
+                "flowchart LR",
+                '  record["mRNA Stability Batch"] --> reviewer["Formulation Scientist"]',
+                "",
+            ]
+        ),
+        component_rows=[
+            {
+                "name": "mRNA Stability Batch",
+                "description": (
+                    "mRNA Stability Batch is the trusted record core for the product. "
+                    "It ties review evidence to source input."
+                ),
+            }
+        ],
+        diagram_title="mRNA Stability Batch Review",
+        diagram_summary="Shows how the formulation scientist reviews one mRNA stability record.",
+    )
+    by_label = {box.label: box.description for box in boxes}
+
+    assert by_label["mRNA Stability Batch"].startswith("mRNA Stability Batch is")
+    assert "MRNA Stability" not in "\n".join(by_label.values())
+
+
 def test_atlas_box_explanations_do_not_prefix_action_component_copy_with_owns() -> None:
     boxes = atlas_box_explanations.extract_diagram_boxes_from_mermaid(
         "\n".join(

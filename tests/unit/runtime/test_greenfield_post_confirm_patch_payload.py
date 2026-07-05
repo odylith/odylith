@@ -60,9 +60,12 @@ def test_repair_payload_enriches_rescue_patchset_with_structured_planner(
         assert kwargs["provider"] is provider
         assert kwargs["patchset_request"]["operations"][0]["operation_id"] == "GF-PATCH-001"
         assert kwargs["evidence"]["intent"]["title"] == "Structured Repair"
+        assert "quality_lenses" not in kwargs["evidence"]
+        assert "semantic_compiler" not in kwargs["evidence"]
+        assert kwargs["evidence"]["patch_targets"][0]["operation_id"] == "GF-PATCH-001"
         assert kwargs["model"] == "planner-model"
         assert kwargs["reasoning_effort"] == ""
-        assert kwargs["timeout_seconds"] == 45.0
+        assert kwargs["timeout_seconds"] == 60.0
         return {
             "version": greenfield_post_confirm_rescue_planner.tribunal_patch_planner.TRIBUNAL_PATCH_PLAN_VERSION,
             "status": "planned",
@@ -151,6 +154,139 @@ def test_repair_payload_enriches_rescue_patchset_with_structured_planner(
     assert operation["replacement_fact"]["first_path"].startswith("A reviewer checks")
     assert operation["decision_ledger_entry"]["chosen_interpretation"] == "first path is a user-visible decision"
     assert enriched_context.patchset_request["tribunal_patch_plan"]["status"] == "planned"
+
+
+def test_structured_rescue_planner_uses_cheap_profile_for_local_provider(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    provider = SimpleNamespace(
+        provider_name="codex-cli",
+        last_failure_code="",
+        last_failure_detail="",
+        last_request_model="",
+        last_request_reasoning_effort="",
+    )
+    config = greenfield_post_confirm_rescue_planner.odylith_reasoning.ReasoningConfig(
+        mode="auto",
+        provider="codex-cli",
+        model="",
+        base_url="",
+        api_key="",
+        scope_cap=5,
+        timeout_seconds=35.0,
+        codex_bin="codex",
+        codex_reasoning_effort="high",
+        claude_bin="claude",
+        claude_reasoning_effort="high",
+    )
+    monkeypatch.delenv("ODYLITH_REASONING_CODEX_REASONING_EFFORT", raising=False)
+    monkeypatch.setattr(
+        greenfield_post_confirm_rescue_planner.odylith_reasoning,
+        "reasoning_config_from_env",
+        lambda *, repo_root: config,
+    )
+    monkeypatch.setattr(
+        greenfield_post_confirm_rescue_planner.odylith_reasoning,
+        "provider_from_config",
+        lambda *_args, **_kwargs: provider,
+    )
+    captured: dict[str, Any] = {}
+
+    def fake_plan_structured_patch(**kwargs: Any) -> dict[str, Any]:
+        captured.update(kwargs)
+        return {
+            "version": greenfield_post_confirm_rescue_planner.tribunal_patch_planner.TRIBUNAL_PATCH_PLAN_VERSION,
+            "status": "provider_failed",
+            "operation_count": 0,
+            "decision_summary": "Codex CLI exceeded 60.0s.",
+            "operations": [],
+            "rejections": [],
+            "provider": {
+                "provider": "codex-cli",
+                "code": "timeout",
+                "detail": "Codex CLI exceeded 60.0s.",
+                "model": "gpt-5.3-codex-spark",
+                "reasoning_effort": "low",
+            },
+        }
+
+    monkeypatch.setattr(
+        greenfield_post_confirm_rescue_planner.tribunal_patch_planner,
+        "plan_structured_patch",
+        fake_plan_structured_patch,
+    )
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=10.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("structured rescue proof",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "semantic_model",
+                    "target_path": "semantic_model.domain_ontology.external_systems",
+                    "semantic_node_id": "SemanticModelIR.domain_ontology.external_systems",
+                    "issue_code": "structured_rescue_semantic_patch",
+                    "operation_kind": "semantic_external_systems",
+                    "replacement_fact": "",
+                }
+            ],
+        },
+        quality_lenses={"status": "passed", "lenses": {"architect": {"status": "passed"}}},
+        semantic_compiler={"status": "passed", "visible_result": {"text": "Release proof"}},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+
+    enriched = greenfield_post_confirm_rescue_planner.enrich_rescue_patchset_with_structured_plan(
+        {
+            "intent": {"title": "Structured Rescue"},
+            "semantic_model": {"domain_ontology": {"external_systems": ["mail gateway"]}},
+        },
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    assert enriched is not None
+    assert captured["model"] == "gpt-5.3-codex-spark"
+    assert captured["reasoning_effort"] == "low"
+    assert captured["timeout_seconds"] == 12.0
+    assert captured["patchset_request"]["operations"][0]["target_path"] == (
+        "semantic_model.domain_ontology.external_systems"
+    )
+    assert "quality_lenses" not in captured["evidence"]
+    assert captured["evidence"]["semantic_model_targets"][0]["current_value"] == ["mail gateway"]
+    operation = enriched.patchset_request["operations"][0]
+    assert operation["replacement_fact"] == {"external_systems": ["mail gateway"]}
+    assert operation["decision_ledger_entry"]["chosen_interpretation"] == (
+        "preserve the accepted schema-owned semantic fact"
+    )
+    assert enriched.patchset_request["tribunal_patch_plan"]["status"] == "provider_failed"
+    assert enriched.patchset_request["structured_patch_fallback"] == {
+        "version": "odylith.greenfield.post_confirm.structured_patch_fallback.v1",
+        "status": "applied",
+        "source": "source_anchored_semantic_fact",
+        "operation_count": 1,
+        "provider_failure": {
+            "provider": "codex-cli",
+            "code": "timeout",
+            "detail": "Codex CLI exceeded 60.0s.",
+            "model": "gpt-5.3-codex-spark",
+            "reasoning_effort": "low",
+        },
+    }
 
 
 def test_repair_payload_skips_structured_planner_on_standard_tier(
@@ -296,7 +432,13 @@ def test_structured_patch_planner_uses_medium_effort_by_default(monkeypatch: pyt
     )
     config = SimpleNamespace(codex_reasoning_effort="high", claude_reasoning_effort="high")
 
-    assert greenfield_post_confirm_rescue_planner._provider_reasoning_effort(config, provider) == "medium"
+    profile = greenfield_post_confirm_rescue_planner.odylith_reasoning.StructuredReasoningProfile(
+        provider="codex-cli",
+        model="gpt-5.3-codex-spark",
+        reasoning_effort="medium",
+    )
+
+    assert greenfield_post_confirm_rescue_planner._provider_reasoning_effort(config, provider, profile=profile) == "medium"
 
 
 def test_structured_patch_planner_honors_explicit_effort_env(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -314,8 +456,15 @@ def test_structured_patch_planner_honors_explicit_effort_env(monkeypatch: pytest
 
 
 def test_structured_patch_planner_keeps_rescue_timeout_inside_budget() -> None:
-    assert greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(85.0) == 45.0
-    assert greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(40.0) == 30.0
+    assert greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(85.0) == 60.0
+    assert (
+        greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(
+            85.0,
+            source_fallback_ready=True,
+        )
+        == 12.0
+    )
+    assert greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(40.0) == 32.0
     assert greenfield_post_confirm_rescue_planner._structured_patch_timeout_seconds(12.0) == 0.0
 
 

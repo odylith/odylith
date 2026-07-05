@@ -195,6 +195,7 @@ _FOCUS_STOPWORDS = {
     "workspace",
 }
 _TITLE_CONNECTORS = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"}
+_MODAL_ACTION_BOUNDARIES = frozenset({"can", "could", "may", "might", "must", "shall", "should", "will", "would"})
 
 
 def accepted_actor_label(value: str, *, project_focus: str = "") -> str:
@@ -547,7 +548,8 @@ def _split_actor_action_tail(value: str) -> tuple[str, str]:
         } or (token.endswith("ing") and head_has_role_signal)
         finite_action_boundary = looks_like_finite_action_token(token)
         base_action_boundary = looks_like_base_action_token(token)
-        clause_action_boundary = finite_action_boundary or base_action_boundary
+        modal_action_boundary = token in _MODAL_ACTION_BOUNDARIES and index + 1 < len(words)
+        clause_action_boundary = finite_action_boundary or base_action_boundary or modal_action_boundary
         if not (gerund_boundary or clause_action_boundary):
             continue
         head = head_candidate
@@ -671,7 +673,7 @@ def _strip_actor_head_articles(value: str) -> str:
 def _strip_modal_actor_tail(value: str) -> str:
     text = _clean(value).strip(" .")
     words = text.split()
-    if len(words) < 2 or words[-1].casefold().strip(".,;:") not in {"can", "must", "should"}:
+    if len(words) < 2 or words[-1].casefold().strip(".,;:") not in _MODAL_ACTION_BOUNDARIES:
         return text
     head = " ".join(words[:-1]).strip(" .")
     return head if _role_suffix(head) else text

@@ -6,7 +6,7 @@
   affordances, admissible action, proof, compact learning, benchmark evidence,
   updated priors, and the cross-system loop through Context, Execution,
   Memory, Intervention, Tribunal, Surfaces, and Benchmarks.
-Last updated: 2026-06-30
+Last updated: 2026-07-04
 
 
 Last updated (UTC): 2026-06-30
@@ -308,19 +308,19 @@ too low-signal for default promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-30 · Implementation:** Decomposed Atlas diagram-box tracked-object phrase selection into a dedicated term owner, pinned generic-verb fallback, and kept the touched explanation renderer under the source-size pressure line.
+- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/atlas/CURRENT_SPEC.md +3 more
-- **2026-06-30 · Implementation:** Removed platform-facing retained-scenario vocabulary from current Registry specs and Atlas box-explanation runtime custody; leakage guard and strict platform-surface scan are clean outside intentional fixtures/evidence.
+  - Evidence: 5 tracked artifact references retained
+- **2026-06-30 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/registry/source/components/atlas/CURRENT_SPEC.md, odylith/registry/source/components/dashboard/CURRENT_SPEC.md +3 more
-- **2026-06-28 · Implementation:** Fixed Atlas workstream navigation visibility for backlog-derived diagram ownership: D-045 now remains owned by B-142 in diagram_related_workstreams after render attachment, with Atlas source-local check-only proof at 46 fresh / 0 stale.
+  - Evidence: 5 tracked artifact references retained
+- **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +3 more
-- **2026-03-16 · Implementation:** Implemented the Subagent Router runtime, the thin router skill, the component spec and runbook, and the Atlas routing topology diagrams.
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
-- **2026-03-16 · Decision:** keep Subagent Router accuracy-first, hard-gated, and first-class in Registry and Atlas instead of hiding delegation policy in prompt folklore.
-  - Evidence: odylith/atlas/source/catalog/diagrams.v1.json, odylith/registry/source/components/subagent-router/CURRENT_SPEC.md +1 more
+  - Evidence: 5 tracked artifact references retained
+- **2026-03-16 · Implementation:** Implementation evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
+- **2026-03-16 · Decision:** Decision evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

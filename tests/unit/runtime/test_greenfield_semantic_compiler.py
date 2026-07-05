@@ -9,6 +9,9 @@ from odylith.runtime.domain_intelligence.greenfield_apply_semantic import APPLY_
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import ensure_apply_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_apply_semantic import greenfield_apply_semantic_input
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import complete_confirmed_intent
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_requirement_control_step
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import (
     compile_greenfield_semantics,
 )
@@ -73,6 +76,93 @@ def test_semantic_compiler_nominalizes_terse_terminal_result_before_proof_bounda
     assert report.quality_scores["proof_result_separation"] == 1.0
 
 
+def test_semantic_compiler_nominalizes_actor_led_terminal_action_before_proof_boundary() -> None:
+    first_path = (
+        "Platform operators submit distributed agent jobs, track assigned worker progress, collect execution evidence, "
+        "surface blockers, and publish a final run record with reviewer approval."
+    )
+    proof = "The product shows the workspace result and keeps replayable evidence for review."
+
+    candidate = select_visible_result_candidate(first_path, proof_boundary=proof)
+
+    assert candidate.source_kind == "first_path_event"
+    assert candidate.text == "published final run record with reviewer approval"
+    assert "workspace result" not in candidate.text
+
+
+def test_semantic_compiler_derives_terminal_approval_result_before_proof_boundary() -> None:
+    first_path = (
+        "Marine ecologist can register a model candidate, attach dataset identity, run comparison evidence, "
+        "review uncertainty, block unsafe claims, and approve only bounded release evidence."
+    )
+    proof = (
+        "Release 0.0.1 succeeds when a researcher can complete one bounded model-risk release gate run, "
+        "review inputs, method version, baseline comparison, uncertainty or tolerance, and reproduce the saved result."
+    )
+
+    candidate = select_visible_result_candidate(first_path, proof_boundary=proof)
+    report = compile_greenfield_semantics(
+        {
+            "intent": {"first_path": first_path, "proof_boundary": proof},
+            "semantic_model": {
+                "first_path_contract": {
+                    "visible_result": "approved bounded release evidence",
+                    "events": [{"text": first_path, "visible_result": True}],
+                }
+            },
+        }
+    )
+
+    assert candidate.source_kind == "first_path_event"
+    assert candidate.source_path.startswith("first_path.")
+    assert candidate.text == "the approved bounded release evidence"
+    assert "saved result" not in candidate.text
+    assert report.status == "passed"
+
+
+def test_semantic_compiler_keeps_object_list_results_ahead_of_proof_boundary() -> None:
+    proof = "The product shows the workspace result and keeps replayable evidence for review."
+    disclosure = (
+        "Multi-party security disclosure council workspace user coordinates external vulnerability reports, "
+        "affected partner review, embargo decisions, evidence custody, legal signoff, and public advisory "
+        "release readiness without personalized notification campaigns in the first release."
+    )
+    spacecraft = (
+        "Telemetry claims, fault hypotheses, simulation evidence, command risk, operator approvals, "
+        "and recovery state before a corrective procedure is released."
+    )
+
+    disclosure_candidate = select_visible_result_candidate(disclosure, proof_boundary=proof)
+    spacecraft_candidate = select_visible_result_candidate(spacecraft, proof_boundary=proof)
+
+    assert disclosure_candidate.source_kind == "first_path_event"
+    assert disclosure_candidate.text.startswith("coordinated external vulnerability reports")
+    assert "workspace result" not in disclosure_candidate.text
+    assert spacecraft_candidate.source_path == "first_path.visible_result"
+    assert spacecraft_candidate.text.startswith("Telemetry claims")
+    assert "workspace result" not in spacecraft_candidate.text
+
+
+def test_semantic_compiler_rejects_object_led_workflow_subjects() -> None:
+    report = compile_greenfield_semantics(
+        {
+            "intent": {
+                "first_path": "The decision summary turns an ambiguous waiver packet into a reviewable status.",
+                "proof_boundary": (
+                    "Release 0.0.1 succeeds when a reviewer can see the reviewable status, resolve missing input, "
+                    "and keep evidence available for review."
+                ),
+            },
+            "semantic_model": {
+                "first_path_contract": {"visible_result": "a reviewable status"},
+            },
+        }
+    )
+
+    assert report.status == "failed"
+    assert any(item.code == "first_path.non_human_workflow_subject" for item in report.counterexamples)
+
+
 def test_semantic_compiler_prioritizes_terminal_first_path_result_over_long_proof_result() -> None:
     first_path = (
         "The home cook picks a recipe, the controller validates that ingredients are staged and sensors are live, "
@@ -91,6 +181,44 @@ def test_semantic_compiler_prioritizes_terminal_first_path_result_over_long_proo
     assert candidate.source_path == "first_path.events.5"
     assert candidate.text == "a finished safe-to-serve state with emergency stop available throughout"
     assert "hardware simulator" not in candidate.text.casefold()
+
+
+def test_semantic_compiler_ignores_meta_quality_constraints_as_visible_result() -> None:
+    first_path = (
+        "Sports medicine coordinator can turn an ambiguous return-to-play case into a review-ready record using "
+        "symptom checklist, neurocognitive test, trainer notes, clearance status, explicit expert review, "
+        "auditable decision ledger, and a final return recommendation. The request has specialist jargon and "
+        "operational handoff, so the artifacts must stay readable without losing domain depth. An architect must "
+        "see bounded components, state ownership, events, and projection boundaries. The post-confirm create must "
+        "finish all project and governance artifacts under the standard budget."
+    )
+    proof = (
+        "Release 0.0.1 succeeds when the accepted first path is complete, reviewable, and blocked when required. "
+        "The product shows the workspace result, handles missing or invalid input with a clear blocker, and keeps "
+        "replayable evidence for review."
+    )
+
+    model = first_path_model(first_path)
+    candidate = select_visible_result_candidate(first_path, proof_boundary=proof)
+
+    assert is_requirement_control_step(
+        "The request has specialist jargon and operational handoff, so the artifacts must stay readable without losing domain depth"
+    )
+    assert drop_requirement_control_steps(
+        [
+            "Sports medicine coordinator turns an ambiguous return-to-play case into a review-ready record",
+            "The request has specialist jargon and operational handoff, so the artifacts must stay readable without losing domain depth",
+            "An architect must see bounded components, state ownership, events, and projection boundaries",
+            "The post-confirm create must finish all project and governance artifacts under the standard budget",
+        ]
+    ) == ["Sports medicine coordinator turns an ambiguous return-to-play case into a review-ready record"]
+    assert "must stay readable" not in " ".join(model.steps).casefold()
+    assert "post-confirm create" not in " ".join(model.steps).casefold()
+    assert model.visible_outcome == "A final return recommendation"
+    assert candidate.source_kind == "first_path_event"
+    assert candidate.source_path == "first_path.visible_result"
+    assert candidate.text == "a final return recommendation"
+    assert "specialist jargon" not in candidate.text.casefold()
 
 
 def test_confirmed_intent_completion_rebuilds_proof_poisoned_product_fields() -> None:
@@ -153,6 +281,40 @@ def test_semantic_compiler_counterexample_repairs_existing_projection_poisoning(
     assert repaired["semantic_model"]["first_path_contract"]["visible_result"].startswith("same event settled")
 
 
+def test_semantic_compiler_rejects_poisoned_rendered_projection_surfaces() -> None:
+    proposal = _minimal_lifecycle_proposal()
+    proof = proposal["intent"]["proof_boundary"]
+    poison = f"Operators should trust the visible result produced by {proof}."
+    proposal["project_brief"]["project_outcome"] = poison
+    proposal["accepted_project"] = {"summary": poison}
+    proposal["project_dashboard"] = {"status": {"headline": poison}}
+
+    failed = compile_greenfield_semantics(proposal)
+
+    assert failed.status == "failed"
+    paths = {item.path for item in failed.counterexamples}
+    assert "project_brief.project_outcome" in paths
+    assert "accepted_project.summary" in paths
+    assert "project_dashboard.status.headline" in paths
+
+    assert repair_greenfield_semantic_projections(proposal) is True
+    assert "visible result produced by" not in json.dumps(proposal["project_brief"]).casefold()
+
+
+def test_semantic_compiler_rejects_paraphrased_proof_poisoned_projection_surfaces() -> None:
+    proposal = _minimal_lifecycle_proposal()
+    poison = "Operators use the same event settled into a finished result proven by release evidence to decide the next action."
+    proposal["intent"]["product_view"] = poison
+    proposal["backlog"][0]["opportunity"] = poison
+
+    failed = compile_greenfield_semantics(proposal)
+
+    assert failed.status == "failed"
+    paths = {item.path for item in failed.counterexamples}
+    assert "intent.product_view" in paths
+    assert "backlog.0.opportunity" in paths
+
+
 def test_confirmed_intent_completion_does_not_wrap_visible_outcome_as_produced_by() -> None:
     intent = complete_confirmed_intent(
         {
@@ -201,7 +363,8 @@ def test_apply_semantic_input_records_source_paths_and_semantic_visibility_fallb
     source_paths = dict(compiler_input.source_paths)
 
     assert compiler_input.schema_version == APPLY_SEMANTIC_INPUT_VERSION
-    assert compiler_input.first_path.endswith("then shows the accepted result for review.")
+    assert compiler_input.first_path.endswith("The product shows the accepted result for review.")
+    assert "then shows the accepted result" not in compiler_input.first_path
     assert source_paths["first_path"] == "intent.first_path+semantic_visible_result_fallback"
     assert source_paths["proof_boundary"] == "intent.proof_boundary"
 
@@ -209,7 +372,8 @@ def test_apply_semantic_input_records_source_paths_and_semantic_visibility_fallb
     persisted_input = ensured["apply_semantic_input"]
 
     assert persisted_input["schema_version"] == APPLY_SEMANTIC_INPUT_VERSION
-    assert persisted_input["first_path"].endswith("then shows the accepted result for review.")
+    assert persisted_input["first_path"].endswith("The product shows the accepted result for review.")
+    assert "then shows the accepted result" not in persisted_input["first_path"]
     assert persisted_input["source_paths"]["first_path"] == "intent.first_path+semantic_visible_result_fallback"
 
 

@@ -39,6 +39,24 @@ _OBJECT_HEADS = frozenset(
         "windows",
     }
 )
+_LIST_RESULT_HEADS = frozenset(
+    {
+        *_OBJECT_HEADS,
+        "approval",
+        "approvals",
+        "certificate",
+        "certificates",
+        "exclusion",
+        "exclusions",
+        "ledger",
+        "ledgers",
+        "recommendation",
+        "recommendations",
+        "readiness",
+        "sign-off",
+        "sign-offs",
+    }
+)
 
 
 def starts_with_compound_noun_object(value: str) -> bool:
@@ -57,11 +75,30 @@ def action_word_inside_compound_noun(value: str, action_start: int) -> bool:
     return False
 
 
+def action_word_starts_result_list_noun(value: str, action_start: int) -> bool:
+    """Return true when an action-looking word starts a visible-result noun list."""
+
+    text = clean_first_path_text(value)
+    words = _word_spans(text)
+    for index, (word, start, end) in enumerate(words):
+        if not start <= action_start < end or word not in _ACTION_NOUNS:
+            continue
+        if index + 1 >= len(words):
+            return False
+        boundary = text[end : words[index + 1][1]]
+        if not any(marker in boundary for marker in (",", ";", ":")):
+            return False
+        tail_heads = {item[0] for item in words[index + 1 : index + 9]}
+        return bool(tail_heads & _LIST_RESULT_HEADS)
+    return False
+
+
 def _compound_noun_index(value: str, *, required_index: int | None = None) -> int | None:
     words = _word_spans(value)
     if len(words) < 3:
         return None
-    for index, (word, _start, _end) in enumerate(words[1:-1], start=1):
+    start = 0 if required_index == 0 or required_index is None else 1
+    for index, (word, _start, _end) in enumerate(words[start:-1], start=start):
         if required_index is not None and index != required_index:
             continue
         if word not in _ACTION_NOUNS:
@@ -79,4 +116,8 @@ def _word_spans(value: str) -> list[tuple[str, int, int]]:
     ]
 
 
-__all__ = ["action_word_inside_compound_noun", "starts_with_compound_noun_object"]
+__all__ = [
+    "action_word_inside_compound_noun",
+    "action_word_starts_result_list_noun",
+    "starts_with_compound_noun_object",
+]

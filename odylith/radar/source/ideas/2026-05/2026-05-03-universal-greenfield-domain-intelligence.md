@@ -184,6 +184,83 @@ Compass timeline audit filters zero-file prompt-intervention narration so routin
 - Browser proof for refreshed Radar, Registry, Atlas, Casebook, and Compass surfaces after generated assets update.
 
 ## Validation Evidence
+- 2026-07-03 harness observability checkpoint: Greenfield matrix discovery now
+  has incremental JSONL telemetry, failure clustering, proof-tier separation,
+  controlled campaign tiers, and a metadata-driven shard builder for exact
+  failed-subset replay, regression shards, volume-discovery shards, and strict
+  release-proof shards. Proof passed the focused sharder/campaign suite
+  (`18 passed`), Python compile checks, Bash entrypoint syntax checks, and a
+  disposable `make greenfield-matrix-shards` command-surface smoke with temp
+  cleanup. Fresh local dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-postconfirm-20260703b`
+  passed the 52-term platform domain-leakage guard, and an installed replay of
+  the saved `/Users/freedom/mock/grn-sim` confirmed intent completed governed
+  create in 32.451s with final manifest passed, write transaction committed,
+  core governance files present, and no `result result` Atlas copy. This is
+  installed defect replay and harness proof, not full release readiness; browser
+  and natural-rescue proof still belong to the release-proof tier.
+- 2026-07-03 incremental campaign progress checkpoint: the tiered campaign
+  runner now tails shard telemetry and writes merged
+  `campaign-progress.v1.jsonl` plus live `campaign-progress.v1.json` snapshots
+  with per-case counts, running shards, telemetry-derived stop decisions, and
+  cross-tier failure-cluster counts. Pending shards stop after the first
+  actionable failure or cluster threshold, and in-flight sibling shards receive
+  a cooperative stop signal once merged telemetry exposes tier failure evidence.
+  Failure clustering now prefers typed manifest issue ownership and concrete
+  blocker text before score buckets, so the next failed-subset replay is
+  root-cause readable instead of score-only. The shard builder now emits
+  per-tier variance evaluation and reads top-level campaign failure clusters so
+  high-volume discovery is scored by stressor coverage and ambiguity-shape
+  density, not raw project count. The campaign wrapper now performs release
+  component-forensics and Chromium preflight before strict release-proof shards.
+  Direct release-tier matrix invocations now also reject missing browser,
+  rescue-smoke, or natural-rescue proof, so the strict proof contract cannot be
+  bypassed outside the wrapper. Focused proof passed the harness suite
+  (`27 passed in 0.51s`), the broader matrix unit file (`69 passed in 0.42s`),
+  combined runner/matrix proof (`87 passed in 0.74s`), Python compile checks,
+  and Bash syntax checks. This remains
+  discovery/release-harness proof only; current post-confirm generation
+  quality failures still keep B-142 open.
+- 2026-07-03 tiered replay and actor-led product-view checkpoint: the
+  high-volume harness now flushes matrix result JSON incrementally during
+  case execution, preserves stable case identity for exact failed-subset replay
+  through id, slug, prompt hash, and confirmed-intent hash, and adds an explicit
+  240-case discovery tier with tier-specific worker limits. The latest
+  product-view no-write blocker was repaired in source by adding a
+  domain-neutral actor-led open-action owner to the first-path semantic path and
+  confirmed completion text, so long actor-led first paths no longer fall back
+  to later homonym object actions when rendering Radar product-view copy.
+  Focused campaign/progress proof passed (`29 passed`), focused first-path and
+  post-confirm slop proof passed (`56 passed`), Python compile checks passed,
+  and exact source-local replay of the failed long-first-path prompt completed
+  governed create with final manifest passed and zero issues. This is not a
+  release-ready claim: next proof is a fresh built dist, installed exact replay,
+  and resumed 60-case regression before broader 120/240 discovery.
+- 2026-07-04 source-anchored structured-rescue fallback checkpoint: the strict
+  release-proof natural-rescue blocker showed that local host CLI subprocesses
+  can miss the rescue budget even for tiny schema-bound PatchSet requests. The
+  rescue path now gives exact source-owned semantic operations a short 12s host
+  attempt, records provider failure, and applies a source-anchored semantic
+  fallback only when the accepted proposal already carries the exact
+  schema-owned fact. The same pass fixed campaign evidence inflation by
+  de-duplicating tier aggregate and shard failure-cluster counts and preserving
+  preflight tier-completion counts in live progress snapshots. Focused proof
+  passed 68 rescue/campaign/proof tests plus compile and diff checks; a
+  source-local natural-rescue replay committed governed writes in 43.439s with
+  the final manifest passed. Release readiness remains unclaimed until a fresh
+  installable dist passes strict full-install release proof with browser,
+  synthetic rescue, natural rescue, platform leakage, and temp cleanup.
+- 2026-07-04 strict installed fallback release proof checkpoint: fresh dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-tiered-rescue-fallback-20260704`
+  passed checksum/syntax/archive verification and strict release campaign
+  `/tmp/odylith-tiered-rescue-fallback-release-campaign.v1.json` with
+  `release_readiness_status=proven`, no failure clusters, and full-install
+  release proof. The release shard passed 12/12 high-variance cases with browser
+  proof, zero issue rows, complete governed evidence, prompt findings at zero,
+  and standard create timings of 30.674-40.448s. Synthetic rescue passed, and
+  natural rescue committed governed writes under the 90s rescue tier with
+  `cli_create_seconds=67.639`, manifest elapsed 40.888s, provider timeout
+  recorded after 12.0s, and `structured_patch_fallback.status=applied`.
 - 2026-06-29 post-domain-leakage-guard installed proof passed on local release
   dist `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-3fbacb91`:
   build-time platform domain-leakage gate passed across 19 distinctive fixture
@@ -2468,6 +2545,66 @@ Odylith should feel like a precise greenfield architecture partner in empty repo
   rescue passing in 66.245 seconds, platform domain-leakage proof passing across
   213 generated readback terms, and no remaining temp roots. Final
   committed-head installed release proof remains pending.
+- 2026-07-03 first-path requirement-control and structured Atlas coverage
+  repair advanced the generic Greenfield compiler. The high-variance failed
+  subset showed that a modal requirement sentence can be valid product
+  instruction but invalid path-event material. Domain Intelligence now keeps
+  those control clauses out of `FirstPathContract.events` when real path
+  actions remain, lets terminal review-result steps own the visible result,
+  splits temporal review tails from rich material heads, normalizes
+  subjectless coordinated action labels before Atlas render, and validates
+  Atlas FirstPathContract coverage against structured projection facts. Exact
+  source-local quantum repeater and fusion plasma replays completed governed
+  creates in 27.086s and 35.305s with Radar, Registry, and Atlas records
+  written; this remains source proof, not final installed release readiness.
+- 2026-07-03 installed failed-subset proof and campaign temp-isolation fix:
+  the fresh working-tree dist
+  `odylith-local-release-0.1.15-working-requirement-control-20260703`
+  completed the exact quantum repeater and fusion plasma failed subset in
+  installed mode under the standard budget with zero issues and hard 10/10
+  scored quality. The next 60-case campaign exposed a harness failure rather
+  than an artifact failure: one all-passed shard returned failed because child
+  cleanup proof was scoped to a shared `TEMP_PARENT` while a sibling shard was
+  still active. The release harness now gives each shard an isolated temp
+  parent, precleans stale shard scope, records the temp scope in progress, and
+  removes the shard temp parent after completion or interruption. Remaining
+  work: rerun the 60-case campaign with the isolated harness, then continue
+  unseen controlled-concurrency shards before any release-readiness claim.
+- 2026-07-03 tiered replay plus sentinel-distinctiveness checkpoint: the
+  working-tiered-replay dist proved the exact actor-led product-view failure in
+  installed mode, then the tiered 60-case discovery lane surfaced a harness
+  vocabulary false positive before project execution. The fix keeps leakage
+  proof strict by rejecting short declared sentinels made only from
+  platform-native/common governance terms while preserving project-specific
+  phrases. Focused leakage proof passed, shard 010 reran 6/6 clean, shard 009
+  reran 6/6 clean, and combined aggregate-plus-rerun evidence now covers 60
+  unique high-variance cases with zero failed result records and no remaining
+  generated project temp roots under `/Users/freedom/mock`. This remains
+  discovery evidence because browser and natural rescue proof were deliberately
+  skipped. Fresh rebuild
+  `odylith-local-release-0.1.15-working-tiered-replay2-20260703` then passed
+  checksum, installer syntax, archive readability, build-time platform leakage,
+  and a 7-case selected installed package proof covering the exact actor-led
+  replay plus the leakage-sentinel tranche. The selected proof had 7/7 governed
+  writes, hard 10/10 scored quality, zero issues, all expert lenses green, max
+  create time 37.229s, generated-readback leakage proof passing, and temp
+  cleanup passing. The full available 72-case high-variance volume-discovery
+  tier then passed on the same fresh package with two-shard concurrency and
+  stop thresholds active: 72/72 governed writes, zero issues, zero failure
+  clusters, hard 10/10 scored quality for every case, max create 39.321s,
+  average 33.575s, p95 38.143s, and no temp simulation roots. The corpus
+  covered every tracked stressor class. Next work: run strict
+  browser/natural-rescue release proof, then expand to larger 120/240 unseen
+  corpora only after release proof is green.
+
+- 2026-07-03 strict release-proof natural-rescue blocker: release readiness is
+  still blocked even after 72/72 discovery creates passed. Strict release proof
+  passed standard cases, browser proof, leakage proof, temp cleanup, and
+  synthetic rescue, but failed the natural provider-backed rescue leg because
+  the Tribunal structured patch planner timed out after 45 seconds before
+  returning a schema-bound operation for `structured_rescue_semantic_patch`.
+  The next slice must make structured host repair low-latency and reliable
+  inside the 90-second rescue tier while preserving fail-closed write custody.
 
 ## Test Strategy
 - Historical under-30 timing notes above are standard-path evidence snapshots.

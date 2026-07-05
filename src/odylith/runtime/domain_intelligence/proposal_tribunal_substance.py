@@ -8,6 +8,7 @@ from typing import Any, Mapping, Sequence
 from odylith.runtime.common import mermaid_text
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps as semantic_first_path_steps
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 
@@ -341,13 +342,22 @@ def _check_atlas_source_preserves_first_path_tail(
     else:
         final_clause = re.split(r",\s+and\s+|;\s+and\s+|[.!?]\s+", first_path.strip(" ."))[-1]
         tail = final_clause if len(_term_set(final_clause)) >= 2 else " ".join(first_path.split()[max(0, len(first_path.split()) - 18) :])
-    tail_terms = _atlas_tail_term_set(tail)
+    tail_terms = _atlas_tail_term_set(_atlas_tail_comparison_text(tail))
     if not tail_terms:
         return
     source_terms = _atlas_tail_term_set(source)
     required_tail_hits = min(2, len(tail_terms))
     if len(tail_terms & source_terms) < required_tail_hits:
         issues.append(f"confirmed Atlas {kind} `{title}` omits the tail of the accepted first path")
+
+
+def _atlas_tail_comparison_text(value: str) -> str:
+    stripped = strip_action_subject(value).strip(" .")
+    if stripped and stripped != str(value or "").strip(" ."):
+        stripped_terms = _atlas_tail_term_set(stripped)
+        if stripped_terms:
+            return stripped
+    return value
 
 
 def _looks_like_first_path_meta_summary(value: str) -> bool:

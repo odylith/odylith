@@ -33,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import re
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_clauses
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
 from odylith.runtime.domain_intelligence.greenfield_release_scope_limits import proof_boundary_limit_text
 
 
@@ -60,7 +61,13 @@ def confirmed_workstream_titles(
     if (
         outcome
         and not backlog_text.generic_title_outcome(outcome)
-        and (backlog_actions.prefer_outcome_title(outcome) or _malformed_workflow_title_action(actor_owned_action or action))
+        and (
+            (
+                backlog_actions.prefer_outcome_title(outcome)
+                and not _workflow_action_should_anchor_title(actor_owned_action)
+            )
+            or _malformed_workflow_title_action(actor_owned_action or action)
+        )
     ):
         workflow_actor = actor or backlog_text.actor_from_action(action) or "user"
         workflow = f"Let {workflow_actor} {_outcome_action_phrase(outcome)}"
@@ -115,6 +122,11 @@ def _workstream_title_label(value: str) -> str:
 def _malformed_workflow_title_action(value: str) -> bool:
     text = str(value or "").strip()
     return bool(text.endswith(",") or re.search(r"\brecorded\s+attaches\b", text, flags=re.IGNORECASE))
+
+
+def _workflow_action_should_anchor_title(value: str) -> bool:
+    text = str(value or "").strip()
+    return bool(text and re.search(r"\b(?:turn|convert|transform)\b.+\binto\b", text, flags=re.IGNORECASE))
 
 
 def confirmed_evidence_record_label(*, label: str, proof_boundary: str, internal_systems: list[str]) -> str:
@@ -278,6 +290,7 @@ def confirmed_backlog_rows(
     opportunity: str = "",
     product_view: str = "",
     success_metrics: list[str] | None = None,
+    evidence_requirements: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     component_ids = [str(row["component_id"]) for row in components]
     state_label = _compact_domain_object_label(state_object, fallback=f"{label} state")
@@ -310,11 +323,11 @@ def confirmed_backlog_rows(
     proof_record_label = _proof_record_label(proof_component) or evidence_label
     primary_user_action = backlog_text.sentence_fragment(
         first_path_action_phrase(
-            first_path_for_clauses,
-            fallback=clauses.action_chain or clauses.model.material_action or "complete the accepted product path",
-            max_fragments=3,
-            limit=180,
-        )
+        first_path_for_clauses,
+        fallback=clauses.action_chain or clauses.model.material_action or "complete the accepted product path",
+        max_fragments=3,
+        limit=240,
+    )
     )
     first_path_entry_text = backlog_text.sentence_fragment(clauses.model.material_action or primary_user_action or clauses.action_chain)
     first_path_capability = backlog_text.capability_action_clause(
@@ -323,7 +336,16 @@ def confirmed_backlog_rows(
     first_path_full_capability = backlog_language.dedupe_capability_phrase(
         backlog_text.capability_action_clause(backlog_text.sentence_fragment(clauses.capability_chain) or first_path_capability)
     )
-    outcome_summary = backlog_text.sentence_fragment(clauses.visible_result) or backlog_text.first_path_outcome(first_path_summary, proof_boundary=proof_boundary)
+    semantic_visible_result = select_visible_result_candidate(
+        first_path_for_clauses,
+        proof_boundary=proof_boundary,
+        model=clauses.model,
+        fallback=clauses.visible_result or backlog_text.first_path_outcome(first_path_summary, proof_boundary=proof_boundary),
+    ).text
+    outcome_summary = backlog_text.sentence_fragment(semantic_visible_result) or backlog_text.first_path_outcome(
+        first_path_summary,
+        proof_boundary=proof_boundary,
+    )
     outcome_action = _outcome_action_phrase(outcome_summary)
     proof_focus = backlog_text.proof_focus_phrase(proof_summary, fallback="release decision")
     state_responsibility = backlog_actions.state_responsibility_label(state_label)
@@ -437,6 +459,12 @@ def confirmed_backlog_rows(
         actor=workflow_actor_label,
         fallback=first_path_action,
     )
+    workflow_review_action = backlog_actions.review_action_when_action_repeats_outcome(
+        action=workflow_action,
+        outcome=outcome_summary,
+    )
+    if workflow_review_action:
+        workflow_action = workflow_review_action
     workflow_outcome_action = backlog_actions.append_outcome_action(
         action=workflow_action,
         outcome=outcome_summary,
@@ -521,6 +549,7 @@ def confirmed_backlog_rows(
         internal_systems=internal_systems,
         external_systems=external_systems,
         non_goals=non_goals,
+        source_requirements=evidence_requirements or [],
         workstream_type="program_parent",
     )
     workflow = _backlog_row(
@@ -567,6 +596,7 @@ def confirmed_backlog_rows(
         internal_systems=internal_systems,
         external_systems=external_systems,
         non_goals=non_goals,
+        source_requirements=evidence_requirements or [],
     )
     boundary = _backlog_row(
         label=label,
@@ -610,6 +640,7 @@ def confirmed_backlog_rows(
         internal_systems=internal_systems,
         external_systems=external_systems,
         non_goals=non_goals,
+        source_requirements=evidence_requirements or [],
     )
     proof = _backlog_row(
         label=label,
@@ -655,6 +686,7 @@ def confirmed_backlog_rows(
         internal_systems=internal_systems,
         external_systems=external_systems,
         non_goals=non_goals,
+        source_requirements=evidence_requirements or [],
     )
     return [parent, workflow, boundary, proof]
 

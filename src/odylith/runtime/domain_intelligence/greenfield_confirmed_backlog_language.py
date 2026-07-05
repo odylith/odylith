@@ -281,9 +281,9 @@ def metric_capability_summary(value: str) -> str:
         if part:
             parts.append(part)
     if len(parts) >= 2 and any(looks_like_action_clause(part) for part in parts):
-        return "the completed first-path actions"
+        return "the complete first-path run"
     if len(parts) >= 3:
-        return f"{parts[0]} through the promised result"
+        return "the complete first-path run"
     if len(parts) == 2:
         return f"{parts[0]} and {parts[1]}"
     return parts[0] if parts else text

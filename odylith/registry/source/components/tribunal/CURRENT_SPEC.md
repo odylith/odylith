@@ -7,7 +7,7 @@
 - Tribunal may promote a pattern into doctrine, tool affordance, skill
   guidance, benchmark case, or Casebook bug. It is not the hot path and must
   not run provider reasoning for ordinary Odylith Discipline decisions.
-Last updated: 2026-06-26
+Last updated: 2026-07-04
 
 
 Last updated (UTC): 2026-06-26
@@ -314,9 +314,9 @@ checkpoint, Stop, or visibility-status hot paths.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-06-26 · Implementation:** Greenfield post-confirm cleanup proof passed: focused typed finding/rescue tests 17 passed, widened post-confirm suite 152 passed in 669.31s, Casebook/Registry/Radar/Atlas/plan/topology validators passed, and D-043 Atlas topology is fresh.
+- **2026-06-26 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-greenfield-post-confirm-repair-routing-remains-stringly-typed-instead-of-semanti.md +3 more
+  - Evidence: 5 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

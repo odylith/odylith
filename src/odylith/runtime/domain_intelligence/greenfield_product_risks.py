@@ -478,6 +478,9 @@ def _outcome_clause_as_noun(value: str) -> str:
     actor_led_decision = _actor_led_decision_result_object(text)
     if actor_led_decision:
         return actor_led_decision
+    terminal_result = _terminal_result_object(text)
+    if terminal_result:
+        return terminal_result
     subject_verb = re.match(
         r"^(?:a|an|the)\s+[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?\s+"
         r"(?:can\s+)?(?:acts?\s+on|approves?|blocks?|decides?|displays?|explains?|gets?|inspects?|receives?|reviews?|sees?|shows?|uses?)\s+"
@@ -505,6 +508,20 @@ def _outcome_clause_as_noun(value: str) -> str:
     if verb_first:
         return _lower_first(short_summary(verb_first.group("object"), limit=200))
     return _lower_first(short_summary(text, limit=200))
+
+
+def _terminal_result_object(value: str) -> str:
+    text = compact_text(value).strip(" .")
+    match = re.search(
+        r"(?:,?\s+and\s+|,\s+)"
+        r"(?:exports?|publishes?|produces?|returns?|shows?|displays?|records?|emits?)\s+"
+        r"(?P<object>(?:a|an|the|one)\s+.+)$",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return ""
+    return _lower_first(short_summary(match.group("object"), limit=200))
 
 
 def _actor_led_decision_result_object(value: str) -> str:
@@ -645,6 +662,7 @@ def _input_clause_object(value: str) -> str:
 
 def _clean_input_object(value: str) -> str:
     text = compact_text(value).strip(" .")
+    text = _strip_compound_input_action_lead(text)
     text = re.sub(
         r"\s+and\s+(?:manually\s+)?(?:adds?|answers?|captures?|chooses?|completes?|connects?|enters?|fills?|imports?|logs?|records?|selects?|submits?|uploads?)\s+",
         " and ",
@@ -652,6 +670,20 @@ def _clean_input_object(value: str) -> str:
         flags=re.IGNORECASE,
     )
     return compact_text(text).strip(" .")
+
+
+def _strip_compound_input_action_lead(value: str) -> str:
+    """Remove alternate input verbs left behind by compound actions.
+
+    The object of "uploads or selects a dataset" is the dataset, not
+    "or selects a dataset". Keep this as action grammar, not domain cleanup.
+    """
+
+    input_action = (
+        r"adds?|answers?|attaches?|captures?|chooses?|completes?|connects?|creates?|enters?|fills?|imports?|"
+        r"logs?|pays?|records?|responds?|selects?|starts?|submits?|uploads?"
+    )
+    return re.sub(rf"^(?:and|or)\s+(?:manually\s+)?(?:{input_action})\s+", "", value, flags=re.IGNORECASE).strip()
 
 
 def _external_focus(values: Sequence[str]) -> str:

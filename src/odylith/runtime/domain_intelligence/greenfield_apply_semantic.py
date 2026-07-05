@@ -35,6 +35,7 @@ class GreenfieldApplySemanticInput:
     external_systems: tuple[str, ...]
     non_goals: tuple[str, ...]
     workstreams: tuple[Mapping[str, Any], ...]
+    source_requirements: tuple[str, ...]
     source_paths: tuple[tuple[str, str], ...]
 
 
@@ -61,6 +62,7 @@ def ensure_apply_semantic_model(proposal: dict[str, Any], *, refresh: bool = Fal
             external_systems=compiler_input.external_systems,
             non_goals=compiler_input.non_goals,
             workstreams=compiler_input.workstreams,
+            source_requirements=compiler_input.source_requirements,
         )
     )
     return proposal
@@ -79,6 +81,7 @@ def apply_semantic_input_mapping(compiler_input: GreenfieldApplySemanticInput) -
         "internal_systems": list(compiler_input.internal_systems),
         "external_systems": list(compiler_input.external_systems),
         "non_goals": list(compiler_input.non_goals),
+        "source_requirements": list(compiler_input.source_requirements),
         "components": [dict(row) for row in compiler_input.components],
         "workstreams": [dict(row) for row in compiler_input.workstreams],
         "source_paths": dict(compiler_input.source_paths),
@@ -129,6 +132,7 @@ def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldAp
         external_systems=tuple(external_systems),
         non_goals=tuple(text_values(proposal.get("non_goals") or intent.get("non_goals"))),
         workstreams=tuple(backlog_rows),
+        source_requirements=tuple(text_values(intent.get("evidence_requirements"))),
         source_paths=(
             ("title", title_source),
             ("state_object", state_source),
@@ -140,6 +144,7 @@ def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldAp
             ("external_systems", _external_source),
             ("non_goals", "proposal.non_goals|intent.non_goals"),
             ("workstreams", "proposal.backlog"),
+            ("source_requirements", "intent.evidence_requirements"),
         ),
     )
 
@@ -177,7 +182,7 @@ def _first_path_text(
         fallback=("default.first_path", f"{title} creates, preserves, and reviews the accepted first-path result"),
     )
     if not _first_path_has_visible_result(first_path, proof_boundary=proof_boundary):
-        first_path = f"{first_path.rstrip(' .,;:!?')}, then shows the accepted result for review."
+        first_path = f"{first_path.rstrip(' .,;:!?')}. The product shows the accepted result for review."
         source = f"{source}+semantic_visible_result_fallback"
     return first_path, source
 
@@ -230,6 +235,8 @@ def _first_path_has_visible_result(value: str, *, proof_boundary: str) -> bool:
     candidate = select_visible_result_candidate(value, proof_boundary=proof_boundary)
     if not candidate.source_path.startswith("first_path."):
         return False
+    if candidate.source_path == "first_path.visible_result" and candidate.confidence >= 0.8 and word_count(candidate.text) >= 2:
+        return True
     if candidate.source_path.startswith("first_path.events.") and candidate.confidence >= 0.55 and word_count(candidate.text) >= 2:
         return True
     if candidate.source_kind == "first_path_event" and candidate.confidence < _VISIBLE_RESULT_CONFIDENCE_FLOOR:

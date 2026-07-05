@@ -114,6 +114,39 @@ def test_case_file_loader_preserves_confirmed_intent_markdown(tmp_path: Path) ->
     assert cases[0].confirmed_intent_markdown == confirmed.strip()
 
 
+def test_case_file_loader_canonicalizes_adjacent_duplicate_source_words(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "cases.json"
+    confirmed = "# Product Intent Confirmation\n\n## Proof boundary\nMission evidence evidence remains reviewable.\n"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "name": "mission evidence review",
+                        "prompt": (
+                            "Create a greenfield proposal for mission evidence evidence review that preserves "
+                            "coverage cell and mission evidence evidence."
+                        ),
+                        "required_terms": ["mission evidence evidence", "coverage cell"],
+                        "leakage_terms": ["mission evidence evidence review"],
+                        "confirmed_intent_markdown": confirmed,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    case = module.load_case_file(case_file)[0]
+
+    assert "mission evidence evidence" not in case.prompt.casefold()
+    assert case.required_terms == ("mission evidence", "coverage cell")
+    assert case.leakage_terms == ("mission evidence review",)
+    assert "Mission evidence remains reviewable." in case.confirmed_intent_markdown
+    assert "evidence evidence" not in case.confirmed_intent_markdown.casefold()
+
+
 def test_main_uses_external_case_files_instead_of_default_catalog(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -155,6 +188,8 @@ def test_main_uses_external_case_files_instead_of_default_catalog(
             str(tmp_path),
             "--case-file",
             str(case_file),
+            "--proof-tier",
+            "discovery",
             "--include-browser-proof",
             "--json",
         ]
@@ -223,6 +258,8 @@ def test_main_fails_when_temp_cleanup_proof_finds_leftover_repo(monkeypatch, tmp
             "0.1.15",
             "--temp-parent",
             str(tmp_path),
+            "--proof-tier",
+            "discovery",
             "--include-browser-proof",
             "--json",
         ]
@@ -235,7 +272,23 @@ def test_main_fails_when_temp_cleanup_proof_finds_leftover_repo(monkeypatch, tmp
     assert str(tmp_path / "odylith-greenfield-matrix-leftover") in payload["temp_cleanup_proof"]["remaining_paths"]
 
 
-def test_natural_rescue_quality_requires_provider_backed_non_probe_case() -> None:
+def test_temp_cleanup_proof_finds_leftover_files_and_symlinks(tmp_path: Path) -> None:
+    module = _module()
+    leftover_file = tmp_path / "odylith-greenfield-matrix-leftover-file"
+    leftover_file.write_text("stale temp payload", encoding="utf-8")
+    leftover_target = tmp_path / "target"
+    leftover_target.mkdir()
+    leftover_link = tmp_path / "odylith-greenfield-rescue-leftover-link"
+    leftover_link.symlink_to(leftover_target, target_is_directory=True)
+
+    proof = module.temp_cleanup_proof(tmp_path)
+
+    assert proof["status"] == "failed"
+    assert str(leftover_file) in proof["remaining_paths"]
+    assert str(leftover_link) in proof["remaining_paths"]
+
+
+def test_natural_rescue_quality_requires_structured_non_probe_case() -> None:
     module = _module()
     synthetic = _passing_matrix_result(
         module,
@@ -263,9 +316,28 @@ def test_natural_rescue_quality_requires_provider_backed_non_probe_case() -> Non
             "tribunal_patch_plan_provider": "codex-cli",
         },
     )
+    fallback = _passing_matrix_result(
+        module,
+        manifest_summary={
+            "status": "passed",
+            "validation_status": "passed",
+            "repair_tier": "rescue",
+            "rescue_activated": True,
+            "repaired_issue_codes": ["structured_rescue_semantic_patch"],
+            "tribunal_patch_plan_status": "provider_failed",
+            "tribunal_patch_plan_operation_count": 0,
+            "tribunal_patch_plan_provider": "codex-cli",
+            "structured_patch_fallback_status": "applied",
+            "structured_patch_fallback_source": "source_anchored_semantic_fact",
+            "structured_patch_fallback_operation_count": 1,
+            "structured_patch_fallback_provider": "codex-cli",
+            "structured_patch_fallback_provider_failure_code": "timeout",
+        },
+    )
 
     assert module.natural_rescue_quality_proven((synthetic,)) is False
     assert module.natural_rescue_quality_proven((natural,)) is True
+    assert module.natural_rescue_quality_proven((fallback,)) is True
 
 
 def test_post_confirm_manifest_summary_uses_last_repair_patchset_for_clean_final_pass() -> None:
@@ -301,6 +373,12 @@ def test_post_confirm_manifest_summary_uses_last_repair_patchset_for_clean_final
                     "operation_count": 1,
                     "provider": {"provider": "codex-cli", "last_failure_code": ""},
                 },
+                "structured_patch_fallback": {
+                    "status": "applied",
+                    "source": "source_anchored_semantic_fact",
+                    "operation_count": 1,
+                    "provider_failure": {"provider": "codex-cli", "code": "timeout"},
+                },
             },
         }
     )
@@ -311,3 +389,8 @@ def test_post_confirm_manifest_summary_uses_last_repair_patchset_for_clean_final
     assert summary["tribunal_patch_plan_status"] == "planned"
     assert summary["tribunal_patch_plan_operation_count"] == 1
     assert summary["tribunal_patch_plan_provider"] == "codex-cli"
+    assert summary["structured_patch_fallback_status"] == "applied"
+    assert summary["structured_patch_fallback_source"] == "source_anchored_semantic_fact"
+    assert summary["structured_patch_fallback_operation_count"] == 1
+    assert summary["structured_patch_fallback_provider"] == "codex-cli"
+    assert summary["structured_patch_fallback_provider_failure_code"] == "timeout"

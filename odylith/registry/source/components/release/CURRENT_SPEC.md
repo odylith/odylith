@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-07-01
+Last updated: 2026-07-04
 
 
 Last updated (UTC): 2026-04-09
@@ -494,14 +494,21 @@ governed subsystem.
   Release proof must also include a separate host-planned structured rescue leg
   when natural rescue quality is claimed: the leg must emit a typed semantic or
   artifact-plan PatchSet with no deterministic replacement fact, call an
-  explicit reasoning provider, preserve the provider-backed patch-plan summary
-  in the final clean manifest as `last_repair_patchset_request`, avoid the
+  explicit reasoning provider, preserve the patch-plan or provider-failure
+  summary in the final clean manifest as `last_repair_patchset_request`, avoid the
   deterministic rescue-probe issue code, finish under the 90 second rescue
   budget, and write the same governed record floor as the standard matrix.
-  Provider timeout, empty replacement facts, missing `last_repair_patchset_request`,
-  missing semantic-patch ledger evidence for an idempotent provider-confirmed
-  fact, or a clean standard matrix plus synthetic rescue smoke is not enough to
-  claim natural rescue quality.
+  Provider-planned operations are the preferred proof. If the provider times
+  out, natural rescue quality may still pass only when the PatchSet operation
+  names a schema-owned semantic or artifact-plan target, the accepted proposal
+  already carries an exact source-owned value for that target, the manifest
+  records `structured_patch_fallback.status=applied` with provider-failure
+  metadata, the semantic-patch ledger records the applied or idempotent fact,
+  and the final post-confirm quality gate passes before governed writes.
+  Empty replacement facts without an executable provider plan or source-anchored
+  fallback, missing `last_repair_patchset_request`, missing semantic-patch
+  ledger evidence, or a clean standard matrix plus synthetic rescue smoke is
+  not enough to claim natural rescue quality.
   Explicit empty-list replacement facts are valid only when the PatchSet target
   is a list-valued semantic field and the structured plan records a provider
   decision ledger; a blank, absent, or prose-only replacement fact remains a
@@ -533,6 +540,41 @@ governed subsystem.
   when requested by the maintained wrapper, and temp-cleanup proof; leftover
   Odylith simulation roots are release-proof failures, not chat-side cleanup
   chores.
+- The tiered `make greenfield-matrix-campaign` discovery harness must keep
+  discovery proof and release proof separate. Discovery tiers may use seeded
+  installs and controlled concurrency, but they must stream per-case JSONL,
+  flush incremental shard result JSON, merge live progress into campaign JSONL
+  and snapshot files, cluster failures from typed manifest ownership before
+  score buckets, stop on configured failure-cluster thresholds, and emit a
+  failure-response packet with failed-result JSON paths, stable case IDs,
+  content fingerprints, Casebook-capture requirement, exact failed-subset
+  replay instruction, materialized failed-subset replay shards when exact
+  source identity exists, and resume order. If stable identity is missing,
+  unreadable, or ambiguous, the packet must mark replay materialization
+  unavailable and preserve source-shard replay guidance instead of pretending an
+  exact subset exists. Case breadth must be evaluated through the shared
+  stressor taxonomy and 10-point variance score rather than raw case count
+  alone. Campaign summaries must also report failure outcomes by
+  stressor class, and failure clusters must carry stressor tags so maintainers
+  can identify which ambiguity shapes are failing. Case-generator and shard
+  summaries must also persist source-file, tag, stressor, and stressor-by-tag
+  stratification evidence so high-volume discovery proves varied
+  ambiguity-shape coverage before expensive execution. Pre-result
+  child-process failures must write a replayable synthetic shard payload with
+  source case identity and prompt fingerprints; interrupted sibling shards
+  without failure evidence must not be advertised as failed-subset replay
+  inputs. Release readiness remains strict full-install proof with browser,
+  rescue, and natural-rescue legs, and a release-tier preflight abort is not a
+  completed release proof. Temp cleanup proof must fail on matching stale
+  directories, files, or symlinks.
+- The optional `make greenfield-matrix-generate-cases` source-pool step must
+  consume external case files, not embedded platform domains, and must report
+  stressor coverage, variance score, density warnings, and hard missing-stressor
+  failures before shards are built. Matrix preflight must flush structured
+  failed-case telemetry and incremental result JSON before project execution
+  when source metadata is invalid. Live-stop failure response must prefer exact
+  failed case identity from running shard telemetry before falling back to
+  broader shard replay.
 - Local release smoke must inspect installed greenfield guidance files as part of
   the same journey. Installed AGENTS, README, and skill guidance must mention the
   `greenfield create` confirmation path, must forbid hand-authored proposal JSON,
@@ -559,27 +601,338 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-01 · Implementation:** Local release provenance writer smoke proved workflow sha is populated from git HEAD and source_tree records branch plus dirty posture in the active maintainer workspace.
+- **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, tests/unit/install/test_release_bootstrap.py
-- **2026-07-01 · Implementation:** Release closure review found local dist provenance was not commit-bound; local release builder now records git HEAD and source-tree posture before final greenfield install handoff.
+  - Evidence: 6 tracked artifact references retained
+- **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +2 more
-- **2026-06-30 · Implementation:** Greenfield natural structured-rescue hardening now preserves provider-backed PatchSet evidence through the final clean post-confirm manifest and adds a maintained natural rescue proof leg; focused source proof passed, installed committed-head proof remains pending.
+  - Evidence: 2 tracked artifact references retained
+- **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/registry/source/components/release/CURRENT_SPEC.md, src/odylith/runtime/domain_intelligence/greenfield_post_confirm_engine.py
-- **2026-06-30 · Implementation:** Greenfield release proof now accepts explicit external case files, persists per-case post-confirm manifest summaries, derives natural rescue proof only from non-probe provider-backed structured patch evidence, and gates matrix status on temp-cleanup proof; a three-case external variance run passed 10/10 with zero quality/browser/platform-leakage issues, 24.952s min, 25.405s average, 25.970s max, cleanup proof passed, and synthetic rescue smoke at 33.491s; natural host-rescue quality remains unproven.
+  - Evidence: 2 tracked artifact references retained
+- **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +1 more
-- **2026-06-30 · Implementation:** Committed-head release 0.1.15-78787588 passed source-plus-dist domain-leakage proof and the installed greenfield matrix: 13/13 standard creates, zero platform-leakage findings, zero browser findings, zero quality issues, 22.690s min, 26.156s average, 29.050s max, and synthetic typed rescue smoke at 33.888s; natural host-rescue quality remains unproven by that smoke.
+  - Evidence: 2 tracked artifact references retained
+- **2026-07-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/release/CURRENT_SPEC.md +1 more
-- **2026-06-30 · Implementation:** Registry component forensics now project generic event summaries and neutral artifact counts; the platform leakage guard scans Registry component custody, while raw repro language remains limited to evidence surfaces.
+  - Evidence: 3 tracked artifact references retained
+- **2026-07-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/atlas/source/domain-intelligence-greenfield-governance.mmd, odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md +2 more
+  - Evidence: 4 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-07-04: Materialized exact failed-subset replay shards from failed campaign output. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The tiered campaign runner now writes `failure_response.failed_subset_replay`
+  in the final campaign JSON. When failed result JSON and source case files
+  carry exact stable identity, the runner invokes the existing shard builder to
+  emit ready-to-run failed-subset shard files; when identity is missing,
+  unreadable, ambiguous, or source files are unavailable, it reports an
+  explicit unavailable reason and leaves the original shard replay guidance
+  intact. The wrapper exposes `GREENFIELD_MATRIX_FAILED_SUBSET_REPLAY_DIR` for
+  maintainer-controlled output placement. Focused proof passed the harness
+  campaign/sharder/failure-response/generator suite (`69 passed in 1.61s`) and
+  shell syntax checks. This is stop-fix-replay custody, not release readiness.
+
+- 2026-07-04: Added stratification evidence to Greenfield matrix case generation and shard summaries. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The high-volume campaign harness now records tag, source-file, stressor, and
+  stressor-by-tag distribution in generated case files and tier shard
+  summaries. This keeps the discovery lane honest by proving source-grounded
+  ambiguity-shape breadth before execution instead of relying on raw case
+  counts. Focused proof passed the campaign/generator/sharder harness suite
+  (`63 passed in 1.53s`). This is discovery-harness proof, not release
+  readiness.
+
+- 2026-07-04: Completed the incremental Greenfield campaign runner architecture slice without promoting discovery to release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The campaign harness now attributes live stop decisions to the shard that
+  emitted failed case telemetry, propagates required stressor classes into child
+  matrix commands, permits discovery shards to report partial shard-local
+  stressor coverage while the tier owns aggregate coverage, writes replayable
+  synthetic payloads for launch and cleanup failures, and reports
+  `discovery-passed`, `release-ready`, `failed`, or `skipped` as distinct
+  campaign statuses. `execution_status` remains the CLI exit contract, while
+  release readiness still requires the strict full-install release tier with
+  browser, rescue, natural rescue, platform-leakage, temp-cleanup, and artifact
+  quality proof. Focused proof passed the synthetic/replayability pack, focused
+  harness/preflight checks, Compass visible-copy checks, and the full
+  install/matrix harness suite (`135 passed in 15.98s`).
+
+- 2026-07-04: Added source-grounded Greenfield case generation and structured preflight telemetry to the campaign harness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The release harness now includes `bin/greenfield-matrix-generate-cases` and
+  `scripts/release/greenfield_matrix_case_generator.py` for selecting external
+  case pools by stressor coverage, source/tag balance, and density without
+  adding domain vocabulary to Odylith source. Matrix preflight now emits
+  structured `preflight_failed` case results, incremental result JSON, and
+  run-stop telemetry before expensive project execution when required terms,
+  leakage terms, stressor coverage, or platform-domain custody are invalid.
+  Campaign progress records running cases and per-shard failed identity so
+  live-stop failure-response packets can replay the exact failed subset, and
+  explicit `required_stressors` now apply even when high-variance defaults are
+  disabled. Tooling readback moved to an anchored payload reader that resolves
+  the real `__ODYLITH_TOOLING_DATA__` assignment instead of first-brace parsing.
+  Focused proof passed compile, shell syntax, an external source-case generator
+  smoke, and the focused install/matrix regression pack (`58 passed in 8.45s`).
+  This is discovery-harness proof, not release readiness.
+
+- 2026-07-04: Hardened Greenfield campaign replayability, stressor outcomes, and release-proof status boundaries after reviewer audit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The campaign runner now writes replayable synthetic matrix payloads when a
+  child shard dies before normal result JSON emission, preserving source case
+  IDs, stressor tags, and prompt fingerprints for exact failed-subset replay.
+  Failure-response aggregation moved into `greenfield_matrix_failure_response.py`
+  so interrupted sibling shards without failed-case evidence are excluded from
+  replay inputs. Campaign summaries now include stressor-class outcomes and
+  stressor-tagged clusters, release-proof preflight aborts report
+  `release_proof_completed=false`, and temp cleanup proof fails on stale
+  files and symlinks as well as directories. Focused proof passed 53
+  reviewer-boundary tests, the widened 134-test install/greenfield harness
+  suite, compile, shell syntax, scoped diff hygiene, and a disposable campaign
+  smoke that proved intentional failure still flushes progress and a
+  failure-response packet without claiming release readiness.
+
+- 2026-07-04: Promoted Greenfield campaign stressor taxonomy and failure-response custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The campaign harness now has a shared stressor taxonomy owner and 10-point
+  variance score used by campaign summaries and shard selection, and the
+  maintained default matrix cases carry explicit stressor metadata so breadth
+  is measured by ambiguity shape rather than only project count. Failed
+  campaigns now persist a failure-response packet that requires Casebook
+  capture, points at failed shard result JSON, preserves stable case IDs and
+  fingerprints for exact replay, and states the stop-fix-replay sequence before
+  volume discovery can resume. Focused proof passed 47 tiered harness tests,
+  77 installed matrix/proof-scope tests, compile, scoped `git diff --check`,
+  Atlas D-047 render at 47 fresh / 0 stale, and a disposable campaign smoke
+  that proved telemetry and failure-response behavior on a controlled fake
+  install failure. This is discovery-harness proof, not release readiness.
+
+- 2026-07-04: Hardened Greenfield campaign replay identity and local-temp portability after reviewer audit. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Failed-subset replay now distinguishes strong case identity
+  (`case_id`, prompt hash, confirmed-intent hash) from weak display-name
+  evidence, and uses weak names only when a failure cluster carries no stronger
+  identity. This keeps duplicate display names from collapsing unrelated cases
+  while still replaying cluster-only failures from older or partial result
+  payloads. Matrix wrappers and the source default no longer assume
+  `/Users/freedom/mock`; disposable project roots default to the host temp
+  directory unless `TEMP_PARENT` explicitly overrides it. Focused proof passed
+  the sharder, campaign, bootstrap, and matrix wrapper regressions plus a
+  two-case tiered shard smoke where failed-subset, 60-case regression,
+  240-case discovery, release-proof, and volume-discovery tiers all reported
+  passed. This remains harness/discovery custody and does not convert a
+  no-browser or no-natural-rescue run into release readiness.
+
+- 2026-07-04: Hardened tiered Greenfield campaign telemetry, release-proof variance, and failed-subset identity. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The release discovery harness now emits a failed case result when clone or
+  case execution raises after `case_started`, then flushes incremental payload,
+  `case_completed`, and `run_stopped` telemetry instead of leaving the shard
+  opaque. The merged campaign snapshot backfills shard-level failed case and
+  cluster counts only for cases not already observed from child telemetry, so
+  stop decisions remain live without double-counting. Release-proof tiers now
+  enforce requested stressor coverage instead of relying on discovery-tier
+  variance, and the sharder dedupes/replays no-id cases by prompt fingerprint
+  so duplicate names cannot corrupt exact failed-subset replay.
+
+- 2026-07-04: Added source-case required-term provenance to the Greenfield matrix harness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  External case files now fail at ingestion when `required_terms` cannot be
+  grounded as source tokens or phrases in the case prompt or confirmed intent.
+  The sharder therefore rejects invalid evaluator metadata before writing tier
+  files or launching installed campaigns, rather than burning successful
+  project creates before discovering an impossible domain-term obligation inside
+  one shard. The same pass gives pre-result child-process failures a stable
+  `campaign.shard-process-failed` cluster with tail-preserved stderr, so final
+  campaign JSON remains actionable even when no child matrix result payload was
+  written. The gate is intentionally token-provenance based: prefixed words do
+  not ground shorter required terms, while exact source terms remain valid.
+
+- 2026-07-03: Isolated concurrent Greenfield matrix shard temp cleanup scope. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The tiered campaign runner no longer lets concurrent discovery shards share
+  one cleanup-proof parent. Each shard now receives a campaign-owned isolated
+  temp parent, stale copies of that shard scope are removed before launch, the
+  shard temp parent is recorded in progress/result payloads, and the campaign
+  removes that shard temp parent after completion or interruption. This keeps
+  strict temp-cleanup proof intact while preventing a finished shard from
+  falsely failing because an in-flight sibling still has an active simulation
+  root. The fix is harness-scoped and does not weaken artifact quality gates or
+  convert discovery evidence into release readiness.
+
+- 2026-07-03: Completed tiered Greenfield campaign progress and replay custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The release harness now treats high-volume Greenfield discovery as a tiered
+  campaign rather than final-only shard execution. Matrix runs flush their
+  result payload incrementally while cases complete; the campaign runner tails
+  per-shard telemetry into merged JSONL and live snapshot files; and live
+  cluster evidence can stop scheduling and interrupt sibling shards before a
+  known-bad class burns the rest of the run. Failed-subset replay is keyed by
+  stable case identity, slug, prompt hash, and confirmed-intent hash instead of
+  display names alone. The sharder now emits failed-subset, 60-case regression,
+  120-case discovery, 240-case discovery, and strict release-proof tiers, with
+  per-tier worker limits and final output that keeps discovery status separate
+  from browser/natural-rescue release readiness. This is harness custody only:
+  it does not relax artifact-quality gates and does not convert discovery
+  evidence into release proof.
+
+- 2026-07-03: Tightened Greenfield matrix leakage-sentinel distinctiveness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The platform domain-leakage preflight now rejects short declared case
+  sentinels made only from platform-native or common governance terms before
+  scanning Odylith source and built package surfaces. This keeps release
+  leakage proof strict while preventing legitimate platform custody prose from
+  blocking discovery shards before any project create occurs. Project-specific
+  declared phrases remain authoritative, and source-derived fallback terms
+  still preserve coverage for cases without explicit sentinels. Focused proof
+  covered the false-positive sentinel class and retained valid multi-token
+  project phrases; the affected installed discovery shards reran cleanly after
+  the selector fix. This is leakage-proof vocabulary custody only: it does not
+  suppress platform findings, weaken generated-artifact readback checks, or
+  convert no-browser discovery evidence into release readiness.
+
+- 2026-07-03: Proved fresh tiered-replay package on selected installed cases. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Fresh local-release dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-tiered-replay2-20260703`
+  passed build-time platform leakage, checksum, installer syntax, and archive
+  readability checks. The selected installed package matrix passed the exact
+  actor-led product-view replay plus the leakage-sentinel tranche with 7/7
+  governed post-confirm writes, hard 10/10 scored quality, zero issues, all
+  expert lenses green, max standard create time of 37.229s, generated-readback
+  leakage proof passing, and temp cleanup passing. This remains discovery and
+  package proof only because browser proof and natural rescue proof were not
+  requested; release proof remains browser-strict and natural-rescue-strict.
+
+- 2026-07-03: Proved 72-case Greenfield volume-discovery campaign on fresh package. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The fresh package passed the full available 72-case high-variance volume tier
+  with two-shard concurrency, stop-on-first-failure thresholds, hard 10/10
+  scored quality on every case, zero issues, zero failure clusters, and no
+  standard-path create over 60s. Timing was max 39.321s, average 33.575s, and
+  p95 38.143s. The tier covered every tracked stressor class and left no
+  generated simulation roots under `/Users/freedom/mock`. This is discovery
+  proof only; release readiness still requires browser surface proof and
+  natural rescue proof.
+
+- 2026-07-03: Strict Greenfield release proof blocked on natural host-planned rescue. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The same fresh package passed all twelve standard release-proof cases, browser
+  proof, platform-domain leakage proof, temp cleanup, and synthetic rescue, but
+  failed the natural structured-rescue release leg before governed writes.
+  `structured_rescue_semantic_patch` remained unrepaired for
+  `SemanticModelIR.domain_ontology.external_systems` because the Tribunal patch
+  planner provider timed out after 45 seconds and returned no schema-bound
+  operation. Release custody must keep natural rescue fail-closed: discovery
+  volume proof and synthetic rescue do not prove release readiness until the
+  provider-backed semantic patch path succeeds inside the 90-second rescue tier.
+
+- 2026-07-04: Added completion-priority structured-rescue fallback custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Local Codex and Claude CLI probes proved that tiny schema-bound structured
+  patch requests can still miss the rescue budget. The release proof contract
+  now keeps the host attempt first but allows a short provider-timeout fallback
+  only for source-owned, schema-addressed semantic PatchSet operations. The
+  manifest must preserve the provider failure, `structured_patch_fallback`
+  metadata, semantic-patch ledger evidence, repaired issue code, final passed
+  post-confirm manifest, and committed governed write. Source-local proof
+  completed the natural structured-rescue create in 43.439s with governed writes
+  committed after a 12.0s Codex timeout and source-anchored semantic fallback.
+  Strict installed release proof from a fresh dist remains required before
+  release readiness can be claimed.
+
+- 2026-07-04: Proved strict installed release proof for the source-anchored rescue fallback. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Fresh working-tree dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-tiered-rescue-fallback-20260704`
+  passed build leakage, checksum, shell-syntax, wheel, and runtime-archive
+  verification. The strict release campaign
+  `/tmp/odylith-tiered-rescue-fallback-release-campaign.v1.json` finished with
+  `release_readiness_status=proven`, no failure clusters, and a passed
+  release-proof tier. The installed shard passed 12/12 full-install cases with
+  browser proof, zero issue rows, complete governed evidence, and standard
+  create timings of 30.674-40.448s. Synthetic rescue passed, and natural rescue
+  committed governed writes in the rescue tier with `cli_create_seconds=67.639`,
+  manifest elapsed 40.888s, provider timeout recorded after 12.0s, and
+  `structured_patch_fallback.status=applied`. This is working-tree release proof;
+  published-release closure still requires the normal stable checkpoint.
+
+- 2026-07-04: Hardened tiered Greenfield campaign blocker extraction and live proof telemetry. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The release harness now keeps multiline final-gate blockers structurally intact
+  while deriving failure-cluster keys. Plain-text and JSON-backed errors are
+  scanned line by line, wrapper/remediation lines are skipped, and the first
+  concrete blocker bullet becomes the replay cluster before score buckets are
+  considered. This protects the failed-subset replay loop from grouping real
+  post-confirm issues under generic `issue(s)` text. The same proof pass keeps
+  the tiered campaign contract pinned: per-case matrix payload flushing, merged
+  campaign progress JSONL/snapshot files, failed-subset/60/120/240/release
+  shards, stressor-coverage checks, per-shard temp cleanup scopes, and discovery
+  status separated from release readiness. Focused proof passed 29 campaign and
+  sharder tests, the widened 108-test install/matrix suite, harness compile
+  checks, command-help checks, and diff hygiene.
+
+- 2026-07-04: Closed reviewer-found live telemetry and cleanup gaps in the Greenfield campaign harness. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  Per-case matrix execution now applies generated platform-domain leakage
+  verdicts before telemetry, stop-threshold evaluation, and incremental result
+  flushing, so leakage failures participate in live clustering instead of
+  appearing only at final post-processing. The matrix also persists the partial
+  result payload before deleting the generated repo, then converts cleanup
+  failure into a failed proof result instead of losing the last case update. The
+  standalone matrix wrapper only selects release proof when browser proof,
+  installed rescue smoke, and natural rescue proof are all enabled; explicit
+  debug skips downgrade the run to discovery proof. Campaign shard temp cleanup
+  now fails closed with a `campaign.shard-temp-cleanup-failed` cluster rather
+  than swallowing deletion errors. Focused reviewer-finding proof passed 26
+  tests, the widened install/matrix suite passed 111 tests, and compile plus
+  shell-syntax checks passed.
+
+- 2026-07-03: Added merged Greenfield campaign progress and release-tier preflight. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  The tiered Greenfield matrix campaign now writes merged
+  `campaign-progress.v1.jsonl` and live `campaign-progress.v1.json` snapshots
+  while shards run, including per-case counts, running shard state,
+  telemetry-derived stop decisions, and cross-tier failure-cluster counts. The
+  campaign payload carries an aggregate failure-cluster summary, and discovery
+  tiers stop scheduling pending shards after the configured failure or cluster
+  threshold while signaling in-flight sibling shards to stop after actionable
+  telemetry. Cluster keys now prefer typed post-confirm manifest issue ownership
+  and concrete blocker text before falling back to score buckets, so repeated
+  mechanisms remain diagnosable. The sharder now emits variance evaluation for
+  each tier and can build failed-subset replay from top-level campaign failure
+  clusters, so high-volume discovery is measured by stressor coverage and
+  ambiguity-shape density, not only case count. Release-proof campaign runs now
+  execute component-forensics and Chromium preflight before full-install
+  browser/natural-rescue shards, and direct release-tier matrix invocations are
+  rejected unless browser proof, installed rescue smoke, and natural rescue
+  proof are requested. This improves discovery observability and release-proof
+  custody without converting discovery passes into release readiness.
+
+- 2026-07-03: Added tiered Greenfield matrix campaign observability and proof-tier custody. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-021)
+  The installed Greenfield matrix now writes incremental JSONL telemetry,
+  carries a persisted `campaign` summary, exposes failure-cluster and stressor
+  coverage controls, and enforces that release tier cannot use seeded installs,
+  skipped browser proof, or early-stop thresholds. The new tiered campaign
+  wrapper runs failed-subset, regression, volume-discovery, and release-proof
+  shards in order with controlled discovery concurrency and stop-before-next
+  behavior after new failure evidence. The runner reports release proof
+  completion, release proof status, and release readiness status separately
+  from selected-tier pass/fail so discovery-only campaigns cannot be mistaken
+  for release proof. Discovery runs remain non-release proof; release proof
+  remains full install with browser and natural rescue enabled.
+
+- 2026-07-03: Added metadata-driven Greenfield matrix shard building. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-021)
+  The maintainer release harness now includes `make greenfield-matrix-shards`
+  and `greenfield_matrix_shards.py` to build failed-subset, regression,
+  volume-discovery, and release-proof shard files from external case JSON,
+  prior result JSON, and stressor metadata. The sharder emits campaign
+  environment hints, rejects missing required stressor coverage before a volume
+  run starts, and keeps project-domain vocabulary in external cases rather
+  than in Odylith release code. Focused proof passed the sharder/campaign test
+  suite, compile and Bash syntax checks, and a disposable command-surface smoke.
+
+- 2026-07-03: Hardened high-volume greenfield matrix leakage-term selection. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`)
+  Declared case sentinels now reject low-entropy two-token artifact phrases
+  such as generic `evidence` or `proof` heads while preserving project-specific
+  declared phrases. This keeps platform domain-leakage proof strict without
+  letting ordinary Odylith governance language block high-volume discovery
+  shards as false positives. Targeted proof covered the batch-06 failure shape,
+  existing explicit platform-word project phrases, and default matrix coverage.
+
+- 2026-07-03: Separated high-volume greenfield discovery status from release browser proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-046)
+  The installed greenfield matrix keeps browser proof required for release
+  proof by default, but explicit `BROWSER_PROOF=0` high-volume discovery runs
+  now pass the existing skipped-browser allowance into the matrix CLI. The
+  aggregate status therefore matches the per-case scoring contract:
+  no-browser volume runs can pass as
+  `volume_discovery_without_browser_surface_proof`, while release-proof lanes
+  still require browser state proof. Focused harness regressions passed and
+  the shard-05 rerun showed 30/30 governed project creates at hard 10/10 with
+  cleanup and platform leakage passing before the harness status fix.
+
 - 2026-07-01: Bound maintainer-local release provenance to the source git head. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bugs: `CB-209`, `CB-215`; Diagram: D-023)
   Independent closure review found that the greenfield committed-head dist
   carried strong behavioral proof but weak local provenance: the generated

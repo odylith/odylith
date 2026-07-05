@@ -19,6 +19,7 @@ from odylith.runtime.domain_intelligence.greenfield_phrase_quality import singul
 from odylith.runtime.domain_intelligence.greenfield_relative_clause_artifacts import normalize_relative_clause_artifacts
 from odylith.runtime.domain_intelligence.greenfield_text import clean_artifact_text, clean_text, normalize_visible_result_language, unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
+from odylith.runtime.domain_intelligence.greenfield_transfer_phrases import transfer_object_phrase
 
 NOUN_MODIFIER_ACTION_TERMS = {"review"}
 RELATION_TAIL_TERMS = {
@@ -52,6 +53,7 @@ def clean_artifact_phrase(value: str) -> str:
     if not text:
         return ""
     text = _clean_visible_phrase_debris(text)
+    text = transfer_object_phrase(text) or text
     text = _normalize_fragmented_artifact_phrase(text)
     text = _normalize_misplaced_artifact_modifiers(text)
     if re.fullmatch(r"pass\s+or\s+block\s+outcomes?", text, flags=re.I):
@@ -585,6 +587,9 @@ def object_clause_focus(value: str) -> str:
     text = clean(value)
     if not text:
         return ""
+    transfer_object = transfer_object_phrase(text)
+    if transfer_object:
+        return transfer_object
     text = re.sub(r"\bhand(?:s|ed|ing)?\s+off\b", "handoff", text, flags=re.I)
     if re.search(r"\bor\b", text, flags=re.I):
         return text

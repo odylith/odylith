@@ -43,7 +43,9 @@ def build_quality_verdict(
     package: Any,
     counts: GreenfieldArtifactCounts,
     surface_issues: Sequence[str] = (),
+    browser_surface_issues: Sequence[str] = (),
     browser_surface_proof_attempted: bool = True,
+    browser_surface_proof_required: bool = True,
     create_returncode: int,
     create_seconds: float,
     create_detail: str = "",
@@ -67,6 +69,8 @@ def build_quality_verdict(
         *_browser_surface_proof_issues(
             create_returncode=create_returncode,
             browser_surface_proof_attempted=browser_surface_proof_attempted,
+            browser_surface_proof_required=browser_surface_proof_required,
+            browser_surface_issues=browser_surface_issues,
         ),
         *_create_failure_detail_issues(create_returncode=create_returncode, create_detail=create_detail),
         *_manifest_issues(manifest),
@@ -94,6 +98,8 @@ def build_quality_verdict(
         lenses=lenses,
         evidence_findings=evidence_findings,
         browser_surface_proof_attempted=browser_surface_proof_attempted,
+        browser_surface_proof_required=browser_surface_proof_required,
+        browser_surface_issues=browser_surface_issues,
     )
     final_score = _final_quality_score(
         scores=scores,
@@ -118,6 +124,7 @@ def build_quality_verdict(
             create_returncode=create_returncode,
             lenses=lenses,
         ),
+        score_basis=_score_basis(scores),
     )
 
 
@@ -275,6 +282,8 @@ def _quality_scores(
     lenses: Mapping[str, bool],
     evidence_findings: Sequence[Any] = (),
     browser_surface_proof_attempted: bool = True,
+    browser_surface_proof_required: bool = True,
+    browser_surface_issues: Sequence[str] = (),
 ) -> dict[str, int]:
     return {
         "completion": (
@@ -304,7 +313,12 @@ def _quality_scores(
             prompt_issues=prompt_issues,
             evidence_findings=evidence_findings,
         ),
-        "browser_surface_proof": 10 if create_returncode == 0 and browser_surface_proof_attempted else 0,
+        "browser_surface_proof": _browser_surface_proof_score(
+            create_returncode=create_returncode,
+            browser_surface_proof_attempted=browser_surface_proof_attempted,
+            browser_surface_proof_required=browser_surface_proof_required,
+            browser_surface_issues=browser_surface_issues,
+        ),
         "product_manager": 10 if lenses.get("product_manager") else 0,
         "architect": 10 if lenses.get("architect") else 0,
         "engineer": 10 if lenses.get("engineer") else 0,
@@ -401,7 +415,12 @@ def _final_quality_score(
 ) -> int:
     if create_returncode != 0 or not write_committed(manifest):
         return 0
-    score = min(int(scores.get(dimension, 0)) for dimension in QUALITY_SCORE_DIMENSIONS)
+    scored_dimensions = [
+        int(scores.get(dimension, 0))
+        for dimension in QUALITY_SCORE_DIMENSIONS
+        if int(scores.get(dimension, 0)) >= 0
+    ]
+    score = min(scored_dimensions) if scored_dimensions else 0
     if rendered_issues:
         score = min(score, 6)
     if prompt_issues:
@@ -409,6 +428,12 @@ def _final_quality_score(
     if _manifest_issues(manifest):
         score = min(score, 4)
     return max(0, min(10, score))
+
+
+def _score_basis(scores: Mapping[str, int]) -> str:
+    if int(scores.get("browser_surface_proof", 0)) < 0:
+        return "volume_discovery_without_browser_surface_proof"
+    return "release"
 
 
 def _score_explanation(
@@ -431,8 +456,20 @@ def _score_explanation(
         explanations.append(f"Project implementation prompt findings cap release score at 4; findings={len(tuple(prompt_issues))}")
     if _manifest_issues(manifest):
         explanations.append("manifest or transaction issues cap release score at 4")
-    if score == 10 and all(int(value) == 10 for value in scores.values()):
-        explanations.append("all brutal release-quality dimensions scored 10")
+    unscored_dimensions = [dimension for dimension, value in scores.items() if int(value) < 0]
+    scored_values = [int(value) for value in scores.values() if int(value) >= 0]
+    if score == 10 and scored_values and all(value == 10 for value in scored_values):
+        if unscored_dimensions:
+            explanations.append(
+                "all scored release-quality dimensions scored 10; "
+                f"unscored dimensions: {', '.join(unscored_dimensions)}"
+            )
+            explanations.append(
+                "browser surface proof was not requested and is unscored; "
+                "this is volume-discovery evidence, not complete browser release proof"
+            )
+        else:
+            explanations.append("all brutal release-quality dimensions scored 10")
         explanations.extend(_passing_score_evidence(counts, prompt_issues, lenses))
         return tuple(explanations)
     weakest = [dimension for dimension, value in scores.items() if int(value) == score]
@@ -548,10 +585,35 @@ def _browser_surface_proof_issues(
     *,
     create_returncode: int,
     browser_surface_proof_attempted: bool,
+    browser_surface_proof_required: bool,
+    browser_surface_issues: Sequence[str] = (),
 ) -> tuple[str, ...]:
-    if create_returncode != 0 or browser_surface_proof_attempted:
+    if create_returncode != 0:
+        return ()
+    issues = tuple(str(issue).strip() for issue in browser_surface_issues if str(issue).strip())
+    if issues:
+        return issues
+    if browser_surface_proof_attempted or not browser_surface_proof_required:
         return ()
     return ("browser surface proof was not attempted; premium release scoring requires headless rendered-surface proof",)
+
+
+def _browser_surface_proof_score(
+    *,
+    create_returncode: int,
+    browser_surface_proof_attempted: bool,
+    browser_surface_proof_required: bool,
+    browser_surface_issues: Sequence[str] = (),
+) -> int:
+    if create_returncode != 0:
+        return 0
+    if browser_surface_issues:
+        return 0
+    if browser_surface_proof_attempted:
+        return 10
+    if not browser_surface_proof_required:
+        return -1
+    return 0
 
 
 def _manifest_lenses(manifest: Mapping[str, Any]) -> Mapping[str, Any]:

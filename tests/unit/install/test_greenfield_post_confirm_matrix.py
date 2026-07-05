@@ -125,7 +125,7 @@ def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
 
-def test_run_matrix_preflight_supplements_declared_sentinels_with_case_vocabulary(
+def test_run_matrix_preflight_ignores_stale_declared_sentinels_without_source_grounding(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     module = _module()
@@ -161,7 +161,7 @@ def test_run_matrix_preflight_supplements_declared_sentinels_with_case_vocabular
         )
 
     assert len(captured_terms) == 1
-    assert "dictionary review sentinel" in captured_terms[0]
+    assert "dictionary review sentinel" not in captured_terms[0]
     assert "language archive dictionary" in captured_terms[0]
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
 
@@ -796,6 +796,18 @@ def _passing_rescue_result(module) -> object:
     )
 
 
+def _passing_natural_rescue_result(module) -> object:
+    return module.GreenfieldRescueSmokeResult(
+        status="passed",
+        cli_create_seconds=64.0,
+        counts=_full_counts(module),
+        issues=(),
+        manifest={"repair_tier": "rescue"},
+        proof_scope="real_installed_structured_patch_plan_case",
+        natural_rescue_quality_proven=True,
+    )
+
+
 def test_standard_matrix_create_does_not_receive_internal_rescue_probe_env(monkeypatch, tmp_path: Path) -> None:
     module = _module()
     create_envs: list[dict[str, str]] = []
@@ -1372,6 +1384,71 @@ def test_collect_artifact_package_reads_project_prompts_from_persisted_tooling_p
     assert "Persisted prompt 5" in prompts[4]["prompt"]
 
 
+def test_tooling_payload_reader_ignores_leading_js_braces_before_assignment(tmp_path: Path) -> None:
+    module = _module()
+    project_payload = _substantive_project_payload()
+    _write(
+        tmp_path / "odylith/tooling-payload.v1.js",
+        "/* preamble { not the payload } */\n"
+        f'window["__ODYLITH_TOOLING_DATA__"] = {json.dumps({"project_intelligence": project_payload}, sort_keys=True)};\n',
+    )
+
+    payload = module._read_tooling_payload(tmp_path)  # noqa: SLF001
+
+    assert len(payload["project_intelligence"]["host_handoff_prompts"]) == 5
+
+
+def test_tooling_payload_reader_resolves_simple_named_object_binding(tmp_path: Path) -> None:
+    module = _module()
+    project_payload = _substantive_project_payload()
+    _write(
+        tmp_path / "odylith/tooling-payload.v1.js",
+        "const payload = "
+        + json.dumps({"project_intelligence": project_payload}, sort_keys=True)
+        + ';\nwindow["__ODYLITH_TOOLING_DATA__"] = payload;\n',
+    )
+
+    payload = module._read_tooling_payload(tmp_path)  # noqa: SLF001
+
+    assert len(payload["project_intelligence"]["host_handoff_prompts"]) == 5
+
+
+def test_matrix_preflight_failure_flushes_structured_incremental_telemetry(tmp_path: Path) -> None:
+    module = _module()
+    dist = tmp_path / "dist"
+    dist.mkdir()
+    _write(dist / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
+    output_json = tmp_path / "matrix.json"
+    telemetry_jsonl = tmp_path / "matrix.jsonl"
+    case = module.GreenfieldMatrixCase(
+        name="preflight source case",
+        prompt="Create a greenfield proposal for source case review.",
+        required_terms=("missingterm",),
+        leakage_terms=("source case sentinel",),
+        stressors=("modal-expert-lens",),
+    )
+
+    results = module.run_matrix(
+        dist_dir=dist,
+        version="0.1.15",
+        temp_parent=tmp_path,
+        cases=(case,),
+        telemetry_jsonl=telemetry_jsonl,
+        incremental_output_json=output_json,
+        proof_tier="discovery",
+    )
+
+    payload = json.loads(output_json.read_text(encoding="utf-8"))
+    events = [json.loads(line)["event"] for line in telemetry_jsonl.read_text(encoding="utf-8").splitlines()]
+
+    assert results[0].status == "preflight_failed"
+    assert payload["status"] == "failed"
+    assert payload["campaign"]["completed_case_count"] == 1
+    assert events[:2] == ["run_started", "preflight_failed"]
+    assert "case_completed" in events
+    assert "required terms are not grounded" in results[0].failure_detail
+
+
 def test_package_evidence_rejects_missing_persisted_project_prompt_payload() -> None:
     module = _module()
     package = _substantive_package()
@@ -1382,13 +1459,13 @@ def test_package_evidence_rejects_missing_persisted_project_prompt_payload() -> 
     assert any("accepted Project readback does not expose five source-launch prompts" in finding.message for finding in findings)
 
 
-def test_generated_leakage_terms_supplement_declared_sentinels_with_source_phrases(tmp_path: Path) -> None:
+def test_generated_leakage_terms_use_declared_sentinels_without_source_phrase_padding(tmp_path: Path) -> None:
     module = _module()
     package = _substantive_package()
     package.project_brief_record_text += "\nWafer lot and wafer xenobot attestation remain visible for review."
     case = module.GreenfieldMatrixCase(
         name="wafer xenobot",
-        prompt="Create a proposal for wafer xenobot attestation.",
+        prompt="Create a proposal for wafer xenobot attestation with wafer lot and missing lattice phrase sentinels.",
         required_terms=("xenobot", "wafer", "attestation"),
         leakage_terms=("wafer lot", "missing lattice phrase"),
     )
@@ -1400,7 +1477,7 @@ def test_generated_leakage_terms_supplement_declared_sentinels_with_source_phras
 
     assert "wafer lot" in terms
     assert "missing lattice phrase" not in terms
-    assert "wafer xenobot attestation" in terms
+    assert "wafer xenobot attestation" not in terms
     assert "xenobot" not in terms
     assert "wafer" not in terms
 
@@ -1437,7 +1514,6 @@ def test_generated_leakage_terms_suppress_required_anchors_already_native_to_pla
         name="estimate dispute",
         prompt="Create a proposal for estimate projection dispute review.",
         required_terms=("estimate", "projection"),
-        leakage_terms=("missing lattice phrase",),
     )
     captured_terms: list[tuple[str, ...]] = []
 
@@ -1567,6 +1643,163 @@ def test_generated_leakage_scan_runs_once_for_result_union(
     )
     assert results[1].status == "passed"
     assert results[1].platform_leakage_issues == ()
+
+
+def test_matrix_result_serializes_retained_case_evidence() -> None:
+    module = _module()
+    result = _passing_matrix_result(module)
+    result = module.GreenfieldMatrixResult(
+        name=result.name,
+        status=result.status,
+        create_seconds=result.create_seconds,
+        counts=result.counts,
+        quality=result.quality,
+        evidence={"case": {"id": "science-001"}, "artifacts": [{"sha256": "abc"}]},
+    )
+
+    payload = result.to_dict()
+
+    assert payload["evidence"]["case"]["id"] == "science-001"
+    assert payload["evidence"]["artifacts"][0]["sha256"] == "abc"
+
+
+def test_case_file_loads_variance_metadata(tmp_path: Path) -> None:
+    module = _module()
+    case_file = tmp_path / "cases.json"
+    case_file.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "science-001",
+                        "name": "rare assay workflow",
+                        "prompt": "Create a proposal for rare assay workflow.",
+                        "required_terms": ["assay"],
+                        "leakage_terms": ["rare assay"],
+                        "tags": ["science", "regulated"],
+                        "stressors": ["thin prompt", "specialized vocabulary"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    case = module.load_case_file(case_file)[0]
+
+    assert case.case_id == "science-001"
+    assert case.tags == ("science", "regulated")
+    assert case.stressors == ("thin prompt", "specialized vocabulary")
+    assert case.source_file == str(case_file.resolve())
+
+
+def test_case_evidence_manifest_retains_artifact_hashes_and_grounding(tmp_path: Path) -> None:
+    module = _module()
+    install_script = tmp_path / "install.sh"
+    _write(install_script, "#!/usr/bin/env bash\nexit 0\n")
+    case = module.GreenfieldMatrixCase(
+        name="permit readiness evidence",
+        prompt="Create a permit readiness workspace.",
+        required_terms=("permit", "readiness"),
+        leakage_terms=("permit readiness",),
+        case_id="permit-001",
+        tags=("civic",),
+        stressors=("evidence retention",),
+    )
+    quality = _passing_matrix_result(module).quality
+
+    evidence = module._case_evidence_manifest(  # noqa: SLF001
+        case=case,
+        repo_root=tmp_path,
+        package=_substantive_package(),
+        create_payload=_passing_create_payload(),
+        quality=quality,
+        install_script=install_script,
+        version="0.1.15",
+        install_mode="seeded",
+        browser_surface_proof_attempted=False,
+        browser_surface_proof_required=False,
+        browser_surface_issues=(),
+    )
+
+    assert evidence["case"]["id"] == "permit-001"
+    assert len(evidence["case"]["prompt_sha256"]) == 64
+    assert evidence["release"]["install_mode"] == "seeded"
+    assert len(evidence["release"]["install_script_sha256"]) == 64
+    assert evidence["artifacts"]
+    assert all(len(artifact["sha256"]) == 64 for artifact in evidence["artifacts"])
+    grounding = {row["term"]: row for row in evidence["required_term_grounding"]}
+    assert grounding["permit"]["present"] is True
+    assert grounding["readiness"]["present"] is True
+    assert evidence["browser_surface_proof"]["required"] is False
+
+
+def test_case_evidence_manifest_splits_scored_grounding_from_runtime_only_terms(tmp_path: Path) -> None:
+    module = _module()
+    install_script = tmp_path / "install.sh"
+    _write(install_script, "#!/usr/bin/env bash\nexit 0\n")
+    package = _substantive_package()
+    package.accepted_project_preview = {"runtimeonly": "runtimeonly term remains only in accepted runtime state"}
+    case = module.GreenfieldMatrixCase(
+        name="runtime only term split",
+        prompt="Create a permit readiness workspace with runtimeonly runtime evidence.",
+        required_terms=("permit", "runtimeonly"),
+        leakage_terms=("permit readiness",),
+    )
+
+    evidence = module._case_evidence_manifest(  # noqa: SLF001
+        case=case,
+        repo_root=tmp_path,
+        package=package,
+        create_payload=_passing_create_payload(),
+        quality=_passing_matrix_result(module).quality,
+        install_script=install_script,
+        version="0.1.15",
+        install_mode="seeded",
+        browser_surface_proof_attempted=False,
+        browser_surface_proof_required=False,
+        browser_surface_issues=(),
+    )
+
+    all_grounding = {row["term"]: row for row in evidence["required_term_grounding"]}
+    scored_grounding = {row["term"]: row for row in evidence["required_term_scored_grounding"]}
+
+    assert all_grounding["runtimeonly"]["present"] is True
+    assert all_grounding["runtimeonly"]["surfaces"] == ["Accepted project"]
+    assert scored_grounding["runtimeonly"]["present"] is False
+    assert any(
+        "required term `runtimeonly` appears only outside scored generated artifacts" in row
+        for row in evidence["required_term_distribution_findings"]
+    )
+
+
+def test_seeded_clone_reuses_runtime_without_copying_seed_git(tmp_path: Path) -> None:
+    module = _module()
+    seed = tmp_path / "seed"
+    clone = tmp_path / "clone"
+    _write(seed / ".odylith/bin/odylith", "#!/usr/bin/env bash\n")
+    _write(seed / ".odylith/runtime/versions/0.1.15/bin/python", "#!/usr/bin/env bash\n")
+    _write(seed / ".odylith/runtime/versions/0.1.15/runtime-metadata.json", "{}\n")
+    _write(seed / "odylith/radar/source/B-001.md", "# Workstream\n")
+    _write(seed / ".git/seed-marker", "do not copy\n")
+
+    module._clone_seed_repo(seed_repo=seed, repo_root=clone, version="0.1.15")  # noqa: SLF001
+
+    assert (clone / ".odylith/bin/odylith").is_file()
+    assert (clone / "odylith/radar/source/B-001.md").read_text(encoding="utf-8") == "# Workstream\n"
+    assert (clone / ".odylith/runtime/versions/0.1.15").is_symlink()
+    assert (clone / ".odylith/runtime/versions/0.1.15").resolve() == (
+        seed / ".odylith/runtime/versions/0.1.15"
+    ).resolve()
+    assert (clone / ".odylith/runtime/current").is_symlink()
+    assert not (clone / ".git/seed-marker").exists()
+
+
+def test_invalid_greenfield_matrix_install_mode_is_rejected() -> None:
+    module = _module()
+
+    with pytest.raises(RuntimeError, match="install mode"):
+        module._validated_install_mode("partial")  # noqa: SLF001
 
 
 def test_quality_verdict_fails_closed_without_manifest_or_complete_artifacts() -> None:
@@ -1742,6 +1975,10 @@ def test_quality_verdict_accepts_scientific_package_with_paraphrased_ir_evidence
         "analysis configuration, control-run comparator, expected range, error interval, "
         "acceptable range, identical source inputs, context, parameter set, and rerun ledger."
     )
+    package.project_dashboard_preview["host_handoff_prompts"][0]["prompt"] += (
+        " Preserve the solver release identifier, control-run comparator, error interval, "
+        "acceptable range, parameter set, and rerun ledger in the governed implementation prompt."
+    )
 
     verdict = module.build_quality_verdict(
         create_payload=_passing_create_payload(),
@@ -1754,6 +1991,38 @@ def test_quality_verdict_accepts_scientific_package_with_paraphrased_ir_evidence
     assert verdict.passed
     assert verdict.score == 10
     assert verdict.scores["domain_expert"] == 10
+
+
+def test_quality_verdict_rejects_scientific_package_with_evidence_concentrated_in_one_spec(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+    package = _substantive_package()
+    package.proposal["semantic_model"]["evaluation_semantics"] = {
+        "schema_version": "odylith.greenfield.evaluation_semantics.v1",
+        "focus": "Assay Drift Prediction Model",
+        "method_or_protocol": "solver release identifier and analysis configuration used for the accepted run",
+        "reference_or_baseline": "control-run comparator and expected range reviewed with the result",
+        "uncertainty_or_tolerance": "error interval and acceptable range visible beside the result",
+        "reproducibility": "identical source inputs, context, parameter set, and rerun ledger can regenerate the accepted result",
+    }
+    package.rendered_component_specs["Evidence Review Ledger Service"] += (
+        "\n\nScientific review proof: the accepted run records the solver release identifier, "
+        "analysis configuration, control-run comparator, expected range, error interval, "
+        "acceptable range, identical source inputs, context, parameter set, and rerun ledger."
+    )
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=package,
+        counts=_full_counts(module),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.scores["domain_expert"] == 0
+    assert any("concentrates method, baseline, uncertainty, and reproducibility evidence" in issue for issue in verdict.issues)
 
 
 def test_quality_verdict_rejects_unattempted_browser_surface_proof(monkeypatch) -> None:
@@ -1775,6 +2044,52 @@ def test_quality_verdict_rejects_unattempted_browser_surface_proof(monkeypatch) 
     assert verdict.scores["browser_surface_proof"] == 0
     assert verdict.scores["copy_semantic_clarity"] == 10
     assert "browser surface proof was not attempted; premium release scoring requires headless rendered-surface proof" in verdict.issues
+
+
+def test_quality_verdict_allows_unattempted_browser_proof_for_volume_discovery(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=_substantive_package(),
+        counts=_full_counts(module),
+        browser_surface_proof_attempted=False,
+        browser_surface_proof_required=False,
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert verdict.passed
+    assert verdict.score == 10
+    assert verdict.scores["browser_surface_proof"] == -1
+    assert verdict.score_basis == "volume_discovery_without_browser_surface_proof"
+    assert any("browser surface proof was not requested and is unscored" in line for line in verdict.score_explanation)
+    assert "all brutal release-quality dimensions scored 10" not in verdict.score_explanation
+    assert "browser surface proof was not attempted; premium release scoring requires headless rendered-surface proof" not in verdict.issues
+
+
+def test_quality_verdict_rejects_failed_browser_surface_proof(monkeypatch) -> None:
+    module = _module()
+    monkeypatch.setattr(_scoring_module(), "greenfield_rendered_package_quality_issues", lambda package: [])
+    monkeypatch.setattr(_scoring_module(), "build_greenfield_quality_lens_report", lambda _package: _passing_package_lens_report())
+
+    verdict = module.build_quality_verdict(
+        create_payload=_passing_create_payload(),
+        package=_substantive_package(),
+        counts=_full_counts(module),
+        browser_surface_proof_attempted=True,
+        browser_surface_proof_required=True,
+        browser_surface_issues=("browser surface Radar rendered blank main content",),
+        create_returncode=0,
+        create_seconds=20.0,
+    )
+
+    assert not verdict.passed
+    assert verdict.score == 0
+    assert verdict.scores["browser_surface_proof"] == 0
+    assert "browser surface Radar rendered blank main content" in verdict.issues
 
 
 def test_quality_verdict_rejects_count_only_package_even_when_lenses_are_stubbed(monkeypatch) -> None:
@@ -2186,36 +2501,25 @@ def test_main_requires_browser_surface_proof_by_default(monkeypatch, tmp_path: P
     )
     monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
 
-    exit_code = module.main(
-        [
-            "--dist-dir",
-            str(dist_dir),
-            "--version",
-            "0.1.15",
-            "--temp-parent",
-            str(tmp_path),
-            "--json",
-            "--output-json",
-            str(tmp_path / "matrix-proof.json"),
-        ]
-    )
-    payload = json.loads(capsys.readouterr().out)
-    persisted = json.loads((tmp_path / "matrix-proof.json").read_text(encoding="utf-8"))
-
-    assert exit_code == 1
-    assert payload["status"] == "failed"
-    assert payload == persisted
-    assert payload["proof_scope"]["standard_path"] == "real_installed_greenfield_post_confirm_quality_matrix"
-    assert payload["proof_scope"]["rescue_path"] == "synthetic_typed_probe_wiring_only"
-    assert payload["proof_scope"]["natural_rescue_quality_proven"] is False
-    assert payload["rescue_smoke"]["status"] == "passed"
-    assert payload["rescue_smoke"]["proof_scope"] == "synthetic_typed_probe_wiring_only"
-    assert payload["rescue_smoke"]["natural_rescue_quality_proven"] is False
-    assert "engine_manifest" not in payload["rescue_smoke"]
-    assert payload["browser_surface_proof"]["status"] == "skipped"
+    with pytest.raises(RuntimeError, match="release proof must include browser proof"):
+        module.main(
+            [
+                "--dist-dir",
+                str(dist_dir),
+                "--version",
+                "0.1.15",
+                "--temp-parent",
+                str(tmp_path),
+                "--json",
+                "--output-json",
+                str(tmp_path / "matrix-proof.json"),
+            ]
+        )
+    assert capsys.readouterr().out == ""
+    assert not (tmp_path / "matrix-proof.json").exists()
 
 
-def test_main_allows_skipped_browser_surface_proof_only_for_debug(monkeypatch, tmp_path: Path, capsys) -> None:
+def test_main_allows_skipped_browser_surface_proof_for_volume_discovery(monkeypatch, tmp_path: Path, capsys) -> None:
     module = _module()
     dist_dir = tmp_path / "dist"
     _write(dist_dir / "install.sh", "#!/usr/bin/env bash\nexit 0\n")
@@ -2230,6 +2534,8 @@ def test_main_allows_skipped_browser_surface_proof_only_for_debug(monkeypatch, t
             "0.1.15",
             "--temp-parent",
             str(tmp_path),
+            "--proof-tier",
+            "discovery",
             "--allow-skipped-browser-proof",
             "--json",
         ]
@@ -2253,6 +2559,11 @@ def test_main_runs_browser_surface_proof_when_requested(monkeypatch, tmp_path: P
 
     monkeypatch.setattr(module, "run_matrix", fake_run_matrix)
     monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+    monkeypatch.setattr(
+        module,
+        "run_natural_rescue_proof",
+        lambda **_kwargs: _passing_natural_rescue_result(module),
+    )
 
     exit_code = module.main(
         [
@@ -2263,6 +2574,7 @@ def test_main_runs_browser_surface_proof_when_requested(monkeypatch, tmp_path: P
             "--temp-parent",
             str(tmp_path),
             "--include-browser-proof",
+            "--include-natural-rescue-proof",
             "--json",
         ]
     )
@@ -2298,6 +2610,11 @@ def test_main_fails_when_requested_browser_surface_proof_fails(monkeypatch, tmp_
     )
     monkeypatch.setattr(module, "run_matrix", lambda **_kwargs: (failing_result,))
     monkeypatch.setattr(module, "run_rescue_smoke", lambda **_kwargs: _passing_rescue_result(module))
+    monkeypatch.setattr(
+        module,
+        "run_natural_rescue_proof",
+        lambda **_kwargs: _passing_natural_rescue_result(module),
+    )
 
     exit_code = module.main(
         [
@@ -2308,6 +2625,7 @@ def test_main_fails_when_requested_browser_surface_proof_fails(monkeypatch, tmp_
             "--temp-parent",
             str(tmp_path),
             "--include-browser-proof",
+            "--include-natural-rescue-proof",
             "--json",
         ]
     )

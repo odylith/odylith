@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
+from odylith.runtime.common.prose_grammar import looks_like_finite_action_token
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text
 
 ACTOR_ROLE_NOUNS = frozenset(
     {
         "actor",
         "actors",
+        "analyst",
+        "analysts",
+        "architect",
+        "architects",
         "applicant",
         "applicants",
         "coordinator",
@@ -55,6 +61,19 @@ ACTOR_ROLE_NOUNS = frozenset(
         "users",
     }
 )
+ACTOR_ROLE_SUFFIXES = ("ant", "ent", "er", "ian", "ist", "or", "owner")
+
+
+def looks_like_actor_role_term(value: str | object) -> bool:
+    term = str(value or "").casefold().strip(".,:;")
+    if not term:
+        return False
+    if term in ACTOR_ROLE_NOUNS:
+        return True
+    singular = term[:-1] if term.endswith("s") else term
+    if looks_like_finite_action_token(term) or looks_like_base_action_token(singular):
+        return False
+    return len(singular) >= 5 and singular.endswith(ACTOR_ROLE_SUFFIXES)
 
 
 def has_actor_role_word(value: str | object) -> bool:
@@ -66,4 +85,4 @@ def has_actor_role_word(value: str | object) -> bool:
     return bool(set(words) & ACTOR_ROLE_NOUNS)
 
 
-__all__ = ["ACTOR_ROLE_NOUNS", "has_actor_role_word"]
+__all__ = ["ACTOR_ROLE_NOUNS", "ACTOR_ROLE_SUFFIXES", "has_actor_role_word", "looks_like_actor_role_term"]

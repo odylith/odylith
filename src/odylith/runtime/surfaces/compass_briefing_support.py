@@ -131,6 +131,50 @@ def _trim_dangling_fragment(text: str) -> str:
     return ""
 
 
+def _complete_clause_excerpt(text: str, *, max_chars: int) -> str:
+    token = compass_base._normalize_sentence(text)
+    if not token:
+        return ""
+    sentences = re.split(r"(?<=[.!?])\s+", token)
+    sentence = next((part.strip() for part in sentences if part.strip()), "")
+    if not sentence:
+        return ""
+    if len(sentence) <= max_chars:
+        return sentence
+    for parts in (
+        [part.strip() for part in sentence.split(";") if part.strip()],
+        [
+            part.strip()
+            for part in re.split(r",\s+(?=(?:and|but|then|while|when|which|so)\b)", sentence)
+            if part.strip()
+        ],
+    ):
+        candidate = _join_complete_clause_parts(parts=parts, max_chars=max_chars)
+        if candidate:
+            return candidate
+    return ""
+
+
+def _join_complete_clause_parts(*, parts: Sequence[str], max_chars: int) -> str:
+    selected: list[str] = []
+    for part in parts:
+        cleaned = _trim_dangling_fragment(part)
+        if not cleaned:
+            continue
+        candidate = "; ".join([*selected, cleaned])
+        if selected and len(candidate) > max_chars:
+            break
+        if not selected and len(candidate) > max_chars:
+            return ""
+        selected.append(cleaned)
+    candidate = "; ".join(selected).strip()
+    return _trim_dangling_fragment(candidate)
+
+
+def _why_excerpt(text: str, *, max_chars: int) -> str:
+    return _normalize_why_fragment(_complete_clause_excerpt(text, max_chars=max_chars))
+
+
 def _use_story_text(*, customer: str, problem: str, fallback: str = "") -> str:
     customer_token = _trim_dangling_fragment(_sentence_without_period(customer))
     problem_token = _trim_dangling_fragment(_sentence_without_period(problem))
@@ -161,8 +205,20 @@ def _normalize_why_fragment(text: str) -> str:
     return ""
 
 
+def _remove_implementation_lead(text: str) -> str:
+    token = compass_base._normalize_sentence(text).strip()
+    for prefix in (
+        "First implementation step:",
+        "Start with this implementation slice:",
+        "Implementation step:",
+    ):
+        if token.lower().startswith(prefix.lower()):
+            return token[len(prefix) :].strip()
+    return token
+
+
 def _architecture_consequence_text(*, proposed_solution: str, benefit: str) -> str:
-    solution_token = _trim_dangling_fragment(_sentence_without_period(proposed_solution))
+    solution_token = _trim_dangling_fragment(_sentence_without_period(_remove_implementation_lead(proposed_solution)))
     benefit_token = _trim_dangling_fragment(_sentence_without_period(benefit))
     if solution_token:
         solution_clause = _decapitalize_clause(solution_token)
@@ -192,28 +248,12 @@ def _ws_why_context(row: Mapping[str, Any]) -> dict[str, str]:
             "use_story": "",
             "architecture_consequence": "",
         }
-    problem = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("problem", "")).strip(), max_sentences=1, max_chars=220)
-    )
-    customer = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("customer", "")).strip(), max_sentences=1, max_chars=160)
-    )
-    proposed_solution = _normalize_why_fragment(
-        compass_base._narrative_excerpt(
-            str(why.get("proposed_solution", "")).strip(),
-            max_sentences=1,
-            max_chars=220,
-        )
-    )
-    why_now = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("why_now", "")).strip(), max_sentences=1, max_chars=280)
-    )
-    opportunity = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("opportunity", "")).strip(), max_sentences=1, max_chars=280)
-    )
-    founder = _normalize_why_fragment(
-        compass_base._narrative_excerpt(str(why.get("founder_pov", "")).strip(), max_sentences=1, max_chars=280)
-    )
+    problem = _why_excerpt(str(why.get("problem", "")).strip(), max_chars=280)
+    customer = _why_excerpt(str(why.get("customer", "")).strip(), max_chars=180)
+    proposed_solution = _why_excerpt(str(why.get("proposed_solution", "")).strip(), max_chars=300)
+    why_now = _why_excerpt(str(why.get("why_now", "")).strip(), max_chars=320)
+    opportunity = _why_excerpt(str(why.get("opportunity", "")).strip(), max_chars=320)
+    founder = _why_excerpt(str(why.get("founder_pov", "")).strip(), max_chars=320)
     purpose = why_now or opportunity or founder or problem
     benefit = opportunity or founder or why_now or purpose
     use_story = _use_story_text(customer=customer, problem=problem, fallback=purpose)

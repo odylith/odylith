@@ -8,7 +8,6 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
-from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import text_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_domain_object_label
@@ -19,17 +18,18 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_restates_label_with_finite_action
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import project_specific_actor_labels
-from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_actor_roles import has_actor_role_word
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import is_system_generated_action
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
 from odylith.runtime.domain_intelligence.greenfield_text import imperative_action_with_copula_words
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_confirmed_proof_boundary_sentence
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_reviewed_result_nouns
@@ -43,6 +43,7 @@ _LABEL_FOCUS_STOPWORDS = {
     "surface",
     "system",
     "view",
+    "workspace",
 }
 
 _VISIBLE_RESULT_OBJECT_HINTS = {
@@ -136,18 +137,13 @@ def _actor_led_base_action_parts(value: str) -> tuple[str, str]:
     text = _clean(value).strip(" .")
     if not text:
         return "", ""
-    words = text.split()
-    for index in range(1, min(len(words), 6)):
-        prefix = " ".join(words[:index]).strip(" .")
-        if not looks_like_actor_led_subject_prefix(prefix, text):
-            continue
-        if re.search(r"\b(?:as|at|by|for|from|in|of|on|through|to|via|with|without)\b", prefix, flags=re.IGNORECASE):
-            continue
-        candidate = " ".join(words[index:]).strip(" .")
-        if looks_like_finite_action(candidate) or looks_like_action_clause(candidate):
-            if imperative_action_with_copula_words(words, index):
-                return "", ""
-            return prefix, base_action_clause(candidate)
+    actor, action = actor_led_action_parts(text)
+    if actor and action:
+        words = text.split()
+        index = len(actor.split())
+        if imperative_action_with_copula_words(words, index):
+            return "", ""
+        return actor, action
     return "", ""
 
 
@@ -187,7 +183,7 @@ def outcome_action_phrase(outcome: str) -> str:
     object_text = _object_phrase(text)
     if "status" in words and "visible" in words:
         return _modal_safe_outcome_action(f"see {object_text}")
-    if words & {"proof", "proven", "verified", "evidence", "audit"}:
+    if words & {"proof", "proven", "verified", "evidence", "audit", "ledger", "ledgers", "recommendation", "recommendations"}:
         return _modal_safe_outcome_action(f"review {object_text}")
     if "readiness" in words:
         return _modal_safe_outcome_action(f"see {object_text}")
@@ -519,11 +515,13 @@ def _label_focus_phrase(label: str) -> str:
     words = [
         word.casefold()
         for word in label_terms(
-            _clean(label).replace("_", " "),
+            collapse_repeated_phrase_units(_clean(label).replace("_", " ")),
             stopwords=_LABEL_FOCUS_STOPWORDS,
         )
     ]
-    return collapse_adjacent_duplicate_terms(_trim_terminal_connector(" ".join(words[:6]).strip()))
+    focus = _trim_terminal_connector(" ".join(words[:6]).strip())
+    focus = collapse_adjacent_duplicate_terms(focus)
+    return collapse_repeated_phrase_units(focus)
 
 
 def _trim_terminal_connector(value: str) -> str:
@@ -577,7 +575,8 @@ def keywords(values: Sequence[Any]) -> set[str]:
 
 
 def component_label(row: Mapping[str, Any], index: int) -> str:
-    return _clean(row.get("label")) or _clean(row.get("component_id")) or f"Component {index}"
+    label = collapse_repeated_phrase_units(_clean(row.get("label")))
+    return label or _clean(row.get("component_id")) or f"Component {index}"
 
 
 def project_title(proposal: Mapping[str, Any]) -> str:

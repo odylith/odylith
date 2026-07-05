@@ -8,7 +8,9 @@ from typing import Any
 
 from odylith.runtime.common.value_coercion import dedupe_strings
 from odylith.runtime.domain_intelligence.greenfield_component_contract import public_prose_quality_issues
+from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_requirement_control_clause
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import progression_marker_count
@@ -212,6 +214,25 @@ _TERM_STOPWORDS = {
 }
 
 _SHORT_DOMAIN_TERMS = {"ai", "ml", "ui", "ux", "ar", "vr", "kyb", "aml", "smb", "crm", "erp"}
+_CONTROL_CONTEXT_STOPWORDS = frozenset(
+    {
+        *_TERM_STOPWORDS,
+        "atlas",
+        "casebook",
+        "compass",
+        "component",
+        "diagram",
+        "governance",
+        "mermaid",
+        "radar",
+        "registry",
+        "surface",
+        "tribunal",
+        "workstream",
+        "workspace",
+    }
+)
+_SOURCE_GROUNDED_CONTROL_LABELS = frozenset({"radar", "registry", "atlas", "compass", "tribunal"})
 
 
 def greenfield_quality_issues(proposal: Mapping[str, Any]) -> list[str]:
@@ -220,7 +241,7 @@ def greenfield_quality_issues(proposal: Mapping[str, Any]) -> list[str]:
     issues: list[str] = []
     public_leaves = list(_public_text_leaves(proposal))
     prompt_terms = _prompt_terms(proposal)
-    issues.extend(_control_plane_leak_issues(public_leaves, prompt_terms=prompt_terms))
+    issues.extend(_control_plane_leak_issues(public_leaves, grounded_contexts=_source_grounded_control_contexts(proposal)))
     issues.extend(_stale_generic_issues(public_leaves))
     issues.extend(_generic_actor_label_issues(public_leaves))
     issues.extend(_directive_leak_issues(public_leaves))
@@ -257,6 +278,8 @@ def _semantic_model_issues(proposal: Mapping[str, Any]) -> list[str]:
             issues.append("semantic_model first_path_contract collapses a multi-step first path")
         if events and not any(row.get("visible_result") for row in events):
             issues.append("semantic_model first_path_contract has no visible-result event")
+        if any(contains_requirement_control_clause(clean_text(row.get("text") or row.get("mutation"))) for row in events):
+            issues.append("semantic_model first_path_contract includes release/proof constraints as path events")
     component_refs = model.get("components")
     if not isinstance(component_refs, list) or not component_refs:
         issues.append("semantic_model is missing component contract references")
@@ -316,17 +339,74 @@ def _is_confirmed_generated_proposal(proposal: Mapping[str, Any]) -> bool:
     return str(intent.get("reasoning_mode", "")).strip() == "odylith_confirmed_governed_proposal"
 
 
-def _control_plane_leak_issues(public_leaves: list[tuple[str, str]], *, prompt_terms: tuple[str, ...]) -> list[str]:
+def _control_plane_leak_issues(
+    public_leaves: list[tuple[str, str]],
+    *,
+    grounded_contexts: Mapping[str, tuple[frozenset[str], ...]],
+) -> list[str]:
     issues: list[str] = []
     for label, pattern in _CONTROL_PLANE_LEAKS:
-        if label in {"Radar", "Registry", "Atlas", "Compass", "Tribunal"} and label.casefold() in prompt_terms:
-            continue
-        paths = [path for path, text in public_leaves if pattern.search(text)]
+        label_key = label.casefold()
+        contexts = grounded_contexts.get(label_key, ())
+        paths = [
+            path
+            for path, text in public_leaves
+            if pattern.search(text) and not _control_label_is_source_grounded(text, label=label_key, contexts=contexts)
+        ]
         if paths:
             issues.append(
                 f"greenfield public product content leaks Odylith control-plane term `{label}` at {_path_preview(paths)}"
             )
     return issues
+
+
+def _source_grounded_control_contexts(proposal: Mapping[str, Any]) -> dict[str, tuple[frozenset[str], ...]]:
+    source_keys = ("prompt", "source_title", "title", "first_path")
+    contexts: dict[str, list[frozenset[str]]] = {}
+    intent = proposal.get("intent")
+    if not isinstance(intent, Mapping):
+        return {}
+    for key in source_keys:
+        for text in text_values(intent.get(key)):
+            if not text:
+                continue
+            for label in _SOURCE_GROUNDED_CONTROL_LABELS:
+                for context in _control_label_contexts(text, label=label):
+                    if context:
+                        contexts.setdefault(label, []).append(context)
+    return {label: tuple(dict.fromkeys(rows)) for label, rows in contexts.items()}
+
+
+def _control_label_is_source_grounded(text: str, *, label: str, contexts: tuple[frozenset[str], ...]) -> bool:
+    if not contexts:
+        return False
+    observed = tuple(context for context in _control_label_contexts(text, label=label) if context)
+    if not observed:
+        return False
+    for context in observed:
+        if not any(_context_overlap_sufficient(context, accepted) for accepted in contexts):
+            return False
+    return True
+
+
+def _context_overlap_sufficient(observed: frozenset[str], accepted: frozenset[str]) -> bool:
+    return bool(observed & accepted)
+
+
+def _control_label_contexts(text: str, *, label: str) -> tuple[frozenset[str], ...]:
+    tokens = [str(term).casefold() for term in label_terms(text)]
+    contexts: list[frozenset[str]] = []
+    for index, token in enumerate(tokens):
+        if token != label:
+            continue
+        window = tokens[max(0, index - 3) : index] + tokens[index + 1 : index + 4]
+        context = frozenset(
+            item
+            for item in window
+            if item and item not in _CONTROL_CONTEXT_STOPWORDS and len(item) >= 3
+        )
+        contexts.append(context)
+    return tuple(contexts)
 
 
 def _stale_generic_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
@@ -348,7 +428,7 @@ def _generic_actor_label_issues(public_leaves: list[tuple[str, str]]) -> list[st
         paths = [
             path
             for path, text in public_leaves
-            if _starts_with_generic_actor_label(text, label)
+            if not _is_option_metadata_path(path) and _starts_with_generic_actor_label(text, label)
         ]
         if paths:
             issues.append(
@@ -361,24 +441,32 @@ def _starts_with_generic_actor_label(text: str, label: str) -> bool:
     """Reject placeholder actor rows without rejecting domain-specific owners."""
 
     cleaned = clean_text(text)
-    match = re.match(rf"^{re.escape(label)}(?P<separator>\s|:|[-–—]|$)", cleaned)
-    if not match:
+    label_text = str(label or "").strip()
+    if not label_text or not cleaned.casefold().startswith(label_text.casefold()):
         return False
-    separator = match.group("separator")
+    after_label = cleaned[len(label_text) :]
+    if not after_label:
+        return True
+    separator = after_label[0]
+    if separator not in {" ", ":", "-", "–", "—"}:
+        return False
     if separator != " ":
         return True
-    tail = cleaned[match.end() :].strip()
+    tail = after_label[1:].strip()
     if not tail:
         return True
-    return bool(
-        re.match(
-            r"^(?:can|cannot|needs?|must|should|will|would|is|are|"
-            r"adds?|approves?|checks?|chooses?|creates?|enters?|inspects?|logs?|opens?|records?|reviews?|sees?|submits?|updates?|views?|"
-            r"adding|approving|checking|choosing|creating|entering|inspecting|logging|opening|recording|reviewing|seeing|submitting|updating|viewing)\b",
-            tail,
-            flags=re.IGNORECASE,
-        )
-    )
+    words = [part.strip(".,;:()[]{}").casefold() for part in tail.split() if part.strip(".,;:()[]{}")]
+    if not words:
+        return True
+    first = words[0]
+    second = words[1] if len(words) > 1 else ""
+    if first in {"can", "cannot", "could", "is", "must", "needs", "need", "should", "will", "would"}:
+        return True
+    if first.endswith("ing"):
+        return True
+    if first.endswith("s") and second not in {"is", "are", "was", "were"}:
+        return True
+    return False
 
 
 def _directive_leak_issues(public_leaves: list[tuple[str, str]]) -> list[str]:
@@ -610,18 +698,21 @@ def _prompt_echo_issues(
     raw_prompt = clean_text(intent.get("prompt"))
     raw_title = clean_text(intent.get("title"))
     issues: list[str] = []
-    _ = raw_title
-    for label, value, max_hits in (("prompt", raw_prompt, 0),):
+    for label, value, max_hits, minimum_length in (
+        ("prompt", raw_prompt, 0, 32),
+        ("title", raw_title, 0, 24),
+    ):
         needle = value.casefold()
-        if len(needle) < 32:
+        if len(needle) < minimum_length or (label == "title" and len(value.split()) < 4):
             continue
         paths = [
             path
             for path, text in public_leaves
             if needle
-            and needle in text.casefold()
+            and _raw_echo_matches(label=label, needle=needle, text=text)
             and not path.startswith("intent.")
             and _is_artifact_content_path(path)
+            and (label != "title" or _is_project_brief_prose_path(path))
         ]
         if len(paths) > max_hits:
             issues.append(
@@ -630,8 +721,29 @@ def _prompt_echo_issues(
     return issues
 
 
+def _raw_echo_matches(*, label: str, needle: str, text: str) -> bool:
+    lowered = text.casefold()
+    if label != "title":
+        return needle in lowered
+    if lowered.strip() == needle:
+        return True
+    return lowered.startswith(needle) and len(text.split()) <= 14
+
+
 def _is_artifact_content_path(path: str) -> bool:
-    return path.startswith(("backlog.", "components.", "diagrams.", "program.", "release_plan."))
+    return path.startswith(("backlog.", "components.", "diagrams.", "program.", "release_plan.", "project_brief."))
+
+
+def _is_project_brief_prose_path(path: str) -> bool:
+    return path in {
+        "project_brief.purpose",
+        "project_brief.project_outcome",
+        "project_brief.operating_principle",
+    }
+
+
+def _is_option_metadata_path(path: str) -> bool:
+    return ".customization_options." in f".{path}."
 
 
 def _public_text_leaves(value: Any, *, path: tuple[str, ...] = ()) -> tuple[tuple[str, str], ...]:

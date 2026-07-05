@@ -7,6 +7,7 @@ from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import localize_leading_actor_reference, project_specific_actor_row
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import actor_row_description as _actor_row_description, completed_actor_rows as _completed_actor_rows
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import first_release_actor_rows as _first_release_actor_rows, proof_claim_summary
@@ -24,6 +25,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_external_boundary_semantics import completed_external_boundary_rows
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase, readable_action_chain_sentence
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_completion import derived_title as _derived_title, title as _title, title_needs_repair as _title_needs_repair
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase, first_path_capability_phrase, first_path_outcome_phrase, material_first_path_action, normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import repair_confirmed_intent_semantic_projections
@@ -31,6 +33,7 @@ from odylith.runtime.domain_intelligence.greenfield_text import clean_text, norm
 
 
 CORE_FIELD_MIN_WORDS = {"product_story": 28, "state_object": 12, "first_path": 18, "proof_boundary": 18}
+_ACTOR_MODAL_ROLE_WORDS = frozenset({"lead", "leads", "people", "person", "rep", "reps", "staff", "team", "teams", "user", "users"})
 
 def complete_confirmed_intent(intent: Mapping[str, Any]) -> dict[str, Any]:
     result = copy.deepcopy(dict(intent))
@@ -346,9 +349,91 @@ def _first_path_is_complete_enough(value: str) -> bool:
     text = _clean(value)
     if _word_count(text) < 6:
         return False
+    if _actor_modal_path_is_complete(text):
+        return True
     action = first_path_action_phrase(text, fallback="", max_fragments=2)
     outcome = first_path_outcome_phrase(text, fallback="", limit=160)
-    return bool(_clean(action) and _clean(outcome) and len(_semantic_terms(text)) >= 4)
+    if _clean(action) and _clean(outcome) and _first_path_has_distinct_outcome(text, outcome) and len(_semantic_terms(text)) >= 4:
+        return True
+    material_action = material_first_path_action(text)
+    model = first_path_model(text)
+    visible_outcome = _clean(model.visible_outcome)
+    if (
+        len(model.steps) >= 2
+        and visible_outcome
+        and _word_count(visible_outcome) >= 4
+        and len(_semantic_terms(visible_outcome)) >= 3
+        and len(_semantic_terms(text)) >= 7
+    ):
+        return True
+    return _material_first_path_is_rich_enough(material_action)
+
+
+def _actor_modal_path_is_complete(value: str) -> bool:
+    words = [word.strip(".,:;!?()[]{}").casefold() for word in _clean(value).split()]
+    if "can" not in words:
+        return False
+    can_index = words.index("can")
+    actor_words = words[:can_index]
+    if not actor_words or len(actor_words) > 5:
+        return False
+    if not any(word_has_actor_role_signal(word) or word in _ACTOR_MODAL_ROLE_WORDS for word in actor_words):
+        return False
+    return len(_semantic_terms(value)) >= 4
+
+
+_LOW_SPECIFICITY_FIRST_ACTIONS = frozenset(
+    {
+        "add",
+        "capture",
+        "collect",
+        "enter",
+        "provide",
+        "record",
+        "save",
+        "store",
+        "submit",
+        "upload",
+    }
+)
+
+
+def _material_first_path_is_rich_enough(value: str) -> bool:
+    text = _clean(value).strip(" .")
+    if not text:
+        return False
+    first = text.split(maxsplit=1)[0].casefold().strip(".,:;")
+    min_words = 8 if first in _LOW_SPECIFICITY_FIRST_ACTIONS else 6
+    min_terms = 6 if first in _LOW_SPECIFICITY_FIRST_ACTIONS else 4
+    return _word_count(text) >= min_words and len(_semantic_terms(text)) >= min_terms
+
+
+def _first_path_has_distinct_outcome(path: str, outcome: str) -> bool:
+    model = first_path_model(path)
+    if len(model.steps) >= 2:
+        return True
+    material = _clean(material_first_path_action(path)).strip(" .")
+    result = _clean(outcome).strip(" .")
+    if not material or not result:
+        return False
+    material_first = material.split(maxsplit=1)[0].casefold().strip(".,:;")
+    result_first = result.split(maxsplit=1)[0].casefold().strip(".,:;")
+    if result_first == _regular_action_state_form(material_first):
+        return False
+    material_terms = _semantic_terms(material)
+    result_terms = _semantic_terms(result)
+    return bool(result_terms - material_terms)
+
+
+def _regular_action_state_form(value: str) -> str:
+    term = str(value or "").casefold().strip()
+    if len(term) < 4:
+        return ""
+    if term.endswith("e"):
+        return f"{term}d"
+    if len(term) > 2 and term.endswith("y") and term[-2] not in {"a", "e", "i", "o", "u"}:
+        return f"{term[:-1]}ied"
+    return f"{term}ed"
 
 
 def _modal_action_clause(value: str) -> str:

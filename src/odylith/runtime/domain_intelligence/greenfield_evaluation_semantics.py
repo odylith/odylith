@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 import re
 from typing import Any
 
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import contains_requirement_control_clause
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_requirement_control_step
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
+from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 from odylith.runtime.domain_intelligence.greenfield_text import word_count
 
 
@@ -45,6 +49,7 @@ class EvaluationSemantics:
     focus: str
     observed_quantities: tuple[str, ...]
     evidence_sources: tuple[str, ...]
+    source_anchors: tuple[str, ...]
     method_or_protocol: str
     reference_or_baseline: str
     uncertainty_or_tolerance: str
@@ -72,20 +77,38 @@ def evaluation_semantics_for_texts(
     first_path: str,
     proof_boundary: str,
     prompt: str = "",
+    source_anchors: Sequence[str] = (),
 ) -> EvaluationSemantics | None:
     """Return an optional generic evidence/evaluation IR for R&D-heavy prompts."""
 
-    source = " ".join(clean_text(value) for value in (prompt, title, state_object, first_path, proof_boundary))
+    anchors = evidence_anchor_phrases(prompt, source_anchors=source_anchors)
+    source = " ".join(clean_text(value) for value in (prompt, title, state_object, first_path, proof_boundary, " ".join(anchors)))
     if not source or not evaluation_depth_required(source):
         return None
     focus = evaluation_focus_label(source, fallback=title or "evaluation result")
     focus_ref = _lower_focus(focus)
+    anchor_summary = _anchor_summary(anchors)
     return EvaluationSemantics(
         schema_version="odylith.greenfield.evaluation_semantics.v1",
         applicability="evidence_backed_model_or_research_evaluation",
         focus=focus,
-        observed_quantities=(f"{focus_ref} inputs", f"{focus_ref} outputs", "reviewable uncertainty or confidence"),
-        evidence_sources=("source data or observation provenance", "evaluation context and constraints", "saved run record"),
+        observed_quantities=_unique(
+            (
+                *anchors[:4],
+                f"{focus_ref} inputs",
+                f"{focus_ref} outputs",
+                "reviewable uncertainty or confidence",
+            )
+        ),
+        evidence_sources=_unique(
+            (
+                *((f"prompt-grounded evidence anchors: {anchor_summary}",) if anchor_summary else ()),
+                "source data or observation provenance",
+                "evaluation context and constraints",
+                "saved run record",
+            )
+        ),
+        source_anchors=anchors,
         method_or_protocol="method, protocol, model, solver, rule, or analysis version used for the accepted run",
         reference_or_baseline="baseline, reference, fixture, expected range, or comparison evidence when the result is reviewed",
         uncertainty_or_tolerance="uncertainty, confidence, tolerance, calibration, or limitation boundary visible with the result",
@@ -175,6 +198,27 @@ def evaluation_depth_required(value: Any) -> bool:
     return bool(tokens & {"model", "prediction", "predictive", "simulate", "simulation", "simulator", "solver"} and tokens & _EVALUATION_CONTEXT_TERMS)
 
 
+def evidence_anchor_phrases(value: Any, *, source_anchors: Sequence[str] = ()) -> tuple[str, ...]:
+    """Return prompt-grounded evidence phrases that must survive projection."""
+
+    rows: list[str] = []
+    for source in source_anchors:
+        normalized = _normalize_anchor(source)
+        if _meaningful_anchor(normalized):
+            rows.append(normalized)
+    for sentence in _sentences(value):
+        if not (is_requirement_control_step(sentence) or contains_requirement_control_clause(sentence)):
+            continue
+        tail = _requirement_tail(sentence)
+        if not tail:
+            continue
+        for anchor in _anchor_list_items(tail):
+            normalized = _normalize_anchor(anchor)
+            if _meaningful_anchor(normalized):
+                rows.append(normalized)
+    return tuple(dict.fromkeys(rows))[:12]
+
+
 def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_source: str) -> bool:
     text = " ".join(clean_text(value) for value in (source, title_source, first_path_source))
     tokens = {_word_key(word) for word in text.replace("/", " ").split()}
@@ -202,10 +246,105 @@ def _evaluation_recovery_needed(*, source: str, title_source: str, first_path_so
     ) or bool(evaluation_depth_required(text) and len(first_path_model(first_path_source).steps) >= 2)
 
 
+def _anchor_summary(values: Sequence[str]) -> str:
+    rows = [dedupe_adjacent_words(value).strip(" .") for value in values if dedupe_adjacent_words(value).strip(" .")]
+    if not rows:
+        return ""
+    if len(rows) == 1:
+        return rows[0]
+    return "; ".join(rows)
+
+
+def _requirement_tail(value: str) -> str:
+    text = clean_text(value).strip(" .")
+    for match in re.finditer(r"[A-Za-z][A-Za-z0-9'-]*", text):
+        token = _word_key(match.group(0))
+        if token in {"preserve", "include", "includes", "capture", "captures", "show", "shows", "name", "names", "record", "records"}:
+            return text[match.end() :].strip(" .")
+    return ""
+
+
+def _anchor_list_items(value: str) -> tuple[str, ...]:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ()
+    text = re.sub(r"\b(?:as well as|plus)\b", ",", text, flags=re.IGNORECASE)
+    text = re.sub(r"\b(?:before|so that|while)\b.+$", "", text, flags=re.IGNORECASE).strip(" .")
+    chunks: list[str] = []
+    for part in re.split(r"\s*[,;]\s*", text):
+        part = part.strip(" .")
+        if not part:
+            continue
+        if "," not in text and re.search(r"\s+and\s+", part, flags=re.IGNORECASE):
+            chunks.extend(row.strip(" .") for row in re.split(r"\s+and\s+", part, flags=re.IGNORECASE) if row.strip(" ."))
+        else:
+            chunks.append(part)
+    result: list[str] = []
+    for chunk in chunks:
+        cleaned = re.sub(r"^(?:and|or)\s+", "", chunk, flags=re.IGNORECASE).strip(" .")
+        if cleaned:
+            result.append(cleaned)
+    return tuple(result)
+
+
+def _normalize_anchor(value: Any) -> str:
+    text = dedupe_adjacent_words(value).strip(" .")
+    if not text:
+        return ""
+    text = re.sub(r"^(?:the|a|an|this|that)\s+", "", text, flags=re.IGNORECASE).strip(" .")
+    text = re.sub(
+        r"^(?:avoid|capture|captures|include|includes|make|name|names|preserve|record|records|show|shows)\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    text = re.sub(r"^(?:unsupported\s+)?operational\s+claims?\b", "unsupported operational claims", text, flags=re.IGNORECASE)
+    return text
+
+
+def _meaningful_anchor(value: str) -> bool:
+    text = dedupe_adjacent_words(value).strip(" .")
+    if not text:
+        return False
+    words = [_word_key(word) for word in re.split(r"[-/\s]+", text)]
+    words = [word for word in words if word]
+    if len(words) < 2 or len(words) > 9:
+        return False
+    generic = {
+        "architecture",
+        "artifact",
+        "domain",
+        "engineer",
+        "engineering",
+        "expert",
+        "product",
+        "project",
+        "review",
+    }
+    return bool(set(words) - generic)
+
+
+def _sentences(value: Any) -> tuple[str, ...]:
+    text = clean_text(value).strip(" .")
+    if not text:
+        return ()
+    return tuple(row.strip(" .") for row in re.split(r"(?<=[.!?])\s+", text) if row.strip(" ."))
+
+
+def _unique(values: Sequence[str]) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(dedupe_adjacent_words(value).strip(" .") for value in values if dedupe_adjacent_words(value).strip(" .")))
+
+
 def _preserved_evaluation_first_path(value: str) -> str:
     text = clean_text(value).strip(" .")
     if word_count(text) < 10:
         return ""
+    if re.match(
+        r"^[A-Za-z][A-Za-z0-9 /&'()-]{1,80}\s+who\s+",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        return text
     model = first_path_model(text)
     if len(model.steps) < 2:
         return ""
@@ -312,6 +451,7 @@ def _word_key(value: str) -> str:
 __all__ = [
     "EvaluationSemantics",
     "RecoveredEvaluationContext",
+    "evidence_anchor_phrases",
     "evaluation_depth_required",
     "evaluation_focus_label",
     "evaluation_semantics_for_texts",

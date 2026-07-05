@@ -32,10 +32,10 @@
     "empty_reasons": [],
     "explicit_event_count": 140,
     "mapped_workstream_evidence_count": 126,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 12,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 140
+    "timeline_event_count": 141
   },
   "name": "Tribunal",
   "path_prefixes": [
@@ -44,6 +44,23 @@
   ],
   "spec_ref": "odylith/registry/source/components/tribunal/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 931,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "tribunal"
+      ],
+      "meaningful": true,
+      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-07-04T19:08:48-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 4,
       "artifacts": [

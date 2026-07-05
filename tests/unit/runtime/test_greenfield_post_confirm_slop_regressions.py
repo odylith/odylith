@@ -587,6 +587,46 @@ def test_actor_led_common_workflow_verbs_compile_to_base_actions() -> None:
     ) == "register a shelter"
 
 
+def test_workstream_title_fallback_strips_actor_owned_prefix() -> None:
+    first_path = (
+        "Domain reviewer turn an ambiguous evidence case into a review-ready record using source samples, "
+        "gradient evidence, lab-result evidence, explicit expert review, auditable decisions, "
+        "and a final action recommendation."
+    )
+
+    assert backlog_actions.workflow_title_action(
+        first_path=first_path,
+        actor="Domain Reviewer",
+        fallback="domain reviewer turn an ambiguous evidence case into a review-ready record using source samples",
+    ) == "turn an ambiguous evidence case into a review-ready record using source samples"
+    workflow_title = confirmed_workstream_titles(
+        label="Evidence Review Workspace",
+        components=[{"label": "Evidence Intake Surface"}, {"label": "Expert Review Workspace"}],
+        internal_systems=[],
+        first_path=first_path,
+        state_object="Evidence review record",
+        proof_boundary="Release 0.0.1 succeeds when the domain reviewer reaches a final action recommendation.",
+        human_actors=["Domain Reviewer: needs to turn an ambiguous evidence case into a review-ready record."],
+    )[0]
+    assert "Domain Reviewer Domain Reviewer" not in workflow_title
+    assert workflow_title.startswith("Let Domain Reviewer Turn an Ambiguous Evidence Case Into a Review-ready Record")
+
+
+def test_workstream_product_view_keeps_actor_led_open_action_out_of_user_can_clause() -> None:
+    product_view = workstream_product_view(
+        label="Purity Review Workspace",
+        action=(
+            "Hydrogen lab engineers audit membrane pressure readings and purity certificates "
+            "before publishing a release recommendation"
+        ),
+        outcome="final release recommendation",
+    )
+
+    assert "hydrogen lab engineers can audit membrane pressure readings" in product_view
+    assert "the user can hydrogen lab engineers audit" not in product_view
+    assert generated_semantic_slop_issues({"product_view": product_view}, root="proposal.backlog.0") == []
+
+
 def test_saved_destination_detector_allows_component_handoff_targets() -> None:
     assert generated_public_copy_issues(
         "component spec",
@@ -744,6 +784,51 @@ The first proof should show that a user can start with a broad goal, get a struc
     assert "supports status approvals" not in systems.casefold()
     assert "Trust, auditability, and recoverability are product requirements" in brief
     assert generated_semantic_slop_issues(proposal) == []
+
+
+def test_next_steps_source_anchor_gate_dedupes_compound_boundary_copy() -> None:
+    prompt = (
+        "Create a greenfield proposal for a carbon capture solvent degradation intake-to-proof workspace "
+        "that helps a process chemist provide inputs, validate units and provenance, run the model, "
+        "compare against a baseline, record uncertainty, and save a reviewable result. "
+        "The first release must preserve capture solvent, solvent degradation, amine loading, "
+        "flue gas condition, degradation marker, and regeneration cycle evidence. "
+        "Distinctive project vocabulary includes carbon capture solvent degradation degradation marker evidence "
+        "and carbon capture solvent degradation regeneration cycle review. "
+        "It must capture method version, parameter set, validation source, reviewer note, "
+        "avoid unsupported operational claims, show uncertainty or confidence limits, and make the saved result "
+        "reproducible for product, architecture, engineering, and domain-expert review."
+    )
+    proposal = _proposal_from_guidance_prompt(prompt)
+    created = [
+        {"idea_id": f"B-{index:03d}", "title": str(row.get("title", f"Workstream {index}"))}
+        for index, row in enumerate(proposal.get("backlog", []), start=1)
+        if isinstance(row, dict)
+    ]
+
+    next_steps = build_next_steps(
+        proposal=proposal,
+        backlog_result={"created": created},
+        first_release_workstreams=["B-002"],
+        program_result={
+            "umbrella_id": "B-001",
+            "waves": [
+                {
+                    "wave_id": "W-001",
+                    "label": "First wave",
+                    "status": "active",
+                    "primary_workstreams": ["B-002"],
+                }
+            ],
+        },
+        release_selector="0.0.1",
+    )
+    text = json.dumps(next_steps, sort_keys=True)
+
+    assert "degradation degradation" not in text
+    assert "carbon capture solvent degradation marker evidence" in text
+    assert "carbon capture solvent degradation regeneration cycle review" in text
+    assert generated_public_copy_issues("operator next-steps preview", next_steps) == ()
 
 
 def test_rendered_package_judgment_rejects_role_quality_failures() -> None:
@@ -1734,6 +1819,38 @@ def test_first_path_flowchart_strips_clipped_terminal_final_label() -> None:
     )
 
 
+def test_first_path_flowchart_normalizes_subjectless_coordinated_action_labels() -> None:
+    first_path = (
+        "A reviewer configures distance limits or select thresholds, tunes model settings or compare saved runs, "
+        "and records progress evidence and grant the next path."
+    )
+    semantic = {
+        "first_path_contract": {
+            "visible_result": "saved comparison result",
+            "events": [
+                {"text": "A reviewer configures distance limits or select thresholds"},
+                {"text": "A reviewer tunes model settings or compare saved runs"},
+                {"text": "A reviewer records progress evidence and grant the next path"},
+            ],
+        }
+    }
+    mermaid = first_path_flowchart_mermaid(
+        label="Scientific Review Workspace",
+        actors=["Scientific reviewer"],
+        components=[{"label": "Review Workspace", "release_scope": "first_path_required"}],
+        first_path=first_path,
+        semantic_model=semantic,
+    )
+
+    assert "Configure distance limits<br/>or select thresholds" in mermaid
+    assert "Tune model settings or compare<br/>saved runs" in mermaid
+    assert "Configures distance limits or" not in mermaid
+    assert "Tunes model settings or" not in mermaid
+    assert not _artifact_surface_language_issues(
+        RenderedArtifact("Atlas Mermaid", "scientific-review-first-path.mmd", mermaid, kind="mermaid")
+    )
+
+
 def test_first_path_flowchart_keeps_coordinated_object_tail_and_allows_participant_actor() -> None:
     first_path = (
         "A participant records symptoms, triggers, chosen practice steps, check-in results, "
@@ -1778,6 +1895,48 @@ def test_first_path_flowchart_keeps_coordinated_object_tail_and_allows_participa
     assert "participant records symptoms" not in mermaid.casefold()
     assert 'S3["Record progress evidence"]' in mermaid
     assert not [issue for issue in issues if "sequence/parser debris" in issue]
+
+
+def test_first_path_tail_checker_allows_subject_stripped_terminal_action() -> None:
+    first_path = (
+        "A release manager manage a waiver request, preserve risk evidence, route review, "
+        "separate product-domain terms from platform governance language, and publish go decision."
+    )
+    semantic = semantic_model_mapping(
+        build_greenfield_semantic_model(
+            title="Software Release Waiver Board Setup Workspace",
+            state_object="A go decision record tracks actor, source input, status, blocker, evidence, and history.",
+            first_path=first_path,
+            proof_boundary="Release succeeds when the go decision is reviewable.",
+            components=[],
+            human_actors=["Software Release Waiver Board Setup Workspace User"],
+        )
+    )
+    components = [
+        {"label": "Software Release Waiver Board Setup Workspace Intake Register", "release_scope": "first_path_required"},
+        {"label": "Software Release Waiver Board Setup Workspace Review Workspace", "release_scope": "first_path_required"},
+        {"label": "Software Release Waiver Board Setup Workspace Proof Ledger", "release_scope": "first_path_required"},
+    ]
+
+    mermaid = first_path_flowchart_mermaid(
+        label="Software Release Waiver Board Setup Workspace",
+        actors=["Software Release Waiver Board Setup Workspace User"],
+        components=components,
+        first_path=first_path,
+        semantic_model=semantic,
+    )
+    issues: list[str] = []
+    _check_first_path_flowchart(
+        proposal={"intent": {"first_path": first_path}},
+        components=components,
+        title="First Path Sequence",
+        source=mermaid,
+        issues=issues,
+    )
+
+    assert "Publish go decision" in mermaid
+    assert "release manager" not in mermaid.casefold()
+    assert "omits the tail of the accepted first path" not in "\n".join(issues)
 
 
 def test_package_quality_allows_plural_noun_after_to() -> None:
@@ -1986,6 +2145,9 @@ def test_visible_result_language_normalization_stays_in_text_owner() -> None:
     assert normalize_visible_result_language(
         "shows progress, and reaches a finished safe-to-serve state with emergency stop available throughout"
     ) == "a finished safe-to-serve state with emergency stop available throughout"
+    assert visible_result_object("The record shows the final status with source evidence") == (
+        "the final status with source evidence"
+    )
 
     for caller in callers:
         source = caller.read_text(encoding="utf-8")
@@ -2163,6 +2325,61 @@ def test_workstream_product_view_modalizes_actor_led_actions_without_user_can_sp
     assert generated_semantic_slop_issues({"product_view": product_view}) == []
 
 
+def test_workstream_product_view_modalizes_architect_actor_led_actions_without_user_can_splice() -> None:
+    product_view = workstream_product_view(
+        label="Search Coordination Evidence Service",
+        action="robotics architect provides inputs",
+        outcome="a reviewable result",
+    )
+
+    assert "the robotics architect can provide inputs" in product_view
+    assert "the user can robotics architect provides" not in product_view
+    assert "can provides" not in product_view
+    assert generated_semantic_slop_issues({"product_view": product_view}) == []
+
+
+def test_workstream_product_view_modalizes_actor_led_open_actions_without_homonym_fallback() -> None:
+    product_view = workstream_product_view(
+        label="Near Miss Review Service",
+        action="Safety engineers replay robot paths, human proximity events, intervention thresholds, sensor occlusion",
+        outcome="baseline routes and operator notes before releasing a safety result",
+    )
+
+    assert "safety engineers can replay robot paths" in product_view
+    assert "the user can baseline routes" not in product_view
+    assert "can baseline routes" not in product_view
+    assert generated_semantic_slop_issues({"product_view": product_view}) == []
+
+
+def test_workstream_product_view_modalizes_suffix_role_actor_led_finite_action() -> None:
+    product_view = workstream_product_view(
+        label="Batch Review Service",
+        action=(
+            "process safety engineer turns an ambiguous batch into a review-ready record "
+            "using readings, condition checks, pressure logs, safety evidence, and decision ledger"
+        ),
+        outcome="final release recommendation",
+    )
+
+    assert "the process safety engineer can turn an ambiguous batch" in product_view
+    assert "the user can process safety engineer turns" not in product_view
+    assert "users can process safety engineer turns" not in product_view
+    assert generated_semantic_slop_issues({"product_view": product_view}) == []
+
+
+def test_workstream_product_view_reviews_ledger_and_recommendation_outcomes() -> None:
+    product_view = workstream_product_view(
+        label="Batch Review Service",
+        action="process safety engineer turns an ambiguous batch into a review-ready record using readings",
+        outcome="expert review, decision ledger, and final release recommendation",
+    )
+
+    assert "the process safety engineer can turn an ambiguous batch" in product_view
+    assert "review the expert review, decision ledger, and final release recommendation" in product_view
+    assert "use the expert review" not in product_view
+    assert generated_semantic_slop_issues({"product_view": product_view}) == []
+
+
 def test_semantic_slop_gate_rejects_multi_word_actor_inside_user_can_clause() -> None:
     public_issues = generated_public_copy_issues(
         "proposal.product_view",
@@ -2197,6 +2414,53 @@ def test_copy_and_semantic_gates_reject_gerundized_actor_role_action_splice() ->
 
     assert any("gerundized actor-role action prose" in issue for issue in public_issues)
     assert any("gerundized actor-role action leaked" in issue for issue in semantic_issues)
+
+
+def test_semantic_gate_accepts_source_owned_actor_role_compound() -> None:
+    proposal = {
+        "intent": {
+            "human_actors": [
+                "Sterile Processing Manager: owns exception review.",
+                "Building Safety Reviewer: owns permit sequencing.",
+            ],
+        },
+        "semantic_model": {
+            "first_path_contract": {
+                "events": [
+                    {
+                        "actor": "Sterile Processing Manager",
+                        "mutation": (
+                            "Sterile processing manager turns an ambiguous hospital sterile processing exception "
+                            "case into a review-ready record"
+                        ),
+                    },
+                    {
+                        "actor": "Building Safety Reviewer",
+                        "mutation": (
+                            "Building safety reviewer turns an ambiguous seismic retrofit permit sequencing case "
+                            "into a review-ready record"
+                        ),
+                    },
+                ]
+            },
+            "diagram_event_graph": {
+                "events": [
+                    {
+                        "actor": "Sterile Processing Manager",
+                        "text": (
+                            "Sterile processing manager turns an ambiguous hospital sterile processing exception "
+                            "case into a review-ready record"
+                        ),
+                    }
+                ]
+            },
+        },
+    }
+
+    issues = generated_semantic_slop_issues(proposal, root="proposal")
+
+    assert not any("gerundized actor-role action leaked" in issue for issue in issues)
+    assert generated_public_copy_issues("accepted-project final memory", proposal) == ()
 
 
 def test_predicate_visible_outcome_does_not_become_user_import_action() -> None:
@@ -2517,6 +2781,50 @@ def test_first_path_gerund_chain_handles_set_draft_and_send_actions() -> None:
     )
     assert "seting" not in capability
     assert "drafts a response" not in capability
+
+
+def test_first_path_gerund_chain_splits_execute_after_object_connector() -> None:
+    first_path = (
+        "Agronomy analyst can submit a scenario, inspect controls and assumptions, "
+        "execute the simulation, review confidence and residuals, route exceptions, "
+        "and publish readiness proof."
+    )
+
+    model = first_path_model(first_path)
+    capability = first_path_capability_phrase(first_path, fallback="review simulation", gerund=True, max_fragments=8, limit=360)
+    product_view = backlog_actions.parent_product_view_sentence(
+        label="Hyperspectral Crop Disease",
+        capability=capability,
+        outcome="published readiness proof",
+        outcome_action="review the published readiness proof",
+        outcome_event="",
+        state_label="run record",
+        recipient="the agronomy analyst",
+    )
+
+    assert model.steps == (
+        "Agronomy analyst submits a scenario",
+        "Agronomy analyst inspects controls and assumptions",
+        "Agronomy analyst executes the simulation",
+        "Agronomy analyst reviews confidence and residuals",
+        "Agronomy analyst routes exceptions",
+        "Agronomy analyst publishes readiness proof",
+    )
+    assert "inspecting controls and assumptions" in capability
+    assert "executing the simulation" in capability
+    assert "assumptions, execute" not in capability
+    assert "assumptions, execute" not in product_view
+    assert "the agronomy analyst can submit a scenario" in workstream_product_view(
+        label="Hyperspectral Crop Disease",
+        action="agronomy analyst submits a scenario",
+        outcome="published readiness proof",
+    )
+    assert "the user can agronomy analyst submits" not in workstream_product_view(
+        label="Hyperspectral Crop Disease",
+        action="agronomy analyst submits a scenario",
+        outcome="published readiness proof",
+    )
+    assert generated_semantic_slop_issues({"product_view": product_view}, root="proposal.backlog.0") == []
 
 
 def test_actor_role_modifiers_do_not_become_gerund_actions_or_modal_splices() -> None:
@@ -2863,8 +3171,21 @@ def test_generated_public_copy_rejects_action_shaped_result_and_template_prefix(
         "Let Case Coordinator Accept a Water Use Claim: `docket-readiness-view` (Docket Readiness View Service).",
     ) == ()
     assert generated_public_copy_issues(
+        "accepted-project memory",
+        (
+            "AI Hiring Model Adverse Impact Workspace earns trust when an algorithmic accountability auditor can turn "
+            "an ambiguous hiring model review case into a review-ready record using selection-rate evidence, feature "
+            "documentation, validation study, accommodation notes, explicit expert review, auditable decisions, and a "
+            "final model use recommendation and the result remains visible, blocked when needed, and reviewable."
+        ),
+    ) == ()
+    assert generated_public_copy_issues(
         "Radar workstream",
         "The product lets the evidence clerk reach the hearing readiness.",
+    ) == ("Radar workstream leaked awkward visible-result action prose",)
+    assert generated_public_copy_issues(
+        "Radar workstream",
+        "The product asks the reviewer to use the result before evidence is complete.",
     ) == ("Radar workstream leaked awkward visible-result action prose",)
 
 
@@ -2885,6 +3206,10 @@ def test_generated_public_copy_rejects_duplicate_status_and_clipped_terminals() 
             "details remain"
         ),
     ) == ("project brief preview leaked clipped or dangling public copy",)
+    assert generated_public_copy_issues(
+        "project brief preview",
+        "The product shows what unresolved follow-up remains.",
+    ) == ()
     assert generated_public_copy_issues(
         "accepted-project memory preview",
         (
@@ -3638,6 +3963,44 @@ The first release succeeds when one requester can submit a complete request and 
     assert all(len(title.split()) <= 12 for title in titles)
     assert any(title.startswith("Let Requester See a Decision Summary") for title in titles)
     assert "long-term analytics" not in proposal["semantic_model"]["first_path_contract"]["visible_result"].casefold()
+    assert generated_semantic_slop_issues(proposal) == []
+
+
+def test_confirmed_completion_dedupes_repeated_workspace_labels_before_artifacts(tmp_path) -> None:
+    prompt = (
+        "Create a greenfield proposal for waiver review where the decision summary turns an ambiguous waiver packet "
+        "into a reviewable status."
+    )
+    intent_text = f"""Product Intent Confirmation needed
+No files changed. Source posture: empty_or_no_app_source.
+
+Host reasoning task: Infer the product shape live from the operator prompt and any observed repo source.
+
+Visible format contract
+- Render the visible confirmation as sectioned Markdown in this order.
+
+Original user intent
+{prompt}
+Next step
+- Confirm: write this same visible Product Intent Confirmation to .odylith/runtime/greenfield/confirmed-intent.md.
+Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prompt '{prompt}' --intent-file .odylith/runtime/greenfield/confirmed-intent.md --confirm --release 0.0.1
+"""
+    intent = parse_confirmed_intent_text(intent_text, prompt=prompt)
+
+    proposal = build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert "decision summary turns" not in rendered
+    assert "review workspace review workspace" not in rendered
+    assert "workspace result" not in rendered
+    assert "result result" not in rendered
+    assert "waiver review result" in rendered
+    assert greenfield_quality_issues(proposal) == []
     assert generated_semantic_slop_issues(proposal) == []
 
 

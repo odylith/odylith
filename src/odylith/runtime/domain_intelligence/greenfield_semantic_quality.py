@@ -182,6 +182,7 @@ def normalize_project_title(value: Any, *, fallback: str = "Greenfield Project")
     while canonical != previous:
         previous = canonical
         canonical = _PROVISIONAL_TITLE_RE.sub(" ", canonical)
+        canonical = _collapse_title_boundary_duplicates(canonical)
         canonical = re.sub(r"\s+", " ", canonical).strip(" .:-–—")
     if not canonical:
         canonical = _clean(fallback).strip(" .") or "Greenfield Project"
@@ -190,6 +191,54 @@ def normalize_project_title(value: Any, *, fallback: str = "Greenfield Project")
 
 def contains_provisional_title_marker(value: Any) -> bool:
     return bool(_PROVISIONAL_TITLE_RE.search(_clean(value)))
+
+
+def _collapse_title_boundary_duplicates(value: str) -> str:
+    """Collapse duplicate lexical title boundaries before projections fan out."""
+
+    words = str(value or "").split()
+    if len(words) < 2:
+        return str(value or "")
+    result: list[str] = []
+    for word in words:
+        key = _title_boundary_key(word)
+        prefix_key = _title_compound_prefix_key(word)
+        if result and key:
+            previous_key = _title_boundary_key(result[-1])
+            if previous_key == key:
+                _carry_title_duplicate_terminal_punctuation(result, word)
+                continue
+            if prefix_key and previous_key == prefix_key and prefix_key != key:
+                result[-1] = word
+                continue
+        result.append(word)
+    return " ".join(result)
+
+
+def _title_boundary_key(value: str) -> str:
+    token = str(value or "").strip("`'\"“”‘’.,;:!?()[]{}<>")
+    if not token or not any(char.isalnum() for char in token):
+        return ""
+    return token.casefold()
+
+
+def _title_compound_prefix_key(value: str) -> str:
+    token = _title_boundary_key(value)
+    if not token:
+        return ""
+    parts = re.split(r"[-/]+", token, maxsplit=1)
+    if len(parts) < 2:
+        return ""
+    prefix = parts[0].strip("`'\"“”‘’.,;:!?()[]{}<>")
+    return prefix if len(prefix) >= 2 and any(char.isalnum() for char in prefix) else ""
+
+
+def _carry_title_duplicate_terminal_punctuation(output: list[str], duplicate: str) -> None:
+    if not output:
+        return
+    suffix = str(duplicate or "")[-1:]
+    if suffix in ".!?" and output[-1][-1:] not in ".!?":
+        output[-1] = f"{output[-1].rstrip(',;:')}{suffix}"
 
 
 
@@ -308,6 +357,7 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
     """Detect visible generated prose that should never pass a greenfield gate."""
 
     issues: list[str] = []
+    actor_labels = _semantic_actor_labels(value)
     for path, text in _text_leaves(value):
         location = f"{root}.{path}" if path else root
         lowered = text.casefold()
@@ -350,7 +400,7 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
             issues.append(f"mechanical success-metric scaffold leaked at {location}")
         if actor_led_finite_action_inside_user_can(text):
             issues.append(f"actor-led finite action leaked inside user-can clause at {location}")
-        if gerund_actor_role_finite_action_splice(text):
+        if gerund_actor_role_finite_action_splice(text, actor_labels=actor_labels):
             issues.append(f"gerundized actor-role action leaked at {location}")
         if re.search(r"\bsource\s+evidence,\s+visible\s+blockers,\s+and\s+the\s+systems?\s+that\s+own\b", lowered):
             issues.append(f"governance-scaffold problem language leaked at {location}")
@@ -424,6 +474,65 @@ def generated_semantic_slop_issues(value: Any, *, root: str = "artifact") -> lis
         ):
             issues.append(f"clipped generated sentence leaked at {location}")
     return _unique(issues)
+
+
+def _semantic_actor_labels(value: Any) -> frozenset[str]:
+    if not isinstance(value, Mapping):
+        return frozenset()
+    labels: list[str] = []
+    intent = value.get("intent")
+    if isinstance(intent, Mapping):
+        human_actors = intent.get("human_actors")
+        if isinstance(human_actors, list):
+            labels.extend(_actor_label_from_row(actor) for actor in human_actors)
+    model = value.get("semantic_model")
+    if isinstance(model, Mapping):
+        labels.extend(_actor_labels_from_semantic_model(model))
+    return frozenset(_clean(label).casefold() for label in labels if _clean(label))
+
+
+def _actor_labels_from_semantic_model(model: Mapping[str, Any]) -> list[str]:
+    labels: list[str] = []
+    contract = model.get("first_path_contract")
+    if isinstance(contract, Mapping):
+        actor = _clean(contract.get("actor"))
+        if actor:
+            labels.append(actor)
+        labels.extend(_actor_labels_from_events(contract.get("events")))
+    graph = model.get("diagram_event_graph")
+    if isinstance(graph, Mapping):
+        labels.extend(_actor_labels_from_events(graph.get("events")))
+    ontology = model.get("domain_ontology")
+    if isinstance(ontology, Mapping):
+        actors = ontology.get("actors")
+        if isinstance(actors, list):
+            labels.extend(_actor_label_from_row(actor) for actor in actors)
+    return [label for label in labels if label]
+
+
+def _actor_labels_from_events(events: Any) -> list[str]:
+    if not isinstance(events, list):
+        return []
+    labels: list[str] = []
+    for event in events:
+        if isinstance(event, Mapping):
+            actor = _clean(event.get("actor"))
+            if actor:
+                labels.append(actor)
+    return labels
+
+
+def _actor_label_from_row(row: Any) -> str:
+    if isinstance(row, Mapping):
+        for key in ("label", "actor", "name", "role"):
+            label = _clean(row.get(key))
+            if label:
+                return label
+        return ""
+    text = _clean(row)
+    if ":" in text:
+        return text.split(":", 1)[0].strip()
+    return text
 
 
 def _has_mechanical_need_to_turn(value: Any) -> bool:

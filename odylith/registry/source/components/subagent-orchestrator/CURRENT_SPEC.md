@@ -7,7 +7,7 @@
   closeout state before delegation proceeds.
 - Route-ready outputs must remain host-general across Codex and Claude while
   preserving host capability differences in adapter fields only.
-Last updated: 2026-04-09
+Last updated: 2026-07-04
 
 
 Last updated (UTC): 2026-04-09
@@ -299,8 +299,8 @@ self-contained and inspectable without recomputing routing later.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-23 · Decision:** Successor created: B-276 reopens B-275 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/subagent-orchestrator/CURRENT_SPEC.md +2 more
+- **2026-03-23 · Decision:** Decision evidence linked this component to governed work with 4 tracked artifact references retained.
+  - Evidence: 4 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -5,6 +5,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
+    capitalize_sentence_start_preserving_source_terms,
+)
 from odylith.runtime.project_intelligence.utils import display_text, sentence, short
 
 
@@ -109,7 +112,7 @@ def _title_text(value: str) -> str:
     words = text.split()
     if len(words) > 8:
         text = " ".join(words[:8])
-    return text[:1].upper() + text[1:] if text else ""
+    return capitalize_sentence_start_preserving_source_terms(text)
 
 
 def _activity_body(*, activity_tail: str, title: str) -> str:
@@ -141,7 +144,11 @@ def _participant_body(*, title: str, body: str, context: str) -> str:
     ):
         candidate = _context_body(title=clean_title, context="")
     candidate = _remove_other_role_spillover(title=clean_title, body=candidate)
-    candidate = candidate[:1].upper() + candidate[1:] if candidate else _context_body(title=clean_title, context=context)
+    candidate = (
+        capitalize_sentence_start_preserving_source_terms(candidate)
+        if candidate
+        else _context_body(title=clean_title, context=context)
+    )
     return short(candidate, limit=210)
 
 

@@ -21,10 +21,11 @@ def greenfield_artifact_judgment_issues(package: Any) -> list[str]:
     """Return role-oriented quality failures for a rendered greenfield package."""
 
     issues: list[str] = []
+    source_owned_phrases = _source_owned_phrases(package)
     for identity, text in _artifact_texts(package):
         lowered = text.casefold()
         issues.extend(_product_manager_issues(identity, lowered))
-        issues.extend(_architect_issues(identity, lowered))
+        issues.extend(_architect_issues(identity, lowered, source_owned_phrases=source_owned_phrases))
         issues.extend(_engineer_issues(identity, lowered))
         issues.extend(_domain_reviewer_issues(identity, lowered))
     return unique_text(issues)
@@ -72,9 +73,9 @@ def _product_manager_issues(identity: str, lowered: str) -> list[str]:
     return issues
 
 
-def _architect_issues(identity: str, lowered: str) -> list[str]:
+def _architect_issues(identity: str, lowered: str, *, source_owned_phrases: set[str]) -> list[str]:
     issues: list[str] = []
-    if _has_contract_fragment_tuple(lowered):
+    if _has_contract_fragment_tuple(lowered, source_owned_phrases=source_owned_phrases):
         issues.append(f"{identity} contains component-contract noun slots built from clipped phrase fragments")
     if _abstract_contract_noun_run(lowered) >= 3:
         issues.append(f"{identity} contains adjacent abstract contract nouns without a governing relation")
@@ -96,12 +97,41 @@ def _domain_reviewer_issues(identity: str, lowered: str) -> list[str]:
     return []
 
 
-def _has_contract_fragment_tuple(lowered: str) -> bool:
-    if re.search(r"\bcovers?\s+(?!(?:a|an|one|that|the|their|this)\b)\w+\s+\w+\b", lowered):
-        return True
-    if re.search(r"\bgate\s+\w+\s+\w+\s+(?:result|status|state)\b", lowered):
-        return True
+def _has_contract_fragment_tuple(lowered: str, *, source_owned_phrases: set[str]) -> bool:
+    for match in re.finditer(r"\bcovers?\s+(?!(?:a|an|one|that|the|their|this)\b)\w+\s+\w+\b", lowered):
+        if not _source_owns_contract_fragment(match.group(0), source_owned_phrases):
+            return True
+    for match in re.finditer(r"\bgate\s+\w+\s+\w+\s+(?:result|status|state)\b", lowered):
+        if not _source_owns_contract_fragment(match.group(0), source_owned_phrases):
+            return True
     return False
+
+
+def _source_owns_contract_fragment(fragment: str, source_owned_phrases: set[str]) -> bool:
+    text = normalize_string(fragment).casefold()
+    return bool(text and any(text in phrase for phrase in source_owned_phrases))
+
+
+def _source_owned_phrases(package: Any) -> set[str]:
+    proposal = _mapping(getattr(package, "proposal", None))
+    values = text_values(
+        {
+            "title": proposal.get("title"),
+            "intent": proposal.get("intent"),
+            "project_brief": proposal.get("project_brief"),
+            "semantic_model": proposal.get("semantic_model"),
+            "components": [
+                {
+                    "label": row.get("label"),
+                    "name": row.get("name"),
+                    "description": row.get("description"),
+                }
+                for row in proposal.get("components", ())
+                if isinstance(row, Mapping)
+            ],
+        }
+    )
+    return {text for value in values if (text := normalize_string(value).casefold())}
 
 
 def _abstract_contract_noun_run(lowered: str) -> int:

@@ -7,6 +7,9 @@ import re
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
+    capitalize_sentence_start_preserving_source_terms,
+)
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_action_target_language
 from odylith.runtime.surfaces import atlas_diagram_intelligence
@@ -228,7 +231,7 @@ def clean_component_description(*, name: str, description: str) -> str:
     if re.match(r"^owns?\b", text, flags=re.IGNORECASE):
         text = "Owns " + re.sub(r"^owns?\s+", "", text, flags=re.IGNORECASE).strip()
     else:
-        text = text[:1].upper() + text[1:]
+        text = capitalize_sentence_start_preserving_source_terms(text)
     return _first_sentence(text)
 
 
@@ -565,6 +568,11 @@ def _component_grounded_sentence(
     description = component_descriptions[0] if component_descriptions else ""
     if description:
         responsibility = _responsibility_phrase(description, subject=subject)
+        if re.match(r"^is\b", responsibility, flags=re.IGNORECASE):
+            return (
+                f"{subject} {responsibility}. "
+                f"It matters because release proof must make this boundary traceable from accepted input to {_review_outcome_phrase(tracked_object)}."
+            )
         if _ACTION_START_RE.match(responsibility):
             return (
                 f"{subject} {responsibility}. "
@@ -683,7 +691,7 @@ def _join_list(values: Sequence[str]) -> str:
 def _sentence_subject(label: str) -> str:
     text = _clean_label(label).strip().rstrip(".")
     text = re.sub(r"\s*\([^)]*\)\s*$", "", text).strip()
-    return text[:1].upper() + text[1:] if text else "This step"
+    return capitalize_sentence_start_preserving_source_terms(text) if text else "This step"
 
 
 def _has_any(value: str, markers: Sequence[str]) -> bool:

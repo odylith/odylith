@@ -17,6 +17,7 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import best_component_node_for_text
 from odylith.runtime.domain_intelligence.greenfield_sequence_diagram import first_path_flowchart_mermaid
+from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import title_action_label
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import flow_label as wrapped_flow_label
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import header_body_label
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
@@ -376,7 +377,7 @@ def _first_action_label(
     for step in sequence_event_steps(first_path, semantic_model=semantic_model, dedupe=True):
         action = action_chain_fragment(step) or step
         if action:
-            return _diagram_label(action[:1].upper() + action[1:], limit=72, fallback="First path action")
+            return _diagram_label(title_action_label(action, fallback="First path action"), limit=72, fallback="First path action")
     return _diagram_label(fallback, limit=72, fallback="First path action")
 
 

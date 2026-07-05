@@ -6,6 +6,7 @@ from collections.abc import Sequence
 import re
 
 from odylith.runtime.domain_intelligence import greenfield_confirmed_backlog_text_model as backlog_text
+from odylith.runtime.domain_intelligence.greenfield_actor_roles import looks_like_actor_role_term
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import looks_like_visible_result
@@ -53,7 +54,7 @@ def workflow_title_action(*, first_path: str, actor: str, fallback: str) -> str:
         if action:
             return _action_with_preservation_constraint(action, first_path=first_path)
     if fallback:
-        action = backlog_text.capability_action_clause(_title_action_fragment(fallback))
+        action = backlog_text.capability_action_clause(_title_action_fragment(backlog_text.strip_actor_prefix(fallback, actor)))
         return _action_with_preservation_constraint(action, first_path=first_path)
     return ""
 
@@ -65,15 +66,20 @@ def actor_interaction_action(*, first_path: str, actor: str, fallback: str) -> s
 
 
 def actor_appears_in_path(first_path: str, actor: str) -> bool:
-    actor_terms = _actor_match_terms(actor)
-    if not actor_terms:
+    actor_label = backlog_text.actor_label(actor)
+    actor_terms = _actor_match_terms(actor_label)
+    actor_role_terms = _actor_role_match_terms(actor_label)
+    if not actor_terms and not _actor_token_tuple(actor_label):
         return False
     for step in first_path_steps(first_path):
-        signature_terms = _actor_match_terms(actor_signature(step))
-        if signature_terms and signature_terms & actor_terms:
+        signature = actor_signature(step)
+        if _actor_phrase_present(actor_label, signature) or _actor_phrase_present(actor_label, step):
+            return True
+        signature_terms = _actor_match_terms(signature)
+        if _actor_terms_match(actor_terms, actor_role_terms, signature_terms, candidate_is_signature=True):
             return True
         step_terms = _actor_match_terms(step)
-        if step_terms and step_terms & actor_terms:
+        if _actor_terms_match(actor_terms, actor_role_terms, step_terms, candidate_is_signature=False):
             return True
     return False
 
@@ -126,6 +132,23 @@ def workflow_result_sentence(
     return f"and lets {recipient_phrase(recipient)} {outcome_action}"
 
 
+def review_action_when_action_repeats_outcome(*, action: str, outcome: str) -> str:
+    if not backlog_text.result_terms_covered(outcome, action):
+        return ""
+    text = backlog_text.sentence_fragment(outcome)
+    result = re.sub(
+        r"^(?:(?:a|an|the)\s+)?(?:accepted|approved|confirmed|published|saved|selected)\s+",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    if not result or result.casefold() == text.casefold():
+        return ""
+    if not result.casefold().startswith(("a ", "an ", "the ")):
+        result = f"a {result}"
+    return f"review {result}"
+
+
 def actor_owned_outcome_event(
     *,
     outcome: str,
@@ -139,7 +162,11 @@ def actor_owned_outcome_event(
         actor = actor_signature(outcome)
         actor_action = action_chain_fragment(outcome)
     if not actor or not actor_action:
-        return ""
+        return _known_actor_outcome_event(
+            outcome=outcome,
+            outcome_action=outcome_action,
+            known_actors=known_actors or (),
+        )
     known_terms = _known_actor_match_terms(known_actors or ())
     if known_terms and not (_actor_match_terms(actor) & known_terms):
         return ""
@@ -148,8 +175,40 @@ def actor_owned_outcome_event(
         or backlog_text.result_terms_covered(outcome_action, actor_action)
         or backlog_text.sentence_fragment(actor_action) == backlog_text.sentence_fragment(outcome_action)
     ):
-        return ""
+        known_event = _known_actor_outcome_event(
+            outcome=outcome,
+            outcome_action=outcome_action,
+            known_actors=known_actors or (),
+        )
+        return known_event
     return backlog_text.sentence_fragment(outcome)
+
+
+def _known_actor_outcome_event(*, outcome: str, outcome_action: str, known_actors: Sequence[str]) -> str:
+    for row in known_actors:
+        label = backlog_text.actor_label(str(row))
+        if not label:
+            continue
+        _head, separator, body = str(row).partition(":")
+        action_source = body if separator else str(row)
+        action = _actor_row_action(action_source)
+        if not action:
+            continue
+        if (
+            backlog_text.result_terms_covered(action, outcome)
+            or backlog_text.result_terms_covered(outcome, action)
+            or backlog_text.result_terms_covered(action, outcome_action)
+            or backlog_text.result_terms_covered(outcome_action, action)
+        ):
+            return backlog_text.sentence_fragment(f"{label} {action}")
+    return ""
+
+
+def _actor_row_action(value: str) -> str:
+    text = backlog_text.sentence_fragment(value)
+    text = re.sub(r"^(?:needs?|need)\s+(?:the\s+product\s+)?to\s+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+and\s+keep\s+the\s+result\b.*$", "", text, flags=re.IGNORECASE).strip(" .")
+    return backlog_text.capability_action_clause(text) or action_chain_fragment(text)
 
 
 def _known_actor_match_terms(values: Sequence[str]) -> set[str]:
@@ -409,16 +468,28 @@ def _skip_title_setup_fragment(value: str) -> bool:
 
 
 def _actor_owned_action_fragments(*, first_path: str, actor: str, include_visible: bool, max_fragments: int) -> list[str]:
-    actor_terms = _actor_match_terms(actor)
+    actor_label = backlog_text.actor_label(actor)
+    actor_terms = _actor_match_terms(actor_label)
+    actor_role_terms = _actor_role_match_terms(actor_label)
     selected: list[str] = []
     selected_keys: set[str] = set()
     visible_seen = False
     for step in first_path_steps(first_path):
-        signature_terms = _actor_match_terms(actor_signature(step))
         if actor_terms:
-            step_terms = _actor_match_terms(step)
-            matched_actor = bool((signature_terms | step_terms) & actor_terms)
-            if not matched_actor:
+            signature = actor_signature(step)
+            matched_signature = _actor_phrase_present(actor_label, signature) or _actor_terms_match(
+                actor_terms,
+                actor_role_terms,
+                _actor_match_terms(signature),
+                candidate_is_signature=True,
+            )
+            matched_step = _actor_phrase_present(actor_label, step) or _actor_terms_match(
+                actor_terms,
+                actor_role_terms,
+                _actor_match_terms(step),
+                candidate_is_signature=False,
+            )
+            if not (matched_signature or matched_step):
                 if selected and visible_seen:
                     break
                 continue
@@ -450,6 +521,41 @@ def _actor_match_terms(value: str) -> set[str]:
         if singular:
             terms.add(singular)
     return terms - {"actor", "later", "primary", "reviewer", "user"}
+
+
+def _actor_role_match_terms(value: str) -> set[str]:
+    return {token for token in _actor_token_tuple(value) if looks_like_actor_role_term(token)}
+
+
+def _actor_token_tuple(value: str) -> tuple[str, ...]:
+    return tuple(word.casefold() for word in re.findall(r"[A-Za-z][A-Za-z0-9'-]{2,}", str(value or "")))
+
+
+def _actor_phrase_present(actor: str, candidate: str) -> bool:
+    actor_tokens = _actor_token_tuple(actor)
+    candidate_tokens = _actor_token_tuple(candidate)
+    if not actor_tokens or len(actor_tokens) > len(candidate_tokens):
+        return False
+    width = len(actor_tokens)
+    return any(tuple(candidate_tokens[index : index + width]) == actor_tokens for index in range(0, len(candidate_tokens) - width + 1))
+
+
+def _actor_terms_match(
+    actor_terms: set[str],
+    actor_role_terms: set[str],
+    candidate_terms: set[str],
+    *,
+    candidate_is_signature: bool,
+) -> bool:
+    if not actor_terms or not candidate_terms:
+        return False
+    overlap = actor_terms & candidate_terms
+    if not overlap:
+        return False
+    if actor_role_terms:
+        return bool(actor_role_terms & candidate_terms)
+    required_overlap = 1 if candidate_is_signature and len(actor_terms) == 1 else 2
+    return len(overlap) >= min(required_overlap, len(actor_terms))
 
 
 def _singular_actor_match_term(value: str) -> str:

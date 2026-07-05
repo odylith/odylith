@@ -83,19 +83,49 @@ def _mixed_case_drift_issues(proposal: Mapping[str, Any], text: str) -> list[str
 
 
 def _source_mixed_case_tokens(proposal: Mapping[str, Any]) -> set[str]:
-    source = " ".join(
+    source = _source_casing_authority_text(proposal)
+    return {
+        token
+        for token in re.findall(r"\b[A-Z][A-Za-z0-9_/-]*[A-Z][A-Za-z0-9_/-]*\b", source)
+        if len(token) >= 3 and not _source_contains_lower_first_variant(source, token)
+    }
+
+
+def _source_contains_lower_first_variant(source: str, token: str) -> bool:
+    lowered_first = f"{token[:1].lower()}{token[1:]}"
+    return lowered_first != token and bool(re.search(rf"\b{re.escape(lowered_first)}\b", source))
+
+
+def _source_casing_authority_text(proposal: Mapping[str, Any]) -> str:
+    accepted_source = " ".join(
+        text_values(
+            {
+                "intent": proposal.get("intent"),
+                "confirmed_intent": proposal.get("confirmed_intent"),
+            }
+        )
+    )
+    if _has_source_casing_token(accepted_source):
+        return accepted_source
+    return " ".join(
         text_values(
             {
                 "intent": proposal.get("intent"),
                 "semantic_model": proposal.get("semantic_model"),
+                "confirmed_intent": proposal.get("confirmed_intent"),
             }
         )
     )
-    return {
-        token
-        for token in re.findall(r"\b[A-Z][A-Za-z0-9_/-]*[A-Z][A-Za-z0-9_/-]*\b", source)
-        if len(token) >= 3
-    }
+
+
+def _has_source_casing_token(value: str) -> bool:
+    return bool(
+        re.search(
+            r"\b[A-Z]{2,}(?:[/-][A-Za-z0-9]+)*\b|"
+            r"\b[A-Za-z][A-Za-z0-9_/-]*[A-Z][A-Za-z0-9_/-]*\b",
+            value,
+        )
+    )
 
 
 def _state_object_predicate_issues(proposal: Mapping[str, Any], text: str) -> list[str]:

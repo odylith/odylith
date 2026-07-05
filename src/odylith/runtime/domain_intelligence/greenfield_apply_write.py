@@ -75,6 +75,7 @@ def write_greenfield_proposal(
             backlog_result = restored_backlog_result
         if prewrite_package is not None:
             prewrite_package = greenfield_source_casing.package_with_source_casing(prewrite_package)
+    validation_gate = _source_cased_validation_gate(tribunal, source_text=source_text)
     release_bootstrap = None
     release_targeting = None
     rendered_atlas_sources = dict(prewrite_package.rendered_atlas_sources or {}) if prewrite_package else {}
@@ -248,7 +249,7 @@ def write_greenfield_proposal(
         diagram_ids=diagrams_created,
         release_selector=release_selector,
         release_id=release_id,
-        validation_gate=tribunal.to_dict(),
+        validation_gate=validation_gate,
         source_launch_context=next_steps,
     )
     _raise_for_final_package_quality(
@@ -265,6 +266,7 @@ def write_greenfield_proposal(
         diagram_rows=diagram_rows,
         memory_record=memory_record,
         next_steps=next_steps,
+        validation_gate=validation_gate,
         completion_priority_write_policy=completion_priority_write_policy,
         completion_quality_debt=completion_quality_debt,
     )
@@ -292,7 +294,7 @@ def write_greenfield_proposal(
 
     return {
         "mode": "applied",
-        "validation_gate": tribunal.to_dict(),
+        "validation_gate": validation_gate,
         "backlog": backlog_result["created"],
         "components": components_created,
         "diagrams": diagrams_created,
@@ -309,7 +311,22 @@ def write_greenfield_proposal(
     }
 
 
-_GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "casebook", "tooling_shell")
+_GREENFIELD_VISIBLE_SURFACES = ("radar", "registry", "atlas", "compass", "tooling_shell")
+
+
+def _source_cased_validation_gate(tribunal: Any, *, source_text: str) -> dict[str, Any]:
+    """Return the validation gate using the same visible source-casing custody as durable memory."""
+
+    gate = tribunal.to_dict() if hasattr(tribunal, "to_dict") else {}
+    if not isinstance(gate, Mapping):
+        return {}
+    if not source_text:
+        return dict(gate)
+    restored = greenfield_source_casing.restore_source_casing_in_public_copy(
+        gate,
+        source_text=source_text,
+    )
+    return dict(restored) if isinstance(restored, Mapping) else dict(gate)
 
 
 def _refresh_greenfield_dashboard(*, repo_root: Path) -> dict[str, Any]:
@@ -419,6 +436,7 @@ def _raise_for_final_package_quality(
     diagram_rows: Sequence[Mapping[str, Any]],
     memory_record: Mapping[str, Any],
     next_steps: Mapping[str, Any],
+    validation_gate: Mapping[str, Any] | None = None,
     completion_priority_write_policy: Mapping[str, Any] | None = None,
     completion_quality_debt: list[str] | None = None,
 ) -> None:
@@ -435,7 +453,7 @@ def _raise_for_final_package_quality(
         component_registry_preview=tuple(dict(row) for row in component_rows),
         project_brief_preview=proposal.get("project_brief") if isinstance(proposal.get("project_brief"), Mapping) else {},
         project_brief_record_text=_read_text(root / "odylith/runtime/source/project-brief.v1.md"),
-        tribunal_preview=tribunal.to_dict(),
+        tribunal_preview=dict(validation_gate or tribunal.to_dict()),
         accepted_project_preview=accepted_project_preview,
         project_dashboard_preview=project_dashboard_preview,
         compass_memory_preview=memory_record.get("event") if isinstance(memory_record.get("event"), Mapping) else {},

@@ -6,11 +6,15 @@ from dataclasses import dataclass
 
 from odylith.runtime.common.prose_grammar import base_action_clause
 from odylith.runtime.common.prose_grammar import looks_like_action_clause
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_trailing_requirement_control_steps
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 
 
+_REQUEST_TITLE_MAX_WORDS = 10
 _REQUEST_COMMAND_WORDS = frozenset(
     {
         "build",
@@ -42,6 +46,7 @@ _REQUEST_PRODUCT_WORDS = frozenset(
         "manager",
         "monitor",
         "notebook",
+        "plan",
         "platform",
         "planner",
         "portal",
@@ -65,7 +70,48 @@ _REQUEST_PRODUCT_WORDS = frozenset(
 _REQUEST_HELPER_WORDS = frozenset({"allow", "allows", "enable", "enables", "help", "helps", "let", "lets"})
 _REQUEST_ACTOR_PURPOSE_TOKENS = frozenset({"people", "person", "rep", "reps", "staff", "team", "teams", "user", "users"})
 _REQUEST_ACTOR_ROLE_SUFFIXES = ("ant", "ants", "ent", "ents", "er", "ers", "ian", "ians", "ist", "ists", "or", "ors", "owner", "owners")
+_NON_HUMAN_SUBJECT_TERMS = frozenset(
+    {
+        "approval",
+        "case",
+        "claim",
+        "decision",
+        "evidence",
+        "finding",
+        "handoff",
+        "note",
+        "notes",
+        "proof",
+        "recommendation",
+        "record",
+        "report",
+        "result",
+        "review",
+        "state",
+        "status",
+        "summary",
+        "view",
+        "workflow",
+    }
+)
 _REQUEST_LEAD_CONNECTORS = ("where", "that", "who", "so", "for", "to")
+_PATH_GRANT_PATH_MODIFIERS = frozenset(
+    {
+        "a",
+        "an",
+        "the",
+        "clear",
+        "complete",
+        "end-to-end",
+        "first",
+        "full",
+        "governed",
+        "guided",
+        "one",
+        "review-ready",
+        "single",
+    }
+)
 _DIRECT_TITLE_BOUNDARY_CONNECTORS = frozenset({"where", "that", "who", "so"})
 _ORIGINAL_INTENT_BOUNDARY_HEADINGS = frozenset(
     {
@@ -121,18 +167,27 @@ def prompt_intent_source(value: str) -> PromptIntentSource:
     text = clean_markdown_text(_operator_original_intent_block(value) or value).strip(" .")
     words = _request_words(text)
     start, command_led = _request_content_start(words)
-    actor, actor_led_first_path = _actor_led_relative_clause(value)
+    grant_actor, grant_first_path = _path_grant_actor_action(text)
+    workflow_actor, workflow_first_path = _workflow_where_actor_action(text)
+    actor, actor_led_first_path = _actor_led_relative_clause(text)
+    first_path_source = grant_first_path or workflow_first_path or actor_led_first_path or _first_path_source_from_text(text)
     return PromptIntentSource(
         title=_project_title_source_from_words(words, start=start, command_led=command_led),
-        first_path=actor_led_first_path or _first_path_source_from_text(text),
+        first_path=_strip_release_proof_tail(first_path_source),
         command_led=command_led,
-        actor=actor,
+        actor=grant_actor or workflow_actor or actor,
     )
 
 
 def _first_path_source_from_text(value: str) -> str:
     raw_text = clean_markdown_text(value).strip(" .")
     text = _strip_operator_request_wrapper(raw_text)
+    grant_actor, grant_first_path = _path_grant_actor_action(raw_text)
+    if grant_actor and word_count(grant_first_path) >= 8 and _looks_like_recoverable_first_path(grant_first_path):
+        return _strip_release_proof_tail(grant_first_path)
+    workflow_actor, workflow_first_path = _workflow_where_actor_action(raw_text)
+    if workflow_actor and word_count(workflow_first_path) >= 8 and _looks_like_recoverable_first_path(workflow_first_path):
+        return _strip_release_proof_tail(workflow_first_path)
     actor_led_candidate = _actor_led_relative_clause_source(raw_text)
     if word_count(actor_led_candidate) >= 8 and _looks_like_recoverable_first_path(actor_led_candidate):
         return _strip_release_proof_tail(actor_led_candidate)
@@ -180,19 +235,33 @@ def _project_title_source_from_words(words: list[str], *, start: int, command_le
             tail = " ".join(words[index + 1 :]).strip(" .")
             if not _looks_like_recoverable_first_path(tail):
                 continue
-        lead = words[start:index]
+        lead = _lead_before_sentence_boundary(words[start:index]) or words[start:index]
         if _looks_like_product_title_phrase(lead):
             return " ".join(lead).strip(" .")
         tail = " ".join(words[index + 1 :]).strip(" .")
+        if command_led and _looks_like_explicit_title_before_workflow_context(lead, tail=tail):
+            return " ".join(lead).strip(" .")
         if command_led and _looks_like_target_focus_phrase(lead, tail=tail):
             return " ".join(lead).strip(" .")
-    sentence_title = _project_title_before_sentence_boundary(words, start=start)
+    sentence_title = _project_title_before_sentence_boundary(words, start=start, command_led=command_led)
     if sentence_title:
         return sentence_title
     lead = words[start:]
     if _looks_like_product_title_phrase(lead):
         return " ".join(lead).strip(" .")
     return ""
+
+
+def _lead_before_sentence_boundary(words: list[str]) -> list[str]:
+    lead: list[str] = []
+    for word in words:
+        cleaned = str(word or "").strip()
+        if not cleaned:
+            continue
+        lead.append(cleaned.strip(".,:;"))
+        if cleaned.endswith((".", "!", "?")):
+            break
+    return lead if lead and len(lead) < len(words) else []
 
 
 def _operator_original_intent_block(value: str) -> str:
@@ -222,9 +291,11 @@ def _heading_key(value: str) -> str:
     return text.rstrip(":").strip().casefold()
 
 
-def _project_title_before_sentence_boundary(words: list[str], *, start: int) -> str:
+def _project_title_before_sentence_boundary(words: list[str], *, start: int, command_led: bool = False) -> str:
     lead: list[str] = []
-    for raw in words[start:]:
+    tail_start = start
+    for offset, raw in enumerate(words[start:], start=start):
+        tail_start = offset + 1
         token = raw.strip()
         cleaned = token.strip(".,:;")
         if cleaned.casefold() in _REQUEST_LEAD_CONNECTORS:
@@ -234,6 +305,13 @@ def _project_title_before_sentence_boundary(words: list[str], *, start: int) -> 
         if token.endswith((".", "!", "?")):
             break
     if _looks_like_product_title_phrase(lead):
+        return " ".join(lead).strip(" .")
+    if command_led and _looks_like_explicit_title_before_workflow_context(
+        lead,
+        tail=" ".join(words[tail_start:]).strip(" ."),
+    ):
+        return " ".join(lead).strip(" .")
+    if command_led and _looks_like_target_focus_phrase(lead, tail=" ".join(words[tail_start:]).strip(" .")):
         return " ".join(lead).strip(" .")
     return ""
 
@@ -282,6 +360,74 @@ def _actor_led_relative_clause_source(value: str) -> str:
     return first_path
 
 
+def _workflow_where_actor_action(value: str) -> tuple[str, str]:
+    words = _request_words(value)
+    lowered = [_word_key(word) for word in words]
+    for marker_index, token in enumerate(lowered[:-3]):
+        if token != "where":
+            continue
+        tail_words = words[marker_index + 1 :]
+        for action_index in range(min(len(tail_words), 5), 0, -1):
+            actor_words = tail_words[:action_index]
+            action_words = tail_words[action_index:]
+            actor_words, action_words = _trim_actor_action_split(actor_words, action_words)
+            if not action_words or not _looks_like_actor_split_left(actor_words, allow_bounded_workflow_phrase=True):
+                continue
+            action_source = _smooth_request_first_path_clause(" ".join(action_words))
+            if not _looks_like_direct_transformation_workflow_action(action_source):
+                continue
+            if not looks_like_action_clause(action_source):
+                continue
+            action = base_action_clause(action_source, force_leading_finite=True).strip(" .") or action_source
+            if action and _looks_like_recoverable_first_path(action):
+                actor = _strip_leading_actor_article(" ".join(actor_words))
+                return actor, f"{actor} {action}".strip(" .")
+    return "", ""
+
+
+def _path_grant_actor_action(value: str) -> tuple[str, str]:
+    words = _request_words(value)
+    lowered = [_word_key(word) for word in words]
+    for grant_index, token in enumerate(lowered[:-4]):
+        if token not in {"give", "gives", "grant", "grants", "provide", "provides"}:
+            continue
+        actor, action = _path_grant_tail_parts(words[grant_index + 1 :])
+        if actor and action:
+            return actor, f"{actor} {action}".strip(" .")
+    return "", ""
+
+
+def _path_grant_tail_parts(words: list[str]) -> tuple[str, str]:
+    lowered = [_word_key(word) for word in words]
+    for path_index, token in enumerate(lowered[:-1]):
+        if token != "path":
+            continue
+        actor_stop = _path_grant_actor_stop(words, path_index)
+        if actor_stop <= 0:
+            continue
+        actor_words = words[:actor_stop]
+        if not _looks_like_actor_purpose_left(actor_words):
+            continue
+        action_start = path_index + 1
+        if action_start < len(words) and _word_key(words[action_start]) == "to":
+            action_start += 1
+        action_words = words[action_start:]
+        if not action_words:
+            continue
+        action_source = _smooth_request_first_path_clause(" ".join(action_words))
+        action = base_action_clause(action_source, force_leading_finite=True).strip(" .") or action_source
+        if action and _looks_like_recoverable_first_path(action):
+            return _strip_leading_actor_article(" ".join(actor_words)), action
+    return "", ""
+
+
+def _path_grant_actor_stop(words: list[str], path_index: int) -> int:
+    stop = path_index
+    while stop > 0 and _word_key(words[stop - 1]) in _PATH_GRANT_PATH_MODIFIERS:
+        stop -= 1
+    return stop
+
+
 def _actor_led_relative_clause(value: str) -> tuple[str, str]:
     words = _request_words(value)
     lowered = [word.casefold().strip(".,:;") for word in words]
@@ -291,13 +437,17 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
         for connector_index in range(for_index + 2, len(words) - 1):
             if lowered[connector_index] not in {"that", "who"}:
                 continue
-            actor_words = words[for_index + 1 : connector_index]
-            tail_words = words[connector_index + 1 :]
-            if not actor_words or not tail_words or not _looks_like_actor_purpose_left(actor_words):
-                continue
-            embedded_actor, embedded_action = _helper_relative_actor_action(tail_words)
+            raw_tail_words = words[connector_index + 1 :]
+            embedded_actor, embedded_action = _helper_relative_actor_action(raw_tail_words)
             if embedded_actor and embedded_action:
                 return embedded_actor, f"{embedded_actor} {embedded_action}".strip(" .")
+            actor_words = _actor_role_suffix(words[for_index + 1 : connector_index])
+            actor_words, moved_action_words = _trim_actor_action_split(actor_words, [])
+            tail_words = raw_tail_words
+            if moved_action_words:
+                tail_words = [*moved_action_words, *tail_words]
+            if not actor_words or not tail_words or not _looks_like_actor_purpose_left(actor_words):
+                continue
             use_actor, use_action = _use_to_actor_action(tail_words)
             if use_actor and use_action:
                 return use_actor, f"{use_actor} {use_action}".strip(" .")
@@ -309,6 +459,35 @@ def _actor_led_relative_clause(value: str) -> tuple[str, str]:
                     return actor, f"{actor} {connector} {action}".strip(" .")
                 return actor, f"{actor} {action}".strip(" .")
     return "", ""
+
+
+def _actor_role_suffix(words: list[str]) -> list[str]:
+    """Prefer the role-bearing suffix when a product title wraps a for-who clause."""
+
+    for index, word in enumerate(words[:-1]):
+        if _word_key(word) != "for":
+            continue
+        suffix = words[index + 1 :]
+        if suffix and _looks_like_actor_purpose_left(suffix):
+            return suffix
+    return words
+
+
+def _trim_actor_action_split(actor_words: list[str], action_words: list[str]) -> tuple[list[str], list[str]]:
+    words = list(actor_words)
+    tokens = [_word_key(word) for word in words]
+    for index, token in enumerate(tokens[1:], start=1):
+        if token in {"who", "that", "where"}:
+            break
+        if not (
+            _looks_like_actor_purpose_left(words[:index])
+            or _looks_like_bounded_workflow_actor_phrase(words[:index])
+        ):
+            continue
+        action_tail = " ".join(words[index:]).strip(" .")
+        if looks_like_action_clause(action_tail):
+            return words[:index], [*words[index:], *action_words]
+    return actor_words, action_words
 
 
 def _use_to_actor_action(words: list[str]) -> tuple[str, str]:
@@ -335,18 +514,73 @@ def _looks_like_use_to_actor_left(words: list[str]) -> bool:
     return len(last) > 3 and last.endswith("s") and last not in _REQUEST_PRODUCT_WORDS
 
 
+def _looks_like_actor_split_left(words: list[str], *, allow_bounded_workflow_phrase: bool = False) -> bool:
+    if _looks_like_non_human_subject(words):
+        return False
+    if not _looks_like_actor_purpose_left(words) and not (
+        allow_bounded_workflow_phrase and _looks_like_bounded_workflow_actor_phrase(words)
+    ):
+        return False
+    tokens = [_word_key(word) for word in words if _word_key(word)]
+    if any(any(mark in str(word) for mark in (",", ";", ":")) for word in words):
+        return False
+    if any(token in {"and", "or", "then"} for token in tokens):
+        return False
+    return not looks_like_action_clause(" ".join(words))
+
+
+def _looks_like_non_human_subject(words: list[str]) -> bool:
+    content = [_word_key(word) for word in words if _word_key(word)]
+    if not content:
+        return False
+    if _looks_like_actor_purpose_left(words):
+        return False
+    return bool(set(content) & _NON_HUMAN_SUBJECT_TERMS)
+
+
+def _looks_like_bounded_workflow_actor_phrase(words: list[str]) -> bool:
+    content = [_word_key(word) for word in words if _word_key(word)]
+    while content and content[0] in {"a", "an", "the", "one"}:
+        content = content[1:]
+    if not 2 <= len(content) <= 4:
+        return False
+    if any(token in {"and", "or", "then"} for token in content):
+        return False
+    if any(token in _REQUEST_COMMAND_WORDS for token in content):
+        return False
+    if set(content) <= _REQUEST_PRODUCT_WORDS:
+        return False
+    if looks_like_action_clause(" ".join(content)):
+        return False
+    return any(token not in {"case", "context", "record", "request", "review", "workflow"} for token in content)
+
+
+def _looks_like_direct_transformation_workflow_action(value: str) -> bool:
+    words = _request_words(value)
+    if not words:
+        return False
+    action = _word_key(words[0])
+    if action in {"capture", "captures", "record", "records", "register", "registers"}:
+        return len(first_path_model(value).steps) == 1
+    return action in {"convert", "converts", "transform", "transforms", "translate", "translates", "turn", "turns"} and (
+        " into " in f" {clean_markdown_text(value).casefold()} "
+    )
+
+
 def _helper_relative_actor_action(words: list[str]) -> tuple[str, str]:
     if len(words) < 3 or _word_key(words[0]) not in _REQUEST_HELPER_WORDS:
         return "", ""
     tail_words = words[1:]
     if tail_words and _word_key(tail_words[0]) == "to":
         tail_words = tail_words[1:]
-    for split_index in range(1, min(len(tail_words), 7)):
+    for split_index in range(min(len(tail_words), 5), 0, -1):
         actor_words = tail_words[:split_index]
         action_words = tail_words[split_index:]
-        if not action_words or not _looks_like_actor_purpose_left(actor_words):
+        if not action_words or not _looks_like_actor_split_left(actor_words, allow_bounded_workflow_phrase=True):
             continue
         action_source = _smooth_request_first_path_clause(" ".join(action_words))
+        if not looks_like_action_clause(action_source):
+            continue
         action = base_action_clause(action_source, force_leading_finite=True)
         if action:
             return _strip_leading_actor_article(" ".join(actor_words)), action
@@ -450,7 +684,7 @@ def _strip_leading_helper_word(value: str) -> str:
 
 
 def _smooth_request_first_path_clause(value: str) -> str:
-    words = _request_words(value)
+    words = _request_words(strip_trailing_requirement_control_steps(value))
     if not words:
         return ""
     while words and words[0].casefold() == "to":
@@ -507,6 +741,8 @@ def _looks_like_actor_purpose_left(words: list[str]) -> bool:
     return (
         last in _REQUEST_ACTOR_PURPOSE_TOKENS
         or singular in _REQUEST_ACTOR_PURPOSE_TOKENS
+        or word_has_actor_role_signal(last)
+        or word_has_actor_role_signal(singular)
         or any(last.endswith(suffix) or singular.endswith(suffix) for suffix in _REQUEST_ACTOR_ROLE_SUFFIXES)
     )
 
@@ -523,7 +759,7 @@ def _actor_purpose_tail(words: list[str]) -> list[str]:
 def _strip_release_proof_tail(value: str) -> str:
     words = _request_words(value)
     if len(words) < 5:
-        return clean_markdown_text(value).strip(" .")
+        return strip_requirement_control_tail(strip_trailing_requirement_control_steps(clean_markdown_text(value).strip(" .")))
     lowered = [_word_key(word) for word in words]
     for index, word in enumerate(lowered[:-2]):
         if word not in {"before", "until", "when"}:
@@ -534,8 +770,8 @@ def _strip_release_proof_tail(value: str) -> str:
         if action_index < len(words) and _looks_like_release_selector(words[action_index]):
             action_index += 1
         if _release_proof_tail_starts(lowered[action_index:]):
-            return " ".join(words[:index]).strip(" ,.;:")
-    return clean_markdown_text(value).strip(" .")
+            return strip_requirement_control_tail(strip_trailing_requirement_control_steps(" ".join(words[:index]).strip(" ,.;:")))
+    return strip_requirement_control_tail(strip_trailing_requirement_control_steps(clean_markdown_text(value).strip(" .")))
 
 
 def _release_proof_tail_starts(words: list[str]) -> bool:
@@ -564,7 +800,7 @@ def _request_words(value: str) -> list[str]:
 
 
 def _looks_like_product_title_phrase(words: list[str]) -> bool:
-    if not words or len(words) > 7:
+    if not words or len(words) > _REQUEST_TITLE_MAX_WORDS:
         return False
     lowered = [word.casefold().strip(".,:;") for word in words]
     if set(lowered) <= {"new", "simple", "small", "greenfield"} | _REQUEST_PRODUCT_WORDS:
@@ -573,7 +809,7 @@ def _looks_like_product_title_phrase(words: list[str]) -> bool:
 
 
 def _looks_like_target_focus_phrase(words: list[str], *, tail: str) -> bool:
-    if len(words) < 2 or len(words) > 7:
+    if len(words) < 2 or len(words) > _REQUEST_TITLE_MAX_WORDS:
         return False
     lowered = [word.casefold().strip(".,:;") for word in words]
     if set(lowered) <= {"new", "simple", "small", "greenfield"}:
@@ -585,7 +821,33 @@ def _looks_like_target_focus_phrase(words: list[str], *, tail: str) -> bool:
     text = " ".join(words).strip(" .")
     if looks_like_action_clause(text):
         return False
-    return _looks_like_recoverable_first_path(tail)
+    return _has_recoverable_first_path_context(tail)
+
+
+def _looks_like_explicit_title_before_workflow_context(words: list[str], *, tail: str) -> bool:
+    if len(words) < 2 or len(words) > _REQUEST_TITLE_MAX_WORDS:
+        return False
+    lowered = [word.casefold().strip(".,:;") for word in words]
+    if set(lowered) <= {"new", "simple", "small", "greenfield"} | _REQUEST_PRODUCT_WORDS:
+        return False
+    if set(lowered) & set(_REQUEST_LEAD_CONNECTORS):
+        return False
+    return _has_recoverable_first_path_context(tail)
+
+
+def _has_recoverable_first_path_context(value: str) -> bool:
+    text = clean_markdown_text(value).strip(" .")
+    if not text:
+        return False
+    if _looks_like_recoverable_first_path(text):
+        return True
+    source = _first_path_source_from_text(text)
+    return bool(
+        source
+        and source.casefold() != text.casefold()
+        and word_count(source) >= 8
+        and _looks_like_recoverable_first_path(source)
+    )
 
 
 def _looks_like_recoverable_first_path(value: str) -> bool:

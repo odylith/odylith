@@ -141,6 +141,64 @@ inside prose is still extracted while the surrounding multiline sentence is
 not. Source-local Casebook refresh then passed with 213 cases and 119 open
 cases.
 
+2026-07-02 pinned-dogfood recurrence during the high-volume greenfield
+checkpoint: `./.odylith/bin/odylith sync --repo-root . --force` was still
+running the pinned 0.1.15 runtime and failed while rendering Casebook because a
+prose paragraph was treated as a path and `pathlib.exists()` raised
+`OSError: [Errno 63] File name too long`. The same refresh immediately passed
+through the current source runtime with
+`PYTHONPATH=src .venv/bin/python -m odylith.cli sync --repo-root . --force`,
+including Casebook render, 46 fresh Atlas diagrams, Registry render, Compass
+refresh, and top-level shell render. This confirms the fix is present in
+current source but not yet shipped in the active pinned dogfood runtime. Future
+agents should use source-local refresh for this unreleased checkpoint, then
+prove the packaged runtime after building the next dist; they should not
+reopen the greenfield post-confirm root cause for this governance refresh
+failure.
+
+2026-07-03 repeat during the high-volume shard-08 checkpoint: the pinned
+repo-local launcher again failed `casebook refresh` with
+`OSError: [Errno 63] File name too long` while linking a prose-sized Casebook
+token. This repeated the known unreleased pinned-runtime gap, not the
+greenfield post-confirm defect. Keep using source-local governance refresh for
+the active branch until the next local release dist packages the path-token
+guard, then prove the packaged runtime with Casebook refresh as part of the
+installable volume pass.
+
+2026-07-03 repeat during Greenfield campaign-harness governance update: pinned
+`./.odylith/bin/odylith casebook refresh --repo-root .` failed while rendering
+CB-202 because the pinned context-engine snapshot still exposed a prose-sized
+Casebook path token beginning `into the canonical title...`. Source validation
+passed first (`213` records checked), and the same Casebook surface refreshed
+cleanly through the current source runtime with
+`PYTHONPATH=src .venv/bin/python -m odylith.cli casebook refresh --repo-root .`
+(`213` total cases, `120` open). This is the same known shipped-runtime gap:
+do not repeat the fix, do not mutate CB-202 to hide parser behavior, and prove
+the packaged runtime after the next local dist is built.
+
+2026-07-04 repeat during rendered-projection governance update: pinned
+`./.odylith/bin/odylith casebook refresh --repo-root .` failed on the same
+prose-sized Casebook path token while source-local refresh passed with `213`
+total cases and `120` open. This remains a pinned-runtime packaging gap, not a
+new Casebook source-data defect and not a greenfield post-confirm regression.
+
+2026-07-04 repeat during semantic-ownership governance update: pinned Casebook
+refresh again failed with File name too long while linking prose-sized CB-202
+tokens. This repeated the known unreleased pinned-runtime gap. Do not massage
+CB-202 source prose to satisfy the pinned renderer; use the source-local runtime
+for governance refresh on this branch and prove the packaged path-token guard in
+the next local dist.
+
+2026-07-05 repeat during Greenfield source-title boundary governance update:
+pinned `./.odylith/bin/odylith casebook refresh --repo-root .` again failed on
+the same prose-sized CB-202 path token after Casebook source validation passed.
+The source-local refresh immediately passed with `213` total cases and `120`
+open cases in `1.5s`, confirming this is still the known pinned-runtime
+packaging gap rather than a new Casebook source defect or a Greenfield
+post-confirm regression. Do not repeat source fixes that are already present in
+`src/odylith/runtime/surfaces/surface_path_helpers.py`; package and prove the
+guard in the next local release dist.
+
 - Version/Build: `v0.1.7` live benchmark harness hardening wave on 2026-04-02.
 
 - Config/Flags: `odylith benchmark --repo-root . --profile proof`

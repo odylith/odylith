@@ -59,17 +59,39 @@ _DANGLING_ACTOR_LABEL_TAILS = frozenset(
 _NON_ACTOR_SUBJECT_TAILS = frozenset(
     {"decision", "entry", "evidence", "note", "packet", "ready", "record", "report", "result", "summary", "view"}
 )
+_DERIVED_CONTEXT_ACTOR_MODIFIERS = frozenset(
+    {
+        "board",
+        "console",
+        "readiness",
+        "record",
+        "records",
+        "state",
+        "status",
+        "system",
+        "view",
+        "workspace",
+    }
+)
+_MODAL_ACTION_BOUNDARY_TAILS = frozenset({"can", "could", "may", "might", "must", "shall", "should", "will", "would"})
 
 
 def completed_actor_rows(intent: Mapping[str, Any], *, title: str) -> list[str]:
     rows = [row for row in confirmed_text_values(intent.get("human_actors")) if not _actor_row_is_meta(row)]
     labels = [_actor_label(row, title=title) for row in rows]
     labels = [label for label in labels if label and not _actor_label_has_clause_lead(label)]
-    derived_labels = _derived_actor_labels(intent, title=title, allow_generic_fallback=not labels)
+    should_derive = _should_derive_missing_actor_labels(rows)
+    if should_derive and len(rows) == 1 and _single_actor_covers_first_path(rows[0], intent):
+        should_derive = False
+    derived_labels = (
+        _derived_actor_labels(intent, title=title, allow_generic_fallback=not labels)
+        if should_derive
+        else []
+    )
     for label in derived_labels:
         if label and not _actor_label_duplicates_existing(label, labels):
             labels.append(label)
-    labels = list(unique_text(labels))[:8]
+    labels = _dedupe_actor_labels(labels)[:8]
 
     first_path = _clean(intent.get("first_path")) or "the accepted first path"
     state = _short(_clean(intent.get("state_object")), fallback="the accepted state")
@@ -97,6 +119,42 @@ def actor_labels(intent: Mapping[str, Any]) -> list[str]:
     return [label for label in labels if label]
 
 
+def _should_derive_missing_actor_labels(rows: Sequence[str]) -> bool:
+    if not rows:
+        return True
+    if len(rows) < 2:
+        return True
+    return any(not _actor_row_has_usable_description(row) or _actor_row_description_is_generated(row) for row in rows)
+
+
+def _single_actor_covers_first_path(row: str, intent: Mapping[str, Any]) -> bool:
+    label = _actor_label(row, title="")
+    if not label or not _actor_row_has_usable_description(row):
+        return False
+    first_path = _clean(intent.get("first_path"))
+    subject = leading_subject_prefix(first_path) or _modal_subject_prefix(first_path)
+    return bool(subject and subject.casefold() == label.casefold())
+
+
+def _modal_subject_prefix(value: str) -> str:
+    words = [word.strip(".,:;!?()[]{}") for word in _clean(value).split() if word.strip(".,:;!?()[]{}")]
+    for index, word in enumerate(words[1:], start=1):
+        if word.casefold() not in _MODAL_ACTION_BOUNDARY_TAILS:
+            continue
+        subject_words = words[:index]
+        if 1 <= len(subject_words) <= 5:
+            return " ".join(subject_words)
+    return ""
+
+
+def _actor_row_description_is_generated(row: str) -> bool:
+    description = actor_row_description(row).casefold()
+    return bool(
+        ("need the product to" in description or "needs the product to" in description)
+        and "keep the result visible and reviewable" in description
+    )
+
+
 def _actor_label_duplicates_existing(label: str, existing_labels: Sequence[str]) -> bool:
     candidate = _clean(label).casefold()
     if not candidate:
@@ -105,7 +163,48 @@ def _actor_label_duplicates_existing(label: str, existing_labels: Sequence[str])
         current = _clean(existing).casefold()
         if candidate == current or candidate.endswith(f" {current}"):
             return True
+        if current.endswith(f" {candidate}") or current.startswith(f"{candidate} "):
+            return True
+        if _actor_label_is_context_expanded_duplicate(candidate, current):
+            return True
     return False
+
+
+def _dedupe_actor_labels(labels: Sequence[str]) -> list[str]:
+    deduped: list[str] = []
+    for label in unique_text(labels):
+        cleaned = re.sub(r"^(?:one|first|main|primary)\s+", "", _clean(label), flags=re.IGNORECASE).strip()
+        if cleaned and not _actor_label_duplicates_existing(cleaned, deduped):
+            deduped.append(cleaned)
+    return deduped
+
+
+def _actor_label_is_context_expanded_duplicate(candidate: str, current: str) -> bool:
+    candidate_tokens = _actor_label_context_tokens(candidate)
+    current_tokens = _actor_label_context_tokens(current)
+    if len(candidate_tokens) < 3 or len(current_tokens) < 3:
+        return False
+    if candidate_tokens[-1] != current_tokens[-1]:
+        return False
+    candidate_prefix = candidate_tokens[:-1]
+    current_prefix = current_tokens[:-1]
+    shorter, longer = (
+        (candidate_prefix, current_prefix)
+        if len(candidate_prefix) <= len(current_prefix)
+        else (current_prefix, candidate_prefix)
+    )
+    if not shorter or len(longer) <= len(shorter):
+        return False
+    extra = longer[len(shorter) :]
+    if longer[: len(shorter)] == shorter:
+        return any(token in _DERIVED_CONTEXT_ACTOR_MODIFIERS for token in extra)
+    if len(longer) > len(shorter) and longer[-len(shorter) :] == shorter:
+        return True
+    return False
+
+
+def _actor_label_context_tokens(value: str) -> tuple[str, ...]:
+    return tuple(token for token in _clean(value).casefold().replace("-", " ").split() if token)
 
 
 def project_specific_actor_labels(intent: Mapping[str, Any]) -> list[str]:
@@ -193,21 +292,25 @@ def _derived_actor_labels(intent: Mapping[str, Any], *, title: str, allow_generi
     first_path = _clean(intent.get("first_path"))
     story = _clean(intent.get("product_story"))
     state = _clean(intent.get("state_object"))
+    candidate_sources = [first_path]
+    if allow_generic_fallback:
+        candidate_sources.extend([state, story, _actor_context(intent)])
     candidates = unique_text(
         [
-            *_role_candidates(first_path),
-            *_role_candidates(state),
-            *_role_candidates(story),
-            *_role_candidates(_actor_context(intent)),
+            *(
+                candidate
+                for source in candidate_sources
+                for candidate in _role_candidates(source)
+            ),
         ]
     )
     labels: list[str] = []
     for candidate in candidates:
         if _word_count(candidate) <= 5:
-            label = _title_case(candidate)
+            label = _actor_label_display(candidate)
             if value_starts_with_generic_actor_label(label):
                 role = label.casefold()
-                label = _title_case(f"{_role_focus(focus, role)} {role}")
+                label = _actor_label_display(f"{_role_focus(focus, role)} {role}")
             if _actor_label_is_usable(label) and _derived_actor_label_has_human_signal(label):
                 labels.append(label)
     labels = _dedupe_actor_labels(list(unique_text(labels)))
@@ -285,7 +388,7 @@ def _subject_candidate(sentence: str) -> str:
         return ""
     subject = _actor_head_before_setup_action(subject) or subject
     subject = re.sub(r"^(?:a|an|the|one|this|that|each|another)\s+", "", subject, flags=re.IGNORECASE).strip(" .")
-    subject = re.sub(r"\s+can\s*$", "", subject, flags=re.IGNORECASE).strip(" .")
+    subject = _strip_modal_subject_tail(subject)
     words = subject.split()
     if not 1 <= len(words) <= 4:
         return ""
@@ -297,6 +400,16 @@ def _subject_candidate(sentence: str) -> str:
     if re.search(r"\b(?:app|application|engine|platform|product|service|system|tool|workspace)\b", lowered):
         return ""
     return _trim_non_actor_lead_words(subject)
+
+
+def _strip_modal_subject_tail(value: str) -> str:
+    words = _clean(value).strip(" .").split()
+    if len(words) < 2:
+        return _clean(value).strip(" .")
+    if words[-1].casefold().strip(".,;:()") not in _MODAL_ACTION_BOUNDARY_TAILS:
+        return _clean(value).strip(" .")
+    candidate = " ".join(words[:-1]).strip(" .")
+    return candidate or _clean(value).strip(" .")
 
 
 def _actor_head_before_setup_action(subject: str) -> str:
@@ -318,11 +431,18 @@ def _actor_head_before_setup_action(subject: str) -> str:
 
 def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:
     previous_token = words[index - 1].casefold().strip(".,;:-") if index > 0 else ""
+    previous_previous_token = words[index - 2].casefold().strip(".,;:-") if index > 1 else ""
     next_token = words[index + 1].casefold().strip(".,;:-") if index + 1 < len(words) else ""
     sentence = " ".join(words).casefold()
     if re.search(r"\b(?:defer(?:red|s)?|out\s+of\s+scope|non[-\s]?goals?|later|future|not\s+included)\b", sentence):
         return True
+    if previous_token in {"explicit", "using"}:
+        return True
+    if previous_previous_token in {"without", "instead", "before", "after"} and previous_token.endswith("ing"):
+        return True
     artifact_neighbors = {
+        "approval",
+        "approvals",
         "confirmation",
         "contact",
         "decision",
@@ -341,25 +461,22 @@ def _role_token_is_artifact_context(words: Sequence[str], index: int) -> bool:
         "status",
         "visible",
     }
+    if index >= 2 and _looks_plural_object_token(previous_token) and (
+        _looks_plural_object_token(next_token) or next_token in artifact_neighbors
+    ):
+        return True
     if previous_token in artifact_neighbors or next_token in artifact_neighbors:
         return True
     current = words[index].casefold()
     return "-" in current and any(part in artifact_neighbors for part in current.split("-"))
 
 
-def _dedupe_actor_labels(values: Sequence[str]) -> list[str]:
-    labels = [
-        re.sub(r"^(?:one|first|main|primary)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
-        for value in values
-        if _clean(value)
-    ]
-    result: list[str] = []
-    lowered_labels = [label.casefold() for label in labels]
-    for label, lowered in zip(labels, lowered_labels):
-        if any(other != lowered and other.endswith(f" {lowered}") for other in lowered_labels):
-            continue
-        result.append(label)
-    return result
+def _looks_plural_object_token(value: str) -> bool:
+    token = str(value or "").casefold().strip(".,;:-")
+    if len(token) <= 3 or not token.endswith("s") or token.endswith(("ous", "ss")):
+        return False
+    singular = token[:-1]
+    return singular not in _ROLE_WORDS
 
 
 def _trim_non_actor_lead_words(value: str) -> str:
@@ -405,6 +522,7 @@ def _trim_non_actor_lead_words(value: str) -> str:
         "the",
         "then",
         "to",
+        "using",
         "when",
         "where",
         "which",
@@ -447,7 +565,12 @@ def _actor_label_has_dangling_tail(value: str) -> bool:
 
 def _actor_label_is_action_fragment(value: str) -> bool:
     words = [word for word in (raw.casefold().strip(".,;:()[]{}") for raw in _clean(value).split()) if word]
-    return bool(words and not any(_word_has_role_signal(word) for word in words) and (looks_like_base_action_token(words[0]) or looks_like_finite_action_token(words[0]) or words[0].endswith("ing")))
+    has_human_signal = any(_word_has_role_signal(word) or _looks_like_derived_human_token(word) for word in words)
+    return bool(
+        words
+        and not has_human_signal
+        and (looks_like_base_action_token(words[0]) or looks_like_finite_action_token(words[0]) or words[0].endswith("ing"))
+    )
 
 
 def _actor_label_has_embedded_action(value: str) -> bool:
@@ -483,15 +606,19 @@ def _actor_label(row: str, *, title: str) -> str:
     accepted = accepted_actor_label(str(row), project_focus=_focus_label(title))
     if accepted:
         accepted = re.sub(r"^(?:one|first|main|primary)\s+", "", accepted, flags=re.IGNORECASE).strip()
-        accepted = accepted if _actor_row_has_usable_description(str(row)) else _title_case(accepted)
+        accepted = accepted if _actor_row_has_usable_description(str(row)) else _actor_label_display(accepted)
         return accepted if _actor_label_is_usable(accepted) else ""
     specific = _specific_role_label(raw)
     if specific:
         return specific if _actor_label_is_usable(specific) else ""
     if raw.casefold() in {"operator", "reviewer", "user", "owner", "helper", "support", "admin"}:
         raw = f"{_role_focus(_focus_label(title), raw)} {raw}"
-    label = _title_case(raw)
+    label = _actor_label_display(raw)
     return label if _actor_label_is_usable(label) else ""
+
+
+def _actor_label_display(value: str) -> str:
+    return _title_case(_clean(value).replace("-", " "))
 
 
 def _specific_role_label(value: str) -> str:

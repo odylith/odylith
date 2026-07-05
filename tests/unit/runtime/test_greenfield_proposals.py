@@ -456,6 +456,31 @@ def test_tribunal_role_suffixes_do_not_repeat_existing_role_words() -> None:
     assert _role_suffixed_label("Decision Workspace", "proof reviewer") == "Decision Workspace proof reviewer"
 
 
+def test_greenfield_tribunal_preserves_lower_first_source_symbols_in_visible_roles() -> None:
+    projection = tribunal_actor_projection(
+        {
+            "title": "mRNA Stability Batch Comparison Workspace",
+            "intent": {"title": "mRNA Stability Batch Comparison Workspace"},
+            "backlog": [
+                {
+                    "title": "Show proof",
+                    "customer": "Formulation Scientist",
+                    "domain_intelligence": {
+                        "actors": ["Formulation Scientist"],
+                        "evidence_model": ["Review evidence belongs in mRNA Stability Batch Proof Record."],
+                        "proof_standards": ["mRNA Stability Batch Proof Record must show accepted input."],
+                    },
+                }
+            ],
+        }
+    )
+    role_labels = {row["stable_role"]: row["visible_actor"] for row in projection}
+
+    assert role_labels["risk_owner"] == "mRNA Stability Batch risk reviewer"
+    assert role_labels["evidence_owner"] == "mRNA Stability Batch proof reviewer"
+    assert not any("MRNA Stability" in row["visible_actor"] for row in projection)
+
+
 def test_greenfield_tribunal_splits_collapsed_judgment_roles() -> None:
     projection = tribunal_actor_projection(
         {
@@ -487,6 +512,46 @@ def test_greenfield_tribunal_splits_collapsed_judgment_roles() -> None:
     assert role_labels["risk_owner"] == "Cross-Boundary Evidence Workspace risk reviewer"
     assert role_labels["evidence_owner"] == "Cross-Boundary Evidence Workspace proof reviewer"
     assert len({role_labels[role] for role in ("beneficiary_advocate", "domain_operator", "risk_owner", "evidence_owner")}) == 4
+    assert tribunal_visible_actor_quality_issues(projection) == ()
+
+
+@pytest.mark.parametrize(
+    ("title", "actor", "expected_role"),
+    (
+        ("Decision Evidence Review", "Algorithmic Accountability Auditor", "evidence_owner"),
+        ("Safety Finding Review", "Maternal Safety Reviewer", "risk_owner"),
+    ),
+)
+def test_greenfield_tribunal_does_not_reuse_explicit_reviewer_as_beneficiary(
+    title: str,
+    actor: str,
+    expected_role: str,
+) -> None:
+    projection = tribunal_actor_projection(
+        {
+            "title": title,
+            "intent": {"title": title},
+            "project_intelligence": {"actors": [actor]},
+            "backlog": [
+                {
+                    "customer": actor,
+                    "domain_intelligence": {
+                        "actors": [actor],
+                        "operators": [actor],
+                        "risks": [f"{actor} owns review exposure"],
+                        "validation_obligations": [f"{actor} checks proof"],
+                    },
+                }
+            ],
+            "semantic_model": {"first_path_contract": {"actor": actor}},
+        }
+    )
+    role_labels = {row["stable_role"]: row["visible_actor"] for row in projection}
+
+    assert role_labels[expected_role] == actor
+    assert role_labels["beneficiary_advocate"] != actor
+    assert role_labels["beneficiary_advocate"].endswith("beneficiary advocate")
+    assert len({role_labels[role] for role in ("beneficiary_advocate", "risk_owner", "evidence_owner")}) == 3
     assert tribunal_visible_actor_quality_issues(projection) == ()
 
 
@@ -1386,12 +1451,12 @@ def test_greenfield_apply_bootstraps_first_release_selector(tmp_path, monkeypatc
     assert len(result["components"]) == 3
     assert len(result["diagrams"]) == 2
     assert result["validation_gate"]["status"] == "passed"
-    assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"]
+    assert result["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert result["dashboard_refresh"]["view"] == "odylith/index.html?tab=project"
     assert refresh_calls == [
         {
             "repo_root": tmp_path.resolve(),
-            "surfaces": ("radar", "registry", "atlas", "compass", "casebook", "tooling_shell"),
+            "surfaces": ("radar", "registry", "atlas", "compass", "tooling_shell"),
             "operation_label": "Greenfield apply dashboard visibility",
         }
     ]

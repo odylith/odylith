@@ -331,6 +331,95 @@ def test_quality_lens_does_not_use_proof_boundary_as_visible_result() -> None:
     assert "visible result" in checks["complete_first_path"]["issue"]
 
 
+def test_domain_expert_lens_fails_when_scientific_source_terms_disappear() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {
+                    "proof_boundary": "Release succeeds when assay input, calibration baseline, and uncertainty interval are visible.",
+                },
+                "first_path_contract": {
+                    "capability": "Researcher runs an assay simulation with calibration baseline and uncertainty interval.",
+                    "visible_result": "Simulation result with uncertainty interval and baseline comparison.",
+                },
+            },
+            "intent": {
+                "state_object": "An assay simulation run records dataset identity, calibration baseline, model version, and uncertainty interval.",
+            },
+            "assumptions": [],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={},
+        rendered_component_specs={"Generic Review Service": "Review service records status and approval evidence."},
+        component_registry_preview=(),
+        next_steps_preview={},
+        backlog_result={},
+        program_result={},
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    checks = {check["name"]: check for check in report["lenses"]["domain_expert"]["checks"]}
+
+    assert checks["domain_term_coverage"]["status"] == "failed"
+    assert "domain term coverage" in checks["domain_term_coverage"]["issue"]
+
+
+def test_domain_expert_lens_fails_when_high_risk_assumption_is_not_rendered() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {
+                    "proof_boundary": "Release succeeds when assay input, calibration baseline, and uncertainty interval are visible.",
+                },
+                "first_path_contract": {
+                    "capability": "Researcher runs an assay simulation with calibration baseline and uncertainty interval.",
+                    "visible_result": "Simulation result with uncertainty interval and baseline comparison.",
+                },
+            },
+            "intent": {
+                "state_object": "An assay simulation run records dataset identity, calibration baseline, model version, and uncertainty interval.",
+            },
+            "assumptions": [
+                {
+                    "tier": "user_intent",
+                    "statement": "Only authorized reviewers may approve safety-sensitive simulation outputs.",
+                }
+            ],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={},
+        rendered_component_specs={
+            "Assay Simulation Service": (
+                "The assay simulation run records dataset identity, calibration baseline, model version, "
+                "uncertainty interval, and baseline comparison for researcher review."
+            )
+        },
+        component_registry_preview=(),
+        next_steps_preview={},
+        backlog_result={},
+        program_result={},
+        project_brief_preview={},
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    checks = {check["name"]: check for check in report["lenses"]["domain_expert"]["checks"]}
+
+    assert checks["domain_term_coverage"]["status"] == "passed"
+    assert checks["high_risk_assumptions"]["status"] == "failed"
+    assert "high-risk accepted assumption coverage" in checks["high_risk_assumptions"]["issue"]
+
+
 def test_quality_lens_requires_non_empty_external_boundary() -> None:
     package = SimpleNamespace(
         proposal={

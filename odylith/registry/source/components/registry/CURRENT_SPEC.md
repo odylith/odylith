@@ -5,7 +5,7 @@
   affected component spec names its faculty, hot-path boundary, proof duty,
   and surface duty so the Odylith Discipline layer remains cross-cutting rather than a
   runtime-only feature.
-Last updated: 2026-07-01
+Last updated: 2026-07-04
 
 
 Last updated (UTC): 2026-04-15
@@ -254,15 +254,15 @@ exhaustive regardless of rung.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-07-01 · Implementation:** Repeated CB-209 mechanism observed: pinned-runtime Registry forensics sync reintroduced historical scenario terms; source-local regeneration cleared the 285-term leakage guard and must be used for source-change forensics closure.
+- **2026-07-01 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
   - Scope: B-142
-  - Evidence: odylith/casebook/bugs/2026-06-26-high-variance-installed-greenfield-prompts-still-stop-before-governed-writes.md, odylith/registry/source/components/registry/CURRENT_SPEC.md
-- **2026-03-17 · Implementation:** Added quick-tooltip metadata to Registry component spec inline links and code spans for hover parity in the Current Spec pane.
-  - Evidence: odylith/registry/source/components/registry/CURRENT_SPEC.md, src/odylith/runtime/surfaces/render_registry_dashboard.py
-- **2026-03-04 · Implementation:** Shipped Registry dashboard rendering plus governance and traceability sync updates, and refreshed generated Radar, Atlas, and Compass shells.
-  - Evidence: src/odylith/runtime/governance/sync_workstream_artifacts.py, src/odylith/runtime/surfaces/render_backlog_ui.py +2 more
-- **2026-03-04 · Decision:** Standardized governance visibility around Registry as the canonical component audit surface across Radar, Atlas, and Compass.
-  - Evidence: src/odylith/runtime/governance/sync_workstream_artifacts.py, src/odylith/runtime/surfaces/render_backlog_ui.py +2 more
+  - Evidence: 2 tracked artifact references retained
+- **2026-03-17 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
+  - Evidence: 2 tracked artifact references retained
+- **2026-03-04 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
+  - Evidence: 4 tracked artifact references retained
+- **2026-03-04 · Decision:** Decision evidence linked this component to governed work with 4 tracked artifact references retained.
+  - Evidence: 4 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

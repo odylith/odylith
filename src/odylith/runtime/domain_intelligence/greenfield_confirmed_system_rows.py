@@ -12,6 +12,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semant
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text as _title_case_phrase
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count as _word_count
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import terminal_deferral_subject
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import reference_relation_description
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_visible_result_language
@@ -33,13 +34,14 @@ _SYSTEM_NAME_NOUNS = frozenset(
     views workflow workflows
     """.split()
 )
+_EXPLICIT_SYSTEM_NAME_MAX_WORDS = 16
 
 def confirmed_system_name(value: str) -> str:
     cleaned = _strip_scope_prefix(_clean(value))
     raw = re.split(r"\s+[—-]\s+|\s*:\s*", cleaned, maxsplit=1)[0].strip()
     raw = _flatten_parenthetical_label(raw)
     raw, _description = _split_system_action_clause(raw)
-    return _clean(raw) or "Product System"
+    return collapse_repeated_phrase_units(_clean(raw)) or "Product System"
 
 
 def confirmed_system_description(value: str) -> str:
@@ -773,14 +775,15 @@ def _concise_system_description(name: str, *, context_text: str) -> str:
 
 
 def _format_system_row(name: str, body: str, *, context_text: str = "") -> str:
-    return f"{_title_case_system_name(name)} — {_contextualized_system_body(name=name, body=body, context_text=context_text)}"
+    label = _title_case_system_name(name)
+    return f"{label} — {_contextualized_system_body(name=label, body=body, context_text=context_text)}"
 
 
 def _title_case_system_name(value: str) -> str:
     value = re.sub(
         r"^Reviewer\s+(?=(?:Dashboard|Export|Surface|View|Portal|Report|Package)\b)",
         "Review ",
-        _clean(value),
+        collapse_repeated_phrase_units(_clean(value)),
         flags=re.IGNORECASE,
     )
     words: list[str] = []
@@ -800,7 +803,7 @@ def _title_case_system_name(value: str) -> str:
         if _append_slash_conjunction_system_word(words, raw_word=word, label_word=label_word):
             continue
         words.append(label_word)
-    return _clean(" ".join(words))
+    return collapse_repeated_phrase_units(_clean(" ".join(words)))
 
 
 def _append_slash_conjunction_system_word(words: list[str], *, raw_word: str, label_word: str) -> bool:
@@ -998,11 +1001,11 @@ def _usable_internal_system_candidate(candidate: str) -> bool:
 
 
 def _usable_explicit_system_candidate(candidate: str) -> bool:
-    """Allow concise reviewed labels when a row provides its own description."""
+    """Allow reviewed labels when a row provides its own description."""
 
     text = _clean(candidate)
     words = _word_count(text)
-    if words < 1 or words > 9:
+    if words < 1 or words > _EXPLICIT_SYSTEM_NAME_MAX_WORDS:
         return False
     lowered = text.casefold()
     if lowered in {"internal product systems", "internal systems"}:

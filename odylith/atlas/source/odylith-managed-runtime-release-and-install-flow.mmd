@@ -1,7 +1,8 @@
-%% Reviewed 2026-07-01 after local release provenance was bound to the source git head and source-tree posture.
+%% Reviewed 2026-07-02 after local release packaging gained source-local Registry forensics freshness preflight.
 flowchart TD
     maintainer["Maintainer workspace"]
     devvalidate["dev-validate<br/>detached source-local current workspace"]
+    forensicpreflight["Registry forensics freshness preflight<br/>source-local sync check-only<br/>one-pass sidecar convergence required"]
     canonical["Canonical release commit<br/>origin/main"]
     proof["Isolated clean proof checkout<br/>optional when workspace is dirty or off-main"]
     bundles["Publish wheel + managed runtime bundles<br/>darwin-arm64 / linux-arm64 / linux-x86_64"]
@@ -25,9 +26,11 @@ flowchart TD
 
     maintainer --> canonical
     maintainer --> devvalidate
+    devvalidate --> forensicpreflight
     maintainer --> localprov
     canonical --> proof
-    canonical --> bundles
+    canonical --> forensicpreflight
+    forensicpreflight --> bundles
     proof --> bundles
     bundles --> manifest
     localprov --> manifest
@@ -46,6 +49,7 @@ flowchart TD
     consumer_cmd --> consumer_rt
 
     localprov -. local dist handoff is blocked when commit binding is missing .-> maintainer
+    forensicpreflight -. stale or wrong-runtime component sidecars block packaging and installed matrix proof .-> maintainer
     verify -. fail closed on unsupported or invalid bundle .-> shell
     managed -. no shell-level interpreter switching .-> consumer_rt
     repo_files -. validation still belongs to the consumer repo toolchain .-> consumer_rt

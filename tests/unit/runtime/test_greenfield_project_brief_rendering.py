@@ -202,8 +202,8 @@ def test_confirmed_project_brief_drops_clipped_comma_list_tail_from_readiness_ga
     readiness_copy = json.dumps(brief["coding_readiness_gates"], sort_keys=True)
 
     assert "reports, affected." not in readiness_copy
-    assert "external vulnerability reports." in readiness_copy
-    assert "affected partner review." not in readiness_copy
+    assert "external vulnerability reports, affected partner review" in readiness_copy
+    assert "without personalized notification campaigns in the first release." in readiness_copy
     assert generated_public_copy_issues("security disclosure project brief", brief) == ()
 
 
@@ -292,8 +292,37 @@ def test_project_brief_long_outcome_uses_state_object_label_not_state_sentence()
     )
 
     assert "and A daily comfort practice coach result record tracks" not in normalized["project_outcome"]
-    assert "Daily Comfort Practice Coach Result Record stay connected" in normalized["project_outcome"]
+    assert "Daily Comfort Practice Coach Result Record" in normalized["project_outcome"]
     assert generated_public_copy_issues("project outcome", normalized["project_outcome"]) == ()
+
+
+def test_project_brief_outcome_avoids_cross_sentence_title_state_duplication() -> None:
+    brief = confirmed_project_brief(
+        label="Volcanic Ash Aviation",
+        prompt="volcanic ash aviation advisory",
+        release="0.0.1",
+        state_object="An aviation advisory update record tracks status, owner, blocker, handoff, and evidence.",
+        evidence_record="Volcanic Ash Aviation Proof Ledger",
+        first_path=(
+            "Aviation meteorologist can open the ash advisory episode, record satellite, plume, and dispersion "
+            "evidence, escalate forecast review, resolve exceptions, and publish the aviation advisory update "
+            "without automating expert judgment."
+        ),
+        proof_boundary=(
+            "Release 0.0.1 succeeds when aviation meteorologist can open the ash advisory episode, record satellite, "
+            "plume, and dispersion evidence, escalate forecast review, resolve exceptions, and publish the aviation "
+            "advisory update without automating expert judgment. The product shows the aviation advisory update."
+        ),
+        human_actors=["Aviation Meteorologist"],
+        internal_systems=("Volcanic Ash Aviation Intake Register", "Volcanic Ash Aviation Proof Ledger"),
+    )
+
+    assert "Aviation Aviation" not in brief["project_outcome"]
+    assert "accepted first path for Volcanic Ash Aviation" in brief["project_outcome"]
+    assert generated_public_copy_issues("project outcome", brief["project_outcome"]) == ()
+    encoded = json.dumps(brief, sort_keys=True)
+    assert "Volcanic Ash Aviation: Aviation meteorologist" not in encoded
+    assert "Aviation Aviation" not in encoded
 
 
 def test_project_brief_outcome_compacts_field_heavy_state_object() -> None:
@@ -325,9 +354,9 @@ def test_project_brief_outcome_compacts_field_heavy_state_object() -> None:
     )
 
     outcome = normalized["project_outcome"]
-    assert outcome.endswith("review evidence")
+    assert outcome.endswith("review evidence together.")
     assert not outcome.rstrip(" .").endswith("and")
-    assert "Corridor Readiness Record stay connected" in outcome
+    assert "Corridor Readiness Record, blocked-path evidence" in outcome
     assert "Waiver Notes" not in outcome
     assert generated_public_copy_issues("project outcome", outcome) == ()
 
@@ -354,3 +383,25 @@ def test_project_brief_renderer_keeps_comma_heavy_story_as_coherent_sentence() -
     assert "\n  - Chosen practice steps" not in rendered
     assert "\n  - Check-in results" not in rendered
     assert "records symptoms, triggers, chosen practice steps, check-in results" in rendered
+
+
+def test_project_brief_renderer_preserves_lower_first_source_symbol_at_fragment_start() -> None:
+    lines = render_project_brief_lines(
+        {
+            "blueprint_sections": [
+                {
+                    "section": "Product story",
+                    "must_capture": (
+                        "mRNA Stability Batch Comparison Workspace helps a formulation scientist complete a first path "
+                        "using accelerated-stability data, lipid ratio records, impurity profiles, storage excursions, "
+                        "explicit expert review, auditable decisions, and a final recommendation."
+                    ),
+                    "why_it_matters": "Readers need the source-owned scientific symbol to stay legible.",
+                }
+            ],
+        }
+    )
+    rendered = "\n".join(lines)
+
+    assert "mRNA Stability Batch Comparison Workspace helps" in rendered
+    assert "MRNA Stability" not in rendered

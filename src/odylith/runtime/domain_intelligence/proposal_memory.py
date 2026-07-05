@@ -17,6 +17,7 @@ from odylith.runtime.common import agent_runtime_contract
 from odylith.runtime.common import display_text
 from odylith.runtime.common import log_compass_timeline_event
 from odylith.runtime.common.value_coercion import dedupe_strings
+from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_project_brief import render_project_brief_lines
 
@@ -206,7 +207,14 @@ def build_accepted_project_source_payload(
         "source_launch": _source_launch_payload(source_launch_context),
         "validation_gate": dict(validation_gate or {}),
     }
-    return dict(_normalize_accepted_memory_copy(display_text.strip_inline_markdown_emphasis_tree(payload)))
+    normalized = _normalize_accepted_memory_copy(display_text.strip_inline_markdown_emphasis_tree(payload))
+    source_text = greenfield_source_casing.proposal_source_casing_text(proposal)
+    if source_text:
+        normalized = greenfield_source_casing.restore_source_casing_in_public_copy(
+            normalized,
+            source_text=source_text,
+        )
+    return dict(normalized)
 
 
 def _source_launch_payload(value: Mapping[str, Any] | None) -> dict[str, Any]:

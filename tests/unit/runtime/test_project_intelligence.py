@@ -8,7 +8,9 @@ from pathlib import Path
 from odylith.runtime.project_intelligence import assets, builder, deeplinks, focus, presenter, product_story
 from odylith.runtime.project_intelligence.greenfield_job_cards import _jobs
 from odylith.runtime.project_intelligence.greenfield import _risk_classes
-from odylith.runtime.project_intelligence.utils import short
+from odylith.runtime.project_intelligence.participants import participant_title
+from odylith.runtime.project_intelligence.product_story_cards import build_greenfield_story_cards
+from odylith.runtime.project_intelligence.utils import short, tidy_fragment
 from odylith.runtime.surfaces import dashboard_shell_links
 from tests.unit.runtime.greenfield_proposal_fixtures import _apply_ready_greenfield_fixture as _host_greenfield_fixture
 
@@ -44,6 +46,51 @@ def test_project_short_strips_dangling_terminal_verbs_after_clip() -> None:
 
     assert clipped.endswith("medical standby signoff.")
     assert not clipped.endswith("and keep.")
+
+
+def test_project_participant_titles_preserve_lower_first_source_symbols() -> None:
+    assert participant_title("mRNA Stability Batch proof reviewer") == "mRNA Stability Batch proof reviewer"
+    assert tidy_fragment("mRNA Stability Batch desired state") == "mRNA Stability Batch desired state"
+
+
+def test_greenfield_story_cards_preserve_lower_first_source_symbol_participants() -> None:
+    cards = build_greenfield_story_cards(
+        title="mRNA Stability Batch Comparison Workspace",
+        intent={
+            "product_story": (
+                "mRNA Stability Batch Comparison Workspace helps a formulation scientist compare one batch "
+                "with traceable stability evidence."
+            ),
+            "state_object": "mRNA Stability Batch result record",
+        },
+        project={},
+        objective=(
+            "Formulation Scientist needs a dependable way to compare one mRNA stability batch with traceable evidence."
+        ),
+        outcome="The mRNA Stability Batch comparison result remains reviewable.",
+        first_path="Formulation Scientist compares one mRNA stability batch and records the reviewed result.",
+        actors=[
+            ("", "Formulation Scientist", "Compares the batch evidence."),
+            ("", "mRNA Stability Batch proof reviewer", "Reviews the evidence."),
+        ],
+        validation=[],
+    )
+    encoded = json.dumps(cards, sort_keys=True)
+
+    assert "mRNA Stability Batch proof reviewer" in encoded
+    assert "MRNA Stability" not in encoded
+
+
+def test_project_short_strips_clipped_article_modifier_tail_after_clip() -> None:
+    value = (
+        "This slice preserves review context, publishes decision evidence, and recovers cleanly from a bad or incomplete attempt."
+    )
+
+    clipped = short(value, limit=100)
+
+    assert clipped.endswith("recovers cleanly.")
+    assert not clipped.endswith("a bad.")
+    assert short("The review status is final before handoff proof.", limit=34) == "The review status is final."
 
 
 def test_project_intelligence_blank_install_starts_with_minimal_project_state(tmp_path: Path) -> None:

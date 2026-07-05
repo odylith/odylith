@@ -6,7 +6,7 @@
   and release-gate posture, but should suppress weak Odylith Discipline noise.
 - Compass entries should preserve workstream ids B-110 through B-117 and the
   benchmark gates that feed future session priors.
-Last updated: 2026-04-17
+Last updated: 2026-07-04
 
 
 Last updated (UTC): 2026-04-17
@@ -674,18 +674,18 @@ or component definitions.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-03-20 · Decision:** Successor created: B-255 reopens B-253 for active plan binding
-  - Evidence: odylith/radar/source/INDEX.md, odylith/registry/source/components/compass/CURRENT_SPEC.md +1 more
-- **2026-03-04 · Implementation:** Shipped Registry dashboard rendering plus governance and traceability sync updates, and refreshed generated Radar, Atlas, and Compass shells.
-  - Evidence: src/odylith/runtime/governance/sync_workstream_artifacts.py, src/odylith/runtime/surfaces/render_backlog_ui.py +2 more
-- **2026-03-04 · Decision:** Standardized governance visibility around Registry as the canonical component audit surface across Radar, Atlas, and Compass.
-  - Evidence: src/odylith/runtime/governance/sync_workstream_artifacts.py, src/odylith/runtime/surfaces/render_backlog_ui.py +2 more
-- **2026-03-03 · Implementation:** Implemented lineage fields and relation edges across validation, reciprocal backfill, traceability graph, and Radar/Compass rendering.
-  - Evidence: odylith/radar/source/INDEX.md, odylith/technical-plans/INDEX.md +2 more
-- **2026-03-03 · Decision:** kickoff B-034 lineage model with successor-first reopen policy and typed relation semantics.
-  - Evidence: odylith/radar/source/INDEX.md, odylith/technical-plans/INDEX.md +2 more
-- **2026-03-01 · Implementation:** Added Codex decision/implementation stream ingestion into Compass timeline audits and shipped logging skill contract.
-  - Evidence: odylith/skills/compass-timeline-stream/SKILL.md, src/odylith/runtime/common/log_compass_timeline_event.py
+- **2026-03-20 · Decision:** Decision evidence linked this component to governed work with 3 tracked artifact references retained.
+  - Evidence: 3 tracked artifact references retained
+- **2026-03-04 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
+  - Evidence: 4 tracked artifact references retained
+- **2026-03-04 · Decision:** Decision evidence linked this component to governed work with 4 tracked artifact references retained.
+  - Evidence: 4 tracked artifact references retained
+- **2026-03-03 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
+  - Evidence: 4 tracked artifact references retained
+- **2026-03-03 · Decision:** Decision evidence linked this component to governed work with 4 tracked artifact references retained.
+  - Evidence: 4 tracked artifact references retained
+- **2026-03-01 · Implementation:** Implementation evidence linked this component to governed work with 2 tracked artifact references retained.
+  - Evidence: 2 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

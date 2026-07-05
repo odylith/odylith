@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import base_gerund_clause
+from odylith.runtime.common.prose_grammar import looks_like_base_action_token
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import term_frequencies
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
@@ -206,6 +207,7 @@ def _term_signature(value: str, *, minimum: int, normalize_gerunds: bool = False
 def _grounded_equivalent_terms(source_text: str, signature_terms: set[str]) -> set[str]:
     text = _signature_text(source_text)
     terms: set[str] = set()
+    terms.update(_grounded_action_state_terms(signature_terms))
     if signature_terms & {"recommend", "recommended", "suggest", "suggested"} or re.search(
         r"\b(?:recommend|recommended|suggest|suggested)\b",
         text,
@@ -214,6 +216,28 @@ def _grounded_equivalent_terms(source_text: str, signature_terms: set[str]) -> s
     if signature_terms & {"propose", "proposed"} or re.search(r"\b(?:propose|proposed)\b", text):
         terms.add("proposal")
     return terms
+
+
+def _grounded_action_state_terms(signature_terms: set[str]) -> set[str]:
+    terms: set[str] = set()
+    for term in signature_terms:
+        if not looks_like_base_action_token(term):
+            continue
+        state = _regular_action_state_form(term)
+        if state:
+            terms.add(state)
+    return terms
+
+
+def _regular_action_state_form(value: str) -> str:
+    term = str(value or "").casefold().strip()
+    if len(term) < 4:
+        return ""
+    if term.endswith("e"):
+        return f"{term}d"
+    if len(term) > 2 and term.endswith("y") and term[-2] not in {"a", "e", "i", "o", "u"}:
+        return f"{term[:-1]}ied"
+    return f"{term}ed"
 
 
 def _signature_text(value: str, *, normalize_gerunds: bool = False) -> str:

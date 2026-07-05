@@ -60,7 +60,7 @@ def test_declared_leakage_terms_are_not_padded_with_required_quality_anchors() -
     assert terms == ("chamber exposure", "wafer lot")
 
 
-def test_case_leakage_terms_derive_distinctive_prompt_vocabulary() -> None:
+def test_declared_leakage_terms_are_authoritative_when_present() -> None:
     terms = set(
         leakage.case_leakage_terms(
             SimpleNamespace(
@@ -76,20 +76,41 @@ def test_case_leakage_terms_derive_distinctive_prompt_vocabulary() -> None:
         )
     )
 
-    assert "bell inequality" in terms
-    assert "entangled photon" in terms
-    assert "quantum communication" in terms
+    assert any(term.startswith("bell inequality") for term in terms)
+    assert "entangled photon" not in terms
+    assert "quantum communication" not in terms
     assert "quantum" not in terms
     assert "create" not in terms
     assert "greenfield proposal" not in terms
 
 
-def test_source_text_terms_skip_platform_native_governance_phrases() -> None:
+def test_stale_declared_leakage_terms_do_not_mask_source_domain_terms() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                name="quantum communication lab",
+                prompt=(
+                    "Create a greenfield proposal for a quantum communication lab that records "
+                    "entangled photon pairs, Bell inequality checks, QBER thresholds, and CHSH "
+                    "review evidence."
+                ),
+                required_terms=("quantum", "qber"),
+                leakage_terms=("court interpreter",),
+            )
+        )
+    )
+
+    assert "court interpreter" not in terms
+    assert "quantum communication" in terms
+    assert any(term.startswith("bell inequality") for term in terms)
+
+
+def test_declared_leakage_terms_do_not_absorb_platform_native_governance_phrases() -> None:
     terms = set(
         leakage.case_leakage_terms(
             SimpleNamespace(
                 prompt=(
-                    "Create an ICU review workspace that preserves handoff evidence, "
+                    "Create a ventilator event review workspace for ICU operators that preserves handoff evidence, "
                     "tracks manual override exceptions, lets operators request review, "
                     "and publishes readiness for the support team."
                 ),
@@ -111,7 +132,7 @@ def test_source_text_terms_skip_matrix_proof_vocabulary_that_is_not_domain_signa
         leakage.case_leakage_terms(
             SimpleNamespace(
                 prompt=(
-                    "Create a radio astronomy classifier where observers review telescope candidate events "
+                    "Create a radio astronomy classifier for dispersion measure review where observers review telescope candidate events "
                     "and compare finite-element simulations against bench-test controls."
                 ),
                 required_terms=("radio", "classifier", "finite"),
@@ -124,6 +145,28 @@ def test_source_text_terms_skip_matrix_proof_vocabulary_that_is_not_domain_signa
     assert "candidate events" not in terms
     assert "simulations against" not in terms
     assert "telescope candidate events" not in terms
+
+
+def test_source_text_terms_derive_distinctive_prompt_vocabulary_without_declared_terms() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                name="quantum communication lab",
+                prompt=(
+                    "Create a greenfield proposal for a quantum communication lab that records "
+                    "entangled photon pairs, Bell inequality checks, QBER thresholds, and CHSH "
+                    "review evidence."
+                ),
+                required_terms=("quantum", "qber"),
+                leakage_terms=(),
+            )
+        )
+    )
+
+    assert any(term.startswith("bell inequality") for term in terms)
+    assert "entangled photon" in terms
+    assert "quantum communication" in terms
+    assert "quantum" not in terms
 
 
 def test_source_text_terms_keep_domain_rich_phrases_without_declared_terms() -> None:
@@ -157,6 +200,58 @@ def test_generic_required_anchors_do_not_reenter_leakage_custody_noise() -> None
     )
 
     assert terms == ("lab sample custody",)
+
+
+def test_declared_low_entropy_evidence_phrases_do_not_become_platform_leak_sentinels() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                required_terms=("radio", "channel", "coverage", "inventory"),
+                leakage_terms=(
+                    "emergency radio channel",
+                    "court interpreter",
+                    "assignment confirmation",
+                    "coverage evidence",
+                    "inventory evidence",
+                    "delivery evidence",
+                    "manifest evidence",
+                    "session evidence",
+                ),
+            )
+        )
+    )
+
+    assert "emergency radio channel" in terms
+    assert "court interpreter" in terms
+    assert "assignment confirmation" in terms
+    assert "coverage evidence" not in terms
+    assert "inventory evidence" not in terms
+    assert "delivery evidence" not in terms
+    assert "manifest evidence" not in terms
+    assert "session evidence" not in terms
+
+
+def test_declared_short_platform_generic_phrases_do_not_become_leakage_sentinels() -> None:
+    terms = set(
+        leakage.case_leakage_terms(
+            SimpleNamespace(
+                required_terms=("data", "flow", "lineage", "retention"),
+                leakage_terms=(
+                    "data flow",
+                    "artifact custody",
+                    "data retention policy",
+                    "feature store lineage",
+                    "court interpreter",
+                ),
+            )
+        )
+    )
+
+    assert "data flow" not in terms
+    assert "artifact custody" not in terms
+    assert "data retention policy" in terms
+    assert "feature store lineage" in terms
+    assert "court interpreter" in terms
 
 
 def test_domain_leakage_terms_accept_custom_matrix_cases_without_required_anchor_noise() -> None:

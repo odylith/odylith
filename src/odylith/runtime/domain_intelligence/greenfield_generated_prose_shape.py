@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import re
 
+from collections.abc import Collection
+
 from odylith.runtime.common.prose_grammar import base_gerund_clause
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
@@ -18,15 +20,23 @@ def actor_led_finite_action_inside_user_can(value: str) -> bool:
         for index in range(0, max(0, len(tokens) - 2)):
             if lowered[index] not in {"user", "users"} or lowered[index + 1] != "can":
                 continue
-            tail = tokens[index + 2 : min(len(tokens), index + 10)]
+            tail = _modal_action_tail(tokens[index + 2 : min(len(tokens), index + 10)])
             if _contains_actor_led_finite_action(tail):
                 return True
     return False
 
 
-def gerund_actor_role_finite_action_splice(value: str) -> bool:
+def _modal_action_tail(tokens: list[str]) -> list[str]:
+    for index, token in enumerate(tokens):
+        if index > 0 and token.casefold() in {"before", "until", "when", "while", "without"}:
+            return tokens[:index]
+    return tokens
+
+
+def gerund_actor_role_finite_action_splice(value: str, *, actor_labels: Collection[str] = ()) -> bool:
     """Return whether a gerundized action word leaked into an actor-role subject."""
 
+    allowed_actor_labels = {_actor_label_key(label) for label in actor_labels if _actor_label_key(label)}
     for tokens in _token_segments(value):
         for index in range(0, max(0, len(tokens) - 2)):
             window = tokens[index : min(len(tokens), index + 10)]
@@ -34,6 +44,12 @@ def gerund_actor_role_finite_action_splice(value: str) -> bool:
                 prefix = " ".join(window[:split_index]).strip(" .")
                 normalized_prefix = base_gerund_clause(prefix).strip(" .")
                 if not normalized_prefix or normalized_prefix.casefold() == prefix.casefold():
+                    continue
+                if _is_source_owned_actor_label(prefix, allowed_actor_labels) or _is_source_owned_actor_label_prefix(
+                    window,
+                    split_index=split_index,
+                    allowed_actor_labels=allowed_actor_labels,
+                ) or _is_source_owned_actor_label_suffix(prefix, allowed_actor_labels):
                     continue
                 if _looks_like_title_compound_actor(prefix, normalized_prefix):
                     continue
@@ -60,6 +76,40 @@ def _contains_actor_led_finite_action(tokens: list[str]) -> bool:
 
 def _word_tokens(value: str) -> list[str]:
     return [match.group(0) for match in re.finditer(r"[A-Za-z][A-Za-z0-9'-]*", str(value or ""))]
+
+
+def _actor_label_key(value: str) -> str:
+    return " ".join(token.casefold() for token in _word_tokens(value))
+
+
+def _is_source_owned_actor_label(prefix: str, allowed_actor_labels: set[str]) -> bool:
+    return bool(allowed_actor_labels and _actor_label_key(prefix) in allowed_actor_labels)
+
+
+def _is_source_owned_actor_label_prefix(
+    window: list[str],
+    *,
+    split_index: int,
+    allowed_actor_labels: set[str],
+) -> bool:
+    if not allowed_actor_labels:
+        return False
+    prefix_key = _actor_label_key(" ".join(window[:split_index]))
+    if not prefix_key:
+        return False
+    for label_key in allowed_actor_labels:
+        label_tokens = label_key.split()
+        if len(label_tokens) <= split_index or len(label_tokens) > len(window):
+            continue
+        window_key = _actor_label_key(" ".join(window[: len(label_tokens)]))
+        if window_key == label_key and label_key.startswith(prefix_key + " "):
+            return True
+    return False
+
+
+def _is_source_owned_actor_label_suffix(prefix: str, allowed_actor_labels: set[str]) -> bool:
+    prefix_key = _actor_label_key(prefix)
+    return bool(prefix_key and any(label_key.endswith(" " + prefix_key) for label_key in allowed_actor_labels))
 
 
 def _token_segments(value: str) -> list[list[str]]:

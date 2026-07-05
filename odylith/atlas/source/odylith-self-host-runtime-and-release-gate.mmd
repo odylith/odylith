@@ -37,10 +37,12 @@ flowchart TB
     subgraph Gate["Release Gate"]
         Pin["Source version + repo pin + __version__"]
         Validate["odylith validate self-host-posture<br/>--mode release --expected-tag vX.Y.Z"]
-        Matrix["Installed greenfield matrix<br/>10+ standard cases,<br/>per-case generated browser state proof,<br/>Project prompt payload readback,<br/>declared-sentinel leakage proof,<br/>Atlas diagram state + Casebook included,<br/>persisted proof JSON,<br/>rescue wiring-only label"]
+        Discovery["Tiered high-variance discovery<br/>metadata shard builder<br/>failed subset -> 60-case regression<br/>-> 120/240 volume shards<br/>JSONL per-case telemetry<br/>failure clusters + stressor coverage<br/>controlled concurrency"]
+        Matrix["Installed greenfield release matrix<br/>full install mode<br/>per-case generated browser state proof<br/>Project prompt payload readback<br/>declared-sentinel leakage proof<br/>Atlas diagram state + Casebook included<br/>persisted proof JSON<br/>natural rescue proof"]
         Workflow[".github/workflows/release.yml"]
         Publish["GitHub release assets"]
         Pin --> Validate --> Matrix --> Workflow --> Publish
+        Discovery -. learning only, not release proof .-> Matrix
     end
 
     ConsumerLauncher --> RuntimeBoundary

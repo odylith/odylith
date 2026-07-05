@@ -7,10 +7,15 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
     CONFIRMED_INTENT_VALIDATION_STOPWORDS,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import boundary_clause_item
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_confirmed_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
+    capitalize_sentence_start_preserving_source_terms,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import domain_object_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import focus_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import inline_list_sentence
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import join_system_labels
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import state_detail_summary
@@ -27,6 +32,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import first_path_capability_phrase
+from odylith.runtime.domain_intelligence.greenfield_first_path_common import clip_first_path_phrase
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import clean_first_path_text
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import gerund_action_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_steps
@@ -52,6 +58,9 @@ GREENFIELD_TEXT_PATH = DOMAIN_INTELLIGENCE / "greenfield_text.py"
 def test_confirmed_intent_list_text_coercion_stays_in_text_owner() -> None:
     text_source = CONFIRMED_TEXT_PATH.read_text(encoding="utf-8")
     assert "def confirmed_text_values" in text_source
+    assert clean_confirmed_text("runs the assimilation quality review review") == (
+        "runs the assimilation quality review"
+    )
     assert confirmed_text_values(" **Resident** confirms `booking` ") == [
         "Resident confirms booking"
     ]
@@ -98,6 +107,10 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
     assert title_label("revision-round management") == "Revision-round Management"
     assert title_label("scientific-quality reviewer") == "Scientific Quality Reviewer"
     assert title_label("titration-schedule model") == "Titration Schedule Model"
+    assert capitalize_sentence_start_preserving_source_terms("mRNA Stability Batch stays reviewable") == (
+        "mRNA Stability Batch stays reviewable"
+    )
+    assert capitalize_sentence_start_preserving_source_terms("workflow stays reviewable") == "Workflow stays reviewable"
     assert sentence_label("GLP-1 Companion") == "GLP-1 companion"
     assert sentence_label("AI/ML Review API") == "AI/ML review API"
     assert focus_label("GLP-1 Companion — Medication Tracking App") == "GLP-1 Companion Medication Tracking"
@@ -192,6 +205,27 @@ def test_state_object_label_handles_central_thing_tracking_language() -> None:
             fallback="Permit state",
         )
         == "Permit Packet"
+    )
+    assert (
+        domain_object_label(
+            "Public Records Redaction Workspace Intake Register",
+            fallback="Public records redaction state",
+        )
+        == "Public Records Redaction Workspace Intake Register"
+    )
+    assert (
+        join_system_labels(
+            [
+                "Public Records Redaction Workspace Intake Register — records source input and version history.",
+                "Public Records Redaction Workspace Review Workspace — presents current state.",
+                "Public Records Redaction Workspace Proof Ledger — keeps validation results.",
+            ]
+        )
+        == (
+            "Public Records Redaction Workspace Intake Register, "
+            "Public Records Redaction Workspace Review Workspace, "
+            "Public Records Redaction Workspace Proof Ledger"
+        )
     )
 
 
@@ -543,6 +577,24 @@ def test_confirmed_tail_repair_strips_clipped_terminal_fragments() -> None:
         "Collect denial reasons, reviewer notes"
     )
     assert strip_dangling_tail("The review status is final") == "The review status is final"
+
+
+def test_first_path_phrase_clipping_strips_incomplete_terminal_modifier_fragments() -> None:
+    phrase = (
+        "turn an ambiguous case into a review-ready record using source evidence, explicit review board, "
+        "auditable decisions and a final classification recommendation"
+    )
+
+    clipped = clip_first_path_phrase(phrase, limit=132)
+
+    assert clipped == (
+        "turn an ambiguous case into a review-ready record using source evidence, "
+        "explicit review board, auditable decisions"
+    )
+    assert not clipped.endswith((" and a final", " a final", " final"))
+    assert clip_first_path_phrase("mark the review status is final before handoff proof", limit=34) == (
+        "mark the review status is final"
+    )
 
 
 def test_confirmed_focus_label_uses_shared_label_terms() -> None:

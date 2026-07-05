@@ -17,10 +17,10 @@
     "empty_reasons": [],
     "explicit_event_count": 131,
     "mapped_workstream_evidence_count": 121,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 14,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 131
+    "timeline_event_count": 132
   },
   "name": "Execution Engine",
   "path_prefixes": [
@@ -28,6 +28,23 @@
   ],
   "spec_ref": "odylith/registry/source/components/execution-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 918,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "execution-engine"
+      ],
+      "meaningful": true,
+      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-07-04T19:08:48-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 0,
       "artifacts": [],

@@ -7,10 +7,12 @@ from collections.abc import Iterable, Sequence
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import looks_like_finite_action
+from odylith.runtime.common.prose_grammar import strip_clipped_terminal_fragment as _strip_clipped_terminal_fragment
 from odylith.runtime.domain_intelligence.greenfield_deferral_predicates import has_terminal_deferral_predicate
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms, ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 from odylith.runtime.domain_intelligence.greenfield_text import word_count as _generic_word_count
@@ -167,22 +169,6 @@ _DOMAIN_LABEL_PREDICATE_WORDS = frozenset(
     }
 )
 
-_TERMINAL_MODIFIER_WORDS = {
-    "accepted",
-    "actionable",
-    "clear",
-    "complete",
-    "concrete",
-    "daily",
-    "first",
-    "reviewable",
-    "specific",
-    "trusted",
-    "visible",
-}
-_TERMINAL_MODIFIER_PRECEDERS = {"a", "an", "one", "the", "this", "that"}
-_TERMINAL_FINAL_STATE_WORDS = {"case", "decision", "match", "record", "result", "review", "score", "status"}
-
 _TITLE_CONNECTOR_WORDS = {
     "a",
     "an",
@@ -252,8 +238,16 @@ _TITLE_HYPHEN_ROLE_TERMS = {
     "user",
 }
 _TITLE_HYPHEN_OBJECT_HEADS = {
+    "compliance",
+    "coordination",
     "model",
+    "triage",
     "timeline",
+}
+_TITLE_HYPHEN_SPLIT_SECOND_TERMS = {
+    "control",
+    "event",
+    "up",
 }
 
 
@@ -262,7 +256,7 @@ def compact_text(value: str) -> str:
 
 
 def clean_confirmed_text(value: Any) -> str:
-    return normalize_connector_sequence(clean_markdown_text(value))
+    return dedupe_adjacent_words(normalize_connector_sequence(clean_markdown_text(value)))
 
 
 def normalize_connector_sequence(value: Any) -> str:
@@ -359,9 +353,11 @@ def semantic_overlap(left: str, right: str) -> int:
 def title_case_text(value: str) -> str:
     words: list[str] = []
     connectors = {"a", "an", *_TITLE_CONNECTOR_WORDS}
-    for index, word in enumerate(clean_confirmed_text(value).split()):
+    source_words = clean_confirmed_text(value).split()
+    for index, word in enumerate(source_words):
         lower = word.casefold()
-        label_word = _title_label_word(word)
+        next_word = source_words[index + 1] if index + 1 < len(source_words) else ""
+        label_word = _title_label_word(word, next_word=next_word)
         if _append_slash_conjunction_title_word(words, raw_word=word, label_word=label_word):
             continue
         if index > 0 and lower in connectors:
@@ -427,6 +423,9 @@ def domain_object_label(value: str, *, fallback: str) -> str:
         return fallback
     first_clause = re.split(r"[.;\n]", text, maxsplit=1)[0].strip(" :.-")
     dash_head = re.split(r"\s+[—-]\s+", first_clause, maxsplit=1)[0].strip(" :.-")
+    standalone_system_label = _standalone_system_label(dash_head)
+    if standalone_system_label:
+        return standalone_system_label
     compact_list_label = "" if _has_domain_label_predicate(dash_head) else _compact_list_like_domain_label(dash_head)
     if compact_list_label:
         return compact_list_label
@@ -504,6 +503,18 @@ def compact_domain_object_label(value: str, *, fallback: str) -> str:
     ]
     title = title_label(" ".join(terms[:5])) if terms else ""
     return title or fallback
+
+
+def _standalone_system_label(value: str) -> str:
+    words = [word.strip(".,;:") for word in compact_text(value).split() if word.strip(".,;:")]
+    if not (2 <= len(words) <= 9):
+        return ""
+    if words[-1].casefold() not in _SYSTEM_LABEL_NOUNS:
+        return ""
+    lowered = {word.casefold() for word in words}
+    if lowered & {"including", "that", "where", "when", "while", "without"}:
+        return ""
+    return title_label(" ".join(words))
 
 
 def state_object_descriptor(value: str) -> str:
@@ -606,31 +617,6 @@ def strip_dangling_tail(value: str) -> str:
         if cleaned == text:
             return cleaned
         text = cleaned
-
-
-def _strip_clipped_terminal_fragment(value: str) -> str:
-    text = compact_text(value).rstrip(" ,;:.")
-    words = text.split()
-    if len(words) >= 2:
-        previous = words[-2].strip(".,;:'").casefold()
-        tail = words[-1].strip(".,;:'").casefold()
-        if previous in _TERMINAL_MODIFIER_PRECEDERS and tail in _TERMINAL_MODIFIER_WORDS:
-            return " ".join(words[:-2]).rstrip(" ,;:.")
-    if words and words[-1].strip(".,;:'").casefold() == "final" and not _allows_terminal_final(words):
-        return " ".join(words[:-1]).rstrip(" ,;:.")
-    return text
-
-
-def _allows_terminal_final(words: list[str]) -> bool:
-    lowered = [word.strip(".,;:'").casefold() for word in words if word.strip(".,;:'")]
-    if len(lowered) < 2 or lowered[-1] != "final":
-        return False
-    previous = lowered[-2]
-    if previous in _TERMINAL_FINAL_STATE_WORDS:
-        return True
-    if previous in {"is", "becomes", "became"} and any(token in _TERMINAL_FINAL_STATE_WORDS for token in lowered[:-2]):
-        return True
-    return any(token in {"finalize", "finalizes", "finalized", "finalizing", "mark", "marked", "marks"} for token in lowered[:-1])
 
 
 def problem_text(*, label: str, problem: str, product_story: str, first_path: str) -> str:
@@ -787,6 +773,20 @@ def title_label(value: str) -> str:
     return " ".join(words).strip()
 
 
+def capitalize_sentence_start_preserving_source_terms(value: str) -> str:
+    """Capitalize a sentence start without rewriting lower-first mixed-case terms."""
+
+    text = str(value or "")
+    if not text:
+        return text
+    match = re.match(r"^(?P<prefix>\s*[\[({\"'`]*)(?P<token>[A-Za-z][A-Za-z0-9_/-]*)", text)
+    if match:
+        token = match.group("token")
+        if token[:1].islower() and _looks_like_source_mixed_case_token(token):
+            return text
+    return text[:1].upper() + text[1:]
+
+
 def _append_slash_conjunction_title_word(words: list[str], *, raw_word: str, label_word: str) -> bool:
     if not words or words[-1].casefold() != "and":
         return False
@@ -831,9 +831,16 @@ def _title_label_word(value: str, *, next_word: str = "") -> str:
         return prefix + word + suffix
     if lower in _TITLE_ACRONYMS:
         return prefix + lower.upper() + suffix
+    if _looks_like_source_mixed_case_token(word):
+        return prefix + word + suffix
     if _should_split_human_hyphen_label(word, next_word=next_word):
         return prefix + " ".join(_title_label_word(part) for part in word.split("-") if part) + suffix
     return prefix + word[:1].upper() + word[1:] + suffix
+
+
+def _looks_like_source_mixed_case_token(value: str) -> bool:
+    letters = [char for char in value if char.isalpha()]
+    return bool(len(letters) >= 2 and any(char.islower() for char in letters) and any(char.isupper() for char in letters[1:]))
 
 
 def _looks_like_preserved_acronym_token(value: str) -> bool:
@@ -877,8 +884,15 @@ def restore_source_token_casing(label: str, source: str) -> str:
 
 def _restore_source_acronym_number_tokens(label: str, source: str) -> str:
     text = label
+    lower_first_mixed = {
+        token.casefold()
+        for token in _source_casing_tokens(source)
+        if token[:1].islower() and any(char.isupper() for char in token[1:])
+    }
     for match in re.finditer(r"\b[A-Z]{2,}(?:[/-][A-Za-z0-9]+)*\b", source):
         token = match.group(0)
+        if token.casefold() in lower_first_mixed:
+            continue
         variants = {
             token,
             token.replace("-", " "),
@@ -894,10 +908,37 @@ def _restore_source_acronym_number_tokens(label: str, source: str) -> str:
 
 def _restore_source_mixed_case_tokens(label: str, source: str) -> str:
     text = label
-    for match in re.finditer(r"\b[A-Z][A-Za-z0-9_/-]*[A-Z][A-Za-z0-9_/-]*\b", source):
-        token = match.group(0)
+    for token in _preferred_source_casing_tokens(source):
         text = re.sub(rf"\b{re.escape(token)}\b", token, text, flags=re.IGNORECASE)
     return text
+
+
+def _preferred_source_casing_tokens(source: str) -> tuple[str, ...]:
+    chosen: dict[str, tuple[int, int, str]] = {}
+    for index, token in enumerate(_source_casing_tokens(source)):
+        key = token.casefold()
+        priority = _source_casing_priority(token)
+        current = chosen.get(key)
+        if current is None or priority > current[0]:
+            chosen[key] = (priority, index, token)
+    return tuple(row[2] for row in sorted(chosen.values(), key=lambda item: item[1]))
+
+
+def _source_casing_tokens(source: str) -> tuple[str, ...]:
+    return tuple(match.group(0) for match in re.finditer(r"\b[A-Za-z][A-Za-z0-9_/-]*[A-Z][A-Za-z0-9_/-]*\b", source))
+
+
+def _source_casing_priority(token: str) -> int:
+    letters = [char for char in token if char.isalpha()]
+    if len(letters) < 2:
+        return 0
+    if token[:1].islower() and any(char.isupper() for char in token[1:]):
+        return 3
+    if any(char.islower() for char in letters) and any(char.isupper() for char in letters):
+        return 2
+    if all(char.isupper() for char in letters):
+        return 1
+    return 0
 
 
 def _strip_state_object_predicate(value: str) -> str:
@@ -935,6 +976,8 @@ def _should_split_human_hyphen_label(value: str, *, next_word: str = "") -> bool
         return False
     if any(part.endswith(("ed", "ing")) for part in lowered[1:]):
         return False
+    if len(lowered) == 2 and lowered[1] in _TITLE_HYPHEN_SPLIT_SECOND_TERMS:
+        return True
     next_lower = clean_confirmed_text(next_word).casefold().strip(".,;:()[]{}")
     if not (
         set(lowered) & _TITLE_HYPHEN_ROLE_TERMS
@@ -1020,6 +1063,7 @@ _SYSTEM_LABEL_NOUNS = {
     "model",
     "portal",
     "queue",
+    "register",
     "record",
     "records",
     "registry",

@@ -63,3 +63,40 @@ def test_greenfield_quality_gate_ignores_internal_artifact_plan_patch_ledger() -
         for issue in greenfield_quality_issues(proposal)
         if "control-plane term `Registry`" in issue
     ]
+
+
+def test_greenfield_quality_gate_allows_source_grounded_control_plane_homonym_only_in_domain_context() -> None:
+    accepted = {
+        "intent": {
+            "prompt": "Create a product for geologic atlas field mapping.",
+            "title": "Geologic Atlas Field Mapping Workspace",
+            "product_story": "Geologic Atlas Field Mapping Workspace helps field geologists review map evidence.",
+            "first_path": "A field geologist manages a map sheet and preserves stratigraphy evidence.",
+        },
+        "components": [
+            {
+                "label": "Geologic Atlas Field Mapping Review Workspace",
+                "description": "Keeps geologic atlas field mapping evidence reviewable.",
+            }
+        ],
+    }
+    leaked = {
+        "intent": {
+            "prompt": "Create a product for geologic atlas field mapping.",
+            "title": "Geologic Atlas Field Mapping Workspace",
+            "product_story": "The Atlas diagram shows the generated governance flow.",
+            "first_path": "A field geologist manages a map sheet and preserves stratigraphy evidence.",
+        },
+        "components": [],
+    }
+
+    assert not [
+        issue
+        for issue in greenfield_quality_issues(accepted)
+        if "control-plane term `Atlas`" in issue
+    ]
+    assert [
+        issue
+        for issue in greenfield_quality_issues(leaked)
+        if "control-plane term `Atlas`" in issue
+    ]

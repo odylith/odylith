@@ -52,6 +52,7 @@ def confirmed_project_brief(
     assumptions: list[str] | None = None,
     ambiguities: list[str] | None = None,
     non_goals: list[str] | None = None,
+    evidence_requirements: list[str] | None = None,
 ) -> dict[str, Any]:
     label_lower = sentence_label(label)
     state_label = compact_domain_object_label(state_object, fallback=f"{label} state")
@@ -100,6 +101,7 @@ def confirmed_project_brief(
         proof_boundary=proof_source,
         limit=520,
     )
+    evidence_summary = _brief_clause(join_confirmed_items((evidence_requirements or [])[:8]), limit=520)
     non_goal_summary = (
         boundary_clause_text(non_goals) or "wider automation, live irreversible integrations, and production scaling"
     )
@@ -151,6 +153,17 @@ def confirmed_project_brief(
                 "must_capture": proof,
                 "why_it_matters": "Release readiness depends on evidence rather than persuasive prose.",
             },
+            *(
+                [
+                    {
+                        "section": "Evidence anchors",
+                        "must_capture": evidence_summary,
+                        "why_it_matters": "Domain reviewers need the accepted evidence vocabulary to survive planning, implementation, and proof.",
+                    }
+                ]
+                if evidence_summary
+                else []
+            ),
             {
                 "section": "Actors and systems",
                 "must_capture": f"Actors include {actor_summary}. External systems include {external_summary}.",
@@ -228,6 +241,7 @@ def confirmed_project_brief(
                 f"direction: {component_summary}."
             ),
             f"Release {release} has proof checks for success, failure, replay, access, and review evidence.",
+            *([f"Source and proof must preserve prompt-grounded evidence anchors: {evidence_summary}."] if evidence_summary else []),
             f"External dependencies for {label_lower} are simulated, sandboxed, source-backed, or explicitly deferred.",
         ],
         "host_independent_paths": [
@@ -309,10 +323,23 @@ def _split_actor_boundary_item(value: str) -> tuple[str, str, str]:
 
 def _command_prompt(*, label: str, first: str, fallback: str) -> str:
     first_prompt = _command_first_path_summary(first)
-    prompt = compact_text(f"{label}: {first_prompt}").strip(" .:")
+    if _prompt_boundary_repeats(label, first_prompt):
+        prompt = compact_text(first_prompt).strip(" .:")
+    else:
+        prompt = compact_text(f"{label}: {first_prompt}").strip(" .:")
     if prompt and len(prompt) <= 240:
         return prompt
     return _brief_clause(prompt or fallback or label, limit=240)
+
+
+def _prompt_boundary_repeats(label: str, first_prompt: str) -> bool:
+    left = _prompt_boundary_words(label)
+    right = _prompt_boundary_words(first_prompt)
+    return bool(left and right and left[-1] == right[0] and len(left[-1]) >= 4)
+
+
+def _prompt_boundary_words(value: str) -> list[str]:
+    return [word.casefold().strip(".,;:'\"()[]{}") for word in compact_text(value).split() if word.strip(".,;:'\"()[]{}")]
 
 
 def _command_first_path_summary(value: str) -> str:
@@ -504,16 +531,27 @@ def _first_path_step_summary(steps: list[str], *, limit: int) -> str:
 
 def _story_readiness_summary(value: str, *, fallback: str, limit: int = 220) -> str:
     candidates = [
-        _remove_colon_action_list(sentence)
+        _readiness_sentence_focus(_remove_colon_action_list(sentence), limit=limit)
         for sentence in _summary_sentences(value)
         if _remove_colon_action_list(sentence)
     ]
-    candidates.append(_remove_colon_action_list(fallback))
+    candidates.append(_readiness_sentence_focus(_remove_colon_action_list(fallback), limit=limit))
     for candidate in candidates:
         summary = _brief_clause(candidate, limit=limit)
         if len(summary.split()) >= 6:
             return summary
     return _brief_clause(fallback, limit=limit)
+
+
+def _readiness_sentence_focus(value: str, *, limit: int) -> str:
+    text = compact_text(value).strip(" .")
+    if len(text) <= limit:
+        return text
+    for marker in (" where ", " so that ", " so "):
+        head, separator, tail = text.partition(marker)
+        if separator and 8 <= _word_count(tail) and len(tail) <= limit:
+            return tail.strip(" .")
+    return text
 
 
 def _first_path_readiness_summary(
@@ -544,7 +582,9 @@ def _first_path_readiness_summary(
         and not _result_terms_covered(outcome, text)
         and not _outcome_action_covered(outcome, text)
     ):
-        text = f"{text} and validate the promised result: {outcome}"
+        appended = f"{text} and validate the promised result: {outcome}"
+        if len(base_adverbial_note_action(appended)) <= limit:
+            text = appended
     return _brief_clause(base_adverbial_note_action(text), limit=limit)
 
 

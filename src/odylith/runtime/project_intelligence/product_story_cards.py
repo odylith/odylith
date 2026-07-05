@@ -12,6 +12,9 @@ from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import (
     outcome_action_phrase as _outcome_action_phrase,
 )
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
+    capitalize_sentence_start_preserving_source_terms,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import base_adverbial_note_action
 from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_adjacent_duplicate_terms
@@ -833,7 +836,7 @@ def _actor_title(actors: Sequence[tuple[str, str, str]], *, index: int) -> str:
     words = title.split()
     if len(words) > 6:
         title = " ".join(words[:6])
-    return title[:1].upper() + title[1:] if title else ""
+    return capitalize_sentence_start_preserving_source_terms(title)
 
 
 def _participant_phrase(value: str) -> str:
@@ -901,7 +904,7 @@ def _upper_first(value: str) -> str:
     text = _clean(value)
     if not text:
         return ""
-    return text[:1].upper() + text[1:]
+    return capitalize_sentence_start_preserving_source_terms(text)
 
 
 def _clean(value: Any) -> str:

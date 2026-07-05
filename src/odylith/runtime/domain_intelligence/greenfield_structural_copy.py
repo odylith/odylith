@@ -22,6 +22,7 @@ STRUCTURAL_COPY_KEYS = frozenset(
         "product_layer",
         "qualification",
         "release",
+        "repo_name",
         "schema_version",
         "semantic_axis",
         "slug",

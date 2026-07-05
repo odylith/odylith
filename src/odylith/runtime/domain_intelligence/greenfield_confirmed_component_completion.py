@@ -41,6 +41,9 @@ def complete_component_rows(proposal: dict[str, Any]) -> bool:
         if not isinstance(row, dict):
             continue
         label = completion_text.component_label(row, index)
+        if _clean(row.get("label")) and _clean(row.get("label")) != label:
+            row["label"] = label
+            changed = True
         previous_label = (
             completion_text.component_label(rows[index - 2], index - 1)
             if index > 1 and isinstance(rows[index - 2], Mapping)

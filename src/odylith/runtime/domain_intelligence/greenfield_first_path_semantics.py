@@ -17,24 +17,21 @@ from odylith.runtime.common.prose_grammar import repair_modal_base_form_drift
 from odylith.runtime.common.prose_grammar import third_person_action_verb
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
-from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
-    carried_subject_action_verb as _carried_subject_action_verb,
-)
-from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
-    carried_subject_prefix as _carried_subject_prefix,
-)
-from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import (
-    looks_like_plural_subject as _looks_like_plural_subject,
-)
+from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import carried_subject_action_verb as _carried_subject_action_verb
+from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import carried_subject_prefix as _carried_subject_prefix
+from odylith.runtime.domain_intelligence.greenfield_first_path_carried_subjects import looks_like_plural_subject as _looks_like_plural_subject
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import MATERIAL_ACTION_RE as _MATERIAL_ACTION_RE
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import clean_first_path_text as _clean
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import drop_requirement_control_steps as _drop_requirement_control_steps
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import is_scope_or_deferred_statement as _is_scope_or_deferred_statement
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail as _strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import action_chain_fragment as _action_chain_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_led_action_parts as _actor_led_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     clean_visible_result_phrase as _clean_visible_result_phrase,
 )
-from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import (
-    starts_with_compound_noun_object as _starts_with_compound_noun_object,
-)
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import action_word_inside_compound_noun as _action_word_inside_compound_noun
+from odylith.runtime.domain_intelligence.greenfield_first_path_noun_compounds import starts_with_compound_noun_object as _starts_with_compound_noun_object
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import is_trivial_start as _is_trivial_start
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     leading_subject_prefix as _leading_subject_prefix,
@@ -54,8 +51,20 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import (
     visible_result_object as _visible_result_object,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_action_split import (
+    starts_subject_finite_action_clause as _starts_subject_finite_action_clause,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_review_outcome import (
+    review_step_visible_result as _review_step_visible_result,
+)
 from odylith.runtime.domain_intelligence import greenfield_first_path_purpose_context as _purpose_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_step_roles import drop_release_proof_control_steps
+from odylith.runtime.domain_intelligence.greenfield_first_path_temporal import (
+    base_from_gerund_action as _base_from_gerund_action,
+)
+from odylith.runtime.domain_intelligence.greenfield_first_path_temporal import (
+    temporal_head_can_split as _temporal_head_can_split,
+)
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
 from odylith.runtime.domain_intelligence.greenfield_first_path_visible_results import (
     prefer_visible_result_object as _prefer_visible_result_object,
@@ -162,7 +171,8 @@ def _first_path_steps(value: str) -> list[str]:
         normalized = normalized[1:]
     merged = _merge_leading_modifier_steps(normalized)
     without_context = _drop_leading_context_fragments(merged)
-    return _unique(drop_release_proof_control_steps(without_context))
+    without_requirements = _drop_requirement_control_steps(without_context)
+    return _unique(drop_release_proof_control_steps(without_requirements))
 
 
 def _merge_leading_modifier_steps(steps: Sequence[str]) -> list[str]:
@@ -198,14 +208,12 @@ def _is_leading_context_fragment(value: str) -> bool:
 
 def _step_has_action_signal(value: str) -> bool:
     text = _clean(value).strip(" .")
-    return bool(
-        text
-        and (
-            _MATERIAL_ACTION_RE.search(text)
-            or _looks_like_visible_result(text)
-            or _connector_core_starts_action_clause(text)
-            or looks_like_finite_action(text)
-        )
+    return bool(text) and (
+        bool(_MATERIAL_ACTION_RE.search(text))
+        or (not _MATERIAL_ACTION_RE.search(text) and bool(_actor_led_action_parts(text)[1]))
+        or _looks_like_visible_result(text)
+        or _connector_core_starts_action_clause(text)
+        or looks_like_finite_action(text)
     )
 
 
@@ -288,6 +296,9 @@ def _material_action(steps: Sequence[str]) -> str:
             return _sentence_case(_action_chain_fragment(step))
         if _MATERIAL_ACTION_RE.search(step):
             return _sentence_case(_action_chain_fragment(step))
+        actor, action = _actor_led_action_parts(step)
+        if actor and action:
+            return _sentence_case(f"{actor} {action}")
     return _sentence_case(_action_chain_fragment(steps[0]))
 
 def _visible_outcome(steps: Sequence[str]) -> str:
@@ -300,6 +311,10 @@ def _visible_outcome(steps: Sequence[str]) -> str:
         if _is_meta_visible_result_summary(step) or _is_scope_or_deferred_statement(step):
             continue
         if _is_routing_handoff_step(step):
+            continue
+        review_visible = _review_step_visible_result(step)
+        if review_visible:
+            preferred.append(review_visible)
             continue
         if _looks_like_visible_result(step):
             cleaned = _clean_visible_result_phrase(step) or step
@@ -406,7 +421,7 @@ def _recovery_action(steps: Sequence[str]) -> str:
 
 
 def _clean_step(value: str) -> str:
-    text = _clean(value).strip(" .,;:")
+    text = _strip_requirement_control_tail(_clean(value)).strip(" .,;:")
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", text, flags=re.IGNORECASE)
     text = re.sub(
         r"^(?:(?:release\s+\S+|the\s+first\s+release|first\s+release)\s+)?"
@@ -528,7 +543,7 @@ def _split_action_pieces(value: str) -> list[str]:
                 for part in _merge_status_modifier_parts(
                     [piece.strip(" .,;:") for piece in re.split(r",\s+", segment) if piece.strip(" .,;:")]
                 ):
-                    if current and _starts_new_action_clause(part) and not _continues_subject_object_list(part, current):
+                    if current and _starts_new_action_clause(part, allow_homonym_subject=True) and not _continues_subject_object_list(part, current):
                         pieces.append(current.strip(" .,;:"))
                         current = _with_carried_subject(part, subject_prefix)
                     else:
@@ -590,29 +605,16 @@ def _split_temporal_action_tail(value: str) -> list[str]:
         text,
         flags=re.IGNORECASE,
     )
-    if not match or not _MATERIAL_ACTION_RE.search(text[: match.start()]):
+    head = text[: match.start()].strip(" ,") if match else ""
+    if not match or not _temporal_head_can_split(head, actor_led_subject_prefix=_has_actor_led_subject_prefix(head)):
         return [text]
     base = _base_from_gerund_action(match.group("verb"))
     if not base:
         return [text]
-    head = _compact_final_list_comma(text[: match.start()].strip(" ,"))
+    head = _compact_final_list_comma(head)
     tail = match.group("tail").strip(" ,")
     action = f"{base} {tail}".strip(" .")
     return [part for part in (head, action) if part]
-
-
-def _base_from_gerund_action(value: str) -> str:
-    token = str(value or "").casefold().strip(".,;:")
-    if not token.endswith("ing") or len(token) <= 5:
-        return ""
-    stem = token[:-3]
-    candidates = [stem, f"{stem}e"]
-    if len(stem) >= 3 and stem[-1:] == stem[-2:-1]:
-        candidates.append(stem[:-1])
-    for candidate in candidates:
-        if _MATERIAL_ACTION_RE.fullmatch(candidate):
-            return base_action_clause(candidate)
-    return ""
 
 
 def _with_carried_subject(value: str, subject_prefix: str) -> str:
@@ -705,15 +707,30 @@ def _connector_core_starts_action_clause(value: str) -> bool:
     }
 
 
-def _starts_new_action_clause(value: str) -> bool:
+def _starts_new_action_clause(value: str, *, allow_homonym_subject: bool = False) -> bool:
     text = re.sub(r"^(?:and|then|later|then\s+later)\s+", "", _clean(value), flags=re.IGNORECASE).strip()
     if not text:
         return False
     words = [word.strip(".,:;()[]{}") for word in text.split() if word.strip(".,:;()[]{}")]
-    if len(words) >= 3 and any(
-        _MATERIAL_ACTION_RE.match(" ".join(words[index:])) for index in range(1, min(3, len(words) - 1))
+    if allow_homonym_subject and _starts_subject_finite_action_clause(
+        text,
+        material_action_match=_MATERIAL_ACTION_RE.match,
     ):
         return True
+    if len(words) >= 3 and any(
+        _MATERIAL_ACTION_RE.match(" ".join(words[index:]))
+        and looks_like_actor_led_subject_prefix(" ".join(words[:index]), text)
+        for index in range(1, min(3, len(words) - 1))
+    ):
+        return True
+    if len(words) >= 3 and words[0].casefold() not in {"a", "an", "and", "or", "the", "then"}:
+        action_tail = " ".join(words[1:])
+        action_match = _MATERIAL_ACTION_RE.match(action_tail)
+        if action_match and not (
+            _action_word_inside_compound_noun(action_tail, action_match.start())
+            or _starts_with_compound_noun_object(action_tail)
+        ):
+            return True
     if _starts_with_compound_noun_object(text):
         return False
     if _starts_with_result_object_modifier(text):
@@ -760,30 +777,6 @@ def _valid_step(value: str) -> bool:
     if re.fullmatch(r"(?:capture|view|edit|create|done|path|mean|person)(?:\s*,\s*(?:capture|view|edit|create|done|path|mean|person))*", text, re.IGNORECASE):
         return False
     return True
-
-
-def _is_scope_or_deferred_statement(value: str) -> bool:
-    """Return whether a clause describes release limits, not first-path behavior."""
-    text = _clean(value).strip(" .")
-    if not text:
-        return False
-    lowered = text.casefold()
-    if re.search(r"\b(?:act|follow(?:-|\s+)up|research|respond|retry|return)\s+later\b", lowered) and _MATERIAL_ACTION_RE.search(
-        text
-    ):
-        if not re.search(r"\b(?:defer|deferred|future|not\s+included|not\s+claim|outside|release|scope)\b", lowered):
-            return False
-    if re.search(
-        r"\b(?:out\s+of\s+scope|outside\s+(?:the\s+)?(?:first\s+)?release|outside\s+scope|"
-        r"stay\s+outside|stays\s+outside|deferred|future|not\s+included|not\s+claim|"
-        r"must\s+not\s+claim|does\s+not\s+claim)\b",
-        lowered,
-    ):
-        return True
-    return bool(
-        re.search(r"\b(?:multi|external|automated|long-term|broader|production-scale|fleet-wide)\b", lowered)
-        and re.search(r"\b(?:scope|release|stay|stays|outside|deferred|later|future|not)\b", lowered)
-    )
 
 
 def _sentence_case(value: str) -> str:

@@ -36,6 +36,7 @@ def build_backlog_row(
     internal_systems: list[str],
     external_systems: list[str],
     non_goals: list[str],
+    source_requirements: list[str] | None = None,
     intelligence_actors: list[str] | None = None,
     workstream_type: str = "implementation",
 ) -> dict[str, Any]:
@@ -93,6 +94,7 @@ def build_backlog_row(
             internal_systems=internal_systems,
             external_systems=external_systems,
             non_goals=non_goals,
+            source_requirements=source_requirements or [],
         ),
     }
 

@@ -1626,6 +1626,18 @@
   forensics/leakage/governance-learning sidecars until the source fix is
   shipped, then prove the shipped pinned runtime separately through installed
   release artifacts.
+  Repeated forensics mechanism on 2026-07-02: a fresh `local-release-assets`
+  build from committed head failed the 285-term platform leakage gate because
+  committed Registry `FORENSICS.v1.json` sidecars again retained old scenario
+  vocabulary in generic platform custody. Source-local `--check-only` correctly
+  reported stale sidecars, but the first source-local sync pass also exposed a
+  convergence bug: updating a component `CURRENT_SPEC.md` could change the
+  workspace-derived forensics snapshot, leaving affected sidecars stale until a
+  second invocation. Forward fix: release packaging and installed matrix
+  wrappers now require a source-local `sync-component-spec-requirements
+  --check-only` preflight before leakage proof, and the sync command reruns the
+  forensics projection from a refreshed Registry report after any component spec
+  write so one invocation leaves check-only clean.
   Fresh installed proof against
   `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-e4441a43`
   reopened the matrix on 2026-07-02 after the exact grn-sim source-local
@@ -1657,6 +1669,122 @@
   then completed in 24.268s with a passed manifest, zero issues, 4 Radar
   records, 3 Registry specs, 6 Atlas diagrams, no `result result`, preserved
   `published proof`, no `accepted result for review` fallback, and temp cleanup.
+  High-volume variance learning on 2026-07-02: the maintained matrix passed
+  14/14 standard cases on the working forensics-preflight dist, but the first
+  external 30-case no-browser sweep exposed 12 real post-confirm create
+  failures across climate data assimilation, battery electrolyte degradation,
+  and plasma confinement shot planning. All failures shared the same generic
+  signature: accepted first-path text entered the semantic compiler with
+  adjacent duplicate copy such as `review review`, which then escaped into
+  governed surfaces and was correctly rejected before writes. The failed
+  mechanism was semantic ingress custody, not Atlas, Registry, or scientific
+  domain vocabulary. The fix moves adjacent duplicate-word cleanup into shared
+  confirmed-text and first-path ingress owners so renderers do not carry the
+  burden. Representative source-local replays for all three failed project
+  classes then committed governed records with passed manifests, zero issues,
+  and no repeated review copy.
+  Follow-up quality learning on 2026-07-02: broader runtime tests found that
+  actor completion and specialized component contracts still had semantic
+  overreach after the ingress repair. Actor completion mined rich accepted
+  actor lists for extra role nouns, hyphenated human labels were rendered as
+  awkward display names, document-context proof obligations could remain
+  hyphenated in component specs, and specialized status/document profiles could
+  bury access proof rows or truncate important transition states. The generic
+  repair keeps rich operator actor lists authoritative, derives missing actors
+  only from first-path evidence when the accepted list is absent or thin,
+  naturalizes display labels at render boundaries, selects proof rows by proof
+  category instead of blind order, and merges semantic/profile transition
+  fragments before lifecycle summarization. Runtime proof passed 179 greenfield
+  quality tests, while the install/matrix/leakage/preflight slice passed 106
+  tests. Release readiness still requires a fresh dist and hundreds-scale
+  seeded installed sweep from the current code.
+  Harness learning on 2026-07-02: deleting temp repos after every simulation
+  left the platform without enough durable artifact evidence for brutal QA at
+  scale. The matrix harness now records per-case retained evidence before
+  cleanup: case metadata, prompt and confirmed-intent hashes, artifact
+  inventory, artifact hashes and excerpts, required-term grounding from full
+  readback text, browser-proof state, quality findings, and manifest summary.
+  It also supports seeded install mode, installing Odylith once per batch and
+  cloning mutable consumer repo state for each case while symlinking the
+  immutable runtime. This preserves cleanup discipline without losing
+  auditability and makes 100s of project simulations operationally realistic.
+  Proof-scoring failed mechanism on 2026-07-02: the first two seeded
+  high-volume discovery batches correctly skipped browser proof and recorded
+  that skip at the top level, but each per-case quality block still awarded
+  `browser_surface_proof: 10` and printed `all brutal release-quality
+  dimensions scored 10`. That made discovery evidence look like complete
+  release-quality browser proof. The source harness now marks unrequested
+  browser proof as an unscored dimension with
+  `score_basis=volume_discovery_without_browser_surface_proof`, preserves pass
+  status for fast volume discovery, and reserves the full brutal release claim
+  for runs where browser proof is actually requested and attempted.
+  High-volume homonym/title learning on 2026-07-02: seeded batch three exposed
+  six real quality failures after governed create completed for weather radar
+  calibration and geologic atlas field mapping cases. The generator preserved
+  lower-level first-path phrases such as `radar scan`, `beam blockage
+  evidence`, `map sheet`, and `stratigraphy evidence`, but collapsed the
+  project frame to generic outcome labels such as `Calibration Decision
+  Workspace` and `Mapping Release Workspace`, leaving required domain
+  qualifiers present only in accepted-project runtime state. The source fix
+  preserves command-led prompt targets before sentence boundaries as the
+  canonical project frame, keeps source-grounded control-plane homonyms valid
+  only in matching local domain context, rejects object-list fragments such as
+  `Drought Restrictions Expert` and `Windows Operator` as supplemental actors,
+  and restores readable title splitting for source shorthand such as
+  `adverse-event` and `follow-up`. The evidence harness now separates required
+  term grounding across all retained artifacts from scored generated-surface
+  grounding, and reports when a required term appears only outside scored
+  governed artifacts. Focused proof passed six homonym/title/evidence tests,
+  five prior recovery regressions, four install evidence/scoring tests, syntax
+  proof for the touched source, and the full confirmed-intent recovery suite
+  passed 48 tests in 151.01 seconds.
+  High-volume homonym stress learning on 2026-07-02: seeded batch four passed
+  27 of 30 platform-homonym cases, including product-domain uses of registry,
+  compass, casebook, tribunal, source, proof, pipeline, and agent language, but
+  the three `software release waiver board` cases failed before governed writes
+  in 25.505-26.599s. The final blocker was
+  `confirmed Atlas flowchart First Path Sequence omits the tail of the accepted
+  first path`. Source-local replay confirmed the flowchart correctly rendered
+  the terminal event as `Publish go decision`; the false failure came from the
+  tail-preservation gate reducing the accepted tail to `{manager, publish}`
+  after `decision` was treated as generic, while the renderer intentionally
+  stripped the actor subject and exposed only `publish` in the terminal node.
+  This is a generic checker/semantic-shape mismatch, not a software-release
+  domain exception and not a reason to weaken Atlas tail preservation. The
+  repair must compare the same subject-stripped terminal action/object shape
+  that the renderer owns, while still rejecting diagrams that drop the terminal
+  action or visible result entirely.
+  High-variance actor-source learning on 2026-07-04: the new 60-case
+  taxonomy regression stopped after 25 clean cases on `robotics warehouse
+  near-miss lab v1`. The exact failed prompt named a concrete actor, `safety
+  engineers`, and also contained object-list material, `baseline routes, and
+  operator notes before releasing a safety result`. Confirmed-intent recovery
+  promoted that object-list tail into extra human actor rows, including
+  `Operator Notes`, and final post-confirm quality correctly failed before
+  governed writes with
+  `greenfield.public.product.content.uses.generic.actor.label.instead.project`.
+  This is not a robotics or warehouse defect. The failed mechanism is
+  candidate-clause recovery accepting object-list fragments after a concrete
+  actor has already been recovered. The banned fixes remain explicit: do not
+  weaken the generic actor-label gate, do not add project-domain exceptions,
+  and do not patch rendered Radar, Registry, Atlas, or project-brief strings.
+  The source fix must keep actor extraction semantic: once a clause yields a
+  concrete actor, later comma/and fragments need their own human actor signal
+  before they can become additional actors.
+  Failed mechanism learning on 2026-07-04: reviewer audit caught that the
+  first repair pass overcorrected. A broad material-action fallback could let
+  action-only first paths pass completeness without a distinct visible
+  outcome; bounded workflow-phrase actor recovery could promote non-human
+  result/workflow nouns before `turns ... into ...`; actor-row shortening
+  could drop legitimate single-action object-list detail from Problem and
+  Product View; and visible-result grounding could strip meaningful completion
+  state verbs from valid result phrases. These failures are generic semantic
+  custody failures, not project-domain defects. The next repair must preserve
+  typed source facts without weakening validation: require a visible result
+  or dense actor/action/object path shape, reject non-human workflow/result
+  subjects as actors, summarize actor rows by parsed path shape rather than
+  raw comma splitting, and strip action-state morphology only when it is
+  ungrounded/generated rather than accepted product language.
 
 - Related Incidents/Bugs: CB-208
 

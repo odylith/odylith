@@ -202,6 +202,13 @@ def collapse_adjacent_duplicate_terms(value: str) -> str:
     return "\n".join(_collapse_adjacent_duplicate_terms_line(line) for line in lines)
 
 
+def collapse_repeated_phrase_units(value: str, *, max_unit_terms: int = 4) -> str:
+    """Collapse duplicate neighboring word groups in generated labels."""
+
+    lines = str(value or "").splitlines()
+    return "\n".join(_collapse_repeated_phrase_units_line(line, max_unit_terms=max_unit_terms) for line in lines)
+
+
 def collapse_adjacent_duplicate_terms_tree(value: object) -> object:
     """Return a public-copy tree with duplicate neighboring terms collapsed."""
 
@@ -368,6 +375,36 @@ def _collapse_adjacent_duplicate_terms_line(value: str) -> str:
     return " ".join(result)
 
 
+def _collapse_repeated_phrase_units_line(value: str, *, max_unit_terms: int) -> str:
+    words = str(value or "").split()
+    if len(words) < 4:
+        return str(value or "")
+    result = list(words)
+    while True:
+        match = _repeated_phrase_unit_match(result, max_unit_terms=max_unit_terms)
+        if match is None:
+            return " ".join(result)
+        start, size = match
+        del result[start + size : start + (2 * size)]
+
+
+def _repeated_phrase_unit_match(words: Sequence[str], *, max_unit_terms: int) -> tuple[int, int] | None:
+    keys = [_term_key(word) for word in words]
+    for start in range(len(keys) - 1):
+        largest = min(max_unit_terms, (len(keys) - start) // 2)
+        for size in range(largest, 0, -1):
+            first = keys[start : start + size]
+            if not _phrase_unit_is_meaningful(first):
+                continue
+            if first == keys[start + size : start + (2 * size)]:
+                return start, size
+    return None
+
+
+def _phrase_unit_is_meaningful(keys: Sequence[str]) -> bool:
+    return bool(keys and all(key and len(key) >= 3 for key in keys) and any(len(key) >= 5 for key in keys))
+
+
 def _duplicate_term_separator(value: str) -> bool:
     return str(value or "").strip() in {"-", "--", "---", "–", "—", ":", "|", "/"}
 
@@ -389,6 +426,7 @@ __all__ = [
     "RELATION_TAIL_WORDS",
     "collapse_adjacent_duplicate_terms",
     "collapse_adjacent_duplicate_terms_tree",
+    "collapse_repeated_phrase_units",
     "normalize_artifact_tail",
     "reference_relation_description",
     "relation_object_phrase",

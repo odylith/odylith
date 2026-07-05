@@ -160,6 +160,7 @@ def build_workstream_domain_intelligence(
     internal_systems: list[str],
     external_systems: list[str],
     non_goals: list[str],
+    source_requirements: list[str] | None = None,
 ) -> dict[str, Any]:
     """Render the domain-intelligence packet from one shared workstream contract."""
 
@@ -183,6 +184,7 @@ def build_workstream_domain_intelligence(
         state_object=state_object,
         first_path=first_path,
         proof_boundary=proof_boundary,
+        source_anchors=source_requirements or [],
     )
     packet = {
         "schema_version": "odylith.greenfield.workstream_intelligence.v1",

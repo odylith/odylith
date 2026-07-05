@@ -74,6 +74,40 @@ def test_component_contract_removes_actor_and_handoff_verbs_from_artifact_nouns(
     assert "service visit" in rendered
     assert not generated_semantic_slop_issues(contract)
 
+    evidence_contract = derive_component_semantic_contract(
+        {
+            "label": "Evidence Annotation and Extraction Service",
+            "source_system_description": (
+                "links included sources to annotations, captures extracted fields, records source locations, "
+                "validates missing evidence, and hands extracted evidence into assessment"
+            ),
+        },
+        proposal={
+            "intent": {
+                "title": "Structured Evidence Review Workspace",
+                "first_path": (
+                    "A review lead creates an Evidence Review Project, imports source records, screens independently, "
+                    "moves included sources into evidence extraction, records quality assessment, builds a synthesis table, "
+                    "and exports a review package with source references and decision history."
+                ),
+                "proof_boundary": (
+                    "Release succeeds when the exported package explains which evidence was extracted, "
+                    "which quality assessment was recorded, and which audit events prove the result."
+                ),
+            }
+        },
+        sibling={"label": "Quality Assessment and Scoring"},
+        previous_label="Independent Screening Workflow",
+        next_label="Quality Assessment and Scoring",
+        state_label="Evidence Review Project",
+    ).fields
+    evidence_rendered = json.dumps(evidence_contract, sort_keys=True).casefold()
+
+    assert "hands extracted evidence" not in evidence_rendered
+    assert "extracted evidence into assessment" not in evidence_rendered
+    assert "extracted evidence" in evidence_rendered
+    assert not generated_semantic_slop_issues(evidence_contract)
+
 
 def test_component_contract_preserves_relative_clause_objects_as_artifacts() -> None:
     contract = derive_component_semantic_contract(

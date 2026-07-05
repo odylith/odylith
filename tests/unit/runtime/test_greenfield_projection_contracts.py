@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_text_model import outcome_action_phrase
+from odylith.runtime.domain_intelligence.greenfield_visible_result_focus import focused_visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import generated_semantic_slop_issues
 from odylith.runtime.domain_intelligence.greenfield_workstream_risk_projection import domain_risk_for_row
 from odylith.runtime.governance import artifact_tribunal
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def test_visible_result_object_stays_modal_safe_in_user_can_projection() -> None:
@@ -11,6 +16,17 @@ def test_visible_result_object_stays_modal_safe_in_user_can_projection() -> None
 
     assert action == "review an invoice anomaly review result with blockers and evidence for review"
     assert generated_semantic_slop_issues(f"Result proof confirms the user can {action}.") == []
+
+
+def test_visible_result_focus_strips_non_goal_tails_from_result_identity() -> None:
+    assert (
+        focused_visible_result_object("the channel assignment plan without automating expert judgment")
+        == "the channel assignment plan"
+    )
+    assert (
+        focused_visible_result_object("a reviewable pattern summary without making diagnosis claims")
+        == "a reviewable pattern summary"
+    )
 
 
 def test_comma_led_finite_outcome_stays_modal_safe_in_user_can_projection() -> None:
@@ -54,3 +70,24 @@ def test_child_workstream_risk_projection_preserves_governed_risk_posture() -> N
 
     assert risk.startswith("Risk:")
     assert decision.passed
+
+
+def test_sequence_component_router_does_not_embed_vertical_keyword_tables() -> None:
+    source = (
+        REPO_ROOT / "src/odylith/runtime/domain_intelligence/greenfield_sequence_diagram.py"
+    ).read_text(encoding="utf-8")
+
+    for token in (
+        "adherence",
+        "arrival",
+        "departure",
+        "discount",
+        "dose",
+        "dosing",
+        "price",
+        "pricing",
+        "quote",
+        "timetable",
+        "vehicle",
+    ):
+        assert f'"{token}"' not in source

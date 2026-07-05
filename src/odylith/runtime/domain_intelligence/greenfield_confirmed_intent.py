@@ -61,6 +61,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import lab
 from odylith.runtime.domain_intelligence.greenfield_first_path_common import (
     clean_first_path_text as _clean_first_path,
 )
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import strip_requirement_control_tail
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
@@ -133,7 +134,7 @@ def normalize_confirmed_intent(value: object, *, prompt: str = "", fallback_titl
         "prompt": _canonical_prompt_text(payload.get("prompt") or prompt, title_normalization=title_normalization),
         "product_story": _clean(payload.get("product_story") or payload.get("story")),
         "state_object": _clean(payload.get("state_object") or payload.get("state_object_first_journey")),
-        "first_path": _clean_first_path(payload.get("first_path") or payload.get("first_workflow")),
+        "first_path": _accepted_first_path(payload.get("first_path") or payload.get("first_workflow")),
         "proof_boundary": _clean(payload.get("proof_boundary")),
         "problem": _clean(payload.get("problem") or payload.get("user_problem") or payload.get("user_problem_and_risk")),
         "customer": _clean(payload.get("customer")),
@@ -248,7 +249,7 @@ def parse_confirmed_intent_text(text: str, *, prompt: str = "", fallback_title: 
         "prompt": _canonical_prompt_text(prompt, title_normalization=title_normalization),
         "product_story": _section_text(sections, "product_story") or structured_preamble_story or derived_story or preamble_story,
         "state_object": _section_text(sections, "state_object") or derived_state,
-        "first_path": _clean_first_path(_section_text(sections, "first_path") or derived_first_path),
+        "first_path": _accepted_first_path(_section_text(sections, "first_path") or derived_first_path),
         "proof_boundary": _section_text(sections, "proof_boundary") or derived_proof,
         "problem": _section_text(sections, "problem"),
         "customer": _section_text(sections, "customer"),
@@ -291,8 +292,8 @@ def _restore_prompt_material_first_path(
     prompt_source = _clean(result.get("prompt"))
     if not prompt_source:
         return result
-    prompt_first_path = _clean_first_path(prompt_first_path_source(prompt_source))
-    current_first_path = _clean_first_path(result.get("first_path"))
+    prompt_first_path = _accepted_first_path(prompt_first_path_source(prompt_source))
+    current_first_path = _accepted_first_path(result.get("first_path"))
     if not prompt_first_path or prompt_first_path.casefold() == current_first_path.casefold():
         return result
     prompt_model = first_path_model(prompt_first_path)
@@ -313,6 +314,10 @@ def _restore_prompt_material_first_path(
         return result
     result["first_path"] = prompt_first_path
     return result
+
+
+def _accepted_first_path(value: Any) -> str:
+    return strip_requirement_control_tail(_clean_first_path(value))
 
 
 def _material_prompt_terms(value: Any) -> set[str]:

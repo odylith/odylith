@@ -116,6 +116,40 @@ def test_artifact_judgment_reviews_preview_values_not_structural_mapping_keys() 
     )
 
 
+def test_artifact_judgment_does_not_treat_source_owned_gate_labels_as_contract_fragments() -> None:
+    package = GreenfieldCompletionPackage(
+        proposal={
+            "intent": {
+                "title": "Asset Gate Reliability Workspace",
+                "state_object": "Asset Gate Reliability Workspace Result Record",
+            },
+            "components": [
+                {
+                    "label": "Asset Gate Reliability Workspace Review Workspace",
+                }
+            ],
+        },
+        backlog_result={
+            "idea_files": {
+                "odylith/radar/source/W-001.md": (
+                    "Validate that this slice preserves Asset Gate Reliability Workspace Result Record "
+                    "and keeps review evidence attached."
+                )
+            }
+        },
+        rendered_component_specs={
+            "Asset Gate Reliability Workspace Review Workspace": (
+                "Reviewers inspect Asset Gate Reliability Workspace Result Record with blocked-path evidence."
+            )
+        },
+    )
+
+    assert not any(
+        "component-contract noun slots" in issue
+        for issue in greenfield_artifact_judgment_issues(package)
+    )
+
+
 def test_semantic_overlap_normalizes_gerund_first_path_actions() -> None:
     assert semantic_overlap_ratio(
         "submitting proposals and seeing decision status",
@@ -1364,7 +1398,7 @@ def test_greenfield_apply_commits_with_quality_debt_when_renderer_keeps_emitting
         "_refresh_greenfield_dashboard",
         lambda **_kwargs: {
             "status": "passed",
-            "surfaces": ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"],
+            "surfaces": ["radar", "registry", "atlas", "compass", "tooling_shell"],
             "view": "odylith/index.html?tab=project",
         },
     )
@@ -1416,7 +1450,7 @@ def test_greenfield_apply_commits_with_quality_debt_for_final_next_steps_project
         "_refresh_greenfield_dashboard",
         lambda **_kwargs: {
             "status": "passed",
-            "surfaces": ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"],
+            "surfaces": ["radar", "registry", "atlas", "compass", "tooling_shell"],
             "view": "odylith/index.html?tab=project",
         },
     )

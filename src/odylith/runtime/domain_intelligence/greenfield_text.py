@@ -49,6 +49,39 @@ def clean_text(value: Any) -> str:
     return " ".join(str(value or "").split()).strip()
 
 
+def dedupe_adjacent_words(value: Any) -> str:
+    """Collapse adjacent duplicate word tokens in generated prose."""
+
+    text = clean_text(value)
+    if not text:
+        return ""
+    output: list[str] = []
+    previous_key = ""
+    for token in text.split(" "):
+        key = _adjacent_word_key(token)
+        if key and key == previous_key:
+            _carry_duplicate_terminal_punctuation(output, token)
+            continue
+        output.append(token)
+        previous_key = key
+    return clean_text(" ".join(output))
+
+
+def _adjacent_word_key(token: str) -> str:
+    word = str(token or "").strip("`*_~.,;:!?()[]{}\"'")
+    if len(word) < 2:
+        return ""
+    return word.casefold() if any(char.isalnum() for char in word) else ""
+
+
+def _carry_duplicate_terminal_punctuation(output: list[str], token: str) -> None:
+    if not output:
+        return
+    suffix = str(token or "")[-1:]
+    if suffix in ".!?" and output[-1][-1:] not in ".!?":
+        output[-1] = f"{output[-1]}{suffix}"
+
+
 def clean_artifact_text(value: Any, *, split_parentheses: bool = False) -> str:
     text = clean_text(value).replace("`", "")
     if split_parentheses:

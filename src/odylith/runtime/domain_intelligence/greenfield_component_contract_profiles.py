@@ -92,7 +92,7 @@ def status_view_contract(
     )
     return {
         "owned_state": (
-            f"{view_scope + ', ' if view_scope else ''}{timeline}, current next-action owner, {role_scope}, transition history, blocked or stale indicators, "
+            f"{view_scope + ', ' if view_scope else ''}{timeline}, {_status_owner_phrase(object_base)}, {role_scope}, transition history, blocked or stale indicators, "
             "source freshness marker, and audit trail"
         ),
         "accepted_inputs": (
@@ -125,6 +125,15 @@ def _status_view_scope(*, label: str, context: str) -> str:
     return ", ".join(unique_text(rows))
 
 
+def _status_owner_phrase(object_base: str) -> str:
+    text = _clean(object_base).casefold().strip(" .")
+    if not text:
+        return "status owner"
+    if text.endswith(" status"):
+        return f"{text} owner"
+    return f"{text} status owner"
+
+
 def _object_phrase(value: str) -> str:
     text = _clean(value).casefold().replace("_", " ")
     if not text:
@@ -147,7 +156,7 @@ def _packet_phrase(context: str, *, object_name: str) -> str:
     packet = _context_packet_phrase(lowered)
     if packet:
         return packet
-    return f"{object_name} context bundle"
+    return object_name
 
 
 def _context_packet_phrase(lowered_context: str) -> str:
@@ -179,7 +188,7 @@ def _context_label(context: str, *, object_name: str) -> str:
         subject = match.group("context").split()[0]
         if subject in {"and", "or", "the", "a", "an"}:
             continue
-        return match.group("context")
+        return match.group("context").replace("-", " ")
     return f"{_object_base(object_name)} context"
 
 

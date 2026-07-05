@@ -6,6 +6,9 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
+    capitalize_sentence_start_preserving_source_terms,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
@@ -68,9 +71,7 @@ def _clean_objective_sentence(value: str) -> str:
     lowered = text.lower()
     if lowered.startswith("govern "):
         text = text[len("govern "):].strip()
-    if text:
-        text = text[0].upper() + text[1:]
-    return text
+    return _capitalize_first(text)
 
 
 def _display_title(*, raw_title: str, intro: str) -> str:
@@ -240,7 +241,7 @@ def _dashboard_excerpt(value: str, *, limit: int = 210) -> str:
 
 
 def _capitalize_first(value: str) -> str:
-    return f"{value[:1].upper()}{value[1:]}" if value else value
+    return capitalize_sentence_start_preserving_source_terms(value)
 
 
 def _join_titles(values: Sequence[str]) -> str:

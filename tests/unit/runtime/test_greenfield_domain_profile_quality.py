@@ -213,6 +213,24 @@ def test_quality_gate_allows_domain_specific_actor_names_but_rejects_placeholder
     ]
     assert any("generic actor label `Reviewer`" in issue for issue in greenfield_quality_issues(placeholder))
 
+    for label, action in (
+        ("Reviewer", "handles final approval"),
+        ("Operator", "coordinates escalations"),
+        ("Maintainer", "triages drift"),
+        ("Reviewer", "manages release exceptions"),
+    ):
+        generic_action = _host_reasoned_ecommerce_proposal()
+        generic_action["assumptions"] = [
+            {"id": "ASM-001", "statement": f"{label} {action} without a project-specific role."}
+        ]
+        assert any(f"generic actor label `{label}`" in issue for issue in greenfield_quality_issues(generic_action))
+
+    domain_specific = _host_reasoned_ecommerce_proposal()
+    domain_specific["assumptions"] = [
+        {"id": "ASM-001", "statement": "Safety reviewer handles release exceptions for hazardous runs."}
+    ]
+    assert not any("generic actor label `Reviewer`" in issue for issue in greenfield_quality_issues(domain_specific))
+
 
 def test_quality_gate_meaningful_terms_use_shared_domain_index() -> None:
     source_root = (
@@ -262,6 +280,24 @@ def test_project_prompt_echo_is_rejected_inside_artifact_content() -> None:
     issues = greenfield_quality_issues(proposal)
 
     assert any("repeats the raw prompt" in issue for issue in issues)
+
+
+def test_project_prompt_echo_is_rejected_inside_project_brief_content() -> None:
+    prompt = "Build a commerce launch recovery workflow for independent merchants with order retry proof"
+    title = "Commerce Launch Recovery Workflow"
+    for field, repeated in (
+        ("purpose", prompt),
+        ("project_outcome", title),
+        ("operating_principle", prompt),
+    ):
+        proposal = _host_reasoned_ecommerce_proposal()
+        proposal["intent"]["prompt"] = prompt
+        proposal["intent"]["title"] = title
+        proposal["project_brief"][field] = f"{repeated} is repeated instead of being authored as project language."
+
+        issues = greenfield_quality_issues(proposal)
+
+        assert any("repeats the raw" in issue and f"project_brief.{field}" in issue for issue in issues)
 
 
 def test_runtime_source_does_not_contain_canned_greenfield_domain_families() -> None:

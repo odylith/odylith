@@ -20,6 +20,20 @@ from odylith.runtime.domain_intelligence.greenfield_text import text_values
 _REPETITION_MIN_WORDS = 9
 _REPETITION_MIN_CHARS = 68
 _CODE = "package_repetition"
+_CANONICAL_LABEL_SUFFIX_WORDS = frozenset(
+    {
+        "board",
+        "engine",
+        "hub",
+        "ledger",
+        "module",
+        "register",
+        "registry",
+        "service",
+        "store",
+        "workspace",
+    }
+)
 
 
 def package_repetition_quality_findings(
@@ -164,6 +178,8 @@ def _allowed_repetition_chunk(
 ) -> bool:
     if key in generic_allowed or _canonical_repetition_allowed(key, canonical_allowed, artifact):
         return True
+    if _canonical_label_prefix_allowed(key, (*generic_allowed, *canonical_allowed.keys())):
+        return True
     body = _section_body_for_repetition(chunk)
     if not body:
         return False
@@ -173,6 +189,7 @@ def _allowed_repetition_chunk(
         and (
             body_key in generic_allowed
             or _canonical_repetition_allowed(body_key, canonical_allowed, artifact)
+            or _canonical_label_prefix_allowed(body_key, (*generic_allowed, *canonical_allowed.keys()))
         )
     )
 
@@ -184,6 +201,20 @@ def _canonical_repetition_allowed(
 ) -> bool:
     for fact in canonical_allowed.get(key, ()):
         if artifact.projection_id in fact.allowed_projection_ids:
+            return True
+    return False
+
+
+def _canonical_label_prefix_allowed(key: str, allowed_keys: Sequence[str]) -> bool:
+    words = key.split()
+    if len(words) < 6:
+        return False
+    for allowed_key in allowed_keys:
+        allowed = normalize_string(allowed_key)
+        if not allowed.startswith(f"{key} "):
+            continue
+        suffix = allowed[len(key) :].strip().split()
+        if 1 <= len(suffix) <= 4 and suffix[-1] in _CANONICAL_LABEL_SUFFIX_WORDS:
             return True
     return False
 

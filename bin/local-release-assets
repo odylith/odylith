@@ -24,6 +24,7 @@ esac
 rm -rf "$dist_dir"
 mkdir -p "$dist_dir"
 
+require_current_component_forensics
 "$odylith_python" -m hatch build --target wheel "$dist_dir"
 "$odylith_python" scripts/release/publish_release_assets.py \
   --repo odylith/odylith \

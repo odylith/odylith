@@ -13,7 +13,7 @@ from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ord
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import modal_actor_action_parts
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
-from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import compact_result_object_label as _compact_result_object_label, strip_actor_role_subject as _strip_actor_role_subject
+from odylith.runtime.domain_intelligence.greenfield_sequence_action_labels import compact_result_object_label as _compact_result_object_label, strip_actor_role_subject as _strip_actor_role_subject, subjectless_action_label_clause as _subjectless_action_label_clause
 from odylith.runtime.domain_intelligence.greenfield_sequence_labeling import compact_text as _compact_text, flow_label as _flow_label, header_body_label as _header_body_label, node_id as _node_id, strip_dangling_tail as _strip_dangling_tail, trim as _trim, without_ellipsis as _without_ellipsis
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import ACTION_VERB_PATTERN as _ACTION_VERB_PATTERN
 from odylith.runtime.domain_intelligence.greenfield_sequence_steps import sequence_event_steps
@@ -46,6 +46,55 @@ _SEQUENCE_TERM_STOPWORDS = {
     "through",
     "with",
 }
+_COMPONENT_ACTION_AXES: tuple[tuple[frozenset[str], frozenset[str], int], ...] = (
+    (
+        frozenset({"add", "attach", "capture", "create", "draft", "enter", "import", "intake", "log", "open", "record", "save", "select", "store", "submit", "upload"}),
+        frozenset({"capture", "entry", "form", "intake", "record", "register", "source", "store", "submission"}),
+        14,
+    ),
+    (
+        frozenset({"choose", "compare", "display", "highlight", "render", "review", "see", "show", "surface", "view"}),
+        frozenset({"comparison", "dashboard", "display", "outcome", "presentation", "result", "review", "selection", "summary", "surface", "timeline", "view"}),
+        18,
+    ),
+    (
+        frozenset({"check", "configure", "define", "parameter", "policy", "setting", "setup", "validate"}),
+        frozenset({"configuration", "gate", "guardrail", "parameter", "policy", "setting", "setup", "validation"}),
+        14,
+    ),
+    (
+        frozenset({"align", "analyze", "calculate", "compute", "correlate", "derive", "estimate", "evaluate", "measure", "metric", "model", "predict", "score", "simulate", "trend", "update"}),
+        frozenset({"analysis", "calculation", "comparison", "correlation", "engine", "estimate", "estimation", "measurement", "metric", "model", "ranking", "score", "scoring", "trend", "visualization"}),
+        18,
+    ),
+    (
+        frozenset({"accept", "adjust", "approve", "condition", "decide", "decision", "dismiss", "finalize", "plan", "rationale", "recommendation", "target"}),
+        frozenset({"adjustment", "condition", "decision", "outcome", "plan", "rationale", "recommendation", "signoff", "target"}),
+        16,
+    ),
+    (
+        frozenset({"deliver", "delivery", "followup", "message", "notify", "receive", "reminder", "send"}),
+        frozenset({"deadline", "delivery", "followup", "freshness", "message", "notification", "reminder"}),
+        12,
+    ),
+    (
+        frozenset({"assign", "conflict", "eligible", "match", "route", "screen"}),
+        frozenset({"assignment", "conflict", "eligibility", "handoff", "matching", "queue", "routing"}),
+        12,
+    ),
+    (
+        frozenset({"audit", "history", "proof", "publish", "replay", "report"}),
+        frozenset({"attachment", "audit", "evidence", "history", "ledger", "proof", "provenance", "record", "report", "trail"}),
+        16,
+    ),
+    (
+        frozenset({"answer", "assessment", "feedback", "question", "resolved", "response", "rubric", "unresolved"}),
+        frozenset({"assessment", "evaluation", "feedback", "form", "issue", "question", "response", "rubric", "tracker"}),
+        12,
+    ),
+)
+
+
 def sequence_mermaid(
     *,
     label: str,
@@ -191,10 +240,10 @@ def _terminal_step_label(step: str, visible_result: str) -> str:
     action_label = _step_action_label(step)
     step_terms = _sequence_terms(step)
     action_terms = _sequence_terms(action_label)
-    if terminal_step_loses_distinctive_tail(step_terms=step_terms, label_terms=action_terms):
-        candidate = _compress_step_action_label(_imperative_handoff_focus(strip_action_subject(step)))
-        if not terminal_step_loses_distinctive_tail(step_terms=step_terms, label_terms=_sequence_terms(candidate)):
-            action_label = candidate[:1].upper() + candidate[1:] if candidate else action_label
+    candidate = "" if _is_modal_delegation_label(action_label) else _terminal_subjectless_action_candidate(step)
+    if candidate and not terminal_step_loses_distinctive_tail(step_terms=step_terms, label_terms=_sequence_terms(candidate)):
+        if terminal_step_loses_distinctive_tail(step_terms=step_terms, label_terms=action_terms) or len(candidate) < len(action_label):
+            action_label = candidate[:1].upper() + candidate[1:]
             action_terms = _sequence_terms(action_label)
     outcome_terms = _sequence_terms(outcome)
     if outcome and terminal_step_prefers_visible_result(
@@ -212,6 +261,14 @@ def _terminal_step_label(step: str, visible_result: str) -> str:
     if step_terms and not step_terms <= outcome_terms:
         return action_label
     return outcome[:1].upper() + outcome[1:] if outcome else action_label
+
+
+def _terminal_subjectless_action_candidate(step: str) -> str:
+    return _compress_step_action_label(_imperative_handoff_focus(strip_action_subject(step))).strip(" .")
+
+
+def _is_modal_delegation_label(value: str) -> bool:
+    return _compact_text(value).casefold().startswith("let ")
 
 
 def best_component_node_for_text(value: str, *, components: list[dict[str, Any]]) -> str:
@@ -290,159 +347,20 @@ def _step_component(step: str, *, components: list[dict[str, Any]], fallback_ind
 
 def _step_axis_component_index(step: str, *, rows: list[str], fallback_index: int = 0) -> int | None:
     text = _compact_text(step).casefold()
-    step_terms = _sequence_terms(text)
+    routing_text = strip_action_subject(text) or text
+    step_terms = _sequence_terms(routing_text)
     if not step_terms:
         return None
-    if re.search(r"\b(?:highlight|highlights|choose|chooses|display|show|shows|review|compare|compares)\b", text):
-        for index, row in enumerate(rows):
-            row_terms = _sequence_terms(row)
-            if row_terms & {"comparison", "display", "presentation", "review", "selected", "selection", "surface", "view"}:
-                return index
-    if re.search(r"\b(?:configure|configures|configuration|define|defines|parameter|parameters|setting|settings|setup|validate|validates)\b", text):
-        for index, row in enumerate(rows):
-            row_terms = _sequence_terms(row)
-            if row_terms & {"config", "configuration", "intake", "parameter", "parameters", "setting", "settings", "setup", "validation"}:
-                return index
-    if re.search(r"\b(?:follow-up|followup|question|questions|response|responses|preparer|preparers)\b", text):
-        for index, row in enumerate(rows):
-            row_terms = _sequence_terms(row)
-            if row_terms & {"question", "questions", "response", "responses", "tracker"}:
-                return index
-    if re.search(r"\b(?:available|compare|compares|find|finds|history|report|reports|result|results|save|saves|saved|viewable)\b", text):
-        for index, row in enumerate(rows):
-            row_terms = _sequence_terms(row)
-            if row_terms & {"archive", "history", "record", "result", "results", "review", "store", "stored"}:
-                return index
-    if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives)\b", text) and re.search(
-        r"\b(?:price|pricing|cost|discount|quote|quoted)\b",
-        text,
-    ):
-        for index, row in enumerate(rows):
-            row_terms = _sequence_terms(row)
-            if row_terms & {"price", "pricing", "cost", "discount", "quote", "quoted"}:
-                return index
+    step_words = _axis_words(routing_text)
     scored: list[tuple[int, int, int]] = []
     for index, row in enumerate(rows):
-        row_text = row.casefold()
         row_terms = _sequence_terms(row)
+        row_words = _axis_words(row)
         exact = len(step_terms & row_terms)
         fuzzy = sum(1 for step_term in step_terms for row_term in row_terms if _term_related(step_term, row_term))
-        score = exact * 3 + fuzzy
-        if re.search(r"\b(?:show|shows|see|sees|view|views|display|renders?)\b", text) and (
-            row_terms & {"dashboard", "display", "interface", "owner", "presentation", "result", "summary", "surface", "timeline", "view"}
-        ):
-            score += 12
-        if re.search(r"\b(?:align|aligned|correlat|correlation|overlay|overlaid|timeline|trend|chart|visuali[sz]e)\b", text) and (
-            row_terms & {"alignment", "correlation", "dashboard", "display", "overlay", "timeline", "trend", "view", "visualization"}
-        ):
-            score += 42
-        if re.search(r"\b(?:add|adds|enter|enters|entry|log|logs|manual|record|records|save|saves|trip|upload)\b", text) and (
-            row_terms & {"capture", "entry", "form", "history", "intake", "log", "profile", "record", "store", "vehicle"}
-        ):
-            score += 14
-        if re.search(r"\b(?:intervention|dose|dosing|adherence)\b", text) and (
-            row_terms & {"intervention", "dose", "dosing", "adherence", "schedule", "scheduling", "log"}
-        ):
-            score += 30
-        if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives|estimate|estimated|estimates|metric|metrics|trend|update|updates)\b", text) and (
-            row_terms & {"calculation", "engine", "estimation", "estimate", "metric", "metrics", "trend"}
-        ):
-            score += 12
-        if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives|evaluate|evaluates)\b", text) and (
-            row_terms & {"comparison", "option", "rank", "ranking", "score", "scoring", "selection"}
-        ):
-            score += 26
-        if re.search(r"\b(?:plan|target|recommendation|adjusted|adjustment|off\s+track)\b", text) and (
-            row_terms & {"plan", "target", "recommendation", "adjustment"}
-        ):
-            score += 18
-        if re.search(r"\b(?:log|logs|progress|daily)\b", text) and (
-            row_terms & {"daily", "progress", "log", "logging"}
-        ):
-            score += 18
-        if re.search(r"\b(?:reminder|reminders|follow-up|followup|updates?\s+stop|unsafe|guardrail)\b", text) and (
-            row_terms & {"reminder", "notification", "guardrail", "follow-up", "followup"}
-        ):
-            score += 18
-        if re.search(r"\b(?:price|pricing|cost|discount|schedule|transfer)\b", text) and (
-            row_terms & {"price", "pricing", "cost", "discount", "schedule", "transfer", "evidence"}
-        ):
-            score += 16
-        if re.search(r"\b(?:price|pricing|cost|discount)\b", text) and (
-            row_terms & {"price", "pricing", "cost", "discount", "quote", "quoted"}
-        ):
-            score += 20
-        if re.search(r"\b(?:schedule|schedules|timetable|departure|arrival|transfer)\b", text) and (
-            row_terms & {"schedule", "timetable", "departure", "arrival", "transfer"}
-        ):
-            score += 10
-        if re.search(r"\b(?:accept|dismiss|recommendation|suggestion|card|rank|ranks)\b", text) and (
-            row_terms & {"advice", "card", "recommendation", "suggestion"}
-        ):
-            score += 12
-        if re.search(r"\b(?:attach|attaches|create|creates|draft|drafts|enter|enters|import|imports|open|opens|receive|receives|select|selects|submit|submits|upload|uploads|validate|validates)\b", text) and (
-            row_terms & {"application", "capture", "entry", "intake", "packet", "submission"}
-        ):
-            score += 12
-        if re.search(r"\bopen(?:s)?\b", text) and re.search(r"\bpacket\b", text) and (
-            row_terms & {"intake", "versioning", "import", "submission"}
-        ):
-            score += 18
-        if re.search(r"\b(?:result|reason|qualified|qualification|decision|returns?|next steps?)\b", text) and (
-            row_terms & {"decision", "reason", "result", "qualification", "outcome"}
-        ):
-            score += 10
-        if re.search(r"\b(?:screen|screens|check|checks|assign|assigns|match|matches|route|routes)\b", text) and (
-            row_terms & {"assignment", "routing", "eligibility", "conflict", "matching"}
-        ):
-            score += 7
-        if (step_terms & {"feedback", "form", "score", "scoring", "rubric", "answer", "assessment", "evaluation"}) and (
-            row_terms & {"form", "scoring", "score", "rubric", "assessment", "evaluation"}
-        ):
-            score += 8
-        if re.search(r"\b(?:question|questions|response|responses|follow-up|followup|preparer|preparers|resolved|unresolved)\b", text) and (
-            row_terms & {"question", "response", "issue", "tracker", "follow-up", "followup", "preparer", "resolved", "unresolved"}
-        ):
-            score += 18
-        if re.search(r"\b(?:rationale|final|finalize|finalized|outcome|condition|decision|record)\b", text) and (
-            row_terms & {"decision", "rationale", "outcome", "condition", "vote", "signoff"}
-        ):
-            score += 18
-        if re.search(r"\b(?:compare|compares|comparison)\b", text) and (
-            row_terms & {"comparison", "recommendation", "readiness", "dashboard"}
-        ):
-            score += 8
-        if re.search(r"\b(?:receive|receives|notify|notifies|sent|delivered|delivery)\b", text) and (
-            row_terms & {"notification", "delivery", "deadline", "message", "freshness"}
-        ):
-            score += 8
-        if re.search(r"\b(?:price|cost|pricing|charge|quote|quoted)\b", text) and (
-            row_terms & {"price", "pricing", "cost", "quote", "quoted", "option", "estimate"}
-        ):
-            score += 8
-        if re.search(r"\b(?:calculate|calculates|compute|computes|derive|derives|estimate|estimates)\b", text) and re.search(
-            r"\b(?:evidence|proof|calculation|metric|measurement|estimate)\b",
-            row_text,
-        ):
-            score += 5
-        if re.search(r"\b(?:reminder|reminders|follow-up|followup)\b", text) and (
-            row_terms & {"reminder", "notification", "follow-up", "followup"}
-        ):
-            score += 8
-        if re.search(r"\b(?:highlight|highlights|choose|chooses|display|show|shows)\b", text) and (
-            row_terms & {"surface", "review", "display", "selected", "selection", "comparison"}
-        ):
-            score += 18
-        if re.search(r"\b(?:store|stores)\b", text) and (
-            row_terms & {"surface", "review", "display", "selected", "selection", "route", "comparison"}
-        ):
-            score += 9
-        if re.search(r"\b(?:publish|publishes|attachment|attachments|audit|history|replay)\b", text) and (
-            row_terms & {"audit", "trail", "history", "provenance", "source-backed", "attachment"}
-        ):
-            score += 24
+        score = exact * 3 + fuzzy + _component_axis_score(step_words, row_words)
         if index == fallback_index and exact:
-            score += 30
+            score += 6
         if score:
             scored.append((score, -abs(index - fallback_index), -index))
     if scored:
@@ -454,6 +372,30 @@ def _term_related(left: str, right: str) -> bool:
     if left == right:
         return True
     return len(left) >= 5 and len(right) >= 5 and (left.startswith(right) or right.startswith(left))
+
+
+def _component_axis_score(step_words: set[str], row_words: set[str]) -> int:
+    score = 0
+    for action_words, owner_words, weight in _COMPONENT_ACTION_AXES:
+        if step_words & action_words and row_words & owner_words:
+            score += weight
+    return score
+
+
+def _axis_words(value: object) -> set[str]:
+    words: set[str] = set()
+    for raw in re.findall(r"[a-z0-9]+(?:-[a-z0-9]+)?", _compact_text(str(value)).casefold()):
+        token = raw.replace("-", "")
+        if not token:
+            continue
+        words.add(token)
+        if token.endswith("ies") and len(token) > 4:
+            words.add(f"{token[:-3]}y")
+        elif token.endswith("es") and len(token) > 4:
+            words.add(token[:-2])
+        elif token.endswith("s") and len(token) > 4:
+            words.add(token[:-1])
+    return words
 
 def _best_index_for_text(value: str, *, rows: list[str], default: int) -> int:
     terms = _sequence_terms(value)
@@ -511,6 +453,7 @@ def _step_action_label(value: str) -> str:
     if modal_action:
         text = _modal_actor_step_label(actor=modal_actor, action=modal_action)
         text = _compress_step_action_label(text)
+        text = _subjectless_action_label_clause(text)
         return text[:1].upper() + text[1:] if text else "Advance accepted path"
     if _retains_readable_step_subject(text):
         text = _compress_step_action_label(text)
@@ -674,7 +617,7 @@ def _strip_primary_actor_subject(value: str) -> str:
 
 def _imperative_handoff_focus(value: str) -> str:
     text = _compact_text(value).strip(" .")
-    return base_following_action_verbs(text)
+    return _subjectless_action_label_clause(text)
 
 def _sequence_terms(value: object) -> set[str]:
     return set(

@@ -261,10 +261,22 @@ def _dedupe_label(label: str, *, used: set[str], source: str = "") -> str:
         return label
     focus = _risk_label_focus(source)
     if focus:
-        candidate = f"{focus} {label}"
+        candidate = _join_label_phrase(focus, label)
         if candidate.casefold() not in used:
             return candidate
     return f"{label} {len(used) + 1}"
+
+
+def _join_label_phrase(prefix: str, suffix: str) -> str:
+    prefix_words = [word for word in sentence(prefix).strip(" .").split() if word]
+    suffix_words = [word for word in sentence(suffix).strip(" .").split() if word]
+    if not prefix_words:
+        return " ".join(suffix_words)
+    if not suffix_words:
+        return " ".join(prefix_words)
+    if prefix_words[-1].casefold().strip(".,;:") == suffix_words[0].casefold().strip(".,;:"):
+        suffix_words = suffix_words[1:]
+    return " ".join([*prefix_words, *suffix_words]).strip()
 
 
 def _risk_label_focus(value: object) -> str:

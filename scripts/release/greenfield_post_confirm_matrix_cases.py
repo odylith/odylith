@@ -12,6 +12,10 @@ class GreenfieldMatrixCase:
     required_terms: tuple[str, ...]
     leakage_terms: tuple[str, ...] = ()
     confirmed_intent_markdown: str = ""
+    case_id: str = ""
+    tags: tuple[str, ...] = ()
+    stressors: tuple[str, ...] = ()
+    source_file: str = ""
 
     @property
     def slug(self) -> str:
@@ -31,6 +35,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("flood", "shelter", "resident", "placement"),
             leakage_terms=("flood shelter", "shelter capacity", "displaced residents"),
+            stressors=("long-first-path", "multi-role-tribunal", "path-grant", "final-memory-pressure"),
         ),
         GreenfieldMatrixCase(
             name="pediatric agency practice",
@@ -41,6 +46,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("pediatric", "therapy", "guardian", "care"),
             leakage_terms=("pediatric therapy", "guardian consent", "therapist assignment"),
+            stressors=("modal-expert-lens", "multi-role-tribunal", "path-grant", "domain-depth-obligations"),
         ),
         GreenfieldMatrixCase(
             name="semiconductor lab custody",
@@ -51,6 +57,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("semiconductor", "wafer", "custody", "reliability"),
             leakage_terms=("semiconductor", "wafer lot", "chamber exposure"),
+            stressors=("scientific-casing", "domain-depth-obligations", "registry-contract-pressure", "latency-pressure"),
         ),
         GreenfieldMatrixCase(
             name="port berth carbon tariff",
@@ -61,6 +68,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("port", "berth", "tariff", "emissions"),
             leakage_terms=("port berth", "carbon tariff", "shore power", "emissions"),
+            stressors=("long-first-path", "atlas-label-pressure", "path-grant", "modal-expert-lens"),
         ),
         GreenfieldMatrixCase(
             name="security disclosure council",
@@ -72,6 +80,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("security", "disclosure", "embargo", "evidence"),
             leakage_terms=("security disclosure council", "embargo decisions", "public advisory"),
+            stressors=("multi-role-tribunal", "final-memory-pressure", "modal-expert-lens", "path-grant"),
         ),
         GreenfieldMatrixCase(
             name="open source security embargo",
@@ -82,6 +91,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("open", "source", "security", "embargo"),
             leakage_terms=("open source security embargo", "vulnerability reports", "advisory readiness"),
+            stressors=("noun-verb-homonym", "multi-role-tribunal", "final-memory-pressure", "registry-contract-pressure"),
         ),
         GreenfieldMatrixCase(
             name="package supply chain exception desk",
@@ -92,6 +102,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("package", "dependency", "provenance", "waiver"),
             leakage_terms=("supply chain exception desk", "vulnerable dependency", "package manager review"),
+            stressors=("noun-verb-homonym", "registry-contract-pressure", "path-grant", "domain-depth-obligations"),
         ),
         GreenfieldMatrixCase(
             name="credit union fair lending exception",
@@ -103,6 +114,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("credit", "union", "lending", "underwriting"),
             leakage_terms=("credit union", "fair lending", "underwriting evidence"),
+            stressors=("modal-expert-lens", "multi-role-tribunal", "final-memory-pressure", "domain-depth-obligations"),
         ),
         GreenfieldMatrixCase(
             name="apprenticeship credential readiness",
@@ -114,6 +126,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("apprenticeship", "credential", "mentor", "certification"),
             leakage_terms=("apprenticeship", "credential readiness", "mentor signoff"),
+            stressors=("multi-role-tribunal", "path-grant", "long-first-path", "registry-contract-pressure"),
         ),
         GreenfieldMatrixCase(
             name="film archive rights clearance",
@@ -124,6 +137,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("film", "archive", "rights", "screening"),
             leakage_terms=("film archive", "rights clearance", "donated reels"),
+            stressors=("modal-expert-lens", "final-memory-pressure", "domain-depth-obligations", "path-grant"),
         ),
         GreenfieldMatrixCase(
             name="developer incident runbook readiness",
@@ -134,12 +148,14 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("developer", "incident", "runbook", "deployment"),
             leakage_terms=("developer incident runbook", "mitigation steps", "deployment window"),
+            stressors=("registry-contract-pressure", "latency-pressure", "final-memory-pressure", "atlas-label-pressure"),
         ),
         GreenfieldMatrixCase(
             name="assay drift prediction model",
             prompt="Draft a product-first greenfield proposal for building an assay drift prediction model.",
             required_terms=("assay", "drift", "prediction", "model"),
             leakage_terms=("assay drift", "prediction model", "assay drift prediction"),
+            stressors=("scientific-casing", "domain-depth-obligations", "registry-contract-pressure", "latency-pressure"),
         ),
         GreenfieldMatrixCase(
             name="sparse disclosure confirmation",
@@ -149,6 +165,7 @@ def default_cases() -> tuple[GreenfieldMatrixCase, ...]:
             ),
             required_terms=("disclosure", "council", "evidence", "embargo"),
             leakage_terms=("disclosure council", "embargo decision", "personalized notification delivery"),
+            stressors=("final-memory-pressure", "multi-role-tribunal", "long-first-path", "modal-expert-lens"),
             confirmed_intent_markdown="""
 # Product Intent Confirmation
 
@@ -192,6 +209,15 @@ Evidence custody and embargo decision.
                 "e91",
                 "qber",
                 "chsh",
+            ),
+            stressors=(
+                "scientific-casing",
+                "domain-depth-obligations",
+                "long-first-path",
+                "atlas-label-pressure",
+                "registry-contract-pressure",
+                "latency-pressure",
+                "noun-verb-homonym",
             ),
             confirmed_intent_markdown="""
 # Quantum Link Lab
@@ -253,6 +279,7 @@ def rescue_smoke_case() -> GreenfieldMatrixCase:
         ),
         required_terms=("disclosure", "council", "embargo", "evidence"),
         leakage_terms=("disclosure council", "embargo status", "personalized notification delivery"),
+        stressors=("final-memory-pressure", "multi-role-tribunal", "path-grant", "modal-expert-lens"),
     )
 
 

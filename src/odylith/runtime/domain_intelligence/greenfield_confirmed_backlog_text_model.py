@@ -29,6 +29,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_language i
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_text as _compact_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import short_summary as _short_summary
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_text import imperative_action_with_copula_words
@@ -385,7 +386,7 @@ def proof_title_object(value: str) -> str:
 
 
 def workstream_subject(value: str) -> str:
-    text = _compact_text(value)
+    text = collapse_repeated_phrase_units(_compact_text(value))
     text = re.sub(r"\s+(Service|Surface|Component|Boundary)$", "", text, flags=re.IGNORECASE).strip()
     return drop_adjacent_duplicate_words(text) or value
 
@@ -394,7 +395,7 @@ def component_label_at(components: list[dict[str, Any]], index: int, *, fallback
     if not components:
         return fallback
     bounded_index = min(max(index, 0), len(components) - 1)
-    value = str(components[bounded_index].get("label", "")).strip()
+    value = collapse_repeated_phrase_units(str(components[bounded_index].get("label", "")).strip())
     return value or fallback
 
 

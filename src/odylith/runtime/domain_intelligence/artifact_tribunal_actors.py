@@ -10,6 +10,8 @@ from odylith.runtime.domain_intelligence.artifact_graph import DomainIntelligenc
 from odylith.runtime.domain_intelligence.artifact_graph import domain_graph_from_workstream
 from odylith.runtime.domain_intelligence.greenfield_actor_labels import accepted_actor_label
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_acronym_number_tokens
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import restore_source_token_casing
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_label
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
@@ -263,7 +265,11 @@ def _role_specific_judgment_label(
     if not text:
         return _role_suffixed_label("Project", _JUDGMENT_ROLE_REPAIR_SUFFIX[role])
     key = _label_key(text)
-    if key in explicit_actor_label_keys and _can_keep_explicit_actor_for_role(label=text, role=role):
+    if (
+        key in explicit_actor_label_keys
+        and _can_keep_explicit_actor_for_role(label=text, role=role)
+        and (key not in seen_labels or role == "domain_operator")
+    ):
         return text
     if (
         _incompatible_judgment_role_suffix(label=text, role=role)
@@ -361,6 +367,8 @@ def _can_keep_explicit_actor_for_role(*, label: str, role: str) -> bool:
     if not text:
         return False
     if _incompatible_shared_explicit_label(lowered):
+        return False
+    if _incompatible_judgment_role_suffix(label=text, role=role):
         return False
     if _compatible_judgment_role_suffix(label=text, role=role):
         return True
@@ -632,8 +640,8 @@ def _compact_lens_name(graph: DomainIntelligenceGraph, *, proposal: Mapping[str,
     if source_label and _looks_like_role_lens(label):
         label = source_label
     words = label.replace("_", " ").split()
-    text = " ".join(word[:1].upper() + word[1:] for word in words[:3])
-    return restore_source_acronym_number_tokens(text, source_title or label)
+    text = title_label(" ".join(words[:3]))
+    return restore_source_token_casing(restore_source_acronym_number_tokens(text, source_title or label), source_title or label)
 
 
 def _looks_like_role_lens(value: str) -> bool:

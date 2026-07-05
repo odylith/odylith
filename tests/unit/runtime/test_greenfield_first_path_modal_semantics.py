@@ -46,6 +46,49 @@ def test_first_path_steps_repair_carried_modal_base_form_drift() -> None:
     ]
 
 
+def test_first_path_steps_drop_workflow_requirement_control_clause_after_real_actions() -> None:
+    first_path = (
+        "Physicists tune magnetic confinement parameters, impurity injection timing, sensor channels, "
+        "baseline shots, confidence limits, and saved experiment state before reviewing disruption prediction results. "
+        "The workflow must distinguish record as an action from record as evidence and show which owner can grant the next path."
+    )
+    model = first_path_model(first_path)
+
+    assert model.steps == (
+        "Physicists tune magnetic confinement parameters, impurity injection timing, sensor channels, baseline shots, confidence limits and saved experiment state",
+        "Review disruption prediction results",
+    )
+    assert model.visible_outcome == "Disruption prediction results"
+    assert not any("Workflow" in step for step in model.steps)
+    assert "next path" not in model.visible_outcome.casefold()
+
+
+def test_first_path_steps_drop_role_led_architecture_and_delivery_requirements() -> None:
+    first_path = (
+        "Process safety engineer can turn an ambiguous batch into a review-ready record using readings, "
+        "condition checks, pressure logs, safety evidence, expert review, decision ledger, and final release recommendation. "
+        "The request mentions review, approval, and release in the same sentence, so the workflow must keep those states separate. "
+        "An architect must see bounded components, state ownership, events, and projection boundaries. "
+        "The post-confirm create must finish all project and governance artifacts under the standard budget."
+    )
+    model = first_path_model(first_path)
+
+    assert model.steps[0] == "Process safety engineer turns an ambiguous batch into a review-ready record using readings"
+    assert "Pressure logs, safety evidence" in model.steps
+    assert "Expert review, decision ledger and final release recommendation" in model.steps
+    assert model.material_action.startswith("Turn an ambiguous batch into a review-ready record")
+    assert model.visible_outcome == "Expert review, decision ledger and final release recommendation"
+    rendered = " ".join(model.steps).casefold()
+    assert "bounded components" not in rendered
+    assert "governance artifacts" not in rendered
+
+
+def test_first_path_steps_preserve_actor_modal_obligation() -> None:
+    steps = first_path_steps("A reviewer must approve one request and publish proof for later review.")
+
+    assert steps == ("A reviewer must approve one request and publish proof for later review",)
+
+
 def test_first_path_steps_preserve_plural_actor_can_base_form() -> None:
     steps = first_path_steps(
         "Digestive health patients can log meals and related inputs and prepare a clinician-ready "
@@ -112,6 +155,19 @@ def test_first_path_steps_keep_compound_review_outcomes_inside_object_list() -> 
     assert model.material_action.startswith("Correlate robot telemetry")
     assert model.visible_outcome.startswith("Robot telemetry")
     assert model.material_action != "Review a fix is approved"
+
+
+def test_actor_led_open_action_beats_homonym_object_fallback() -> None:
+    model = first_path_model(
+        "Safety engineers replay robot paths, human proximity events, intervention thresholds, sensor occlusion. "
+        "Baseline routes and operator notes before releasing a safety result."
+    )
+
+    assert model.material_action == (
+        "Safety engineers replay robot paths, human proximity events, intervention thresholds, sensor occlusion"
+    )
+    assert model.material_action != "Baseline routes and operator notes before releasing a safety result"
+    assert "can baseline routes" not in model.material_action.casefold()
 
 
 def test_first_path_steps_split_carried_subject_finite_group_action() -> None:

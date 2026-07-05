@@ -7,6 +7,10 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from odylith.runtime.common import display_text as shared_display_text
+from odylith.runtime.common.prose_grammar import strip_clipped_terminal_fragment
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
+    capitalize_sentence_start_preserving_source_terms,
+)
 
 
 def dict_value(value: object) -> dict[str, Any]:
@@ -103,17 +107,11 @@ def tidy_fragment(value: object) -> str:
         flags=re.IGNORECASE,
     ).strip(" ,;:.")
     text = _remove_dangling_tail(text).strip(" .")
-    return text[:1].upper() + text[1:] if text else ""
+    return capitalize_sentence_start_preserving_source_terms(text)
 
 
 def _remove_dangling_tail(value: str) -> str:
     text = sentence(value).rstrip(" ,;:")
-    text = re.sub(
-        r"(?:,?\s+)?\b(?:when|if|because|while|where|which|who|that)\b[^.!?]*$",
-        "",
-        text,
-        flags=re.IGNORECASE,
-    ).rstrip(" ,;:")
     trailing_tokens = {
         "a",
         "an",
@@ -155,10 +153,30 @@ def _remove_dangling_tail(value: str) -> str:
         "without",
         "would",
     }
-    words = text.split()
-    while words and words[-1].casefold().strip(".,;:") in trailing_tokens:
-        words.pop()
-    return " ".join(words).rstrip(" ,;:") or text
+    while True:
+        original = text
+        text = strip_clipped_terminal_fragment(text)
+        words = text.split()
+        while words and words[-1].casefold().strip(".,;:") in trailing_tokens:
+            words.pop()
+        text = " ".join(words).rstrip(" ,;:")
+        stripped = _strip_open_subordinate_tail(text, dangling_words=trailing_tokens)
+        if stripped != text:
+            text = stripped
+            continue
+        if text == original:
+            return text or sentence(value).rstrip(" ,;:")
+
+
+def _strip_open_subordinate_tail(value: str, *, dangling_words: set[str]) -> str:
+    text = sentence(value).rstrip(" ,;:")
+    match = re.search(r"(?:,?\s+)?\b(?P<connector>when|if|because|while|where|which|who|that)\b(?P<tail>[^.!?]*)$", text, flags=re.IGNORECASE)
+    if not match:
+        return text
+    tail_words = [word.casefold().strip(".,;:") for word in match.group("tail").split() if word.strip(".,;:")]
+    if len(tail_words) >= 5 and tail_words[-1] not in dangling_words:
+        return text
+    return text[: match.start()].rstrip(" ,;:")
 
 
 def strings(value: object) -> list[str]:

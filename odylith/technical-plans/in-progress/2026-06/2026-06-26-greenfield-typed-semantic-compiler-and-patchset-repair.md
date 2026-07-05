@@ -2,7 +2,7 @@ Status: In progress
 
 Created: 2026-06-26
 
-Updated: 2026-07-01
+Updated: 2026-07-05
 
 Backlog: B-142
 
@@ -85,6 +85,171 @@ vocabulary, or degraded packages.
   rendered-prose mutation.
 
 ## Latest Simulation Evidence
+
+- 2026-07-05 accepted-project final-memory actor-selection checkpoint: the
+  broader 120-case controlled-concurrency discovery tranche stopped after 40
+  hard-10/10 passes on `quantum dot display aging simulation review board`
+  because accepted-project final memory contained
+  `lets the quantum dot display review the published readiness proof` and the
+  presentational-splice gate correctly refused to write governed records. Root
+  cause was generic supporting-actor selection: generated product-role actors
+  were treated as present in a first path when any domain token overlapped the
+  step text, so title/domain words could become follow-up recipients. Source
+  fix makes first-path actor presence role-aware: a supporting actor must match
+  as a direct actor phrase or through a role-compatible actor term; domain
+  object overlap alone is not enough. Focused proof passed the new
+  high-variance actor regression and related published-readiness slop checks
+  (`7 passed`), source-local replay wrote governed records with manifest
+  passed, zero issues, 4 Radar workstreams, 3 Registry components, and 6 Atlas
+  diagrams, and fresh installed dist
+  `/private/tmp/odylith-local-release-0.1.15-qdot-actor-20260705T002631`
+  passed the exact failed-subset replay at hard 10/10 in 42.730s with zero
+  issues, 18 trace nodes, 5 Project implementation prompts, zero prompt
+  findings, all expert lenses green, platform leakage proof, and temp cleanup.
+  This proves the escaped no-write class from a fresh installed package, not
+  release readiness; browser/natural-rescue release proof and resumed broader
+  120/240 discovery remain required.
+
+- 2026-07-05 hyphenated scientific-anchor checkpoint: the resumed 60-case
+  installed regression against the drone-anchor candidate dist passed 36 fresh
+  cases before stopping on `radiotherapy dose adaptation intake-to-proof
+  workspace`. Governed post-confirm creation completed cleanly in 39.165s, but
+  the brutal domain-expert lens scored the case 0/10 because one required
+  source-grounded term, `organ-at-risk`, disappeared from scored generated
+  surfaces. Root cause was a generic semantic-ingress tokenization defect:
+  evidence-anchor meaningfulness counted hyphenated compounds as one word and
+  rejected them before typed evaluation/source requirements could project into
+  Radar, Registry, Atlas, project brief, or Project prompts. The source fix
+  treats hyphen, slash, and whitespace as lexical part boundaries for anchor
+  meaningfulness while preserving source spelling. Focused proof passed
+  `tests/unit/runtime/test_greenfield_prompt_requirement_boundary.py`
+  (`5 passed in 89.71s`), source-local CLI replay wrote clean governed records
+  with `organ-at-risk` visible in six scored/generated surfaces, and fresh
+  candidate dist
+  `/private/tmp/odylith-local-release-0.1.15-hyphen-anchor-20260704T231813`
+  passed the exact installed failed-subset at hard 10/10 in 37.990s with zero
+  issues and all expert lenses green. This proves the exact failure class, not
+  release readiness. The resumed two-shard scientific/deep-tech tranche then
+  passed 60/60 cases with all hard 10/10 scores, zero issues, all
+  domain-expert lenses green, create-time min 37.896s, average 42.265s, max
+  47.917s, and no case over 60s; the original radiotherapy case passed again
+  in context at 39.436s. This is strong discovery evidence, but strict
+  browser/natural-rescue release proof and broader 120/240 discovery are still
+  required before release readiness can be claimed.
+
+- 2026-07-05 source-anchor and architect-role recurrence checkpoint:
+  the fresh 180-case extension stopped on `drone swarm search coordination
+  intake-to-proof workspace` after seven hard-10/10 passes because a generated
+  case prompt contained `mission evidence evidence` and the semantic compiler
+  preserved that adjacent duplicate into evidence requirements and evaluation
+  anchors. After that source-anchor fix, the same prompt exposed a second
+  generic Product View defect: `architect` was not recognized as a human role
+  noun, so capability projection recomposed `the user can robotics architect
+  provides inputs`. The source fix canonicalizes adjacent duplicate words at
+  the typed evidence-anchor boundary and release case-file boundary, and adds
+  `architect/architects` to the generic actor-role set. Focused proof passed
+  the affected 12-test pack in 92.59s. Disposable source-local CLI replay of
+  the exact prompt wrote governed records with manifest passed, issue_count 0,
+  4 Radar records, 3 Registry specs, and 6 Atlas diagrams; temp repos were
+  deleted. Fresh local dist
+  `/private/tmp/odylith-local-release-0.1.15-drone-anchor-20260704T224118`
+  passed 224-term platform leakage proof, and the exact installed failed-subset
+  replay passed at hard 10/10 in 38.266s with zero issues, 18 trace nodes,
+  5 Project implementation prompts, zero prompt findings, and all expert
+  lenses green. This proves the exact recurrence, not release readiness; the
+  next step remains resumed 60/120/240 high-variance discovery followed by
+  strict browser/natural-rescue release proof.
+
+- 2026-07-04 campaign stratification hardening checkpoint: the tiered
+  Greenfield matrix harness now persists source-file, tag, stressor, and
+  stressor-by-tag distribution in generated case files and tier shard
+  summaries. This closes the planning gap where hundreds of generated projects
+  could still be opaque if the source pool did not prove ambiguity-shape
+  breadth before execution. The change stays generic: no project-domain
+  vocabulary enters Odylith, and the evaluator scores metadata shape rather
+  than specific domains. Focused proof passed the campaign/generator/sharder
+  harness suite (`63 passed in 1.53s`). This is discovery-harness proof only;
+  release readiness still requires fresh installed release-proof tiers with
+  browser, natural rescue, platform-leakage, temp-cleanup, and brutal artifact
+  readback proof.
+
+- 2026-07-04 failed-subset replay materialization checkpoint: the campaign
+  runner now converts replayable failure-response evidence into actual
+  failed-subset replay shard files when source case files and failed result JSON
+  contain exact stable identity. The final campaign JSON carries
+  `failure_response.failed_subset_replay` with `status=written`, file paths,
+  summary path, source files, failed-result files, and `next_tier=failed-subset`;
+  non-exact cases return explicit unavailable/not-required reasons and keep the
+  source-shard replay guidance. This closes the remaining operator-loop gap
+  where a failure packet told maintainers to build failed subsets but left that
+  as manual aftercare. The wrapper exposes
+  `GREENFIELD_MATRIX_FAILED_SUBSET_REPLAY_DIR` for controlled output placement.
+  Focused proof passed the campaign/sharder/failure-response/generator harness
+  suite (`68 passed in 1.61s`) and shell syntax checks. This is discovery-loop
+  infrastructure only; it does not prove Greenfield artifact quality or release
+  readiness.
+
+- 2026-07-04 campaign harness completion and release blocker checkpoint:
+  the high-volume harness now reports incrementally and replayably enough for
+  stop-fix-replay execution. Live stop decisions use the failure-emitting
+  shard from child telemetry, child matrix commands receive required stressor
+  classes, discovery shards can report partial shard-local stressor coverage
+  while the tier owns aggregate coverage, synthetic launch and cleanup failures
+  write replayable payloads, and campaign status now separates
+  `discovery-passed` from `release-ready` with `execution_status` retained for
+  CLI exit behavior. Focused proof passed synthetic/replayability tests
+  (`4 passed`), focused harness/preflight/Compass tests (`10 passed in
+  15.50s`), Compass visible-copy tests (`3 passed`), the full install/matrix
+  harness suite (`135 passed in 15.98s`), compile checks, shell syntax checks,
+  and diff hygiene. This completes the requested runner architecture slice,
+  but it does not clear the Greenfield release goal: the broad runtime quality
+  pack still failed (`4 failed, 67 passed in 902.47s`) on semantic-model actor
+  casing, visible-result event ownership, and extra actor derivation. The next
+  implementation step is Domain Intelligence semantic repair for those defects,
+  then exact failed-subset replay, then resumed 60/120/240 discovery and strict
+  release proof.
+
+- 2026-07-04 incremental telemetry and case-generation checkpoint: the
+  Greenfield discovery harness now has a source-grounded case generator
+  (`bin/greenfield-matrix-generate-cases`) that selects from external case
+  files by stressor coverage, source balance, tag balance, and density instead
+  of counting raw projects. Matrix preflight now emits structured failed case
+  telemetry and incremental result JSON before expensive execution when source
+  metadata is invalid, required stressors are absent, leakage terms are
+  missing, or platform-domain leakage is detected. Campaign progress now tracks
+  running cases and failed case identity per shard; live-stop failure-response
+  packets can therefore synthesize replayable failed-subset payloads from the
+  exact failed cases rather than all stopped siblings. Explicit
+  `required_stressors` are enforced even outside high-variance default mode,
+  and tooling payload readback now anchors on the real global assignment instead
+  of scanning from the first JavaScript object. Focused proof passed
+  `py_compile` for the touched harness modules, shell syntax for the wrappers,
+  an external-case generator smoke, and the focused install/matrix regression
+  pack (`58 passed in 8.45s`). This remains discovery-harness proof; release
+  readiness still requires a fresh installable dist with browser, rescue,
+  natural-rescue, platform-leakage, and temp-cleanup proof.
+
+- 2026-07-04 tiered matrix harness checkpoint: high-volume Greenfield
+  discovery is no longer a mostly opaque final-JSON runner. The release
+  scripts now use a shared stressor taxonomy owner for modal expert lenses,
+  path grants, noun/verb homonyms, scientific casing, multi-role review,
+  long first paths, domain-depth obligations, final-memory pressure, Atlas
+  label pressure, Registry contract pressure, and latency pressure. The
+  maintained release cases now carry explicit stressor metadata, campaign
+  summaries include a 10-point variance score, and the campaign runner emits
+  merged per-case progress, incremental shard result JSON, live failure-cluster
+  stop decisions, failed-result JSON pointers, stable failed case IDs and
+  fingerprints, and a failure-response packet requiring Casebook capture,
+  platform repair, exact failed-subset replay, then resumed 60/120/240
+  discovery. D-047 now documents the shared taxonomy, failure-response, and
+  stop-fix-replay loop. Focused proof passed 47 tiered harness tests, 77
+  installed matrix/proof-scope tests, py_compile for touched scripts, scoped
+  `git diff --check`, Atlas D-047 render with 47 fresh / 0 stale diagrams, and
+  a disposable campaign smoke that intentionally failed on a fake install but
+  still emitted case telemetry, merged progress, failed-result JSON, and a
+  Casebook/replay failure-response packet. This is discovery-harness proof,
+  not release readiness; release readiness still requires a rebuilt dist and
+  strict installed release proof with browser and natural rescue.
 
 - 2026-07-01 committed-head dist `da2643edecc66e403a9e070d7976a2033248e5bd`
   is behaviorally release-strong for local skip-verify installation: maintained
@@ -2229,6 +2394,22 @@ vocabulary, or degraded packages.
       passed with no remaining temp paths, and synthetic typed-probe rescue
       smoke passed in 34.340s. Natural host-model rescue remains explicitly
       unproven and is still the next proof gap.
+- [x] Close repeated Registry-forensics stale-sidecar leakage before local dist proof.
+      A 2026-07-02 fresh local release build from `0069fca4` failed before
+      installable proof because committed component `FORENSICS.v1.json`
+      sidecars again retained old high-variance scenario vocabulary inside
+      protected Registry custody. The source projector was already generic, so
+      the root cause was release workflow custody plus sync convergence:
+      packaging did not first require source-local forensics freshness, and a
+      sync invocation that updated a component spec could leave forensics stale
+      until a second pass. The fix adds a source-local
+      `sync-component-spec-requirements --check-only` preflight to local release
+      build, installed matrix proof, and release proof wrappers; the sync
+      command now rebuilds the Registry report and writes forensics from the
+      refreshed snapshot after any spec write. Source-local check-only,
+      focused sync/release-script tests, and the 285-term platform leakage guard
+      are green; fresh committed-head dist and installed high-variance proof are
+      still required before release readiness can be claimed.
 - [x] Decompose Atlas box tracked-object phrase selection.
       The platform-facing leakage cleanup touched
       `atlas_box_explanations.py`, which was already above the source-size
@@ -2530,3 +2711,844 @@ vocabulary, or degraded packages.
       object-head compounds while preserving source-owned workflow compounds.
       Focused label regressions passed 23 tests in 15.71 seconds, and the
       widened confirmed artifact suite passed 74 tests in 631.93 seconds.
+- [x] Add retained evidence and seeded install mode for hundreds-scale
+      high-variance greenfield simulation.
+      The first external 30-case sweep proved that one-off temp repo cleanup
+      was correct for disk pressure but insufficient for brutal post-run
+      assessment: once repos were deleted, only aggregate matrix JSON remained.
+      The harness now persists per-case evidence before cleanup, including case
+      metadata, prompt/intent hashes, artifact inventories, artifact hashes and
+      excerpts, full-readback grounding for required terms, quality findings,
+      browser proof state, and post-confirm manifest summaries. Seeded install
+      mode installs Odylith once per batch, clones mutable repo state per case,
+      symlinks the immutable runtime, and still deletes each project after
+      evidence capture. The install/matrix/leakage/preflight test slice passed
+      106 tests in 8.82 seconds.
+- [x] Separate volume-discovery scoring from complete browser release proof.
+      Independent review of the first seeded 30-case proof found a false
+      confidence mechanism: the top-level JSON honestly reported browser proof
+      as skipped, but per-case quality scores still awarded
+      `browser_surface_proof: 10` and printed the full brutal release-quality
+      explanation. The scoring owner now marks unrequested browser proof as
+      unscored, excludes that optional dimension from the discovery score,
+      records `score_basis=volume_discovery_without_browser_surface_proof`,
+      and explains that the run is volume-discovery evidence rather than full
+      browser release proof. Focused scoring regressions passed 4 tests in
+      0.20 seconds.
+- [x] Preserve source-grounded command targets and homonym context in
+      high-volume greenfield recovery.
+      Seeded batch three found six quality failures where governed records were
+      written but project frames collapsed from source-grounded targets such as
+      `weather radar calibration setup` and `geologic atlas field mapping
+      setup` into generic outcome workspaces. The repair keeps command-led
+      prompt targets before sentence boundaries as canonical project frames,
+      validates control-plane homonyms through local accepted-source context
+      instead of literal term membership, blocks object-list fragments from
+      becoming supplemental actors, and restores readable title splitting for
+      source shorthand. The matrix evidence harness now records scored
+      generated-surface required-term grounding separately from runtime-only
+      accepted-project grounding. Focused proof passed six homonym/title/evidence
+      tests, five prior recovery regressions, four install evidence/scoring
+      tests, py_compile, and the full confirmed-intent recovery suite passed
+      48 tests in 151.01 seconds.
+- [x] Repair high-volume duplicate-copy semantic ingress instead of Atlas or
+      Registry renderer patches.
+      External high-variance batch one found 12 real no-write failures in
+      scientific domains, all sharing adjacent duplicate accepted-path copy
+      such as `review review`. The root cause was not domain vocabulary or a
+      diagram renderer; duplicate copy entered the accepted intent before
+      semantic projection. Shared confirmed-text and first-path ingress now
+      dedupe adjacent words before the semantic compiler or artifact renderers
+      see them. Representative source-local replays for climate data
+      assimilation, battery electrolyte degradation, and plasma confinement
+      shot planning committed governed records with passed manifests, zero
+      issues, and no repeated review copy.
+- [x] Tighten actor completion and specialized component contract custody after
+      broader runtime quality proof.
+      The wider runtime greenfield suite exposed remaining semantic overreach:
+      actor completion over-mined rich accepted actor lists, hyphenated actor
+      labels rendered awkwardly, context proof labels carried hyphenated
+      carrier copy, blind proof-row selection could hide access obligations,
+      and status/document profile transition summaries could drop important
+      states. Actor completion now treats rich operator actor lists as
+      authoritative, derives missing actors from first-path evidence only when
+      the accepted actor set is absent or thin, naturalizes display labels at
+      render boundaries, selects proof rows by category, naturalizes proof
+      carrier compounds in component narratives, and merges semantic/profile
+      transition fragments before lifecycle summarization. Runtime proof passed
+      179 greenfield quality tests in 302.68 seconds.
+- [ ] Run the fresh committed-code local dist through hundreds-scale seeded
+      high-variance installed sweeps.
+      Use the four 30-case external batches as the first 120-case sweep, retain
+      per-case evidence JSON, delete every temp project after evidence capture,
+      and treat any create failure, quality debt, browser-proof failure,
+      platform leakage, or timing breach as a new Casebook/plan learning before
+      the next fix pass. Expand with additional random domains only after the
+      first 120 cases are clean or the next root-cause fix is landed.
+      Shard-06 source-local repair is now proven for the public-records and
+      emergency-radio failures: prompt-source workflow clauses, non-goal
+      visible-result tails, standalone system labels, and hyphen-label custody
+      were corrected with focused regressions and exact source-local replays.
+      The next proof step is a fresh working-tree dist plus shard-06 rerun
+      before expanding to more unseen batches.
+      The first fresh shard-06 installed rerun proved those two cases but
+      exposed two more no-write modal/base-form failures in municipal
+      stormwater and tribal consultation workflows. Source-local repair now
+      bounds the `where <actor> <action>` shortcut to complete actor roles and
+      direct transformation or single-step record workflows, with the full
+      confirmed-intent recovery suite green. A second fresh dist and shard-06
+      rerun remain required before expanding volume.
+      That second installed rerun exposed a governance-custody failure before
+      project execution: Registry Requirements Trace had copied raw Compass
+      proof summaries into public component specs, so shard-domain labels leaked
+      into platform contract surfaces. Requirements Trace now uses neutral
+      evidence projection, retaining event kind, workstream scope, and artifact
+      counts without raw scenario prose or artifact paths. Focused sync/leakage
+      proof passed 37 tests, Registry sync regenerated the affected specs and
+      forensics sidecars, and the selected shard-06 source leakage scan passed
+      with 51 distinctive terms and zero findings. A fresh dist and installed
+      shard-06 rerun are still required before moving to the next unseen batch.
+      The fresh dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-high-volume-shard06-workflow-registry-fix`
+      then passed shard-06 installed: 30/30 projects completed governed writes,
+      zero issues, all scored quality dimensions at 10/10, product-manager,
+      architect, engineer, and domain-expert lenses green, every create under
+      60s with range 25.682-33.607s and average 28.031s, generated-artifact
+      platform leakage passed across 43 terms, and temp cleanup left no matrix,
+      rescue, source, debug, or sim roots. Browser proof was intentionally
+      unrequested and remains unscored, so this is high-volume discovery proof.
+      Continue with fresh shard-07 and shard-08 domains before claiming broader
+      release confidence.
+      The first shard-07 attempt failed before project execution on another
+      leakage-sentinel false positive: a declared short platform-native phrase
+      was accepted as project-domain vocabulary and collided with legitimate
+      Odylith analysis code. Sentinel selection now rejects one- or two-token
+      declared phrases made entirely from platform-native/common tokens while
+      preserving richer project phrases and explicit longer fixtures. Platform
+      leakage tests passed 32/32, and the shard-07 selected source+dist scan now
+      excludes the false sentinel, retains 47 distinctive terms, and has zero
+      findings. Rerun shard-07 installed before expanding to shard-08.
+      The shard-07 installed rerun then passed 30/30 projects with zero issues,
+      all scored dimensions at 10/10, all expert lenses green, create timing
+      25.489-30.954s with average 27.809s, generated-artifact leakage passing
+      across 37 terms, and temp cleanup leaving no simulation roots. The current
+      fresh dist therefore has 60/60 clean high-volume discovery projects across
+      shard-06 and shard-07, with browser proof intentionally unrequested and
+      unscored. Run shard-08 next before any 100+ claim.
+      Shard-08 then failed 3/30 installed projects on a fresh unseen batch:
+      two project-brief command prompts repeated a boundary word between the
+      focus label and first actor, and one final/preview package carried
+      clipped source-launch readiness and risk copy into implementation prompts,
+      operator next steps, accepted-project memory, and dashboard preview. The
+      source repair stays generic: command prompt labels are suppressed only
+      when label-tail and prompt-head collide, readable project outcomes avoid
+      title/state cross-sentence duplication and restore terminal punctuation,
+      source-launch prompt fragments trim terminal keep/return tails and
+      incomplete risk clauses, and final next-step readiness gates are
+      preview-sanitized before memory projection. Focused proof passed the full
+      project-brief/source-launch slice, 26 tests in 3.61 seconds. Exact
+      source-local replays
+      for volcanic ash aviation advisory, solid organ transplant allocation,
+      and offender reentry service plan all committed governed records under
+      31 seconds with clean scans, and the final reentry replay had no
+      completion-priority debt. Rebuild a fresh dist from this source before
+      rerunning shard-08, then rerun shard-06 and shard-07 on that same dist
+      before claiming any current-build 100+ volume proof.
+      Fresh dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-high-volume-batch08-fix-20260703a`
+      then passed shard-08, shard-06, and shard-07 cleanly, 90/90 projects
+      with zero issues and all creates under 60 seconds. Shard-05 exposed the
+      next systemic defect before the 120-project claim could be made:
+      `aquifer nitrate plume` failed before governed writes because
+      `Hydrogeologist Hydrogeologist` reached next steps, project implementation
+      prompts, dashboard preview, Radar workstream source, Radar index, and
+      prewrite Radar package. This makes the current proof 119/120 attempted,
+      not a pass. Diagnose and fix semantic actor/title ownership for
+      "where the <actor> turns an ambiguous <object> into..." scientific-object
+      prompts without adding domain vocabulary, weakening duplicate gates, or
+      patching rendered files after projection; then exact-replay the aquifer
+      prompt source-locally, rebuild, rerun shard-05, and only then combine the
+      four shard summaries.
+      Source diagnosis found the generic owner: `workflow_title_action()` could
+      fall back to an imperative action that still began with the actor when the
+      actor-owned fragment splitter had no clean step boundary. The title
+      composer then added `Let {actor}` again. The source fix strips an
+      already-owned actor prefix from fallback title actions before composition,
+      avoiding rendered-copy repair and domain vocabulary. Focused proof passed
+      the new actor-prefix regression and adjacent actor-led workflow regression
+      (`2 passed`), the broader project-brief/source-launch/workstream-title
+      slice (`29 passed in 4.10s`), and exact source-local aquifer replay with a
+      passed standard manifest, zero issues, 4 Radar rows, 3 Registry components,
+      6 Atlas diagrams, and no `Hydrogeologist Hydrogeologist` hits. Rebuild the
+      local dist next, rerun shard-05, then scale to sharded 100+ volume only
+      from the fresh fixed package.
+      A corrected four-shard installed sweep against fresh dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-high-volume-actor-prefix-20260703a`
+      ran 120 projects and did not pass: 110 were clean premium passes, 10 were
+      failures or quality debt, average create time was 34.959s, max create time
+      was 37.521s, zero creates exceeded 60s, cleanup passed, and leakage proof
+      passed. Browser proof was intentionally disabled for this volume-discovery
+      sweep. The new blockers are platform classes, not project-local defects:
+      mixed-case source token drift (`Cryo-EM` -> `cryo-EM`), gerundized
+      actor-role customer copy, Tribunal role projection collapse across five
+      domains, clipped component-contract noun slots, and two
+      `passed_with_quality_debt` validation failures. Do not scale the next
+      hundreds run until the failed ten cases replay cleanly from source and a
+      fresh package reruns the same four shards without quality debt.
+      A later disjoint 120-case sweep against
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-high-volume-20260703c`
+      reached 119/120 clean premium case-quality passes with average create
+      time 42.649s, max 52.471s, and zero creates over 60s, but still failed
+      one scientific lower-first source-symbol case because the final write
+      path restored accepted-project visible actors to source casing while the
+      returned create payload reused the raw Tribunal gate. The fix keeps one
+      source-cased validation-gate mapping for returned payload, durable
+      accepted-project memory, and final package preview. Focused proof passed
+      34 source-casing and adjacent rendering tests. The same run exposed a
+      harness-only false positive: parallel wrappers must not share one
+      `TEMP_PARENT`, because cleanup proof treats live sibling shard roots as
+      leftovers. Rebuild the dist from this source fix, rerun the exact failed
+      case, then rerun high-volume shards with isolated temp parents before any
+      current-build 100+ or hundreds-scale claim.
+    - 2026-07-03 high-volume latency drift blocker:
+      fresh dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-high-volume-20260703d`
+      passed the exact mRNA replay in 31.456s and passed the disjoint
+      `/private/tmp/odylith-high-volume-20260703f/results/full-d` corpus at
+      120/120 hard 10/10 with average create time 43.396s, max 50.036s, zero
+      over 60s, and clean isolated cleanup. The next distinct corpus
+      `/private/tmp/odylith-high-volume-20260703f/results/full-a` failed the
+      release-quality latency gate: 104/120 clean passes, 16 create times over
+      60s, average 46.701s, p90 61.421s, p95 64.850s, max 69.970s, and cleanup
+      still passed. All failed cases wrote quality-complete artifacts with
+      product-manager, architect, engineer, and domain-expert lenses green; the
+      only failing dimension was standard-path latency. Failures clustered late
+      in each 30-case shard, mostly positions 24-30, so the next work must
+      distinguish serial single-case cost from parallel shard/runtime pressure
+      and then remove standard-path work from `greenfield create`. Do not treat
+      104/120 as success, do not raise the normal 60s budget, do not reclassify
+      these as rescue-tier work, and do not add domain-specific exceptions.
+      Serial isolation then showed the 16 failed cases are not intrinsically
+      over budget: the worst single replay passed in 45.832s and the full
+      16-case serial replay passed 16/16 with hard 10/10, average 47.665s, max
+      54.045s, zero over 60s, and clean cleanup. Late-case artifact byte volume
+      and trace breadth did not explain the four-way failures. Treat the
+      four-shard result as concurrency stress, not normal operator-path proof;
+      rerun the second corpus with controlled concurrency before making a
+      current-build 240-project claim.
+      Controlled rerun of the same second corpus is now clean: two waves with
+      two shard workers at a time passed all 120 Corpus A projects with hard
+      10/10 quality, zero issues, average create time 43.232s, p90 50.230s,
+      maximum 52.889s, zero over 60s, and clean cleanup. Together with the
+      disjoint Corpus D 120/120 result, the installed high-volume discovery
+      evidence now covers 240 distinct prompts under controlled concurrency.
+      This is strong operator-path discovery evidence but still not full
+      release proof because browser proof and natural rescue were intentionally
+      disabled.
+    - 2026-07-03 Registry semantic/profile merge hardening:
+      source-side review of the post-latency cleanup found a CB-217-class
+      adjacent regression before release: specialized document-context profile
+      obligations could survive the semantic contract builder but be trimmed
+      by the merge cap or hidden by Registry narrative similarity ordering.
+      The fix moved merge/floor ownership into the semantic-contract support
+      owner, preserves all semantic fragments while appending bounded profile
+      supplements, narrows profile-preservation guards to material
+      document-context fields rather than proof-floor boilerplate, and ranks
+      missing/blocked obligations ahead of low-risk metadata in the narrative
+      view. Focused proof passed `57 passed in 28.82s` across source-casing,
+      specialized profiles, post-confirm repair, profile ownership, and the
+      confirmed-create Registry spec assertion. This fix remains generic and
+      does not add domain vocabulary to Odylith.
+    - 2026-07-03 Corpus G first-tranche actor/action repair:
+      a new 300-case Corpus G was generated with ten unseen 30-case shards.
+      The first two corrected shards against working-tree dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-high-volume-20260703e`
+      exposed 20/60 failures or score blockers: fifteen modal/base-form
+      no-write failures, three accepted-project final-memory punctuation
+      no-write failures, one maternal-referral domain-term miss, and one
+      61.106s latency breach. The failures were generic actor/action custody
+      defects, not domain gaps. The source fix keeps ownership before render:
+      actor labels split modal action tails through the shared modal boundary,
+      confirmed actor completion strips modal subject tails and avoids duplicate
+      derived labels, and prompt-source recovery now prefers bounded
+      path-grant and direct transformation workflow actors before expert-lens
+      sentences. Focused proof passed the actor/prompt-source slice
+      (`14 passed in 32.20s`), and representative source-local replays for
+      nine failed or near-failed prompts completed governed writes with passed
+      post-confirm manifests, committed write transactions, and all required
+      readback terms present. Do not claim current-build hundreds proof from
+      this source-local pass; rebuild a fresh dist, rerun the failed subset and
+      shards 01-02 through the matrix, then continue controlled-concurrency
+      unseen shards.
+    - 2026-07-03 tiered campaign harness hardening:
+      the high-volume runner now separates discovery proof from release proof
+      instead of relying on final-only shard JSON and shell convention. The
+      matrix runner emits per-case JSONL telemetry, persists a `campaign`
+      summary with failure clusters and stressor coverage, supports explicit
+      discovery/release tiers, and rejects release-tier runs that try to use
+      seeded installs, skipped browser proof, or early-stop thresholds. A new
+      tiered campaign runner executes failed-subset replay, 60-case regression,
+      volume discovery, and strict release proof in order with controlled
+      discovery concurrency and stop-before-next-tier behavior after failures.
+      It reports release proof completion, release proof status, and release
+      readiness status separately from selected-tier campaign pass/fail, so a
+      successful discovery-only run stays explicitly non-release-ready.
+      This is an execution-quality improvement, not a generator shortcut:
+      discovery evidence remains non-release proof until a full-install,
+      browser, and natural-rescue release tier passes. Focused harness proof
+      passed `92 passed in 0.78s`, `py_compile`, and shell syntax checks.
+    - 2026-07-03 incremental campaign progress implementation:
+      the tiered campaign runner now owns merged progress files in addition to
+      per-shard telemetry. It tails each shard's case events, writes
+      append-only `campaign-progress.v1.jsonl`, maintains a live
+      `campaign-progress.v1.json` aggregate snapshot, and carries cross-tier
+      failure-cluster summaries into final campaign JSON. Pending shards stop
+      after a shard or cluster threshold, and in-flight sibling shards receive
+      a tier stop signal so the discovery lane stops spending time after a
+      root-cause class is visible. The sharder now emits variance evaluation
+      by tier, including stressor coverage ratio, density, low-depth cases,
+      and dominant stressors, so high-volume proof is not measured by raw case
+      count alone. The campaign wrapper now runs release component-forensics
+      and Chromium preflight before release-proof shards, matching the
+      standalone release gate. Focused proof passed the campaign/sharder/proof
+      suite (`22 passed in 0.50s`) plus Python compile checks, and a real
+      external 72-case metadata sharder smoke produced observable shards. This
+      is harness discipline only; it does not close the remaining greenfield
+      generation defects discovered by the current variance campaign.
+    - 2026-07-03 live campaign stop and direct release policy tightening:
+      the merged progress stream is now an execution-control input, not just
+      an observability artifact. The campaign progress owner records
+      telemetry-derived tier stop decisions, emits the stop reason into progress
+      snapshots, gives the origin shard a short grace window to finish writing
+      its result JSON, interrupts sibling shards, and carries the live stop
+      reason into final tier output. Failure clusters now prefer typed manifest
+      issue signatures and concrete blocker text before score buckets, and the
+      sharder can replay failures from top-level campaign cluster summaries.
+      Direct matrix release-tier invocation now rejects missing browser proof,
+      installed rescue smoke, or natural rescue proof, so release custody does
+      not depend on using the campaign wrapper. Focused proof passed the
+      campaign/sharder/natural-rescue/bootstrap suite (`27 passed in 0.51s`),
+      the broader matrix unit file (`69 passed in 0.42s`), combined
+      runner/matrix proof (`87 passed in 0.74s`), Python compile checks, and
+      Bash syntax checks. This still does not prove post-confirm artifact
+      quality for the latest failed high-variance tranche; it makes the next
+      failed-subset replay and hundreds-scale campaign stop sooner and explain
+      failure classes more accurately.
+    - 2026-07-03 first-path requirement-control and Atlas coverage repair:
+      failed-subset replay proved the harness was now surfacing the right
+      generator defect. Quantum repeater v2 completed source-local create, but
+      fusion plasma v2 still failed before writes because a modal requirement
+      sentence became a `Workflow` event and visible result `the next path`,
+      then Atlas and accepted-project memory leaked mixed finite/base labels.
+      The source repair keeps the fix in typed semantic/projection custody:
+      requirement-control clauses with product/control subjects are filtered
+      from `FirstPathContract.events` only when material path actions remain,
+      review terminal steps can own visible results, temporal `before
+      reviewing...` tails split from rich material heads, subjectless Atlas
+      labels normalize coordinated finite/base actions before Mermaid render,
+      and Atlas coverage checks compare structured FirstPathContract projection
+      facts rather than raw capability prose. Focused proof passed first-path
+      semantics (`14 passed`), full slop regressions (`113 passed`),
+      diagram/package suites (`98 passed`), and campaign/matrix tests
+      (`96 passed`). Exact source-local replays passed for quantum repeater
+      and fusion plasma in 27.086s and 35.305s with governed Radar, Registry,
+      and Atlas records written and disposable repos deleted.
+    - 2026-07-03 installed failed-subset proof plus campaign temp isolation:
+      the fresh dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-requirement-control-20260703`
+      passed the exact installed failed subset for quantum repeater v2 and
+      fusion plasma v2 with governed writes, zero issues, hard 10/10 scored
+      quality, all expert lenses green, and create times of 31.806s and
+      39.419s. The follow-up 60-case campaign correctly stopped, but the
+      actionable defect was in the harness: shard 002 had 6/6 passed cases and
+      no failure clusters, yet returned failed because cleanup proof inspected
+      the shared campaign `TEMP_PARENT` while shard 001 was still active. The
+      campaign runner now assigns an isolated temp parent to each shard,
+      precleans stale copies of that shard scope, records the temp scope in
+      progress/result payloads, and removes the shard temp parent after
+      completion or interruption. Focused proof passed the campaign-runner
+      tests (`10 passed`) plus Python compile checks. Next proof is to rerun
+      the 60-case campaign with isolated shard temp parents, then resume
+      broader unseen controlled-concurrency shards.
+    - 2026-07-03 tiered replay and actor-led product-view repair:
+      the campaign harness now has a dedicated merged progress owner, live
+      per-case telemetry flushing, stable failed-subset replay identity
+      (`case.id`, slug, prompt hash, confirmed-intent hash), tier-specific
+      worker policy, and an explicit 240-case discovery tier between the
+      120-case discovery lane and strict release proof. Live failure clusters
+      are preserved in final tier output even when interrupted shard result
+      files are incomplete. The next generator failure in the 60-case tier was
+      repaired at the semantic source: actor-led open actions now have a
+      domain-neutral owner used by first-path semantics and confirmed
+      completion text, preventing valid actor-led first-path clauses from
+      falling back to later homonym object actions in product-view copy.
+      Focused proof passed campaign/progress tests (`29 passed`), first-path
+      plus post-confirm slop tests (`56 passed`), Python compile checks, and
+      source-local exact replay with final manifest passed and zero issues.
+      Remaining proof is still installed: rebuild a fresh dist, rerun the
+      exact failed subset, then resume the 60-case tier before broad 120/240
+      discovery or release-readiness claims.
+    - 2026-07-03 installed 60-case discovery and sentinel distinctiveness:
+      the working-tiered-replay dist passed the exact installed robotics
+      failed-subset replay in 37.414s with governed writes, hard 10/10 scored
+      quality, zero issues, and all expert lenses green. The resumed 60-case
+      campaign then stopped on shard 010 before project execution because
+      platform leakage preflight accepted a low-distinctiveness declared
+      sentinel composed only from platform-native governance words. The fix is
+      kept in harness vocabulary custody: short declared leakage sentinels made
+      only from platform-native/common terms are rejected before source/dist
+      scanning, while project-specific declared phrases remain authoritative.
+      Focused leakage proof passed, shard 010 reran 6/6 clean, shard 009 reran
+      6/6 clean, and combined aggregate-plus-rerun evidence covers 60 unique
+      high-variance cases with zero failed result records and no generated
+      project temp roots under `/Users/freedom/mock`. This remains discovery
+      proof because browser and natural rescue were deliberately skipped.
+      Fresh rebuild
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-tiered-replay2-20260703`
+      passed build-time platform leakage, checksum, installer syntax, archive
+      readability, and a 7-case selected installed package proof covering the
+      exact actor-led replay plus the leakage-sentinel tranche. The selected
+      package proof had 7/7 governed writes, hard 10/10 scored quality, zero
+      issues, all expert lenses green, max create time 37.229s,
+      generated-readback leakage proof passing, and temp cleanup passing.
+      The full available 72-case high-variance volume-discovery tier then
+      passed on the same fresh package with two-shard concurrency and stop
+      thresholds active: 72/72 governed writes, zero issues, zero failure
+      clusters, hard 10/10 scored quality for every case, max create 39.321s,
+      average 33.575s, p95 38.143s, and no temp simulation roots. The corpus
+      covered every tracked stressor class. Remaining proof: run strict
+      browser/natural-rescue release proof, then expand to larger 120/240
+      unseen corpora after release proof is green.
+    - 2026-07-03 strict release-proof natural-rescue blocker:
+      strict release proof against the same fresh package kept the release gate
+      honest. Twelve release-proof standard cases, browser proof, platform
+      leakage proof, temp cleanup, and synthetic rescue passed, but natural
+      host-planned rescue failed before governed writes. The final manifest
+      carried one `structured_rescue_semantic_patch` operation for
+      `SemanticModelIR.domain_ontology.external_systems`; the Tribunal patch
+      planner returned `provider_failed` because Codex CLI exceeded 45 seconds,
+      so no provider-authored operation could be merged and the transaction
+      correctly refused to write records. Next implementation work is to reduce
+      the structured rescue prompt/planner latency and improve provider-failure
+      handling without weakening the typed semantic-patch requirement, without
+      treating synthetic rescue as release proof, and without raising the
+      standard 60-second path budget.
+    - 2026-07-04 source-anchored structured-rescue fallback:
+      local-provider probes proved the latency blocker was architectural, not
+      just prompt size: Codex CLI and Claude Code CLI can time out on tiny
+      schema-bound structured patch requests. The rescue planner now keeps host
+      reasoning first, but exact source-owned semantic PatchSet operations use
+      a 12s provider window before a source-anchored fallback applies the
+      current SemanticModelIR fact with a decision ledger and
+      `structured_patch_fallback` manifest metadata. Campaign evidence was also
+      corrected so final failure-cluster summaries do not double-count tier and
+      shard aggregates, and preflight `tier_completed` snapshots retain shard
+      counts and cluster counts. Focused proof passed the rescue, Tribunal,
+      semantic patch, campaign runner, sharder, natural-rescue, and proof-scope
+      suites (`68 passed in 0.83s`), compile checks, and `git diff --check`.
+      Source-local natural-rescue proof completed in 43.439s with final
+      manifest passed, governed writes committed, provider timeout recorded at
+      12.0s, and `structured_rescue_semantic_patch` repaired.
+    - 2026-07-04 strict installed fallback release proof:
+      fresh working-tree dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-working-tiered-rescue-fallback-20260704`
+      passed build leakage, checksum, `install.sh`, wheel, and runtime archive
+      verification. Strict campaign proof
+      `/tmp/odylith-tiered-rescue-fallback-release-campaign.v1.json` completed
+      with `release_readiness_status=proven`, no failure clusters, and 12/12
+      full-install release cases passing with browser proof and zero issue rows.
+      Standard create timings were 30.674-40.448s. Synthetic rescue passed, and
+      natural rescue committed governed writes with `cli_create_seconds=67.639`,
+      manifest elapsed 40.888s, provider timeout recorded after 12.0s, and
+      `structured_patch_fallback.status=applied`. Remaining release work is
+      checkpoint/publish custody, not another source-fix blocker from this proof.
+    - 2026-07-04 campaign blocker extraction checkpoint:
+      the tiered campaign harness now preserves multiline final-gate blocker
+      structure while deriving replay clusters, so exact failed-subset replay
+      is driven by concrete post-confirm issue text instead of generic
+      `issue(s)` wrappers. This is a harness-quality fix, not a generator
+      shortcut: per-case incremental matrix payloads, merged campaign progress,
+      failed-subset/60/120/240/release tiers, stressor coverage, live stop
+      thresholds, isolated shard temp scopes, and discovery-versus-release
+      separation remain in force. Focused proof passed 29 campaign/sharder
+      tests, the 108-test install/matrix suite, compile checks, command-help
+      checks, and diff hygiene. The next implementation step remains the
+      generic actor-led product-view repair exposed by the current 120-case
+      discovery stop, followed by exact replay and resumed discovery.
+    - 2026-07-04 reviewer hardening checkpoint for campaign correctness:
+      independent read-only review found that leakage verdicts were applied
+      after live telemetry, cleanup could raise before partial-result flush,
+      wrapper debug skips could still request invalid release proof, and shard
+      temp cleanup errors were swallowed. The harness now applies generated
+      platform-leakage verdicts per case before telemetry/stop/flush, persists
+      partial result JSON before generated-repo cleanup, records cleanup failure
+      as a failed proof result, downgrades any explicit browser/rescue/natural
+      rescue skip to discovery proof in the standalone wrapper, and converts
+      shard temp cleanup failure into a `campaign.shard-temp-cleanup-failed`
+      cluster. Focused reviewer tests passed (`26 passed in 1.13s`), compile
+      and shell syntax checks passed, and the widened install/matrix suite
+      passed (`111 passed in 1.33s`).
+    - 2026-07-04 actor-led product-view and tiered harness completion:
+      current source now repairs the latest 120-case discovery blocker at the
+      semantic projection owner. Product-view copy uses shared actor-led action
+      parts before generic user-capability wrapping, and result-list noun
+      disambiguation keeps review/evidence/proof outcome phrases as visible
+      result objects rather than actor-led actions. A second harness review also
+      closed exception telemetry, release-proof stressor coverage, and
+      duplicate-name failed-subset replay risks. Focused proof passed the new
+      harness reviewer regressions (`4 passed`), the full harness suite (`115
+      passed in 1.66s`), the Greenfield semantic/source pack (`159 passed in
+      84.25s`), and the combined focused suite (`273 passed in 85.49s`), plus
+      compile, shell syntax, and `git diff --check`. Exact source-local replay
+      of the failed actor-led product-view case completed governed create in
+      41.607s with returncode 0, no actor-led `user can` slop, no `result
+      result`, and the disposable repo deleted. Remaining verification is
+      installable-dist replay of the failed subset and resumed 120/240
+      discovery before any release-readiness claim.
+    - 2026-07-04 source-case provenance checkpoint:
+      the resumed controlled volume campaign passed 40/40 installed cases
+      before stopping on shard 008 due to invalid evaluator metadata, not a
+      post-confirm artifact failure. The source corpus declared `inspection` as
+      a required term for `restaurant health reinspection`, but the case prompt
+      grounded only `reinspection` and `inspector`, making the domain-term proof
+      impossible. The harness now centralizes required-term grounding in the
+      case-file loader, rejects ungrounded required terms before the sharder
+      writes any tier files, keeps exact source terms valid, and gives
+      pre-result shard exits a `campaign.shard-process-failed` cluster with
+      tail-preserved stderr. Focused proof passed 95 harness/matrix tests plus
+      compile checks. Live proof rejects the stale Corpus G source file before
+      shard output and clusters the stale shard failure with the exact bad term.
+      Remaining execution work is to rebuild corrected high-variance source
+      cases from source-grounded terms, rerun the repaired shard subset, and
+      resume 120/240 discovery only after the case-source preflight is clean.
+    - 2026-07-04 replayable campaign failure-response checkpoint:
+      a follow-up read-only reviewer found that the new stop-fix-replay loop
+      could still break when a child shard died before writing a normal result
+      payload, because the parent could advertise unreadable
+      `failed_result_jsons` and the sharder would fail before exact replay.
+      The same review found that interrupted sibling shards without failure
+      evidence could pollute failed-subset inputs, release-proof preflight
+      aborts were labeled as completed release proof, temp cleanup proof missed
+      stale files and symlinks, and campaign summaries still lacked failure
+      outcomes by stressor class. The harness now has a dedicated
+      `greenfield_matrix_failure_response.py` owner, writes replayable
+      synthetic shard payloads with source case IDs, stressor tags, and prompt
+      fingerprints for pre-result failures, excludes evidence-free interrupted
+      siblings from failed-subset replay, marks release preflight aborts as
+      not completed proof, treats stale matching files/symlinks as cleanup
+      failures, and reports stressor-class outcomes plus stressor-tagged
+      failure clusters. Focused proof passed 53 reviewer-boundary tests, the
+      134-test install/greenfield harness pack, compile, shell syntax, scoped
+      diff hygiene, and a disposable fake-dist campaign smoke that intentionally
+      failed installation while flushing progress, failure clusters, and a
+      required failure-response packet without claiming release readiness.
+    - 2026-07-04 rendered projection and replay identity checkpoint:
+      reviewer-driven hardening found two platform defects outside the previous
+      generator fix. The semantic compiler scanned source intent/backlog fields
+      but missed rendered package roots such as project brief, accepted project,
+      dashboard, and operator prompts; and failed-subset replay could miss
+      cluster-only failures for no-id cases after no-ID dedupe moved to prompt
+      fingerprints. Source now adds a recursive projection-surface scanner,
+      applies proof-as-result rejection only to public rendered surfaces while
+      preserving legitimate proof/evidence fields, treats `repo_name` as
+      structural metadata rather than public prose, matches weak display names
+      only when no stronger identity exists, and removes `/Users/freedom/mock`
+      as a generic temp default from wrappers and source defaults. Focused
+      proof passed the semantic/projection/sharder/bootstrap/wrapper pack
+      (`120 passed`), the metadata false-positive focused pack (`29 passed`),
+      compile checks, a clean source-local sports-concussion create in 39.48s
+      with governed records written and no quality debt, and a two-case tiered
+      smoke where failed-subset, 60-case regression, 240-case discovery,
+      release-proof, and volume-discovery tiers all passed. This is source and
+      harness proof only; release readiness still requires fresh installable
+      dist proof with browser and natural rescue enabled.
+    - 2026-07-04 runtime-quality semantic ownership checkpoint:
+      broad runtime-quality proof after the harness work exposed four remaining
+      source defects in SemanticModelIR and first-path copy custody: approval or
+      review artifacts could become actors, material object-list outcomes could
+      be skipped because the surrounding clause also carried release/scope
+      language, actor-role phrases beginning with action-shaped words could be
+      nominalized as the wrong verb, and storage/custody evidence could outrank
+      the visible product outcome. The repair keeps the fix in generic semantic
+      ownership rather than rendered text: actor completion treats approval
+      artifacts as artifact context, visible-result selection admits material
+      object-list and reviewable outcomes before proof-boundary fallback,
+      action-result nominalization disambiguates actor-role nouns from leading
+      verbs, and supporting storage/custody evidence is demoted below terminal
+      product outcomes. Focused proof passed the actor-label and semantic
+      compiler regressions plus live simulations (`43 passed in 323.42s`), the
+      runtime-quality pack (`71 passed in 903.36s`), and the final focused
+      semantic-quality pack (`31 passed in 51.71s`). Remaining work is to rerun
+      the installed high-variance tiers and strict release proof from a fresh
+      dist before any release-readiness claim.
+    - 2026-07-04 reviewer follow-up on leakage and actor custody:
+      read-only review found that declared leakage sentinels could be stale and
+      mask source-domain vocabulary in platform leakage scans, and that actor
+      completion could collapse distinct same-tail roles such as two different
+      reviewers. The harness now validates external case-file `leakage_terms`
+      against prompt or confirmed-intent source text before writing shards, and
+      platform leakage selection falls back to source-derived terms when
+      programmatic cases carry stale declared sentinels. Actor completion now
+      removes tail-only dedupe while retaining exact and containment dedupe, so
+      distinct same-tail roles remain separate actors. The broad rerun also
+      exposed a code-hygiene failed mechanism: a duplicate legacy
+      `_dedupe_actor_labels` helper later in the file overrode the new owner.
+      That duplicate was removed, prefix normalization moved into the single
+      actor-dedupe owner, and the same-tail/context-expanded actor cases now
+      pin that custody. Focused proof passed the platform leakage, sharder
+      case-file, and actor-label suites (`53 passed in 7.29s`), exact actor/live
+      regression proof passed (`13 passed in 20.16s`), the widened
+      harness/leakage pack passed (`88 passed in 16.53s`), and the broad
+      runtime-quality pack passed (`71 passed in 894.16s`). Remaining release
+      proof is unchanged: build a fresh dist, run installed high-variance
+      discovery, and run strict release proof before readiness claims.
+    - 2026-07-04 live progress line checkpoint:
+      the tiered campaign harness now streams compact progress lines from the
+      same merged telemetry owner that writes `campaign-progress.v1.jsonl` and
+      the live campaign snapshot. The matrix child still flushes incremental
+      result JSON after each case, and the campaign runner still owns stop
+      decisions through typed failure clusters; the new renderer only projects
+      canonical events to stderr for operators watching a long run. The wrapper
+      streams by default and supports `GREENFIELD_MATRIX_QUIET_PROGRESS=1` for
+      machine-only logs. Focused proof passed Python compile checks for the
+      touched harness modules and the focused install/matrix harness suite
+      (`56 passed in 0.26s`). This closes the opacity issue; it does not
+      convert discovery proof into release readiness.
+    - 2026-07-04 replay/concurrency/tier-size hardening:
+      a read-only harness review found that the first live-progress pass still
+      let four campaign contracts drift: multi-case pre-result shard crashes
+      could masquerade as exact failed-subset replay, duplicate display names
+      could over-select replay cases when no strong identity existed, 60/120/240
+      tier names could silently shrink to small smoke pools, and the intended
+      controlled-concurrency profile lived outside the harness policy. The
+      follow-up fix makes exact failed-subset replay depend on stable case
+      identity or single-case shard scope, emits source-shard replay packets for
+      multi-case pre-result failures, treats weak names as replayable only when
+      unique, fails default 60/120/240 tiers on undersized source pools unless a
+      caller explicitly asks for a smaller smoke size, warns when generated case
+      pools cannot satisfy 120/240 discovery, and records the default campaign
+      worker profile of one failed-subset worker plus two discovery workers.
+      A follow-up source read closed live name-only duplicate telemetry as well:
+      duplicate display-name failures now produce source-shard replay instead
+      of a fake exact subset when no strong identity exists.
+      The code was decomposed at the same checkpoint: the campaign runner now
+      owns orchestration, readiness posture, and CLI output, while a shard
+      execution owner handles matrix command construction, process tailing,
+      temp cleanup, synthetic shard payloads, and live telemetry forwarding.
+      The resulting files are 428 and 792 lines, keeping both below the
+      hand-maintained source soft limit instead of leaving another near-limit
+      mixed-owner harness.
+      Focused proof passed the campaign/sharder/generator/bootstrap harness
+      suite (`61 passed in 0.18s`), Python compile checks for the touched
+      harness modules, and scoped `git diff --check`. This makes the next
+      hundreds-scale run faster to interpret and harder to overclaim; it still
+      does not replace installed release proof.
+    - 2026-07-04 replay fallback and dependency-injection cleanup:
+      follow-up review found that exact failed-subset replay was still
+      overclaimed when a failed shard named an unreadable or missing output
+      JSON. The failure-response owner now advertises exact replay only when
+      the result payload is readable and contains stable failed-case identity;
+      otherwise it preserves the source shard case file for replay. The same
+      pass keeps stopped sibling shards without failed-case evidence out of
+      failed-case totals and removes the process-global monkeypatch seam
+      between campaign orchestration and shard execution. `run_tier` now takes
+      explicit command, telemetry-forwarding, and temp-cleanup dependencies,
+      while the wrapper passes its current functions directly. Test ownership
+      was split so direct failure-response behavior lives in its own 217-line
+      module and the campaign-runner test file returns to 1,367 lines.
+      Focused proof passed the full harness slice (`77 passed in 1.61s`),
+      Python compile for the release harness modules, Registry forensics
+      check-only (`30` components scanned, no updates required), and the broad
+      runtime-quality pack (`71 passed in 928.12s`). D-047 now reflects the
+      source-shard fallback and explicit dependency boundary. Remaining release
+      work is unchanged: resume high-variance installed discovery, then run
+      strict release proof from a fresh dist before readiness claims.
+    - 2026-07-04 direct campaign case-file preflight follow-up:
+      packaged exact failed-subset replay against the fresh worktree dist passed
+      20/20 previously failing cases with every case at 10/10 and under 45s,
+      proving the replay tier itself. The next direct campaign invocation over
+      stale shard files exposed a remaining harness custody gap: invalid
+      existing case-file metadata could still reach child shard execution when
+      the maintainer bypassed the sharder and passed shard files directly to
+      `greenfield-matrix-campaign`. The fix preflights existing selected shard
+      files at the tier boundary before any worker launch, emits a typed
+      `campaign.case-file-invalid` cluster, keeps completed shard count at
+      zero, and preserves source-shard replay guidance for the invalid file.
+      Live rerun of shard 03-10 now fails in 0.006s with no sibling launch, and
+      focused proof passed the campaign-runner suite (`30 passed in 0.16s`).
+    - 2026-07-04 current-taxonomy strict release proof:
+      strict release proof on the fresh worktree dist completed with
+      `status=release-ready`, `release_proof_completed=true`,
+      `release_proof_status=passed`, `release_readiness_status=proven`, and
+      zero failure clusters. The release case shard covered all 11 maintained
+      stressor classes at 10/10 variance, and the 12 release cases all scored
+      10/10 with standard create timing min 32.826s, max 42.597s, mean
+      37.311s, and p95 41.905s. Browser proof attempted and passed 12/12 cases
+      with zero issues, platform leakage passed, rescue smoke passed at
+      52.260s, natural rescue passed at 68.349s within the 90s rescue budget,
+      and temp cleanup proof left the release temp scope empty. This supports
+      the strict release-proof posture for the current dist, while large-volume
+      discovery remains blocked on regenerating valid high-taxonomy external
+      shards rather than reusing stale legacy corpus G shards.
+    - 2026-07-04 controlled-regression source-launch falsification:
+      fresh current-source dist `/private/tmp/odylith-local-release-0.1.15-current-replay`
+      first passed the exact six-case failed-subset replay from shard 006 with
+      every case at hard 10/10, complete governed records, zero issues, and
+      standard create timing between 34.547s and 46.534s. The follow-up
+      controlled 60-case regression over shards 003-010 then stopped correctly
+      on the first new failure cluster after 26 clean cases: `rail signal
+      anomaly simulator v1` failed before governed writes because every Project
+      implementation prompt leaked actor-led finite action inside `user can`
+      prose. Source diagnosis traced this to Project source-launch rendering:
+      it composed accepted path copy from `first_path_action_phrase`, which
+      derived `review Engineers replay signal states`, then wrapped it as `the
+      user can ...` and joined the terminal outcome as `receive accept an
+      anomaly result`. The fix is source-owned and generic: accepted actor rows
+      flow into source-launch first-path, capability, and proof rendering; only
+      source-owned actor prefixes may split actor-led base-action material
+      steps; terminal action outcomes become readable result objects before
+      being joined with `receive`; and the prompt quality gate remains strict.
+      Focused proof passed the new rail regression and adjacent actor-led
+      source-launch prompt regression (`2 passed in 0.37s`) plus Python compile
+      checks. Remaining verification: rebuild the local dist from this fix,
+      rerun the exact rail failed subset, then resume the interrupted
+      controlled 60-case regression before any broader discovery or release
+      readiness claim.
+    - 2026-07-04 existing-modal source-launch falsification:
+      the rebuilt rail source-launch dist passed the exact rail replay at hard
+      10/10 and resumed the interrupted controlled 60-case regression.
+      Shards 007 and 008 then passed 12/12 additional high-variance installed
+      cases before the live stop policy found a new source-launch cluster in
+      shard 010. The failed case rejected every Project implementation prompt
+      and the Project dashboard preview for adjacent duplicate visible copy.
+      Source-local reproduction exposed the exact shared phrase:
+      `the mission operators can can import orbit covariance...`. Root cause
+      was generic modal custody: the source-owned actor path always prepended
+      `can` even when the accepted first-path action already carried a modal,
+      while the base capability path should strip that modal before composing
+      `capture the information needed to ...`. The fix keeps ownership inside
+      `src/odylith/runtime/project_intelligence/source_launch.py`: actor
+      subject rendering preserves existing modal action clauses without adding
+      another modal, and base-action rendering removes a leading modal before
+      capability composition. Focused proof passed the existing-modal
+      regression, the rail actor-source regression (`2 passed in 0.34s`), and
+      the full Project source-launch quality suite (`16 passed in 1.27s`).
+      Exact source-local replay completed governed create with `mode=applied`,
+      manifest passed, validation passed, zero issues, and manifest elapsed
+      11.923s. Fresh installable dist
+      `/private/tmp/odylith-local-release-0.1.15-space-modal-fix` passed
+      platform-domain leakage across 224 distinctive fixture terms, and exact
+      installed failed-subset replay passed at hard 10/10 with create time
+      34.148s, zero issues, complete Radar/Registry/Atlas/trace/prompt
+      evidence, and all expert lenses green. Follow-up resumed shards 009-010
+      from the same fresh dist with two workers and stop-on-first-cluster
+      enabled; the window passed 12/12 high-variance installed cases at hard
+      10/10 with zero issues and zero clusters. The exact failed case passed
+      again in normal shard position at 36.361s, and both shards produced
+      complete Radar/Registry/Atlas/trace/project-brief/Project-prompt
+      evidence. A current-dist rerun of shards 003-008 then passed 36/36
+      additional installed high-variance post-confirm cases at hard 10/10 with
+      zero issues, zero failure clusters, and per-case live telemetry. The
+      exact `grn-sim` confirmed intent replay now passes both source-local and
+      installed paths: source-local create finished in 30.71s with governed
+      records written and no repeated visible-copy hits, and installed replay
+      passed at hard 10/10 with create time 30.034s, zero issues, 4 Radar
+      workstreams, 5 Registry specs, 6 Atlas diagrams, 20 trace nodes, and all
+      expert lenses green. Because older shards 001-002 evidence belonged to a
+      stale worktree dist, those shards were rerun on the same fresh
+      space-modal dist and passed 12/12 at hard 10/10 with zero issues and max
+      create time 44.803s. The current fresh dist has therefore cleared the
+      maintained 60-case regression tier at 60/60 with zero clusters. This is
+      discovery proof, not release-readiness proof: browser, natural-rescue,
+      strict release, and broader unseen-discovery proof still remain separate
+      gates.
+    - 2026-07-05 title-boundary semantic-ingress checkpoint:
+      the resumed 120-case discovery run found a new failure after the
+      quantum-dot fix: `secure multiparty risk model model-risk release gate`
+      failed before governed writes because source-title boundary duplication
+      fanned out into Project prompts, project brief, next steps, accepted
+      memory, Compass, Radar, Registry, and Atlas. The repair keeps ownership
+      in semantic ingress rather than rendered surface cleanup:
+      `normalize_project_title` now collapses adjacent duplicate title terms
+      and prefix-equivalent hyphen/slash compound boundaries before projection
+      fan-out, and Product Intent Confirmation recovery canonicalizes recovered
+      title sources before story/state/proof/system generation. Focused proof
+      passed the boundary/source-launch/high-variance pack (`12 passed in
+      129.16s`), source-local exact replay committed governed writes with
+      manifest passed and whole-project elapsed `32.85s`, and fresh installed
+      failed-subset replay against
+      `/private/tmp/odylith-local-release-0.1.15-secure-title-20260705T082546`
+      passed hard `10/10` in `46.865s` with zero issues, complete
+      Radar/Registry/Atlas/project-brief/trace/Project-prompt evidence, all
+      expert lenses green, platform leakage proof passed, and temp cleanup
+      passed. This proves the escaped failed subset but remains discovery
+      proof; resume broader 120/240 unseen discovery and strict release proof
+      before release-readiness claims.
+    - Resumed installed volume-discovery shards 007-008 against the same
+      secure-title dist passed 60/60 high-variance scientific and deep-tech
+      cases with zero clusters, zero rescue activations, hard `10/10` on every
+      scored matrix dimension, all expert lenses green, and standard-path
+      latency min `30.504s`, average `40.951s`, max `48.879s`. The tranche
+      re-exercised the exact prior `secure multiparty risk model model-risk
+      release gate` case at hard `10/10` in `45.971s` plus independent
+      boundary-duplicate variants such as `chemical plume emergency model
+      model-risk release gate` at hard `10/10` in `45.378s`. This materially
+      strengthens the generic ingress fix but remains discovery evidence
+      because browser-surface proof and natural-rescue proof were intentionally
+      off.
+    - The same secure-title installed dist then passed the remaining
+      volume-discovery shards 001-006, adding 180/180 clean cases and closing
+      the candidate's 240-case discovery target at 240/240 passed, zero
+      clusters, zero rescue activations, all scored dimensions hard `10/10`,
+      create-time min `30.504s`, average `41.828s`, max `48.879s`, and no
+      standard-path create over `60s`. The tranche rechecked the earlier
+      quantum-dot escaped family across intake, simulation, field-evidence, and
+      model-risk variants in installed shard context. Remaining release
+      boundary: run strict release proof with full install mode, browser,
+      natural rescue, platform leakage, temp cleanup, and brutal artifact
+      readback before release-readiness claims.
+    - Strict release proof against the secure-title installed dist then passed
+      the full release boundary: campaign
+      `/private/tmp/odylith-secure-title-release-proof-20260705T103137/campaign.json`
+      reported `status=release-ready`, `execution_status=passed`,
+      `release_proof_completed=true`, `release_proof_status=passed`,
+      `release_readiness_status=proven`, and zero failure clusters. The strict
+      shard passed 12/12 scientific and deep-tech release cases with zero
+      issues, browser proof for every generated repo, platform-domain leakage
+      proof, temp cleanup proof, and hard `10/10` minimum scores for completion,
+      copy semantic clarity, governance depth, traceability, implementation
+      prompts, browser proof, latency, operator usefulness, semantic manifest,
+      product manager, architect, engineer, and domain expert. Standard create
+      timing stayed under the normal operator budget with min `39.648s`,
+      average `42.987s`, and max `47.625s`. Natural rescue also passed through
+      a real installed structured semantic patch case: first pass produced
+      `structured_rescue_semantic_patch`, the Tribunal patch planner returned a
+      schema-bound repair for
+      `SemanticModelIR.domain_ontology.external_systems`, the second pass
+      committed governed records, `natural_rescue_proof.cli_create_seconds` was
+      `66.351s`, manifest elapsed was `39.777s`, whole-project elapsed was
+      `58.397s`, and all quality lenses passed. This proves the candidate
+      package's strict release boundary. Final closure still requires a fresh
+      local-installable dist from the current post-governance tree, installed
+      proof against that exact dist, then stable commit and push.
+    - Final fresh-dist closure proof is now green for
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-final-20260705T035850`.
+      The dist build passed platform-domain leakage across 224 distinctive
+      fixture terms, and strict installed campaign
+      `/private/tmp/odylith-final-release-proof-20260705T040258/campaign.json`
+      reported `status=release-ready`, `execution_status=passed`,
+      `release_proof_completed=true`, `release_proof_status=passed`,
+      `release_readiness_status=proven`, and zero failure clusters. The strict
+      shard passed 12/12 high-variance scientific/deep-tech cases with zero
+      issues, browser proof, platform-domain leakage proof, temp cleanup proof,
+      and hard `10/10` minimum scores across completion, copy semantic clarity,
+      governance depth, traceability, implementation prompts, browser proof,
+      latency, operator usefulness, semantic manifest, product manager,
+      architect, engineer, and domain expert. Standard create timing stayed
+      within the 60s target: min `38.971s`, average `42.668s`, max `47.199s`.
+      Natural rescue passed on the real installed structured semantic patch
+      path with `cli_create_seconds=61.178`, manifest elapsed `34.826s`,
+      whole-project elapsed `53.204s`, repaired
+      `structured_rescue_semantic_patch`, and committed governed writes. Final
+      remaining delivery action is the stable commit and push of this release
+      checkpoint.

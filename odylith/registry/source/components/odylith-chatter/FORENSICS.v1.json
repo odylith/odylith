@@ -16,12 +16,12 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 137,
+    "explicit_event_count": 138,
     "mapped_workstream_evidence_count": 123,
-    "recent_path_match_count": 0,
+    "recent_path_match_count": 1,
     "spec_history_event_count": 15,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 137
+    "timeline_event_count": 139
   },
   "name": "Odylith Chatter",
   "path_prefixes": [
@@ -54,6 +54,48 @@
   ],
   "spec_ref": "odylith/registry/source/components/odylith-chatter/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 1,
+      "artifacts": [
+        "tracked_artifact_1"
+      ],
+      "confidence": "high",
+      "event_index": 922,
+      "explicit_components": [],
+      "kind": "workspace_activity",
+      "mapped_components": [
+        "odylith-chatter"
+      ],
+      "meaningful": true,
+      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
+      "ts_iso": "2026-07-04T19:08:48-07:00",
+      "workstreams": []
+    },
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
+      ],
+      "confidence": "high",
+      "event_index": 817,
+      "explicit_components": [
+        "odylith",
+        "odylith-chatter",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "odylith",
+        "odylith-chatter",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. 3 tracked artifact references retained.",
+      "ts_iso": "2026-07-02T14:59:30-07:00",
+      "workstreams": []
+    },
     {
       "artifact_count": 7,
       "artifacts": [

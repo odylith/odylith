@@ -7,6 +7,9 @@ import re
 from typing import Any
 
 from odylith.runtime.common.prose_grammar import third_person_action_verb
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import (
+    capitalize_sentence_start_preserving_source_terms,
+)
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.project_intelligence.focus import backlog_rows_by_id
 from odylith.runtime.project_intelligence.narration import evidence_boundary_phrase
@@ -899,7 +902,7 @@ def _story_sentence(value: str) -> str:
 
 
 def _capitalize_first(value: str) -> str:
-    return f"{value[:1].upper()}{value[1:]}" if value else value
+    return capitalize_sentence_start_preserving_source_terms(value)
 
 
 def _lower_first(value: str) -> str:

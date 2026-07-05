@@ -14,6 +14,7 @@ from odylith.runtime.analysis_engine.types import slugify
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_text import clip_text_at_word_boundary
+from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 from odylith.runtime.domain_intelligence.greenfield_text import join_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_text import normalize_cover_article_language
 from odylith.runtime.domain_intelligence.greenfield_text import strip_dangling_word_tail
@@ -56,7 +57,9 @@ _PREVIEW_TERMINAL_MODIFIERS = frozenset(
         "visible",
     }
 )
-_PREVIEW_DANGLING_WORDS = frozenset((CONFIRMED_DANGLING_WORDS - {"final"}) | {"around", "from"})
+_PREVIEW_DANGLING_WORDS = frozenset(
+    (CONFIRMED_DANGLING_WORDS - {"final"}) | {"around", "from", "keep", "keeps", "return", "returns"}
+)
 _PREVIEW_TERMINAL_FINAL_STATE_WORDS = frozenset(
     {"case", "decision", "match", "record", "result", "review", "score", "status"}
 )
@@ -128,6 +131,10 @@ def build_next_steps(
     project_brief = proposal.get("project_brief", {}) if isinstance(proposal.get("project_brief"), Mapping) else {}
     customization_options = _customization_options(project_brief)
     readiness_gates = _readiness_gates(project_brief)
+    anchor_gate = _semantic_anchor_gate(proposal)
+    if anchor_gate:
+        readiness_gates = [*readiness_gates, anchor_gate]
+        validation_items = unique_text([*validation_items, anchor_gate])
     return {
         "project_workstream_id": umbrella_id,
         "project_workstream_title": project_title,
@@ -559,6 +566,26 @@ def _validation_items(*, row: Mapping[str, Any], wave: Mapping[str, Any]) -> tup
     )
 
 
+def _semantic_anchor_gate(proposal: Mapping[str, Any]) -> str:
+    anchors = _semantic_source_anchors(proposal)
+    if not anchors:
+        return ""
+    return _preview_safe_fragment(
+        "Preserve prompt-grounded evidence anchors in source and proof: " + "; ".join(anchors[:8]),
+        limit=520,
+    )
+
+
+def _semantic_source_anchors(proposal: Mapping[str, Any]) -> tuple[str, ...]:
+    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    evaluation = semantic.get("evaluation_semantics") if isinstance(semantic.get("evaluation_semantics"), Mapping) else {}
+    rows = text_values(evaluation.get("source_anchors")) if isinstance(evaluation, Mapping) else []
+    if not rows:
+        intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+        rows = text_values(intent.get("evidence_requirements")) if isinstance(intent, Mapping) else []
+    return tuple(row for row in rows if row)
+
+
 def _preview_safe_validation_item(value: Any) -> str:
     return _preview_safe_fragment(normalize_cover_article_language(value), limit=220)
 
@@ -571,6 +598,7 @@ def _preview_safe_fragment(value: Any, *, limit: int) -> str:
         dangling_words=_PREVIEW_DANGLING_WORDS,
         rstrip_chars=" ,;:.",
     )
+    text = dedupe_adjacent_words(text)
     return _trim_preview_terminal_fragment(text).strip(" ,;:")
 
 
@@ -650,7 +678,13 @@ def _customization_options(project_brief: Mapping[str, Any]) -> list[str]:
 
 def _readiness_gates(project_brief: Mapping[str, Any]) -> list[str]:
     gates = project_brief.get("coding_readiness_gates", []) if isinstance(project_brief, Mapping) else []
-    return [str(item).strip() for item in gates if str(item).strip()] if isinstance(gates, list) else []
+    if not isinstance(gates, list):
+        return []
+    return [
+        cleaned
+        for item in gates
+        if (cleaned := _preview_safe_fragment(item, limit=520))
+    ]
 
 
 def _project_first_prompt(*, project_id: str, project_title: str, start_id: str, start_title: str) -> str:

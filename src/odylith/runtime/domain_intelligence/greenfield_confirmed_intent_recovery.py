@@ -18,6 +18,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source impo
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_project_title_source
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import title_case_text
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import recovered_evaluation_context
 from odylith.runtime.domain_intelligence.greenfield_first_path_repair import first_path_has_action_signal
@@ -26,8 +27,10 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 from odylith.runtime.domain_intelligence.greenfield_first_path_clauses import readable_action_chain_sentence
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import lower_plain_title_subject_fragment
+from odylith.runtime.domain_intelligence.greenfield_first_path_control_steps import operator_review_lens_obligations
 
 _MODAL_MARKERS = frozenset({"can", "will", "must", "needs", "need"})
 _ACTORLESS_IMPERATIVE_ACTION_WORDS = frozenset({"release"})
@@ -41,6 +44,7 @@ _NON_HUMAN_ACTOR_TERMS = frozenset(
         "builder",
         "controller",
         "database",
+        "decision",
         "device",
         "engine",
         "executor",
@@ -54,13 +58,20 @@ _NON_HUMAN_ACTOR_TERMS = frozenset(
         "policy",
         "product",
         "proof",
+        "recommendation",
         "record",
         "register",
+        "report",
+        "result",
         "sensor",
         "service",
         "software",
+        "state",
+        "status",
+        "summary",
         "system",
         "tool",
+        "view",
         "workbench",
         "workspace",
     }
@@ -176,6 +187,25 @@ _PRODUCT_CONTAINER_TERMS = frozenset(
         "workspace",
     }
 )
+_RESULT_FOCUS_CONTAINER_TERMS = frozenset(
+    {
+        "app",
+        "application",
+        "console",
+        "dashboard",
+        "desk",
+        "platform",
+        "portal",
+        "product",
+        "room",
+        "service",
+        "studio",
+        "system",
+        "tool",
+        "workbench",
+        "workspace",
+    }
+)
 
 
 def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title: bool = False) -> str:
@@ -185,18 +215,38 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
     source = _clean(raw_source).strip(" .")
     prompt_source = prompt_intent_source(raw_source)
     recovered_first_path_source = prompt_source.first_path or prompt_first_path_source(raw_source)
-    title_source = _recover_title_source(raw_source) if prefer_product_title else ""
+    title_source = _canonical_recovered_title_source(_recover_title_source(raw_source)) if prefer_product_title else ""
+    prompt_title_source = _canonical_recovered_title_source(prompt_source.title)
     evaluation = recovered_evaluation_context(
         source=raw_source,
-        title_source=title_source or prompt_source.title,
+        title_source=title_source or prompt_title_source,
         first_path_source=recovered_first_path_source,
     )
-    title = _recovered_title(evaluation.title_source or title_source or first_path_outcome_phrase(recovered_first_path_source, fallback=""))
-    first_path_source = evaluation.first_path_source or _usable_first_path_source(
+    title = normalize_project_title(
+        _recovered_title(
+            evaluation.title_source
+            or title_source
+            or first_path_outcome_phrase(recovered_first_path_source, fallback="")
+        ),
+        fallback="Recovered Product Workspace",
+    ).canonical_title
+    recovered_source_has_non_human_subject = _path_starts_with_non_human_workflow_subject(recovered_first_path_source)
+    usable_first_path_source = _usable_first_path_source(
         recovered_first_path_source,
         title=title,
         preserve_one_line=bool(prompt_source.command_led and prompt_source.title and prompt_source.actor),
-    ) or _generic_first_path_source(title, source=recovered_first_path_source)
+    )
+    generic_context_source = (
+        (prompt_title_source or title_source or title)
+        if recovered_source_has_non_human_subject
+        else recovered_first_path_source
+    )
+    first_path_source = (
+        usable_first_path_source
+        or evaluation.first_path_source
+        or _generic_first_path_source(title, source=generic_context_source)
+    )
+    reviewer_obligations = operator_review_lens_obligations(raw_source)
     direct_actor_row = _prompt_actor_row(prompt_source.actor, first_path_source)
     actor_rows = [direct_actor_row] if direct_actor_row else _human_actor_rows_from_first_path(first_path_source, title=title)
     actor_rows = [
@@ -247,20 +297,25 @@ def confirmation_from_operator_intent(intent_text: str, *, prefer_product_title:
         state = evaluation.state_object
     if evaluation.proof_boundary:
         proof = evaluation.proof_boundary
+    proof = _proof_with_reviewer_obligations(proof, reviewer_obligations)
     problem = (
         f"{lead_actor} {lead_needs} a dependable way to {lead_action.rstrip('.')} and trust the result without stitching "
         "together scattered context."
     )
     product_view = (
-        f"{title} earns trust when {lead_actor_ref} can {lead_action.rstrip('.')} and the result remains "
-        "visible, blocked when needed, and reviewable."
+        f"{title} earns trust when {lead_actor_ref} can {lead_action.rstrip('.')}. "
+        f"{_product_view_result_sentence(outcome_object, lead_action=lead_action)}"
+        "The result remains visible, blocked when needed, and reviewable."
     )
     success_metrics = evaluation.success_metrics or (
         f"{lead_actor} can {lead_action.rstrip('.')} and see the visible result.",
         "Missing or invalid input produces a clear blocker instead of a false success.",
         f"Review evidence backs {outcome_object} with replayable proof.",
     )
-    assumptions = evaluation.assumptions or ("Release 0.0.1 proves the first path before broader automation or live integrations.",)
+    assumptions = _assumptions_with_reviewer_obligations(
+        evaluation.assumptions or ("Release 0.0.1 proves the first path before broader automation or live integrations.",),
+        reviewer_obligations,
+    )
     ambiguities = evaluation.ambiguities or (
         "The exact exception policies, integration depth, and operational ownership can be refined after the first proof path is accepted.",
     )
@@ -291,6 +346,8 @@ def _usable_first_path_source(value: str, *, title: str, preserve_one_line: bool
     text = _clean(value).strip(" .")
     if not text or _path_source_restates_title(text, title=title):
         return ""
+    if _path_starts_with_non_human_workflow_subject(text):
+        return ""
     model = first_path_model(text)
     gerund_actor, gerund_action = _actor_gerund_action_parts(text)
     if not first_path_has_action_signal(text) and not (gerund_actor and gerund_action):
@@ -310,6 +367,24 @@ def _usable_first_path_source(value: str, *, title: str, preserve_one_line: bool
     return ""
 
 
+def _path_starts_with_non_human_workflow_subject(value: str) -> bool:
+    words = _strip_leading_articles(_words(value))
+    if len(words) < 3:
+        return False
+    max_subject_words = min(5, len(words) - 1)
+    for action_index in range(1, max_subject_words + 1):
+        token = words[action_index].casefold().strip(".,:;")
+        if not (looks_like_base_action_token(token) or looks_like_finite_action_token(token)):
+            continue
+        subject_words = words[:action_index]
+        if _looks_like_actor_subject(subject_words):
+            return False
+        subject_terms = _semantic_terms(" ".join(subject_words))
+        if subject_terms & _NON_HUMAN_ACTOR_TERMS:
+            return True
+    return False
+
+
 def _prompt_actor_row(actor: str, first_path: str) -> str:
     actor_text = _clean(actor).strip(" .")
     path = _clean(first_path).strip(" .")
@@ -319,7 +394,12 @@ def _prompt_actor_row(actor: str, first_path: str) -> str:
     action = _strip_relative_action_prefix(action)
     if not action:
         return ""
-    return _human_actor_row(actor_text, action, preserve_full_action=True)
+    return _human_actor_row(actor_text, action, preserve_full_action=not _action_has_distinct_sequence(action))
+
+
+def _action_has_distinct_sequence(value: str) -> bool:
+    model = first_path_model(value)
+    return len(model.steps) >= 3
 
 
 def _first_path_source_from_steps(steps: Sequence[str]) -> str:
@@ -362,6 +442,13 @@ def _path_source_restates_title(value: str, *, title: str) -> bool:
     return bool(value_terms and title_terms and value_terms <= title_terms)
 
 
+def _canonical_recovered_title_source(value: str) -> str:
+    text = _clean(value).strip(" .")
+    if not text:
+        return ""
+    return normalize_project_title(text, fallback=text).canonical_title
+
+
 def _semantic_terms(value: str) -> set[str]:
     terms: set[str] = set()
     for term in label_terms(value):
@@ -390,9 +477,15 @@ def _embedded_first_path_clause(value: str, *, actor: str, force_actor_modal: bo
     gerund_actor, gerund_action = _actor_gerund_action_parts(text)
     if gerund_actor and gerund_action:
         return f"{_clean(gerund_actor) or _clean(actor) or 'the representative user'} can {gerund_action}"
-    actor_prefix, actor_action = _actor_led_base_action_parts(text) if force_actor_modal else ("", "")
-    if force_actor_modal and actor_prefix and actor_action:
-        return f"{_clean(actor_prefix) or _clean(actor) or 'the representative user'} can {actor_action}"
+    actor_prefix, actor_action = _actor_led_base_action_parts(text)
+    prefix_words = _words(actor_prefix)
+    article_led_prefix = bool(prefix_words and prefix_words[0].casefold().strip(".,:;") in _LEADING_ARTICLES)
+    if actor_prefix and actor_action and (
+        force_actor_modal or (not article_led_prefix and text.casefold().startswith(f"{actor_prefix.casefold()} "))
+    ):
+        if force_actor_modal or _actor_led_clause_has_modal(text, actor_prefix):
+            return f"{_clean(actor_prefix) or _clean(actor) or 'the representative user'} can {actor_action}"
+        return _sentence_case(text)
     clause = _lower_leading_word(text)
     actorless_modal_action = _actorless_modal_action(clause)
     if actorless_modal_action:
@@ -463,6 +556,19 @@ def _actor_led_base_action_parts(value: str) -> tuple[str, str]:
     return "", ""
 
 
+def _actor_led_clause_has_modal(value: str, actor_prefix: str) -> bool:
+    text = _clean(value).strip(" .")
+    prefix = _clean(actor_prefix).strip(" .")
+    if not text or not prefix:
+        return False
+    return bool(re.match(rf"^{re.escape(prefix)}\s+(?:can|could|must|should|will)\b", text, flags=re.IGNORECASE))
+
+
+def _sentence_case(value: str) -> str:
+    text = _clean(value).strip(" .")
+    return text[:1].upper() + text[1:] if text else ""
+
+
 def _strip_relative_action_prefix(value: str) -> str:
     text = _clean(value).strip(" .")
     text = re.sub(r"^(?:who|that)\s+", "", text, count=1, flags=re.IGNORECASE).strip(" .")
@@ -524,6 +630,15 @@ def _recovered_proof_text(*, first_path_inline: str, outcome_object: str) -> str
         f"{opening} The product shows {outcome_object}, handles missing or invalid input with a clear blocker, "
         "and keeps replayable evidence for review."
     )
+
+
+def _product_view_result_sentence(outcome_object: str, *, lead_action: str) -> str:
+    outcome = _clean(outcome_object).strip(" .")
+    if not outcome or word_count(outcome) < 3:
+        return ""
+    if outcome.casefold() in _clean(lead_action).casefold():
+        return ""
+    return f"The visible result is {outcome}. "
 
 
 def _recover_title_source(source: str) -> str:
@@ -593,7 +708,11 @@ def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[st
     rows: list[str] = []
     seen_labels: set[str] = set()
     for clause in _first_path_actor_clauses(value):
-        row = _human_actor_row_from_clause(clause, allow_subject_fallback=not rows)
+        row = _human_actor_row_from_clause(
+            clause,
+            allow_subject_fallback=not rows,
+            require_actor_signal=bool(rows),
+        )
         label = row.split(":", 1)[0].casefold() if row else ""
         if row and label not in seen_labels:
             seen_labels.add(label)
@@ -607,6 +726,30 @@ def _human_actor_rows_from_first_path(value: str, *, title: str = "") -> list[st
         or "complete the first path"
     )
     return [f"{actor}: needs the product to {action} and keep the result visible and reviewable"]
+
+
+def _proof_with_reviewer_obligations(proof: str, obligations: Sequence[str]) -> str:
+    base = _clean(proof).strip(" .")
+    obligation_text = "; ".join(_clean(row).strip(" .") for row in obligations if _clean(row).strip(" ."))
+    if not obligation_text:
+        return base
+    if obligation_text.casefold() in base.casefold():
+        return base
+    return f"{base}. Reviewer obligations: {obligation_text}."
+
+
+def _assumptions_with_reviewer_obligations(
+    assumptions: Sequence[str],
+    obligations: Sequence[str],
+) -> tuple[str, ...]:
+    rows = [_clean(row).strip(" .") for row in assumptions if _clean(row).strip(" .")]
+    seen = {row.casefold() for row in rows}
+    for obligation in obligations:
+        cleaned = _clean(obligation).strip(" .")
+        if cleaned and cleaned.casefold() not in seen:
+            seen.add(cleaned.casefold())
+            rows.append(cleaned)
+    return tuple(rows)
 
 
 def _fallback_actor_label(title: str) -> str:
@@ -682,13 +825,20 @@ def _unique_clauses(values: Sequence[str]) -> list[str]:
     return rows
 
 
-def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -> str:
+def _human_actor_row_from_clause(
+    clause: str,
+    *,
+    allow_subject_fallback: bool,
+    require_actor_signal: bool = False,
+) -> str:
     relative = re.match(
         r"^(?P<actor>[A-Za-z][A-Za-z0-9 /&'()-]{1,80}?)\s+(?:who|that)\s+(?P<action>.+)$",
         _clean(clause),
         flags=re.IGNORECASE,
     )
     if relative:
+        if require_actor_signal and not _looks_like_actor_subject(_words(relative.group("actor"))):
+            return ""
         row = _human_actor_row(relative.group("actor"), relative.group("action"))
         if row:
             return row
@@ -697,9 +847,13 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
         return ""
     purpose_actor, purpose_action = _actor_purpose_parts(clause)
     if purpose_actor and purpose_action:
+        if require_actor_signal and not _looks_like_actor_subject(_words(purpose_actor)):
+            return ""
         return _human_actor_row(purpose_actor, purpose_action)
     gerund_actor, gerund_action = _actor_gerund_action_parts(clause)
     if gerund_actor and gerund_action:
+        if require_actor_signal and not _looks_like_actor_subject(_words(gerund_actor)):
+            return ""
         return _human_actor_row(gerund_actor, gerund_action, preserve_full_action=True)
     if _starts_with_action_without_actor(clause):
         return ""
@@ -707,6 +861,8 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
     if marker_index > 0 and marker_index + 1 < len(words):
         actor_words = list(words[:marker_index])
         action = " ".join(words[marker_index + 1 :])
+        if require_actor_signal and not _looks_like_actor_subject(actor_words):
+            return ""
         if _looks_like_state_review_predicate(action):
             role_actor, role_action = _state_review_actor_action(actor_words)
             if role_actor and role_action:
@@ -721,20 +877,76 @@ def _human_actor_row_from_clause(clause: str, *, allow_subject_fallback: bool) -
         return _human_actor_row(" ".join(actor_words), action)
     action_index = _action_start_index(words)
     if action_index > 0:
-        actor = " ".join(words[:action_index])
-        action = " ".join(words[action_index:])
-        if _actor_prefix_contains_embedded_action(words[:action_index]):
+        actor_words = words[:action_index]
+        action_words = words[action_index:]
+        actor = " ".join(actor_words)
+        action = " ".join(action_words)
+        if require_actor_signal and not _looks_like_actor_subject(actor_words):
             return ""
-        if _looks_like_material_actor_fragment(words[:action_index], words[action_index:]):
+        if _actor_prefix_contains_embedded_action(actor_words):
             return ""
-        if _looks_like_passive_object_subject(words[:action_index], words[action_index:]):
+        if _looks_like_material_actor_fragment(actor_words, action_words):
+            return ""
+        if _looks_like_passive_object_subject(actor_words, action_words):
+            return ""
+        if _looks_like_role_object_relation_fragment(actor_words, action_words):
             return ""
         return _human_actor_row(actor, action)
     fallback = _plural_subject_fallback(words, allow_single_subject=allow_subject_fallback)
     if fallback:
         actor, action = fallback
+        actor_words = _words(actor)
+        action_words = _words(action)
+        if require_actor_signal and not _looks_like_actor_subject(actor_words):
+            return ""
+        if _looks_like_role_object_relation_fragment(actor_words, action_words):
+            return ""
         return _human_actor_row(actor, action)
     return ""
+
+
+_RELATION_BOUNDARY_WORDS = frozenset(
+    {
+        "after",
+        "before",
+        "during",
+        "for",
+        "from",
+        "through",
+        "until",
+        "when",
+        "where",
+        "while",
+        "with",
+        "without",
+    }
+)
+
+
+def _looks_like_role_object_relation_fragment(actor_words: Sequence[str], action_words: Sequence[str]) -> bool:
+    """Reject object-list tails such as "operator notes before release" as actors."""
+
+    subject = _strip_leading_articles(actor_words)
+    action = _strip_leading_articles(action_words)
+    if not subject or len(action) < 1:
+        return False
+    subject_head = subject[0].casefold().strip(".,:;")
+    if subject_head not in _HUMAN_ACTOR_TERMS:
+        return False
+    subject_tail = [word.casefold().strip(".,:;") for word in subject[1:]]
+    if any(tail in _HUMAN_ACTOR_TERMS or _looks_like_human_actor_token(tail) for tail in subject_tail):
+        return False
+    action_head = action[0].casefold().strip(".,:;")
+    if len(subject) > 1:
+        return action_head in _RELATION_BOUNDARY_WORDS
+    if len(action) < 2:
+        return False
+    relation = action[1].casefold().strip(".,:;")
+    return (
+        relation in _RELATION_BOUNDARY_WORDS
+        and _looks_plural(action_head)
+        and not _looks_like_human_actor_token(action_head)
+    )
 
 
 def _looks_like_material_actor_fragment(actor_words: Sequence[str], action_words: Sequence[str]) -> bool:
@@ -1031,21 +1243,34 @@ def _lead_actor_action(actor_rows: Sequence[str]) -> str:
 
 
 def _internal_system_rows_from_recovered_title(title: str) -> list[str]:
-    label = title_case_text(_clean(title) or "Product")
+    label = title_case_text(collapse_repeated_phrase_units(_clean(title) or "Product"))
     return [
         (
-            f"{label} Intake Register — records source input, current status, owner, blocker, "
+            f"{_system_label_with_suffix(label, 'Intake Register')} — records source input, current status, owner, blocker, "
             "handoff, and version history for the first path"
         ),
         (
-            f"{label} Review Workspace — presents current state, missing input, user-facing confirmation, "
+            f"{_system_label_with_suffix(label, 'Review Workspace')} — presents current state, missing input, user-facing confirmation, "
             "and the next useful action"
         ),
         (
-            f"{label} Proof Ledger — keeps validation results, release decisions, failure reasons, "
+            f"{_system_label_with_suffix(label, 'Proof Ledger')} — keeps validation results, release decisions, failure reasons, "
             "and replayable evidence for review"
         ),
     ]
+
+
+def _system_label_with_suffix(label: str, suffix: str) -> str:
+    head = title_case_text(collapse_repeated_phrase_units(_clean(label) or "Product"))
+    head_words = head.split()
+    suffix_words = _clean(suffix).split()
+    head_keys = [word.casefold().strip(".,;:") for word in head_words]
+    suffix_keys = [word.casefold().strip(".,;:") for word in suffix_words]
+    if suffix_keys and head_keys[-len(suffix_keys) :] == suffix_keys:
+        return head
+    if len(suffix_keys) > 1 and head_keys and head_keys[-1] == suffix_keys[-1]:
+        return title_case_text(collapse_repeated_phrase_units(" ".join([*head_words[:-1], *suffix_words]).strip()))
+    return title_case_text(collapse_repeated_phrase_units(" ".join([head, *suffix_words]).strip()))
 
 
 def _stable_outcome_phrase(value: str, *, title: str) -> str:
@@ -1060,7 +1285,7 @@ def _stable_outcome_phrase(value: str, *, title: str) -> str:
         or _looks_like_generic_result_outcome(lowered)
         or any(f" {marker} " in f" {lowered} " for marker in _MODAL_MARKERS)
     ):
-        return f"{lower_plain_title_subject_fragment(title, action_offset=0)} result"
+        return f"{_title_result_focus(title)} result"
     return text
 
 
@@ -1071,7 +1296,20 @@ def _looks_like_status_only_outcome(value: str) -> bool:
 
 def _looks_like_generic_result_outcome(value: str) -> bool:
     words = [word.casefold() for word in _words(value)]
-    return bool(words and words[-1] == "result" and set(words[:-1]) <= {"a", "an", "the", "visible", "reviewable"})
+    return bool(
+        words
+        and words[-1] == "result"
+        and set(words[:-1]) <= {"a", "an", "the", "visible", "reviewable", "workspace"}
+    )
+
+
+def _title_result_focus(value: str) -> str:
+    terms = [
+        term.casefold()
+        for term in label_terms(value)
+        if term.casefold() not in _RESULT_FOCUS_CONTAINER_TERMS
+    ]
+    return " ".join(terms).strip(" .") or lower_plain_title_subject_fragment(value, action_offset=0) or "accepted product"
 
 
 def _object_result_phrase(value: str) -> str:
@@ -1090,6 +1328,15 @@ def _state_record_subject(value: str) -> str:
     text = lower_plain_title_subject_fragment(_clean(value), action_offset=0).strip(" .")
     if not text:
         return "first visible result"
+    text = _drop_terminal_result_action_participle(text)
+    words = _strip_leading_articles(_words(text))
+    if (
+        2 <= len(words) <= 4
+        and words[-1].casefold().strip(".,:;") == "result"
+        and not looks_like_base_action_token(words[0].casefold().strip(".,:;"))
+        and not looks_like_finite_action_token(words[0].casefold().strip(".,:;"))
+    ):
+        return " ".join(words).strip(" .")
     action_object = _actor_action_object(text)
     if action_object:
         text = nominal_visible_result_object(action_object).strip(" .") or action_object
@@ -1100,6 +1347,16 @@ def _state_record_subject(value: str) -> str:
     if words and words[-1].casefold() == "record":
         words = words[:-1]
     return " ".join(words).strip(" .") or "first visible result"
+
+
+def _drop_terminal_result_action_participle(value: str) -> str:
+    words = _words(value)
+    if len(words) < 2:
+        return _clean(value).strip(" .")
+    first = words[0].casefold().strip(".,:;")
+    if first not in {"accepted", "approved", "captured", "cleaned", "completed", "generated", "published", "recorded", "saved"}:
+        return _clean(value).strip(" .")
+    return " ".join(words[1:]).strip(" .") or _clean(value).strip(" .")
 
 
 def _actor_action_object(value: str) -> str:

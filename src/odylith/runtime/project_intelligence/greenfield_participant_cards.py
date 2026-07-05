@@ -227,7 +227,7 @@ def _actor_title_and_body(value: object) -> tuple[str, str]:
     if not detail or detail.casefold() == title.casefold():
         detail = participant_body(title=title, context=_default_actor_body(title))
     elif detail:
-        detail = participant_body(title=title, body=detail[:1].upper() + detail[1:])
+        detail = participant_body(title=title, body=_capitalize_first(detail))
     return title, detail
 
 
@@ -446,7 +446,7 @@ def _proposal_actor_responsibility_map(proposal: Mapping[str, Any]) -> dict[str,
         for value in strings(intelligence.get("actors")):
             actor, sep, body = display_text(value).partition(":")
             if sep and actor.strip() and body.strip():
-                rows.setdefault(actor.strip().casefold(), body.strip()[:1].upper() + body.strip()[1:])
+                rows.setdefault(actor.strip().casefold(), _capitalize_first(body.strip()))
     return rows
 
 

@@ -20,6 +20,9 @@ from odylith.runtime.artifact_quality.greenfield_package_quality import (
 )
 from odylith.runtime.domain_intelligence.greenfield_project_brief import PROJECT_BRIEF_SCHEMA_VERSION
 from odylith.runtime.domain_intelligence.greenfield_project_brief import project_brief_issues
+from odylith.runtime.domain_intelligence.greenfield_atlas_semantic_coverage import (
+    atlas_first_path_contract_coverage_text,
+)
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import ordered_terms
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_count
@@ -382,7 +385,13 @@ def _project_brief_preview_issues(
         else ""
     )
     preview_text = clean_text(" ".join(value for item in text_values(project_brief_preview) for value in text_values(item)))
-    if clean_text(first_path.get("capability")) and _semantic_overlap_ratio(clean_text(first_path.get("capability")), preview_text) < 0.16:
+    first_path_capability = clean_text(first_path.get("capability"))
+    first_path_raw_path = clean_text(first_path.get("raw_path"))
+    if (
+        first_path_capability
+        and _semantic_overlap_ratio(first_path_capability, preview_text) < 0.16
+        and (not first_path_raw_path or _semantic_overlap_ratio(first_path_raw_path, preview_text) < 0.16)
+    ):
         issues.append("project brief preview missing semantic coverage for FirstPathContract")
     if clean_text(proof_boundary) and _semantic_overlap_ratio(clean_text(proof_boundary), preview_text) < 0.12:
         issues.append("project brief preview missing semantic coverage for proof boundary")
@@ -527,7 +536,7 @@ def _atlas_preview_semantic_issues(package: GreenfieldCompletionPackage, atlas_s
     graph = semantic.get("diagram_event_graph") if isinstance(semantic.get("diagram_event_graph"), Mapping) else {}
     first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     issues: list[str] = []
-    first_path_text = clean_text(first_path.get("capability"))
+    first_path_text = atlas_first_path_contract_coverage_text(semantic)
     if first_path_text and _semantic_overlap_ratio(first_path_text, text) < 0.16:
         issues.append("prewrite Atlas package missing semantic coverage for FirstPathContract")
     if "proof checkpoint" not in text.casefold():

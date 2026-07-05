@@ -30,6 +30,8 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import release_scope_for_component
 from odylith.runtime.domain_intelligence.greenfield_actor_led_prefix import looks_like_actor_led_subject_prefix
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import actor_signature
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import nominal_action_result_object
+from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import strip_action_subject
 from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import visible_result_object
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import clean_text
@@ -177,6 +179,7 @@ def build_greenfield_semantic_model(
     external_systems: Sequence[str] = (),
     non_goals: Sequence[str] = (),
     workstreams: Sequence[Mapping[str, Any]] = (),
+    source_requirements: Sequence[str] = (),
 ) -> GreenfieldSemanticModel:
     """Build the canonical semantic model that renderers must preserve."""
 
@@ -201,6 +204,7 @@ def build_greenfield_semantic_model(
         for row in components
     )
     component_labels = tuple(_clean(row.get("label")) for row in components if isinstance(row, Mapping) and _clean(row.get("label")))
+    requirement_rows = tuple(_clean(row) for row in source_requirements if _clean(row))
     ontology = DomainOntology(
         product_title=_clean(title),
         state_object=state_label,
@@ -212,7 +216,7 @@ def build_greenfield_semantic_model(
         domain_terms=tuple(
             sorted(
                 ordered_terms(
-                    " ".join([title, state_object, first_path, proof_boundary]),
+                    " ".join([title, state_object, first_path, proof_boundary, *requirement_rows]),
                     stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS,
                 )
             )
@@ -242,6 +246,7 @@ def build_greenfield_semantic_model(
             state_object=state_object,
             first_path=first_path,
             proof_boundary=proof_boundary,
+            source_anchors=requirement_rows,
         ),
     )
 
@@ -326,7 +331,13 @@ def _reconciled_visible_result(
     terminal = next((event for event in reversed(events) if event.visible_result), None)
     if terminal is None:
         return current
-    terminal_result = visible_result_object(terminal.text) or _clean(model_visible)
+    terminal_visible = visible_result_object(terminal.text)
+    terminal_result = (
+        nominal_action_result_object(terminal.text, terminal_visible)
+        or nominal_action_result_object(strip_action_subject(terminal.text), "")
+        or terminal_visible
+        or _clean(model_visible)
+    )
     terminal_result = _clean(terminal_result).strip(" .")
     if not terminal_result or len(ordered_terms(terminal_result, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS)) < 2:
         return current

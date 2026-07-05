@@ -96,7 +96,7 @@ def first_path_step_view(
         is_trivial_start=is_trivial_start(text),
         is_system_generated=is_system_generated_action(text),
         is_visible_result=visible,
-        is_material_action=bool(fragment and looks_like_action_clause(fragment)),
+        is_material_action=bool(fragment and (looks_like_action_clause(fragment) or MATERIAL_ACTION_RE.search(text))),
         is_named_product_launcher=_is_named_product_launcher_fragment(fragment),
         is_dash_detail=bool(fragment and fragment.casefold() in dash_detail_fragment_keys),
     )

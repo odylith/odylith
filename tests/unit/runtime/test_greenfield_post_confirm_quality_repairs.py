@@ -55,6 +55,12 @@ def test_plain_title_actor_subjects_lower_coherently_before_finite_actions() -> 
     assert generated_semantic_slop_issues({"fragment": action_chain_fragment("Station Lead Review")}) == []
 
 
+def test_accepted_project_memory_treats_repo_name_as_structural_metadata() -> None:
+    payload = {"proposal": {"observed_source": {"repo_name": "odylith-debug-sports-concussion-return"}}}
+
+    assert generated_public_copy_issues("accepted-project final memory", payload) == ()
+
+
 def test_package_repair_does_not_rewrite_semantic_grammar_even_with_draft_permission() -> None:
     package = GreenfieldCompletionPackage(
         proposal={},
@@ -1062,6 +1068,30 @@ def test_product_risks_strip_bare_actor_label_from_weak_input_clause() -> None:
 
     assert "resident Applicant" not in rendered
     assert "weak inputs are the permit type" in rendered
+    assert generated_semantic_slop_issues({"risks": risks}) == []
+
+
+def test_product_risks_use_object_from_compound_input_action() -> None:
+    risks = build_product_risks(
+        title="Gene Expression Simulation Model",
+        product_story=(
+            "A research workspace helps scientists run and review gene expression prediction experiments."
+        ),
+        first_path=(
+            "A researcher uploads or selects a small expression dataset, defines the biological context "
+            "and prediction target, runs a simulation, and saves the result as a reviewable experiment."
+        ),
+        state_object="A gene expression simulation run tracks input dataset, model version, outputs, and review notes.",
+        proof_boundary=(
+            "Release 0.0.1 succeeds when one researcher can reopen the saved run with the same inputs."
+        ),
+        human_actors=["Researcher", "Scientific reviewer"],
+        release="0.0.1",
+    )
+    rendered = json.dumps(risks, sort_keys=True)
+
+    assert "weak inputs are or selects" not in rendered
+    assert "weak inputs are a small expression dataset" in rendered
     assert generated_semantic_slop_issues({"risks": risks}) == []
 
 

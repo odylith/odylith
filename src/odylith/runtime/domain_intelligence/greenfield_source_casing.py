@@ -183,7 +183,11 @@ def _structural_key(key: str) -> bool:
 
 def _has_source_casing_token(value: str) -> bool:
     return bool(
-        re.search(r"\b[A-Z]{2,}(?:[/-][A-Za-z0-9]+)*\b|\b[A-Z][A-Za-z0-9_/-]*[A-Z][A-Za-z0-9_/-]*\b", value)
+        re.search(
+            r"\b[A-Z]{2,}(?:[/-][A-Za-z0-9]+)*\b|"
+            r"\b[A-Za-z][A-Za-z0-9_/-]*[A-Z][A-Za-z0-9_/-]*\b",
+            value,
+        )
     )
 
 

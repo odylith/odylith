@@ -402,21 +402,33 @@ def supplemental_state_items(values: Sequence[str], *, existing: Sequence[str], 
         text = clean_text(value).strip(" .")
         if not text:
             continue
-        if any(phrases_too_similar(text, row) for row in existing):
+        if any(phrases_too_similar(text, row) and not _materially_distinct_state_item(text, row) for row in existing):
             continue
         score = state_material_score(text)
         if score <= 0:
             continue
         candidates.append((score, index, text))
     candidates.sort(key=lambda row: (-row[0], row[1]))
-    selected: list[tuple[int, str]] = []
+    selected: list[tuple[int, int, str]] = []
     for _score, index, text in candidates:
-        if any(phrases_too_similar(text, chosen) for _chosen_index, chosen in selected):
+        if any(
+            phrases_too_similar(text, chosen) and not _materially_distinct_state_item(text, chosen)
+            for _chosen_score, _chosen_index, chosen in selected
+        ):
             continue
-        selected.append((index, text))
+        selected.append((_score, index, text))
         if len(selected) >= limit:
             break
-    return tuple(text for _index, text in sorted(selected))
+    return tuple(text for _score, _index, text in selected)
+
+
+def _materially_distinct_state_item(value: str, other: str) -> bool:
+    terms = _word_set(value)
+    other_terms = _word_set(other)
+    material_terms = terms & _MATERIAL_STATE_TERMS
+    if not material_terms:
+        return False
+    return bool(material_terms - (other_terms & _MATERIAL_STATE_TERMS))
 
 
 def transition_narrative_items(values: Sequence[str], *, limit: int) -> tuple[str, ...]:
@@ -453,7 +465,7 @@ def state_material_score(value: str) -> int:
     if terms & {"validation", "validated", "validates", "completeness", "complete"}:
         score += 3
     if terms & {"missing", "blocked", "blocker", "invalid", "correction", "recovery"}:
-        score += 3
+        score += 5
     if terms & {"provenance", "source", "evidence", "attachment", "uploaded", "document"}:
         score += 3
     if terms & {"access", "permission", "privacy", "sensitive", "retention", "deletion", "consent"}:

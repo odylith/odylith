@@ -41,6 +41,7 @@ def complete_semantic_model(
             external_systems=text_values(intent.get("external_systems")),
             non_goals=text_values(proposal.get("non_goals") or intent.get("non_goals")),
             workstreams=mapping_rows(proposal.get("backlog")),
+            source_requirements=text_values(intent.get("evidence_requirements")),
         )
     )
     if proposal.get("semantic_model") == model:

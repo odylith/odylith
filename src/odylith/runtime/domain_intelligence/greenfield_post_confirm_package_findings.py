@@ -12,6 +12,7 @@ from odylith.runtime.artifact_quality.generated_copy_quality import generated_pu
 from odylith.runtime.artifact_quality.greenfield_rendered_artifacts import ArtifactQualityUnit
 from odylith.runtime.artifact_quality.greenfield_package_quality import greenfield_rendered_package_quality_findings
 from odylith.runtime.domain_intelligence.greenfield_artifact_plan import artifact_draft_exact_repair_path
+from odylith.runtime.domain_intelligence.greenfield_atlas_semantic_coverage import atlas_first_path_contract_coverage_text
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import GreenfieldReviewFinding
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import dedupe_review_findings
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_review import review_finding
@@ -83,7 +84,12 @@ def _project_brief_preview_semantic_findings(
     preview_text = clean_text(" ".join(value for item in text_values(project_brief_preview) for value in text_values(item)))
     findings: list[GreenfieldReviewFinding] = []
     first_path_capability = clean_text(first_path.get("capability"))
-    if first_path_capability and _semantic_overlap_ratio(first_path_capability, preview_text) < 0.16:
+    first_path_raw_path = clean_text(first_path.get("raw_path"))
+    if (
+        first_path_capability
+        and _semantic_overlap_ratio(first_path_capability, preview_text) < 0.16
+        and (not first_path_raw_path or _semantic_overlap_ratio(first_path_raw_path, preview_text) < 0.16)
+    ):
         findings.append(
             _semantic_package_finding(
                 message="project brief preview missing semantic coverage for FirstPathContract",
@@ -160,9 +166,8 @@ def _atlas_preview_semantic_findings(
         return ()
     semantic = _semantic_model(package)
     graph = semantic.get("diagram_event_graph") if isinstance(semantic.get("diagram_event_graph"), Mapping) else {}
-    first_path = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
     findings: list[GreenfieldReviewFinding] = []
-    first_path_text = clean_text(first_path.get("capability"))
+    first_path_text = atlas_first_path_contract_coverage_text(semantic)
     if first_path_text and _semantic_overlap_ratio(first_path_text, text) < 0.16:
         findings.append(
             _semantic_package_finding(

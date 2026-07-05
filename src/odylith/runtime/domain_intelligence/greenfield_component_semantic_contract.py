@@ -358,15 +358,15 @@ def _proposal_context(proposal: Mapping[str, Any]) -> str:
         proposal.get("external_systems"),
         *ontology.values(),
     ]
-    return " ".join(_clean(value) for value in values if _clean(value))
+    return ". ".join(_clean(value).strip(" .") for value in values if _clean(value))
 
 
 def _proof_boundary_text(proposal: Mapping[str, Any]) -> str:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
     semantic_model = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
     ontology = semantic_model.get("domain_ontology") if isinstance(semantic_model.get("domain_ontology"), Mapping) else {}
-    return " ".join(
-        _clean(value)
+    return ". ".join(
+        _clean(value).strip(" .")
         for value in (
             proposal.get("proof_boundary"),
             intent.get("proof_boundary"),

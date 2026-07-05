@@ -30,6 +30,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
     preserve_first_path_signal_terms,
 )
 from odylith.runtime.domain_intelligence.greenfield_domain_term_index import label_terms
+from odylith.runtime.domain_intelligence.greenfield_phrase_quality import collapse_repeated_phrase_units
 from odylith.runtime.domain_intelligence.greenfield_text import clean_markdown_text
 from odylith.runtime.domain_intelligence.greenfield_text import visible_words
 
@@ -423,6 +424,7 @@ def _component_label(name: str, kind: str) -> str:
 
 def _greenfield_component_label_text(value: str) -> str:
     text = re.sub(r"\bRegistry\b", "Record", str(value or ""), flags=re.IGNORECASE)
+    text = collapse_repeated_phrase_units(text)
     return re.sub(r"\s+", " ", text).strip()
 
 

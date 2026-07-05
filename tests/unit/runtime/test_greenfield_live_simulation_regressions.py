@@ -538,7 +538,7 @@ The first proof is a working one-dimensional quantum tunneling lab for a rectang
     assert first_metrics[0] == (
         "The first release proves the first path: open a preset electron tunneling experiment, "
         "adjust barrier height and width, run the simulation, watch the wave packet interact with the barrier, "
-        "and review a short lab result with the chosen parameters and observations"
+        "and save a short lab result with the chosen parameters and observations"
     )
     assert not any(metric == "adjust barrier height and width" for metric in first_metrics)
     assert ";" not in first_metrics[0]
@@ -568,7 +568,10 @@ Human actors
 - Scientific reviewer: checks assumptions, uncertainty, and comparison evidence.
 
 External systems
-- Source datasets for expression measurements.
+- Public or lab-owned gene expression datasets.
+- Reference genome or annotation sources.
+- Compute environment for training and inference.
+- Optional model artifact storage or experiment tracking system.
 
 Internal product systems
 - Dataset Intake Register.
@@ -630,6 +633,13 @@ Release 0.0.1 succeeds when a researcher can run one gene expression prediction,
     rendered_lower = rendered.casefold()
     for term in ("baseline", "comparison", "uncertainty", "tolerance", "method", "model version", "reproducibility"):
         assert term in rendered_lower
+    for bad_phrase in (
+        "weak inputs are or selects",
+        "expression decide result",
+        "ledger public lab-owned gene",
+        "the weak inputs are or",
+    ):
+        assert bad_phrase not in rendered_lower
     assert report.issues == ()
     assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
 

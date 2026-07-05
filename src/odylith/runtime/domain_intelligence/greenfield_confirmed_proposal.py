@@ -38,8 +38,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import (
     confirmed_intent_list,
     confirmed_intent_summary,
 )
+from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evidence_anchor_phrases
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import active_release_components
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_capability_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import health_safety_obligations
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
@@ -106,6 +108,12 @@ def build_confirmed_greenfield_proposal(
     opportunity_summary = confirmed_intent_summary(confirmed_intent, "opportunity", "")
     product_view_summary = confirmed_intent_summary(confirmed_intent, "product_view", "")
     success_metrics = confirmed_intent_list(confirmed_intent, "success_metrics")
+    evidence_requirements = list(
+        evidence_anchor_phrases(
+            prompt,
+            source_anchors=confirmed_intent_list(confirmed_intent, "evidence_requirements"),
+        )
+    )
     if not (product_story and state_object and first_path and proof_boundary and human_actors and len(internal_systems) >= 2):
         raise ValueError(
             "confirmed greenfield proposal requires product story, state object, first path, proof boundary, "
@@ -164,6 +172,7 @@ def build_confirmed_greenfield_proposal(
         non_goals=non_goals,
         components=release_components,
         diagram_slugs=diagram_slugs,
+        evidence_requirements=evidence_requirements,
     )
     semantic_model = semantic_model_mapping(
         build_greenfield_semantic_model(
@@ -177,6 +186,7 @@ def build_confirmed_greenfield_proposal(
             external_systems=external_systems,
             non_goals=non_goals,
             workstreams=backlog_rows,
+            source_requirements=evidence_requirements,
         )
     )
     first_path_capability = first_path_capability_phrase(first_path, fallback=first_path, limit=260, gerund=True)
@@ -210,6 +220,7 @@ def build_confirmed_greenfield_proposal(
             "opportunity": opportunity_summary,
             "product_view": product_view_summary,
             "success_metrics": success_metrics,
+            "evidence_requirements": evidence_requirements,
         },
         "observed_source": dict(observed_source),
         "classification": {
@@ -301,6 +312,7 @@ def build_confirmed_greenfield_proposal(
             assumptions=assumptions,
             ambiguities=ambiguities,
             non_goals=non_goals,
+            evidence_requirements=evidence_requirements,
         ),
         "project_intelligence": _project_intelligence(
             label=label,
@@ -480,6 +492,12 @@ def _project_intelligence(
     product_view_summary = _short_summary(product_view, limit=320) or "The first release stays narrow until source-backed behavior and review evidence exist."
     first_path_summary = _short_summary(first_path, limit=360)
     proof_summary = proof_claim_summary(proof_boundary, limit=320)
+    visible_result = first_path_outcome_phrase(
+        first_path,
+        proof_boundary=proof_boundary,
+        fallback=f"{state_lower} result",
+    )
+    visible_result_ref = _object_reference_phrase(visible_result) or f"the {state_lower} result"
     state_summary = _state_detail_summary(state_object, state_label=state_label, limit=260)
     actors = join_actor_labels(human_actors) or _short_summary(customer, limit=220) or f"the first {label_lower} operator and reviewer"
     actor_boundary = _actor_boundary_summary(human_actors, fallback=actors)
@@ -506,7 +524,7 @@ def _project_intelligence(
         ],
         "state": [
             f"{state_label} changes according to the confirmed first journey: {first_path_summary}",
-            f"State changes stay versioned so the visible {label_lower} result can be replayed instead of explained from memory.",
+            f"State changes stay versioned so {visible_result_ref} can be replayed instead of explained from memory.",
         ],
         "operators": [
             f"Actors involved in the first release stay limited to {actor_boundary}.",

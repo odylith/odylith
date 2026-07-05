@@ -7,7 +7,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+from greenfield_matrix_leakage import term_present
 from greenfield_post_confirm_matrix_cases import GreenfieldMatrixCase
+from odylith.runtime.domain_intelligence.greenfield_text import dedupe_adjacent_words
 
 
 def load_case_file(path: Path) -> tuple[GreenfieldMatrixCase, ...]:
@@ -43,19 +45,72 @@ def _case_rows(raw: Any) -> tuple[Mapping[str, Any], ...]:
 
 def _case_from_row(row: Mapping[str, Any], *, index: int, source: Path) -> GreenfieldMatrixCase:
     name = _required_text(row, "name", index=index, source=source)
-    prompt = _required_text(row, "prompt", index=index, source=source)
+    prompt = _canonical_text(_required_text(row, "prompt", index=index, source=source))
     required_terms = _string_tuple(row.get("required_terms"))
     leakage_terms = _string_tuple(row.get("leakage_terms"))
+    confirmed_intent = _canonical_block_text(_optional_block_text(row.get("confirmed_intent_markdown")))
     if not required_terms:
         raise RuntimeError(f"{source} case {index} ({name}) must define required_terms")
     if not leakage_terms:
         raise RuntimeError(f"{source} case {index} ({name}) must define leakage_terms")
+    missing_terms = ungrounded_required_terms(
+        prompt=prompt,
+        confirmed_intent_markdown=confirmed_intent,
+        required_terms=required_terms,
+    )
+    if missing_terms:
+        raise RuntimeError(
+            f"{source} case {index} ({name}) has ungrounded required_terms: {', '.join(missing_terms)}; "
+            "required_terms must be source-grounded in the case prompt or confirmed intent"
+        )
+    missing_leakage_terms = ungrounded_leakage_terms(
+        prompt=prompt,
+        confirmed_intent_markdown=confirmed_intent,
+        leakage_terms=leakage_terms,
+    )
+    if missing_leakage_terms:
+        raise RuntimeError(
+            f"{source} case {index} ({name}) has ungrounded leakage_terms: {', '.join(missing_leakage_terms)}; "
+            "leakage_terms must be source-grounded in the case prompt or confirmed intent"
+        )
     return GreenfieldMatrixCase(
         name=name,
         prompt=prompt,
         required_terms=required_terms,
         leakage_terms=leakage_terms,
-        confirmed_intent_markdown=_optional_block_text(row.get("confirmed_intent_markdown")),
+        confirmed_intent_markdown=confirmed_intent,
+        case_id=_optional_text(row.get("case_id")) or _optional_text(row.get("id")),
+        tags=_string_tuple(row.get("tags")),
+        stressors=_string_tuple(row.get("stressors")),
+        source_file=str(source),
+    )
+
+
+def ungrounded_required_terms(
+    *,
+    prompt: str,
+    confirmed_intent_markdown: str,
+    required_terms: Sequence[str],
+) -> tuple[str, ...]:
+    source_text = "\n".join(str(item or "") for item in (prompt, confirmed_intent_markdown))
+    return tuple(
+        term
+        for term in required_terms
+        if str(term).strip() and not term_present(source_text, str(term))
+    )
+
+
+def ungrounded_leakage_terms(
+    *,
+    prompt: str,
+    confirmed_intent_markdown: str,
+    leakage_terms: Sequence[str],
+) -> tuple[str, ...]:
+    source_text = "\n".join(str(item or "") for item in (prompt, confirmed_intent_markdown))
+    return tuple(
+        term
+        for term in leakage_terms
+        if str(term).strip() and not term_present(source_text, str(term))
     )
 
 
@@ -77,7 +132,18 @@ def _optional_block_text(value: Any) -> str:
 def _string_tuple(value: Any) -> tuple[str, ...]:
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         return ()
-    return tuple(dict.fromkeys(text for item in value if (text := _optional_text(item))))
+    return tuple(dict.fromkeys(text for item in value if (text := _canonical_text(_optional_text(item)))))
 
 
-__all__ = ["load_case_file"]
+def _canonical_text(value: Any) -> str:
+    return dedupe_adjacent_words(_optional_text(value)).strip()
+
+
+def _canonical_block_text(value: Any) -> str:
+    text = _optional_block_text(value)
+    if not text:
+        return ""
+    return "\n".join(dedupe_adjacent_words(line).strip() for line in text.splitlines()).strip()
+
+
+__all__ = ["load_case_file", "ungrounded_leakage_terms", "ungrounded_required_terms"]

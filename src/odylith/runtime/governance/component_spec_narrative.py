@@ -527,7 +527,7 @@ def _short_transition_summary(values: Sequence[str]) -> str:
     rows = [clean_text(value).strip(" .") for value in values if clean_text(value).strip(" .")]
     if not rows:
         return ""
-    selected = rows[:8]
+    selected = rows[:12]
     if sum(1 for row in selected if row.casefold().endswith(" state")) >= 2:
         return ""
     if any(len(row.split()) > 4 or len(row) > 48 for row in selected):
@@ -737,7 +737,10 @@ def _proof_narrative(*, label: str, role: str, failure: str, proofs: Sequence[st
         if failure
         else f"The product failure to guard against: treating the {label} as ready without local behavior proof"
     )
-    selected = [_clean_proof_sentence(proof, label=label, index=index) for index, proof in enumerate(proofs[:5], start=1)]
+    selected = [
+        _clean_proof_sentence(proof, label=label, index=index)
+        for index, proof in enumerate(_selected_proof_rows(proofs), start=1)
+    ]
     selected = [row for row in selected if row]
     if selected:
         proof_text = " ".join(selected)
@@ -748,6 +751,25 @@ def _proof_narrative(*, label: str, role: str, failure: str, proofs: Sequence[st
     else:
         proof_text = f"Promotion should show one accepted path, one blocked path, and one replay path before downstream work depends on {label}."
     return _sentences(risk, proof_text)
+
+
+def _selected_proof_rows(proofs: Sequence[str]) -> tuple[str, ...]:
+    rows = [clean_text(proof).strip() for proof in proofs if clean_text(proof).strip()]
+    selected: list[str] = []
+    for prefix in (
+        "Successful path evidence",
+        "Blocked input evidence",
+        "Replay evidence",
+        "Access evidence",
+        "Freshness evidence",
+        "Handoff evidence",
+        "Proof boundary evidence",
+    ):
+        match = next((row for row in rows if row.casefold().startswith(prefix.casefold())), "")
+        if match:
+            selected.append(match)
+    selected.extend(rows)
+    return tuple(unique_text(selected)[:7])
 
 
 def _implementation_narrative(
@@ -786,7 +808,7 @@ def _clean_proof_sentence(proof: str, *, label: str, index: int) -> str:
     canonical = _canonical_proof_sentence(proof)
     if canonical:
         return canonical
-    text = _sentence(_clean_fragment(proof, proof=True)).rstrip(".")
+    text = _sentence(_naturalize_proof_carrier_hyphens(_clean_fragment(proof, proof=True))).rstrip(".")
     if not text:
         return ""
     text = re.sub(
@@ -852,6 +874,7 @@ def _proof_items(value: Any) -> tuple[str, ...]:
 
 def _canonical_proof_sentence(value: Any) -> str:
     text = clean_text(display_text.strip_inline_markdown_emphasis_tokens(str(value or ""))).strip(" .;:")
+    text = _naturalize_proof_carrier_hyphens(text)
     if not re.match(
         r"^(?:Successful path evidence|Blocked input evidence|Replay evidence|Handoff evidence|Access evidence|Freshness evidence)\s+for\b",
         text,
@@ -859,6 +882,15 @@ def _canonical_proof_sentence(value: Any) -> str:
     ):
         return ""
     return _sentence(text)
+
+
+def _naturalize_proof_carrier_hyphens(value: str) -> str:
+    return re.sub(
+        r"\b([A-Za-z][A-Za-z0-9]*)-(context|record|state|status|history|evidence|decision|identity|material|materials)\b",
+        r"\1 \2",
+        clean_text(value),
+        flags=re.IGNORECASE,
+    )
 
 
 def _clean_fragment(value: Any, *, proof: bool = False) -> str:

@@ -25,7 +25,7 @@ def prefer_visible_result_object(value: str, action_value: str) -> bool:
     action_words = _words(action)
     if not visible_words or not action_words:
         return False
-    if ('"' in visible or "'" in visible or "without" in visible_words) and len(visible_words) <= len(action_words):
+    if ('"' in visible or "'" in visible) and len(visible_words) <= len(action_words):
         return True
     return len(visible_words) + 3 <= len(action_words) and bool(set(visible_words) & _RESULT_OBJECT_TERMS)
 

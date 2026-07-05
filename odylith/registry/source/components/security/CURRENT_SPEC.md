@@ -1,5 +1,5 @@
 # Security
-Last updated: 2026-05-03
+Last updated: 2026-07-04
 
 
 Last updated (UTC): 2026-04-01
@@ -112,17 +112,17 @@ and process-lifetime discipline across consumer, pinned-dogfood, and detached
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
-- **2026-05-03 · Implementation:** CB-149 consumer start latency update: installed v0.1.13 measured 25.40s in a real consumer repo; source fix now returns expected fallback in 2.55s with fast start preflight and hot-path bootstrap.
+- **2026-05-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 5 tracked artifact references retained.
   - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, src/odylith/cli.py +3 more
-- **2026-05-02 · Implementation:** B-141 activation pass keeps source-local memory on Lance/Tantivy, preserves visible Assist recovery, and leaves consumer pinned runtimes on the managed feature pack.
+  - Evidence: 5 tracked artifact references retained
+- **2026-05-02 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
   - Scope: B-141
-  - Evidence: odylith/casebook/bugs/2026-05-01-host-adapters-pay-too-much-odylith-hook-and-startup-latency.md, odylith/radar/source/ideas/2026-05/2026-05-01-cross-host-hook-latency-budget-and-fast-path-startup.md +2 more
-- **2026-04-27 · Implementation:** v0.1.12 hardening: extracted upgrade reporting from CLI into install-owned helpers, added recursive lock hygiene with doctor repair, improved Sigstore warning summaries, and compacted 13715 stale zero-byte lock placeholders in this product repo.
+  - Evidence: 4 tracked artifact references retained
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
   - Scope: B-030
-  - Evidence: src/odylith/install/lock_hygiene.py, src/odylith/install/manager.py +2 more
-- **2026-04-27 · Implementation:** v0.1.12 / CB-133: hardened upgrade lifecycle UX with exact dry-run target metadata, idempotent current-target planning, upgrade JSON/report persistence, clearer installed-local version wording, doctor trust/upgrade observability, OS metadata dirty-path filtering, and rollback scope closeout.
-  - Evidence: src/odylith/cli.py, src/odylith/install/manager.py +2 more
+  - Evidence: 4 tracked artifact references retained
+- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
+  - Evidence: 4 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History

@@ -44,7 +44,7 @@ def _assert_whole_project_completed(payload: dict, root: Path, *, elapsed: float
     assert payload["validation_gate"]["status"] == "passed"
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"
-    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"]
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert len(payload["backlog"]) == 4
     assert len(payload["components"]) >= 4
     assert len(payload["diagrams"]) == 6
@@ -605,7 +605,7 @@ def test_greenfield_create_confirm_full_refresh_stays_under_thirty_seconds(tmp_p
     assert generated_semantic_slop_issues(payload) == []
     assert all("(" not in line and ")" not in line for line in payload["atlas_scaffold_logs"])
     assert payload["dashboard_refresh"]["status"] == "passed"
-    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"]
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert len(payload["backlog"]) == 4
     assert len(payload["components"]) == 4
     assert len(payload["diagrams"]) == 6
@@ -1091,7 +1091,7 @@ def test_greenfield_create_completes_signal_processing_pipeline_without_sentence
     assert payload["validation_gate"]["status"] == "passed"
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"
-    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"]
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert len(payload["backlog"]) == 4
     assert len(payload["components"]) == 5
     assert len(payload["diagrams"]) == 6
@@ -1167,7 +1167,7 @@ def test_greenfield_create_completes_compound_public_response_path_under_sixty_s
     assert payload["validation_gate"]["status"] == "passed"
     assert generated_semantic_slop_issues(payload) == []
     assert payload["dashboard_refresh"]["status"] == "passed"
-    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"]
+    assert payload["dashboard_refresh"]["surfaces"] == ["radar", "registry", "atlas", "compass", "tooling_shell"]
     assert len(payload["backlog"]) == 4
     assert len(payload["components"]) == 5
     assert len(payload["diagrams"]) == 6

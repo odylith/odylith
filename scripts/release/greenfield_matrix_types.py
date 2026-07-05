@@ -37,6 +37,7 @@ class GreenfieldQualityVerdict:
     scores: Mapping[str, int]
     score: int
     score_explanation: tuple[str, ...]
+    score_basis: str = "release"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -46,6 +47,7 @@ class GreenfieldQualityVerdict:
             "scores": dict(self.scores),
             "score": self.score,
             "score_explanation": list(self.score_explanation),
+            "score_basis": self.score_basis,
         }
 
 
@@ -65,6 +67,7 @@ class GreenfieldMatrixResult:
     platform_leakage_terms: tuple[str, ...] = ()
     platform_leakage_issues: tuple[str, ...] = ()
     post_confirm_manifest_summary: Mapping[str, Any] | None = None
+    evidence: Mapping[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -82,6 +85,7 @@ class GreenfieldMatrixResult:
             "platform_leakage_terms": list(self.platform_leakage_terms),
             "platform_leakage_issues": list(self.platform_leakage_issues),
             "post_confirm_manifest_summary": dict(self.post_confirm_manifest_summary or {}),
+            "evidence": dict(self.evidence or {}),
         }
 
 

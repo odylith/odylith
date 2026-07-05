@@ -377,7 +377,7 @@ def _domain_expert_checks(
     covered_high_risk = [
         row
         for row in high_risk_assumptions
-        if _terms(normalize_string(row.get("statement"))) & rendered_terms
+        if _high_risk_assumption_covered(normalize_string(row.get("statement")), rendered_terms)
     ]
     return [
         _check(
@@ -549,6 +549,15 @@ def _terms(value: str) -> set[str]:
             stem_ing_minimum_length=5,
         )
     )
+
+
+def _high_risk_assumption_covered(statement: str, rendered_terms: set[str]) -> bool:
+    terms = _terms(statement)
+    if not terms:
+        return True
+    covered = terms & rendered_terms
+    required = min(3, max(2, len(terms) // 2))
+    return len(covered) >= required
 
 
 def _high_risk_statement(value: str) -> bool:

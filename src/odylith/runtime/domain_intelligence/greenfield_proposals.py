@@ -97,6 +97,8 @@ def _intent_title(prompt: str) -> str:
         "draft greenfield proposal for ",
         "create a product-first greenfield proposal for ",
         "create product-first greenfield proposal for ",
+        "create a greenfield proposal for ",
+        "create greenfield proposal for ",
         "draft a proposal for ",
         "draft proposal for ",
         "greenfield proposal for ",
@@ -121,6 +123,7 @@ def _intent_title(prompt: str) -> str:
             break
     text = re.sub(r"^(?:a|an)\s+", "", text, flags=re.IGNORECASE).strip()
     text = _strip_greenfield_directives(text).strip(" .")
+    text = _strip_instruction_sentence_tail(text)
     text = _strip_title_target_context(text)
     if not text or len(text) < 4:
         return "Greenfield Project"
@@ -161,6 +164,19 @@ def _strip_greenfield_directives(text: str) -> str:
     stripped = _GREENFIELD_DIRECTIVE_RE.sub("", text).strip()
     stripped = re.sub(r"\b(for me|please)\b\.?$", "", stripped, flags=re.IGNORECASE).strip()
     return stripped or text
+
+
+def _strip_instruction_sentence_tail(text: str) -> str:
+    head, separator, tail = str(text or "").partition(". ")
+    if not separator:
+        return text
+    head = head.strip(" .")
+    tail = tail.strip()
+    if not head or len(head.split()) > 12:
+        return text
+    if re.match(r"^(?:focus|use|include|ensure|make|keep|it|the\s+first|release)\b", tail, flags=re.IGNORECASE):
+        return head
+    return text
 
 
 def _strip_title_target_context(text: str) -> str:
@@ -228,11 +244,18 @@ def _title_token(token: str) -> str:
         key = part.casefold()
         if key in _TITLE_ACRONYMS:
             rendered.append(_TITLE_ACRONYMS[key])
+        elif _looks_like_source_mixed_case_token(part):
+            rendered.append(part)
         elif index > 0 and part.islower():
             rendered.append(part)
         else:
             rendered.append(part[:1].upper() + part[1:] if part else part)
     return "-".join(rendered)
+
+
+def _looks_like_source_mixed_case_token(value: str) -> bool:
+    letters = [char for char in str(value or "") if char.isalpha()]
+    return bool(len(letters) >= 2 and any(char.islower() for char in letters) and any(char.isupper() for char in letters[1:]))
 
 
 def _source_evidence(repo_root: Path) -> dict[str, Any]:
@@ -298,7 +321,7 @@ def build_greenfield_proposal(
             "prompt-only confirmed proposal construction is disabled."
         )
     intent_title = str(confirmed_intent.get("title") or "").strip() or "Greenfield Project"
-    intent_prompt = str(confirmed_intent.get("prompt") or intent_title).strip() or intent_title
+    intent_prompt = str(prompt or confirmed_intent.get("prompt") or intent_title).strip() or intent_title
     evidence = _confirmed_intent_source_evidence(root)
     proposal = build_confirmed_greenfield_proposal(
         prompt=intent_prompt,

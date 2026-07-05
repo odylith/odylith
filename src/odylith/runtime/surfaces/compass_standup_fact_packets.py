@@ -808,7 +808,7 @@ def _build_global_standup_fact_packet(
         else:
             portfolio_posture = "Most active lanes are still setting up the first implementation slice."
     if top_activity_labels:
-        portfolio_posture = portfolio_posture.rstrip(".") + f" Heaviest movement is in {', '.join(top_activity_labels)}."
+        portfolio_posture = portfolio_posture.rstrip(".") + f". Heaviest movement is in {', '.join(top_activity_labels)}."
     section_candidates["current_execution"].append(
             _standup_fact(
                 section_key="current_execution",

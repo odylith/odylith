@@ -82,7 +82,7 @@ def ensure_component_contract(
                     next_label=next_label,
                     workstream_title=workstream_title,
                 )
-            return _with_required_local_proof_floor(normalized, label=_label(row))
+            return contract_support.with_required_local_proof_floor(normalized, label=_label(row))
     return build_component_contract(
         row,
         proposal=proposal or {},
@@ -171,7 +171,7 @@ def build_component_contract(
             label=label,
         )
     if _semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields):
-        return _with_required_local_proof_floor(semantic_fields, label=label)
+        return contract_support.with_required_local_proof_floor(semantic_fields, label=label)
     contract = _generic_contract(
         label=label,
         kind=kind,
@@ -181,7 +181,7 @@ def build_component_contract(
         previous_label=previous_label,
         next_label=next_label,
     )
-    return _with_required_local_proof_floor(normalize_contract(contract), label=label)
+    return contract_support.with_required_local_proof_floor(normalize_contract(contract), label=label)
 
 
 def _specialized_contract_with_semantic_proof(
@@ -193,42 +193,13 @@ def _specialized_contract_with_semantic_proof(
 ) -> dict[str, Any]:
     profile_fields = normalize_contract(contract)
     if not (_semantic_contract_is_ready(semantic_contract) and contract_is_complete(semantic_fields)):
-        return _with_required_local_proof_floor(profile_fields, label=label)
-    normalized = dict(semantic_fields)
-    normalized["local_proof"] = contract_support.prioritize_local_proof_rows(
-        unique_text([*text_values(normalized.get("local_proof")), *text_values(profile_fields.get("local_proof"))])
+        return contract_support.with_required_local_proof_floor(profile_fields, label=label)
+    normalized = contract_support.merge_profile_contract_fields(
+        semantic_fields,
+        profile_fields,
+        protected_phrases=tuple(getattr(semantic_contract, "local_terms", ()) or ()),
     )
-    normalized = contract_support.restore_protected_phrase_surface(
-        normalized,
-        tuple(getattr(semantic_contract, "local_terms", ()) or ()),
-    )
-    return _with_required_local_proof_floor(normalized, label=label)
-
-
-def _with_required_local_proof_floor(contract: Mapping[str, Any], *, label: str) -> dict[str, Any]:
-    normalized = dict(contract)
-    existing_rows = [_sentence(item) for item in text_values(normalized.get("local_proof")) if _clean(item)]
-    required = (
-        (
-            "successful path evidence",
-            f"Successful path evidence for {label}: accepted input, visible result, persisted explanation, and reviewer context.",
-        ),
-        (
-            "blocked input evidence",
-            f"Blocked input evidence for {label}: missing or malformed input, stops before a trusted result, and recovery explanation.",
-        ),
-        (
-            "replay evidence",
-            f"Replay evidence for {label}: actor, input facts, status, explanation, and proof trail.",
-        ),
-    )
-    proof_rows: list[str] = []
-    for marker, row in required:
-        existing = next((item for item in existing_rows if marker in item.casefold()), "")
-        proof_rows.append(existing or _sentence(row))
-    proof_rows.extend(existing_rows)
-    normalized["local_proof"] = list(unique_text(proof_rows))
-    return normalized
+    return contract_support.with_required_local_proof_floor(normalized, label=label)
 
 
 def _requires_profile_preserving_rebuild(

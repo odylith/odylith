@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+requested_version="${1:-${VERSION:-$(current_source_version)}}"
+dist_arg="${2:-${DIST:-}}"
+temp_parent="${TEMP_PARENT:-${TMPDIR:-/tmp}}"
+require_version "$requested_version"
+
+if [[ -z "$dist_arg" ]]; then
+  dist_dir="${TMPDIR:-/tmp}/odylith-local-release-${requested_version}"
+elif [[ "$dist_arg" == /* ]]; then
+  dist_dir="$dist_arg"
+else
+  dist_dir="$odylith_repo_root/$dist_arg"
+fi
+
+if [[ ! -f "$dist_dir/install.sh" ]]; then
+  die "local release dist is missing install.sh: $dist_dir"
+fi
+
+output_json="${GREENFIELD_MATRIX_CAMPAIGN_OUTPUT_JSON:-$dist_dir/greenfield-matrix-campaign.v1.json}"
+output_parent="$(dirname "$output_json")"
+telemetry_dir="${GREENFIELD_MATRIX_CAMPAIGN_TELEMETRY_DIR:-$output_parent/greenfield-matrix-telemetry}"
+extra_args=()
+has_release_case_files=0
+
+append_case_files() {
+  local flag="$1"
+  local raw="$2"
+  local files=()
+  if [[ -z "$raw" ]]; then
+    return 0
+  fi
+  IFS=',' read -r -a files <<< "$raw"
+  for file in "${files[@]}"; do
+    if [[ -n "$file" ]]; then
+      extra_args+=("$flag" "$file")
+      if [[ "$flag" == "--release-case-file" ]]; then
+        has_release_case_files=1
+      fi
+    fi
+  done
+}
+
+append_case_files --failed-case-file "${GREENFIELD_MATRIX_FAILED_CASE_FILES:-}"
+append_case_files --regression-case-file "${GREENFIELD_MATRIX_REGRESSION_CASE_FILES:-}"
+append_case_files --volume-case-file "${GREENFIELD_MATRIX_VOLUME_CASE_FILES:-}"
+append_case_files --deep-volume-case-file "${GREENFIELD_MATRIX_DEEP_VOLUME_CASE_FILES:-}"
+append_case_files --release-case-file "${GREENFIELD_MATRIX_RELEASE_CASE_FILES:-}"
+
+if [[ "${#extra_args[@]}" -eq 0 ]]; then
+  die "set at least one campaign case-file env: GREENFIELD_MATRIX_FAILED_CASE_FILES, GREENFIELD_MATRIX_REGRESSION_CASE_FILES, GREENFIELD_MATRIX_VOLUME_CASE_FILES, GREENFIELD_MATRIX_DEEP_VOLUME_CASE_FILES, or GREENFIELD_MATRIX_RELEASE_CASE_FILES"
+fi
+if [[ -n "${GREENFIELD_MATRIX_DISCOVERY_MAX_WORKERS:-}" ]]; then
+  extra_args+=(--discovery-max-workers "$GREENFIELD_MATRIX_DISCOVERY_MAX_WORKERS")
+fi
+if [[ -n "${GREENFIELD_MATRIX_FAILED_SUBSET_MAX_WORKERS:-}" ]]; then
+  extra_args+=(--failed-subset-max-workers "$GREENFIELD_MATRIX_FAILED_SUBSET_MAX_WORKERS")
+fi
+if [[ -n "${GREENFIELD_MATRIX_REGRESSION_MAX_WORKERS:-}" ]]; then
+  extra_args+=(--regression-max-workers "$GREENFIELD_MATRIX_REGRESSION_MAX_WORKERS")
+fi
+if [[ -n "${GREENFIELD_MATRIX_VOLUME_MAX_WORKERS:-}" ]]; then
+  extra_args+=(--volume-max-workers "$GREENFIELD_MATRIX_VOLUME_MAX_WORKERS")
+fi
+if [[ -n "${GREENFIELD_MATRIX_DEEP_VOLUME_MAX_WORKERS:-}" ]]; then
+  extra_args+=(--deep-volume-max-workers "$GREENFIELD_MATRIX_DEEP_VOLUME_MAX_WORKERS")
+fi
+if [[ -n "${GREENFIELD_MATRIX_STOP_AFTER_FAILURES:-}" ]]; then
+  extra_args+=(--stop-after-failures "$GREENFIELD_MATRIX_STOP_AFTER_FAILURES")
+fi
+if [[ -n "${GREENFIELD_MATRIX_STOP_AFTER_CLUSTER_FAILURES:-}" ]]; then
+  extra_args+=(--stop-after-cluster-failures "$GREENFIELD_MATRIX_STOP_AFTER_CLUSTER_FAILURES")
+fi
+if [[ "${GREENFIELD_MATRIX_REQUIRE_HIGH_VARIANCE_STRESSORS:-0}" == "1" ]]; then
+  extra_args+=(--require-high-variance-stressors)
+fi
+if [[ "${GREENFIELD_MATRIX_REQUIRE_RELEASE_READINESS:-0}" == "1" ]]; then
+  extra_args+=(--require-release-readiness)
+fi
+if [[ -n "${GREENFIELD_MATRIX_REQUIRED_STRESSORS:-}" ]]; then
+  IFS=',' read -r -a required_stressors <<< "$GREENFIELD_MATRIX_REQUIRED_STRESSORS"
+  for stressor in "${required_stressors[@]}"; do
+    if [[ -n "$stressor" ]]; then
+      extra_args+=(--required-stressor "$stressor")
+    fi
+  done
+fi
+if [[ -n "${GREENFIELD_MATRIX_CAMPAIGN_PROGRESS_JSONL:-}" ]]; then
+  extra_args+=(--progress-jsonl "$GREENFIELD_MATRIX_CAMPAIGN_PROGRESS_JSONL")
+fi
+if [[ -n "${GREENFIELD_MATRIX_CAMPAIGN_PROGRESS_JSON:-}" ]]; then
+  extra_args+=(--progress-json "$GREENFIELD_MATRIX_CAMPAIGN_PROGRESS_JSON")
+fi
+if [[ -n "${GREENFIELD_MATRIX_FAILED_SUBSET_REPLAY_DIR:-}" ]]; then
+  extra_args+=(--failed-subset-replay-dir "$GREENFIELD_MATRIX_FAILED_SUBSET_REPLAY_DIR")
+fi
+if [[ "${GREENFIELD_MATRIX_QUIET_PROGRESS:-0}" == "1" ]]; then
+  extra_args+=(--quiet-progress)
+fi
+if [[ "$has_release_case_files" == "1" ]]; then
+  require_current_component_forensics
+  ensure_playwright_chromium
+fi
+
+"$odylith_python" scripts/release/greenfield_matrix_campaign_runner.py \
+  --dist-dir "$dist_dir" \
+  --version "$requested_version" \
+  --temp-parent "$temp_parent" \
+  --output-json "$output_json" \
+  --telemetry-dir "$telemetry_dir" \
+  "${extra_args[@]}"

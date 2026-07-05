@@ -46,7 +46,7 @@ def _stub_apply_refreshes(monkeypatch) -> None:
         "_refresh_greenfield_dashboard",
         lambda **_kwargs: {
             "status": "passed",
-            "surfaces": ["radar", "registry", "atlas", "compass", "casebook", "tooling_shell"],
+            "surfaces": ["radar", "registry", "atlas", "compass", "tooling_shell"],
             "view": "odylith/index.html?tab=project",
         },
     )

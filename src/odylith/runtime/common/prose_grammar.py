@@ -21,7 +21,13 @@ _INFINITIVE_TO_FINITE = {
     "answer": "answers",
     "apply": "applies",
     "approve": "approves",
+    "adjudicate": "adjudicates",
+    "analyse": "analyses",
+    "analyze": "analyzes",
+    "annotate": "annotates",
     "assemble": "assembles",
+    "assess": "assesses",
+    "assimilate": "assimilates",
     "ask": "asks",
     "attach": "attaches",
     "attest": "attests",
@@ -43,6 +49,7 @@ _INFINITIVE_TO_FINITE = {
     "close": "closes",
     "cluster": "clusters",
     "collect": "collects",
+    "calibrate": "calibrates",
     "compare": "compares",
     "compute": "computes",
     "complete": "completes",
@@ -55,12 +62,15 @@ _INFINITIVE_TO_FINITE = {
     "correlate": "correlates",
     "correct": "corrects",
     "create": "creates",
+    "curate": "curates",
     "decide": "decides",
     "define": "defines",
     "delete": "deletes",
     "derive": "derives",
     "describe": "describes",
+    "design": "designs",
     "detect": "detects",
+    "diagnose": "diagnoses",
     "deliver": "delivers",
     "dismiss": "dismisses",
     "display": "displays",
@@ -73,9 +83,11 @@ _INFINITIVE_TO_FINITE = {
     "enforce": "enforces",
     "end": "ends",
     "enter": "enters",
+    "escalate": "escalates",
     "estimate": "estimates",
     "evaluate": "evaluates",
     "exchange": "exchanges",
+    "execute": "executes",
     "expose": "exposes",
     "explain": "explains",
     "export": "exports",
@@ -95,6 +107,7 @@ _INFINITIVE_TO_FINITE = {
     "guide": "guides",
     "handle": "handles",
     "hand": "hands",
+    "harmonize": "harmonizes",
     "highlight": "highlights",
     "hold": "holds",
     "identify": "identifies",
@@ -102,6 +115,7 @@ _INFINITIVE_TO_FINITE = {
     "include": "includes",
     "ingest": "ingests",
     "inspect": "inspects",
+    "investigate": "investigates",
     "intake": "intakes",
     "issue": "issues",
     "keep": "keeps",
@@ -115,6 +129,7 @@ _INFINITIVE_TO_FINITE = {
     "map": "maps",
     "mark": "marks",
     "make": "makes",
+    "measure": "measures",
     "monitor": "monitors",
     "normalize": "normalizes",
     "notify": "notifies",
@@ -164,7 +179,9 @@ _INFINITIVE_TO_FINITE = {
     "request": "requests",
     "repair": "repairs",
     "render": "renders",
+    "rehearse": "rehearses",
     "resolve": "resolves",
+    "restore": "restores",
     "return": "returns",
     "review": "reviews",
     "route": "routes",
@@ -181,6 +198,7 @@ _INFINITIVE_TO_FINITE = {
     "separate": "separates",
     "set": "sets",
     "share": "shares",
+    "simulate": "simulates",
     "split": "splits",
     "start": "starts",
     "store": "stores",
@@ -202,6 +220,7 @@ _INFINITIVE_TO_FINITE = {
     "use": "uses",
     "view": "views",
     "visit": "visits",
+    "vet": "vets",
     "validate": "validates",
     "verify": "verifies",
     "vote": "votes",
@@ -284,6 +303,31 @@ DEFAULT_DANGLING_TAIL_WORDS = frozenset(
         "with",
     }
 )
+TERMINAL_MODIFIER_WORDS = frozenset(
+    {
+        "accepted",
+        "actionable",
+        "bad",
+        "blocked",
+        "clear",
+        "complete",
+        "concrete",
+        "corrected",
+        "daily",
+        "failed",
+        "final",
+        "first",
+        "incomplete",
+        "invalid",
+        "missing",
+        "reviewable",
+        "specific",
+        "trusted",
+        "visible",
+    }
+)
+TERMINAL_MODIFIER_PRECEDERS = frozenset({"a", "an", "one", "the", "this", "that"})
+TERMINAL_FINAL_STATE_WORDS = frozenset({"case", "decision", "match", "record", "result", "review", "score", "status"})
 
 
 def strip_dangling_word_tail(
@@ -300,6 +344,36 @@ def strip_dangling_word_tail(
     while words and words[-1].casefold().strip(".,;:") in dangling:
         words.pop()
     return " ".join(words).rstrip(rstrip_chars)
+
+
+def strip_clipped_terminal_fragment(value: str, *, rstrip_chars: str = " ,;:.") -> str:
+    """Trim clipped article/modifier tails while preserving valid state phrases."""
+
+    text = str(value or "").rstrip(rstrip_chars)
+    while True:
+        words = text.split()
+        if len(words) >= 2:
+            previous = words[-2].casefold().strip(".,;:'")
+            tail = words[-1].casefold().strip(".,;:'")
+            if previous in TERMINAL_MODIFIER_PRECEDERS and tail in TERMINAL_MODIFIER_WORDS:
+                text = " ".join(words[:-2]).rstrip(rstrip_chars)
+                continue
+        if words and words[-1].casefold().strip(".,;:'") == "final" and not _allows_terminal_final(words):
+            text = " ".join(words[:-1]).rstrip(rstrip_chars)
+            continue
+        return text
+
+
+def _allows_terminal_final(words: list[str]) -> bool:
+    lowered = [word.casefold().strip(".,;:'") for word in words if word.strip(".,;:'")]
+    if len(lowered) < 2 or lowered[-1] != "final":
+        return False
+    previous = lowered[-2]
+    if previous in TERMINAL_FINAL_STATE_WORDS:
+        return True
+    if previous in {"is", "becomes", "became"} and any(token in TERMINAL_FINAL_STATE_WORDS for token in lowered[:-2]):
+        return True
+    return any(token in {"finalize", "finalizes", "finalized", "finalizing", "mark", "marked", "marks"} for token in lowered[:-1])
 
 
 def looks_like_finite_action(value: str) -> bool:

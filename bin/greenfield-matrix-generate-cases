@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_odylith.sh"
+
+source_case_files_raw="${GREENFIELD_MATRIX_SOURCE_CASE_FILES:-}"
+output_json="${GREENFIELD_MATRIX_GENERATED_CASE_FILE:-${TMPDIR:-/tmp}/odylith-greenfield-generated-cases.v1.json}"
+extra_args=(--output-json "$output_json")
+
+if [[ -z "$source_case_files_raw" ]]; then
+  die "set GREENFIELD_MATRIX_SOURCE_CASE_FILES to one or more comma-separated JSON seed case files"
+fi
+
+IFS=',' read -r -a source_case_files <<< "$source_case_files_raw"
+for file in "${source_case_files[@]}"; do
+  if [[ -n "$file" ]]; then
+    extra_args+=(--source-case-file "$file")
+  fi
+done
+
+if [[ -n "${GREENFIELD_MATRIX_TARGET_COUNT:-}" ]]; then
+  extra_args+=(--target-count "$GREENFIELD_MATRIX_TARGET_COUNT")
+fi
+if [[ -n "${GREENFIELD_MATRIX_MIN_VARIANCE_SCORE:-}" ]]; then
+  extra_args+=(--min-variance-score "$GREENFIELD_MATRIX_MIN_VARIANCE_SCORE")
+fi
+if [[ -n "${GREENFIELD_MATRIX_MIN_STRESSOR_DENSITY:-}" ]]; then
+  extra_args+=(--min-stressor-density "$GREENFIELD_MATRIX_MIN_STRESSOR_DENSITY")
+fi
+if [[ "${GREENFIELD_MATRIX_REQUIRE_HIGH_VARIANCE_STRESSORS:-0}" == "1" ]]; then
+  extra_args+=(--require-high-variance-stressors)
+fi
+if [[ "${GREENFIELD_MATRIX_FAIL_ON_CASE_WARNINGS:-0}" == "1" ]]; then
+  extra_args+=(--fail-on-warnings)
+fi
+if [[ -n "${GREENFIELD_MATRIX_REQUIRED_STRESSORS:-}" ]]; then
+  IFS=',' read -r -a required_stressors <<< "$GREENFIELD_MATRIX_REQUIRED_STRESSORS"
+  for stressor in "${required_stressors[@]}"; do
+    if [[ -n "$stressor" ]]; then
+      extra_args+=(--required-stressor "$stressor")
+    fi
+  done
+fi
+
+"$odylith_python" scripts/release/greenfield_matrix_case_generator.py "${extra_args[@]}"

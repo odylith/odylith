@@ -44,7 +44,7 @@
       "idea_id": "B-142",
       "field": "related_diagram_ids",
       "current": "D-043",
-      "candidate": "D-043,D-045,D-046",
+      "candidate": "D-023,D-043,D-045,D-046",
       "reason": "inferred from Mermaid catalog related_backlog/related_workstreams"
     }
   ],
@@ -58,5 +58,5 @@
     "unresolved": 0,
     "warnings": 0
   },
-  "generated_utc": "2026-06-29 00:27:58Z"
+  "generated_utc": "2026-07-03 00:23:38Z"
 }

@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from odylith.runtime.domain_intelligence.greenfield_actor_terms import word_has_actor_role_signal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_system_rows import (
     contains_generic_system_scaffold,
 )
@@ -17,8 +18,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import CONFIR
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import confirmed_text_values
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import semantic_terms
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import word_count
+from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_action_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
+from odylith.runtime.domain_intelligence.greenfield_semantic_quality import material_first_path_action
 from odylith.runtime.domain_intelligence.greenfield_text import progression_marker_count
 
 
@@ -30,6 +33,7 @@ FIELD_MIN_WORDS = {
 }
 LIST_ROW_MIN_WORDS = 5
 SYSTEM_ROW_MIN_WORDS = 5
+ACTOR_MODAL_ROLE_WORDS = frozenset({"lead", "leads", "people", "person", "rep", "reps", "staff", "team", "teams", "user", "users"})
 PROGRESSION_CONNECTORS = (
     "start",
     "starts",
@@ -183,12 +187,98 @@ def _first_path_is_clear_enough(intent: Mapping[str, Any]) -> bool:
         )
         if part
     )
-    return bool(
+    if _actor_modal_path_is_clear(path) and _has_semantic_overlap(path, context, minimum=1):
+        return True
+    if (
         clean_confirmed_text(action)
         and clean_confirmed_text(outcome)
+        and _first_path_has_distinct_outcome(path, outcome)
         and len(semantic_terms(path, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)) >= 4
         and _has_semantic_overlap(path, context, minimum=1)
-    )
+    ):
+        return True
+    material_action = material_first_path_action(path)
+    model = first_path_model(path)
+    visible_outcome = clean_confirmed_text(model.visible_outcome)
+    if (
+        len(model.steps) >= 2
+        and visible_outcome
+        and word_count(visible_outcome) >= 4
+        and len(semantic_terms(visible_outcome, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)) >= 3
+        and len(semantic_terms(path, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)) >= 7
+        and _has_semantic_overlap(path, context, minimum=1)
+    ):
+        return True
+    return bool(_material_first_path_is_rich_enough(material_action) and _has_semantic_overlap(path, context, minimum=1))
+
+
+def _actor_modal_path_is_clear(value: str) -> bool:
+    words = [word.strip(".,:;!?()[]{}").casefold() for word in clean_confirmed_text(value).split()]
+    if "can" not in words:
+        return False
+    can_index = words.index("can")
+    actor_words = words[:can_index]
+    if not actor_words or len(actor_words) > 5:
+        return False
+    if not any(word_has_actor_role_signal(word) or word in ACTOR_MODAL_ROLE_WORDS for word in actor_words):
+        return False
+    return len(semantic_terms(value, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)) >= 4
+
+
+_LOW_SPECIFICITY_FIRST_ACTIONS = frozenset(
+    {
+        "add",
+        "capture",
+        "collect",
+        "enter",
+        "provide",
+        "record",
+        "save",
+        "store",
+        "submit",
+        "upload",
+    }
+)
+
+
+def _material_first_path_is_rich_enough(value: str) -> bool:
+    text = clean_confirmed_text(value).strip(" .")
+    if not text:
+        return False
+    first = text.split(maxsplit=1)[0].casefold().strip(".,:;")
+    min_words = 8 if first in _LOW_SPECIFICITY_FIRST_ACTIONS else 6
+    min_terms = 6 if first in _LOW_SPECIFICITY_FIRST_ACTIONS else 4
+    return word_count(text) >= min_words and len(
+        semantic_terms(text, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)
+    ) >= min_terms
+
+
+def _first_path_has_distinct_outcome(path: str, outcome: str) -> bool:
+    model = first_path_model(path)
+    if len(model.steps) >= 2:
+        return True
+    material = clean_confirmed_text(material_first_path_action(path)).strip(" .")
+    result = clean_confirmed_text(outcome).strip(" .")
+    if not material or not result:
+        return False
+    material_first = material.split(maxsplit=1)[0].casefold().strip(".,:;")
+    result_first = result.split(maxsplit=1)[0].casefold().strip(".,:;")
+    if result_first == _regular_action_state_form(material_first):
+        return False
+    material_terms = semantic_terms(material, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)
+    result_terms = semantic_terms(result, stopwords=CONFIRMED_INTENT_VALIDATION_STOPWORDS)
+    return bool(result_terms - material_terms)
+
+
+def _regular_action_state_form(value: str) -> str:
+    term = str(value or "").casefold().strip()
+    if len(term) < 4:
+        return ""
+    if term.endswith("e"):
+        return f"{term}d"
+    if len(term) > 2 and term.endswith("y") and term[-2] not in {"a", "e", "i", "o", "u"}:
+        return f"{term[:-1]}ied"
+    return f"{term}ed"
 
 
 def _has_meaningful_sentences(text: str, *, minimum: int) -> bool:

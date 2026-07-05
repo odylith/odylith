@@ -142,6 +142,41 @@ def test_clean_requirement_summary_scrubs_consumer_repo_names() -> None:
     ) == "CB-149 update measured 25.40s in a real consumer repo before the fast path."
 
 
+def test_requirements_trace_projection_does_not_copy_scenario_terms() -> None:
+    event = component_registry.MappedEvent(
+        event_index=12,
+        ts_iso="2026-07-03T01:47:31-07:00",
+        kind="implementation",
+        summary=(
+            "Exact municipal stormwater plus tribal consultation source-local "
+            "replays wrote clean governed records."
+        ),
+        workstreams=["B-142"],
+        artifacts=[
+            "/tmp/municipal-stormwater/proof.json",
+            "/tmp/tribal-consultation/proof.json",
+        ],
+        explicit_components=["domain-intelligence"],
+        mapped_components=["domain-intelligence"],
+        confidence="high",
+        meaningful=True,
+    )
+
+    rows = sync._build_generated_requirement_lines(
+        events=[event],
+        fallback_date="2026-07-03",
+        max_events=6,
+    )
+    rendered = "\n".join(rows).lower()
+
+    assert "implementation evidence linked this component to governed work" in rendered
+    assert "2 tracked artifact references retained" in rendered
+    assert "municipal" not in rendered
+    assert "stormwater" not in rendered
+    assert "tribal" not in rendered
+    assert "consultation" not in rendered
+
+
 def test_forensics_payload_keeps_timeline_rows_scenario_neutral() -> None:
     entry = _component_entry(
         component_id="release",
@@ -325,6 +360,7 @@ def test_sync_component_spec_requirements_records_workspace_activity_from_source
     ]
 
     assert sync.main(base_argv) == 0
+    assert sync.main([*base_argv, "--check-only"]) == 0
 
     forensics_path = tmp_path / "odylith" / "registry" / "source" / "components" / "tribunal" / "FORENSICS.v1.json"
     payload = json.loads(forensics_path.read_text(encoding="utf-8"))

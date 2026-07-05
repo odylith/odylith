@@ -9,7 +9,7 @@
   "source_fingerprint": {
     "version": "traceability-source-v1",
     "algorithm": "sha256-content",
-    "digest": "930cb2f23250f73cd313fbe1f1042c3d71a38f19894515e5c01ea60427bbd9d8",
+    "digest": "6539a5ccac5976ee5fe790b5cf40f43796c4418352364762a3aa4d50d625ec54",
     "file_count": 314,
     "source_paths": [
       "odylith/radar/source/INDEX.md",
@@ -8513,9 +8513,11 @@
       "workstream_merged_into": "",
       "workstream_merged_from": [],
       "related_diagram_ids": [
+        "D-023",
         "D-043",
         "D-045",
-        "D-046"
+        "D-046",
+        "D-047"
       ],
       "idea_file": "odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md",
       "promoted_to_plan": "odylith/technical-plans/in-progress/2026-06/2026-06-26-greenfield-typed-semantic-compiler-and-patchset-repair.md",
@@ -8594,7 +8596,7 @@
       "release_history_summary": "Active: 0.1.15 \u00b7 Latest move: 0.1.14 -> 0.1.15",
       "coverage": {
         "linked_plan_count": 1,
-        "linked_diagram_count": 3,
+        "linked_diagram_count": 5,
         "runbook_count": 0,
         "developer_doc_count": 0,
         "code_reference_count": 0
@@ -11256,7 +11258,8 @@
       "diagrams": [
         "D-043",
         "D-045",
-        "D-046"
+        "D-046",
+        "D-047"
       ],
       "sources": [
         "manifest",
@@ -12258,6 +12261,7 @@
       ],
       "diagrams": [
         "D-022",
+        "D-047",
         "D-019",
         "D-020",
         "D-021",
@@ -13114,7 +13118,8 @@
       "owner": "product",
       "file": "odylith/atlas/source/odylith-managed-runtime-release-and-install-flow.mmd",
       "related_workstreams": [
-        "B-005"
+        "B-005",
+        "B-142"
       ],
       "component_names": [
         "Managed runtime bundles",
@@ -13657,6 +13662,23 @@
         "Domain Intelligence",
         "Atlas",
         "Generated Flowchart Assets"
+      ],
+      "related_component_ids": []
+    },
+    {
+      "id": "diagram:D-047",
+      "type": "diagram",
+      "label": "Greenfield Matrix Tiered Campaign Progress",
+      "diagram_id": "D-047",
+      "status": "active",
+      "owner": "release",
+      "file": "odylith/atlas/source/greenfield-matrix-tiered-campaign-progress.mmd",
+      "related_workstreams": [
+        "B-142"
+      ],
+      "component_names": [
+        "Release",
+        "Domain Intelligence"
       ],
       "related_component_ids": []
     },
@@ -20562,6 +20584,11 @@
     },
     {
       "source": "B-142",
+      "target": "diagram:D-023",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-142",
       "target": "diagram:D-043",
       "edge_type": "diagram_linkage"
     },
@@ -20573,6 +20600,11 @@
     {
       "source": "B-142",
       "target": "diagram:D-046",
+      "edge_type": "diagram_linkage"
+    },
+    {
+      "source": "B-142",
+      "target": "diagram:D-047",
       "edge_type": "diagram_linkage"
     },
     {
@@ -21488,6 +21520,11 @@
     {
       "source": "component:domain-intelligence",
       "target": "diagram:D-046",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:domain-intelligence",
+      "target": "diagram:D-047",
       "edge_type": "component_diagram"
     },
     {
@@ -22653,6 +22690,11 @@
     {
       "source": "component:release",
       "target": "diagram:D-027",
+      "edge_type": "component_diagram"
+    },
+    {
+      "source": "component:release",
+      "target": "diagram:D-047",
       "edge_type": "component_diagram"
     },
     {
@@ -24616,7 +24658,7 @@
     },
     "B-142": {
       "linked_plan_count": 1,
-      "linked_diagram_count": 3,
+      "linked_diagram_count": 5,
       "runbook_count": 0,
       "developer_doc_count": 0,
       "code_reference_count": 0
@@ -24696,7 +24738,7 @@
       "category": "topology_conflict",
       "message": "B-142: autofix skipped `related_diagram_ids` due to metadata conflict",
       "idea_id": "B-142",
-      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md: current='D-043' candidate='D-043,D-045,D-046'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
+      "action": "Resolve explicitly in odylith/radar/source/ideas/2026-05/2026-05-03-universal-greenfield-domain-intelligence.md: current='D-043' candidate='D-023,D-043,D-045,D-046'. Reason: inferred from Mermaid catalog related_backlog/related_workstreams.",
       "source": "odylith/radar/traceability-autofix-report.v1.json"
     }
   ],
@@ -24721,10 +24763,10 @@
       "info": 0
     },
     "connectivity": {
-      "spine_node_count": 259,
-      "structural_edge_count": 1705,
+      "spine_node_count": 260,
+      "structural_edge_count": 1709,
       "connected_component_count": 3,
-      "largest_component_size": 257,
+      "largest_component_size": 258,
       "isolated_node_count": 2,
       "isolated_nodes": [
         "release:release-0-1-11",
@@ -24740,12 +24782,12 @@
     "active_release_assignment_count": 20,
     "execution_program_count": 5,
     "execution_wave_count": 30,
-    "node_count": 350,
-    "edge_count": 1809,
+    "node_count": 351,
+    "edge_count": 1813,
     "warning_count": 7,
     "warning_item_count": 7,
     "topology_quality": "pass",
     "topology_score": 100
   },
-  "generated_utc": "2026-07-01 18:15:01Z"
+  "generated_utc": "2026-07-04 22:05:34Z"
 }

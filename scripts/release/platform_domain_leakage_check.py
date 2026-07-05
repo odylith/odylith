@@ -126,9 +126,13 @@ GENERIC_PRODUCT_TERMS = frozenset(
 PLATFORM_NATIVE_TERMS = frozenset(
     {
         "agent",
+        "artifact",
         "atlas",
         "casebook",
         "codex",
+        "custody",
+        "data",
+        "flow",
         "compass",
         "governance",
         "matrix",
@@ -289,6 +293,12 @@ DOMAIN_TEXT_STOPWORDS = frozenset(
         "workspace",
     }
 ).union(PLATFORM_NATIVE_TERMS)
+LOW_ENTROPY_SENTINEL_HEADS = frozenset(
+    {
+        "evidence",
+        "proof",
+    }
+)
 
 @dataclass(frozen=True)
 class LeakageFinding:
@@ -339,7 +349,7 @@ def domain_leakage_terms_from_terms(terms: Iterable[str]) -> tuple[str, ...]:
     leakage_terms: set[str] = set()
     for term in terms:
         normalized = _normalize_term(str(term))
-        if normalized and normalized not in GENERIC_PRODUCT_TERMS and normalized not in PLATFORM_NATIVE_TERMS:
+        if normalized and _is_distinctive_declared_term(normalized):
             leakage_terms.add(normalized)
     return tuple(sorted(leakage_terms))
 
@@ -368,12 +378,17 @@ def historical_domain_leakage_terms() -> tuple[str, ...]:
 def case_leakage_terms(case: object) -> tuple[str, ...]:
     """Return distinctive leakage terms for one simulation case."""
 
-    return domain_leakage_terms_from_terms(
-        (
-            *_case_declared_leakage_terms(case),
-            *_case_source_text_terms(case),
-        )
-    )
+    declared = domain_leakage_terms_from_terms(_case_declared_leakage_terms(case))
+    if declared:
+        source_text = _case_source_text(case)
+        if not source_text.strip():
+            return declared
+        grounded_declared = tuple(term for term in declared if _term_present(source_text, term))
+        if len(grounded_declared) == len(declared):
+            return grounded_declared
+        source_terms = domain_leakage_terms_from_text(source_text)
+        return tuple(dict.fromkeys((*grounded_declared, *source_terms)))
+    return domain_leakage_terms_from_text(_case_source_text(case))
 
 
 def cases_missing_leakage_terms(cases: Iterable[object]) -> tuple[str, ...]:
@@ -600,16 +615,44 @@ def _normalize_term(term: str) -> str:
     return " ".join(_tokens(term))
 
 
+def _is_distinctive_declared_term(term: str) -> bool:
+    tokens = _tokens(term)
+    if not tokens:
+        return False
+    if len(tokens) == 1:
+        return not _is_generic_source_token(tokens[0])
+    if len(tokens) <= 2 and all(_is_platform_generic_declared_token(token) for token in tokens):
+        return False
+    if len(tokens) == 2 and tokens[-1] in LOW_ENTROPY_SENTINEL_HEADS:
+        return False
+    return True
+
+
 def _case_source_text_terms(case: object) -> tuple[str, ...]:
     return domain_leakage_terms_from_terms(
         term
-        for value in (
-            getattr(case, "name", ""),
-            getattr(case, "prompt", ""),
-            getattr(case, "confirmed_intent_markdown", ""),
-        )
+        for value in _case_source_values(case)
         for term in domain_leakage_terms_from_text(str(value or ""))
     )
+
+
+def _case_source_text(case: object) -> str:
+    return "\n".join(str(value or "") for value in _case_source_values(case))
+
+
+def _case_source_values(case: object) -> tuple[object, ...]:
+    return (
+        getattr(case, "name", ""),
+        getattr(case, "prompt", ""),
+        getattr(case, "confirmed_intent_markdown", ""),
+    )
+
+
+def _term_present(text: str, term: str) -> bool:
+    term_tokens = _tokens(term)
+    if not term_tokens:
+        return False
+    return _contains_phrase(_tokens(text), term_tokens)
 
 
 def _is_distinctive_source_token(token: str) -> bool:
@@ -644,6 +687,13 @@ def _is_source_support_token(token: str) -> bool:
 def _is_generic_source_token(token: str) -> bool:
     return any(
         form in DOMAIN_TEXT_STOPWORDS or form in GENERIC_PRODUCT_TERMS or form in PLATFORM_NATIVE_TERMS
+        for form in _source_token_forms(str(token or "").casefold())
+    )
+
+
+def _is_platform_generic_declared_token(token: str) -> bool:
+    return any(
+        form in DOMAIN_TEXT_STOPWORDS or form in PLATFORM_NATIVE_TERMS
         for form in _source_token_forms(str(token or "").casefold())
     )
 

@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import json
 
+from odylith.runtime.artifact_quality.generated_copy_quality import generated_public_copy_issues
 from odylith.runtime.domain_intelligence import greenfield_proposals
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent import parse_confirmed_intent_text
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_completion import _first_path_is_complete_enough
+from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_validation import _first_path_is_clear_enough
 from odylith.runtime.domain_intelligence.greenfield_confirmed_proposal import build_confirmed_greenfield_proposal
 from odylith.runtime.domain_intelligence.greenfield_confirmed_intent_recovery import confirmation_from_operator_intent
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source import prompt_intent_source
@@ -11,6 +14,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_prompt_source impo
 from odylith.runtime.domain_intelligence.greenfield_evaluation_semantics import evaluation_semantics_for_texts
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_quality_gate import greenfield_quality_issues
+from odylith.runtime.domain_intelligence.proposal_memory import build_accepted_project_source_payload
 
 
 def _guidance_envelope(prompt: str) -> str:
@@ -282,6 +286,38 @@ def test_operator_intent_recovery_visible_confirmation_keeps_sequence_and_actor_
     assert "then show a clear change explanation without making diagnosis claims" in text
 
 
+def test_operator_intent_recovery_splits_product_view_result_sentence_for_model_use_recommendation() -> None:
+    prompt = (
+        "Create a greenfield proposal for AI hiring model adverse impact. Focus on a governed workflow where the "
+        "algorithmic accountability auditor turns an ambiguous hiring model review case into a review-ready record "
+        "using selection-rate evidence, feature documentation, validation study, and accommodation notes, explicit "
+        "expert review, auditable decisions, and a final model use recommendation."
+    )
+
+    text = confirmation_from_operator_intent(prompt, prefer_product_title=True)
+    intent = parse_confirmed_intent_text(text, prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    payload = build_accepted_project_source_payload(
+        proposal=proposal,
+        backlog_items=(),
+        component_items=(),
+        diagram_ids=(),
+        release_selector="0.0.1",
+        release_id="0.0.1",
+        validation_gate={"status": "passed"},
+    )
+
+    assert "final model use recommendation. The result remains visible" in text
+    assert "model use recommendation and the result" not in text
+    assert generated_public_copy_issues("accepted-project final memory", payload) == ()
+
+
 def test_operator_intent_recovery_does_not_canonize_actorless_action_chain_as_subject() -> None:
     prompt = (
         "Create a greenfield proposal for a space telescope calibration anomaly review tool that ingests "
@@ -520,6 +556,12 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         )
         == "tenant aid coordinators"
     )
+    mrna_prompt = (
+        "Create a greenfield proposal for mRNA stability batch comparison. Focus on a governed workflow where "
+        "the formulation scientist turns an ambiguous mRNA stability batch comparison case into a review-ready record."
+    )
+    assert prompt_project_title_source(mrna_prompt) == "mRNA stability batch comparison"
+    assert greenfield_proposals._intent_title(mrna_prompt) == "mRNA Stability Batch Comparison"
     planned = prompt_intent_source(
         "Plan a new exception review cockpit for operations teams that tracks evidence, review holds, "
         "decision outcomes, exception notes, and release proof."
@@ -540,6 +582,87 @@ def test_prompt_title_source_recognizes_generic_product_containers() -> None:
         in rendered
     )
     assert "Review Holds:" not in rendered
+
+
+def test_prompt_source_rejects_non_human_result_subject_before_transformation() -> None:
+    prompt = "incident board where the final recommendation turns an ambiguous incident into a review-ready record"
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+
+    assert source.actor == ""
+    assert "Final Recommendation:" not in "\n".join(intent["human_actors"])
+
+
+def test_single_step_action_only_paths_do_not_satisfy_completion_or_validation() -> None:
+    weak_paths = (
+        "reviewer capture notes, approvals, and status",
+        "screening scientist record replicate, viability, and off-target evidence",
+    )
+
+    for first_path in weak_paths:
+        intent = {
+            "first_path": first_path,
+            "product_story": first_path,
+            "state_object": "A result record tracks evidence.",
+            "proof_boundary": "Proof shows the accepted path.",
+        }
+        assert not _first_path_is_complete_enough(first_path)
+        assert not _first_path_is_clear_enough(intent)
+
+
+def test_command_led_sentence_target_preserves_domain_frame_without_container(tmp_path) -> None:
+    prompt = (
+        "Create a greenfield proposal for weather radar calibration setup. "
+        "The product should let a meteorologist manage a radar scan, preserve beam blockage evidence, "
+        "route review, separate product-domain terms from platform governance language, and publish calibration decision."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert source.title == "weather radar calibration setup"
+    assert intent["title"] == "Weather Radar Calibration Setup Workspace"
+    assert "weather radar calibration setup workspace" in rendered
+    assert "meteorologist manage a radar scan" in rendered
+    assert "beam blockage evidence" in rendered
+    assert "Calibration Decision Workspace" not in json.dumps(proposal, sort_keys=True)
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_command_led_platform_homonym_target_preserves_project_domain_frame(tmp_path) -> None:
+    prompt = (
+        "Create a greenfield proposal for geologic atlas field mapping setup. "
+        "The product should let a field geologist manage a map sheet, preserve stratigraphy evidence, "
+        "route review, separate product-domain terms from platform governance language, and publish mapping release."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert source.title == "geologic atlas field mapping setup"
+    assert intent["title"] == "Geologic Atlas Field Mapping Setup Workspace"
+    assert "geologic atlas field mapping setup workspace" in rendered
+    assert "field geologist manage a map sheet" in rendered
+    assert "stratigraphy evidence" in rendered
+    assert "Mapping Release Workspace" not in json.dumps(proposal, sort_keys=True)
+    assert greenfield_quality_issues(proposal) == []
 
 
 def test_prompt_source_preserves_infinitive_after_use_to_instead_of_can_rewrite() -> None:
@@ -648,6 +771,158 @@ def test_host_guidance_recovery_handles_helper_relative_embedded_actor_path() ->
     assert greenfield_quality_issues(proposal) == []
 
 
+def test_prompt_source_recovers_actor_from_complete_path_grant() -> None:
+    prompt = (
+        "Create a greenfield proposal for crispr screen reproducibility. The first release should give the "
+        "screening scientist a complete path to open the guide RNA result set, record replicate, viability, "
+        "and off-target evidence, escalate assay review, resolve exceptions, and publish the reproducibility "
+        "decision without automating expert judgment."
+    )
+
+    source = prompt_intent_source(prompt)
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert source.title == "crispr screen reproducibility"
+    assert source.actor == "screening scientist"
+    assert source.first_path.startswith("screening scientist open the guide RNA result set")
+    assert "record replicate, viability, and off-target evidence" in source.first_path
+    assert intent["human_actors"][0].startswith("Screening Scientist:")
+    assert "Release Should:" not in "\n".join(intent["human_actors"])
+    assert "Escalate Assay:" not in "\n".join(intent["human_actors"])
+    assert "screening scientist can open the guide rna result set" in rendered
+    assert "modal/base-form grammar drift" not in "\n".join(greenfield_quality_issues(proposal))
+    assert greenfield_quality_issues(proposal) == []
+
+
+def test_prompt_source_recovers_analyst_actor_from_complete_path_grant() -> None:
+    prompts = (
+        (
+            "exoplanet transit vetting",
+            "astronomy analyst",
+            "candidate transit dossier",
+            "science review",
+            "planet-candidate disposition",
+        ),
+        (
+            "seismic microtremor mapping",
+            "geophysics analyst",
+            "microtremor survey",
+            "hazard review",
+            "site amplification map",
+        ),
+        (
+            "space debris conjunction",
+            "orbital safety analyst",
+            "conjunction assessment",
+            "flight dynamics review",
+            "avoidance recommendation",
+        ),
+    )
+
+    for title, actor, entry_object, review, result in prompts:
+        prompt = (
+            f"Create a greenfield proposal for {title}. The first release should give the {actor} "
+            f"a complete path to open the {entry_object}, record source, evidence, and review context, "
+            f"escalate {review}, resolve exceptions, and publish the {result} without automating expert judgment."
+        )
+
+        source = prompt_intent_source(prompt)
+        intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+        proposal = build_confirmed_greenfield_proposal(
+            prompt=prompt,
+            title=intent["title"],
+            observed_source={},
+            release_selector="0.0.1",
+            confirmed_intent=intent,
+        )
+        rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+        assert source.title == title
+        assert source.actor == actor
+        assert source.first_path.startswith(f"{actor} open the {entry_object}")
+        assert intent["human_actors"][0].startswith(" ".join(word.capitalize() for word in actor.split()) + ":")
+        assert "Release Should:" not in "\n".join(intent["human_actors"])
+        assert f"the {actor} can open the {entry_object}" in rendered
+        assert "the release should can" not in rendered
+        assert "the release should receives" not in rendered
+        assert "modal/base-form grammar drift" not in "\n".join(greenfield_quality_issues(proposal))
+        assert greenfield_quality_issues(proposal) == []
+
+
+def test_shard06_workflow_prompts_prefer_complete_actor_role_before_action() -> None:
+    prompts = [
+        (
+            "Create a greenfield proposal for municipal stormwater illicit discharge. Focus on a governed workflow where "
+            "the stormwater inspector turns an ambiguous illicit discharge case into a review-ready record using outfall, "
+            "sample, and rainfall evidence, explicit enforcement review, auditable decisions, and a final discharge "
+            "resolution plan.",
+            "stormwater inspector",
+            ("stormwater can inspector", "can inspector turns"),
+        ),
+        (
+            "Create a greenfield proposal for tribal consultation tracker. Focus on a governed workflow where the "
+            "government liaison turns an ambiguous consultation commitment into a review-ready record using meeting, "
+            "cultural-resource, and response evidence, explicit policy review, auditable decisions, and a final "
+            "consultation status report.",
+            "government liaison",
+            ("government can liaison", "can liaison turns"),
+        ),
+    ]
+
+    for prompt, actor, forbidden in prompts:
+        source = prompt_intent_source(prompt)
+        intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+        proposal = build_confirmed_greenfield_proposal(
+            prompt=prompt,
+            title=intent["title"],
+            observed_source={},
+            release_selector="0.0.1",
+            confirmed_intent=intent,
+        )
+        rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+        assert source.actor == actor
+        assert source.first_path.startswith(f"{actor} turn")
+        assert actor.title() + ":" in "\n".join(intent["human_actors"])
+        for phrase in forbidden:
+            assert phrase not in rendered
+        assert "modal/base-form grammar drift" not in "\n".join(greenfield_quality_issues(proposal))
+        assert greenfield_quality_issues(proposal) == []
+
+
+def test_confirmed_proposal_preserves_long_scientific_decision_phrase_without_dangling_tail() -> None:
+    prompt = (
+        "Create a greenfield proposal for rare disease variant board. Focus on a governed workflow where the "
+        "genomics counselor turns an ambiguous variant interpretation case into a review-ready record using "
+        "phenotype, segregation, and ACMG evidence, explicit variant board, auditable decisions, and a final "
+        "classification recommendation."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    proposal = build_confirmed_greenfield_proposal(
+        prompt=prompt,
+        title=intent["title"],
+        observed_source={},
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(proposal, sort_keys=True).casefold()
+
+    assert "final classification recommendation" in rendered
+    assert "auditable decisions and a final." not in rendered
+    assert "and a final. follow-up evidence" not in rendered
+    assert "the genomics counselor can turn an ambiguous variant interpretation case" in rendered
+    assert greenfield_quality_issues(proposal) == []
+
+
 def test_host_guidance_recovery_preserves_leading_purpose_context_before_actions() -> None:
     prompt = (
         "municipal water utility planner for lead service-line abatement; intake household records, "
@@ -732,7 +1007,7 @@ Confirmed CLI after confirmation: odylith greenfield create --repo-root . --prom
     rendered = json.dumps(proposal, sort_keys=True)
 
     assert intent["title"] == "Digestive Health Tracking Notebook"
-    assert "records meals, symptoms" in intent["first_path"].casefold()
+    assert "record meals, symptoms" in intent["first_path"].casefold()
     assert len(intent["internal_systems"]) == 3
     assert all("visible format" not in row.casefold() for row in intent["internal_systems"])
     assert "post-confirm repair loop" not in rendered.casefold()
@@ -1156,6 +1431,32 @@ def test_confirmed_recovery_keeps_instrument_objects_out_of_human_actors(tmp_pat
     assert "image coordinates" not in rendered.casefold()
     assert "operator overrides. Recovery proof" not in rendered
     assert expected_path in rendered
+    assert greenfield_quality_issues(completed) == []
+
+
+def test_confirmed_recovery_keeps_operator_notes_out_of_human_actors(tmp_path) -> None:
+    prompt = (
+        "Create a greenfield proposal for a robotics warehouse near-miss lab where safety engineers replay "
+        "robot paths, human proximity events, intervention thresholds, sensor occlusion, baseline routes, "
+        "and operator notes before releasing a safety result. The first path must preserve parameter identity, "
+        "reviewer decision history, and result explanation without asking for a second confirmation."
+    )
+
+    intent = parse_confirmed_intent_text(_guidance_envelope(prompt), prompt=prompt)
+    completed = greenfield_proposals.build_greenfield_proposal(
+        repo_root=tmp_path,
+        prompt=prompt,
+        release_selector="0.0.1",
+        confirmed_intent=intent,
+    )
+    rendered = json.dumps(completed, sort_keys=True)
+
+    assert intent["human_actors"] == [
+        "Safety Engineers: need the product to replay robot paths and keep the result visible and reviewable"
+    ]
+    assert "Operator Notes:" not in rendered
+    assert "Baseline:" not in rendered
+    assert "generic actor label `Operator`" not in "\n".join(greenfield_quality_issues(completed))
     assert greenfield_quality_issues(completed) == []
 
 
