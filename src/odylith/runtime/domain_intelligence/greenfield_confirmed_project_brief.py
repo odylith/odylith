@@ -53,6 +53,7 @@ def confirmed_project_brief(
     ambiguities: list[str] | None = None,
     non_goals: list[str] | None = None,
     evidence_requirements: list[str] | None = None,
+    visible_result: str = "",
 ) -> dict[str, Any]:
     label_lower = sentence_label(label)
     state_label = compact_domain_object_label(state_object, fallback=f"{label} state")
@@ -99,6 +100,7 @@ def confirmed_project_brief(
         first_path or first,
         fallback=first,
         proof_boundary=proof_source,
+        visible_result=visible_result,
         limit=520,
     )
     evidence_summary = _brief_clause(join_confirmed_items((evidence_requirements or [])[:8]), limit=520)
@@ -559,6 +561,7 @@ def _first_path_readiness_summary(
     *,
     fallback: str,
     proof_boundary: str,
+    visible_result: str = "",
     limit: int = 220,
 ) -> str:
     structured_action = _first_path_action_step_summary(value, limit=limit)
@@ -576,7 +579,7 @@ def _first_path_readiness_summary(
     text = _prefer_more_complete_action_summary(structured_action, capability or clauses.action_chain) or fallback
     if not structured_action:
         text = _readiness_action_head(text)
-    outcome = compact_text(clauses.visible_result).strip(" .")
+    outcome = compact_text(visible_result or clauses.visible_result).strip(" .")
     if (
         outcome
         and not _result_terms_covered(outcome, text)

@@ -23,7 +23,6 @@ from odylith.runtime.domain_intelligence import greenfield_experience
 from odylith.runtime.domain_intelligence import greenfield_programs
 from odylith.runtime.domain_intelligence import greenfield_source_casing
 from odylith.runtime.domain_intelligence import greenfield_traceability
-from odylith.runtime.domain_intelligence.greenfield_confirmed_text import sentence_label
 from odylith.runtime.domain_intelligence.greenfield_post_confirm_completion import GreenfieldCompletionPackage
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.proposal_memory import build_greenfield_acceptance_event_preview
@@ -305,13 +304,7 @@ def proposal_with_component_brief_gate(proposal: Mapping[str, Any]) -> dict[str,
     brief = dict(result.get("project_brief")) if isinstance(result.get("project_brief"), Mapping) else {}
     gates = [str(item).strip() for item in brief.get("coding_readiness_gates", []) if str(item).strip()] if isinstance(brief.get("coding_readiness_gates"), list) else []
     summary = ", ".join(labels)
-    title = ""
-    intent = result.get("intent")
-    if isinstance(intent, Mapping):
-        title = str(intent.get("title", "")).strip()
-    title_ref = sentence_label(title)
-    prefix = f"The {title_ref} components" if title_ref else "The project components"
-    gate = f"{prefix} come from product systems named in the accepted product direction: {summary}."
+    gate = f"The first-release components come from product systems named in the accepted product direction: {summary}."
     replaced = False
     updated: list[str] = []
     for item in gates:

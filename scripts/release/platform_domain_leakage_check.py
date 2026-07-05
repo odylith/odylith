@@ -391,6 +391,24 @@ def case_leakage_terms(case: object) -> tuple[str, ...]:
     return domain_leakage_terms_from_text(_case_source_text(case))
 
 
+def case_leakage_term_candidates(case: object) -> tuple[str, ...]:
+    """Return all source-grounded leakage sentinel candidates for one case.
+
+    `case_leakage_terms` preserves the release-matrix contract that explicit,
+    grounded sentinels are authoritative. High-volume external discovery needs a
+    wider candidate set so the runner can discard sentinels that already appear
+    in platform custody and still prove the case with richer source phrases.
+    """
+
+    declared = domain_leakage_terms_from_terms(_case_declared_leakage_terms(case))
+    source_text = _case_source_text(case)
+    if not source_text.strip():
+        return declared
+    grounded_declared = tuple(term for term in declared if _term_present(source_text, term))
+    source_terms = domain_leakage_terms_from_text(_case_domain_source_text(case))
+    return tuple(dict.fromkeys((*grounded_declared, *source_terms)))
+
+
 def cases_missing_leakage_terms(cases: Iterable[object]) -> tuple[str, ...]:
     """Return case names whose contract cannot prove project-term leakage."""
 
@@ -640,6 +658,88 @@ def _case_source_text(case: object) -> str:
     return "\n".join(str(value or "") for value in _case_source_values(case))
 
 
+def _case_domain_source_text(case: object) -> str:
+    values: list[str] = []
+    name = str(getattr(case, "name", "") or "").strip()
+    if name:
+        values.append(name)
+    prompt = str(getattr(case, "prompt", "") or "").strip()
+    values.extend(_domain_source_prompt_segments(case=case, prompt=prompt))
+    confirmed = str(getattr(case, "confirmed_intent_markdown", "") or "").strip()
+    values.extend(_domain_source_confirmed_segments(case=case, confirmed=confirmed))
+    return "\n".join(dict.fromkeys(value for value in values if value))
+
+
+def _domain_source_prompt_segments(*, case: object, prompt: str) -> tuple[str, ...]:
+    if not prompt:
+        return ()
+    declared_terms = _case_declared_leakage_terms(case)
+    required_terms = _case_required_terms(case)
+    segments: list[str] = []
+    for index, segment in enumerate(_split_sentence_like_segments(prompt)):
+        lowered = segment.casefold()
+        if index == 0:
+            segments.append(segment)
+            continue
+        if "distinctive" in lowered and "vocabulary" in lowered:
+            segments.append(segment)
+            continue
+        if _contains_any_term(segment, declared_terms) or _contains_any_term(segment, required_terms):
+            segments.append(segment)
+    return tuple(dict.fromkeys(segments))
+
+
+def _domain_source_confirmed_segments(*, case: object, confirmed: str) -> tuple[str, ...]:
+    if not confirmed:
+        return ()
+    declared_terms = _case_declared_leakage_terms(case)
+    required_terms = _case_required_terms(case)
+    source_section_titles = {
+        "product story",
+        "state object",
+        "first complete path",
+        "actors",
+        "systems",
+    }
+    segments: list[str] = []
+    in_source_section = False
+    for raw_line in confirmed.splitlines():
+        line = _plain_markdown_line(raw_line)
+        if not line:
+            continue
+        title = line.rstrip(":").casefold()
+        if title in source_section_titles:
+            in_source_section = True
+            continue
+        if _looks_like_markdown_heading(raw_line):
+            in_source_section = False
+        if in_source_section or _contains_any_term(line, declared_terms) or _contains_any_term(line, required_terms):
+            segments.append(line)
+    return tuple(dict.fromkeys(segments))
+
+
+def _split_sentence_like_segments(text: str) -> tuple[str, ...]:
+    normalized = str(text or "").replace("?", ".").replace("!", ".")
+    return tuple(segment.strip() for segment in normalized.split(".") if segment.strip())
+
+
+def _plain_markdown_line(line: str) -> str:
+    value = str(line or "").strip()
+    while value.startswith("#"):
+        value = value[1:].strip()
+    for prefix in ("- ", "* "):
+        if value.startswith(prefix):
+            value = value[len(prefix) :].strip()
+    if value.startswith("**") and value.endswith("**") and len(value) > 4:
+        value = value[2:-2].strip()
+    return value
+
+
+def _looks_like_markdown_heading(line: str) -> bool:
+    value = str(line or "").lstrip()
+    return value.startswith("#") or (value.startswith("**") and value.rstrip().endswith("**"))
+
+
 def _case_source_values(case: object) -> tuple[object, ...]:
     return (
         getattr(case, "name", ""),
@@ -653,6 +753,10 @@ def _term_present(text: str, term: str) -> bool:
     if not term_tokens:
         return False
     return _contains_phrase(_tokens(text), term_tokens)
+
+
+def _contains_any_term(text: str, terms: Iterable[str]) -> bool:
+    return any(_term_present(text, str(term or "")) for term in terms)
 
 
 def _is_distinctive_source_token(token: str) -> bool:

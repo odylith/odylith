@@ -10,6 +10,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_list
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text
 from odylith.runtime.domain_intelligence.greenfield_project_intelligence import PROJECT_INTELLIGENCE_LAYERS
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import projection_uses_proof_boundary_as_result
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -25,6 +26,7 @@ def complete_project_intelligence(
     state_object: str,
     proof_boundary: str,
     text_needs_repair: TextRepairPredicate,
+    visible_result: str = "",
 ) -> bool:
     intelligence = proposal.get("project_intelligence")
     if not isinstance(intelligence, dict):
@@ -57,9 +59,14 @@ def complete_project_intelligence(
             first_path=first_path,
             state_object=state_object,
             proof_boundary=proof_boundary,
+            visible_result=visible_result,
         ),
         minimum=5,
         text_needs_repair=text_needs_repair,
+        projection_needs_repair=_projection_repair_predicate(
+            visible_result=visible_result,
+            proof_boundary=proof_boundary,
+        ),
     )
     changed |= _repair_rows(
         intelligence,
@@ -74,6 +81,11 @@ def complete_project_intelligence(
         first_path=first_path,
         state_object=state_object,
         proof_boundary=proof_boundary,
+        visible_result=visible_result,
+    )
+    projection_needs_repair = _projection_repair_predicate(
+        visible_result=visible_result,
+        proof_boundary=proof_boundary,
     )
     for key in PROJECT_INTELLIGENCE_LAYERS:
         minimum = 3 if key in {"intent", "ontology", "operators", "validation_obligations", "topology", "artifacts"} else 2
@@ -83,6 +95,7 @@ def complete_project_intelligence(
             defaults.get(key, ()),
             minimum=minimum,
             text_needs_repair=text_needs_repair,
+            projection_needs_repair=projection_needs_repair,
         )
     return changed
 
@@ -94,9 +107,14 @@ def _repair_rows(
     *,
     minimum: int,
     text_needs_repair: TextRepairPredicate,
+    projection_needs_repair: TextRepairPredicate | None = None,
 ) -> bool:
     existing = list(text_values(intelligence.get(key)))
-    clean_existing = [value for value in existing if not text_needs_repair(value)]
+    clean_existing = [
+        value
+        for value in existing
+        if not text_needs_repair(value) and not (projection_needs_repair and projection_needs_repair(value))
+    ]
     if len(clean_existing) >= minimum and clean_existing == existing:
         return False
     rows = list(unique_text([*clean_existing, *defaults]))
@@ -114,13 +132,15 @@ def _control_rows(
     first_path: str,
     state_object: str,
     proof_boundary: str,
+    visible_result: str = "",
 ) -> tuple[str, ...]:
+    result = clean_generated_text(visible_result) or "the accepted visible result"
     return (
         f"{project_title} must keep the first user path visible and understandable: {first_path}",
         f"{project_title} must show which product state changed and why: {state_object}",
         f"{project_title} must keep blockers, explanations, and decisions understandable before release readiness.",
         f"{project_title} must keep access, privacy, audit, retention, recovery, and safety responsibilities explicit.",
-        f"{project_title} must block promotion when the product cannot satisfy the accepted outcome: {proof_boundary}",
+        f"{project_title} must block promotion when validation cannot prove {result}.",
     )
 
 
@@ -140,7 +160,9 @@ def _layer_defaults(
     first_path: str,
     state_object: str,
     proof_boundary: str,
+    visible_result: str = "",
 ) -> dict[str, tuple[str, ...]]:
+    result = clean_generated_text(visible_result) or "the accepted visible result"
     return {
         "intent": (
             f"{project_title} exists to make the first user path usable and understandable: {first_path}",
@@ -166,7 +188,7 @@ def _layer_defaults(
             "Administrators or maintainers manage access, recovery, audit, and operational boundaries.",
         ),
         "constraints": (
-            f"The first release cannot exceed the accepted product promise: {proof_boundary}",
+            "The first release cannot exceed the accepted product promise, blocked-path proof, or replay boundary.",
             "Generated records must stay grammatical, specific, non-duplicative, and tied to accepted intent.",
         ),
         "source_of_truth_map": (
@@ -203,7 +225,7 @@ def _layer_defaults(
         "validation_obligations": (
             f"Validate success for the accepted first path: {first_path}",
             "Validate blocked paths for missing input, invalid state, access failure, privacy risk, and absent evidence.",
-            f"Validate release proof against the accepted product promise: {proof_boundary}",
+            f"Validate release proof against the accepted visible result: {result}",
         ),
         "artifacts": (
             "Workstream records state the work to build and why it matters to users.",
@@ -239,6 +261,17 @@ def _layer_defaults(
             "Do not copy facts from unrelated projects into the current product records.",
         ),
     }
+
+
+def _projection_repair_predicate(*, visible_result: str, proof_boundary: str) -> TextRepairPredicate:
+    def needs_repair(value: Any) -> bool:
+        return projection_uses_proof_boundary_as_result(
+            value,
+            visible_result=visible_result,
+            proof_boundary=proof_boundary,
+        )
+
+    return needs_repair
 
 
 __all__ = ["complete_project_intelligence"]

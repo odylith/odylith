@@ -1,5 +1,5 @@
 # Release
-Last updated: 2026-07-04
+Last updated: 2026-07-05
 
 
 Last updated (UTC): 2026-04-09
@@ -527,7 +527,10 @@ governed subsystem.
   sentinels alone. Preflight and generated-readback leakage proof must include
   explicit case sentinels, required anchors, and conservative distinctive
   source-text phrases from the case prompt or accepted intent while filtering
-  generic confirmation/governance wording. Domain-anchor coverage scoring must
+  generic confirmation/governance wording. If a declared sentinel is already
+  platform-native, the harness must choose a source-grounded distinctive
+  fallback before failing a case; it may fail preflight only when no
+  platform-distinctive candidate remains. Domain-anchor coverage scoring must
   use token-aware matching rather than raw substring containment.
 - The standalone `make greenfield-post-confirm-matrix` maintainer target must
   write `greenfield-post-confirm-matrix.v1.json` by default, with
@@ -578,7 +581,9 @@ governed subsystem.
 - Local release smoke must inspect installed greenfield guidance files as part of
   the same journey. Installed AGENTS, README, and skill guidance must mention the
   `greenfield create` confirmation path, must forbid hand-authored proposal JSON,
-  and must fail on stale host-drafts-proposal instructions that would send agents
+  must explicitly guard against proposal JSON review and parser/schema retry
+  narration, must name the minimum Product Intent Confirmation sections, and
+  must fail on stale host-drafts-proposal instructions that would send agents
   back into schema-repair loops.
 - Local release smoke must treat unavailable previous-release metadata as a
   skipped upgrade rehearsal when the release lookup reports a 404, whether the
@@ -601,6 +606,9 @@ governed subsystem.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
+  - Scope: B-142
+  - Evidence: 4 tracked artifact references retained
 - **2026-07-04 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 6 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 6 tracked artifact references retained
@@ -616,12 +624,26 @@ This section captures synchronized requirement and contract signals derived from
 - **2026-07-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 3 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 3 tracked artifact references retained
-- **2026-07-03 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
-  - Scope: B-142
-  - Evidence: 4 tracked artifact references retained
 <!-- registry-requirements:end -->
 
 ## Feature History
+- 2026-07-05: Proved the retained final local-installable dist through strict installed release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`)
+  Release proof for
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-final-20260705T200258Z`
+  passed with campaign
+  `/private/tmp/odylith-final-release-proof-20260705T201226Z/campaign.json`
+  reporting `status=release-ready`, `execution_status=passed`,
+  `release_proof_status=passed`, `release_readiness_status=proven`, and zero
+  failure clusters. The release shard passed 12/12 scientific/deep-tech cases
+  at hard `10/10`, browser proof passed, platform generated-readback leakage
+  proof passed, temp cleanup passed, and natural rescue committed governed
+  records under the 90s rescue budget. Standard create timing stayed below 60s
+  with max `47.719s`. Exact installed `grn-sim` replay against the same dist
+  returned `0` in `38.349s`, wrote governed records, and had zero scanned
+  repeated-copy blockers. Obsolete local release dists were removed so the
+  retained package is the only `odylith-local-release-*` directory under the
+  research-code root.
+
 - 2026-07-04: Materialized exact failed-subset replay shards from failed campaign output. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
   The tiered campaign runner now writes `failure_response.failed_subset_replay`
   in the final campaign JSON. When failed result JSON and source case files
@@ -642,6 +664,28 @@ This section captures synchronized requirement and contract signals derived from
   counts. Focused proof passed the campaign/generator/sharder harness suite
   (`63 passed in 1.53s`). This is discovery-harness proof, not release
   readiness.
+
+- 2026-07-05: Hardened high-variance leakage-sentinel preflight with corpus-aware fallback candidates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  External matrix cases can declare source-grounded sentinels that are already
+  native to platform custody. The harness now scans declared plus source-derived
+  candidates once, excludes platform-native candidates, and fails preflight only
+  when no distinctive sentinel remains. Generated-readback leakage proof keeps
+  declared sentinels authoritative when usable and otherwise falls back to
+  source-derived candidates without adding domain vocabulary to release code.
+  Focused proof passed the leakage-preflight and generated-readback regression
+  pack (`39 passed in 7.45s`).
+
+- 2026-07-05: Preserved full platform-leakage proof breadth while narrowing external fallback candidates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
+  A case-aware source/dist scan showed that raw source-derived fallback
+  candidates could misclassify generic quality-obligation wording as project
+  domain leakage. The harness now derives fallback candidate sentinels from
+  product/title/vocabulary context and confirmed-intent source sections, while
+  the official default release proof keeps the full historical 224-term
+  platform-leakage corpus. Focused proof passed 38 leakage/preflight tests;
+  default source/dist platform leakage passed 224 fixture terms; and exact
+  failed-subset case-aware source/dist leakage passed 69 terms with zero
+  findings. This is proof-custody filtering, not a domain exception and not a
+  weakening of the release leakage guard.
 
 - 2026-07-04: Completed the incremental Greenfield campaign runner architecture slice without promoting discovery to release proof. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-215`; Diagram: D-047)
   The campaign harness now attributes live stop decisions to the shard that
@@ -1110,6 +1154,8 @@ This section captures synchronized requirement and contract signals derived from
 - 2026-04-09: Codified release-target progress semantics so release-member badges use shared execution-progress truth, show tracked partial completion honestly, and never render active implementation with unchecked execution as fake `0% progress`. (Plan: [B-068](odylith/radar/radar.html?view=plan&workstream=B-068)) (Bug: [CB-087](odylith/casebook/casebook.html?bug=CB-087))
 - 2026-05-07: Added release-smoke coverage for both empty-repo greenfield paths: the explicit `show -> greenfield propose --format json -> greenfield apply --proposal-file --confirm -> surfaces` journey and the one-command `greenfield create --confirm` shortcut. The same slice tightened installer progress output so child renderer lines no longer collide with the elapsed progress row. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-180`, `CB-181`)
 - 2026-05-07: Extended release smoke from runtime behavior into installed guidance proof: fresh installed AGENTS/README/skill guidance must point confirmation at `greenfield create --confirm`, forbid hand-authored proposal JSON, and reject stale host-drafts-proposal instructions. (Plan: [B-005](odylith/radar/radar.html?view=plan&workstream=B-005); Bugs: `CB-176`, `CB-181`)
+- 2026-07-05: Tightened the managed AGENTS release contract after local release smoke caught a post-commit dist whose fresh install guidance omitted the exact `proposal JSON` guard. The release component now treats explicit proposal-JSON review and parser/schema retry wording as part of installed guidance proof, and the managed AGENTS generator carries a regression assertion for that wording. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-181`)
+- 2026-07-05: Extended the same managed AGENTS contract to include the confirmation-format proof tokens (`Product story`, `State object`, `First complete path`, `Proof boundary`, and no wall of prose) after a rebuilt proof dist exposed that missing section list in fresh-install smoke. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-181`)
 - 2026-06-28: Required both canonical release proof and the standalone greenfield matrix target to persist `greenfield-post-confirm-matrix.v1.json`, expanded the installed standard matrix to at least ten/currently thirteen domains, and labeled rescue smoke as wiring-only proof unless a natural repairable failure passes under the 90 second tier. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
 - 2026-06-28: Promoted generated-surface browser proof from optional single-case smoke into the maintained release matrix contract. The direct matrix target enables browser proof by default unless `BROWSER_PROOF=0` is set for local debugging, shared release-candidate proof passes `--include-browser-proof`, maintained wrappers provision Playwright Chromium before the browser lane, and release proof now treats unavailable Playwright/Chromium as a fail-closed release blocker. The browser lane now covers generated normal shell routes, invalid-query recovery, Casebook empty/filter fallback, Atlas generated diagram state, and invalid Atlas diagram recovery instead of only heading-level route smoke. Persisted matrix proof now marks requested-but-unattempted browser proof as skipped and failed rather than passed. The matrix surface contract also covers Casebook and rejects stale asset-path or malformed tooling-payload wiring before claiming generated artifact quality. Rebuilt dist `odylith-local-release-0.1.15-atlas-state-proof` passed the twelve-case installed matrix with 10/10 scores, zero issues, every browser proof attempted and passed, create timings of 20.660-23.125s, clean temp cleanup, persisted matrix JSON, and synthetic wiring-only auto-rescue at 27.280s. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)
 - 2026-06-28: Tightened release-matrix score evidence after a fresh installed audit showed a Project prompt could be human-weak while the matrix still emitted a one-line 10/10 explanation. Perfect-score matrix results now include concrete completion counts, rendered-surface counts, traceability counts, Project prompt counts and findings, and passed expert-lens names in `score_explanation`, so release reviewers can audit why a 10/10 was awarded instead of trusting row counts alone. The default matrix now retains the escaped prompt-quality regression, and prompt quality hardening rejects bounded gerundized actor/product-subject drift without using broad suffix-count gates. (Plan: [B-142](odylith/radar/radar.html?view=plan&workstream=B-142); Bug: `CB-209`)

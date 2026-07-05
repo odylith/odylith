@@ -6,6 +6,7 @@ Last updated (UTC): 2026-07-05
 
 | Bug ID | Date | Title | Severity | Components | Status | Link |
 | --- | --- | --- | --- | --- | --- | --- |
+| CB-218 | 2026-07-05 | Deterministic greenfield rescue can invent assumption rows without accepted sour | P1 | domain-intelligence | Open | [2026-07-05-deterministic-greenfield-rescue-can-invent-assumption-rows-without-accepted-sour.md](2026-07-05-deterministic-greenfield-rescue-can-invent-assumption-rows-without-accepted-sour.md) |
 | CB-217 | 2026-07-02 | Greenfield registry semantic contracts can miss canonical blocked input proof ro | P1 | domain-intelligence | FixedPendingRelease | [2026-07-02-greenfield-registry-semantic-contracts-can-miss-canonical-blocked-input-proof-ro.md](2026-07-02-greenfield-registry-semantic-contracts-can-miss-canonical-blocked-input-proof-ro.md) |
 | CB-216 | 2026-07-02 | Greenfield control plane leak gate rejects source grounded domain homonyms | P1 | domain-intelligence | Open | [2026-07-02-greenfield-control-plane-leak-gate-rejects-source-grounded-domain-homonyms.md](2026-07-02-greenfield-control-plane-leak-gate-rejects-source-grounded-domain-homonyms.md) |
 | CB-212 | 2026-07-01 | Radar backlog normalization labels utc header with local date | P2 | radar | Open | [2026-07-01-radar-backlog-normalization-labels-utc-header-with-local-date.md](2026-07-01-radar-backlog-normalization-labels-utc-header-with-local-date.md) |

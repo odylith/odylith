@@ -11,6 +11,7 @@ from odylith.runtime.domain_intelligence.greenfield_component_contract_different
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import clean_generated_text as _clean
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
@@ -29,11 +30,24 @@ def complete_semantic_model(
     proof_boundary: str,
 ) -> bool:
     intent = proposal.get("intent") if isinstance(proposal.get("intent"), Mapping) else {}
+    state_source = _clean(intent.get("state_object")) or state_object
+    visible_candidate = select_visible_result_candidate(
+        first_path,
+        proof_boundary=proof_boundary,
+        product_view=intent.get("product_view"),
+        state_object=state_source,
+    )
+    visible_result = (
+        visible_candidate.text
+        if visible_candidate.source_path != "proof_boundary" and len(visible_candidate.text.split()) >= 2
+        else ""
+    )
     model = semantic_model_mapping(
         build_greenfield_semantic_model(
             title=title,
-            state_object=_clean(intent.get("state_object")) or state_object,
+            state_object=state_source,
             first_path=first_path,
+            visible_result=visible_result,
             proof_boundary=proof_boundary,
             components=dict_rows(proposal.get("components")),
             human_actors=text_values(intent.get("human_actors")),

@@ -200,7 +200,7 @@ def _known_actor_outcome_event(*, outcome: str, outcome_action: str, known_actor
             or backlog_text.result_terms_covered(action, outcome_action)
             or backlog_text.result_terms_covered(outcome_action, action)
         ):
-            return backlog_text.sentence_fragment(f"{label} {action}")
+            return backlog_text.inline_actor_event_fragment(label=label, action=action)
     return ""
 
 

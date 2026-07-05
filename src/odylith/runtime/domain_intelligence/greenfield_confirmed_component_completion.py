@@ -28,6 +28,7 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_text import senten
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_list as _set_list
 from odylith.runtime.domain_intelligence.greenfield_confirmed_text import set_sentence_text as _set_text
 from odylith.runtime.domain_intelligence.greenfield_rows import dict_rows
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import projection_uses_proof_boundary_as_result
 from odylith.runtime.domain_intelligence.greenfield_text import text_values
 from odylith.runtime.domain_intelligence.greenfield_text import unique_text
 
@@ -95,11 +96,12 @@ def complete_component_rows(proposal: dict[str, Any]) -> bool:
             changed = True
         else:
             changed |= _ensure_component_list(row, "validation", validation_from_contract(contract))
-        if _component_sequence_is_weak(row.get("risks")):
-            row["risks"] = risks_from_contract(label, contract)
+        risk_defaults = _component_risks(row, label, proposal, contract)
+        if _component_sequence_is_weak(row.get("risks")) or _component_sequence_uses_proof_result(row.get("risks"), proposal):
+            row["risks"] = risk_defaults
             changed = True
         else:
-            changed |= _ensure_component_list(row, "risks", _component_risks(row, label, proposal, contract))
+            changed |= _ensure_component_list(row, "risks", risk_defaults)
         changed |= _ensure_component_text(row, "status", "planned")
         changed |= _ensure_component_text(row, "qualification", "candidate")
         changed |= _ensure_component_text(row, "evidence_tier", "user_intent")
@@ -129,8 +131,8 @@ def repair_component_sentence_lists(proposal: Mapping[str, Any]) -> bool:
             changed |= _set_list(row, "dependencies", dependencies_from_contract(contract))
         if _sequence_has_text_repair(row.get("validation")):
             changed |= _set_list(row, "validation", validation_from_contract(contract))
-        if _sequence_has_text_repair(row.get("risks")):
-            changed |= _set_list(row, "risks", risks_from_contract(label, contract))
+        if _sequence_has_text_repair(row.get("risks")) or _component_sequence_uses_proof_result(row.get("risks"), proposal):
+            changed |= _set_list(row, "risks", _component_risks(row, label, proposal, contract))
     return changed
 
 
@@ -151,6 +153,21 @@ def _component_risks(
     if context:
         values.append(f"Accepted-intent constraint: {label} must preserve this risk or policy condition: {context}")
     return list(unique_text(values))
+
+
+def _component_sequence_uses_proof_result(value: Any, proposal: Mapping[str, Any]) -> bool:
+    visible_result = completion_text.outcome_phrase(proposal)
+    proof_boundary = completion_text.proof_boundary(proposal)
+    if not visible_result or not proof_boundary:
+        return False
+    return any(
+        projection_uses_proof_boundary_as_result(
+            row,
+            visible_result=visible_result,
+            proof_boundary=proof_boundary,
+        )
+        for row in text_values(value)
+    )
 
 
 def _best_context_line(*, row: Mapping[str, Any], proposal: Mapping[str, Any]) -> str:

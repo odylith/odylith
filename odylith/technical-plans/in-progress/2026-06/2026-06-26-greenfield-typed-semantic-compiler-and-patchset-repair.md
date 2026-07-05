@@ -86,6 +86,109 @@ vocabulary, or degraded packages.
 
 ## Latest Simulation Evidence
 
+- 2026-07-05 confirmed projection-custody checkpoint: the source-local repair
+  for structured visible-result selection was necessary but insufficient on its
+  own. A targeted replay showed that accepted-project/project-intelligence and
+  Atlas projections could retain stale proof-boundary result text after
+  `SemanticModelIR` had been corrected. Source fix now selects one
+  visible-result fact before confirmed backlog/project brief/semantic model
+  construction, threads that fact into completion text, project intelligence,
+  component-risk repair, and confirmed Atlas diagram projection, and rerenders
+  confirmed diagrams from the current `SemanticModelIR` before final package
+  scoring. Focused regression proof passed for the computer-vision failed
+  subset, exact source-local `grn-sim` replay wrote governed records in
+  34.820s with clean Atlas copy, exact source-local `hv-033` replay wrote
+  governed records in 45.836s with stale phrases confined to raw proof fields,
+  and the post-fix package-quality confirmation pack passed 61 tests in
+  74.41s. This is not release readiness: the previous local-installable dist is
+  stale and failed installed `hv-033`, so the next boundary is a fresh dist,
+  exact installed failed-subset replay, exact installed `grn-sim` replay, then
+  resumed high-variance discovery and strict release proof.
+
+- 2026-07-05 confirmed projection-custody installed checkpoint: fresh
+  local-installable dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-projection-custody-20260705T170130Z`
+  built from the post-governance tree and passed build-time platform-domain
+  leakage across 224 distinctive fixture terms. Exact installed failed-subset
+  replay for the prior computer-vision visible-result failure passed at hard
+  10/10 with zero issues and create time 44.500s. Exact installed `grn-sim`
+  saved-intent replay then completed governed create in 35.022s with 4 Radar
+  rows, 5 Registry specs, 6 Atlas diagrams, and zero repeated-copy probes for
+  the known escaped strings. This closes the current exact installed blocker
+  proof, but not release readiness: strict release proof with browser-surface,
+  natural rescue, broader unseen variance, generated readback leakage, and temp
+  cleanup scoring still must run against this same dist.
+
+- 2026-07-05 confirmed projection-custody strict release checkpoint: strict
+  installed release-proof tier against the same candidate dist completed with
+  `status=release-ready`, `release_proof_status=passed`, and
+  `release_readiness_status=proven`. The 12-case scientific/deep-tech release
+  shard passed 12/12 at hard 10/10 across cryogenic ion trap calibration,
+  tokamak edge plasma disruption, and microfluidic organ-chip perfusion, with
+  browser proof, generated-readback platform leakage proof, temp cleanup proof,
+  and a real installed natural rescue structured patch-plan case all passed.
+  Standard create timings stayed under 60s with min 42.579s, average 45.175s,
+  and max 46.505s; natural rescue committed governed records after one
+  schema-bound semantic patch in 71.967s CLI time. This proves the strict
+  release-proof tier for the candidate package. Remaining boundary before a
+  final stable checkpoint is broader unseen discovery after this proof and a
+  final dist rebuild after post-proof governance updates.
+
+- 2026-07-05 confirmed projection-custody 60-case discovery checkpoint: the
+  same candidate dist passed a broader installed 60-case scientific/deep-tech
+  regression with zero failures, zero issue findings, zero failure clusters,
+  and hard 10/10 on every case. Domains covered cryogenic ion trap calibration,
+  tokamak edge plasma disruption, microfluidic organ-chip perfusion, coral reef
+  bleaching nowcast, neutrino detector calibration, hyperspectral crop disease
+  mapping, autonomous underwater glider routing, solid electrolyte dendrite
+  imaging, carbon capture solvent degradation, metamaterial acoustic cloak
+  tuning, permafrost methane flux modeling, river flood ensemble assimilation,
+  exoplanet transit spectroscopy, geothermal reservoir tracer inversion,
+  satellite conjunction risk scoring, and fusion materials neutron damage.
+  Standard create timing stayed under 60s with min 41.797s, average 49.788s,
+  and max 55.052s. This is broad discovery proof; next breadth target is the
+  120/240-case discovery lane, and final package handoff still requires a
+  final dist rebuild after governance settles.
+
+- 2026-07-05 confirmed projection-custody 120-case latency checkpoint: the
+  next installed discovery lane against the same candidate dist passed the
+  first two 30-case shards at 60/60, then stopped early in shard 004 on a
+  latency-only blocker. The failed case produced quality-complete governed
+  artifacts with PM, architect, engineer, and domain-expert lenses green, but
+  `greenfield create` exceeded the standard operator budget at 60.570s under
+  cluster `post.confirm.create.exceeded.60s.570s`. Exact failed-subset replay
+  lives at
+  `/private/tmp/odylith-projection-custody-120case-20260705T180927Z/failed-subset-replay/failed-subset-001.cases.json`.
+  Treat this as an open standard-path performance/replay isolation blocker:
+  do not raise the 60s budget, do not classify the case as rescue, do not add
+  project or scientific vocabulary to platform code, and do not resume broad
+  discovery until the exact failed subset has been replayed and any root cause
+  is fixed generically.
+  Exact installed failed-subset replay later passed in isolation at hard 10/10
+  with 47.006s create time, zero issues, complete governed records, and all
+  expert lenses green. This isolates the 60.570s event as discovery-lane
+  concurrency or margin pressure rather than intrinsic project complexity, but
+  the broader 120/240-case lane remains blocked until controlled discovery is
+  clean. The same pass corrected leakage-candidate custody after a raw
+  case-derived scan treated platform-native quality obligations as project
+  domain terms: `case_leakage_term_candidates` now derives fallback source
+  terms from product/title/vocabulary context and confirmed-intent source
+  sections while the default historical platform-leakage proof keeps its
+  224-term breadth. Focused proof passed 38 leakage/preflight tests;
+  source/dist platform leakage passed 224 fixture terms; exact case-aware
+  source/dist leakage passed 69 terms with zero findings.
+  Controlled installed shard replays then closed the stopped 120-case tranche:
+  original shards 001 and 002 passed 60/60, replayed shard 003 passed 30/30,
+  replayed shard 004 passed 30/30, and the aggregate 120-case proof is now
+  120/120 passed with zero issues, hard 10/10 min/max quality, min create
+  44.368s, average 49.031s, and max create 54.498s. Cleanup reduced obsolete
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-*` dist
+  folders from 176 to one active candidate dist and removed the remaining
+  Odylith scratch repo under `/Users/freedom/mock`. This is controlled
+  discovery closure, not final release readiness; the final rebuilt dist still
+  needs strict release proof with browser, natural rescue, leakage, and cleanup
+  gates.
+
 - 2026-07-05 accepted-project final-memory actor-selection checkpoint: the
   broader 120-case controlled-concurrency discovery tranche stopped after 40
   hard-10/10 passes on `quantum dot display aging simulation review board`
@@ -766,6 +869,21 @@ vocabulary, or degraded packages.
   complete broader context-starved projection contracts such as the
   `ProjectionLexicon`, and keep extending the hostile variance corpus whenever
   new real-world failures appear.
+- 2026-07-05 installed release-matrix result: release readiness is blocked
+  again. Working-tree dist
+  `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-guidance-smoke2-20260705T0458`
+  passed local release smoke after managed guidance fixes, then failed the
+  installed release matrix with 12/14 standard cases passing at hard 10/10 and
+  two prewrite failures. `package supply chain exception desk` stopped before
+  manifest creation on inline actor casing drift in backlog domain-intelligence
+  summary/intent fields. `sparse disclosure confirmation` reached the rescue
+  path, classified the domain-expert high-risk-assumption gap as repairable,
+  but emitted an artifact-plan patchset request with empty replacement facts,
+  ledger, and proof-obligation delta, so no executable repair occurred and no
+  governed records were written. The architecture gap is incomplete typed
+  semantic/artifact-plan custody for actor casing and high-risk assumption
+  coverage, plus a repair planner that can label a finding repairable without
+  producing a valid patch.
 
 ## Implementation Slices
 
@@ -3552,3 +3670,99 @@ vocabulary, or degraded packages.
       `structured_rescue_semantic_patch`, and committed governed writes. Final
       remaining delivery action is the stable commit and push of this release
       checkpoint.
+    - Post-commit local release smoke against
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-9842e85d`
+      reopened delivery closure because the fresh install `AGENTS.md` guidance
+      omitted the exact `proposal JSON` confirmed-create guard. This is a
+      release-package custody defect, not a Greenfield semantic-engine defect:
+      `src/odylith/install/agents.py` and the root product scope block still used
+      vague `source/repair JSON`, `narrate retries`, and `JSON review` wording
+      while the smoke guard, asset parity tests, and bundled greenfield guidance
+      required the stricter Odylith-source, hand-authored proposal-JSON,
+      parser/schema, final-summary-only, and no-second-confirmation contract. The
+      fix aligns the managed AGENTS generator and root scope block, adds a
+      regression assertion in
+      `tests/unit/install/test_agents.py`, and leaves the release smoke guard
+      strict. Focused pre-rebuild proof passed
+      `tests/unit/install/test_agents.py` plus
+      `test_release_smoke_requires_installed_greenfield_guidance_uses_confirmed_create`
+      (`10 passed`). Final delivery now requires rebuilding from the fixed tree
+      and passing local release smoke against that rebuilt dist before any
+      release-ready claim.
+    - The first rebuilt proof dist then advanced to the next installed-guidance
+      guard and failed on `AGENTS.md: Product story`, proving the managed root
+      block also needed the minimum confirmation section list, not only
+      proposal-JSON custody. The managed line now names Product story, State
+      object, First complete path, Proof boundary, and the no-wall-of-prose
+      guard, while an unrelated Assist closeout sentence was compacted to keep
+      product and consumer managed blocks under the 11600-byte ceiling. Broader
+      guidance parity proof passed (`12 passed`) and managed block sizes are
+      `consumer_repo=11098`, `product_repo=11321`. Final delivery still requires
+      a fresh rebuild and local release smoke against the post-format fixed dist.
+    - 2026-07-05 post-confirm completion checkpoint: the working tree fixed the
+      two standard installed failures from the guidance-smoke proof without
+      domain-specific exceptions. Inline actor events now render through the
+      backlog text-model actor-subject contract, so protected tokens such as
+      acronyms remain intact while ordinary role words do not leak title casing
+      into sentence fragments. Rescue planning now emits a deterministic,
+      source-anchored `ArtifactPlanIR.assumptions` replacement fact from
+      accepted assumptions plus the accepted proof boundary, while the engine
+      refuses non-executable PatchSet operations before calling repair. The
+      domain-expert lens also no longer requires two rendered terms from a
+      one-term high-risk assumption. Focused proof passed `78` unit tests across
+      quality lenses, rescue planner, patch executor, post-confirm engine, and
+      actor grammar. Source-local replay passed `package supply chain exception
+      desk` in `35.554s` and `sparse disclosure confirmation` in `26.947s`;
+      both wrote governed records, passed final manifests, and had zero scanned
+      `package Manager`, `result result`, `output output`, `proof proof`, or
+      `to flags` hits. A follow-up exact saved `grn-sim` source-local replay of
+      the gene-expression simulation confirmed intent completed in `29.828s`
+      from the current source tree, returned `0`, wrote governed records,
+      produced five Radar markdown records, five Registry specs, six Atlas
+      Mermaid diagrams, and one Casebook record, and had zero scanned
+      `result result`, `output output`, `proof proof`, `to flags`,
+      `package Manager`, or `Launches launches` hits. The same checkpoint
+      corrected assumptions rescue decision-ledger text so
+      `ArtifactPlanIR.assumptions` repairs explain accepted-assumption and
+      proof-boundary custody instead of component-contract custody. Remaining
+      boundary: rebuild a fresh installable dist from this tree, run installed
+      failed-subset proof plus exact grn-sim proof, then widen to maintained
+      matrix/release proof before any release-ready claim.
+    - 2026-07-05 rescue-custody correction: the reviewer found that the new
+      non-executable PatchSet gate repeated an older failed mechanism by using
+      a local non-empty-value predicate. That wrongly treated explicit
+      list-valued SemanticModelIR clears as `no_executable_patchset`, despite
+      the Tribunal planner already distinguishing missing facts from
+      intentional empty semantic lists. The engine now delegates executable
+      fact presence to the Tribunal missing-fact contract. The same review found
+      the deterministic assumptions fallback could invent generic assumption
+      rows when accepted assumptions were absent; the fallback now refuses to
+      produce an `ArtifactPlanIR.assumptions` patch without accepted assumption
+      source rows, and the artifact-plan executor preserves assumption metadata
+      by explicit `ASM-*` id when wording changes. Focused source proof passed
+      `66` PatchSet/rescue tests and the widened post-confirm/Tribunal/semantic
+      patch suite passed `110` tests. A stale proof dist's strict matrix is
+      diagnostic only after these source changes; final release proof must be
+      rebuilt from the corrected tree.
+    - 2026-07-05 current final-dist release proof: rebuilt retained dist
+      `/Volumes/FREEDOM_RESEARCH/research-code/odylith-local-release-0.1.15-final-20260705T200258Z`
+      and reran strict installed release proof against that exact package.
+      Campaign `/private/tmp/odylith-final-release-proof-20260705T201226Z/campaign.json`
+      reported `status=release-ready`, `execution_status=passed`,
+      `release_proof_completed=true`, `release_proof_status=passed`,
+      `release_readiness_status=proven`, and zero failure clusters. The release
+      shard passed 12/12 scientific/deep-tech cases with hard `10/10` release
+      scores, browser proof, platform generated-readback leakage proof, temp
+      cleanup proof, and all PM/architect/engineer/domain-expert lenses green.
+      Standard create timing stayed below 60s with min `45.319s`, average
+      `46.688s`, and max `47.719s`; natural rescue committed governed records
+      through the real installed structured semantic patch path in `74.704s`,
+      under the 90s rescue budget. Exact installed replay of the saved
+      `/Users/freedom/mock/grn-sim` confirmed intent then returned `0` in
+      `38.349s`, wrote governed records, produced 7 Radar markdown files, 5
+      Registry component specs, 6 Atlas Mermaid sources, 12 Atlas rendered
+      assets, 3 Casebook markdown records, and 25 Compass files, and had zero
+      scanned `result result`, `and keeps`, `to flags`, or
+      `Launches launches` hits. Obsolete local release directories and
+      disposable simulation repos were pruned; only the current final dist
+      remains under the research-code root.

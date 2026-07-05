@@ -84,6 +84,96 @@ def test_declared_leakage_terms_are_authoritative_when_present() -> None:
     assert "greenfield proposal" not in terms
 
 
+def test_candidate_terms_include_source_fallback_for_platform_native_declared_terms() -> None:
+    terms = set(
+        leakage.case_leakage_term_candidates(
+            SimpleNamespace(
+                name="sepsis early warning calibration",
+                prompt=(
+                    "Create a greenfield proposal for a sepsis early warning calibration workspace "
+                    "that compares vitals streams, lab results, model thresholds, calibration drift, "
+                    "false-positive reviews, clinician overrides, and fairness evidence before deployment readiness review."
+                ),
+                required_terms=("sepsis", "calibration", "false-positive", "clinician"),
+                leakage_terms=("calibration drift",),
+            )
+        )
+    )
+
+    assert "calibration drift" in terms
+    assert "early warning calibration" in terms
+    assert "greenfield proposal" not in terms
+
+
+def test_source_candidate_terms_exclude_generic_quality_obligation_tail() -> None:
+    terms = set(
+        leakage.case_leakage_term_candidates(
+            SimpleNamespace(
+                name="industrial catalyst sintering monitor field evidence operations desk",
+                prompt=(
+                    "Create a greenfield proposal for a industrial catalyst sintering monitor "
+                    "field evidence operations desk that helps a chemical engineer ingest field "
+                    "observations, normalize measurements, link calibration evidence, flag "
+                    "anomalies, request expert review, and reopen the saved record with the same inputs. "
+                    "The first release must preserve catalyst sintering, reaction monitor, "
+                    "particle growth, conversion curve, temperature ramp, and deactivation signal evidence. "
+                    "Distinctive project vocabulary includes industrial catalyst sintering monitor "
+                    "temperature ramp evidence and industrial catalyst sintering monitor deactivation "
+                    "signal review. It must capture measurement unit, calibration source, quality limit, "
+                    "reproducibility note, avoid unsupported operational claims, show uncertainty or "
+                    "confidence limits, and make the saved result reproducible for product, architecture, "
+                    "engineering, and domain-expert review."
+                ),
+                required_terms=(
+                    "catalyst sintering",
+                    "reaction monitor",
+                    "particle growth",
+                    "conversion curve",
+                ),
+                leakage_terms=(
+                    "industrial catalyst sintering monitor field evidence operations desk",
+                    "industrial catalyst sintering monitor temperature ramp",
+                    "industrial catalyst sintering monitor deactivation signal",
+                ),
+            )
+        )
+    )
+
+    assert "industrial catalyst sintering" in terms
+    assert "catalyst sintering" in terms
+    assert "industrial catalyst sintering monitor temperature ramp" in terms
+    assert "unsupported operational claims" not in terms
+    assert "operational claims" not in terms
+    assert "uncertainty or confidence" not in terms
+
+
+def test_candidate_terms_include_confirmed_intent_source_when_prompt_is_sparse() -> None:
+    terms = set(
+        leakage.case_leakage_term_candidates(
+            SimpleNamespace(
+                name="",
+                prompt="Create a greenfield proposal.",
+                confirmed_intent_markdown=(
+                    "# Product Intent Confirmation\n"
+                    "## Product story\n"
+                    "A quantum communication lab tracks entangled photon pairs and Bell inequality evidence.\n"
+                    "## Proof boundary\n"
+                    "It must avoid unsupported operational claims and show uncertainty or confidence limits.\n"
+                ),
+                required_terms=("bell inequality",),
+                leakage_terms=(),
+            )
+        )
+    )
+
+    assert "quantum communication" in terms
+    assert "entangled photon" in terms
+    assert any("bell inequality" in term for term in terms)
+    assert "unsupported operational claims" not in terms
+    assert "operational claims" not in terms
+    assert "uncertainty or confidence" not in terms
+
+
 def test_stale_declared_leakage_terms_do_not_mask_source_domain_terms() -> None:
     terms = set(
         leakage.case_leakage_terms(

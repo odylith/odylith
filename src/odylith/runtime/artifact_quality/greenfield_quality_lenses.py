@@ -556,7 +556,7 @@ def _high_risk_assumption_covered(statement: str, rendered_terms: set[str]) -> b
     if not terms:
         return True
     covered = terms & rendered_terms
-    required = min(3, max(2, len(terms) // 2))
+    required = min(len(terms), min(3, max(2, len(terms) // 2)))
     return len(covered) >= required
 
 

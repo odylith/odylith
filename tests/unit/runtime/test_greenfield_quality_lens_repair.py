@@ -420,6 +420,54 @@ def test_domain_expert_lens_fails_when_high_risk_assumption_is_not_rendered() ->
     assert "high-risk accepted assumption coverage" in checks["high_risk_assumptions"]["issue"]
 
 
+def test_domain_expert_lens_accepts_short_high_risk_assumption_when_all_terms_rendered() -> None:
+    package = SimpleNamespace(
+        proposal={
+            "semantic_model": {
+                "domain_ontology": {
+                    "proof_boundary": "Release succeeds when evidence custody and decision proof are visible.",
+                },
+                "first_path_contract": {
+                    "capability": "Owner reviews evidence custody and decision proof.",
+                    "visible_result": "Decision proof.",
+                },
+            },
+            "intent": {
+                "state_object": "A report records evidence custody, decision proof, and review status.",
+            },
+            "assumptions": [
+                {
+                    "tier": "user_intent",
+                    "statement": "The first release records evidence only.",
+                }
+            ],
+        },
+        release_selector="0.0.1",
+        release_workstream_ids=("B-001",),
+        rendered_atlas_sources={},
+        rendered_component_specs={
+            "Evidence Review Service": "Evidence custody and decision proof are visible for review."
+        },
+        component_registry_preview=(),
+        next_steps_preview={},
+        backlog_result={},
+        program_result={},
+        project_brief_preview={
+            "critical_assumptions": ["The first release records evidence only."],
+        },
+        accepted_project_preview={},
+        compass_memory_preview={},
+        release_target_result={},
+        release_assignment_result={},
+    )
+
+    report = build_greenfield_quality_lens_report(package)
+    checks = {check["name"]: check for check in report["lenses"]["domain_expert"]["checks"]}
+
+    assert checks["domain_term_coverage"]["status"] == "passed"
+    assert checks["high_risk_assumptions"]["status"] == "passed"
+
+
 def test_quality_lens_requires_non_empty_external_boundary() -> None:
     package = SimpleNamespace(
         proposal={

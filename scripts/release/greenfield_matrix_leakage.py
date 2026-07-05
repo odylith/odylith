@@ -12,7 +12,7 @@ import platform_domain_leakage_check as platform_domain_leakage
 
 
 def case_preflight_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
-    return platform_domain_leakage.case_leakage_terms(case)
+    return platform_domain_leakage.case_leakage_term_candidates(case)
 
 
 def case_declared_leakage_terms(case: GreenfieldMatrixCase) -> tuple[str, ...]:
@@ -40,9 +40,13 @@ def case_generated_leakage_terms(
     platform_baseline_terms: Sequence[str] = (),
 ) -> tuple[str, ...]:
     declared_terms = case_declared_leakage_terms(case)
-    candidate_terms = platform_domain_leakage.case_leakage_terms(case)
+    candidate_terms = platform_domain_leakage.case_leakage_term_candidates(case)
     native_terms = frozenset(str(term).strip() for term in platform_baseline_terms if str(term).strip())
-    declared_present = tuple(term for term in declared_terms if term_present(generated_text, term))
+    declared_present = tuple(
+        term for term in declared_terms if term not in native_terms and term_present(generated_text, term)
+    )
+    if declared_present:
+        return tuple(dict.fromkeys(declared_present))
     supplemental_present = tuple(
         term
         for term in candidate_terms

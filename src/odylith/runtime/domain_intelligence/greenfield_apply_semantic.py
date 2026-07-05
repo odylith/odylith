@@ -28,6 +28,7 @@ class GreenfieldApplySemanticInput:
     title: str
     state_object: str
     first_path: str
+    visible_result: str
     proof_boundary: str
     components: tuple[Mapping[str, Any], ...]
     human_actors: tuple[str, ...]
@@ -55,6 +56,7 @@ def ensure_apply_semantic_model(proposal: dict[str, Any], *, refresh: bool = Fal
             title=compiler_input.title,
             state_object=compiler_input.state_object,
             first_path=compiler_input.first_path,
+            visible_result=compiler_input.visible_result,
             proof_boundary=compiler_input.proof_boundary,
             components=compiler_input.components,
             human_actors=compiler_input.human_actors,
@@ -76,6 +78,7 @@ def apply_semantic_input_mapping(compiler_input: GreenfieldApplySemanticInput) -
         "title": compiler_input.title,
         "state_object": compiler_input.state_object,
         "first_path": compiler_input.first_path,
+        "visible_result": compiler_input.visible_result,
         "proof_boundary": compiler_input.proof_boundary,
         "human_actors": list(compiler_input.human_actors),
         "internal_systems": list(compiler_input.internal_systems),
@@ -117,14 +120,23 @@ def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldAp
         intent=intent,
         brief=brief,
         backlog_rows=backlog_rows,
+        state_object=state_object,
         proof_boundary=proof_boundary,
     )
+    visible_candidate = select_visible_result_candidate(
+        first_path,
+        proof_boundary=proof_boundary,
+        product_view=intent.get("product_view"),
+        state_object=state_object,
+    )
+    visible_result = visible_candidate.text if _is_apply_visible_result_candidate(visible_candidate) else ""
     external_systems, _external_source = _external_system_rows(intent=intent, first_path=first_path)
     return GreenfieldApplySemanticInput(
         schema_version=APPLY_SEMANTIC_INPUT_VERSION,
         title=title,
         state_object=state_object,
         first_path=first_path,
+        visible_result=visible_result,
         proof_boundary=proof_boundary,
         components=tuple(row for row in proposal.get("components", []) if isinstance(row, Mapping)),
         human_actors=tuple(text_values(intent.get("human_actors"))),
@@ -137,6 +149,7 @@ def greenfield_apply_semantic_input(proposal: Mapping[str, Any]) -> GreenfieldAp
             ("title", title_source),
             ("state_object", state_source),
             ("first_path", first_path_source),
+            ("visible_result", visible_candidate.source_path if visible_result else ""),
             ("proof_boundary", proof_source),
             ("components", "proposal.components"),
             ("human_actors", "intent.human_actors"),
@@ -171,6 +184,7 @@ def _first_path_text(
     intent: Mapping[str, Any],
     brief: Mapping[str, Any],
     backlog_rows: list[Mapping[str, Any]],
+    state_object: str,
     proof_boundary: str,
 ) -> tuple[str, str]:
     first_path, source = _first_text_with_source(
@@ -181,7 +195,12 @@ def _first_path_text(
         ("intent.summary", intent.get("summary")),
         fallback=("default.first_path", f"{title} creates, preserves, and reviews the accepted first-path result"),
     )
-    if not _first_path_has_visible_result(first_path, proof_boundary=proof_boundary):
+    if not _first_path_has_visible_result(
+        first_path,
+        proof_boundary=proof_boundary,
+        product_view=intent.get("product_view"),
+        state_object=state_object,
+    ):
         first_path = f"{first_path.rstrip(' .,;:!?')}. The product shows the accepted result for review."
         source = f"{source}+semantic_visible_result_fallback"
     return first_path, source
@@ -231,8 +250,15 @@ def _first_text_with_source(
     return fallback[1], fallback[0]
 
 
-def _first_path_has_visible_result(value: str, *, proof_boundary: str) -> bool:
-    candidate = select_visible_result_candidate(value, proof_boundary=proof_boundary)
+def _first_path_has_visible_result(value: str, *, proof_boundary: str, product_view: Any = "", state_object: Any = "") -> bool:
+    candidate = select_visible_result_candidate(
+        value,
+        proof_boundary=proof_boundary,
+        product_view=product_view,
+        state_object=state_object,
+    )
+    if candidate.source_path == "intent.product_view.visible_result" and word_count(candidate.text) >= 2:
+        return True
     if not candidate.source_path.startswith("first_path."):
         return False
     if candidate.source_path == "first_path.visible_result" and candidate.confidence >= 0.8 and word_count(candidate.text) >= 2:
@@ -249,6 +275,16 @@ def _first_path_has_visible_result(value: str, *, proof_boundary: str) -> bool:
         else _VISIBLE_RESULT_CONFIDENCE_FLOOR
     )
     return candidate.confidence >= confidence_floor
+
+
+def _is_apply_visible_result_candidate(candidate: Any) -> bool:
+    if clean_text(getattr(candidate, "source_kind", "")) not in {
+        "first_path_event",
+        "first_path_event_refined_by_proof_boundary",
+        "intent_context",
+    }:
+        return False
+    return word_count(getattr(candidate, "text", "")) >= 2
 
 
 def _has_compound_first_path_result_shape(value: str) -> bool:

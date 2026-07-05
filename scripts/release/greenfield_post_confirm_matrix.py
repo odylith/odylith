@@ -381,6 +381,8 @@ def _preflight_failure_error(results: Sequence[GreenfieldMatrixResult]) -> str:
     joined = "; ".join(details)
     if "platform custody leaked selected case vocabulary" in joined:
         return "selected greenfield matrix case vocabulary leaked into platform custody: " + joined
+    if "no platform-distinctive sentinel" in joined:
+        return "selected greenfield matrix case vocabulary lacks platform-distinctive sentinels: " + joined
     if "leakage_terms are required" in joined:
         return "custom greenfield matrix cases must declare leakage_terms before platform leakage proof: " + joined
     if "required terms are not grounded" in joined:

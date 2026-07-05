@@ -272,20 +272,45 @@ def _with_deterministic_source_patch_facts(
             continue
         updated = dict(operation)
         updated["replacement_fact"] = replacement
-        updated["decision_ledger_entry"] = {
-            "chosen_interpretation": "component contract output repaired from the localized component source fact",
-            "rationale": "the typed package finding already identified an executable ArtifactPlanIR component contract path",
-            "rejected_interpretations": ["rewriting rendered component spec prose directly"],
-        }
-        updated["proof_obligation_delta"] = {
-            "summary": "No proof obligation change; this patch only corrects the component contract projection source."
-        }
+        updated["decision_ledger_entry"] = _deterministic_patch_decision_ledger(operation, replacement)
+        updated["proof_obligation_delta"] = _deterministic_patch_proof_delta(replacement)
         updated["confidence"] = max(_float_or_zero(operation.get("confidence")), 0.86)
         next_operations.append(updated)
         changed = True
     if not changed:
         return patchset
     return {**dict(patchset), "operations": next_operations}
+
+
+def _deterministic_patch_decision_ledger(
+    operation: Mapping[str, Any],
+    replacement: Mapping[str, Any],
+) -> dict[str, Any]:
+    if normalize_string(replacement.get("path")) == "assumptions":
+        return {
+            "chosen_interpretation": "assumption coverage repaired from accepted assumptions and proof boundary",
+            "rationale": (
+                "the typed quality-lens finding identified ArtifactPlanIR.assumptions and the current proposal "
+                "carried accepted assumptions or proof-boundary source facts"
+            ),
+            "rejected_interpretations": [
+                "rewriting rendered project brief prose directly",
+                "inventing unsupported domain assumptions",
+            ],
+        }
+    return {
+        "chosen_interpretation": "component contract output repaired from the localized component source fact",
+        "rationale": "the typed package finding already identified an executable ArtifactPlanIR component contract path",
+        "rejected_interpretations": ["rewriting rendered component spec prose directly"],
+    }
+
+
+def _deterministic_patch_proof_delta(replacement: Mapping[str, Any]) -> dict[str, str]:
+    if normalize_string(replacement.get("path")) == "assumptions":
+        return {
+            "summary": "No proof obligation change; this patch clarifies accepted assumption coverage before rerender."
+        }
+    return {"summary": "No proof obligation change; this patch only corrects the component contract projection source."}
 
 
 def _deterministic_source_replacement_fact(
@@ -295,12 +320,88 @@ def _deterministic_source_replacement_fact(
     if normalize_string(operation.get("target_layer")) != "artifact_plan":
         return {}
     target_path = normalize_string(operation.get("target_path"))
+    if _assumptions_target(target_path):
+        value = _assumptions_patch_value(proposal)
+        return {"path": "assumptions", "value": value} if value else {}
     if not _component_contract_output_target(target_path):
         return {}
     value = _component_contract_output_patch_value(proposal, target_path)
     if not value:
         return {}
     return {"path": target_path, "value": value}
+
+
+def _assumptions_target(target_path: str) -> bool:
+    return target_path == "assumptions" or target_path.startswith("assumptions[")
+
+
+def _assumptions_patch_value(proposal: Mapping[str, Any]) -> list[str]:
+    statements = _assumption_statements(proposal)
+    if not statements:
+        return []
+    boundary = _accepted_boundary_statement(proposal)
+    if boundary:
+        statement = (
+            "High-risk proof remains review-only until authorized reviewers confirm "
+            f"{boundary} from accepted records."
+        )
+    else:
+        statement = ""
+    if statement and not _statement_already_present(statement, statements):
+        statements.append((f"ASM-{len(statements) + 1:03d}", statement))
+    return [f"{identifier}: {statement.strip(' .')}." for identifier, statement in statements if statement.strip()]
+
+
+def _assumption_statements(proposal: Mapping[str, Any]) -> list[tuple[str, str]]:
+    assumptions = proposal.get("assumptions")
+    if not isinstance(assumptions, Sequence) or isinstance(assumptions, (str, bytes, bytearray)):
+        return []
+    rows: list[tuple[str, str]] = []
+    for index, row in enumerate(assumptions, 1):
+        identifier = f"ASM-{index:03d}"
+        statement = ""
+        if isinstance(row, Mapping):
+            identifier = normalize_string(row.get("id")) or identifier
+            statement = normalize_string(row.get("statement") or row.get("value") or row.get("text"))
+        else:
+            statement = normalize_string(row)
+        if statement:
+            rows.append((identifier, statement.strip(" .")))
+    return rows
+
+
+def _accepted_boundary_statement(proposal: Mapping[str, Any]) -> str:
+    for path in (
+        "semantic_model.domain_ontology.proof_boundary",
+        "intent.proof_boundary",
+        "project_brief.proof_boundary",
+        "intent.state_object",
+    ):
+        text = normalize_string(_nested_value(proposal, path)).strip(" .")
+        if text:
+            return _compact_boundary_statement(text)
+    return ""
+
+
+def _nested_value(source: Mapping[str, Any], path: str) -> Any:
+    current: Any = source
+    for part in path.split("."):
+        if not isinstance(current, Mapping):
+            return ""
+        current = current.get(part)
+    return current
+
+
+def _compact_boundary_statement(value: str) -> str:
+    words = normalize_string(value).strip(" .").split()
+    if len(words) <= 14:
+        return " ".join(words)
+    return " ".join(words[:14])
+
+
+def _statement_already_present(statement: str, rows: Sequence[tuple[str, str]]) -> bool:
+    normalized = normalize_string(statement).strip(" .").casefold()
+    return any(normalize_string(existing).strip(" .").casefold() == normalized for _identifier, existing in rows)
 
 
 def _component_contract_output_target(target_path: str) -> bool:

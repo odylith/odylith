@@ -491,6 +491,16 @@ def inline_actor_subject(value: str, *, fallback: str = "the user") -> str:
     return f"the {_lower_actor_label_start(text)}"
 
 
+def inline_actor_event_fragment(*, label: str, action: str) -> str:
+    actor = inline_actor_subject(label, fallback="")
+    action_text = sentence_fragment(action).strip(" .")
+    if not actor or not action_text:
+        return ""
+    if re.match(r"^(?:can|cannot|could|may|might|must|should|will|would)\b", action_text, flags=re.IGNORECASE):
+        return sentence_fragment(f"{actor} {action_text}")
+    return sentence_fragment(f"{actor} can {action_text}")
+
+
 def _lower_actor_label_start(value: str) -> str:
     text = str(value or "").strip()
     if not text:
@@ -501,9 +511,7 @@ def _lower_actor_label_start(value: str) -> str:
     if _all_plain_title_label_words(text):
         return text.casefold()
     if _protected_actor_label_token(first):
-        if _protected_role_label_after_first_token(text):
-            return text
-        return _lower_role_words(f"{first}{rest}")
+        return _lower_sentence_label_words(f"{first}{rest}")
     lowered = f"{first[:1].casefold()}{first[1:]}{rest}"
     return _lower_role_words(lowered)
 
@@ -527,26 +535,16 @@ def _protected_actor_label_token(value: str) -> bool:
     return any(char.isdigit() for char in token) or (token.isupper() and len(token) > 1)
 
 
-def _protected_role_label_after_first_token(value: str) -> bool:
-    words = [word.strip(".,;:()[]{}") for word in str(value or "").split() if word.strip(".,;:()[]{}")]
-    if len(words) < 2 or not _protected_actor_label_token(words[0]):
-        return False
-    role_words = {
-        "actor",
-        "admin",
-        "administrator",
-        "applicant",
-        "coordinator",
-        "customer",
-        "lead",
-        "manager",
-        "operator",
-        "owner",
-        "participant",
-        "reviewer",
-        "user",
-    }
-    return all(word.casefold() in role_words for word in words[1:])
+def _lower_sentence_label_words(value: str) -> str:
+    words = str(value or "").split()
+    lowered: list[str] = []
+    for word in words:
+        stripped = word.strip(".,;:()[]{}")
+        if _protected_actor_label_token(stripped):
+            lowered.append(word)
+        else:
+            lowered.append(word.casefold())
+    return " ".join(lowered)
 
 
 def _lower_role_words(value: str) -> str:
@@ -677,6 +675,7 @@ __all__ = [
     "generic_title_outcome",
     "has_problem_tension",
     "imperative_action_phrase",
+    "inline_actor_event_fragment",
     "inline_actor_subject",
     "join_actor_labels",
     "lead_actor_label",

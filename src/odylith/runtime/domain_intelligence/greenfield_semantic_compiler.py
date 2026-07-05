@@ -38,6 +38,8 @@ from odylith.runtime.domain_intelligence.greenfield_first_path_fragments import 
 )
 from odylith.runtime.domain_intelligence.greenfield_first_path_semantics import first_path_model
 from odylith.runtime.domain_intelligence.greenfield_first_path_types import FirstPathModel
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import compact_domain_object_label
+from odylith.runtime.domain_intelligence.greenfield_confirmed_text import object_reference_phrase
 from odylith.runtime.domain_intelligence.greenfield_rows import mapping_rows
 from odylith.runtime.domain_intelligence.greenfield_semantic_projection_surfaces import projection_text_values
 from odylith.runtime.domain_intelligence.greenfield_semantic_projection_surfaces import semantic_projection_values
@@ -109,6 +111,8 @@ def select_visible_result_candidate(
     first_path: Any,
     *,
     proof_boundary: Any = "",
+    product_view: Any = "",
+    state_object: Any = "",
     model: FirstPathModel | None = None,
     fallback: str = "the promised user-visible result",
     limit: int = 220,
@@ -147,6 +151,21 @@ def select_visible_result_candidate(
                 source_path=f"first_path.events.{index}",
                 confidence=_step_visible_result_confidence(result, step=step, path_model=path_model),
                 provenance=(step,),
+                limit=limit,
+            )
+        )
+    context_result, context_source, context_provenance = _product_result_from_intent_context(
+        product_view=product_view,
+        state_object=state_object,
+    )
+    if context_result:
+        candidates.append(
+            _candidate(
+                text=context_result,
+                source_kind="intent_context",
+                source_path=context_source,
+                confidence=_candidate_confidence(context_result, source_kind="intent_context"),
+                provenance=context_provenance,
                 limit=limit,
             )
         )
@@ -190,6 +209,8 @@ def select_visible_result_text(
     first_path: Any,
     *,
     proof_boundary: Any = "",
+    product_view: Any = "",
+    state_object: Any = "",
     model: FirstPathModel | None = None,
     fallback: str = "the promised user-visible result",
     limit: int = 220,
@@ -197,6 +218,8 @@ def select_visible_result_text(
     return select_visible_result_candidate(
         first_path,
         proof_boundary=proof_boundary,
+        product_view=product_view,
+        state_object=state_object,
         model=model,
         fallback=fallback,
         limit=limit,
@@ -208,7 +231,12 @@ def compile_greenfield_semantics(proposal: Mapping[str, Any]) -> GreenfieldSeman
     semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
     first_path = _first_nonempty(intent.get("first_path"), _project_brief_value(proposal, "first_path"))
     proof = _first_nonempty(intent.get("proof_boundary"), _project_brief_value(proposal, "proof"))
-    visible = select_visible_result_candidate(first_path, proof_boundary=proof)
+    visible = select_visible_result_candidate(
+        first_path,
+        proof_boundary=proof,
+        product_view=intent.get("product_view"),
+        state_object=intent.get("state_object"),
+    )
     counterexamples: list[GreenfieldSemanticCounterexample] = []
     counterexamples.extend(_first_path_subject_counterexamples(first_path))
     counterexamples.extend(_visible_result_counterexamples(semantic, visible, proof=proof))
@@ -235,9 +263,15 @@ def repair_greenfield_semantic_projections(proposal: dict[str, Any]) -> bool:
     if isinstance(intent, dict):
         changed |= repair_confirmed_intent_semantic_projections(intent)
     if isinstance(proposal.get("backlog"), list):
-        first_path = _first_nonempty(_intent_mapping(proposal).get("first_path"), _project_brief_value(proposal, "first_path"))
-        proof = _first_nonempty(_intent_mapping(proposal).get("proof_boundary"), _project_brief_value(proposal, "proof"))
-        visible = select_visible_result_candidate(first_path, proof_boundary=proof)
+        intent_map = _intent_mapping(proposal)
+        first_path = _first_nonempty(intent_map.get("first_path"), _project_brief_value(proposal, "first_path"))
+        proof = _first_nonempty(intent_map.get("proof_boundary"), _project_brief_value(proposal, "proof"))
+        visible = select_visible_result_candidate(
+            first_path,
+            proof_boundary=proof,
+            product_view=intent_map.get("product_view"),
+            state_object=intent_map.get("state_object"),
+        )
         for row in proposal["backlog"]:
             if isinstance(row, dict):
                 changed |= _clear_bad_projection_fields(row, visible=visible, proof=proof)
@@ -250,7 +284,12 @@ def repair_confirmed_intent_semantic_projections(intent: dict[str, Any]) -> bool
     proof = clean_text(intent.get("proof_boundary"))
     if not first_path:
         return False
-    visible = select_visible_result_candidate(first_path, proof_boundary=proof)
+    visible = select_visible_result_candidate(
+        first_path,
+        proof_boundary=proof,
+        product_view=intent.get("product_view"),
+        state_object=intent.get("state_object"),
+    )
     return _clear_bad_projection_fields(intent, visible=visible, proof=proof)
 
 
@@ -319,6 +358,58 @@ def _product_result_from_proof_boundary(value: Any) -> str:
     candidate = _binary_actor_action_result_object(candidate) or candidate
     candidate = _resolve_result_anaphora(candidate)
     return lowercase_leading_article(nominal_visible_result_object(candidate) or candidate).strip(" .")
+
+
+def _product_result_from_intent_context(
+    *,
+    product_view: Any,
+    state_object: Any,
+) -> tuple[str, str, tuple[str, ...]]:
+    declared_result = _declared_visible_result(product_view)
+    if declared_result:
+        candidate = _product_result_from_visible_outcome(declared_result)
+        if candidate:
+            return candidate, "intent.product_view.visible_result", (clean_text(product_view),)
+    state_text = clean_text(state_object)
+    state_label = compact_domain_object_label(state_text, fallback="") if state_text else ""
+    state_reference = object_reference_phrase(state_label) or state_label
+    if word_count(state_reference) >= 2:
+        candidate = normalize_visible_result_language(state_reference) or state_reference
+        return lowercase_leading_article(candidate).strip(" ."), "intent.state_object", (state_text,)
+    return "", "", ()
+
+
+def _declared_visible_result(value: Any) -> str:
+    text = clean_first_path_text(value)
+    lowered = text.casefold()
+    if not text or "visible result" not in lowered:
+        return ""
+    markers = (
+        "visible result is ",
+        "visible result are ",
+        "visible result: ",
+    )
+    marker_index = -1
+    marker_length = 0
+    for marker in markers:
+        index = lowered.find(marker)
+        if index >= 0 and (marker_index < 0 or index < marker_index):
+            marker_index = index
+            marker_length = len(marker)
+    if marker_index < 0:
+        return ""
+    tail = text[marker_index + marker_length :].strip(" .")
+    return _first_declaration_sentence(tail)
+
+
+def _first_declaration_sentence(value: str) -> str:
+    text = clean_first_path_text(value).strip(" .")
+    if not text:
+        return ""
+    boundaries = [index for index in (text.find(". "), text.find("; "), text.find("\n")) if index >= 0]
+    if boundaries:
+        text = text[: min(boundaries)]
+    return text.strip(" .")
 
 
 def _clause_carries_material_result(step: Any, result: str) -> bool:
@@ -524,8 +615,10 @@ def _candidate_source_priority(candidate: GreenfieldSemanticCandidate) -> int:
         return 3
     if candidate.source_kind.startswith("first_path"):
         return 2
-    if candidate.source_kind == "proof_boundary":
+    if candidate.source_kind == "intent_context":
         return 1
+    if candidate.source_kind == "proof_boundary":
+        return 0
     return 0
 
 
@@ -1074,7 +1167,12 @@ def _repair_bad_project_brief_projection(proposal: dict[str, Any]) -> bool:
     intent = _intent_mapping(proposal)
     first_path = _first_nonempty(intent.get("first_path"), brief.get("first_path"))
     proof = _first_nonempty(intent.get("proof_boundary"), brief.get("proof"), brief.get("project_outcome"))
-    visible = select_visible_result_candidate(first_path, proof_boundary=proof)
+    visible = select_visible_result_candidate(
+        first_path,
+        proof_boundary=proof,
+        product_view=intent.get("product_view"),
+        state_object=intent.get("state_object"),
+    )
     if not any(
         _projection_uses_proof_boundary_as_product_result(
             path,

@@ -252,6 +252,95 @@ def test_compact_registry_component_patch_refuses_unknown_row_key() -> None:
     assert "artifact_plan_patch_ledger" not in proposal
 
 
+def test_path_value_patch_updates_assumption_rows_without_losing_row_shape() -> None:
+    proposal: dict[str, Any] = {
+        "assumptions": [
+            {
+                "id": "ASM-001",
+                "tier": "user_intent",
+                "statement": "The first release records evidence only.",
+                "confirm_when": "The operator confirms evidence-only scope.",
+            },
+            {
+                "id": "ASM-002",
+                "tier": "odylith_assumption",
+                "statement": "External integrations remain sandboxed.",
+                "confirm_when": "A maintainer confirms integration custody before live use.",
+            },
+        ],
+    }
+    operations = [
+        {
+            "operation_id": "GF-PATCH-ASSUMPTIONS",
+            "target_layer": "artifact_plan",
+            "target_path": "proposal.assumptions",
+            "semantic_node_id": "ArtifactPlanIR.assumptions",
+            "issue_code": "quality_lens_gap",
+            "replacement_fact": {
+                "path": "assumptions",
+                "value": [
+                    "ASM-001: The first release records evidence only.",
+                    "ASM-002: External integrations remain sandboxed.",
+                    (
+                        "ASM-003: High-risk decisions require explicit, reviewable confirmation "
+                        "before proof is published."
+                    ),
+                ],
+            },
+        }
+    ]
+
+    changed = apply_artifact_plan_patch_operations(proposal, operations)
+
+    assert changed is True
+    assert [row["id"] for row in proposal["assumptions"]] == ["ASM-001", "ASM-002", "ASM-003"]
+    assert proposal["assumptions"][0]["tier"] == "user_intent"
+    assert proposal["assumptions"][0]["confirm_when"] == "The operator confirms evidence-only scope."
+    assert proposal["assumptions"][1]["tier"] == "odylith_assumption"
+    assert proposal["assumptions"][1]["confirm_when"] == "A maintainer confirms integration custody before live use."
+    assert proposal["assumptions"][2]["tier"] == "user_intent"
+    assert proposal["assumptions"][2]["statement"].endswith(".")
+    assert "artifact_plan_patch_ledger" in proposal
+    assert proposal["artifact_plan_patch_ledger"][0]["applied_paths"] == ("assumptions",)
+
+
+def test_path_value_patch_preserves_assumption_metadata_when_statement_changes() -> None:
+    proposal: dict[str, Any] = {
+        "assumptions": [
+            {
+                "id": "ASM-002",
+                "tier": "odylith_assumption",
+                "statement": "External integrations remain sandboxed.",
+                "confirm_when": "A maintainer confirms integration custody before live use.",
+            }
+        ],
+    }
+    operations = [
+        {
+            "operation_id": "GF-PATCH-ASSUMPTIONS",
+            "target_layer": "artifact_plan",
+            "target_path": "proposal.assumptions",
+            "semantic_node_id": "ArtifactPlanIR.assumptions",
+            "issue_code": "quality_lens_gap",
+            "replacement_fact": {
+                "path": "assumptions",
+                "value": [
+                    "ASM-002: External integrations remain sandboxed until a maintainer approves live use.",
+                ],
+            },
+        }
+    ]
+
+    changed = apply_artifact_plan_patch_operations(proposal, operations)
+
+    assert changed is True
+    row = proposal["assumptions"][0]
+    assert row["id"] == "ASM-002"
+    assert row["tier"] == "odylith_assumption"
+    assert row["confirm_when"] == "A maintainer confirms integration custody before live use."
+    assert row["statement"] == "External integrations remain sandboxed until a maintainer approves live use."
+
+
 def test_path_value_patch_updates_nested_component_contract_field() -> None:
     proposal: dict[str, Any] = {
         "semantic_model": {

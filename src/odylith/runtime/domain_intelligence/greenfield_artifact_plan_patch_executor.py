@@ -84,7 +84,11 @@ def _apply_path_value_patch(proposal: dict[str, Any], replacement: Mapping[str, 
     if not path or "value" not in replacement:
         return ()
     root, tail = _split_root_path(path)
-    if not root or not tail:
+    if not root:
+        return ()
+    if root in ARTIFACT_PLAN_LIST_ROOTS and not tail:
+        return _apply_list_root_patch(proposal, root, replacement.get("value"))
+    if not tail:
         return ()
     if root in ARTIFACT_PLAN_DICT_ROOTS:
         return _set_dict_path(_ensure_dict_root(proposal, root), tail, replacement.get("value"), prefix=root)
@@ -115,6 +119,8 @@ def _apply_dict_root_patch(proposal: dict[str, Any], root: str, patch: Mapping[s
 
 
 def _apply_list_root_patch(proposal: dict[str, Any], root: str, value: Any) -> tuple[str, ...]:
+    if root == "assumptions":
+        return _apply_assumption_list_patch(proposal, value)
     rows = [normalize_string(item) for item in text_values(value) if normalize_string(item)]
     if not rows:
         return ()
@@ -122,6 +128,123 @@ def _apply_list_root_patch(proposal: dict[str, Any], root: str, value: Any) -> t
         return ()
     proposal[root] = rows
     return (root,)
+
+
+def _apply_assumption_list_patch(proposal: dict[str, Any], value: Any) -> tuple[str, ...]:
+    rows = _coerced_assumption_rows(value, existing=_ensure_assumption_rows(proposal))
+    if not rows:
+        return ()
+    if proposal.get("assumptions") == rows:
+        return ()
+    proposal["assumptions"] = rows
+    return ("assumptions",)
+
+
+def _ensure_assumption_rows(proposal: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
+    rows = proposal.get("assumptions")
+    if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes, bytearray)):
+        return ()
+    return tuple(dict(row) for row in rows if isinstance(row, Mapping))
+
+
+def _coerced_assumption_rows(value: Any, *, existing: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    items = value if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)) else [value]
+    by_id = {_assumption_id_key(row.get("id")): dict(row) for row in existing if _assumption_id_key(row.get("id"))}
+    by_statement = {_assumption_key(row.get("statement")): dict(row) for row in existing if _assumption_key(row.get("statement"))}
+    rows: list[dict[str, Any]] = []
+    for item in items:
+        row = _coerced_assumption_row(
+            item,
+            existing_by_id=by_id,
+            existing_by_statement=by_statement,
+            index=len(rows) + 1,
+        )
+        if row:
+            rows.append(row)
+    return rows
+
+
+def _coerced_assumption_row(
+    value: Any,
+    *,
+    existing_by_id: Mapping[str, Mapping[str, Any]],
+    existing_by_statement: Mapping[str, Mapping[str, Any]],
+    index: int,
+) -> dict[str, Any]:
+    if isinstance(value, Mapping):
+        statement = normalize_string(value.get("statement") or value.get("value") or value.get("text"))
+        explicit_id = normalize_string(value.get("id"))
+        base = _existing_assumption_base(
+            explicit_id=explicit_id,
+            statement=statement,
+            existing_by_id=existing_by_id,
+            existing_by_statement=existing_by_statement,
+        )
+        base.update({key: item for key, item in value.items() if normalize_string(key)})
+    else:
+        explicit_id, statement = _split_assumption_id(value)
+        base = _existing_assumption_base(
+            explicit_id=explicit_id,
+            statement=statement,
+            existing_by_id=existing_by_id,
+            existing_by_statement=existing_by_statement,
+        )
+        if statement:
+            base["statement"] = statement
+    statement = normalize_string(base.get("statement") or statement).strip(" .")
+    if not statement:
+        return {}
+    base["id"] = normalize_string(explicit_id or base.get("id")) or f"ASM-{index:03d}"
+    base["tier"] = normalize_string(base.get("tier")) or "user_intent"
+    base["statement"] = f"{statement}."
+    base["confirm_when"] = normalize_string(base.get("confirm_when")) or (
+        "The product owner confirms this accepted assumption before release evidence is trusted."
+    )
+    return base
+
+
+def _existing_assumption_base(
+    *,
+    explicit_id: str,
+    statement: str,
+    existing_by_id: Mapping[str, Mapping[str, Any]],
+    existing_by_statement: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    id_key = _assumption_id_key(explicit_id)
+    if id_key and id_key in existing_by_id:
+        return dict(existing_by_id[id_key])
+    statement_key = _assumption_key(statement)
+    if statement_key and statement_key in existing_by_statement:
+        return dict(existing_by_statement[statement_key])
+    return {}
+
+
+def _split_assumption_id(value: Any) -> tuple[str, str]:
+    text = normalize_string(value)
+    if not text:
+        return "", ""
+    head, separator, tail = text.partition(":")
+    if separator and _assumption_id_token(head):
+        return head.strip(), tail.strip()
+    return "", text
+
+
+def _assumption_id_token(value: Any) -> bool:
+    text = normalize_string(value).upper()
+    return bool(text.startswith("ASM-") and text[4:].isdigit())
+
+
+def _assumption_id_key(value: Any) -> str:
+    text = normalize_string(value).upper()
+    return text if _assumption_id_token(text) else ""
+
+
+def _assumption_key(value: Any) -> str:
+    statement = normalize_string(value).strip(" .")
+    if not statement:
+        return ""
+    _explicit_id, text = _split_assumption_id(statement)
+    return normalize_string(text or statement).strip(" .").casefold()
 
 
 def _apply_row_root_patch(

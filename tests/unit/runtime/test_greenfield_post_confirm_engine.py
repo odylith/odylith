@@ -702,12 +702,30 @@ def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: py
     def build_prewrite(_proposal: dict[str, object], _tribunal: Any) -> SimpleNamespace:
         return SimpleNamespace(package=package, backlog_result={})
 
+    def prepare_context(
+        _current: Mapping[str, Any],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> engine.GreenfieldPostConfirmRepairContext:
+        operation = {
+            **dict(context.patchset_request["operations"][0]),
+            "replacement_fact": {
+                "project_brief": {
+                    "project_outcome": "Release proof is explicit and reviewable.",
+                },
+            },
+        }
+        return replace(
+            context,
+            patchset_request={**dict(context.patchset_request), "operations": [operation]},
+        )
+
     with pytest.raises(engine.GreenfieldPostConfirmEngineError) as exc:
         engine.run_greenfield_post_confirm_engine(
             proposal={},
             release_selector="0.0.1",
             build_prewrite=build_prewrite,
             repair_proposal=lambda current: current,
+            prepare_repair_context=prepare_context,
             proposal_ready=True,
             max_passes=3,
         )
@@ -720,7 +738,7 @@ def test_post_confirm_engine_stops_on_repeated_failure_signature(monkeypatch: py
     assert len(manifest["pass_records"]) == 2
 
 
-def test_post_confirm_engine_commits_noncritical_projection_quality_debt(
+def test_post_confirm_engine_rejects_generated_copy_quality_as_completion_priority_debt(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     package = GreenfieldCompletionPackage(proposal={}, release_selector="0.0.1")
@@ -755,24 +773,21 @@ def test_post_confirm_engine_commits_noncritical_projection_quality_debt(
         lambda current: SimpleNamespace(package=current, initial_report=report, report=report, passes=0, changed=False),
     )
 
-    result = engine.run_greenfield_post_confirm_engine(
-        proposal={},
-        release_selector="0.0.1",
-        build_prewrite=lambda _proposal, _tribunal: SimpleNamespace(package=package, backlog_result={}),
-        repair_proposal=lambda current, _context: current,
-        proposal_ready=True,
-        max_passes=3,
-    )
+    with pytest.raises(engine.GreenfieldPostConfirmEngineError) as exc:
+        engine.run_greenfield_post_confirm_engine(
+            proposal={},
+            release_selector="0.0.1",
+            build_prewrite=lambda _proposal, _tribunal: SimpleNamespace(package=package, backlog_result={}),
+            repair_proposal=lambda current, _context: current,
+            proposal_ready=True,
+            max_passes=3,
+        )
 
-    manifest = result.manifest
-    assert manifest["status"] == engine.POST_CONFIRM_COMPLETION_PRIORITY_STATUS
-    assert manifest["validation_status"] == "failed"
-    assert manifest["stop_reason"] == "completion_priority_quality_debt"
-    assert manifest["completion_priority"]["status"] == "write_allowed_with_projection_quality_debt"
-    assert manifest["completion_priority"]["debt_issue_codes"] == ["generated_copy_quality"]
-    assert manifest["completion_priority"]["hard_blocker_count"] == 0
-    assert manifest["write_transaction"]["prewrite_clean_before_commit"] is False
-    assert manifest["write_transaction"]["quality_debt_guard"] == "typed_noncritical_projection_debt_only"
+    manifest = exc.value.manifest
+    assert manifest["status"] == "failed"
+    assert manifest["issue_codes"] == ["generated_copy_quality"]
+    assert manifest["hard_blocker"] is None
+    assert "completion_priority" not in manifest
 
 
 def test_post_confirm_engine_commits_typed_package_repetition_projection_debt(
@@ -1012,6 +1027,19 @@ def test_post_confirm_engine_passes_quality_lens_context_to_semantic_repair(
         repair_contexts.append(context)
         return {**current, "repaired": True}
 
+    def prepare_context(
+        _current: Mapping[str, Any],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> engine.GreenfieldPostConfirmRepairContext:
+        operation = {
+            **dict(context.patchset_request["operations"][0]),
+            "replacement_fact": {"state_object": "reviewable accepted state for the first complete path"},
+        }
+        return replace(
+            context,
+            patchset_request={**dict(context.patchset_request), "operations": [operation]},
+        )
+
     monkeypatch.setattr(engine, "inspect_greenfield_package", fake_package_repair)
 
     result = engine.run_greenfield_post_confirm_engine(
@@ -1019,6 +1047,7 @@ def test_post_confirm_engine_passes_quality_lens_context_to_semantic_repair(
         release_selector="0.0.1",
         build_prewrite=build_prewrite,
         repair_proposal=repair_callback,
+        prepare_repair_context=prepare_context,
         proposal_ready=True,
         max_passes=3,
     )
@@ -1363,6 +1392,23 @@ def test_post_confirm_auto_tier_extends_to_rescue_after_repairable_failure(
         repair_contexts.append(context)
         return {**current, "semantic_patch_applied": True}
 
+    def prepare_context(
+        _current: Mapping[str, Any],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> engine.GreenfieldPostConfirmRepairContext:
+        operation = {
+            **dict(context.patchset_request["operations"][0]),
+            "replacement_fact": {
+                "project_brief": {
+                    "project_outcome": "Release proof is explicit and reviewable.",
+                },
+            },
+        }
+        return replace(
+            context,
+            patchset_request={**dict(context.patchset_request), "operations": [operation]},
+        )
+
     result = engine.run_greenfield_post_confirm_engine(
         proposal={"intent": {"title": "Rescue Budget Test"}},
         release_selector="0.0.1",
@@ -1371,6 +1417,7 @@ def test_post_confirm_auto_tier_extends_to_rescue_after_repairable_failure(
             backlog_result={},
         ),
         repair_proposal=repair_callback,
+        prepare_repair_context=prepare_context,
         proposal_ready=True,
         repair_tier="auto",
         clock=lambda: next(clock_values, 80.0),
@@ -1808,6 +1855,23 @@ def test_post_confirm_engine_uses_scoped_prewrite_rerender_after_patch_ledger(
         ]
         return repaired
 
+    def prepare_context(
+        _current: Mapping[str, Any],
+        context: engine.GreenfieldPostConfirmRepairContext,
+    ) -> engine.GreenfieldPostConfirmRepairContext:
+        operation = {
+            **dict(context.patchset_request["operations"][0]),
+            "replacement_fact": {
+                "project_brief": {
+                    "project_outcome": "Release proof is now explicit.",
+                },
+            },
+        }
+        return replace(
+            context,
+            patchset_request={**dict(context.patchset_request), "operations": [operation]},
+        )
+
     def fake_rerender_prewrite(
         *,
         current_proposal: Mapping[str, Any],
@@ -1831,6 +1895,7 @@ def test_post_confirm_engine_uses_scoped_prewrite_rerender_after_patch_ledger(
         release_selector="0.0.1",
         build_prewrite=fake_build_prewrite,
         repair_proposal=fake_repair_proposal,
+        prepare_repair_context=prepare_context,
         rerender_prewrite=fake_rerender_prewrite,
         repair_tier="auto",
         max_passes=3,

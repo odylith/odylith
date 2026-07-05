@@ -419,6 +419,119 @@ def test_rescue_patchset_uses_deterministic_component_contract_source_patch(
     }
     assert "tribunal_patch_plan" not in enriched.patchset_request
     assert operation["confidence"] == 0.86
+    assert operation["decision_ledger_entry"]["chosen_interpretation"] == (
+        "component contract output repaired from the localized component source fact"
+    )
+
+
+def test_rescue_patchset_uses_deterministic_assumptions_source_patch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        greenfield_post_confirm_rescue_planner.odylith_reasoning,
+        "provider_from_config",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("host planner should not be called")),
+    )
+    context = engine.GreenfieldPostConfirmRepairContext(
+        pass_index=0,
+        elapsed_seconds=8.0,
+        budget_seconds=90.0,
+        report=GreenfieldCompletionReport(
+            status="failed",
+            version="greenfield-post-confirm-completion-v1",
+            semantic_model=True,
+            artifact_counts={},
+            tribunal_status="passed",
+            issues=("quality lens domain_expert missing high-risk accepted assumption coverage",),
+        ),
+        issues=(),
+        review_report={"version": "odylith.greenfield.post_confirm.review_report.v1"},
+        patchset_request={
+            "version": "odylith.greenfield.post_confirm.patchset_request.v1",
+            "operations": [
+                {
+                    "operation_id": "GF-PATCH-001",
+                    "target_layer": "artifact_plan",
+                    "target_path": "assumptions",
+                    "semantic_node_id": "ArtifactPlanIR.assumptions",
+                    "issue_code": "quality_lens_gap",
+                    "source_finding": "quality_lens",
+                    "affected_projections": ["project_brief"],
+                    "requested_action": "Return an artifact-plan patch.",
+                    "replacement_fact": "",
+                    "confidence": 0.2,
+                }
+            ],
+        },
+        quality_lenses={},
+        semantic_compiler={},
+        repair_tier="rescue",
+        rescue_activated=True,
+    )
+    proposal = {
+        "intent": {
+            "proof_boundary": "Evidence custody and embargo decision.",
+        },
+        "assumptions": [
+            {
+                "id": "ASM-001",
+                "tier": "user_intent",
+                "statement": "The first release records evidence only.",
+            }
+        ],
+    }
+
+    enriched = greenfield_post_confirm_rescue_planner.enrich_rescue_patchset_with_structured_plan(
+        proposal,
+        repair_context=context,
+        repo_root=tmp_path,
+    )
+
+    assert enriched is not None
+    operation = enriched.patchset_request["operations"][0]
+    assert operation["replacement_fact"]["path"] == "assumptions"
+    assert operation["replacement_fact"]["value"] == [
+        "ASM-001: The first release records evidence only.",
+        (
+            "ASM-002: High-risk proof remains review-only until authorized reviewers confirm "
+            "Evidence custody and embargo decision from accepted records."
+        ),
+    ]
+    assert "tribunal_patch_plan" not in enriched.patchset_request
+    assert operation["confidence"] == 0.86
+    assert operation["decision_ledger_entry"]["chosen_interpretation"] == (
+        "assumption coverage repaired from accepted assumptions and proof boundary"
+    )
+    assert operation["proof_obligation_delta"]["summary"] == (
+        "No proof obligation change; this patch clarifies accepted assumption coverage before rerender."
+    )
+
+
+def test_deterministic_assumption_rescue_refuses_to_invent_missing_assumptions() -> None:
+    proposal = {
+        "intent": {
+            "proof_boundary": "Evidence custody and embargo decision.",
+        },
+    }
+
+    assert greenfield_post_confirm_rescue_planner._assumptions_patch_value(proposal) == []
+
+
+def test_deterministic_assumption_rescue_does_not_add_generic_boundary_without_source_boundary() -> None:
+    proposal = {
+        "assumptions": [
+            {
+                "id": "ASM-001",
+                "tier": "user_intent",
+                "statement": "The first release records evidence only.",
+            }
+        ],
+    }
+
+    assert greenfield_post_confirm_rescue_planner._assumptions_patch_value(proposal) == [
+        "ASM-001: The first release records evidence only."
+    ]
 
 
 def test_structured_patch_planner_uses_medium_effort_by_default(monkeypatch: pytest.MonkeyPatch) -> None:

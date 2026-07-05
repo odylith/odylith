@@ -291,6 +291,7 @@ def confirmed_backlog_rows(
     product_view: str = "",
     success_metrics: list[str] | None = None,
     evidence_requirements: list[str] | None = None,
+    visible_result: str = "",
 ) -> list[dict[str, Any]]:
     component_ids = [str(row["component_id"]) for row in components]
     state_label = _compact_domain_object_label(state_object, fallback=f"{label} state")
@@ -336,7 +337,7 @@ def confirmed_backlog_rows(
     first_path_full_capability = backlog_language.dedupe_capability_phrase(
         backlog_text.capability_action_clause(backlog_text.sentence_fragment(clauses.capability_chain) or first_path_capability)
     )
-    semantic_visible_result = select_visible_result_candidate(
+    semantic_visible_result = backlog_text.sentence_fragment(visible_result) or select_visible_result_candidate(
         first_path_for_clauses,
         proof_boundary=proof_boundary,
         model=clauses.model,

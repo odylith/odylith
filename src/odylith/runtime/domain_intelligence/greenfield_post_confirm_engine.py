@@ -15,6 +15,7 @@ from typing import Any
 from odylith.runtime.common.safe_ledger_text import safe_ledger_value
 from odylith.runtime.common.value_coercion import normalize_string
 from odylith.runtime.common.value_coercion import normalize_string_list
+from odylith.runtime.common.value_coercion import normalize_token
 from odylith.runtime.artifact_quality.greenfield_package_repetition import (
     package_repetition_sample_matches_source_truth,
 )
@@ -56,6 +57,7 @@ from odylith.runtime.domain_intelligence.proposal_tribunal import (
     raise_for_failed_greenfield_tribunal,
 )
 from odylith.runtime.domain_intelligence.proposal_tribunal import run_greenfield_tribunal
+from odylith.runtime.reasoning import tribunal_patch_planner
 
 
 POST_CONFIRM_ENGINE_VERSION = "greenfield-post-confirm-fixpoint-v1"
@@ -290,6 +292,10 @@ def run_greenfield_post_confirm_engine(
         )
         if prepare_repair_context is not None:
             repair_context = prepare_repair_context(current, repair_context)
+        if not _patchset_has_executable_operations(repair_context.patchset_request):
+            last_repair_patchset_request = repair_context.patchset_request
+            stop_reason = "no_executable_patchset"
+            break
         if _patchset_has_operations(repair_context.patchset_request):
             last_repair_patchset_request = repair_context.patchset_request
         current = _repair_proposal_with_context(
@@ -486,7 +492,6 @@ def _completion_priority_debt_issue(issue: GreenfieldPostConfirmIssue, *, packag
         "artifact_shape_drift",
         "atlas_render_quality",
         "component_contract_quality",
-        "generated_copy_quality",
         "package_repetition",
         "proposal_quality_gate",
     }
@@ -560,6 +565,46 @@ def _attach_completion_priority_debt(
 def _patchset_has_operations(patchset_request: Mapping[str, Any]) -> bool:
     operations = patchset_request.get("operations")
     return isinstance(operations, Sequence) and not isinstance(operations, (str, bytes)) and bool(operations)
+
+
+def _patchset_has_executable_operations(patchset_request: Mapping[str, Any]) -> bool:
+    operations = patchset_request.get("operations")
+    if not isinstance(operations, Sequence) or isinstance(operations, (str, bytes, bytearray)):
+        return False
+    return any(_operation_has_executable_replacement(operation) for operation in operations if isinstance(operation, Mapping))
+
+
+def _operation_has_executable_replacement(operation: Mapping[str, Any]) -> bool:
+    replacement = operation.get("replacement_fact")
+    if tribunal_patch_planner.replacement_fact_missing(replacement, operation):
+        return False
+    layer = normalize_token(operation.get("target_layer"))
+    if layer == "semantic_model":
+        return isinstance(replacement, Mapping) or (
+            isinstance(replacement, Sequence) and not isinstance(replacement, (str, bytes, bytearray))
+        )
+    if layer == "artifact_plan":
+        return _artifact_plan_replacement_present(replacement)
+    return isinstance(replacement, Mapping)
+
+
+def _artifact_plan_replacement_present(value: Any) -> bool:
+    if not isinstance(value, Mapping):
+        return False
+    path = normalize_string(value.get("path") or value.get("target_path"))
+    if path and "value" in value:
+        return _patch_value_present(value.get("value"))
+    return any(_patch_value_present(item) for key, item in value.items() if normalize_string(key))
+
+
+def _patch_value_present(value: Any) -> bool:
+    if isinstance(value, str):
+        return bool(normalize_string(value))
+    if isinstance(value, Mapping):
+        return any(_patch_value_present(item) for item in value.values())
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return any(_patch_value_present(item) for item in value)
+    return value not in (None, "")
 
 
 def _direct_rerender_projections(issues: Sequence[GreenfieldPostConfirmIssue]) -> tuple[str, ...]:

@@ -1785,6 +1785,56 @@
   subjects as actors, summarize actor rows by parsed path shape rather than
   raw comma splitting, and strip action-state morphology only when it is
   ungrounded/generated rather than accepted product language.
+  Fresh installed release-matrix proof on 2026-07-05 against working-tree dist
+  `odylith-local-release-0.1.15-guidance-smoke2-20260705T0458` reopened this
+  bug before any release-ready claim. The run passed 12 of 14 standard
+  installed cases at hard 10/10 with complete Radar, Registry, Atlas, trace,
+  prompt, and expert-lens evidence, and both rescue smoke cases passed in
+  53.674s and 66.516s. Two standard cases still failed before governed writes:
+  `package supply chain exception desk` failed in 29.098s because inline actor
+  casing drift reached `proposal.backlog.0.domain_intelligence.summary` and
+  `proposal.backlog.0.domain_intelligence.intent.0` before a quality manifest
+  existed; `sparse disclosure confirmation` failed in 26.004s because the
+  domain-expert quality lens found missing high-risk accepted-assumption
+  coverage. The sparse case is especially important: the manifest classified
+  the finding as repairable `quality_lens_gap` owned by
+  `artifact_plan_projector`, but the generated patchset request carried empty
+  `replacement_fact`, `decision_ledger_entry`, and
+  `proof_obligation_delta`, so rescue activation reran without an executable
+  artifact-plan repair and rolled back the write transaction. The failed
+  mechanisms are generic and must not be fixed with project vocabulary,
+  regex allowlists, weakened gates, or rendered-prose patching. Next repair
+  must move inline actor casing custody and high-risk assumption coverage into
+  typed semantic/artifact-plan facts, and the rescue planner must either emit
+  an executable structured patch with source-grounded replacement facts or
+  fail early with a precise non-repairable blocker instead of burning passes.
+  Source-local repair learning on 2026-07-05: `package supply chain exception
+  desk` was fixed by moving inline actor event rendering through the existing
+  backlog text-model actor-subject contract, preserving protected tokens while
+  lowering ordinary role words before domain-intelligence prose is rendered.
+  `sparse disclosure confirmation` exposed two separate generic failures:
+  the artifact-plan rescue planner had no source-anchored fallback for
+  `ArtifactPlanIR.assumptions`, and the domain-expert quality lens could mark
+  a one-term accepted assumption such as `The first release records evidence
+  only.` as high-risk while requiring two rendered terms, an impossible gate.
+  The repair adds an executable assumptions PatchSet fact derived from accepted
+  assumptions and the accepted proof boundary, keeps rescue patch execution
+  fail-closed when no concrete fact exists, and corrects the lens math so
+  short assumptions must cover all available meaningful terms rather than an
+  impossible minimum. Source-local replay passed both failed cases after the
+  fix: `package supply chain exception desk` completed in 35.554s, `sparse
+  disclosure confirmation` completed in 26.947s, both wrote governed records
+  with passed manifests, and the scanned bad-copy sentinels were clean.
+  Follow-up source-local proof on 2026-07-05 reran the exact saved grn-sim
+  gene-expression simulation confirmed intent in a disposable repo from the
+  current source tree. The replay completed in 29.828s with return code 0,
+  wrote governed records, produced five Radar markdown records, five Registry
+  specs, six Atlas Mermaid diagrams, and one Casebook record, and the scanned
+  duplicate-copy sentinels for result result, output output, proof proof, to
+  flags, package Manager, and Launches launches were all clean. The same pass
+  also corrected the assumptions rescue ledger so ArtifactPlanIR.assumptions
+  repair explains accepted-assumption and proof-boundary custody instead of
+  incorrectly describing a Registry component-contract repair.
 
 - Related Incidents/Bugs: CB-208
 

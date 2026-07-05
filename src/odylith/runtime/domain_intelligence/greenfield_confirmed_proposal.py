@@ -44,6 +44,7 @@ from odylith.runtime.domain_intelligence.greenfield_semantic_quality import firs
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import first_path_outcome_phrase
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import health_safety_obligations
 from odylith.runtime.domain_intelligence.greenfield_semantic_quality import normalize_project_title
+from odylith.runtime.domain_intelligence.greenfield_semantic_compiler import select_visible_result_candidate
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import build_greenfield_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_semantic_model import semantic_model_mapping
 from odylith.runtime.domain_intelligence.greenfield_product_risks import build_product_risks
@@ -150,6 +151,17 @@ def build_confirmed_greenfield_proposal(
         "ownership": f"{label_slug}-ownership-proof",
         "proof_review": f"{label_slug}-release-proof-review",
     }
+    visible_candidate = select_visible_result_candidate(
+        first_path,
+        proof_boundary=proof_boundary,
+        product_view=product_view_summary,
+        state_object=state_object,
+    )
+    semantic_visible_result = (
+        visible_candidate.text
+        if visible_candidate.source_path != "proof_boundary" and len(visible_candidate.text.split()) >= 2
+        else ""
+    )
     backlog_rows = confirmed_backlog_rows(
         label=label,
         parent_title=parent_title,
@@ -173,12 +185,14 @@ def build_confirmed_greenfield_proposal(
         components=release_components,
         diagram_slugs=diagram_slugs,
         evidence_requirements=evidence_requirements,
+        visible_result=semantic_visible_result,
     )
     semantic_model = semantic_model_mapping(
         build_greenfield_semantic_model(
             title=product_title,
             state_object=state_object,
             first_path=first_path,
+            visible_result=semantic_visible_result,
             proof_boundary=proof_boundary,
             components=components,
             human_actors=human_actors,
@@ -313,6 +327,7 @@ def build_confirmed_greenfield_proposal(
             ambiguities=ambiguities,
             non_goals=non_goals,
             evidence_requirements=evidence_requirements,
+            visible_result=semantic_visible_result,
         ),
         "project_intelligence": _project_intelligence(
             label=label,
@@ -331,6 +346,7 @@ def build_confirmed_greenfield_proposal(
             internal_systems=internal_systems,
             external_systems=external_systems,
             non_goals=non_goals,
+            visible_result=semantic_visible_result,
         ),
         "program": confirmed_program(
             label=label,
@@ -480,6 +496,7 @@ def _project_intelligence(
     internal_systems: list[str] | None = None,
     external_systems: list[str] | None = None,
     non_goals: list[str] | None = None,
+    visible_result: str = "",
 ) -> dict[str, Any]:
     label_lower = _sentence_label(label)
     state_label = _domain_object_label(state_object, fallback=f"{label} state")
@@ -492,12 +509,12 @@ def _project_intelligence(
     product_view_summary = _short_summary(product_view, limit=320) or "The first release stays narrow until source-backed behavior and review evidence exist."
     first_path_summary = _short_summary(first_path, limit=360)
     proof_summary = proof_claim_summary(proof_boundary, limit=320)
-    visible_result = first_path_outcome_phrase(
+    visible_result_text = _short_summary(visible_result, limit=260) or first_path_outcome_phrase(
         first_path,
         proof_boundary=proof_boundary,
         fallback=f"{state_lower} result",
     )
-    visible_result_ref = _object_reference_phrase(visible_result) or f"the {state_lower} result"
+    visible_result_ref = _object_reference_phrase(visible_result_text) or f"the {state_lower} result"
     state_summary = _state_detail_summary(state_object, state_label=state_label, limit=260)
     actors = join_actor_labels(human_actors) or _short_summary(customer, limit=220) or f"the first {label_lower} operator and reviewer"
     actor_boundary = _actor_boundary_summary(human_actors, fallback=actors)
@@ -540,7 +557,8 @@ def _project_intelligence(
             f"{evidence_label} owns release readiness evidence, release decision, and validation references.",
         ],
         "evidence": [
-            f"Review evidence must show the promised product result: {proof_summary}",
+            f"Review evidence must show the promised product result: {visible_result_ref}",
+            f"Review evidence must prove blocked, replay, and release-decision behavior against the proof boundary: {proof_summary}",
             *[_short_summary(metric, limit=260) for metric in (success_metrics or [])[:3]],
             f"Simulated or sandbox evidence is acceptable for release {release}; live integrations need an explicit later contract.",
         ],

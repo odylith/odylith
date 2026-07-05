@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 import sys
@@ -34,6 +34,7 @@ def matrix_preflight_failures(
     enforce_required_stressors: bool = True,
 ) -> tuple[MatrixPreflightFailure, ...]:
     issues_by_case: dict[GreenfieldMatrixCase, list[str]] = {}
+    terms_by_case = {case: case_preflight_leakage_terms(case) for case in cases}
     for case in cases:
         missing_terms = ungrounded_required_terms(
             prompt=case.prompt,
@@ -47,7 +48,7 @@ def matrix_preflight_failures(
                 "required terms are not grounded in the prompt or confirmed intent: "
                 + ", ".join(missing_terms),
             )
-        if not case_preflight_leakage_terms(case):
+        if not terms_by_case.get(case):
             _add_issue(
                 issues_by_case,
                 case,
@@ -58,16 +59,22 @@ def matrix_preflight_failures(
         detail = "selected case set is missing required stressor classes: " + ", ".join(missing_stressors)
         for case in cases:
             _add_issue(issues_by_case, case, detail)
-    for finding in _platform_domain_leakage_findings(
+    findings = _platform_domain_leakage_findings(
         repo_root=repo_root,
         release_dir=release_dir,
-        cases=cases,
-    ):
-        term = str(finding.term).strip()
-        detail = f"platform custody leaked selected case vocabulary `{term}` at {finding.location}:{finding.line}"
-        matched = [case for case in cases if term in set(case_preflight_leakage_terms(case))]
-        for case in matched or cases:
-            _add_issue(issues_by_case, case, detail)
+        terms_by_case=terms_by_case,
+    )
+    platform_native_terms = frozenset(str(finding.term).strip() for finding in findings if str(finding.term).strip())
+    for case, terms in terms_by_case.items():
+        usable_terms = tuple(term for term in terms if term not in platform_native_terms)
+        if terms and not usable_terms:
+            leaked = ", ".join(terms[:6])
+            _add_issue(
+                issues_by_case,
+                case,
+                "selected case leakage vocabulary has no platform-distinctive sentinel; "
+                f"all candidate terms already exist in platform custody: {leaked}",
+            )
     return tuple(
         MatrixPreflightFailure(
             case=case,
@@ -91,10 +98,10 @@ def _platform_domain_leakage_findings(
     *,
     repo_root: Path,
     release_dir: Path,
-    cases: Sequence[GreenfieldMatrixCase],
+    terms_by_case: Mapping[GreenfieldMatrixCase, Sequence[str]],
 ) -> tuple[Any, ...]:
     terms = tuple(
-        sorted({term for case in cases for term in case_preflight_leakage_terms(case)})
+        sorted({term for terms in terms_by_case.values() for term in terms})
     )
     if not terms:
         return ()

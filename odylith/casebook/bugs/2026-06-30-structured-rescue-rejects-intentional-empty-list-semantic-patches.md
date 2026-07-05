@@ -64,3 +64,23 @@
   synthetic rescue passed in 38.917s, and natural provider-backed structured
   rescue passed in 60.926s with one accepted Tribunal operation, no rejections,
   `structured_rescue_semantic_patch` repaired, and governed writes committed.
+
+- Follow-Up Failed Mechanism (2026-07-05): A later executable-PatchSet gate
+  reintroduced this class one layer downstream. The gate used a local
+  non-empty-value predicate and classified an explicit SemanticModelIR list
+  clear such as `{"external_systems": []}` as `no_executable_patchset` before
+  repair could run, even though the Tribunal planner already treats that
+  payload as an intentional replacement fact.
+
+- Follow-Up Solution (2026-07-05): Domain Intelligence now delegates
+  executable replacement-fact presence to the Tribunal patch planner's
+  missing-fact contract instead of duplicating a local emptiness rule.
+  Blank strings and absent facts remain blockers; explicit list-valued
+  SemanticModelIR clears remain executable typed repairs.
+
+- Follow-Up Verification (2026-07-05): Focused source proof includes
+  `tests/unit/runtime/test_greenfield_post_confirm_executable_patchset.py`,
+  which asserts explicit empty semantic list facts are executable, plus the
+  widened post-confirm rescue and semantic patch suite (`110 passed` across
+  PatchSet, artifact-plan executor, post-confirm engine, Tribunal planner, and
+  semantic patch executor tests).

@@ -133,6 +133,11 @@ def test_managed_block_adds_maintainer_overlay_for_product_repo() -> None:
     assert "rerender only the owned surface" in block
     assert "Claude direct-edit and Bash PostToolUse hooks stay silent on success" in block
     assert "Claude Stop is memory/logging only" in block
+    assert "Do not inspect Odylith source" in block
+    assert "hand-author/repair proposal JSON" in block
+    assert "parser/schema retries" in block
+    assert "ask the operator to inspect proposal JSON or for second confirmation" in block
+    assert "Surface only final summary or blockers" in block
     assert len(block.encode("utf-8")) < 11600
 
 

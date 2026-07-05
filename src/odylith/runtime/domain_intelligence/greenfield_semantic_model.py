@@ -174,6 +174,7 @@ def build_greenfield_semantic_model(
     first_path: str,
     proof_boundary: str,
     components: Sequence[Mapping[str, Any]],
+    visible_result: str = "",
     human_actors: Sequence[str] = (),
     internal_systems: Sequence[str] = (),
     external_systems: Sequence[str] = (),
@@ -193,6 +194,7 @@ def build_greenfield_semantic_model(
         proof_boundary=proof_boundary,
         non_goals=non_goals,
         human_actors=human_actors,
+        visible_result=visible_result,
     )
     component_refs = tuple(
         _component_ref(
@@ -273,11 +275,12 @@ def _first_path_contract(
     proof_boundary: str,
     non_goals: Sequence[str],
     human_actors: Sequence[str],
+    visible_result: str = "",
 ) -> FirstPathContract:
     model = first_path_model(first_path)
     required_fields = tuple(_required_fields(model.steps, state_object=state_object))
     material = _clean(model.material_action) or (model.steps[0] if model.steps else "")
-    visible_result = first_path_outcome_phrase(
+    visible_result = _clean(visible_result) or first_path_outcome_phrase(
         first_path,
         proof_boundary=proof_boundary,
         fallback=_clean(model.visible_outcome) or "the first-path result",
@@ -691,8 +694,30 @@ def _proof_checkpoint_source(contract: FirstPathContract) -> str:
     for event in reversed(contract.events):
         text = _clean(event.text)
         if event.visible_result and text and not _is_synthetic_visible_result_event(text, visible_result):
+            if _event_only_wraps_declared_visible_result(text, visible_result):
+                continue
             return text
     return visible_result
+
+
+def _event_only_wraps_declared_visible_result(text: str, visible_result: str) -> bool:
+    event_text = _clean(text).strip(" .")
+    declared = _clean(visible_result).strip(" .")
+    if not event_text or not declared:
+        return False
+    event_terms = set(ordered_terms(event_text, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS))
+    declared_terms = set(ordered_terms(declared, stopwords=_SEMANTIC_MODEL_TERM_STOPWORDS))
+    if len(declared_terms) < 2 or len(event_terms & declared_terms) < 2:
+        return False
+    event_words = word_count(event_text)
+    declared_words = word_count(declared)
+    if event_words < declared_words + 5:
+        return False
+    return (
+        looks_like_action_clause(event_text)
+        or bool(_actor_led_base_action_phrase(event_text))
+        or bool(re.search(r"\bcan\s+[A-Za-z]+\b", event_text, re.IGNORECASE))
+    )
 
 
 def _is_synthetic_visible_result_event(text: str, visible_result: str) -> bool:

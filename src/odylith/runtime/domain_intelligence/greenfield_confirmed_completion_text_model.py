@@ -148,6 +148,11 @@ def _actor_led_base_action_parts(value: str) -> tuple[str, str]:
 
 
 def outcome_phrase(proposal: Mapping[str, Any]) -> str:
+    semantic = proposal.get("semantic_model") if isinstance(proposal.get("semantic_model"), Mapping) else {}
+    contract = semantic.get("first_path_contract") if isinstance(semantic.get("first_path_contract"), Mapping) else {}
+    semantic_visible = _clean(contract.get("visible_result")).strip(" .")
+    if len(semantic_visible.split()) >= 2:
+        return semantic_visible
     return first_path_outcome_phrase(
         first_path(proposal),
         proof_boundary=proof_boundary(proposal),

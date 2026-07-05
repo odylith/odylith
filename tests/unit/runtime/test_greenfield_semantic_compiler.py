@@ -143,6 +143,57 @@ def test_semantic_compiler_keeps_object_list_results_ahead_of_proof_boundary() -
     assert "workspace result" not in spacecraft_candidate.text
 
 
+def test_semantic_compiler_uses_confirmed_context_before_proof_for_capability_path() -> None:
+    first_path = (
+        "A computer vision defect adjudication system user can track image sensor calibration, labeled defect classes, "
+        "model confidence, reviewer overrides, production lot disposition, and traceable proof."
+    )
+    product_view = (
+        "Computer Vision Defect Adjudication System earns trust when a computer vision defect adjudication system user "
+        "can track image sensor calibration, labeled defect classes, model confidence, reviewer overrides, production lot "
+        "disposition, and traceable proof. The visible result is the computer vision defect adjudication result. "
+        "The result remains visible, blocked when needed, and reviewable."
+    )
+    state_object = (
+        "A computer vision defect adjudication result record tracks the actor, source input, current status, owner, "
+        "blocker, handoff, evidence, and version history for the first path."
+    )
+    proof = (
+        "Release 0.0.1 succeeds when a computer vision defect adjudication system user can complete one representative path. "
+        "The product shows the computer vision defect adjudication result, handles missing or invalid input with a clear "
+        "blocker, and keeps replayable evidence for review."
+    )
+
+    candidate = select_visible_result_candidate(
+        first_path,
+        proof_boundary=proof,
+        product_view=product_view,
+        state_object=state_object,
+    )
+    proposal = ensure_apply_semantic_model(
+        {
+            "intent": {
+                "title": "Computer Vision Defect Adjudication System",
+                "first_path": first_path,
+                "product_view": product_view,
+                "state_object": state_object,
+                "proof_boundary": proof,
+            },
+        },
+        refresh=True,
+    )
+    report = compile_greenfield_semantics(proposal)
+
+    assert candidate.source_kind == "intent_context"
+    assert candidate.source_path == "intent.product_view.visible_result"
+    assert candidate.text == "the computer vision defect adjudication result"
+    assert proposal["apply_semantic_input"]["source_paths"]["visible_result"] == "intent.product_view.visible_result"
+    assert proposal["semantic_model"]["first_path_contract"]["visible_result"] == candidate.text
+    assert "accepted result" not in proposal["apply_semantic_input"]["first_path"].casefold()
+    assert report.status == "passed"
+    assert report.quality_scores["proof_result_separation"] == 1.0
+
+
 def test_semantic_compiler_rejects_object_led_workflow_subjects() -> None:
     report = compile_greenfield_semantics(
         {

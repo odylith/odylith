@@ -18,10 +18,23 @@ from tests.unit.runtime.greenfield_proposal_fixtures import _seed_empty_governan
 
 
 def _proposal(tmp_path: Path) -> dict[str, object]:
-    return _governed_greenfield_fixture(
+    proposal = _governed_greenfield_fixture(
         tmp_path,
         "Draft a greenfield proposal for a trip comparison workspace",
     )
+    brief = proposal.get("project_brief") if isinstance(proposal.get("project_brief"), dict) else {}
+    brief["purpose"] = (
+        "Travel planners face risk when cost, timing, accessibility, and policy constraints are compared in separate "
+        "notes, so the workspace keeps the operational tension visible before broader booking automation is considered."
+    )
+    brief["project_outcome"] = (
+        "A reviewer can inspect the selected itinerary comparison, unresolved constraints, source evidence, risk "
+        "tradeoffs, and release decision before implementation expands scope."
+    )
+    gates = brief.get("coding_readiness_gates")
+    if isinstance(gates, list) and gates:
+        gates[0] = "The accepted story names the trip-planning actor, comparison state, first path, and unresolved assumptions."
+    return proposal
 
 
 def _stub_apply_refreshes(monkeypatch) -> None:

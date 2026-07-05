@@ -6,7 +6,7 @@
   copy or claim completion beyond fresh proof.
 - Odylith Discipline signals may inform closeout only after proof, benchmark, or
   visible-intervention evidence supports the statement.
-Last updated: 2026-07-04
+Last updated: 2026-07-05
 
 
 Last updated (UTC): 2026-04-17
@@ -296,6 +296,9 @@ end-of-work outcomes instead of canned self-promotion.
 This section captures synchronized requirement and contract signals derived from component-linked timeline evidence.
 
 <!-- registry-requirements:start -->
+- **2026-07-05 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 2 tracked artifact references retained.
+  - Scope: B-142
+  - Evidence: 2 tracked artifact references retained
 - **2026-06-28 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 7 tracked artifact references retained.
   - Scope: B-142
   - Evidence: 7 tracked artifact references retained
@@ -309,8 +312,6 @@ This section captures synchronized requirement and contract signals derived from
   - Evidence: 4 tracked artifact references retained
 - **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with workstream scope preserved; 4 tracked artifact references retained.
   - Scope: B-030
-  - Evidence: 4 tracked artifact references retained
-- **2026-04-27 · Implementation:** Implementation evidence linked this component to governed work with 4 tracked artifact references retained.
   - Evidence: 4 tracked artifact references retained
 <!-- registry-requirements:end -->
 

@@ -86,6 +86,8 @@ def _engineer_issues(identity: str, lowered: str) -> list[str]:
     issues: list[str] = []
     if re.search(r"\b(?:can|could|should|must|will|would)\s+\w+\s+(?:controls|turns|assigns|tracks|captures)\b", lowered):
         issues.append(f"{identity} has modal/base-form drift in an action chain")
+    if re.search(r"\b\w+\s+(?:owns|keeps|stores|records|shows|presents)\s+(?:maintains|tracks|records|shows|presents)\s+\w+\b", lowered):
+        issues.append(f"{identity} has finite/finite ownership verb drift")
     if re.search(r"\b(?:controls|turns|assigns|tracks|captures)\s+[^.]{0,80}\s+with\s+success\b", lowered):
         issues.append(f"{identity} uses implementation-operation text as a success metric")
     return issues

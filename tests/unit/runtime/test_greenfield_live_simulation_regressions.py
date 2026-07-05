@@ -722,3 +722,43 @@ def test_use_to_relative_prompt_does_not_leak_compact_mixed_action_memory(tmp_pa
     assert "use to choose" not in rendered
     assert "review to choose" not in rendered
     assert report.issues == ()
+
+
+def test_computer_vision_defect_result_slot_rerenders_confirmed_artifacts(tmp_path: Path) -> None:
+    prompt = (
+        "Create a greenfield proposal for a computer vision defect adjudication system that tracks image sensor "
+        "calibration, labeled defect classes, model confidence, reviewer overrides, production lot disposition, "
+        "and traceable proof."
+    )
+
+    proposal, prewrite = _proposal_and_prewrite(tmp_path / "computer-vision", prompt)
+    report = build_greenfield_package_report(prewrite.package)
+    rendered_atlas = json.dumps(prewrite.package.rendered_atlas_sources, sort_keys=True)
+    rendered_public_artifacts = json.dumps(
+        {
+            "backlog": proposal["backlog"],
+            "project_brief": prewrite.package.project_brief_preview,
+            "next_steps": prewrite.package.next_steps_preview,
+            "atlas": prewrite.package.rendered_atlas_sources,
+        },
+        default=str,
+        sort_keys=True,
+    ).casefold()
+    accepted_project_intelligence = json.dumps(
+        prewrite.package.accepted_project_preview["proposal"]["project_intelligence"],
+        default=str,
+        sort_keys=True,
+    ).casefold()
+
+    assert report.issues == ()
+    assert greenfield_rendered_package_quality_issues(prewrite.package) == ()
+    assert proposal["semantic_model"]["first_path_contract"]["visible_result"] == (
+        "the computer vision defect adjudication result"
+    )
+    assert "Proof result<br/>the computer vision defect<br/>adjudication result" in rendered_atlas
+    assert "Visible result<br/>the computer vision defect<br/>adjudication result" in rendered_atlas
+    assert "result result" not in rendered_public_artifacts
+    assert "the computer vision defect adjudication result, handles" not in rendered_public_artifacts
+    assert "the computer vision defect adjudication result, handles" not in accepted_project_intelligence
+    assert "and keeps replayable evidence for review and keeping" not in rendered_public_artifacts
+    assert "handles missing or invalid input with a clear blocker, and keeps" not in rendered_atlas.casefold()

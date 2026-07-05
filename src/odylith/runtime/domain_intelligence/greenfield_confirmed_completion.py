@@ -18,14 +18,10 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_component_completi
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_domain_intelligence_repair import (
     repair_domain_intelligence_metrics,
-)
-from odylith.runtime.domain_intelligence.greenfield_confirmed_domain_intelligence_repair import (
     repair_domain_intelligence_sentence_lists,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import (
     project_specific_actor_labels,
-)
-from odylith.runtime.domain_intelligence.greenfield_confirmed_actor_completion import (
     value_starts_with_generic_actor_label,
 )
 from odylith.runtime.domain_intelligence.greenfield_confirmed_backlog_text_model import proof_claim_summary
@@ -49,6 +45,9 @@ from odylith.runtime.domain_intelligence.greenfield_confirmed_project_intelligen
 from odylith.runtime.domain_intelligence.greenfield_confirmed_title_repair import repair_project_title
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prewrite_gate import complete_semantic_model as _complete_semantic_model
 from odylith.runtime.domain_intelligence.greenfield_confirmed_prewrite_gate import preflight_issues as _preflight_issues
+from odylith.runtime.domain_intelligence.greenfield_confirmed_diagram_projection import (
+    refresh_confirmed_diagram_projection as _refresh_confirmed_diagram_projection,
+)
 from odylith.runtime.domain_intelligence.greenfield_confirmed_completion_quality import (
     proof_boundary_is_weak as _proof_boundary_is_weak,
 )
@@ -119,6 +118,7 @@ def greenfield_repair_until_clean(
             state_object=completion_text.state_object(payload),
             proof_boundary=completion_text.proof_boundary(payload),
             text_needs_repair=_text_needs_repair,
+            visible_result=completion_text.outcome_phrase(payload),
         )
         changed |= _complete_backlog(payload)
         changed |= complete_component_rows(payload)
@@ -420,6 +420,7 @@ def _complete_diagrams(proposal: dict[str, Any]) -> bool:
     if not isinstance(rows, list):
         return False
     changed = False
+    changed |= _refresh_confirmed_diagram_projection(proposal, rows)
     component_ids = [
         _clean(row.get("component_id"))
         for row in proposal.get("components", [])

@@ -95,8 +95,10 @@ def complete_greenfield_semantic_apply_payload(proposal: dict[str, Any], *, rele
     """Complete proposal semantics and clear poisoned semantic projections."""
 
     repaired = ensure_apply_semantic_model(proposal, refresh=True)
-    if repair_greenfield_semantic_projections(repaired):
-        repaired = complete_confirmed_proposal(repaired, release_selector=release_selector)
+    projection_changed = repair_greenfield_semantic_projections(repaired)
+    completed = complete_confirmed_proposal(repaired, release_selector=release_selector)
+    if projection_changed or completed != repaired:
+        repaired = completed
         repaired = _normalized_proposal(repaired)
         repaired = ensure_apply_semantic_model(repaired, refresh=True)
     return repaired

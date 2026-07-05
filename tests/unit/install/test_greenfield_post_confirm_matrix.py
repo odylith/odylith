@@ -96,12 +96,13 @@ def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
 
     def fake_scan_platform_custody(*, repo_root: Path, dist_dir: Path, terms: tuple[str, ...]):
         captured_terms.append(terms)
-        return (
+        return tuple(
             module.platform_domain_leakage.LeakageFinding(
                 location="src/odylith/runtime/example.py",
-                term="xenobot",
-                line=1,
-            ),
+                term=term,
+                line=index,
+            )
+            for index, term in enumerate(terms, start=1)
         )
 
     monkeypatch.setattr(module.platform_domain_leakage, "scan_platform_custody", fake_scan_platform_custody)
@@ -114,8 +115,9 @@ def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
             cases=(
                 module.GreenfieldMatrixCase(
                     name="xenobot custody",
-                    prompt="Create a greenfield proposal for xenobot culture custody.",
+                    prompt="Create a greenfield proposal for xenobot culture.",
                     required_terms=("xenobot", "culture"),
+                    leakage_terms=("xenobot culture",),
                 ),
             ),
         )
@@ -123,6 +125,50 @@ def test_run_matrix_scans_selected_case_vocabulary_before_simulation(
     assert len(captured_terms) == 1
     assert "xenobot culture" in captured_terms[0]
     assert not any(path.name.startswith("odylith-greenfield-matrix-") for path in tmp_path.iterdir())
+
+
+def test_matrix_preflight_replaces_platform_native_declared_sentinel_with_source_candidate(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _module()
+    dist_dir = tmp_path / "dist"
+    _write(dist_dir / "install.sh", "#!/usr/bin/env bash\n")
+    captured_terms: list[tuple[str, ...]] = []
+
+    def fake_scan_platform_custody(*, repo_root: Path, dist_dir: Path, terms: tuple[str, ...]):
+        captured_terms.append(terms)
+        return (
+            module.platform_domain_leakage.LeakageFinding(
+                location="src/odylith/runtime/project_intelligence/greenfield_boundary_cards.py",
+                term="calibration drift",
+                line=221,
+            ),
+        )
+
+    monkeypatch.setattr(module.platform_domain_leakage, "scan_platform_custody", fake_scan_platform_custody)
+    case = module.GreenfieldMatrixCase(
+        name="sepsis early warning calibration",
+        prompt=(
+            "Create a greenfield proposal for a sepsis early warning calibration workspace that compares "
+            "vitals streams, lab results, model thresholds, calibration drift, false-positive reviews, "
+            "clinician overrides, and fairness evidence before deployment readiness review."
+        ),
+        required_terms=("sepsis", "calibration", "false-positive", "clinician"),
+        leakage_terms=("calibration drift",),
+    )
+
+    failures = module.matrix_preflight_failures(
+        repo_root=module.REPO_ROOT,
+        release_dir=dist_dir,
+        cases=(case,),
+        required_stressors=(),
+        enforce_required_stressors=False,
+    )
+
+    assert failures == ()
+    assert len(captured_terms) == 1
+    assert "calibration drift" in captured_terms[0]
+    assert "early warning calibration" in captured_terms[0]
 
 
 def test_run_matrix_preflight_ignores_stale_declared_sentinels_without_source_grounding(
