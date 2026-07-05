@@ -13,9 +13,9 @@
   ],
   "forensic_coverage": {
     "empty_reasons": [],
-    "explicit_event_count": 493,
-    "mapped_workstream_evidence_count": 463,
-    "recent_path_match_count": 1,
+    "explicit_event_count": 494,
+    "mapped_workstream_evidence_count": 464,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 31,
     "status": "forensic_coverage_present",
     "timeline_event_count": 494
@@ -43,6 +43,43 @@
   ],
   "spec_ref": "odylith/registry/source/components/governance-intervention-engine/CURRENT_SPEC.md",
   "timeline": [
+    {
+      "artifact_count": 3,
+      "artifacts": [
+        "tracked_artifact_1",
+        "tracked_artifact_2",
+        "tracked_artifact_3"
+      ],
+      "confidence": "high",
+      "event_index": 911,
+      "explicit_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "kind": "statement",
+      "mapped_components": [
+        "atlas",
+        "compass",
+        "domain-intelligence",
+        "governance-intervention-engine",
+        "odylith",
+        "radar",
+        "registry",
+        "release"
+      ],
+      "meaningful": true,
+      "summary": "Timeline evidence linked this component to governed work. workstream scope preserved; 3 tracked artifact references retained.",
+      "ts_iso": "2026-07-05T04:22:53-07:00",
+      "workstreams": [
+        "B-142"
+      ]
+    },
     {
       "artifact_count": 2,
       "artifacts": [
@@ -490,23 +527,6 @@
       "workstreams": [
         "B-142"
       ]
-    },
-    {
-      "artifact_count": 1,
-      "artifacts": [
-        "tracked_artifact_1"
-      ],
-      "confidence": "high",
-      "event_index": 919,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "governance-intervention-engine"
-      ],
-      "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
-      "ts_iso": "2026-07-04T19:08:48-07:00",
-      "workstreams": []
     },
     {
       "artifact_count": 0,

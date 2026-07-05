@@ -41,10 +41,10 @@
     "empty_reasons": [],
     "explicit_event_count": 122,
     "mapped_workstream_evidence_count": 68,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 21,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 123
+    "timeline_event_count": 122
   },
   "name": "Dashboard",
   "path_prefixes": [
@@ -54,23 +54,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/dashboard/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifact_count": 1,
-      "artifacts": [
-        "tracked_artifact_1"
-      ],
-      "confidence": "high",
-      "event_index": 916,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "dashboard"
-      ],
-      "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
-      "ts_iso": "2026-07-04T19:08:48-07:00",
-      "workstreams": []
-    },
     {
       "artifact_count": 3,
       "artifacts": [

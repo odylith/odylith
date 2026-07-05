@@ -13,10 +13,10 @@
     "empty_reasons": [],
     "explicit_event_count": 26,
     "mapped_workstream_evidence_count": 25,
-    "recent_path_match_count": 1,
+    "recent_path_match_count": 0,
     "spec_history_event_count": 11,
     "status": "forensic_coverage_present",
-    "timeline_event_count": 27
+    "timeline_event_count": 26
   },
   "name": "Migration Runtime",
   "path_prefixes": [
@@ -24,23 +24,6 @@
   ],
   "spec_ref": "odylith/registry/source/components/migration-runtime/CURRENT_SPEC.md",
   "timeline": [
-    {
-      "artifact_count": 1,
-      "artifacts": [
-        "tracked_artifact_1"
-      ],
-      "confidence": "high",
-      "event_index": 920,
-      "explicit_components": [],
-      "kind": "workspace_activity",
-      "mapped_components": [
-        "migration-runtime"
-      ],
-      "meaningful": true,
-      "summary": "Workspace activity touched tracked component evidence. 1 tracked artifact reference retained.",
-      "ts_iso": "2026-07-04T19:08:48-07:00",
-      "workstreams": []
-    },
     {
       "artifact_count": 7,
       "artifacts": [
